@@ -8,8 +8,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Curveball Demo.
- * Refer to curveballapp.h for a more detailed description of the application.
+ * Web-socket Server Demo.
+ * Refer to websocketserverapp.h for a more detailed description of the application.
  */
 int main(int argc, char *argv[])
 {

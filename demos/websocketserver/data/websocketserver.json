@@ -84,18 +84,6 @@
             "Children": []
         },
         {
-            "Type": "nap::Entity",
-            "mID": "WebSocketEntity",
-            "Components": [
-                {
-                    "Type": "nap::WebSocketComponent",
-                    "mID": "WebSocketComponent",
-                    "Interface": "WebSocketServer"
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
@@ -146,10 +134,6 @@
             "Entities": [
                 {
                     "Entity": "TextEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "WebSocketEntity",
                     "InstanceProperties": []
                 }
             ]
