@@ -18,18 +18,18 @@ namespace nap
 		SerialService(ServiceConfiguration* configuration);
 
 		/**
-		 *	Explicitly frees the yoctopuce API
+		 *	Explicitly frees the serial API
 		 */
 		virtual ~SerialService() override;
 
 	protected:
 		/**
-		 * Initialize yoctopuce related functionality
+		 * Initialize serial related functionality
 		 */
 		virtual bool init(utility::ErrorState& error) override;
 
 		/**
-		 *	Shuts down all yoctopuce related functionality
+		 *	Shuts down all serial related functionality
 		 */
 		virtual void shutdown() override;
 	};
