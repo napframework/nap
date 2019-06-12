@@ -54,7 +54,8 @@ namespace nap
 		ImGui::Begin("Information");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "Connect a websocket client to change the text on screen");
+		ImGui::TextColored(clr, "Connect a client to change the text on screen.");
+		ImGui::TextColored(clr, "Use the javascript client in the 'data/websocket_html_client' directory.");
 		ImGui::TextColored(clr, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
