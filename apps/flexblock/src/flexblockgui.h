@@ -47,7 +47,7 @@ namespace nap
 		 */
 		void toggleVisibility();
 
-		void showTimeLine();
+		void showTimeLineWindow();
 
 	private:
 		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
@@ -55,6 +55,7 @@ namespace nap
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
 		bool								mShowTimeLine = false;
+		bool								mShowSequenceList = false;
 		DateTime							mDateTime;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 		float								mTexPreviewDisplaySize = 1.0f;
@@ -69,9 +70,12 @@ namespace nap
 		 */
 		void showInfoWindow();
 
-		void showSequencesWindow(bool &showTimeLine);
+		void showSequencesWindow();
 
 		void initParameters();
 		void updateInput(int index, float value);
+
+		template<typename T1>
+		std::string convertToString(T1 number, int precision);
 	};
 }

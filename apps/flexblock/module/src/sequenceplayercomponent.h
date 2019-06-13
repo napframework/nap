@@ -84,6 +84,12 @@ namespace nap
 			void setTime(const double time);
 
 			/**
+			* Sets the speed
+			* @param time, time to set sequence to
+			*/
+			void setSpeed(const float speed) { mSpeed = speed; }
+
+			/**
 			* Skips to sequence in time
 			* @param sequence, pointer to sequence
 			*/
@@ -92,22 +98,22 @@ namespace nap
 			/**
 			* @return true if loaded sequence
 			*/
-			const bool getIsLoaded() { return mSequenceContainer != nullptr; }
+			const bool getIsLoaded() const { return mSequenceContainer != nullptr; }
 
 			/**
 			* @return true if playing
 			*/
-			const bool getIsPlaying() { return mIsPlaying; }
+			const bool getIsPlaying() const { return mIsPlaying; }
 
 			/**
 			* @return true if paused
 			*/
-			const bool getIsPaused() { return mIsPaused; };
+			const bool getIsPaused() const { return mIsPaused; };
 
 			/**
 			* @return true if finished playing
 			*/
-			const bool getIsFinished() { return mIsFinished; }
+			const bool getIsFinished() const { return mIsFinished; }
 
 			/**
 			* @return pointer to current sequence
@@ -117,17 +123,22 @@ namespace nap
 			/**
 			* @return current time in sequence
 			*/
-			const double getCurrentTime() { return mTime; }
+			const double getCurrentTime() const { return mTime; }
 
 			/**
 			* @return duration of sequence
 			*/
-			const double getDuration() { return mDuration; }
+			const double getDuration() const { return mDuration; }
 
 			/**
 			* @return true if looping
 			*/
-			const bool getIsLooping() { return mIsLooping; }
+			const bool getIsLooping() const { return mIsLooping; }
+
+			/**
+			* @return speed
+			*/
+			const float getSpeed() const { return mSpeed; }
 
 			/**
 			* @return vector of pointers to sequences
@@ -143,6 +154,7 @@ namespace nap
 			bool mIsFinished = false;
 			bool mIsLooping = false;
 			int mCurrentSequenceIndex = 0;
+			float mSpeed = 1.0f;
 
 			double mDuration = 0.0;
 

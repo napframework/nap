@@ -64,34 +64,51 @@ namespace nap
 			{
 				if (!mIsPaused)
 				{
-					mTime += deltaTime;
+					mTime += deltaTime * mSpeed;
 				}
 
-				while (!mSequenceContainer->mSequences[mCurrentSequenceIndex]->process(mTime, mParameters))
+				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
 				{
-					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
-					mCurrentSequenceIndex++;
-
-					if (mCurrentSequenceIndex >= mSequenceContainer->mSequences.size())
+					int result = mSequenceContainer->mSequences[mCurrentSequenceIndex]->process(mTime, mParameters);
+					
+					if (result != 0)
 					{
-						if (!mIsPaused)
+						mCurrentSequenceIndex += result;
+
+						int size = mSequenceContainer->mSequences.size();
+						if (mCurrentSequenceIndex >= size)
 						{
 							if (mIsLooping)
 							{
-								mTime = 0.0;
 								mCurrentSequenceIndex = 0;
-								break;
+								i = 0;
+								mTime = deltaTime;
 							}
 							else
 							{
-								mIsPlaying = false;
 								mIsFinished = true;
+								mIsPlaying = false;
+								mCurrentSequenceIndex = 0;
 							}
 						}
-
-						mCurrentSequenceIndex -= 1;
-						mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
-
+						else if (mCurrentSequenceIndex < 0)
+						{
+							if (mIsLooping)
+							{
+								mCurrentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+								i = 0;
+								mTime = mDuration - deltaTime;
+							}
+							else
+							{
+								mIsFinished = true;
+								mIsPlaying = false;
+								mCurrentSequenceIndex = 0;
+							}
+						}
+					}
+					else
+					{
 						break;
 					}
 				}

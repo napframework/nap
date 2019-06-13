@@ -83,27 +83,28 @@ namespace nap
 			mCurrentElementIndex = 0;
 		}
 
-		bool Sequence::process(double time, std::vector<Parameter*>& outParameters)
+		int Sequence::process(double time, std::vector<Parameter*>& outParameters)
 		{
-			while (time >= mStartTime && time < mStartTime + mDuration)
+			if(time < mStartTime )
+				return -1;
+			
+			if (time >= mStartTime + mDuration)
+				return 1;
+
+			for(int i = 0 ; i < mElements.size(); i++)
 			{
 				if (mElements[mCurrentElementIndex]->process(time, outParameters))
 				{
-					return true;
+					break;
 				}
 				else
 				{
 					mCurrentElementIndex++;
-
-					if (mCurrentElementIndex >= mElements.size())
-					{
-						mCurrentElementIndex -= 1;
-						return false;
-					}
+					mCurrentElementIndex %= mElements.size();
 				}
 			}
 
-			return false;
+			return 0;
 		}
 	}
 }

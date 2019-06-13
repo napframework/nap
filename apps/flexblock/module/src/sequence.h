@@ -34,7 +34,7 @@ namespace nap
 			* @param endValues a reference to the parameters that need to be set
 			* @return returns true if this element has to do something ( sequence falls in this time slot )
 			*/
-			virtual bool process(double time, std::vector<Parameter*>& outParameters);
+			virtual int process(double time, std::vector<Parameter*>& outParameters);
 
 			/**
 			* Resets current element index

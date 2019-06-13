@@ -13,6 +13,7 @@
 #include <meshutils.h>
 #include <sequence.h>
 #include <sequenceplayercomponent.h>
+#include <iomanip>
 
 namespace nap
 {
@@ -22,6 +23,9 @@ namespace nap
 	static bool showInfo = false;
 	static bool showPresetWindow = false;
 	static bool showSequences = false;
+	static float lengthPerSecond = 60.0f;
+	static float child_width = 1000.0f;
+	static bool wasClicked = false;
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
@@ -93,6 +97,7 @@ namespace nap
 				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
 				ImGui::MenuItem("Sequences", NULL, &showSequences);
+				ImGui::MenuItem("Timeline", NULL, &mShowTimeLine);
 
 				ImGui::EndMenu();
 			}
@@ -105,14 +110,11 @@ namespace nap
 		if (showInfo)
 			showInfoWindow();
 
-		if (showSequences)
-		{
-			showSequencesWindow(mShowTimeLine);
-
-			if (mShowTimeLine)
-				showTimeLine();
-		}
+		if (mShowTimeLine)
+			showTimeLineWindow();
 			
+		if (mShowSequenceList)
+			showSequencesWindow();
 	}
 	
 
@@ -127,54 +129,16 @@ namespace nap
 		mHide = !mHide;
 	}
 
-	void FlexblockGui::showTimeLine()
+	void FlexblockGui::showTimeLineWindow()
 	{
-		// Fetch resource manager to get access to all loaded resources
-		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
-
-		ImGui::Begin("Sequence Timeline");
-
-		/*
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		glm::vec2 top_left = glm::vec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
-		const auto max = ImGui::GetWindowContentRegionMax();
-		const auto min = ImGui::GetWindowContentRegionMin();
-
-		const auto size = ImVec2(max.x - min.x, max.y - min.y);
-
 		timeline::SequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
 
-		const auto & elements = sequencePlayer.getElements();
-		for (int i = 0; i < elements.size(); i++)
-		{
-			float width = size.x * (elements[i]->mDuration / sequencePlayer.getDuration());
-			float start_x = size.x * (elements[i]->getStartTime() / sequencePlayer.getDuration());
+		ImGui::SetNextWindowContentSize(ImVec2(child_width, 300.0f));
+		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar);
 
-			draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y), ImVec2(top_left.x + start_x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
-			draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y + size.y), ImVec2(top_left.x + start_x + width, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+		float cursorPosX = ImGui::GetCursorPosX();
+		ImGui::SetCursorPos(ImVec2(cursorPosX + ImGui::GetScrollX(), ImGui::GetCursorPosY()));
 
-			//draw_list->AddText(ImVec2(top_left.x + start_x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)), elements[i]->mID.c_str());
-		}
-
-		//
-		draw_list->AddLine(ImVec2(top_left.x + size.x, top_left.y), ImVec2(top_left.x + size.x, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
-
-		float pos = ( sequencePlayer.getCurrentTime() / sequencePlayer.getDuration() ) * size.x;
-		draw_list->AddLine(ImVec2(top_left.x + pos, top_left.y), ImVec2(top_left.x + pos, top_left.y + size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
-
-		*/
-		ImGui::End();
-	}
-
-	void FlexblockGui::showSequencesWindow(bool &showTimeLine)
-	{
-		// Fetch resource manager to get access to all loaded resources
-		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
-
-		ImGui::Begin("Sequence player");
-		ImGui::Spacing();
-
-		timeline::SequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
 		if (ImGui::Button("Stop"))
 		{
 			sequencePlayer.stop();
@@ -190,7 +154,6 @@ namespace nap
 				{
 					sequencePlayer.pause();
 				}
-
 			}
 			else
 			{
@@ -213,6 +176,151 @@ namespace nap
 		{
 			sequencePlayer.setIsLooping(isLooping);
 		}
+
+		ImGui::SameLine();
+		float speed = sequencePlayer.getSpeed();
+		ImGui::PushItemWidth(50.0f);
+		ImGui::DragFloat("Speed", &speed, 0.05f, -5.0f, 5.0f);
+		ImGui::PopItemWidth();
+		sequencePlayer.setSpeed(speed);
+
+		ImGui::SameLine();
+		ImGui::Checkbox("Show Sequence List", &mShowSequenceList);
+
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100.0f);
+		ImGui::DragFloat("Resolution", &lengthPerSecond, 0.5f, 10.0f, 200.0f);
+		ImGui::PopItemWidth();
+		child_width = sequencePlayer.getDuration() * lengthPerSecond;
+
+		lengthPerSecond += ImGui::GetIO().MouseWheel;
+		lengthPerSecond = math::clamp<float>(lengthPerSecond, 10.0f, 200.0f);
+
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImGui::SetCursorPos(ImVec2(cursorPosX, ImGui::GetCursorPosY()));
+
+		ImGui::BeginChild("", ImVec2(child_width, 275.0f), false, ImGuiWindowFlags_NoMove);
+		{
+			const auto child_size = ImVec2(child_width, 250.0f);
+
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+			//
+			ImVec2 top_left = ImGui::GetCursorScreenPos();
+
+			ImVec2 bottom_right_pos = ImVec2(top_left.x + child_size.x, top_left.y + child_size.y );
+
+			draw_list->AddRectFilled(top_left, bottom_right_pos,
+				ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.25f)));
+
+
+
+			const auto & sequences = sequencePlayer.getSequences();
+			for (int i = 0; i < sequences.size(); i++)
+			{
+				float width = child_size.x * (sequences[i]->getDuration() / sequencePlayer.getDuration());
+				float start_x = child_size.x * (sequences[i]->getStartTime() / sequencePlayer.getDuration());
+
+				draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y), ImVec2(top_left.x + start_x, top_left.y + child_size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+				draw_list->AddLine(ImVec2(top_left.x + start_x, bottom_right_pos.y), ImVec2(top_left.x + start_x + width, bottom_right_pos.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+				int y_text_offset = 0;
+				for (const auto* element : sequences[i]->mElements)
+				{
+					float p = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
+
+					draw_list->AddLine(
+						ImVec2(top_left.x + start_x + width * p, top_left.y + child_size.y * 0.5f),
+						ImVec2(top_left.x + start_x + width * p, bottom_right_pos.y),
+						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
+
+					draw_list->AddText(
+						ImVec2(top_left.x + start_x + width * p + 5, top_left.y + child_size.y * 0.5f + y_text_offset),
+						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
+						element->getID().c_str());
+
+					y_text_offset += 20;
+					if (y_text_offset > child_size.y * 0.5f - 20)
+					{
+						y_text_offset = 0;
+					}
+				}
+
+				draw_list->AddText(
+					ImVec2(top_left.x + start_x + 5, top_left.y + 15),
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					sequences[i]->getID().c_str());
+			}
+
+			//
+			draw_list->AddLine(
+				ImVec2(top_left.x + child_size.x, top_left.y),
+				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
+				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+			float pos = (sequencePlayer.getCurrentTime() / sequencePlayer.getDuration()) * child_size.x;
+			draw_list->AddLine(ImVec2(top_left.x + pos, top_left.y), ImVec2(top_left.x + pos, bottom_right_pos.y),
+				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
+
+			draw_list->AddText(
+				ImVec2(top_left.x + pos + 5, top_left.y),
+				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+				convertToString(sequencePlayer.getCurrentTime(), 2).c_str());
+
+			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+			{
+				if (ImGui::IsMouseClicked(0))
+				{
+					wasClicked = true;
+					ImVec2 mousePos = ImGui::GetMousePos();
+					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
+					float pos = mousePos.x / child_size.x;
+					sequencePlayer.setTime(pos * sequencePlayer.getDuration());
+					//printf("mouse pos %f\n", mousePos.x);
+				}
+				else if (ImGui::IsMouseDragging() && wasClicked)
+				{
+					ImVec2 mousePos = ImGui::GetMousePos();
+					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
+					float pos = mousePos.x / child_size.x;
+					sequencePlayer.setTime(pos * sequencePlayer.getDuration());
+					//printf("mouse pos %f\n", mousePos.x);
+				}
+			}
+
+			if (!ImGui::IsMouseDown(0))
+				wasClicked = false;
+
+			ImGui::EndChild();
+
+			ImGui::Spacing();
+			ImGui::Spacing();
+		}
+
+		ImGui::End();
+	}
+
+	template<typename T1>
+	std::string FlexblockGui::convertToString(T1 number, int precision)
+	{
+		std::ostringstream streamObj;
+		streamObj << std::fixed;
+		streamObj << std::setprecision(precision) << number;
+		return streamObj.str();
+	}
+
+	void FlexblockGui::showSequencesWindow()
+	{
+		// Fetch resource manager to get access to all loaded resources
+		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+
+		ImGui::Begin("Sequence player");
+		ImGui::Spacing();
+
+		timeline::SequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
+
 
 		ImGui::Spacing();
 
@@ -264,39 +372,6 @@ namespace nap
 
 			}
 			ImGui::TreePop();
-		}
-
-		ImGui::Spacing();
-		ImGui::Spacing();
-
-		if (sequencePlayer.getIsPlaying())
-		{
-			ImGui::Text(("Playing sequence [" 
-				+ sequencePlayer.getCurrentSequence()->mID 
-				+ "]").c_str());
-			RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
-			
-			ImGui::SameLine();
-			ImGui::TextColored(text_color, "%.2f seconds", sequencePlayer.getCurrentTime() );
-		
-			ImGui::Spacing();
-
-			ImGui::Text(std::string("Current Sequence Element = " + sequencePlayer.getCurrentSequence()->getCurrentElement()->mID).c_str());
-			ImGui::Spacing();
-			ImGui::Text("Progress");
-
-			mScrub = (float)(sequencePlayer.getCurrentTime() / sequencePlayer.getDuration());
-			ImGui::ProgressBar(mScrub);
-			auto progressBarSize = ImGui::GetItemRectSize();
-
-			ImGui::NewLine();
-		
-			ImGui::Spacing();
-			ImGui::Text("Scrub");
-			if (ImGui::SliderFloat("", &mScrub, 0.0f, 1.0f))
-			{
-				sequencePlayer.setTime(mScrub * sequencePlayer.getDuration());
-			}
 		}
 
 		ImGui::End();
