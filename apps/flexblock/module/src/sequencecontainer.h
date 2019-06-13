@@ -28,7 +28,7 @@ namespace nap
 			/**
 			* @return the number of available compositions in this container
 			*/
-			int count() const { return mSequences.size(); }
+			const int count() const { return mSequences.size(); }
 
 			std::vector<Sequence*>				mSequences;								///< List of all available compositions
 		};

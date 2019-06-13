@@ -14,9 +14,34 @@ namespace nap
 	{
 		SequenceContainer::~SequenceContainer() { }
 
-
 		bool SequenceContainer::init(utility::ErrorState& errorState)
 		{
+			if (mSequences.size() > 0)
+			{
+				const std::vector<Parameter*>& parameters = mSequences[0]->mStartParameters;
+
+				for (int i = 0; i < mSequences.size(); ++i)
+				{
+					if (!errorState.check(parameters.size() == mSequences[i]->mStartParameters.size(),
+						"Size of start parameters of sequences in container differ %s", mID.c_str()))
+						return false;
+
+					for (int j = 0; j < parameters.size(); ++j)
+					{
+						if (!errorState.check( parameters[j]->get_type() == mSequences[i]->mStartParameters[j]->get_type(),
+							"Start parameter type of sequences in container differ %s", mID.c_str()))
+							return false;
+					}
+				}
+			}
+
+			double time = 0.0;
+			for (const auto& sequence : mSequences)
+			{
+				sequence->setStartTime(time);
+				time += sequence->getDuration();
+			}
+
 			return true;
 		}
 	}

@@ -42,6 +42,7 @@ namespace nap
 			ComponentInstance(entity, resource)									{ }
 
 		~FlexBlockSerialComponentInstance();
+
 		/**
 		 * Initialize FlexBlockSerialComponentInstance based on the FlexBlockSerialComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -50,27 +51,51 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Starts the serial write thread
+		 */
 		void start(utility::ErrorState& error);
 
+		/**
+		 * Stops the serial write thread
+		 */
 		void stop();
 
+		/**
+		 * put stuff in write buffer
+		 * @param data string being put in buffer
+		 */ 
 		void write(std::string data);
 
-		const long getUpdateIntervalMs() 
-		{
-			return mThreadUpdateIntervalMs;
-		}
+		/**
+		 * Sets the write buffer size
+		 * This is necessary when data is being put in write buffer at a faster rate
+		 * the write thread is writing to serial
+		 * @param int max size of write buffer
+		 */
+		void setMaxWriteBufferSize(const int size) { mMaxWriteBufferSize = size; }
 
-		void setUpdateIntervalMs(long interval)
-		{
-			mThreadUpdateIntervalMs = interval;
-		}
+		/**
+		 * Sets update interval in milliseconds
+		 * @param interval the interval in ms
+		 */
+		void setUpdateIntervalMs(const long interval) { mThreadUpdateIntervalMs = interval; }
+
+		/**
+		 * @return max write buffer size
+		 */
+		const int getMaxWriteBufferSize() const { return mMaxWriteBufferSize; }
+
+		/**
+		 * @return return update interval
+		 */
+		const long getUpdateIntervalMs() const { return mThreadUpdateIntervalMs; }
 	protected:
 		void writeThreadFunc();
 		void consumeBuffer(std::deque<std::string>& outBuffer);
-		void onDestroy(SerialPort port);
+		void onSerialPortDestroy(SerialPort* port);
 	protected:
-		Slot<SerialPort>						mCloseSlot;
+		Slot<SerialPort*>						mDestroySlot;
 
 		ResourcePtr<SerialPort>					mSerialPort;
 
@@ -79,6 +104,6 @@ namespace nap
 		std::deque<std::string>					mWriteBuffer;
 		std::mutex								mWriteBufferMutex;
 		std::atomic_long						mThreadUpdateIntervalMs = 10;
-		const int								mMaxWriteBufferSize = 4;
+		int										mMaxWriteBufferSize = 4;
 	};
 }

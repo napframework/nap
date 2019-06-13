@@ -99,7 +99,7 @@ namespace nap
 		// update motors of flex algorithm
 		mFlexLogic->setMotorInput(mMotorInputs);
 
-		//
+		// update serial
 		mUpdateSerialTime += deltaTime;
 		if (mUpdateSerialTime > (double)mFlexBlockSerialComponentInstance->getUpdateIntervalMs() / 1000.0)
 		{
@@ -110,14 +110,12 @@ namespace nap
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{
 				long c = (long)ropeLengths[remapMotorInput(i)];
-				data.append(std::to_string(c));
+				data += std::to_string(c);
 				if (i + 1 < ropeLengths.size())
-					data.append("|");
+					data += "|";
 			}
-			data.append(">");
+			data += ">";
 
-			//printf(data.c_str());
-			//printf("\n");
 			mFlexBlockSerialComponentInstance->write(data);
 		}
 	}
@@ -136,9 +134,9 @@ namespace nap
 		outPoints[7] = inPoints[0];
 	}
 
-	const int FlexBlockComponentInstance::remapMotorInput(const int index)
+	const int FlexBlockComponentInstance::remapMotorInput(const int index) const
 	{
-		static std::vector<int> map =
+		const static std::vector<int> map =
 		{
 			7,
 			6,

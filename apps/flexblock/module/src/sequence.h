@@ -9,11 +9,15 @@ namespace nap
 {
 	namespace timeline
 	{
+		class SequenceContainer;
+
 		/**
 		* Sequence
 		*/
 		class NAPAPI Sequence : public Resource
 		{
+			friend class SequenceContainer;
+
 			RTTI_ENABLE(Resource)
 		public:
 			virtual ~Sequence();
@@ -32,18 +36,30 @@ namespace nap
 			*/
 			virtual bool process(double time, std::vector<Parameter*>& outParameters);
 
-			void setStartTime(double startTime);
-
-			const double getDuration() { return mDuration; }
-
-			const double getStartTime() { return mStartTime; }
-
+			/**
+			* Resets current element index
+			*/
 			void reset();
 
-			const SequenceElement* getCurrentElement() const
-			{ 
-				return mElements[mCurrentElementIndex];
-			}
+			/**
+			* @return returns the total duration of this sequence
+			*/
+			const double getDuration() const { return mDuration; }
+
+			/**
+			* @return returns the start time of this sequence
+			*/
+			const double getStartTime() const { return mStartTime; } 
+
+			/**
+			* @return returns the id of this resource
+			*/
+			const std::string getID() const { return mID; }
+
+			/**
+			* @return returns pointer to current element pointed to by current element index
+			*/
+			const SequenceElement* getCurrentElement() const{ return mElements[mCurrentElementIndex]; }
 		public:
 			// properties
 			std::vector<SequenceElement*> mElements;
@@ -54,6 +70,12 @@ namespace nap
 			double mDuration = 0.0;
 			double mStartTime = 0.0;
 			int mCurrentElementIndex = 0;
+
+			/**
+			* Sets the start time of this sequence, can only be called by friend class SequenceContainer
+			* @param startTime, the new start time
+			*/
+			void setStartTime(double startTime);
 		};
 	}
 }

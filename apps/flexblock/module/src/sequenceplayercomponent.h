@@ -27,8 +27,8 @@ namespace nap
 			*/
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-			ResourcePtr<ParameterGroup> mParameterGroup;
-			ResourcePtr<SequenceContainer> mSequenceContainer;
+			ResourcePtr<ParameterGroup>		mParameterGroup;
+			ResourcePtr<SequenceContainer>	mSequenceContainer;
 		};
 
 
@@ -81,9 +81,13 @@ namespace nap
 			* Sets the current time of the sequence
 			* @param time, time to set sequence to
 			*/
-			void setTime(double time);
+			void setTime(const double time);
 
-			void skipToSequence(Sequence * sequence);
+			/**
+			* Skips to sequence in time
+			* @param sequence, pointer to sequence
+			*/
+			void skipToSequence(const Sequence * sequence);
 
 			/**
 			* @return true if loaded sequence
@@ -106,12 +110,9 @@ namespace nap
 			const bool getIsFinished() { return mIsFinished; }
 
 			/**
-			* @return pointer to current sequence, nullptr if not available
+			* @return pointer to current sequence
 			*/
-			const Sequence* getCurrentSequence() const
-			{ 
-				return mSequenceContainer->mSequences[mCurrentSequenceIndex];
-			}
+			const Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
 
 			/**
 			* @return current time in sequence
@@ -131,7 +132,7 @@ namespace nap
 			/**
 			* @return vector of pointers to sequences
 			*/
-			const std::vector<Sequence*>& getSequences();
+			const std::vector<Sequence*>& getSequences() { return mSequenceContainer->mSequences;}
 		protected:
 			//
 			SequenceContainer* mSequenceContainer = nullptr;

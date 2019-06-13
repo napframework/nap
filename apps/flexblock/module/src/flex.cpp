@@ -391,7 +391,7 @@ namespace nap
 		mPoints = newPoints;
 	}
 
-	const std::vector<float> Flex::getRopeLengths()
+	const std::vector<float> Flex::getRopeLengths() const
 	{
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
@@ -406,11 +406,6 @@ namespace nap
 			a -= 7542;
 			ropes[i] = a;
 		}
-		/*
-		for (float& ropeLength : ropes)
-		{
-			ropeLength *= 1000.0f * MOTORSTEPS - 7542.0f;
-		}*/
 		
 		return ropes;
 	}

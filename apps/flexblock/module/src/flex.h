@@ -20,50 +20,41 @@ namespace nap
 		~Flex();
 
 		/**
-		* Update motor speed [0..8]
-		* @param index index of motor [0..8]
-		* @param value motor input 0-1
-		*/
+		 * Update motor speed [0..8]
+		 * @param index index of motor [0..8]
+		 * @param value motor input 0-1
+		 */
 		void setMotorInput(const std::vector<float>& inputs);
 
 		/**
-		* Starts the logic thread
-		*/
+		 * Starts the logic thread
+		 */
 		void start();
 
 		/**
-		* Stops the logic thread
-		*/
+		 * Stops the logic thread
+		 */
 		void stop();
 
 		/**
-		* Returns true if logic thread is running
-		*/
-		bool getIsRunning()
-		{
-			return mIsRunning;
-		}
+		 * @return true if logic thread is running
+		 */
+		const bool getIsRunning() const  { return mIsRunning; }
 
 		/**
-		* Returns a vector containing calculated rope lengths
-		*/
-		const std::vector<float> getRopeLengths();
+		 * @return a vector containing calculated rope lengths
+		 */
+		const std::vector<float> getRopeLengths() const;
 
 		/**
-		* Returns reference to to latest calculate object points
-		*/
-		const std::vector<glm::vec3>& getObjectPoints()
-		{
-			return mPoints;
-		}
+		 * @return reference to to latest calculate object points
+		 */
+		const std::vector<glm::vec3>& getObjectPoints() const {return mPoints; }
 
 		/**
-		* Returns reference to of frame points
-		*/
-		const std::vector<glm::vec3>& getFramePoints()
-		{
-			return mPointsFrame;
-		}
+		 * @return reference to of frame points
+		 */
+		const std::vector<glm::vec3>& getFramePoints() const { return mPointsFrame; }
 	protected:
 		void getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec);
 		

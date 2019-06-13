@@ -220,21 +220,48 @@ namespace nap
 		{
 			const auto& sequences = sequencePlayer.getSequences();
 
-			for (const auto& sequence : sequences)
+			for (const auto* sequence : sequences)
 			{
 				ImVec4 color = ImVec4(1, 1, 1, 1);
 
-				if (sequencePlayer.getCurrentSequence() == sequence)
+				bool isSequenceBeingPlayed = sequencePlayer.getCurrentSequence() == sequence;
+				if (isSequenceBeingPlayed)
 				{
 					color = ImVec4(1, 0, 0, 1);
 				}
 
-				ImGui::PushStyleColor(1, color);
-				if(ImGui::Button(sequence->mID.c_str()))
+				ImGui::PushStyleColor(0, color);
+				if(ImGui::SmallButton(sequence->getID().c_str()))
 				{
 					sequencePlayer.skipToSequence(sequence);
 				}
 				ImGui::PopStyleColor();
+
+				if (ImGui::TreeNode(std::string(sequence->getID() + " Elements").c_str()))
+				{
+					const auto& elements = sequence->mElements;
+
+					for(const auto* element : elements)
+					{
+						bool isElementBeingPlayed =
+							sequence->getCurrentElement() == element;
+
+						if( isElementBeingPlayed && isSequenceBeingPlayed )
+							ImGui::PushStyleColor(0, color);
+
+						if (ImGui::SmallButton(element->getID().c_str()))
+						{
+							sequencePlayer.skipToSequence(sequence);
+							sequencePlayer.setTime(element->getStartTime());
+						}
+
+						if (isElementBeingPlayed && isSequenceBeingPlayed)
+							ImGui::PopStyleColor();
+					}
+
+					ImGui::TreePop();
+				}
+
 			}
 			ImGui::TreePop();
 		}

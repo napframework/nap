@@ -43,26 +43,31 @@ namespace nap
 			/**
 			* @return returns a reference to the end parameters of this sequence
 			*/
-			const std::vector<Parameter*>& getEndParameters() { return mEndParameters; }
+			const std::vector<Parameter*>& getEndParameters() const { return mEndParameters; }
 
 			/**
 			* @return returns a reference to the start parameters of this sequence
 			*/
-			const std::vector<Parameter*>& getStartParameters() { return mStartParameters; }
+			const std::vector<Parameter*>&  getStartParameters() const { return mStartParameters; }
 
 			/**
 			* This is called by the sequence to set the start time of this element
 			*/
-			void setStartTime(double startTime) { mStartTime = startTime; }
+			void setStartTime(const double startTime) { mStartTime = startTime; }
 
 			/**
 			* @return returns start time of this element in sequence
 			*/
-			const double getStartTime() { return mStartTime; }
+			double getStartTime() const { return mStartTime; }
+
+			/**
+			* @return returns id of this sequence
+			*/
+			const std::string getID() const { return mID; }
 		public:
 			// properties
 			float mDuration = 0.0f;
-			bool mUsePreset					= false;
+			bool mUsePreset	= false;
 			std::string mPreset;
 			std::vector<Parameter*> mEndParameters;
 		protected:

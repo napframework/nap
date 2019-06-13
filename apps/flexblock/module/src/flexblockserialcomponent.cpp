@@ -25,6 +25,11 @@ namespace nap
 
 	FlexBlockSerialComponentInstance::~FlexBlockSerialComponentInstance()
 	{
+		if (mSerialPort != nullptr)
+		{
+			mSerialPort->mIsBeingDeconstructed.disconnect(mDestroySlot);
+		}
+
 		if (mIsRunning)
 		{
 			mIsRunning = false;
@@ -37,17 +42,17 @@ namespace nap
 		FlexBlockSerialComponent* resource = getComponent<FlexBlockSerialComponent>();
 
 		mSerialPort = resource->mSerialPort;
-		mSerialPort->mIsBeingDeconstructed.connect([&]()
-		{
-			stop();
-		});
+
+		mDestroySlot = Slot<SerialPort*>(this, &FlexBlockSerialComponentInstance::onSerialPortDestroy);
+
+		mSerialPort->mIsBeingDeconstructed.connect(mDestroySlot);
 
 		return true;
 	}
 
-	void FlexBlockSerialComponentInstance::onDestroy(SerialPort port)
+	void FlexBlockSerialComponentInstance::onSerialPortDestroy(SerialPort * port)
 	{
-
+		stop();
 	}
 
 	void FlexBlockSerialComponentInstance::start(utility::ErrorState& error)

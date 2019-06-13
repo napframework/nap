@@ -60,7 +60,7 @@ namespace nap
 	SerialPort::~SerialPort()
 	{ 
 		stop(); 
-		mIsBeingDeconstructed.trigger();
+		mIsBeingDeconstructed.trigger(this);
 	}
 
 

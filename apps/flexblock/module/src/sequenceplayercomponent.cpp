@@ -26,7 +26,7 @@ namespace nap
 
 		}
 
-		void SequencePlayerComponentInstance::skipToSequence(Sequence * sequence)
+		void SequencePlayerComponentInstance::skipToSequence(const Sequence * sequence)
 		{
 			for (const auto* sequence_ : mSequenceContainer->mSequences)
 			{
@@ -44,6 +44,7 @@ namespace nap
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
 			SequencePlayerComponent* resource = getComponent<SequencePlayerComponent>();
+			mSequenceContainer = resource->mSequenceContainer.get();
 
 			const auto& parameterGroup = resource->mParameterGroup;
 			for (const auto& parameter : parameterGroup->mParameters)
@@ -51,22 +52,10 @@ namespace nap
 				mParameters.emplace_back(parameter.get());
 			}
 
-			mSequenceContainer = resource->mSequenceContainer.get();
-
-			double time = 0.0;
-			for (const auto& sequence : mSequenceContainer->mSequences)
-			{
-				sequence->setStartTime(time);
-				time += sequence->getDuration();
-			}
-			mDuration = time;
+			if( mSequenceContainer->mSequences.size() > 0 )
+				mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
 
 			return true;
-		}
-
-		const std::vector<Sequence*>& SequencePlayerComponentInstance::getSequences()
-		{
-			return mSequenceContainer->mSequences;
 		}
 
 		void SequencePlayerComponentInstance::update(double deltaTime)
@@ -124,10 +113,15 @@ namespace nap
 			}
 		}
 
-		void SequencePlayerComponentInstance::setTime(double time)
+		void SequencePlayerComponentInstance::setTime(const double time)
 		{
 			mTime = math::clamp<double>(time, 0.0, mDuration);
 			mCurrentSequenceIndex = 0;
+
+			for (const auto& sequence : mSequenceContainer->mSequences)
+			{
+				sequence->reset();
+			}
 		}
 
 		void SequencePlayerComponentInstance::pause()

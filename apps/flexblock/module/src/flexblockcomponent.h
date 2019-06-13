@@ -75,13 +75,31 @@ namespace nap
 		*/
 		void SetMotorInput(int index, float value);
 
-		/*
-		*/
-		const std::vector<glm::vec3>& getObjectPoints() { return mObjectPoints; }
-		const std::vector<glm::vec3>& getFramePoints() { return mFramePoints; }
+		/**
+		 * @return returns object points in local space
+		 */
+		const std::vector<glm::vec3>& getObjectPoints() const { return mObjectPoints; }
 
-		void toNapPoints(const std::vector<glm::vec3>& points, std::vector<glm::vec3>& outPoints);
-		const int remapMotorInput(const int index);
+		/**
+		 * @return returns frame points in local space
+		 */
+		const std::vector<glm::vec3>& getFramePoints() const { return mFramePoints; }
+
+		/**
+		 * Converts a vector of Flex points to nap points
+		 * This is necessary because our coordinate system of mapping points of the block differs
+		 * from the coordinates used in the flex algorithm
+		 * @param flexPoints the points calculated by the flex algorithm
+		 * @param napPoints the converted nap points
+		 */
+		void toNapPoints(const std::vector<glm::vec3>& flexPoints, std::vector<glm::vec3>& napPoints);
+		
+		/**
+		 * Remaps motor id 0--1 to the correct motors used in the hardware
+		 * @param index motor id used in the software
+		 * @return index motor id used in hardware
+		 */
+		const int remapMotorInput(const int index) const;
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
