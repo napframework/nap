@@ -79,7 +79,7 @@ namespace nap
 	 * to catch web-socket events use a nap::WebSocketComponent.
 	 
 	 * NOTE: When the 'Mode' is set to 'APIEvent' NO connection updates (open, close and failed) are created.
-	 * When 'Verbose' is turned on the server will issue warnings if a message can't be converted into an api.
+	 * When 'Verbose' is turned on the server will issue warnings if a message can't be converted into an api event.
 	 * When conversion fails the server always sends an error reply to the client. Every server error reply starts with: "ERROR:", 
 	 * together with the reason for failure, for example: "ERROR: MyServer: unable to parse json". 
 	 */
