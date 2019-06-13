@@ -327,7 +327,7 @@ namespace nap
 		 */
 		bool getCD();
 
-		Signal<> mIsBeingDeconstructed;
+		Signal<SerialPort*> mIsBeingDeconstructed;
 
 		std::string mPortName = "COM1";									///< Property: "PortName" the serial port to open and communicate with. Something like 'COM1' on windows and '/dev/ttyS0' on linux.
 		int mBaudRate = 9600;											///< Property: "BaudRate" the baud rate of the serial port.
