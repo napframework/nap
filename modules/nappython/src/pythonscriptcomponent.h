@@ -76,11 +76,11 @@ namespace nap
          * If the call fails the error will be logged.
          */
         template <typename ReturnType, typename ...Args>
-        ReturnType call(const std::string& identifier, Args... args);
+        ReturnType call(const std::string& identifier, Args&&... args);
         
         // Specialization for void return type
         template <typename ...Args>
-        void call(const std::string& identifier, Args... args);
+        void call(const std::string& identifier, Args&&... args);
         
     private:
         PythonScriptComponent* mResource = nullptr;
@@ -90,11 +90,11 @@ namespace nap
     
     
     template <typename ReturnType, typename ...Args>
-    ReturnType PythonScriptComponentInstance::call(const std::string& identifier, Args... args)
+    ReturnType PythonScriptComponentInstance::call(const std::string& identifier, Args&&... args)
     {
         try
         {
-            return mInstance.attr(identifier.c_str())(args...).template cast<ReturnType>();
+            return mInstance.attr(identifier.c_str())(std::forward<Args>(args)...).template cast<ReturnType>();
         }
         catch (const pybind11::error_already_set& err)
         {
@@ -105,11 +105,11 @@ namespace nap
     
 
     template <typename ...Args>
-    void PythonScriptComponentInstance::call(const std::string& identifier, Args... args)
+    void PythonScriptComponentInstance::call(const std::string& identifier, Args&&... args)
     {
         try
         {
-            mInstance.attr(identifier.c_str())(args...);
+            mInstance.attr(identifier.c_str())(std::forward<Args>(args)...);
         }
         catch (const pybind11::error_already_set& err)
         {

@@ -67,7 +67,6 @@ namespace nap
             ImGui::Text(utility::stringFormat("Value of instance %i: %f", i, pythonComponent->call<float>("getValue")).c_str());
             i++;
         }
-
         ImGui::End();
 
 	}
