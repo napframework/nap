@@ -1,4 +1,4 @@
-#include "python.h"
+#include "pythonapp.h"
 
 // Nap includes
 #include <nap/core.h>

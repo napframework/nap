@@ -7,13 +7,13 @@ class MyComponent:
         self.entity = entity
 
     def update(self, currentTime, deltaTime):
-        print("My value is " + str(self.value))
+        print("python here! my value is " + str(self.value))
 
     def destroy(self):
         pass
 
     def setValue(self, value):
-        print("setting value " + str(value))
+        print("python here! setting value " + str(value))
         self.value = value
 
     def getValue(self):
