@@ -5,6 +5,7 @@ file(GLOB sources src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
+set(GLM_FIND_QUIETLY TRUE)
 find_package(glm REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${sources})

@@ -9,7 +9,3 @@ set(WEBSOCKETPP_INCLUDE_DIRS ${WEBSOCKETPP_DIR}/include)
 # promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(websocketpp REQUIRED_VARS WEBSOCKETPP_DIR)
-
-if(websocketpp_FOUND)
-    message(STATUS "Found websocket header files: ${WEBSOCKETPP_INCLUDE_DIRS}")
-endif()

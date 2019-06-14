@@ -9,7 +9,3 @@ set(ASIO_INCLUDE_DIRS ${ASIO_DIR}/include)
 # promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(asio REQUIRED_VARS ASIO_DIR)
-
-if(ASIO_FOUND)
-    message(STATUS "Found asio header files: ${ASIO_INCLUDE_DIRS}")
-endif()

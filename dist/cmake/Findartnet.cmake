@@ -40,7 +40,7 @@ mark_as_advanced(ARTNET_LIBS_DIR)
 
 # promote package for find
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(artnet REQUIRED_VARS ARTNET_DIR ARTNET_LIBS ARTNET_LIBS_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(artnet REQUIRED_VARS ARTNET_LIBS_DIR)
 
 add_library(artnet SHARED IMPORTED)
 set_target_properties(artnet PROPERTIES
