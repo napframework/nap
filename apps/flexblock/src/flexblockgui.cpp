@@ -46,13 +46,20 @@ namespace nap
 
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+
+		//
+		mSequencePlayer = mApp.GetBlockEntity()->findComponent<timeline::SequencePlayerComponentInstance>();
 		
+		//
+		mFlexBlock = mApp.GetBlockEntity()->findComponent<FlexBlockComponentInstance>();
+
 		//
 		initParameters();
 
 		mParameterService.fileLoaded.connect(
-			[&]() -> void { initParameters(); }
-		);
+			[&]() -> void { 
+			initParameters(); 
+		});
 	}
 
 	void FlexblockGui::initParameters()
@@ -61,7 +68,8 @@ namespace nap
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
 
 		//
-		FlexBlockComponentInstance& flexblockComponent = mApp.GetBlockEntity()->getComponent<FlexBlockComponentInstance>();
+		mSequencePlayer = &mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
+		mFlexBlock = &mApp.GetBlockEntity()->getComponent<FlexBlockComponentInstance>();
 		for (int i = 0; i < 8; i++)
 		{
 			std::string id = "Input " + std::to_string(i + 1);
@@ -79,9 +87,7 @@ namespace nap
 
 	void FlexblockGui::updateInput(int index, float value)
 	{
-		ObjectPtr<EntityInstance> blockEntity = mApp.GetBlockEntity();
-		FlexBlockComponentInstance& flexblockComponent = blockEntity->getComponent<FlexBlockComponentInstance>();
-		flexblockComponent.SetMotorInput(index, value);
+		mFlexBlock->SetMotorInput(index, value);
 	}
 
 	void FlexblockGui::update()
@@ -131,68 +137,77 @@ namespace nap
 
 	void FlexblockGui::showTimeLineWindow()
 	{
-		timeline::SequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
-
+		// set next window content size to timeline ( child ) width to make scroll bar fit
 		ImGui::SetNextWindowContentSize(ImVec2(child_width, 300.0f));
+
+		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar);
 
+		// make sure the top elements above the timeline scroll together with the scrollbar so only timeline moves
 		float cursorPosX = ImGui::GetCursorPosX();
 		ImGui::SetCursorPos(ImVec2(cursorPosX + ImGui::GetScrollX(), ImGui::GetCursorPosY()));
 
+		// stop button
 		if (ImGui::Button("Stop"))
 		{
-			sequencePlayer.stop();
+			mSequencePlayer->stop();
 		}
 
-		if (sequencePlayer.getIsLoaded())
+		// draw sequence player controls
+		if (mSequencePlayer->getIsLoaded())
 		{
 			ImGui::SameLine();
-			if (!sequencePlayer.getIsPaused() &&
-				sequencePlayer.getIsPlaying())
+			if (!mSequencePlayer->getIsPaused() &&
+				mSequencePlayer->getIsPlaying())
 			{
 				if (ImGui::Button("Pause"))
 				{
-					sequencePlayer.pause();
+					mSequencePlayer->pause();
 				}
 			}
 			else
 			{
-				if (sequencePlayer.getIsFinished())
+				if (mSequencePlayer->getIsFinished())
 				{
-					sequencePlayer.setTime(0.0);
+					mSequencePlayer->setTime(0.0);
 				}
 
 				if (ImGui::Button("Play"))
 				{
-					sequencePlayer.play();
+					mSequencePlayer->play();
 				}
 			}
 		}
 
 		ImGui::SameLine();
 
-		bool isLooping = sequencePlayer.getIsLooping();
+		// loop
+		bool isLooping = mSequencePlayer->getIsLooping();
 		if (ImGui::Checkbox("Loop", &isLooping))
 		{
-			sequencePlayer.setIsLooping(isLooping);
+			mSequencePlayer->setIsLooping(isLooping);
 		}
 
+		// speed
 		ImGui::SameLine();
-		float speed = sequencePlayer.getSpeed();
+		float speed = mSequencePlayer->getSpeed();
 		ImGui::PushItemWidth(50.0f);
 		ImGui::DragFloat("Speed", &speed, 0.05f, -5.0f, 5.0f);
 		ImGui::PopItemWidth();
-		sequencePlayer.setSpeed(speed);
+		mSequencePlayer->setSpeed(speed);
 
+		// open sequence list
 		ImGui::SameLine();
 		ImGui::Checkbox("Show Sequence List", &mShowSequenceList);
 
+		// resolution of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
 		ImGui::DragFloat("Resolution", &lengthPerSecond, 0.5f, 10.0f, 200.0f);
 		ImGui::PopItemWidth();
-		child_width = sequencePlayer.getDuration() * lengthPerSecond;
+		child_width = mSequencePlayer->getDuration() * lengthPerSecond;
 
+		// handle scroll wheel input
 		lengthPerSecond += ImGui::GetIO().MouseWheel;
 		lengthPerSecond = math::clamp<float>(lengthPerSecond, 10.0f, 200.0f);
 
@@ -201,46 +216,58 @@ namespace nap
 
 		ImGui::SetCursorPos(ImVec2(cursorPosX, ImGui::GetCursorPosY()));
 
+		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width, 275.0f), false, ImGuiWindowFlags_NoMove);
 		{
-			const auto child_size = ImVec2(child_width, 250.0f);
-
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			//
-			ImVec2 top_left = ImGui::GetCursorScreenPos();
+			const ImVec2 child_size = ImVec2(child_width, 250.0f);
 
+			//
+			ImVec2 top_left = ImGui::GetCursorScreenPos();
 			ImVec2 bottom_right_pos = ImVec2(top_left.x + child_size.x, top_left.y + child_size.y );
 
+			// timeline background
 			draw_list->AddRectFilled(top_left, bottom_right_pos,
 				ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.25f)));
 
+			// right border
+			draw_list->AddLine(
+				ImVec2(top_left.x + child_size.x, top_left.y),
+				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
+				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
 
-
-			const auto & sequences = sequencePlayer.getSequences();
+			// iterate through sequences 
+			const auto & sequences = mSequencePlayer->getSequences();
 			for (int i = 0; i < sequences.size(); i++)
 			{
-				float width = child_size.x * (sequences[i]->getDuration() / sequencePlayer.getDuration());
-				float start_x = child_size.x * (sequences[i]->getStartTime() / sequencePlayer.getDuration());
+				float width = child_size.x * (sequences[i]->getDuration() / mSequencePlayer->getDuration());
+				float start_x = child_size.x * (sequences[i]->getStartTime() / mSequencePlayer->getDuration());
 
+				// draw left and bottom border
 				draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y), ImVec2(top_left.x + start_x, top_left.y + child_size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
 				draw_list->AddLine(ImVec2(top_left.x + start_x, bottom_right_pos.y), ImVec2(top_left.x + start_x + width, bottom_right_pos.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
 
+				// draw element lines and positions
 				int y_text_offset = 0;
 				for (const auto* element : sequences[i]->mElements)
 				{
-					float p = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
+					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 
+					// the line
 					draw_list->AddLine(
-						ImVec2(top_left.x + start_x + width * p, top_left.y + child_size.y * 0.5f),
-						ImVec2(top_left.x + start_x + width * p, bottom_right_pos.y),
+						ImVec2(top_left.x + start_x + width * element_pos, top_left.y + child_size.y * 0.5f),
+						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
 
+					// the text
 					draw_list->AddText(
-						ImVec2(top_left.x + start_x + width * p + 5, top_left.y + child_size.y * 0.5f + y_text_offset),
+						ImVec2(top_left.x + start_x + width * element_pos + 5, top_left.y + child_size.y * 0.5f + y_text_offset),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
 						element->getID().c_str());
 
+					// set a height offset of the next text so they don't overlap to much
 					y_text_offset += 20;
 					if (y_text_offset > child_size.y * 0.5f - 20)
 					{
@@ -248,48 +275,47 @@ namespace nap
 					}
 				}
 
+				// draw element id
 				draw_list->AddText(
 					ImVec2(top_left.x + start_x + 5, top_left.y + 15),
 					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
 					sequences[i]->getID().c_str());
 			}
 
-			//
-			draw_list->AddLine(
-				ImVec2(top_left.x + child_size.x, top_left.y),
-				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
-
-			float pos = (sequencePlayer.getCurrentTime() / sequencePlayer.getDuration()) * child_size.x;
-			draw_list->AddLine(ImVec2(top_left.x + pos, top_left.y), ImVec2(top_left.x + pos, bottom_right_pos.y),
+			// draw player position 
+			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_size.x;
+			draw_list->AddLine(ImVec2(top_left.x + player_pos, top_left.y), ImVec2(top_left.x + player_pos, bottom_right_pos.y),
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
 
+			// time in seconds
 			draw_list->AddText(
-				ImVec2(top_left.x + pos + 5, top_left.y),
+				ImVec2(top_left.x + player_pos + 5, top_left.y),
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
-				convertToString(sequencePlayer.getCurrentTime(), 2).c_str());
+				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
 
+			// handle mouse input
 			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
 			{
+				// is clicked inside timeline ? jump to position
 				if (ImGui::IsMouseClicked(0))
 				{
 					wasClicked = true;
 					ImVec2 mousePos = ImGui::GetMousePos();
 					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
 					float pos = mousePos.x / child_size.x;
-					sequencePlayer.setTime(pos * sequencePlayer.getDuration());
-					//printf("mouse pos %f\n", mousePos.x);
+					mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
 				}
+				// handle drag in timeline
 				else if (ImGui::IsMouseDragging() && wasClicked)
 				{
 					ImVec2 mousePos = ImGui::GetMousePos();
 					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
 					float pos = mousePos.x / child_size.x;
-					sequencePlayer.setTime(pos * sequencePlayer.getDuration());
-					//printf("mouse pos %f\n", mousePos.x);
+					mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
 				}
 			}
 
+			// release mouse
 			if (!ImGui::IsMouseDown(0))
 				wasClicked = false;
 
@@ -319,20 +345,17 @@ namespace nap
 		ImGui::Begin("Sequence player");
 		ImGui::Spacing();
 
-		timeline::SequencePlayerComponentInstance& sequencePlayer = mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
-
-
 		ImGui::Spacing();
 
 		if (ImGui::TreeNode("Sequences"))
 		{
-			const auto& sequences = sequencePlayer.getSequences();
+			const auto& sequences = mSequencePlayer->getSequences();
 
 			for (const auto* sequence : sequences)
 			{
 				ImVec4 color = ImVec4(1, 1, 1, 1);
 
-				bool isSequenceBeingPlayed = sequencePlayer.getCurrentSequence() == sequence;
+				bool isSequenceBeingPlayed = mSequencePlayer->getCurrentSequence() == sequence;
 				if (isSequenceBeingPlayed)
 				{
 					color = ImVec4(1, 0, 0, 1);
@@ -341,7 +364,7 @@ namespace nap
 				ImGui::PushStyleColor(0, color);
 				if(ImGui::SmallButton(sequence->getID().c_str()))
 				{
-					sequencePlayer.skipToSequence(sequence);
+					mSequencePlayer->skipToSequence(sequence);
 				}
 				ImGui::PopStyleColor();
 
@@ -359,8 +382,8 @@ namespace nap
 
 						if (ImGui::SmallButton(element->getID().c_str()))
 						{
-							sequencePlayer.skipToSequence(sequence);
-							sequencePlayer.setTime(element->getStartTime());
+							mSequencePlayer->skipToSequence(sequence);
+							mSequencePlayer->setTime(element->getStartTime());
 						}
 
 						if (isElementBeingPlayed && isSequenceBeingPlayed)

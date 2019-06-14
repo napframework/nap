@@ -1059,9 +1059,23 @@
                     ]
                 },
                 {
-                    "Type": "nap::timeline::SequencePause",
-                    "mID": "Pause",
-                    "Duration": 5.0
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_5",
+                    "Duration": 4.0,
+                    "Curve": "",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 }
             ],
             "StartParameters": [],
@@ -1083,7 +1097,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 1",
-                    "Duration": 2.0,
+                    "Duration": 3.0,
                     "Curve": "Bezier Curve",
                     "Parameters": [],
                     "Preset File": "",

@@ -12,6 +12,10 @@
 #include <parametercolor.h>
 #include <renderablemeshcomponent.h>
 #include <parametervec.h>
+#include <sequenceplayercomponent.h>
+
+#include "flexblockcomponent.h"
+#include "sequenceplayercomponent.h"
 
 namespace nap
 {
@@ -63,7 +67,8 @@ namespace nap
 		float								mVidPreviewDisplaySize = 1.0f;
 		float								mScrub = 0.0f;
 
-		ResourcePtr<ParameterVec3>			mControlPointOne;
+		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
+		FlexBlockComponentInstance* mFlexBlock = nullptr;
 
 		/**
 		 * Shows the information window
