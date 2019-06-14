@@ -189,6 +189,6 @@ namespace nap
 		// Set the camera position in block shader
 		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformVec3& block_cam_input = block_render_comp.getMaterialInstance().getOrCreateUniform<UniformVec3>("inCameraPosition");
-		block_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
+		block_cam_input.setValue(math::extractPosition(cam_xform.getGlobalTransform()) );
 	}
 }

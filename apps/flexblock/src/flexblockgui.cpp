@@ -28,6 +28,8 @@ namespace nap
 	static float child_width = 1000.0f;
 	static float child_height = 500.0f;
 	static bool wasClicked = false;
+	static bool followPlayer = false;
+	static int curveResolution = 75;
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
@@ -70,6 +72,7 @@ namespace nap
 
 	void FlexblockGui::initOscInputs()
 	{
+		mOscInputs.clear();
 		for (int i = 0; i < 8; i++)
 		{
 			//
@@ -164,7 +167,7 @@ namespace nap
 	void FlexblockGui::showTimeLineWindow()
 	{
 		// set next window content size to timeline ( child ) width to make scroll bar fit
-		ImGui::SetNextWindowContentSize(ImVec2(child_width, child_height + 150.0f ));
+		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 150.0f ));
 
 		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
@@ -216,6 +219,14 @@ namespace nap
 			mSequencePlayer->setIsLooping(isLooping);
 		}
 
+		// follow player position
+		ImGui::SameLine();
+		ImGui::Checkbox("Follow", &followPlayer);
+		if (followPlayer)
+		{
+			ImGui::SetScrollX((mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_width);
+		}
+
 		// speed
 		ImGui::SameLine();
 		float speed = mSequencePlayer->getSpeed();
@@ -224,10 +235,16 @@ namespace nap
 		ImGui::PopItemWidth();
 		mSequencePlayer->setSpeed(speed);
 
-		// resolution / zoom of timeline
+		// zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
 		ImGui::DragFloat("Zoom", &child_height, 1, 350.0f, 1500.0f );
+		ImGui::PopItemWidth();
+
+		// curves resolution
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100.0f);
+		ImGui::DragInt("Curve Res.", &curveResolution, 1, 25, 200);
 		ImGui::PopItemWidth();
 
 		// handle scroll wheel input
@@ -345,7 +362,7 @@ namespace nap
 						std::vector<std::vector<ImVec2>> points(8);
 
 						// zoom in on the part that is shown in the window
-						const int steps = 75;
+						const int steps = curveResolution;
 						float part =  windowWidth / child_width;
 						float part_start = math::clamp<float>(scroll_x - 30, 0, child_width ) / child_width;
 
