@@ -34,11 +34,11 @@ namespace nap {
          * If the call fails the error will be logged.
          */
         template <typename ReturnType, typename ...Args>
-        ReturnType call(const std::string& identifier, Args... args);
+        ReturnType call(const std::string& identifier, Args&&... args);
         
         // Specialization for void return type
         template <typename ...Args>
-        void call(const std::string& identifier, Args... args);
+        void call(const std::string& identifier, Args&&... args);
         
         /**
          * Requests a symbol (in most cases a class or function) from the script and returns its C++ representation.
@@ -52,25 +52,26 @@ namespace nap {
     
     
     template <typename ReturnType, typename ...Args>
-    ReturnType PythonScript::call(const std::string& identifier, Args... args)
+    ReturnType PythonScript::call(const std::string& identifier, Args&&... args)
     {
         try
         {
-            return mModule.attr(identifier.c_str())(args...).template cast<ReturnType>();
+            return mModule.attr(identifier.c_str())(std::forward<Args>(args)...).template cast<ReturnType>();
         }
         catch (const pybind11::error_already_set& err)
         {
             nap::Logger::error("Runtime python error while executing %s: %s", mPath.c_str(), err.what());
+			return ReturnType();
         }
     }
 
     
     template <typename ...Args>
-    void PythonScript::call(const std::string& identifier, Args... args)
+    void PythonScript::call(const std::string& identifier, Args&&... args)
     {
         try
         {
-            mModule.attr(identifier.c_str())(args...);
+            mModule.attr(identifier.c_str())(std::forward<Args>(args)...);
         }
         catch (const pybind11::error_already_set& err)
         {
