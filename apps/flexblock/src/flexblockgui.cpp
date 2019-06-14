@@ -25,6 +25,7 @@ namespace nap
 	static bool showSequences = false;
 	static float lengthPerSecond = 60.0f;
 	static float child_width = 1000.0f;
+	static float child_height = 500.0f;
 	static bool wasClicked = false;
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
@@ -102,8 +103,8 @@ namespace nap
 			{
 				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
-				ImGui::MenuItem("Sequences", NULL, &showSequences);
 				ImGui::MenuItem("Timeline", NULL, &mShowTimeLine);
+				ImGui::MenuItem("Sequences", NULL, &mShowSequenceList);
 
 				ImGui::EndMenu();
 			}
@@ -138,10 +139,12 @@ namespace nap
 	void FlexblockGui::showTimeLineWindow()
 	{
 		// set next window content size to timeline ( child ) width to make scroll bar fit
-		ImGui::SetNextWindowContentSize(ImVec2(child_width, 300.0f));
+		ImGui::SetNextWindowContentSize(ImVec2(child_width, child_height + 150.0f ));
 
 		// begin the window
-		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
+
+		float windowWidth = ImGui::GetWindowWidth();
 
 		// make sure the top elements above the timeline scroll together with the scrollbar so only timeline moves
 		float cursorPosX = ImGui::GetCursorPosX();
@@ -196,47 +199,60 @@ namespace nap
 		ImGui::PopItemWidth();
 		mSequencePlayer->setSpeed(speed);
 
-		// open sequence list
-		ImGui::SameLine();
-		ImGui::Checkbox("Show Sequence List", &mShowSequenceList);
-
-		// resolution of timeline
+		// resolution / zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::DragFloat("Resolution", &lengthPerSecond, 0.5f, 10.0f, 200.0f);
+		ImGui::DragFloat("Zoom", &child_height, 1, 350.0f, 1500.0f );
 		ImGui::PopItemWidth();
-		child_width = mSequencePlayer->getDuration() * lengthPerSecond;
 
 		// handle scroll wheel input
 		lengthPerSecond += ImGui::GetIO().MouseWheel;
 		lengthPerSecond = math::clamp<float>(lengthPerSecond, 10.0f, 200.0f);
+		child_width = mSequencePlayer->getDuration() * lengthPerSecond;
 
 		ImGui::Spacing();
 		ImGui::Spacing();
 
 		ImGui::SetCursorPos(ImVec2(cursorPosX, ImGui::GetCursorPosY()));
 
+		// 
+		float scroll_x = ImGui::GetScrollX();
+
 		// begin timeline child
-		ImGui::BeginChild("", ImVec2(child_width, 275.0f), false, ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("", ImVec2(child_width + 30, child_height), false, ImGuiWindowFlags_NoMove);
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			//
-			const ImVec2 child_size = ImVec2(child_width, 250.0f);
+			const ImVec2 child_size = ImVec2(child_width, child_height - 100.0f);
 
 			//
 			ImVec2 top_left = ImGui::GetCursorScreenPos();
+			top_left.x += 20;
+			top_left.y += 20;
 			ImVec2 bottom_right_pos = ImVec2(top_left.x + child_size.x, top_left.y + child_size.y );
 
 			// timeline background
 			draw_list->AddRectFilled(top_left, bottom_right_pos,
-				ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.25f)));
+				ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.25f)), 1.0f);
+
+			// motors backgrounds
+			for (int l = 0; l < 8; l++)
+			{
+				draw_list->AddRect(	ImVec2( top_left.x, math::lerp<float>( top_left.y, bottom_right_pos.y, (float) l / 8.0f) ),
+									ImVec2( bottom_right_pos.x, math::lerp<float>(top_left.y, bottom_right_pos.y, (float)(l+1) / 8.0f)),
+									ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.5f)), 1.0f);
+			}
+
 
 			// right border
 			draw_list->AddLine(
 				ImVec2(top_left.x + child_size.x, top_left.y),
 				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+			//
+			int y_text_offset = 0;
 
 			// iterate through sequences 
 			const auto & sequences = mSequencePlayer->getSequences();
@@ -245,41 +261,95 @@ namespace nap
 				float width = child_size.x * (sequences[i]->getDuration() / mSequencePlayer->getDuration());
 				float start_x = child_size.x * (sequences[i]->getStartTime() / mSequencePlayer->getDuration());
 
-				// draw left and bottom border
-				draw_list->AddLine(ImVec2(top_left.x + start_x, top_left.y), ImVec2(top_left.x + start_x, top_left.y + child_size.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
-				draw_list->AddLine(ImVec2(top_left.x + start_x, bottom_right_pos.y), ImVec2(top_left.x + start_x + width, bottom_right_pos.y), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+				// draw sequence line
+				draw_list->AddLine(
+					ImVec2(top_left.x + start_x, top_left.y), 
+					ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75), 
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+
+				// draw sequence text
+				draw_list->AddText(
+					ImVec2(top_left.x + start_x + 5, top_left.y + child_size.y + 60),
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					sequences[i]->getID().c_str());
 
 				// draw element lines and positions
-				int y_text_offset = 0;
 				for (const auto* element : sequences[i]->mElements)
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 
 					// the line
 					draw_list->AddLine(
-						ImVec2(top_left.x + start_x + width * element_pos, top_left.y + child_size.y * 0.5f),
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y),
+						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
 
 					// the text
+					
 					draw_list->AddText(
-						ImVec2(top_left.x + start_x + width * element_pos + 5, top_left.y + child_size.y * 0.5f + y_text_offset),
+						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
 						element->getID().c_str());
+						
 
 					// set a height offset of the next text so they don't overlap to much
 					y_text_offset += 20;
-					if (y_text_offset > child_size.y * 0.5f - 20)
+					if (y_text_offset > 50 - 10)
 					{
 						y_text_offset = 0;
 					}
-				}
 
-				// draw element id
-				draw_list->AddText(
-					ImVec2(top_left.x + start_x + 5, top_left.y + 15),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
-					sequences[i]->getID().c_str());
+					bool showMotorInputs = true;
+					if (showMotorInputs)
+					{
+						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
+						std::vector<Parameter*> parameters;
+						for (int p = 0; p < 8; p++)
+						{
+							parametersPts.emplace_back(std::make_unique<ParameterFloat>());
+							parameters.emplace_back(parametersPts.back().get());
+						}
+
+						std::vector<std::vector<ImVec2>> points(8);
+
+						const int steps = 75;
+						float part =  windowWidth / child_width;
+						float part_start = math::clamp<float>(scroll_x - 30, 0, child_width ) / child_width;
+
+						for (int p = 0; p < steps; p++)
+						{
+							//
+							mSequencePlayer->evaluate(( ( mSequencePlayer->getDuration() * part ) / (float) steps) * (float)p + (mSequencePlayer->getDuration() * part_start), parameters);
+
+							for (int l = 0; l < 8; l++)
+							{
+								float y_part = (child_size.y / 8.0f);
+								float y_start = y_part * l;
+
+								points[l].emplace_back(ImVec2(
+									part_start * child_width + top_left.x + child_size.x * part * (p * (1.0f / (float) steps)),
+									bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+							}
+							
+						}
+
+						for (int l = 0; l < 8; l++)
+						{
+							draw_list->AddPolyline(
+								&*points[l].begin(),
+								points[l].size(),
+								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
+								false,
+								2.0f,
+								true);
+
+							draw_list->AddText(
+								ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
+								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+								std::to_string(l + 1).c_str());
+						}
+					}
+				}
 			}
 
 			// draw player position 
@@ -289,7 +359,7 @@ namespace nap
 
 			// time in seconds
 			draw_list->AddText(
-				ImVec2(top_left.x + player_pos + 5, top_left.y),
+				ImVec2(top_left.x + player_pos + 5, top_left.y - 20),
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
 				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
 

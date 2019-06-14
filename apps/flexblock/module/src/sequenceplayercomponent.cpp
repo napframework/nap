@@ -115,6 +115,39 @@ namespace nap
 			}
 		}
 
+		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
+		{
+			int currentSequenceIndex = 0;
+			//if (mIsPlaying)
+			//{
+				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+				{
+					int result = mSequenceContainer->mSequences[currentSequenceIndex]->process(time, output);
+
+					if (result != 0)
+					{
+						currentSequenceIndex += result;
+
+						int size = mSequenceContainer->mSequences.size();
+						if (currentSequenceIndex >= size)
+						{
+							currentSequenceIndex = 0;
+							i = 0;
+						}
+						else if (currentSequenceIndex < 0)
+						{
+							currentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+							i = 0;
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+			//}
+		}
+
 		void SequencePlayerComponentInstance::play()
 		{
 			if (mIsPlaying)

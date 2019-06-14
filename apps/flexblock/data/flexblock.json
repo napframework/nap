@@ -1037,6 +1037,61 @@
         },
         {
             "Type": "nap::flexblock::FlexblockSequence",
+            "mID": "Fourth Act",
+            "Elements": [
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_6",
+                    "Duration": 5.0,
+                    "Curve": "SinCurve",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_7",
+                    "Duration": 3.0,
+                    "Curve": "",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            ],
+            "StartParameters": [],
+            "Inputs": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "Type": "nap::flexblock::FlexblockSequence",
             "mID": "first act",
             "Elements": [
                 {
@@ -1048,7 +1103,7 @@
                     "Preset File": "",
                     "Use Preset": false,
                     "Inputs": [
-                        0.0,
+                        1.0,
                         0.0,
                         1.0,
                         0.0,
@@ -1062,12 +1117,12 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "FlexblockSequenceTransition_5",
                     "Duration": 4.0,
-                    "Curve": "",
+                    "Curve": "Bezier Curve",
                     "Parameters": [],
                     "Preset File": "",
                     "Use Preset": false,
                     "Inputs": [
-                        0.0,
+                        1.0,
                         0.0,
                         0.0,
                         0.0,
@@ -1103,7 +1158,7 @@
                     "Preset File": "",
                     "Use Preset": false,
                     "Inputs": [
-                        1.0,
+                        0.5,
                         0.0,
                         0.0,
                         0.0,
@@ -1121,7 +1176,7 @@
             ],
             "StartParameters": [],
             "Inputs": [
-                0.0,
+                1.0,
                 0.0,
                 0.0,
                 0.0,
@@ -1176,7 +1231,7 @@
                 {
                     "Type": "nap::timeline::SequencePause",
                     "mID": "SequencePause_4",
-                    "Duration": 10.0
+                    "Duration": 2.0
                 },
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
@@ -1200,7 +1255,7 @@
             ],
             "StartParameters": [],
             "Inputs": [
-                0.0,
+                0.5,
                 0.0,
                 0.0,
                 0.0,
@@ -1604,7 +1659,8 @@
             "Sequences": [
                 "first act",
                 "second act",
-                "third act"
+                "third act",
+                "Fourth Act"
             ]
         },
         {

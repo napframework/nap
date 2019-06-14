@@ -106,6 +106,11 @@ namespace nap
 			const bool getIsPlaying() const { return mIsPlaying; }
 
 			/**
+			 * 
+			 */
+			const void evaluate(double time, std::vector<Parameter*> &output) const;
+
+			/**
 			* @return true if paused
 			*/
 			const bool getIsPaused() const { return mIsPaused; };
