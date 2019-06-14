@@ -51,7 +51,7 @@ namespace nap
 		/**
 		 * This service depends on the api and web socket service
 		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 	private:
 		APIService* mAPIService = nullptr;
