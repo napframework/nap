@@ -13,6 +13,7 @@
 #include <renderablemeshcomponent.h>
 #include <parametervec.h>
 #include <sequenceplayercomponent.h>
+#include <oscinputcomponent.h>
 
 #include "flexblockcomponent.h"
 #include "sequenceplayercomponent.h"
@@ -35,6 +36,8 @@ namespace nap
 		 * Initialize the various gui components
 		 */
 		void init();
+
+		void initOscInputs();
 
 		/**
 		 *	Update all the various gui components
@@ -70,6 +73,8 @@ namespace nap
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
 
+		std::vector<OSCInputComponentInstance*> mOscInputs;
+		std::vector<ParameterFloat*> mParameters;
 		/**
 		 * Shows the information window
 		 */

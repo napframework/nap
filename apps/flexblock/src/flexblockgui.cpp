@@ -15,6 +15,7 @@
 #include <sequenceplayercomponent.h>
 #include <iomanip>
 
+
 namespace nap
 {
 	/**
@@ -57,16 +58,39 @@ namespace nap
 		//
 		initParameters();
 
+		//
+		initOscInputs();
+
 		mParameterService.fileLoaded.connect(
 			[&]() -> void { 
 			initParameters(); 
+			initOscInputs();
 		});
+	}
+
+	void FlexblockGui::initOscInputs()
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			//
+			OSCInputComponentInstance* oscInput = mApp.GetBlockEntity()->findComponentByID<OSCInputComponentInstance>("OSCInput " + std::to_string(i + 1));
+			mOscInputs.emplace_back(oscInput);
+
+			//
+			oscInput->messageReceived.connect([this, i](const OSCEvent& message)-> void {
+				float value = message.getArgument(0)->asFloat();
+				mParameters[i]->setValue(value);
+			});
+		}
 	}
 
 	void FlexblockGui::initParameters()
 	{
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
+
+		//
+		mParameters.clear();
 
 		//
 		mSequencePlayer = &mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
@@ -78,6 +102,7 @@ namespace nap
 			
 			assert(parameter != nullptr);
 
+			mParameters.emplace_back(parameter.get());
 			parameter->setValue(0.0f);
 			parameter->valueChanged.connect([this, i](float newValue)
 			{
@@ -277,11 +302,17 @@ namespace nap
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 
-					// the line
+					// the bottom line
 					draw_list->AddLine(
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y),
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
+
+					// line in timeline
+					draw_list->AddLine(
+						ImVec2(top_left.x + start_x + width * element_pos, top_left.y),
+						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
+						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 0.5f)));
 
 					// the text
 					draw_list->AddText(
@@ -350,7 +381,7 @@ namespace nap
 							draw_list->AddText(
 								ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
 								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
-								std::to_string(l + 1).c_str());
+								std::to_string(8-l).c_str());
 						}
 					}
 				}

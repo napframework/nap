@@ -157,9 +157,65 @@
                 },
                 {
                     "Type": "nap::timeline::SequencePlayerComponent",
-                    "mID": "nap::timeline::SequencePlayerComponent",
+                    "mID": "SequencePlayerComponent",
                     "TimelineParameters": "Inputs",
                     "SequenceContainer": "SequenceContainer"
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 1",
+                    "Addresses": [
+                        "/flexblock/1"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 2",
+                    "Addresses": [
+                        "/flexblock/2"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 3",
+                    "Addresses": [
+                        "/flexblock/3"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 4",
+                    "Addresses": [
+                        "/flexblock/4"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 5",
+                    "Addresses": [
+                        "/flexblock/5"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 6",
+                    "Addresses": [
+                        "/flexblock/6"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 7",
+                    "Addresses": [
+                        "/flexblock/7"
+                    ]
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInput 8",
+                    "Addresses": [
+                        "/flexblock/8"
+                    ]
                 }
             ],
             "Children": [
@@ -823,6 +879,13 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::OSCReceiver",
+            "mID": "OSCReceiver",
+            "Port": 7000,
+            "EnableDebugOutput": true,
+            "AllowPortReuse": false
         },
         {
             "Type": "nap::ParameterFloat",

@@ -18,6 +18,7 @@
 #include <serialservice.h>
 
 
+
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlexblockApp)
@@ -56,6 +57,8 @@ namespace nap
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
 		mGui->init();
+
+		//
 
 		return true;
 	}
