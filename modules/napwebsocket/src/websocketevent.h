@@ -99,8 +99,8 @@ namespace nap
 			mConnection(connection),
 			mMessage(std::move(message))	{ }
 
+        WebSocketConnection mConnection;    ///< Handle to the client or server connection.
 		WebSocketMessage mMessage;			///< Message received from a client or server.
-		WebSocketConnection mConnection;	///< Handle to the client or server connection.
 	};
 
 	using WebSocketEventPtr = std::unique_ptr<nap::WebSocketEvent>;
