@@ -219,14 +219,14 @@ namespace nap
 		float scroll_x = ImGui::GetScrollX();
 
 		// begin timeline child
-		ImGui::BeginChild("", ImVec2(child_width + 30, child_height), false, ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			//
 			const ImVec2 child_size = ImVec2(child_width, child_height - 100.0f);
 
-			//
+			// start top left with a little bit of margin
 			ImVec2 top_left = ImGui::GetCursorScreenPos();
 			top_left.x += 20;
 			top_left.y += 20;
@@ -244,14 +244,13 @@ namespace nap
 									ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.5f)), 1.0f);
 			}
 
-
 			// right border
 			draw_list->AddLine(
 				ImVec2(top_left.x + child_size.x, top_left.y),
 				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
 
-			//
+			// needed to avoid elements texts from overlapping later on
 			int y_text_offset = 0;
 
 			// iterate through sequences 
@@ -285,7 +284,6 @@ namespace nap
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
 
 					// the text
-					
 					draw_list->AddText(
 						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
@@ -299,9 +297,11 @@ namespace nap
 						y_text_offset = 0;
 					}
 
+					// draw motor inputs 
 					bool showMotorInputs = true;
 					if (showMotorInputs)
 					{
+						// create parameters that we evaluate
 						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
 						std::vector<Parameter*> parameters;
 						for (int p = 0; p < 8; p++)
@@ -310,12 +310,15 @@ namespace nap
 							parameters.emplace_back(parametersPts.back().get());
 						}
 
+						// create list of point lists
 						std::vector<std::vector<ImVec2>> points(8);
 
+						// zoom in on the part that is shown in the window
 						const int steps = 75;
 						float part =  windowWidth / child_width;
 						float part_start = math::clamp<float>(scroll_x - 30, 0, child_width ) / child_width;
 
+						// start evaluating
 						for (int p = 0; p < steps; p++)
 						{
 							//
@@ -333,6 +336,7 @@ namespace nap
 							
 						}
 
+						// draw the polylines and text
 						for (int l = 0; l < 8; l++)
 						{
 							draw_list->AddPolyline(
