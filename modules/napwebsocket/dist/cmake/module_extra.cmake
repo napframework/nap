@@ -11,3 +11,5 @@ endif()
 
 add_include_to_interface_target(mod_napwebsocket ${WEBSOCKETPP_INCLUDE_DIRS})
 add_include_to_interface_target(mod_napwebsocket ${ASIO_INCLUDE_DIRS})
+add_define_to_interface_target(mod_napwebsocket ASIO_STANDALONE)
+add_define_to_interface_target(mod_napwebsocket _WEBSOCKETPP_CPP11_INTERNAL_)
