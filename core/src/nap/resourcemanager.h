@@ -171,7 +171,6 @@ namespace nap
 	template<class T>
 	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const
 	{
-		rtti::TypeInfo type = RTTI_OF(T);
 		std::vector<rtti::ObjectPtr<T>> result;
 		for (auto& kvp : mObjects)
 		{
