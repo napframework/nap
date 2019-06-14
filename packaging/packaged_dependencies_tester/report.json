@@ -282,19 +282,19 @@
         }
     },
     "run": {
-        "duration": "11m20s",
+        "duration": "11m12s",
         "frameworkBuildInfo": {
-            "buildNumber": 65,
-            "gitRevision": "6fa3aefcb3867ef961403c397f57f61984c08709",
+            "buildNumber": 66,
+            "gitRevision": "6f6ff79af4da734c2ac2cb19847ece9a360f2f89",
             "label": "",
             "majorVersion": 0,
             "minorVersion": 2,
             "patchVersion": 3,
-            "timetamp": "2019.06.14T15.11",
+            "timetamp": "2019.06.14T16.30",
             "version": "0.2.3"
         },
-        "frameworkPath": "c:\\naivi\\nap\\NAP-0.2.3-Win64-2019.06.14T15.11",
-        "startTime": "2019.06.14T15.14",
+        "frameworkPath": "c:\\naivi\\nap\\NAP-0.2.3-Win64-2019.06.14T16.30",
+        "startTime": "2019.06.14T16.33",
         "success": true,
         "warnings": []
     },
