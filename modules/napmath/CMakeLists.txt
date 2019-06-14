@@ -12,9 +12,14 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC src ${GLM_INCLUDE_DIRS})
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PRIVATE _USE_MATH_DEFINES)
+# setup definitions
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
+if(WIN32)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
+# libraries to link to
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 
 # Deploy module.json as MODULENAME.json alongside module post-build
