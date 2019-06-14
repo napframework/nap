@@ -1,5 +1,5 @@
 {
-    "title": "Curveball",
+    "title": "WebSocketServer",
     "version": "0.2.3",
     "modules": [
         "mod_websocketserver",
