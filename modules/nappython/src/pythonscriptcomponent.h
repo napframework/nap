@@ -99,6 +99,7 @@ namespace nap
         catch (const pybind11::error_already_set& err)
         {
             nap::Logger::error("Runtime python error while executing %s: %s", mResource->mPythonScript->mPath.c_str(), err.what());
+			return ReturnType();
         }
     }
     
