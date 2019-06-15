@@ -265,10 +265,7 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 			return false;
 
 		if (pitem->getPath().toString() == selection.toString())
-		{
-			nap::Logger::info(pitem->getPath().toString());
 			return true;
-		}
 		return false;
 	});
 
