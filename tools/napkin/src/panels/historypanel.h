@@ -24,7 +24,7 @@ namespace napkin
 		 */
 		void updateUndoStack();
 
-		QVBoxLayout mLayout; // The main layout
-		QUndoView mUndoView; // The actual undo list
+		std::unique_ptr<QVBoxLayout> mLayout = nullptr; // The main layout
+		std::unique_ptr<QUndoView> mUndoView = nullptr; // The actual undo list
 	};
 };

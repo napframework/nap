@@ -8,6 +8,7 @@ using namespace napkin;
 
 TEST_CASE("PropertyPath", "napkin-propertypath")
 {
+	napkin::AppContext::create();
     RUN_Q_APPLICATION
 
 	auto doc = AppContext::get().newDocument();
@@ -17,11 +18,11 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	res->mID = "MyResource";
 
 	// Add a pointer to array of pointers
-	doc->arrayAddExistingObject({res->mID, "ResPointers"}, resB);
+	doc->arrayAddExistingObject({res->mID, "ResPointers", *doc }, resB);
 
 	SECTION("general")
 	{
-		PropertyPath nameProp(entity->mID, nap::rtti::sIDPropertyName);
+		PropertyPath nameProp(entity->mID, nap::rtti::sIDPropertyName, *doc);
 		REQUIRE(nameProp.getType() == rttr::type::get<std::string>());
 		REQUIRE(nameProp.getObject() == entity);
 		REQUIRE(nameProp.isValid());
@@ -36,7 +37,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("enum")
 	{
-		PropertyPath path(res->mID, "Enum");
+		PropertyPath path(res->mID, "Enum", *doc);
 		REQUIRE(path.getType() == rttr::type::get<TestEnum>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isEnum());
@@ -48,7 +49,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("regular pointer")
 	{
-		PropertyPath path(res->mID, "ResPointer");
+		PropertyPath path(res->mID, "ResPointer", *doc);
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -60,7 +61,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of regular pointers")
 	{
-		PropertyPath path(res->mID, "ResPointers");
+		PropertyPath path(res->mID, "ResPointers", *doc);
 		REQUIRE(path.getType() == rttr::type::get<std::vector<nap::ResourcePtr<TestResource>>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -72,7 +73,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array element: regular pointer")
 	{
-		PropertyPath path(res->mID, "ResPointers/0");
+		PropertyPath path(res->mID, "ResPointers/0", *doc);
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -84,7 +85,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("embedded pointer")
 	{
-		PropertyPath path(res->mID, "EmbedPointer");
+		PropertyPath path(res->mID, "EmbedPointer", *doc);
 		REQUIRE(path.getType() == rttr::type::get<nap::ResourcePtr<TestResource>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isPointer());
@@ -96,7 +97,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 
 	SECTION("array of embedded pointers")
 	{
-		PropertyPath path(res->mID, "EmbedPointers");
+		PropertyPath path(res->mID, "EmbedPointers", *doc);
 		REQUIRE(path.getType() == rttr::type::get<std::vector<nap::ResourcePtr<TestResource>>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -110,7 +111,7 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 	{
 		TestPropertiesStruct uniform;
 		res->mStructs.emplace_back(uniform);
-		PropertyPath path(res->mID, "Structs");
+		PropertyPath path(res->mID, "Structs", *doc);
 		REQUIRE(path.getType() == rttr::type::get<std::vector<TestPropertiesStruct>>());
 		REQUIRE(path.isValid());
 		REQUIRE(path.isArray());
@@ -119,49 +120,51 @@ TEST_CASE("PropertyPath", "napkin-propertypath")
 		REQUIRE(!path.isNonEmbeddedPointer());
 		REQUIRE(!path.isEnum());
 	}
-
+	napkin::AppContext::destroy();
 }
 
 TEST_CASE("InstanceProperties", "[napkinpropertypath]")
 {
 	QString tempFilename = "__TEMP_NAPKIN_PROP_PATH_TEST.json";
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
+	{
+		auto& ctx = AppContext::get();
+		auto doc = ctx.newDocument();
+		auto entity = doc->addObject<nap::Entity>();
+		auto comp = doc->addComponent<TestComponent>(*entity);
+		auto scene = doc->addObject<nap::Scene>();
+		REQUIRE(scene);
+		doc->addEntityToScene(*scene, *entity);
 
-	auto& ctx = AppContext::get();
-	auto doc = ctx.newDocument();
-	auto entity = doc->addObject<nap::Entity>();
-	auto comp = doc->addComponent<TestComponent>(*entity);
-	auto scene = doc->addObject<nap::Scene>();
-	REQUIRE(scene);
-	doc->addEntityToScene(*scene, *entity);
+		REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
 
-	REQUIRE(doc->getRootEntities(*scene, *entity).size() > 0);
+		PropertyPath regularPath(comp->mID, "Float", *doc);
+		REQUIRE(!regularPath.isInstanceProperty());
+		REQUIRE(regularPath.isValid());
 
-	PropertyPath regularPath(comp->mID, "Float");
-	REQUIRE(!regularPath.isInstanceProperty());
-	REQUIRE(regularPath.isValid());
-
-//	// The path is an instance path if a root entity is provided
-//	PropertyPath instancePath(*rootEntity, *comp, "Float");
-//	REQUIRE(instancePath.isInstanceProperty());
-//	REQUIRE(instancePath.isValid());
-//
-//	float val1 = 123.456;
-//	regularPath.setValue(val1);
-//	REQUIRE(regularPath.getValue() == val1);
-//	REQUIRE(instancePath.getValue() == val1);
-//
-//	float val2 = 678.90;
-//	instancePath.setValue(val2);
-//	REQUIRE(instancePath.getValue() == val2);
-//	REQUIRE(regularPath.getValue() != val2);
-//
-//	PropertyPath instancePath2(*rootEntity, *comp, "Float");
-//	REQUIRE(instancePath2.getValue() == val2);
-//
-//	doc->setFilename(tempFilename);
-//	nap::Logger::info(nap::utility::getAbsolutePath(doc->getCurrentFilename().toStdString()));
-//	REQUIRE(ctx.saveDocument());
+		//	// The path is an instance path if a root entity is provided
+		//	PropertyPath instancePath(*rootEntity, *comp, "Float");
+		//	REQUIRE(instancePath.isInstanceProperty());
+		//	REQUIRE(instancePath.isValid());
+		//
+		//	float val1 = 123.456;
+		//	regularPath.setValue(val1);
+		//	REQUIRE(regularPath.getValue() == val1);
+		//	REQUIRE(instancePath.getValue() == val1);
+		//
+		//	float val2 = 678.90;
+		//	instancePath.setValue(val2);
+		//	REQUIRE(instancePath.getValue() == val2);
+		//	REQUIRE(regularPath.getValue() != val2);
+		//
+		//	PropertyPath instancePath2(*rootEntity, *comp, "Float");
+		//	REQUIRE(instancePath2.getValue() == val2);
+		//
+		//	doc->setFilename(tempFilename);
+		//	nap::Logger::info(nap::utility::getAbsolutePath(doc->getCurrentFilename().toStdString()));
+		//	REQUIRE(ctx.saveDocument());
+	}
 
 	AppContext::destroy();
 }
@@ -175,6 +178,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	std::string parentEntityCompName = "ParentEntityComponent";
 	std::string childEntityCompName = "ChildEntityComponent";
 	{
+		napkin::AppContext::create();
 		RUN_Q_APPLICATION
 
 		/**
@@ -227,7 +231,6 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 
 		doc->setFilename(QString::fromStdString(tempFilename));
 		REQUIRE(ctx.saveDocument());
-
 		AppContext::destroy();
 	}
 
@@ -246,6 +249,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 
 TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	auto& doc = *AppContext::get().getDocument();
@@ -253,12 +257,12 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 	res.mID = "TestResource";
 
 	{
-		auto props = PropertyPath(res).getProperties();
+		auto props = PropertyPath(res, doc).getProperties();
 		REQUIRE(props.size() == 16);
 	}
 
 	{
-		auto props = PropertyPath(res).getProperties(IterFlag::Resursive);
+		auto props = PropertyPath(res, doc).getProperties(IterFlag::Resursive);
 		REQUIRE(props.size() == 26);
 	}
 
@@ -273,12 +277,12 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		res.mEmbedPointer = &embedRes;
 		REQUIRE(res.mEmbedPointer != nullptr);
 
-		PropertyPath p(res.mID, "ResPointer");
+		PropertyPath p(res.mID, "ResPointer", doc);
 		REQUIRE(p.isValid());
 		REQUIRE(p.isPointer());
 
 
-		auto props1 = PropertyPath(res).getProperties(IterFlag::Resursive | IterFlag::FollowPointers);
+		auto props1 = PropertyPath(res, doc).getProperties(IterFlag::Resursive | IterFlag::FollowPointers);
 		for (auto p : props1)
 		{
 			// The embedded pointee cannot be in this result, only regular pointees
@@ -286,7 +290,7 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		}
 		REQUIRE(props1.size() == 38);
 
-		auto props2 = PropertyPath(res).getProperties(IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
+		auto props2 = PropertyPath(res, doc).getProperties(IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
 		for (auto p : props2)
 		{
 			// The regular pointee subRes cannot be in this result, only embedded pointees
@@ -297,4 +301,5 @@ TEST_CASE("PropertyIteration", "[napkinpropertypath]")
 		res.mResPointer = nullptr;
 
 	}
+	napkin::AppContext::destroy();
 }
