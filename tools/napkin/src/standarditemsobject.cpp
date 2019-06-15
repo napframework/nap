@@ -58,7 +58,7 @@ const PropertyPath ObjectItem::propertyPath() const
 
 	auto pathStr = "/" + path.join('/');
 
-	return PropertyPath(absolutePath());
+	return PropertyPath(absolutePath(), *(AppContext::get().getDocument()));
 }
 
 std::string ObjectItem::absolutePath() const
@@ -104,7 +104,7 @@ void ObjectItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
-		PropertyPath prop_path(*mObject, nap::rtti::Path::fromString(nap::rtti::sIDPropertyName));
+		PropertyPath prop_path(*mObject, nap::rtti::Path::fromString(nap::rtti::sIDPropertyName), *AppContext::get().getDocument());
 
 		// Ensure filename exists
 		if (nap::rtti::hasFlag(prop_path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
@@ -304,7 +304,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(*getEntity(), nap::rtti::Path::fromString("Children"));
+	PropertyPath childrenPath(*getEntity(), nap::rtti::Path::fromString("Children"), *AppContext::get().getDocument());
 	assert(childrenPath.isValid());
 	if (path != childrenPath)
 		return;
@@ -399,10 +399,9 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
 
-		return absolutePath();
+		return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 	}
-
-	return absolutePath();
+	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
 const std::string EntityInstanceItem::unambiguousName() const
@@ -459,7 +458,7 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
 {
-	return absolutePath();
+	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
 nap::Component& ComponentInstanceItem::component() const
