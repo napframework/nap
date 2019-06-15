@@ -1,9 +1,12 @@
 #include "document.h"
 
-#include <nap/logger.h>
 #include <QList>
 #include <QtDebug>
 #include <QStack>
+#include <QUuid>
+
+#include <nap/logger.h>
+#include <mathutils.h>
 #include <utility/fileutils.h>
 
 #include "naputils.h"
@@ -87,7 +90,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	auto newName = getUniqueName(name, object);
+	auto newName = getUniqueName(name, object, false);
 	if (newName == object.mID)
 		return object.mID;
 
@@ -117,7 +120,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
-	comp->mID = getUniqueName(type.get_name().data(), *comp);
+	comp->mID = getUniqueName(type.get_name().data(), *comp, true);
 
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
@@ -150,7 +153,7 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
 	Object* objptr = obj.get();
 	assert(objptr != nullptr);
-	obj->mID = getUniqueName(base_name, *objptr);
+	obj->mID = getUniqueName(base_name, *objptr, true);
 	mObjects.emplace_back(std::move(obj));
 
 	// Handle adding to a parent
@@ -203,14 +206,20 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 	return *e;
 }
 
-std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object)
+std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
 {
 	std::string newName = suggestedName;
+	if (useUUID)
+		newName += "_" + createSimpleUUID();
 	int i = 2;
 	auto obj = getObject(newName);
 	while (obj != nullptr && obj != &object)
 	{
-		newName = suggestedName + "_" + std::to_string(i++);
+		if (useUUID)
+			newName = suggestedName + "_" + createSimpleUUID();
+		else
+			newName = suggestedName + std::to_string(i++);
+
 		obj = getObject(newName);
 	}
 	return newName;
@@ -1021,5 +1030,14 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	std::deque<std::string> path;
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
+}
+
+std::string Document::createSimpleUUID()
+{
+	auto uuid = QUuid::createUuid().toString();
+	// just take the last couple of characters
+	int charCount = 8;
+	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
+	return shortuuid.toStdString();
 }
 
