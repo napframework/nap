@@ -409,60 +409,199 @@ namespace nap
 						}
 					}
 
+					bool draggingMotor = false;
+					// draw motor end positions in element
+					{
+						float motor_height = child_size.y / 8.0f;
+						for (int m = 0; m < 8; m++)
+						{
+							const float circleSize = 6.0f;
+
+							bool filled = false;
+							float x = top_left.x + start_x + width * element_pos + width * element_width;
+							float value = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+							float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
+
+							// handle mouse input
+							if (!mouseHandled)
+							{
+								if (ImGui::IsMouseHoveringRect(ImVec2(x - 12, y - 12), ImVec2(x + 12, y + 12)))
+								{
+									filled = true;
+									mouseHandled = true;
+									draggingMotor = true;
+
+									if (ImGui::IsMouseClicked(0))
+									{
+										wasClicked = true;
+									}
+								}
+							}
+
+							if (filled)
+							{
+								if (wasClicked && ImGui::IsMouseDragging() && !draggingElement)
+								{
+									mouseHandled = true;
+									draggingMotor = true;
+									ImVec2 mousePos = ImGui::GetMousePos();
+
+									float adjust = (mousePos.y - y) / motor_height;
+									float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+									newValue -= adjust;
+									newValue = math::clamp(newValue, 0.0f, 1.0f);
+									static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
+								}
+							}
+
+
+							if (!filled)
+							{
+								draw_list->AddCircle(
+									ImVec2(x, y),
+									circleSize,
+									ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+									12,
+									2.0f);
+							}
+							else
+							{
+								draw_list->AddCircleFilled(
+									ImVec2(x, y),
+									circleSize,
+									ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+									12);
+							}
+						}
+					}
+
 					// draw curve points of element
 					{
+						// width of this element in child
 						float element_size_width = element_width * width;
+
+						// only applies to transition elements
 						timeline::SequenceTransition* transition = dynamic_cast<timeline::SequenceTransition*>(element);
 						if (transition != nullptr)
 						{
+							// get curves of this transition
 							const auto& curves = transition->getCurves();
+
+							// motor height is size of motor timeline in child height
 							float motor_height = child_size.y / 8.0f;
 							for (int m = 0; m < 8; m++)
 							{
-								for (int p = 1; p < curves[m]->mPoints.size() - 1; p++)
-								{
-									auto& point = curves[m]->mPoints[p];
-									float x = top_left.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
-									float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * point.mPos.mValue;
+								// get the range of the difference between start and finish
+								float range = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue - static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
 
+								// get the start position
+								float start_curve = static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
+
+								// is mouse hovering in this element part ?
+								bool mouseInMotor = false;
+								if (!draggingMotor && ImGui::IsMouseHoveringRect(
+									ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y - motor_height * (m + 1)),
+									ImVec2(top_left.x + start_x + width * element_pos + element_size_width, bottom_right_pos.y - motor_height * m)))
+								{
+									mouseInMotor = true;
+								}
+
+								// add control points
+								if (mouseInMotor && !mouseHandled && ImGui::IsMouseClicked(0) && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_C)))
+								{
+									mouseHandled = true;
+
+									// to make sure p_y doesnt become infinite
+									if (range > 0.00001f )
+									{
+										ImVec2 mousePos = ImGui::GetMousePos();
+
+										// translate mouse pos to curve pos
+										float p_x = (mousePos.x - (top_left.x + start_x + width * element_pos)) / element_size_width;
+										float p_y = (((bottom_right_pos.y - motor_height * (float)m) - mousePos.y) / motor_height) * (1.0f / range);
+
+										// create the new point
+										auto newPoint = curves[m]->mPoints[0];
+										newPoint.mPos.mTime = p_x;
+										newPoint.mPos.mValue = p_y;
+
+										// add the point to the curve
+										curves[m]->mPoints.emplace_back(newPoint);
+
+										// update curve
+										curves[m]->invalidate();
+									}
+								}
+
+								// vector stores deletion of points
+								std::vector<int> pointsToDelete;
+
+								// iterate trough the points of the curve
+								for (int p = 0; p < curves[m]->mPoints.size(); p++)
+								{
+									// get a reference
+									auto& point = curves[m]->mPoints[p];
+
+									// translate to element space
+									float x = top_left.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
+									float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ( ( point.mPos.mValue * range ) + start_curve );
+									 
+									// draw the position
 									draw_list->AddCircleFilled(
 										ImVec2(x, y),
 										3,
 										ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 1.0f, 1.0f)),
 										12);
 
+									// are we hovering inside the control point ?
 									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
 									{
 										mouseHandled = true;
 										if (ImGui::IsMouseClicked(0))
 										{
-											wasClicked = true;
-											draggingCurvePoint = true;
-											curvePointPtr = &point;
+											if (!ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_X)))
+											{
+												wasClicked = true;
+												draggingCurvePoint = true;
+												curvePointPtr = &point;
+											}
+											else
+											{
+												// handle deletion
+												wasClicked = true;
+												draggingCurvePoint = false;
+
+												// store the index so we can delete it later
+												pointsToDelete.emplace_back(p);
+											}
 										}
 									}
 
 									//
 									ImVec2 pointPos(x, y);
 
-									//
+									// handle dragging
 									if (draggingCurvePoint && curvePointPtr == &point)
 									{
 										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
+										// translate to curve space
 										float adjust = (mousePos.y - y) / motor_height;
-										point.mPos.mValue -= adjust;
+										point.mPos.mValue -= adjust * ( range / 1.0f );
 
 										adjust = (mousePos.x - x) / element_size_width;
 										point.mPos.mTime += adjust;
 
+										// update and reconstruct
 										curves[m]->invalidate();
 										mSequencePlayer->reconstruct();
 									}
 
+									// translate 
 									x = top_left.x + start_x + width * element_pos + element_size_width * ( point.mPos.mTime + point.mOutTan.mTime );
-									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ( point.mPos.mValue + point.mOutTan.mValue );
+									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height *  ( ( ( point.mPos.mValue + point.mOutTan.mValue ) * range ) + start_curve );
+
 									ImVec2 inTangentPos(x, y);
 									draw_list->AddCircleFilled(
 										inTangentPos,
@@ -472,6 +611,7 @@ namespace nap
 
 									draw_list->AddLine(pointPos, inTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
+									// are we hovering this tangent ?
 									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
 									{
 										mouseHandled = true;
@@ -483,24 +623,27 @@ namespace nap
 										}
 									}
 
+									// handle dragging of tangent
 									if (draggingTangent && tangentPtr == &point.mOutTan)
 									{
 										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
+										// translate
 										float adjust = (mousePos.y - y) / motor_height;
-										tangentPtr->mValue -= adjust;
+										tangentPtr->mValue -= adjust * ( range / 1.0f );
 										
 										adjust = (mousePos.x - x) / element_size_width;
 										tangentPtr->mTime += adjust;
 											
+										// update
 										curves[m]->invalidate();
 										mSequencePlayer->reconstruct();
 									}
 
-									//
+									// translate
 									x = top_left.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mInTan.mTime);
-									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * (point.mPos.mValue + point.mInTan.mValue);
+									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ( ( (point.mPos.mValue + point.mInTan.mValue) * range) + start_curve );
 									ImVec2 outTangentPos(x, y);
 
 									draw_list->AddCircleFilled(
@@ -511,7 +654,7 @@ namespace nap
 
 									draw_list->AddLine(pointPos, outTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
-									//
+									// are we hovering this tangent ?
 									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
 									{
 										mouseHandled = true;
@@ -523,13 +666,14 @@ namespace nap
 										}
 									}
 
+									// handle dragging
 									if (draggingTangent && tangentPtr == &point.mInTan)
 									{
 										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
 										float adjust = (mousePos.y - y) / motor_height;
-										tangentPtr->mValue -= adjust;
+										tangentPtr->mValue -= adjust * (range / 1.0f);
 
 										adjust = (mousePos.x - x) / element_size_width;
 										tangentPtr->mTime += adjust;
@@ -537,30 +681,16 @@ namespace nap
 										curves[m]->invalidate();
 										mSequencePlayer->reconstruct();
 									}
-
-									std::vector<ImVec2> curvePoints;
-									for (int k = 0; k < 40; k++)
-									{
-										float t = (float)k / 40.0f;
-										float e = curves[m]->evaluate(t);
-										x = top_left.x + start_x + width * element_pos + element_size_width * t;
-										y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * e;
-
-										curvePoints.push_back(ImVec2(x, y));
-									}
-
-									draw_list->AddPolyline(
-										&*curvePoints.begin(), 
-										curvePoints.size(), 
-										ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 1.0f, 1.0f)), 
-										false, 
-										1.0f,
-										false);
 								}
 
+								// delete any points
+								for (const int index : pointsToDelete)
+								{
+									curves[m]->mPoints.erase(curves[m]->mPoints.begin() + index);
+									curves[m]->invalidate();
+								}
 							}
 						}
-						//const auto& curves = 
 					}
 
 					// set a height offset of the next text so they don't overlap to much
@@ -568,66 +698,6 @@ namespace nap
 					if (y_text_offset > 50 - 10)
 					{
 						y_text_offset = 0;
-					}
-
-					// draw motor end positions in element
-					float motor_height = child_size.y / 8.0f;
-					for (int m = 0; m < 8; m++)
-					{
-						const float circleSize = 6.0f;
-
-						bool filled = false;
-						float x = top_left.x + start_x + width * element_pos + width * element_width;
-						float value = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
-						float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
-
-						// handle mouse input
-						if (!mouseHandled)
-						{
-							if (ImGui::IsMouseHoveringRect(ImVec2(x - 12, y - 12), ImVec2(x + 12, y + 12)))
-							{
-								filled = true;
-								mouseHandled = true;
-
-								if (ImGui::IsMouseClicked(0))
-								{
-									wasClicked = true;
-								}
-							}
-						}
-
-						if (filled)
-						{
-							if (wasClicked && ImGui::IsMouseDragging() && !draggingElement)
-							{
-								ImVec2 mousePos = ImGui::GetMousePos();
-
-								float adjust = (mousePos.y - y) / motor_height;
-								float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
-								newValue -= adjust;
-								newValue = math::clamp(newValue, 0.0f, 1.0f);
-								static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
-							}
-						}
-
-
-						if (!filled)
-						{
-							draw_list->AddCircle(
-								ImVec2(x, y),
-								circleSize,
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
-								12,
-								2.0f);
-						}
-						else
-						{
-							draw_list->AddCircleFilled(
-								ImVec2(x, y),
-								circleSize,
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
-								12);
-						}
 					}
 				}
 
