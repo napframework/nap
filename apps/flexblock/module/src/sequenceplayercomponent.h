@@ -96,6 +96,11 @@ namespace nap
 			void skipToSequence(const Sequence * sequence);
 
 			/**
+			 * 
+			 */
+			void reconstruct();
+
+			/**
 			* @return true if loaded sequence
 			*/
 			const bool getIsLoaded() const { return mSequenceContainer != nullptr; }

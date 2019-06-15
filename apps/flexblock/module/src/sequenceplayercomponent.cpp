@@ -115,6 +115,11 @@ namespace nap
 			}
 		}
 
+		void SequencePlayerComponentInstance::reconstruct()
+		{
+			mSequenceContainer->reconstruct();
+		}
+
 		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
 		{
 			int currentSequenceIndex = 0;

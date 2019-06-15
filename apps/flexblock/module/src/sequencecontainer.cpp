@@ -44,7 +44,22 @@ namespace nap
 				mSequences.push_back(sequence.get());
 			}
 
+			for (int i = 1; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mElements[0]->setPreviousElement(mSequences[i - 1]->mElements.back());
+			}
+
 			return true;
+		}
+
+		void SequenceContainer::reconstruct()
+		{
+			double time = 0.0;
+			for (const auto& sequence : mSequences)
+			{
+				sequence->setStartTime(time);
+				time += sequence->getDuration();
+			}
 		}
 	}
 

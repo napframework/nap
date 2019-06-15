@@ -30,6 +30,9 @@ namespace nap
 	static bool wasClicked = false;
 	static bool followPlayer = false;
 	static int curveResolution = 75;
+	static bool draggingElement = false;
+	static timeline::SequenceElement* selectedElement = nullptr;
+	static float beginPos = 0.0f;
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
@@ -260,6 +263,10 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
+		//
+		bool mouseHandled = false;
+
+
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
@@ -315,9 +322,10 @@ namespace nap
 					sequences[i]->getID().c_str());
 
 				// draw element lines and positions
-				for (const auto* element : sequences[i]->mElements)
+				for (auto* element : sequences[i]->mElements)
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
+					float element_width = element->mDuration / sequences[i]->getDuration();
 
 					// the bottom line
 					draw_list->AddLine(
@@ -336,7 +344,64 @@ namespace nap
 						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
 						element->getID().c_str());
+
+					//
+					{
+						ImVec2 elementTimeDragRectStart(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 40);
+						ImVec2 elementTimeDragRectEnd(top_left.x + start_x + width * element_pos + 10, bottom_right_pos.y + 50);
+
+						bool filled = false;
+						if ( !mouseHandled && !wasClicked && ImGui::IsMouseHoveringRect(
+							elementTimeDragRectStart,
+							elementTimeDragRectEnd, true))
+						{
+							filled = true;
+							mouseHandled = true;
+
+							if (ImGui::IsMouseClicked(0))
+							{
+								wasClicked = true;
+								draggingElement = true;
+								selectedElement = element;
+							}
+						}
+
 						
+						if (wasClicked && draggingElement && ImGui::IsMouseDragging() && element == selectedElement)
+						{
+							mouseHandled = true;
+							filled = true;
+
+							ImVec2 mousePs = ImGui::GetMousePos();
+							double time = (( mousePs.x - top_left.x ) / child_size.x) * mSequencePlayer->getDuration();
+
+							auto* previousElement = element->getPreviousElement();
+							if (previousElement != nullptr)
+							{
+								float newDuration = time - previousElement->getStartTime();
+
+								previousElement->mDuration = newDuration;
+								mSequencePlayer->reconstruct();
+							}
+						}
+						
+
+						// draw rect in timeline
+						if (!filled)
+						{
+							draw_list->AddRect(
+								elementTimeDragRectStart,
+								elementTimeDragRectEnd,
+								ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
+						}
+						else
+						{
+							draw_list->AddRectFilled(
+								elementTimeDragRectStart,
+								elementTimeDragRectEnd,
+								ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
+						}
+					}
 
 					// set a height offset of the next text so they don't overlap to much
 					y_text_offset += 20;
@@ -345,63 +410,127 @@ namespace nap
 						y_text_offset = 0;
 					}
 
-					// draw motor inputs 
-					bool showMotorInputs = true;
-					if (showMotorInputs)
+					// draw motor end positions in element
+					float motor_height = child_size.y / 8.0f;
+					for (int m = 0; m < 8; m++)
 					{
-						// create parameters that we evaluate
-						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
-						std::vector<Parameter*> parameters;
-						for (int p = 0; p < 8; p++)
+						const float circleSize = 6.0f;
+
+						bool filled = false;
+						float x = top_left.x + start_x + width * element_pos + width * element_width;
+						float value = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+						float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
+
+						// handle mouse input
+						if (!mouseHandled)
 						{
-							parametersPts.emplace_back(std::make_unique<ParameterFloat>());
-							parameters.emplace_back(parametersPts.back().get());
-						}
-
-						// create list of point lists
-						std::vector<std::vector<ImVec2>> points(8);
-
-						// zoom in on the part that is shown in the window
-						const int steps = curveResolution;
-						float part =  windowWidth / child_width;
-						float part_start = math::clamp<float>(scroll_x - 30, 0, child_width ) / child_width;
-
-						// start evaluating
-						for (int p = 0; p < steps; p++)
-						{
-							//
-							mSequencePlayer->evaluate(( ( mSequencePlayer->getDuration() * part ) / (float) steps) * (float)p + (mSequencePlayer->getDuration() * part_start), parameters);
-
-							for (int l = 0; l < 8; l++)
+							if (ImGui::IsMouseHoveringRect(ImVec2(x - 12, y - 12), ImVec2(x + 12, y + 12)))
 							{
-								float y_part = (child_size.y / 8.0f);
-								float y_start = y_part * l;
+								filled = true;
+								mouseHandled = true;
 
-								points[l].emplace_back(ImVec2(
-									part_start * child_width + top_left.x + child_size.x * part * (p * (1.0f / (float) steps)),
-									bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+								if (ImGui::IsMouseClicked(0))
+								{
+									wasClicked = true;
+								}
 							}
-							
 						}
 
-						// draw the polylines and text
-						for (int l = 0; l < 8; l++)
+						if (filled)
 						{
-							draw_list->AddPolyline(
-								&*points[l].begin(),
-								points[l].size(),
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
-								false,
-								2.0f,
-								true);
+							if (wasClicked && ImGui::IsMouseDragging() && !draggingElement)
+							{
+								ImVec2 mousePos = ImGui::GetMousePos();
 
-							draw_list->AddText(
-								ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
-								std::to_string(8-l).c_str());
+								float adjust = (mousePos.y - y) / motor_height;
+								float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+								newValue -= adjust;
+								newValue = math::clamp(newValue, 0.0f, 1.0f);
+								static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
+							}
+						}
+
+
+						if (!filled)
+						{
+							draw_list->AddCircle(
+								ImVec2(x, y),
+								circleSize,
+								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+								12,
+								2.0f);
+						}
+						else
+						{
+							draw_list->AddCircleFilled(
+								ImVec2(x, y),
+								circleSize,
+								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+								12);
 						}
 					}
 				}
+
+				// draw motor inputs 
+				bool showMotorInputs = true;
+				if (showMotorInputs)
+				{
+					// create parameters that we evaluate
+					std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
+					std::vector<Parameter*> parameters;
+					for (int p = 0; p < 8; p++)
+					{
+						parametersPts.emplace_back(std::make_unique<ParameterFloat>());
+						parameters.emplace_back(parametersPts.back().get());
+					}
+
+					// create list of point lists
+					std::vector<std::vector<ImVec2>> points(8);
+
+					// zoom in on the part that is shown in the window
+					const int steps = curveResolution;
+					float part =  windowWidth / child_width;
+					float part_start = math::clamp<float>(scroll_x - 30, 0, child_width ) / child_width;
+
+					// start evaluating and create curves of motor
+					for (int p = 0; p < steps; p++)
+					{
+						//
+						mSequencePlayer->evaluate(( ( mSequencePlayer->getDuration() * part ) / (float) steps) * (float)p + (mSequencePlayer->getDuration() * part_start), parameters);
+
+						//
+						for (int l = 0; l < 8; l++)
+						{
+							float y_part = (child_size.y / 8.0f);
+							float y_start = y_part * l;
+
+							points[l].emplace_back(ImVec2(
+								part_start * child_width + top_left.x + child_size.x * part * (p * (1.0f / (float) steps)),
+								bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+						}
+					}
+
+					for (int l = 0; l < 8; l++)
+					{
+						// draw the polylines 
+						draw_list->AddPolyline(
+							&*points[l].begin(),
+							points[l].size(),
+							ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
+							false,
+							2.0f,
+							true);
+					}
+				}
+			}
+
+			for (int i = 0; i < 8; i++)
+			{
+				// draw motor text
+				draw_list->AddText(
+					ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * i + 4),
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					std::to_string(8 - i).c_str());
 			}
 
 			// draw player position 
@@ -415,31 +544,43 @@ namespace nap
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
 				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
 
-			// handle mouse input
-			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+			// handle dragging of timeline
+			if (!mouseHandled)
 			{
-				// is clicked inside timeline ? jump to position
-				if (ImGui::IsMouseClicked(0))
+				if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
 				{
-					wasClicked = true;
-					ImVec2 mousePos = ImGui::GetMousePos();
-					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
-					float pos = mousePos.x / child_size.x;
-					mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
-				}
-				// handle drag in timeline
-				else if (ImGui::IsMouseDragging() && wasClicked)
-				{
-					ImVec2 mousePos = ImGui::GetMousePos();
-					mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
-					float pos = mousePos.x / child_size.x;
-					mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
+					// is clicked inside timeline ? jump to position
+					if (ImGui::IsMouseClicked(0))
+					{
+						wasClicked = true;
+						ImVec2 mousePos = ImGui::GetMousePos();
+						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
+						float pos = mousePos.x / child_size.x;
+						mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
+
+						mouseHandled = true;
+					}
+					// handle drag in timeline
+					else if (ImGui::IsMouseDragging() && wasClicked)
+					{
+						ImVec2 mousePos = ImGui::GetMousePos();
+						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
+						float pos = mousePos.x / child_size.x;
+						mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
+
+						mouseHandled = true;
+					}
 				}
 			}
 
 			// release mouse
 			if (!ImGui::IsMouseDown(0))
+			{
+				selectedElement = nullptr;
 				wasClicked = false;
+				draggingElement = false;
+			}
+				
 
 			ImGui::EndChild();
 

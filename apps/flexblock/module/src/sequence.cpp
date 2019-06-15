@@ -74,6 +74,11 @@ namespace nap
 
 				startParameters = mElements[i]->getEndParameters();
 				time += mElements[i]->mDuration;
+
+				if (i > 0)
+				{
+					mElements[i]->setPreviousElement(mElements[i - 1]);
+				}
 			}
 			mDuration = time - mStartTime;
 		}

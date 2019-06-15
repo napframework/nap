@@ -1160,7 +1160,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 3",
-                    "Duration": 2.0,
+                    "Duration": 4.0,
                     "Curve": "Bezier Curve",
                     "Parameters": [],
                     "Preset File": "",
@@ -1235,6 +1235,25 @@
                     "Type": "nap::timeline::SequencePause",
                     "mID": "Pause_2",
                     "Duration": 5.0
+                },
+                {
+                    "Type": "nap::flexblock::FlexblockSequenceTransition",
+                    "mID": "FlexblockSequenceTransition_9",
+                    "Duration": 3.0,
+                    "Curve": "SinCurve",
+                    "Parameters": [],
+                    "Preset File": "",
+                    "Use Preset": false,
+                    "Inputs": [
+                        0.0,
+                        1.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
                 }
             ],
             "StartParameters": [],
@@ -1452,6 +1471,22 @@
                     "OutTangent": {
                         "Time": 0.08513012528419495,
                         "Value": 0.420634925365448
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.22118957340717317,
+                        "Value": 0.5052909851074219
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true

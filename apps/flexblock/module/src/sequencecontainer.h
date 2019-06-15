@@ -30,6 +30,11 @@ namespace nap
 			*/
 			const int count() const { return mSequences.size(); }
 
+			/**
+			 * 
+			 */
+			void reconstruct();
+
 			std::vector<Sequence*>				mSequences;								
 			std::vector<ResourcePtr<Sequence>>	mSequenceLinks;
 		};
