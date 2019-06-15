@@ -951,14 +951,6 @@ size_t findCommonStartingElements(const std::deque<std::string>& a, const std::d
 void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target,
 									  std::deque<std::string>& result) const
 {
-	// This implementation is based off the description in componentptr.h
-	// Notes:
-	// - Sibling component paths start with a single period, but other paths (parent/child) do not.
-	//   What is the meaning of the period, can we get rid of it? It would make it more consistent
-	// - No speak of pointers to children, so making assumptions here.
-
-	// Going for Entity -> Component path here.
-	// In other words, we always start from an Entity
 
 	// Grab the origin entity (ignore component if provided)
 	auto originEntity = rtti_cast<const nap::Entity>(&origin);
@@ -969,33 +961,50 @@ void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap
 	}
 	assert(originEntity != nullptr);
 
-	auto targetComponent = rtti_cast<const nap::Component>(&target);
-	auto targetEntity = getOwner(*targetComponent);
-
-	// Sibling component found? Return only one element
-	if (targetEntity != nullptr && originEntity == targetEntity)
+	// Componentptrs and EntityPtrs have to be handled differently. Check for entity first
+	if (auto targetEntity = rtti_cast<const nap::Entity>(&target))
 	{
-		result.emplace_back("."); // TODO: Probably not necessary
-		result.push_back(targetComponent->mID);
+		result.emplace_back(targetEntity->mID);
 		return;
 	}
 
-	// Get absolute paths and compare
-	std::deque<std::string> absOriginPath;
-	std::deque<std::string> absTargetPath;
+	// This implementation is based off the description in componentptr.h
+	// Notes:
+	// - Sibling component paths start with a single period, but other paths (parent/child) do not.
+	//   What is the meaning of the period, can we get rid of it? It would make it more consistent
+	// - No speak of pointers to children, so making assumptions here.
 
-	absoluteObjectPathList(*originEntity, absOriginPath);
-	absoluteObjectPathList(*targetComponent, absTargetPath);
+	// Going for Entity -> Component path here.
+	// In other words, we always start from an Entity
+	if (auto targetComponent = rtti_cast<const nap::Component>(&target))
+	{
+		auto targetEntity = getOwner(*targetComponent);
 
-	size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
-	for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
-		result.emplace_back("..");
+		// Sibling component found? Return only one element
+		if (targetEntity != nullptr && originEntity == targetEntity)
+		{
+			result.emplace_back("."); // TODO: Probably not necessary
+			result.push_back(targetComponent->mID);
+			return;
+		}
 
-	if (result.empty()) // Add a period to be consistent with sibling path?
-		result.emplace_back("."); // TODO: Probably not necessary
+		// Get absolute paths and compare
+		std::deque<std::string> absOriginPath;
+		std::deque<std::string> absTargetPath;
 
-	for (size_t i = commonidx, len=absTargetPath.size(); i<len; i++)
-		result.push_back(absTargetPath[i]);
+		absoluteObjectPathList(*originEntity, absOriginPath);
+		absoluteObjectPathList(*targetComponent, absTargetPath);
+
+		size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
+		for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
+			result.emplace_back("..");
+
+		if (result.empty()) // Add a period to be consistent with sibling path?
+			result.emplace_back("."); // TODO: Probably not necessary
+
+		for (size_t i = commonidx, len = absTargetPath.size(); i < len; i++)
+			result.push_back(absTargetPath[i]);
+	}
 }
 
 std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const nap::rtti::Object& target) const
