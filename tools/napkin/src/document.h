@@ -532,6 +532,10 @@ namespace napkin
 		 */
 		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object);
 
+		/**
+		 * @return A basic UUID meant for local object disambiguation
+		 */
+		static std::string createSimpleUUID();
 
 		nap::Core& mCore;                        // nap's core
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document

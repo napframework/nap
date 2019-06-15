@@ -1,9 +1,12 @@
 #include "document.h"
 
-#include <nap/logger.h>
 #include <QList>
 #include <QtDebug>
 #include <QStack>
+#include <QUuid>
+
+#include <nap/logger.h>
+#include <mathutils.h>
 #include <utility/fileutils.h>
 
 #include "naputils.h"
@@ -205,12 +208,12 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 
 std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object)
 {
-	std::string newName = suggestedName;
+	std::string newName = suggestedName + "_" + createSimpleUUID();
 	int i = 2;
 	auto obj = getObject(newName);
 	while (obj != nullptr && obj != &object)
 	{
-		newName = suggestedName + "_" + std::to_string(i++);
+		newName = suggestedName + "_" + createSimpleUUID();
 		obj = getObject(newName);
 	}
 	return newName;
@@ -1021,5 +1024,14 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	std::deque<std::string> path;
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
+}
+
+std::string Document::createSimpleUUID()
+{
+	auto uuid = QUuid::createUuid().toString();
+	// just take the last couple of characters
+	int charCount = 8;
+	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
+	return shortuuid.toStdString();
 }
 
