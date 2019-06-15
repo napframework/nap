@@ -36,6 +36,8 @@ namespace nap
 			* @return returns true if this element has to do something ( element falls in this sequence time slot )
 			*/
 			virtual bool process(double time, std::vector<Parameter*>& outParameters) override;
+
+			const std::vector<std::unique_ptr<math::FloatFCurve>>& getCurves() { return mCurves; }
 		public:
 			// properties
 
@@ -78,6 +80,10 @@ namespace nap
 			* Use the curve to interpolate
 			*/
 			const float evaluateCurve(float progress);
+
+			std::vector<std::unique_ptr<math::FloatFCurve>> mCurves;
+
+			int mCurveIndex = 0;
 		};
 	}
 

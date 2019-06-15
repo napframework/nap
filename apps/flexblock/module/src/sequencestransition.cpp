@@ -79,10 +79,22 @@ namespace nap
 				}
 			}
 
-			if (mCurve != nullptr)
-				mEvaluateFunction = &SequenceTransition::evaluateCurve;
-			else
-				mEvaluateFunction = &SequenceTransition::evaluateLinear;
+
+			mEvaluateFunction = &SequenceTransition::evaluateCurve;
+
+			for (int i = 0; i < mEndParameters.size(); i++)
+			{
+				mCurves.emplace_back( std::make_unique<math::FloatFCurve>() );
+
+				if (mCurve != nullptr)
+				{
+					mCurves.back()->mPoints = mCurve->mPoints;
+				}
+				else
+				{
+
+				}
+			}
 
 			return true;
 		}
@@ -94,9 +106,11 @@ namespace nap
 
 			float progress = (time - mStartTime) / mDuration;
 
+			mCurveIndex = 0;
 			for (int i = 0; i < outParameters.size(); i++)
 			{
 				(this->*mFunctions[i])(progress, mStartParameters[i], mEndParameters[i], outParameters[i]);
+				mCurveIndex++;
 			}
 
 			return true;
@@ -104,7 +118,7 @@ namespace nap
 
 		const float SequenceTransition::evaluateCurve(float progress)
 		{
-			return mCurve->evaluate(progress);
+			return mCurves[mCurveIndex]->evaluate(progress);
 		}
 
 		template<typename T1, typename T2>

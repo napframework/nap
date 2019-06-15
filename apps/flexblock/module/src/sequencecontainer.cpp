@@ -55,11 +55,17 @@ namespace nap
 		void SequenceContainer::reconstruct()
 		{
 			double time = 0.0;
-			for (const auto& sequence : mSequences)
+			for (int i = 0; i < mSequences.size(); i++)
 			{
-				sequence->setStartTime(time);
-				time += sequence->getDuration();
+				if (i > 0)
+				{
+					mSequences[i]->mStartParameters = mSequences[i - 1]->mElements.back()->getEndParameters();
+				}
+
+				mSequences[i]->setStartTime(time);
+				time += mSequences[i]->getDuration();
 			}
+
 		}
 	}
 

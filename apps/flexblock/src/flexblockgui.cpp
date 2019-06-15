@@ -14,6 +14,7 @@
 #include <sequence.h>
 #include <sequenceplayercomponent.h>
 #include <iomanip>
+#include <sequencetransition.h>
 
 
 namespace nap
@@ -33,6 +34,11 @@ namespace nap
 	static bool draggingElement = false;
 	static timeline::SequenceElement* selectedElement = nullptr;
 	static float beginPos = 0.0f;
+	static bool draggingTangent = false;
+	static bool draggingCurvePoint = false;
+
+	math::FCurvePoint<float, float> *curvePointPtr = nullptr;
+	math::FComplex<float, float> *tangentPtr = nullptr;
 
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
@@ -345,7 +351,7 @@ namespace nap
 						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
 						element->getID().c_str());
 
-					//
+					// draw dragger of element, changes duration of previous element
 					{
 						ImVec2 elementTimeDragRectStart(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 40);
 						ImVec2 elementTimeDragRectEnd(top_left.x + start_x + width * element_pos + 10, bottom_right_pos.y + 50);
@@ -401,6 +407,160 @@ namespace nap
 								elementTimeDragRectEnd,
 								ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
 						}
+					}
+
+					// draw curve points of element
+					{
+						float element_size_width = element_width * width;
+						timeline::SequenceTransition* transition = dynamic_cast<timeline::SequenceTransition*>(element);
+						if (transition != nullptr)
+						{
+							const auto& curves = transition->getCurves();
+							float motor_height = child_size.y / 8.0f;
+							for (int m = 0; m < 8; m++)
+							{
+								for (int p = 1; p < curves[m]->mPoints.size() - 1; p++)
+								{
+									auto& point = curves[m]->mPoints[p];
+									float x = top_left.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
+									float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * point.mPos.mValue;
+
+									draw_list->AddCircleFilled(
+										ImVec2(x, y),
+										3,
+										ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 1.0f, 1.0f)),
+										12);
+
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									{
+										mouseHandled = true;
+										if (ImGui::IsMouseClicked(0))
+										{
+											wasClicked = true;
+											draggingCurvePoint = true;
+											curvePointPtr = &point;
+										}
+									}
+
+									//
+									ImVec2 pointPos(x, y);
+
+									//
+									if (draggingCurvePoint && curvePointPtr == &point)
+									{
+										mouseHandled = true;
+										ImVec2 mousePos = ImGui::GetMousePos();
+
+										float adjust = (mousePos.y - y) / motor_height;
+										point.mPos.mValue -= adjust;
+
+										adjust = (mousePos.x - x) / element_size_width;
+										point.mPos.mTime += adjust;
+
+										curves[m]->invalidate();
+										mSequencePlayer->reconstruct();
+									}
+
+									x = top_left.x + start_x + width * element_pos + element_size_width * ( point.mPos.mTime + point.mOutTan.mTime );
+									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ( point.mPos.mValue + point.mOutTan.mValue );
+									ImVec2 inTangentPos(x, y);
+									draw_list->AddCircleFilled(
+										inTangentPos,
+										2,
+										ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+										12);
+
+									draw_list->AddLine(pointPos, inTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
+
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									{
+										mouseHandled = true;
+										if (ImGui::IsMouseClicked(0))
+										{
+											wasClicked = true;
+											draggingTangent = true;
+											tangentPtr = &point.mOutTan;
+										}
+									}
+
+									if (draggingTangent && tangentPtr == &point.mOutTan)
+									{
+										mouseHandled = true;
+										ImVec2 mousePos = ImGui::GetMousePos();
+
+										float adjust = (mousePos.y - y) / motor_height;
+										tangentPtr->mValue -= adjust;
+										
+										adjust = (mousePos.x - x) / element_size_width;
+										tangentPtr->mTime += adjust;
+											
+										curves[m]->invalidate();
+										mSequencePlayer->reconstruct();
+									}
+
+									//
+									x = top_left.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mInTan.mTime);
+									y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * (point.mPos.mValue + point.mInTan.mValue);
+									ImVec2 outTangentPos(x, y);
+
+									draw_list->AddCircleFilled(
+										outTangentPos,
+										2,
+										ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+										12);
+
+									draw_list->AddLine(pointPos, outTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
+
+									//
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									{
+										mouseHandled = true;
+										if (ImGui::IsMouseClicked(0))
+										{
+											wasClicked = true;
+											draggingTangent = true;
+											tangentPtr = &point.mInTan;
+										}
+									}
+
+									if (draggingTangent && tangentPtr == &point.mInTan)
+									{
+										mouseHandled = true;
+										ImVec2 mousePos = ImGui::GetMousePos();
+
+										float adjust = (mousePos.y - y) / motor_height;
+										tangentPtr->mValue -= adjust;
+
+										adjust = (mousePos.x - x) / element_size_width;
+										tangentPtr->mTime += adjust;
+
+										curves[m]->invalidate();
+										mSequencePlayer->reconstruct();
+									}
+
+									std::vector<ImVec2> curvePoints;
+									for (int k = 0; k < 40; k++)
+									{
+										float t = (float)k / 40.0f;
+										float e = curves[m]->evaluate(t);
+										x = top_left.x + start_x + width * element_pos + element_size_width * t;
+										y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * e;
+
+										curvePoints.push_back(ImVec2(x, y));
+									}
+
+									draw_list->AddPolyline(
+										&*curvePoints.begin(), 
+										curvePoints.size(), 
+										ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 1.0f, 1.0f)), 
+										false, 
+										1.0f,
+										false);
+								}
+
+							}
+						}
+						//const auto& curves = 
 					}
 
 					// set a height offset of the next text so they don't overlap to much
@@ -579,6 +739,10 @@ namespace nap
 				selectedElement = nullptr;
 				wasClicked = false;
 				draggingElement = false;
+				draggingTangent = false;
+				tangentPtr = nullptr;
+				draggingCurvePoint = false;
+				curvePointPtr = nullptr;
 			}
 				
 
