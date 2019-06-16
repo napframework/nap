@@ -28,14 +28,25 @@ namespace nap
 	static float lengthPerSecond = 60.0f;
 	static float child_width = 1000.0f;
 	static float child_height = 500.0f;
-	static bool wasClicked = false;
 	static bool followPlayer = false;
 	static int curveResolution = 75;
-	static bool draggingElement = false;
 	static timeline::SequenceElement* selectedElement = nullptr;
 	static float beginPos = 0.0f;
-	static bool draggingTangent = false;
-	static bool draggingCurvePoint = false;
+	static int motorDragged = 0;
+
+	enum TimeLineActions
+	{
+		NONE = 0,
+		DRAGGING_ELEMENT = 1,
+		DRAGGING_CURVEPOINT = 2,
+		DRAGGING_TANGENT = 3,
+		DRAGGING_MOTORVALUE = 4,
+		ADD_CURVEPOINT = 5,
+		DELETE_CURVEPOINT = 6,
+		DRAGGING_PLAYERPOSITION = 7
+	};
+
+	static TimeLineActions currentTimelineAction = TimeLineActions::NONE;
 
 	math::FCurvePoint<float, float> *curvePointPtr = nullptr;
 	math::FComplex<float, float> *tangentPtr = nullptr;
@@ -269,10 +280,6 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
-		//
-		bool mouseHandled = false;
-
-
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
@@ -357,25 +364,28 @@ namespace nap
 						ImVec2 elementTimeDragRectEnd(top_left.x + start_x + width * element_pos + 10, bottom_right_pos.y + 50);
 
 						bool filled = false;
-						if ( !mouseHandled && !wasClicked && ImGui::IsMouseHoveringRect(
-							elementTimeDragRectStart,
-							elementTimeDragRectEnd, true))
+						if (currentTimelineAction == TimeLineActions::NONE)
 						{
-							filled = true;
-							mouseHandled = true;
-
-							if (ImGui::IsMouseClicked(0))
+							if (ImGui::IsMouseHoveringRect(
+								elementTimeDragRectStart,
+								elementTimeDragRectEnd, true))
 							{
-								wasClicked = true;
-								draggingElement = true;
-								selectedElement = element;
+								filled = true;
+
+								if (ImGui::IsMouseClicked(0))
+								{
+									currentTimelineAction = TimeLineActions::DRAGGING_ELEMENT;
+									selectedElement = element;
+								}
 							}
 						}
 
+
 						
-						if (wasClicked && draggingElement && ImGui::IsMouseDragging() && element == selectedElement)
+						if (currentTimelineAction == TimeLineActions::DRAGGING_ELEMENT
+							&& ImGui::IsMouseDragging() 
+							&& element == selectedElement)
 						{
-							mouseHandled = true;
 							filled = true;
 
 							ImVec2 mousePs = ImGui::GetMousePos();
@@ -423,37 +433,35 @@ namespace nap
 							float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
 
 							// handle mouse input
-							if (!mouseHandled)
+							if (currentTimelineAction == TimeLineActions::NONE)
 							{
 								if (ImGui::IsMouseHoveringRect(ImVec2(x - 12, y - 12), ImVec2(x + 12, y + 12)))
 								{
 									filled = true;
-									mouseHandled = true;
-									draggingMotor = true;
-
 									if (ImGui::IsMouseClicked(0))
 									{
-										wasClicked = true;
+										currentTimelineAction = TimeLineActions::DRAGGING_MOTORVALUE;
+										motorDragged = m;
+										selectedElement = element;
 									}
 								}
 							}
 
-							if (filled)
+							if (currentTimelineAction == TimeLineActions::DRAGGING_MOTORVALUE 
+								&& ImGui::IsMouseDragging() &&
+								m == motorDragged &&
+								element == selectedElement)
 							{
-								if (wasClicked && ImGui::IsMouseDragging() && !draggingElement)
-								{
-									mouseHandled = true;
-									draggingMotor = true;
-									ImVec2 mousePos = ImGui::GetMousePos();
+								filled = true;
 
-									float adjust = (mousePos.y - y) / motor_height;
-									float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
-									newValue -= adjust;
-									newValue = math::clamp(newValue, 0.0f, 1.0f);
-									static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
-								}
+								ImVec2 mousePos = ImGui::GetMousePos();
+
+								float adjust = (mousePos.y - y) / motor_height;
+								float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+								newValue -= adjust;
+								newValue = math::clamp(newValue, 0.0f, 1.0f);
+								static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
 							}
-
 
 							if (!filled)
 							{
@@ -499,41 +507,43 @@ namespace nap
 
 								// is mouse hovering in this element part ?
 								bool mouseInMotor = false;
-								if (!draggingMotor && ImGui::IsMouseHoveringRect(
+
+								if (ImGui::IsMouseHoveringRect(
 									ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y - motor_height * (m + 1)),
 									ImVec2(top_left.x + start_x + width * element_pos + element_size_width, bottom_right_pos.y - motor_height * m)))
 								{
 									mouseInMotor = true;
-									//printf("mouse in motor %i and element %s\n", m, element->getID().c_str());
 								}
 
 								// add control points
-								if (mouseInMotor && ImGui::IsMouseClicked(0) && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_C)))
+								if (mouseInMotor && 
+									ImGui::IsMouseClicked(0) &&
+									ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_C) ) &&
+									currentTimelineAction == TimeLineActions::NONE)
 								{
-									mouseHandled = true;
+									currentTimelineAction = TimeLineActions::ADD_CURVEPOINT;
 
 									// range can be negative, if curves moves downwards, thats why we need to flip the input later on
 									bool flip = range < 0.0f;
-									range = math::abs(range);
-
+			
 									// to make sure p_y doesnt become infinite
-									if (range > 0.00001f )
+									if (math::abs(range) > 0.00001f )
 									{
 										ImVec2 mousePos = ImGui::GetMousePos();
 
 										// translate mouse pos to curve pos
 										float p_x = (mousePos.x - (top_left.x + start_x + width * element_pos)) / element_size_width;
-										float p_y = (((bottom_right_pos.y - motor_height * (float)m) - mousePos.y) / motor_height) * (1.0f / range);
+										float p_y = (((bottom_right_pos.y - motor_height * (float)m) - mousePos.y) / motor_height) * range;
 
 										if (flip)
 										{
-											p_y = 1.0f - p_y;
+											p_y = 1.0f + p_y;
 										}
 
 										// create the new point
 										auto newPoint = curves[m]->mPoints[0];
 										newPoint.mPos.mTime = p_x;
-										newPoint.mPos.mValue = p_y;
+										newPoint.mPos.mValue = math::clamp(p_y , 0.0f, 1.0f) ;
 
 										// add the point to the curve
 										curves[m]->mPoints.emplace_back(newPoint);
@@ -564,25 +574,24 @@ namespace nap
 										12);
 
 									// are we hovering inside the control point ?
-									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)) &&
+										currentTimelineAction == TimeLineActions::NONE)
 									{
-										mouseHandled = true;
 										if (ImGui::IsMouseClicked(0))
 										{
 											if (!ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_X)))
 											{
-												wasClicked = true;
-												draggingCurvePoint = true;
 												curvePointPtr = &point;
+												currentTimelineAction = TimeLineActions::DRAGGING_CURVEPOINT;
 											}
 											else
 											{
 												// handle deletion
-												wasClicked = true;
-												draggingCurvePoint = false;
 
 												// store the index so we can delete it later
 												pointsToDelete.emplace_back(p);
+
+												currentTimelineAction = TimeLineActions::DELETE_CURVEPOINT;
 											}
 										}
 									}
@@ -591,9 +600,9 @@ namespace nap
 									ImVec2 pointPos(x, y);
 
 									// handle dragging of curve point
-									if (draggingCurvePoint && curvePointPtr == &point)
+									if (currentTimelineAction == TimeLineActions::DRAGGING_CURVEPOINT && 
+										curvePointPtr == &point)
 									{
-										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
 										// translate to curve space
@@ -625,21 +634,20 @@ namespace nap
 									draw_list->AddLine(pointPos, inTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
 									// are we hovering this tangent ?
-									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)) &&
+										currentTimelineAction == TimeLineActions::NONE)
 									{
-										mouseHandled = true;
 										if (ImGui::IsMouseClicked(0))
 										{
-											wasClicked = true;
-											draggingTangent = true;
+											currentTimelineAction = TimeLineActions::DRAGGING_TANGENT;
 											tangentPtr = &point.mOutTan;
 										}
 									}
 
 									// handle dragging of tangent
-									if (draggingTangent && tangentPtr == &point.mOutTan)
+									if (currentTimelineAction == TimeLineActions::DRAGGING_TANGENT && 
+										tangentPtr == &point.mOutTan)
 									{
-										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
 										// translate
@@ -668,21 +676,20 @@ namespace nap
 									draw_list->AddLine(pointPos, outTangentPos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
 									// are we hovering this tangent ?
-									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)))
+									if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)) &&
+										currentTimelineAction == TimeLineActions::NONE)
 									{
-										mouseHandled = true;
 										if (ImGui::IsMouseClicked(0))
 										{
-											wasClicked = true;
-											draggingTangent = true;
+											currentTimelineAction = TimeLineActions::DRAGGING_TANGENT;
 											tangentPtr = &point.mInTan;
 										}
 									}
 
 									// handle dragging
-									if (draggingTangent && tangentPtr == &point.mInTan)
+									if (currentTimelineAction == TimeLineActions::DRAGGING_TANGENT && 
+										tangentPtr == &point.mInTan)
 									{
-										mouseHandled = true;
 										ImVec2 mousePos = ImGui::GetMousePos();
 
 										float adjust = (mousePos.y - y) / motor_height;
@@ -788,46 +795,49 @@ namespace nap
 				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
 
 			// handle dragging of timeline
-			if (!mouseHandled)
+			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
 			{
-				if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+				if (currentTimelineAction == TimeLineActions::NONE)
 				{
 					// is clicked inside timeline ? jump to position
 					if (ImGui::IsMouseClicked(0))
 					{
-						wasClicked = true;
+						currentTimelineAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
+
 						ImVec2 mousePos = ImGui::GetMousePos();
 						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
 						float pos = mousePos.x / child_size.x;
 						mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
-
-						mouseHandled = true;
 					}
+				}
+
+				if (currentTimelineAction == TimeLineActions::DRAGGING_PLAYERPOSITION)
+				{
 					// handle drag in timeline
-					else if (ImGui::IsMouseDragging() && wasClicked)
+					if (ImGui::IsMouseDragging())
 					{
 						ImVec2 mousePos = ImGui::GetMousePos();
 						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
 						float pos = mousePos.x / child_size.x;
 						mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
-
-						mouseHandled = true;
 					}
 				}
 			}
 
+			//printf("currentTimeLineAction %i \n", currentTimelineAction);
+
 			// release mouse
-			if (!ImGui::IsMouseDown(0))
+			if (ImGui::IsMouseReleased(0))
 			{
 				selectedElement = nullptr;
-				wasClicked = false;
-				draggingElement = false;
-				draggingTangent = false;
 				tangentPtr = nullptr;
-				draggingCurvePoint = false;
 				curvePointPtr = nullptr;
+				motorDragged = 0;
+
+				currentTimelineAction = TimeLineActions::NONE;
 			}
 				
+			//printf("currentTimeLineAction %i \n", currentTimelineAction);
 
 			ImGui::EndChild();
 
