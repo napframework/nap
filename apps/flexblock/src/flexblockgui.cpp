@@ -461,6 +461,8 @@ namespace nap
 								newValue -= adjust;
 								newValue = math::clamp(newValue, 0.0f, 1.0f);
 								static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
+
+								mSequencePlayer->reconstruct();
 							}
 
 							if (!filled)
