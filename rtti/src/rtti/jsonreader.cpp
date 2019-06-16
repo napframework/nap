@@ -16,19 +16,22 @@ namespace nap
 	{
 		struct ReadState
 		{
-			ReadState(EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result) :
+			ReadState(EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result) :
 				mPropertyValidationMode(propertyValidationMode),
+				mPointerPropertyMode(pointerPropertyMode),
 				mFactory(factory),
 				mResult(result)
 			{
 			}
 
 			EPropertyValidationMode			mPropertyValidationMode;
+			EPointerPropertyMode			mPointerPropertyMode;
 			Path							mCurrentRTTIPath;
 			Factory&						mFactory;
 			DeserializeResult&				mResult;
 			std::unordered_set<std::string>	mObjectIDs;
 		};
+
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
 		{
@@ -42,6 +45,28 @@ namespace nap
 
 			return unique_id;
 		}
+
+
+		/**
+		 * Helper function to give correct error message in case of pointer type mismatch.
+		 */
+		static bool checkPointerProperty(const ReadState& readState, bool isRawPointer, const std::string& rootObjectID, utility::ErrorState& errorState)
+		{
+			if (readState.mPointerPropertyMode == EPointerPropertyMode::OnlyRawPointers && !isRawPointer)
+			{
+				errorState.fail("Encountered a non-raw pointer property {%s}:%s while only raw pointers are supported.", rootObjectID.c_str(), readState.mCurrentRTTIPath.toString().c_str());
+				return false;
+			}
+
+			if (readState.mPointerPropertyMode == EPointerPropertyMode::NoRawPointers && isRawPointer)
+			{
+				errorState.fail("Encountered a raw pointer property {%s}:%s while only pointers like ObjectPtr are supported.", rootObjectID.c_str(), readState.mCurrentRTTIPath.toString().c_str());
+				return false;
+			}
+
+			return true;
+		}
+
 
 		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
 
@@ -168,6 +193,10 @@ namespace nap
 				// If the property is of pointer type, we can't set the property here but need to resolve it later
 				if (wrapped_type.is_pointer())
 				{
+					bool is_raw_pointer = wrapped_type == value_type;
+					if (!checkPointerProperty(readState, is_raw_pointer, rootObject->mID, errorState))
+						return false;
+
 					// Pointer types must point to objects derived from rtti::RTTIObject
 					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
@@ -324,6 +353,10 @@ namespace nap
 
 				if (wrapped_type.is_pointer())
 				{
+					bool is_raw_pointer = wrapped_type == array_type;
+					if (!checkPointerProperty(readState, is_raw_pointer, rootObject->mID, errorState))
+						return false;
+
 					// Pointer types must point to objects derived from rtti::RTTIObject
 					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
@@ -455,7 +488,7 @@ namespace nap
 		}
 
 
-		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Try to parse the json file
 			rapidjson::Document document;
@@ -467,7 +500,7 @@ namespace nap
 			}
 
 			// Read objects
-			ReadState readState(propertyValidationMode, factory, result);
+			ReadState readState(propertyValidationMode, pointerPropertyMode, factory, result);
 			rapidjson::Value::ConstMemberIterator objects = document.FindMember("Objects");
 			if (!errorState.check(objects != document.MemberEnd(), "Unable to find required 'Objects' field"))
 				return false;
@@ -485,13 +518,13 @@ namespace nap
 			return true;
 		}
 
-		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
 				return false;
 
-			return deserializeJSON(buffer, propertyValidationMode, factory, result, errorState);
+			return deserializeJSON(buffer, propertyValidationMode, pointerPropertyMode, factory, result, errorState);
 		}
 
 	}

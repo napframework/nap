@@ -77,7 +77,7 @@ namespace nap
 	void AuraApp::render()
 	{
 		// Get rid of unnecessary resources
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 
 		// Activate current window for drawing
 		mRenderWindow->makeActive();

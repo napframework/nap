@@ -101,7 +101,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 	nap::rtti::DeserializeResult result;
 	auto& factory = getCore().getResourceManager()->getFactory();
 
-	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, factory, result, err))
+	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
 		return nullptr;

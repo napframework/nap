@@ -50,8 +50,6 @@ namespace nap
 		PresetFileList presets;
 		for (const auto& filename : files_in_directory)
 		{
-			rtti::TypeInfo service = rtti::TypeInfo::empty();
-
 			// Ignore directories
 			if (utility::dirExists(filename))
 				continue;
@@ -100,7 +98,7 @@ namespace nap
 
 		// Load the parameters from the preset
 		rtti::DeserializeResult deserialize_result;
-		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
+		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
 			return false;
 
 		// Resolve links
@@ -108,7 +106,6 @@ namespace nap
 			return false;
 
 		// Find the root parameter group in the preset file and apply parameters
-		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
 		for (auto& object : deserialize_result.mReadObjects)
 		{
 			if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == group.mID)
@@ -152,8 +149,6 @@ namespace nap
 	void ParameterService::resourcesLoaded()
 	{
 		// Whenever the main json is (re)loaded, update the root parameter group
-		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-
 		// We search for the root parameter group by finding the group that has no parent
 		using ParentMap = std::unordered_map<const ParameterGroup*, const ParameterGroup*>;
 		ParentMap parent_map;

@@ -132,3 +132,23 @@ function(add_include_to_interface_target TARGET_NAME INCLUDE_PATH)
     list(APPEND module_includes ${INCLUDE_PATH})
     set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${module_includes}")
 endfunction()
+
+# Add a define to the list of defines on an interface target
+function(add_define_to_interface_target TARGET_NAME DEFINE)
+    # Deal with cases using module_extra.cmake for DLL installation when targets aren't defined
+    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT TARGET ${TARGET_NAME})
+        return()
+    endif()
+
+    # Get existing list of includes
+    get_target_property(module_defines ${TARGET_NAME} INTERFACE_COMPILE_DEFINITIONS)
+
+    # Handle no existing includes
+    if(NOT module_defines)
+        set(module_defines "")
+    endif()
+
+    # Append new path and set on target
+    list(APPEND module_defines ${DEFINE})
+    set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${module_defines}")
+endfunction()

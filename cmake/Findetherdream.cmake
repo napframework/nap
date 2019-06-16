@@ -57,7 +57,7 @@ endif()
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR ETHERDREAM_INCLUDE_DIRS ETHERDREAM_LIBS ETHERDREAM_LIBS_DIR)
+find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR)
 
 # Copy the etherdream dynamic linked lib into the build directory
 macro(copy_etherdream_dll)
