@@ -1445,40 +1445,8 @@
                 },
                 {
                     "Position": {
-                        "Time": 1.0,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.22490708529949189,
-                        "Value": 0.507936418056488
-                    },
-                    "InTangent": {
-                        "Time": -0.08746051043272019,
-                        "Value": 0.17740115523338319
-                    },
-                    "OutTangent": {
-                        "Time": 0.08513012528419495,
-                        "Value": -0.17009928822517396
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.7137546539306641,
-                        "Value": 0.9603174328804016
+                        "Time": 0.9962825775146484,
+                        "Value": 0.9947088956832886
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,

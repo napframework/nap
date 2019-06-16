@@ -504,12 +504,17 @@ namespace nap
 									ImVec2(top_left.x + start_x + width * element_pos + element_size_width, bottom_right_pos.y - motor_height * m)))
 								{
 									mouseInMotor = true;
+									//printf("mouse in motor %i and element %s\n", m, element->getID().c_str());
 								}
 
 								// add control points
-								if (mouseInMotor && !mouseHandled && ImGui::IsMouseClicked(0) && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_C)))
+								if (mouseInMotor && ImGui::IsMouseClicked(0) && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_C)))
 								{
 									mouseHandled = true;
+
+									// range can be negative, if curves moves downwards, thats why we need to flip the input later on
+									bool flip = range < 0.0f;
+									range = math::abs(range);
 
 									// to make sure p_y doesnt become infinite
 									if (range > 0.00001f )
@@ -519,6 +524,11 @@ namespace nap
 										// translate mouse pos to curve pos
 										float p_x = (mousePos.x - (top_left.x + start_x + width * element_pos)) / element_size_width;
 										float p_y = (((bottom_right_pos.y - motor_height * (float)m) - mousePos.y) / motor_height) * (1.0f / range);
+
+										if (flip)
+										{
+											p_y = 1.0f - p_y;
+										}
 
 										// create the new point
 										auto newPoint = curves[m]->mPoints[0];
@@ -580,7 +590,7 @@ namespace nap
 									//
 									ImVec2 pointPos(x, y);
 
-									// handle dragging
+									// handle dragging of curve point
 									if (draggingCurvePoint && curvePointPtr == &point)
 									{
 										mouseHandled = true;
@@ -588,10 +598,13 @@ namespace nap
 
 										// translate to curve space
 										float adjust = (mousePos.y - y) / motor_height;
+
 										point.mPos.mValue -= adjust * ( range / 1.0f );
+										point.mPos.mValue = math::clamp(point.mPos.mValue, 0.0f, 1.0f);
 
 										adjust = (mousePos.x - x) / element_size_width;
 										point.mPos.mTime += adjust;
+										point.mPos.mTime = math::clamp(point.mPos.mTime, 0.0f, 1.0f);
 
 										// update and reconstruct
 										curves[m]->invalidate();
