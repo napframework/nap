@@ -108,6 +108,7 @@ add_subdirectory(tools/napkin)
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
 add_subdirectory(test/audiotest)
+add_subdirectory(test/solarsystem)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
@@ -122,7 +123,6 @@ add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
-add_subdirectory(apps/solarsystem)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -146,6 +146,8 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
+add_subdirectory(demos/websocketserver)
+add_subdirectory(demos/websocketserver/module)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -180,6 +182,8 @@ add_subdirectory(modules/napdatabase)
 add_subdirectory(modules/napapi)
 add_subdirectory(modules/napparameter)
 add_subdirectory(modules/napparametergui)
+add_subdirectory(modules/napwebsocket)
+add_subdirectory(modules/napapiwebsocket)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

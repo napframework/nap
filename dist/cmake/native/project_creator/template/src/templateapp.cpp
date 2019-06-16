@@ -61,7 +61,7 @@ namespace nap
 	void @PROJECT_NAME_PASCALCASE@App::render()
 	{
 		// Destroy old GL context related resources scheduled for destruction
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 
 		// Prep main window for drawing
 		mRenderWindow->makeActive();

@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <rtti/object.h>
 #include <cassert>
+#include <mutex>
 
 #ifdef NAP_ENABLE_PYTHON
 	#include <pybind11/cast.h>
@@ -154,6 +155,7 @@ namespace nap
 			}
 
 			ObjectPtrSet mObjectPointers;		///< Set of all pointers in the manager
+			
 		};
 
 		/**
