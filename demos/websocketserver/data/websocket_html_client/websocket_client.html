@@ -67,7 +67,7 @@
     { 
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) 
       {
-        writeToBox("received login ticket");     
+        writeToBox("received login ticket: " + this.responseText);     
         startWebSocket(this.responseText);
       }
     }
