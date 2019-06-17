@@ -77,8 +77,8 @@
                     "Type": "nap::APIWebSocketHandlerComponent",
                     "mID": "APIHandler",
                     "APIComponent": "./APIComponent",
-                    "TextComponent" : "./Render2DTextComponent",
-                    "Server" : "WebSocketServer"
+                    "TextComponent": "./Render2DTextComponent",
+                    "Server": "WebSocketServer"
                 }
             ],
             "Children": []
@@ -150,7 +150,15 @@
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 80,
-            "LibraryLogLevel": "Warning"
+            "LibraryLogLevel": "Warning",
+            "Tickets": [
+                {
+                    "Type": "nap::WebSocketTicket",
+                    "mID": "WebSocketTicket_060c060d",
+                    "UserName": "cklosters",
+                    "Password": "letmein!"
+                }
+            ]
         }
     ]
 }

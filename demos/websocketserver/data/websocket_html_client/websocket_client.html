@@ -67,7 +67,7 @@
     { 
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) 
       {
-        writeToBox("received login ticket: " + this.responseText);     
+        writeToBox("received login ticket");     
         startWebSocket(this.responseText);
       }
     }
@@ -82,7 +82,7 @@
     status_header.style.color = "#5D5E73";
 
     const ws_uri = "ws://"+uri;
-    websocket = new WebSocket(ws_uri, 'token');
+    websocket = new WebSocket(ws_uri, token);
     writeToBox("connecting to: " + ws_uri);
     
     // Callbacks

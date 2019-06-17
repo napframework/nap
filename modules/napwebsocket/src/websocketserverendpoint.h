@@ -4,6 +4,7 @@
 #include "websocketutils.h"
 #include "websocketconnection.h"
 #include "websocketmessage.h"
+#include "websocketticket.h"
 
 // External Includes
 #include <memory.h>
@@ -11,6 +12,7 @@
 #include <utility/errorstate.h>
 #include <nap/device.h>
 #include <nap/signalslot.h>
+#include <nap/resourceptr.h>
 #include <mutex>
 
 namespace nap
@@ -91,6 +93,7 @@ namespace nap
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
 		bool mAllowPortReuse = false;											///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
+		std::vector<ResourcePtr<WebSocketTicket>> mTickets;						///< Property: "All valid tickets"
 
 		// Triggered when a new client connection is opened. Including client web-socket connection.
 		nap::Signal<const WebSocketConnection&> connectionOpened;
