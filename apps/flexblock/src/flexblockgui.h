@@ -80,6 +80,8 @@ namespace nap
 		 */
 		void showInfoWindow();
 
+		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
+
 		void showSequencesWindow();
 
 		void initParameters();

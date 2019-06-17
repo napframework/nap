@@ -125,6 +125,7 @@ namespace nap
 		void SequencePlayerComponentInstance::reconstruct()
 		{
 			mSequenceContainer->reconstruct();
+			mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
 		}
 
 		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
@@ -200,11 +201,9 @@ namespace nap
 			mTime = 0.0;
 		}
 
-		bool SequencePlayerComponentInstance::save(std::string showName)
+		bool SequencePlayerComponentInstance::save(std::string showName, utility::ErrorState& errorState)
 		{
 			//
-			utility::ErrorState errorState;
-
 			// Ensure the presets directory exists
 			const std::string dir = "shows";
 			utility::makeDirs(utility::getAbsolutePath(dir));
@@ -234,10 +233,9 @@ namespace nap
 			return true;
 		}
 
-		bool SequencePlayerComponentInstance::load(std::string showName)
+		bool SequencePlayerComponentInstance::load(std::string showName, utility::ErrorState& errorState)
 		{
 			//
-			utility::ErrorState errorState;
 			mDeserializeResult.mFileLinks.clear();
 			mDeserializeResult.mReadObjects.clear();
 			mDeserializeResult.mUnresolvedPointers.clear();
@@ -256,8 +254,6 @@ namespace nap
 			if (!rtti::DefaultLinkResolver::sResolveLinks(mDeserializeResult.mReadObjects, mDeserializeResult.mUnresolvedPointers, errorState))
 				return false;
 
-			mSequenceContainer->mSequences.clear();
-
 			std::map<int, Sequence*> sequenceMap;
 			// Find the root parameter group in the preset file and apply parameters
 			for (auto& object : mDeserializeResult.mReadObjects)
@@ -273,6 +269,8 @@ namespace nap
 				}
 			}
 
+			mSequenceContainer->mSequences.clear();
+
 			mSequenceContainer->mSequences = std::vector<Sequence*>(sequenceMap.size());
 			for (int i = 0 ; i < sequenceMap.size(); i++)
 			{
@@ -280,8 +278,9 @@ namespace nap
 			}
 
 			mSequenceContainer->reinit();
+			reconstruct();
 
-			return false;
+			return true;
 		}
 	}
 }

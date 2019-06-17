@@ -33,6 +33,8 @@ namespace nap
 	static timeline::SequenceElement* selectedElement = nullptr;
 	static float beginPos = 0.0f;
 	static int motorDragged = 0;
+	static int selectedShowIndex = 0;
+	static bool inPopup = false;
 
 	enum TimeLineActions
 	{
@@ -43,7 +45,8 @@ namespace nap
 		DRAGGING_MOTORVALUE = 4,
 		ADD_CURVEPOINT = 5,
 		DELETE_CURVEPOINT = 6,
-		DRAGGING_PLAYERPOSITION = 7
+		DRAGGING_PLAYERPOSITION = 7,
+		POPUP = 8
 	};
 
 	static TimeLineActions currentTimelineAction = TimeLineActions::NONE;
@@ -274,16 +277,25 @@ namespace nap
 
 		// handle save button
 		ImGui::SameLine();
-		if (ImGui::Button("Save"))
+
+		if (ImGui::Button("Save As"))
 		{
-			mSequencePlayer->save("test.json");
+			ImGui::OpenPopup("Save As");
+			//mSequencePlayer->save("test.json");
+			inPopup = true;
 		}
 
 		// handle load
 		ImGui::SameLine();
 		if (ImGui::Button("Load"))
 		{
-			mSequencePlayer->load("test.json");
+			ImGui::OpenPopup("Load");
+			inPopup = true;
+		}
+
+		if (inPopup)
+		{
+			currentTimelineAction = TimeLineActions::POPUP;
 		}
 
 		ImGui::Spacing();
@@ -394,8 +406,6 @@ namespace nap
 							}
 						}
 
-
-						
 						if (currentTimelineAction == TimeLineActions::DRAGGING_ELEMENT
 							&& ImGui::IsMouseDragging() 
 							&& element == selectedElement)
@@ -411,10 +421,10 @@ namespace nap
 								float newDuration = time - previousElement->getStartTime();
 
 								previousElement->mDuration = newDuration;
+								previousElement->mDuration = math::max(newDuration, 0.001f);
 								mSequencePlayer->reconstruct();
 							}
 						}
-						
 
 						// draw rect in timeline
 						if (!filled)
@@ -446,7 +456,7 @@ namespace nap
 							float value = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
 							float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
 
-							// handle mouse input
+							// handle dragging of motor values
 							if (currentTimelineAction == TimeLineActions::NONE)
 							{
 								if (ImGui::IsMouseHoveringRect(ImVec2(x - 12, y - 12), ImVec2(x + 12, y + 12)))
@@ -861,7 +871,148 @@ namespace nap
 			ImGui::Spacing();
 		}
 
+		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			const std::string showDir = "Shows";
+
+			// Find all files in the preset directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(showDir.c_str(), files_in_directory);
+
+			std::vector<std::string> shows;
+			for (const auto& filename : files_in_directory)
+			{
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
+
+				if (utility::getFileExtension(filename) == "json")
+				{
+					shows.push_back(utility::getFileName(filename));
+				}
+			}
+
+			ImGui::Combo("Shows", &selectedShowIndex, [](void* data, int index, const char** out_text)
+			{
+				ParameterService::PresetFileList* show_files = (ParameterService::PresetFileList*)data;
+				*out_text = (*show_files)[index].data();
+				return true;
+			}, &shows, shows.size());
+
+
+			if (ImGui::Button("Load"))
+			{
+				utility::ErrorState errorState;
+				if (mSequencePlayer->load(shows[selectedShowIndex], errorState))
+				{
+					ImGui::CloseCurrentPopup();
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+				}
+				else
+					ImGui::OpenPopup("Failed to load preset");
+
+				if (ImGui::BeginPopupModal("Failed to load preset"))
+				{
+					ImGui::Text(errorState.toString().c_str());
+					if (ImGui::Button("OK"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
+				}
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				ImGui::CloseCurrentPopup();
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+			}
+		}
+
+		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			const std::string showDir = "Shows";
+
+			// Find all files in the preset directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(showDir.c_str(), files_in_directory);
+
+			std::vector<std::string> shows;
+			for (const auto& filename : files_in_directory)
+			{
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
+
+				if (utility::getFileExtension(filename) == "json")
+				{
+					shows.push_back(utility::getFileName(filename));
+				}
+			}
+			shows.push_back("<New...>");
+
+			if (ImGui::Combo("Shows", &selectedShowIndex, [](void* data, int index, const char** out_text)
+			{
+				ParameterService::PresetFileList* show_files = (ParameterService::PresetFileList*)data;
+				*out_text = (*show_files)[index].data();
+				return true;
+			}, &shows, shows.size())) 
+			{
+				if (selectedShowIndex == shows.size() - 1)
+				{
+					ImGui::OpenPopup("New");
+				}
+			}
+
+			std::string newFilename;
+			utility::ErrorState errorState;
+			if (handleNewShowPopup(newFilename, errorState))
+			{
+				// Insert before the '<new...>' item
+				shows.insert(shows.end() - 1, newFilename);
+				if (mSequencePlayer->save(newFilename, errorState))
+				{
+					selectedShowIndex = shows.size() - 1;
+				}
+				else
+				{
+					ImGui::OpenPopup("Failed to save preset");
+				}
+			}
+
+			if (ImGui::BeginPopupModal("Failed to save preset"))
+			{
+				ImGui::Text(errorState.toString().c_str());
+				if (ImGui::Button("OK"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::EndPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Done"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
+
+
 	}
 
 	template<typename T1>
@@ -950,4 +1101,31 @@ namespace nap
 		ImGui::End();
 	}
 
+	bool FlexblockGui::handleNewShowPopup(std::string& outNewFilename, utility::ErrorState& error)
+	{
+		bool result = false;
+
+		if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			static char name[256] = { 0 };
+			ImGui::InputText("Name", name, 256);
+
+			if (ImGui::Button("OK") && strlen(name) != 0)
+			{
+				outNewFilename = std::string(name, strlen(name));
+				outNewFilename += ".json";
+				ImGui::CloseCurrentPopup();
+				result = true;
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
+
+		return result;
+	}
 }

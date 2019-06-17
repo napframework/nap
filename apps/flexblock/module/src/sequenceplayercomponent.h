@@ -103,9 +103,9 @@ namespace nap
 			/**
 			 * 
 			 */
-			bool save(std::string showName);
+			bool save(std::string showName, utility::ErrorState& errorState);
 
-			bool load(std::string showName);
+			bool load(std::string showName, utility::ErrorState& errorState);
 
 			/**
 			* @return true if loaded sequence

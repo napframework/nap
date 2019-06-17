@@ -191,9 +191,74 @@
                     ]
                 }
             ],
-            "StartParameters": [],
+            "StartParameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 0",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 2",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 3",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 4",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 5",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 6",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Fourth Act GeneratedParameter 7",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
             "Index": 3,
-            "Use Reference": true,
+            "Use Reference": false,
             "Inputs": [
                 0.0,
                 0.0,
@@ -212,7 +277,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 3",
-                    "Duration": 6.633333683013916,
+                    "Duration": 4.0,
                     "Curves": [
                         "Transition 3Generated_Curve0",
                         "Transition 3Generated_Curve1",
@@ -228,7 +293,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3GeneratedParameter0",
                             "Name": "",
-                            "Value": 0.5800004005432129,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -244,7 +309,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3GeneratedParameter2",
                             "Name": "",
-                            "Value": 0.5600003004074097,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -305,7 +370,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "FlexblockSequenceTransition_5",
-                    "Duration": 5.733333587646484,
+                    "Duration": 4.0,
                     "Curves": [
                         "FlexblockSequenceTransition_5Generated_Curve0",
                         "FlexblockSequenceTransition_5Generated_Curve1",
@@ -337,7 +402,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "FlexblockSequenceTransition_5GeneratedParameter2",
                             "Name": "",
-                            "Value": 0.36000004410743716,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -482,7 +547,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 1",
-                    "Duration": 4.300000190734863,
+                    "Duration": 3.0,
                     "Curves": [
                         "Transition 1Generated_Curve0",
                         "Transition 1Generated_Curve1",
@@ -514,7 +579,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 1GeneratedParameter2",
                             "Name": "",
-                            "Value": 0.4800000488758087,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -671,9 +736,74 @@
                     ]
                 }
             ],
-            "StartParameters": [],
+            "StartParameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 0",
+                    "Name": "",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 2",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 3",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 4",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 5",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 6",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "second act GeneratedParameter 7",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
             "Index": 1,
-            "Use Reference": true,
+            "Use Reference": false,
             "Inputs": [
                 1.0,
                 0.0,
@@ -883,7 +1013,7 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "FlexblockSequenceTransition_4",
-                    "Duration": 6.133333683013916,
+                    "Duration": 2.0,
                     "Curves": [
                         "FlexblockSequenceTransition_4Generated_Curve0",
                         "FlexblockSequenceTransition_4Generated_Curve1",
@@ -974,9 +1104,74 @@
                     ]
                 }
             ],
-            "StartParameters": [],
+            "StartParameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 0",
+                    "Name": "",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 2",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 3",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 4",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 5",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 6",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "third act GeneratedParameter 7",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
             "Index": 2,
-            "Use Reference": true,
+            "Use Reference": false,
             "Inputs": [
                 0.5,
                 0.0,
@@ -1910,12 +2105,12 @@
                         "Value": 0.0
                     },
                     "InTangent": {
-                        "Time": -0.08173736929893494,
-                        "Value": 1.2502046823501588
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
                     },
                     "OutTangent": {
-                        "Time": 1.9866617918014527,
-                        "Value": 15.611189842224121
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
@@ -3227,22 +3422,6 @@
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.4651162028312683,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.07364343851804733,
-                        "Value": -3.5619308948516847
-                    },
-                    "OutTangent": {
-                        "Time": 0.09302330017089844,
-                        "Value": 2.8406331539154054
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
                 }
             ]
         },
@@ -3462,44 +3641,12 @@
                         "Value": 1.0
                     },
                     "InTangent": {
-                        "Time": -0.09193025529384613,
-                        "Value": 0.501416802406311
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.3916666805744171,
-                        "Value": 0.36000001430511477
-                    },
-                    "InTangent": {
                         "Time": -0.10000000149011612,
                         "Value": 0.0
                     },
                     "OutTangent": {
                         "Time": 0.10000000149011612,
                         "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.6934673190116882,
-                        "Value": 0.7833120822906494
-                    },
-                    "InTangent": {
-                        "Time": -0.04351673647761345,
-                        "Value": 0.6347360610961914
-                    },
-                    "OutTangent": {
-                        "Time": 0.08732395619153977,
-                        "Value": -0.7931029200553894
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
