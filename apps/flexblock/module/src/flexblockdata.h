@@ -23,8 +23,8 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		glm::vec3 mObject;
-		glm::vec3 mFrame;
+		glm::vec3 mObject;	///< Property: 'Object' size of the object shape
+		glm::vec3 mFrame;	///< Property: 'Frame' size of the frame shape
 	};
 
 	/**
@@ -39,8 +39,8 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::string								mName;
-		ResourcePtr<FlexBlockShapeSizeValues>	mValues;
+		std::string								mName;		///< Property: 'Name' name of the shape size
+		ResourcePtr<FlexBlockShapeSizeValues>	mValues;	///< Property: 'Values' reference to shape size values
 	};
 
 	/**
@@ -55,8 +55,8 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<glm::vec3> mObject;
-		std::vector<glm::vec3> mFrame;
+		std::vector<glm::vec3> mObject; ///< Property: 'Object' points of object, togethers with shape size values will determine the size of the block
+		std::vector<glm::vec3> mFrame;	///< Property: 'Frame' points of frame, togethers with shape size values will determine the size of the frame
 	};
 
 	/**
@@ -71,9 +71,9 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<std::vector<int>> mObject;
-		std::vector<std::vector<int>> mObject2Frame;
-		std::vector<std::vector<int>> mFrame;
+		std::vector<std::vector<int>> mObject;			///< Property: 'Object Element Connections' connections of motor points to sides
+		std::vector<std::vector<int>> mObject2Frame;	///< Property: 'Object Element Connections With Frame' connections of frame points to object sides
+		std::vector<std::vector<int>> mFrame;			///< Property: 'Frame Element Connections' connections of frame points to object sides
 	};
 
 	/**
@@ -88,7 +88,7 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::string										mName;			///< Property: 'Name' 
+		std::string										mName;			///< Property: 'Name' name of shape
 		int												mMotorCount;	///< Property: 'MotorCount' amount of motors
 		ResourcePtr<FlexBlockShapeSize>					mSize;			///< Property: 'Size' Definition of this shape
 		ResourcePtr<FlexBlockElements>					mElements;		///< Property: 'FlexBlockElements' FlexBlockElements

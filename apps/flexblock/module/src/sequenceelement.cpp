@@ -8,9 +8,6 @@
 #include <utility/fileutils.h>
 #include <fstream>
 
-
-RTTI_DEFINE_BASE(nap::timeline::SequenceElement)
-
 RTTI_BEGIN_CLASS(nap::timeline::SequenceElement)
 // Put additional properties here
 
@@ -70,10 +67,12 @@ namespace nap
 			return true;
 		}
 
+
 		bool SequenceElement::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			return (time >= mStartTime && time < mStartTime + mDuration);
 		}
+
 
 		void SequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
 		{

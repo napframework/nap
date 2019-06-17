@@ -106,7 +106,8 @@ namespace nap
 			const bool getIsPlaying() const { return mIsPlaying; }
 
 			/**
-			 * 
+			 * Evaluate acts the same as process but doesn't advance the
+			 * current element index or finishes 
 			 */
 			const void evaluate(double time, std::vector<Parameter*> &output) const;
 
@@ -153,15 +154,14 @@ namespace nap
 			//
 			SequenceContainer* mSequenceContainer = nullptr;
 
-			double mTime = 0.0;
-			bool mIsPlaying = false;
-			bool mIsPaused = false;
-			bool mIsFinished = false;
-			bool mIsLooping = false;
-			int mCurrentSequenceIndex = 0;
-			float mSpeed = 1.0f;
-
-			double mDuration = 0.0;
+			double mTime				= 0.0;
+			bool mIsPlaying				= false;
+			bool mIsPaused				= false;
+			bool mIsFinished			= false;
+			bool mIsLooping				= false;
+			int mCurrentSequenceIndex	= 0;
+			float mSpeed				= 1.0f;
+			double mDuration			= 0.0;
 
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 		};

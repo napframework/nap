@@ -18,6 +18,7 @@ namespace nap
 			return SequenceElement::init(errorState);
 		}
 
+
 		bool SequencePause::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if (!SequenceElement::process(time, outParameters))
@@ -30,6 +31,7 @@ namespace nap
 
 			return true;
 		}
+
 
 		void SequencePause::setStartParameters(const std::vector<Parameter*>& startParameters)
 		{

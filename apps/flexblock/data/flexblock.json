@@ -989,222 +989,30 @@
         },
         {
             "Type": "nap::flexblock::FlexblockSequence",
-            "mID": "first act",
-            "Elements": [
+            "mID": "First Act",
+            "Sequence Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "Transition 3",
-                    "Duration": 2.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_5",
-                    "Duration": 4.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            ],
-            "StartParameters": [],
-            "Motor Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        },
-        {
-            "Type": "nap::flexblock::FlexblockSequence",
-            "mID": "fourth act",
-            "Elements": [
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_6",
-                    "Duration": 5.0,
-                    "Curve": "",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_7",
-                    "Duration": 3.0,
-                    "Curve": "",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            ],
-            "StartParameters": [],
-            "Motor Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        },
-        {
-            "Type": "nap::flexblock::FlexblockSequence",
-            "mID": "second act",
-            "Elements": [
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "Transition 1",
-                    "Duration": 3.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "Type": "nap::timeline::SequencePause",
-                    "mID": "Pause_2",
-                    "Duration": 5.0
-                }
-            ],
-            "StartParameters": [],
-            "Motor Inputs": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        },
-        {
-            "Type": "nap::flexblock::FlexblockSequence",
-            "mID": "third act",
-            "Elements": [
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_2",
-                    "Duration": 2.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_3",
-                    "Duration": 5.0,
-                    "Curve": "Bezier Curve",
-                    "Parameters": [],
-                    "Preset File": "",
-                    "Use Preset": false,
-                    "Motor Inputs": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "Type": "nap::timeline::SequencePause",
-                    "mID": "SequencePause_4",
-                    "Duration": 2.0
-                },
-                {
-                    "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition_4",
+                    "mID": "FlexblockSequenceTransition",
                     "Duration": 2.0,
                     "Curve": "",
                     "Parameters": [],
                     "Preset File": "",
                     "Use Preset": false,
                     "Motor Inputs": [
+                        1.0,
+                        1.0,
                         0.0,
                         0.0,
                         0.0,
-                        0.0,
-                        0.0,
-                        0.0,
+                        1.0,
                         0.0,
                         0.0
                     ]
                 }
             ],
+            "Start Parameters": [],
+            "Elements": [],
             "StartParameters": [],
             "Motor Inputs": [
                 0.0,
@@ -1275,10 +1083,7 @@
             "Type": "nap::timeline::SequenceContainer",
             "mID": "SequenceContainer",
             "Sequences": [
-                "first act",
-                "second act",
-                "third act",
-                "fourth act"
+                "First Act"
             ]
         }
     ]

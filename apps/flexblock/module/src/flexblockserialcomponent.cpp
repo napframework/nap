@@ -23,6 +23,7 @@ namespace nap
 
 	}
 
+
 	FlexBlockSerialComponentInstance::~FlexBlockSerialComponentInstance()
 	{
 		if (mSerialPort != nullptr)
@@ -37,6 +38,7 @@ namespace nap
 		}
 	}
 
+
 	bool FlexBlockSerialComponentInstance::init(utility::ErrorState& errorState)
 	{
 		FlexBlockSerialComponent* resource = getComponent<FlexBlockSerialComponent>();
@@ -50,10 +52,12 @@ namespace nap
 		return true;
 	}
 
+
 	void FlexBlockSerialComponentInstance::onSerialPortDestroy(SerialPort * port)
 	{
 		stop();
 	}
+
 
 	void FlexBlockSerialComponentInstance::start(utility::ErrorState& error)
 	{
@@ -68,6 +72,7 @@ namespace nap
 		}
 	}
 
+
 	void FlexBlockSerialComponentInstance::stop()
 	{
 		if (mIsRunning)
@@ -79,6 +84,7 @@ namespace nap
 		if( mSerialPort->isOpen() )
 			mSerialPort->stop();
 	}
+
 
 	void FlexBlockSerialComponentInstance::write(std::string data)
 	{
@@ -92,12 +98,14 @@ namespace nap
 		}
 	}
 
+
 	void FlexBlockSerialComponentInstance::consumeBuffer(std::deque<std::string>& outBuffer)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
 
 		outBuffer.swap(mWriteBuffer);
 	}
+
 
 	void FlexBlockSerialComponentInstance::writeThreadFunc()
 	{

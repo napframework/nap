@@ -12,8 +12,10 @@ namespace nap
 		class SequenceContainer;
 
 		/**
-		* Sequence
-		*/
+		 * Sequence
+		 * A sequence contains Sequence Elements
+		 * When playing a sequence it looks up the element that needs to do something in the given time
+		 */
 		class NAPAPI Sequence : public Resource
 		{
 			friend class SequenceContainer;
@@ -37,7 +39,7 @@ namespace nap
 			virtual int process(double time, std::vector<Parameter*>& outParameters);
 
 			/**
-			* Resets current element index
+			* Resets current element index, 
 			*/
 			void reset();
 
@@ -59,10 +61,10 @@ namespace nap
 			/**
 			* @return returns pointer to current element pointed to by current element index
 			*/
-			const SequenceElement* getCurrentElement() const{ return mElements[mCurrentElementIndex]; }
+			const SequenceElement* getCurrentElement() const{ return mSequenceElements[mCurrentElementIndex]; }
 		public:
 			// properties
-			std::vector<SequenceElement*> mElements;
+			std::vector<SequenceElement*> mSequenceElements;
 
 			//
 			std::vector<Parameter*> mStartParameters;

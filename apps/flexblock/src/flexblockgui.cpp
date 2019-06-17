@@ -32,6 +32,21 @@ namespace nap
 	static bool followPlayer = false;
 	static int curveResolution = 75;
 
+	// 200, 105, 105
+	ImU32 colorRed = ImGui::ColorConvertFloat4ToU32(ImVec4(200.0f / 255.0f, 105.0f / 255.0f, 105.0f / 255.0f, 1.0f));
+	
+	// 17, 20, 38
+	ImU32 colorBlack = ImGui::ColorConvertFloat4ToU32(ImVec4(17.0f / 255.0f, 20.0f / 255.0f, 38.0f / 255.0f, 1.0f));
+
+	// 139, 140, 160
+	ImU32 colorWhite = ImGui::ColorConvertFloat4ToU32(ImVec4(139.0f / 255.0f, 140.0f / 255.0f, 160.0f / 255.0f, 1.0f));
+
+	// 93, 94, 115
+	ImU32 colorLightGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(93.0f / 255.0f, 94.0f / 255.0f, 115.0f / 255.0f, 1.0f));
+
+	// 82, 84, 106
+	ImU32 colorDarkGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(82.0f / 255.0f, 84.0f / 255.0f, 106.0f / 255.0f, 1.0f));
+
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
 		mParameterService(*app.getCore().getService<ParameterService>())
@@ -149,7 +164,7 @@ namespace nap
 
 	void FlexblockGui::updateInput(int index, float value)
 	{
-		mFlexBlock->SetMotorInput(index, value);
+		mFlexBlock->setMotorInput(index, value);
 	}
 
 	void FlexblockGui::update()
@@ -312,21 +327,21 @@ namespace nap
 
 			// timeline background
 			draw_list->AddRectFilled(top_left, bottom_right_pos,
-				ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.25f)), 1.0f);
+				colorBlack, 1.0f);
 
 			// motors backgrounds
 			for (int l = 0; l < 8; l++)
 			{
 				draw_list->AddRect(	ImVec2( top_left.x, math::lerp<float>( top_left.y, bottom_right_pos.y, (float) l / 8.0f) ),
 									ImVec2( bottom_right_pos.x, math::lerp<float>(top_left.y, bottom_right_pos.y, (float)(l+1) / 8.0f)),
-									ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.5f)), 1.0f);
+									colorWhite, 1.0f);
 			}
 
 			// right border
 			draw_list->AddLine(
 				ImVec2(top_left.x + child_size.x, top_left.y),
 				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+				colorWhite);
 
 			// needed to avoid elements texts from overlapping later on
 			int y_text_offset = 0;
@@ -342,16 +357,16 @@ namespace nap
 				draw_list->AddLine(
 					ImVec2(top_left.x + start_x, top_left.y), 
 					ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75), 
-					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+					colorWhite);
 
 				// draw sequence text
 				draw_list->AddText(
 					ImVec2(top_left.x + start_x + 5, top_left.y + child_size.y + 60),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					colorWhite,
 					sequences[i]->getID().c_str());
 
 				// draw element lines and positions
-				for (const auto* element : sequences[i]->mElements)
+				for (const auto* element : sequences[i]->mSequenceElements)
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 
@@ -359,18 +374,18 @@ namespace nap
 					draw_list->AddLine(
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y),
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
-						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)));
+						colorLightGrey);
 
 					// line in timeline
 					draw_list->AddLine(
 						ImVec2(top_left.x + start_x + width * element_pos, top_left.y),
 						ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
-						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 0.5f)));
+						colorLightGrey);
 
 					// the text
 					draw_list->AddText(
 						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
-						ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)),
+						colorWhite,
 						element->getID().c_str());
 						
 
@@ -425,26 +440,26 @@ namespace nap
 				draw_list->AddPolyline(
 					&*curvePoints[l].begin(),
 					curvePoints[l].size(),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
+					colorRed,
 					false,
 					2.0f,
 					true);
 
 				draw_list->AddText(
 					ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					colorWhite,
 					std::to_string(8 - l).c_str());
 			}
 
 			// draw player position 
 			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_size.x;
 			draw_list->AddLine(ImVec2(top_left.x + player_pos, top_left.y), ImVec2(top_left.x + player_pos, bottom_right_pos.y),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)));
+				colorRed);
 
 			// time in seconds
 			draw_list->AddText(
 				ImVec2(top_left.x + player_pos + 5, top_left.y - 20),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f)),
+				colorRed,
 				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
 
 			// handle mouse input
@@ -524,7 +539,7 @@ namespace nap
 
 				if (ImGui::TreeNode(std::string(sequence->getID() + " Elements").c_str()))
 				{
-					const auto& elements = sequence->mElements;
+					const auto& elements = sequence->mSequenceElements;
 
 					for(const auto* element : elements)
 					{
