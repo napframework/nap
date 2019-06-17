@@ -101,6 +101,13 @@ namespace nap
 			void reconstruct();
 
 			/**
+			 * 
+			 */
+			bool save(std::string showName);
+
+			bool load(std::string showName);
+
+			/**
 			* @return true if loaded sequence
 			*/
 			const bool getIsLoaded() const { return mSequenceContainer != nullptr; }
@@ -169,6 +176,7 @@ namespace nap
 			double mDuration = 0.0;
 
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
+			rtti::DeserializeResult mDeserializeResult;
 		};
 	}
 }

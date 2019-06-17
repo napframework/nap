@@ -18,14 +18,19 @@ namespace nap
 
 		bool FlexblockSequence::init(utility::ErrorState& errorState)
 		{
-			mStartParameters.clear();
-			for (float input : mInputs)
+			if (mStartParameters.size() == 0)
 			{
-				mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
-				mOwnedParameters.back()->setValue(input);
+				mStartParameters.clear();
+				mOwnedParameters.clear();
+				for (float input : mInputs)
+				{
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(input);
 
-				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
-				mStartParameters.emplace_back(parameterFloatPtr.get());
+					ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					parameterFloatPtr->mID = mID + " GeneratedParameter " + std::to_string(mStartParameters.size());
+					mStartParameters.emplace_back(parameterFloatPtr.get());
+				}
 			}
 
 			if (!timeline::Sequence::init(errorState))

@@ -35,6 +35,11 @@ namespace nap
 			 */
 			void reconstruct();
 
+			/**
+			*
+			*/
+			void reinit();
+
 			std::vector<Sequence*>				mSequences;								
 			std::vector<ResourcePtr<Sequence>>	mSequenceLinks;
 		};

@@ -25,14 +25,17 @@ namespace nap
 	{
 		bool FlexblockSequenceTransition::init(utility::ErrorState& errorState)
 		{
-			mEndParameters.clear();
-			for (float input : mInputs)
+			if (mEndParameters.size() == 0 )
 			{
-				mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
-				mOwnedParameters.back()->setValue(input);
+				for (float input : mInputs)
+				{
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(input);
 
-				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
-				mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+					ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					parameterFloatPtr->mID = mID + "GeneratedParameter" + std::to_string(mEndParameters.size());
+					mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+				}
 			}
 
 			if (!timeline::SequenceTransition::init(errorState))

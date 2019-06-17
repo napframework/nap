@@ -63,7 +63,7 @@ namespace nap
 				mEndParameters.clear();
 				for (int i = 0; i < group->mParameters.size(); i++)
 				{
-					mEndParameters.push_back(group->mParameters[i].get());
+					mEndParameters.emplace_back(group->mParameters[i].get());
 				}
 			}
 

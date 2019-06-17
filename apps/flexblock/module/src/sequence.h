@@ -66,6 +66,11 @@ namespace nap
 
 			//
 			std::vector<Parameter*> mStartParameters;
+			std::vector<Parameter*> mStartParametersReference;
+
+			int mIndexInSequenceContainer = 0;
+
+			bool mUseReference = false;
 		protected:
 			double mDuration = 0.0;
 			double mStartTime = 0.0;

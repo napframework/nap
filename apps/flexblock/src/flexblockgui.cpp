@@ -272,6 +272,20 @@ namespace nap
 		lengthPerSecond = math::clamp<float>(lengthPerSecond, 10.0f, 200.0f);
 		child_width = mSequencePlayer->getDuration() * lengthPerSecond;
 
+		// handle save button
+		ImGui::SameLine();
+		if (ImGui::Button("Save"))
+		{
+			mSequencePlayer->save("test.json");
+		}
+
+		// handle load
+		ImGui::SameLine();
+		if (ImGui::Button("Load"))
+		{
+			mSequencePlayer->load("test.json");
+		}
+
 		ImGui::Spacing();
 		ImGui::Spacing();
 

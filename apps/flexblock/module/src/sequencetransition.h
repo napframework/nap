@@ -37,14 +37,14 @@ namespace nap
 			*/
 			virtual bool process(double time, std::vector<Parameter*>& outParameters) override;
 
-			const std::vector<std::unique_ptr<math::FloatFCurve>>& getCurves() { return mCurves; }
+			const std::vector<ResourcePtr<math::FloatFCurve>>& getCurves() { return mCurves; }
 		public:
 			// properties
 
 			/**
 			 * Curve can be nullptr, in which case the transition will use linear interpolation
 			 */
-			ResourcePtr<math::FloatFCurve> mCurve = nullptr;
+			std::vector<ResourcePtr<math::FloatFCurve>> mCurves;
 		protected:
 			/**
 			* A vector containing function pointers to the different functions needed to interpolate 
@@ -81,9 +81,9 @@ namespace nap
 			*/
 			const float evaluateCurve(float progress);
 
-			std::vector<std::unique_ptr<math::FloatFCurve>> mCurves;
-
 			int mCurveIndex = 0;
+
+			std::vector<std::unique_ptr<math::FloatFCurve>> mOwnedCurves;
 		};
 	}
 

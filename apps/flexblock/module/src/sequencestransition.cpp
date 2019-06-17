@@ -6,7 +6,7 @@
 RTTI_BEGIN_CLASS(nap::timeline::SequenceTransition)
 // Put additional properties here
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Curve", &nap::timeline::SequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Curves", &nap::timeline::SequenceTransition::mCurves, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameters, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Preset File", &nap::timeline::SequenceTransition::mPreset, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Use Preset", &nap::timeline::SequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
@@ -79,20 +79,36 @@ namespace nap
 				}
 			}
 
-
 			mEvaluateFunction = &SequenceTransition::evaluateCurve;
 
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
-				mCurves.emplace_back( std::make_unique<math::FloatFCurve>() );
-
-				if (mCurve != nullptr)
+				bool needInsert = false;
+				ResourcePtr<math::FloatFCurve> curve = nullptr;
+				if (i < mCurves.size())
 				{
-					mCurves.back()->mPoints = mCurve->mPoints;
+					curve = mCurves[i];
 				}
 				else
 				{
+					needInsert = true;
+				}
+				
+				if (curve == nullptr)
+				{
+					mOwnedCurves.emplace_back(std::make_unique<math::FloatFCurve>());
 
+					curve = ResourcePtr<math::FloatFCurve>(mOwnedCurves.back().get());
+					curve->mID = mID + "Generated_Curve" + std::to_string(i);
+				}
+
+				if (!needInsert)
+				{
+					mCurves[i] = curve;
+				}
+				else
+				{
+					mCurves.emplace_back(curve);
 				}
 			}
 
@@ -109,7 +125,11 @@ namespace nap
 			mCurveIndex = 0;
 			for (int i = 0; i < outParameters.size(); i++)
 			{
-				(this->*mFunctions[i])(progress, mStartParameters[i], mEndParameters[i], outParameters[i]);
+				(this->*mFunctions[i])(
+					progress, 
+					mStartParameters[i], 
+					mEndParameters[i],
+					outParameters[i]);
 				mCurveIndex++;
 			}
 

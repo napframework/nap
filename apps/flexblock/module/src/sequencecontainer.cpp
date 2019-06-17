@@ -41,7 +41,12 @@ namespace nap
 			{
 				sequence->setStartTime(time);
 				time += sequence->getDuration();
-				mSequences.push_back(sequence.get());
+				mSequences.emplace_back(sequence.get());
+			}
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mIndexInSequenceContainer = i;
 			}
 
 			for (int i = 1; i < mSequences.size(); i++)
@@ -52,6 +57,32 @@ namespace nap
 			return true;
 		}
 
+		void SequenceContainer::reinit()
+		{
+			double time = 0.0;
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (i > 0)
+				{
+					mSequences[i]->mStartParameters.clear();
+					mSequences[i]->mStartParametersReference = mSequences[i - 1]->mElements.back()->getEndParameters();
+					mSequences[i]->mUseReference = true;
+				}
+				else
+				{
+					mSequences[i]->mUseReference = false;
+				}
+
+				mSequences[i]->setStartTime(time);
+				time += mSequences[i]->getDuration();
+			}
+
+			for (int i = 1; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mElements[0]->setPreviousElement(mSequences[i - 1]->mElements.back());
+			}
+		}
+
 		void SequenceContainer::reconstruct()
 		{
 			double time = 0.0;
@@ -59,13 +90,18 @@ namespace nap
 			{
 				if (i > 0)
 				{
-					mSequences[i]->mStartParameters = mSequences[i - 1]->mElements.back()->getEndParameters();
+					mSequences[i]->mStartParameters.clear();
+					mSequences[i]->mStartParametersReference = mSequences[i - 1]->mElements.back()->getEndParameters();
+					mSequences[i]->mUseReference = true;
+				}
+				else
+				{
+					mSequences[i]->mUseReference = false;
 				}
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
 			}
-
 		}
 	}
 

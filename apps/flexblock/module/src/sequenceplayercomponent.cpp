@@ -2,12 +2,19 @@
 
 // External Includes
 #include <entity.h>
+#include <utility/fileutils.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/jsonreader.h>
+#include <rtti/defaultlinkresolver.h>
+#include <fstream>
+
 
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
 // Put additional properties here
 RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("SequenceContainer", &nap::timeline::SequencePlayerComponent::mSequenceContainer, nap::rtti::EPropertyMetaData::Required)
+
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
@@ -191,6 +198,90 @@ namespace nap
 			mIsFinished = false;
 			mCurrentSequenceIndex = 0;
 			mTime = 0.0;
+		}
+
+		bool SequencePlayerComponentInstance::save(std::string showName)
+		{
+			//
+			utility::ErrorState errorState;
+
+			// Ensure the presets directory exists
+			const std::string dir = "shows";
+			utility::makeDirs(utility::getAbsolutePath(dir));
+
+			std::string show_path = dir + "/" + showName;
+
+			// Serialize current set of parameters to json
+			rtti::JSONWriter writer;
+			rtti::ObjectList sequenceList;
+			for (const auto& sequence : mSequenceContainer->mSequences)
+			{
+				sequenceList.emplace_back(sequence);
+			}
+
+			if (!rtti::serializeObjects(sequenceList, writer, errorState))
+				return false;
+
+			// Open output file
+			std::ofstream output(show_path, std::ios::binary | std::ios::out); 
+			if (!errorState.check(output.is_open() && output.good(), "Failed to open %s for writing", show_path.c_str()))
+				return false;
+
+			// Write to disk
+			std::string json = writer.GetJSON();
+			output.write(json.data(), json.size());
+
+			return true;
+		}
+
+		bool SequencePlayerComponentInstance::load(std::string showName)
+		{
+			//
+			utility::ErrorState errorState;
+			mDeserializeResult.mFileLinks.clear();
+			mDeserializeResult.mReadObjects.clear();
+			mDeserializeResult.mUnresolvedPointers.clear();
+
+			// Ensure the presets directory exists
+			const std::string dir = utility::getAbsolutePath("shows");
+
+			std::string show_path = dir + "/" + showName;
+
+			// Load the parameters from the preset
+			rtti::Factory factory;
+			if (!rtti::readJSONFile(show_path, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mDeserializeResult, errorState))
+				return false;
+
+			// Resolve links
+			if (!rtti::DefaultLinkResolver::sResolveLinks(mDeserializeResult.mReadObjects, mDeserializeResult.mUnresolvedPointers, errorState))
+				return false;
+
+			mSequenceContainer->mSequences.clear();
+
+			std::map<int, Sequence*> sequenceMap;
+			// Find the root parameter group in the preset file and apply parameters
+			for (auto& object : mDeserializeResult.mReadObjects)
+			{
+				if (!object->init(errorState))
+					return false;
+
+				if (object->get_type().is_derived_from<Sequence>())
+				{
+					Sequence* sequence = static_cast<Sequence*>(object.get());
+					sequenceMap.insert(std::pair<int, Sequence*>(sequence->mIndexInSequenceContainer, sequence));
+
+				}
+			}
+
+			mSequenceContainer->mSequences = std::vector<Sequence*>(sequenceMap.size());
+			for (int i = 0 ; i < sequenceMap.size(); i++)
+			{
+				mSequenceContainer->mSequences[i] = sequenceMap[i];
+			}
+
+			mSequenceContainer->reinit();
+
+			return false;
 		}
 	}
 }
