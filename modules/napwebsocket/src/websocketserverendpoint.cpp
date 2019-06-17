@@ -256,6 +256,9 @@ namespace nap
 		ss << "got HTTP request with " << res.size() << " bytes of body data.";
 		conp->set_body(ss.str());
 		conp->set_status(websocketpp::http::status_code::ok);
+		
+		// TODO: Make optional!
+		conp->append_header("Access-Control-Allow-Origin", "*");
 	}
 
 

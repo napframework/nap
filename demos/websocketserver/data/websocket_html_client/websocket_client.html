@@ -4,7 +4,7 @@
   <script language="javascript" type="text/javascript">
 
   // Websocket url, change to server web-socket address!
-  var ws_uri = "ws://localhost:80";
+  var uri = "localhost:80";
   
   // JSON formatted api message.
   // Acts as a template for a request to the server to change text.
@@ -30,6 +30,7 @@
   }`
 
   // Some global document vars.
+  var ticket;
   var api_msg;
   var textbox;
   var request_p;
@@ -49,24 +50,42 @@
     api_msg = JSON.parse(nap_msg);
     box_char_count = 0;
     connected = false;
-    startWebSocket();
+
+    // Request login, on success start websocket
+    requestLogin();
+  }
+
+  function requestLogin()
+  {
+    const req = new XMLHttpRequest();
+    const url = 'http://' + uri;
+    req.open("POST", url, true);
+
+    // Request ticket using http request to server
+    // When received start websocket
+    req.onreadystatechange =  function() 
+    { 
+      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) 
+      {
+        writeToBox("received login ticket: " + this.responseText);     
+        startWebSocket(this.responseText);
+      }
+    }
+    writeToBox("requesting login ticket: " + url);
+    req.send(JSON.stringify({ "user": "cklosters", "pass": "lovely" }));
   }
 
   // Run simple websocket
-  function startWebSocket()
+  function startWebSocket(token)
   {
     status_header.innerHTML = "connecting";
     status_header.style.color = "#5D5E73";
 
-    const req = new XMLHttpRequest();
-    const url='http://localhost:80';
-    req.open("POST", url);
-    //req.withCredentials = true;
-    req.send(JSON.stringify({ "user": "cklosters", "pass": "lovely" }));
-
-
-    websocket = new WebSocket(ws_uri, ["token"]);
+    const ws_uri = "ws://"+uri;
+    websocket = new WebSocket(ws_uri, 'token');
     writeToBox("connecting to: " + ws_uri);
+    
+    // Callbacks
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
     websocket.onmessage = function(evt) { onMessage(evt) };
