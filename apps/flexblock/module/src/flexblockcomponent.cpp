@@ -106,6 +106,15 @@ namespace nap
 			mUpdateSerialTime = 0.0;
 
 			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+
+			for (int i = 0; i < ropeLengths.size(); i++)
+			{
+				float a = ropeLengths[i] * 1000.0f;
+				a *= 12.73239f;
+				a -= 7542;
+				ropeLengths[i] = a;
+			}
+
 			std::string data = "<";
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{

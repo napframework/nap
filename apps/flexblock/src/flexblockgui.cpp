@@ -260,6 +260,9 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
+		// create list of point lists
+		std::vector<std::vector<ImVec2>> curvePoints(8);
+
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
@@ -358,9 +361,6 @@ namespace nap
 							parameters.emplace_back(parametersPts.back().get());
 						}
 
-						// create list of point lists
-						std::vector<std::vector<ImVec2>> points(8);
-
 						// zoom in on the part that is shown in the window
 						const int steps = curveResolution;
 						float part =  windowWidth / child_width;
@@ -377,32 +377,31 @@ namespace nap
 								float y_part = (child_size.y / 8.0f);
 								float y_start = y_part * l;
 
-								points[l].emplace_back(ImVec2(
+								curvePoints[l].emplace_back(ImVec2(
 									part_start * child_width + top_left.x + child_size.x * part * (p * (1.0f / (float) steps)),
 									bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
 							}
-							
-						}
-
-						// draw the polylines and text
-						for (int l = 0; l < 8; l++)
-						{
-							draw_list->AddPolyline(
-								&*points[l].begin(),
-								points[l].size(),
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
-								false,
-								2.0f,
-								true);
-
-							draw_list->AddText(
-								ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
-								ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
-								std::to_string(8-l).c_str());
 						}
 					}
 				}
 			}
+
+							// draw the polylines and text
+				for (int l = 0; l < 8; l++)
+				{
+					draw_list->AddPolyline(
+						&*curvePoints[l].begin(),
+						curvePoints[l].size(),
+						ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
+						false,
+						2.0f,
+						true);
+
+					draw_list->AddText(
+						ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
+						ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+						std::to_string(8 - l).c_str());
+				}
 
 			// draw player position 
 			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_size.x;

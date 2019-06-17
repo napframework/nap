@@ -3,8 +3,6 @@
 #include <mathutils.h>
 #include <glm/geometric.hpp>
 
-#define MOTORSTEPS 12.73239f
-
 namespace nap
 {
 	Flex::Flex(FlexBlockShape* flexblockShape)
@@ -95,7 +93,7 @@ namespace nap
 		}
 
 		// calc input
-		calcInput();
+		calcDeltaLengths();
 	}
 
 	Flex::~Flex()
@@ -142,9 +140,9 @@ namespace nap
 			std::vector<float> inputs(8);
 			copyMotorInput(inputs);
 
-			setInput(inputs);
+			setMotorInput(inputs);
 
-			calcInput();
+			calcDeltaLengths();
 
 			for (int i = 0; i < mPointsObject.size(); i++)
 			{
@@ -238,7 +236,7 @@ namespace nap
 		}
 	}
 
-	void Flex::setInput(std::vector<float>& inputs)
+	void Flex::setMotorInputInternal(std::vector<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
 		{
@@ -298,7 +296,7 @@ namespace nap
 		}
 	}
 
-	void Flex::calcInput()
+	void Flex::calcDeltaLengths()
 	{
 		mElementsLengthDelta = std::vector<float>(mElementsLength.size());
 		for (int i = 0; i < mElementsLengthDelta.size(); i++)
@@ -326,9 +324,9 @@ namespace nap
 		float a = 0.0f;
 		for (int i = 12; i < 19; i++)
 		{
-			float n_a = math::abs(mElementsLength[i] - elementsLength[i]);
-			if (n_a > a)
-				a = n_a;
+			float new_a = math::abs(mElementsLength[i] - elementsLength[i]);
+			if (new_a > a)
+				a = new_a;
 		}
 		motorSpd = a * mFrequency;
 
@@ -399,14 +397,6 @@ namespace nap
 			ropes.push_back(mElementsLength[i]);
 		}
 
-		for (int i = 0; i < ropes.size(); i++)
-		{
-			float a = ropes[i] * 1000.0f;
-			a *= MOTORSTEPS;
-			a -= 7542;
-			ropes[i] = a;
-		}
-		
 		return ropes;
 	}
 }
