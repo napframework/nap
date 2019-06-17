@@ -22,12 +22,6 @@ namespace nap
 
     bool APIWebSocketService::init(nap::utility::ErrorState& errorState)
     {
-		mAPIService = getCore().getService<APIService>();
-		assert(mAPIService != nullptr);
-
-		mWebSocketService = getCore().getService<WebSocketService>();
-		assert(mWebSocketService != nullptr);
-
 		return true;
     }    
 
@@ -73,4 +67,13 @@ namespace nap
 		dependencies.emplace_back(RTTI_OF(WebSocketService));
 	}
 
+
+	void APIWebSocketService::created()
+	{
+		mAPIService = getCore().getService<APIService>();
+		assert(mAPIService != nullptr);
+
+		mWebSocketService = getCore().getService<WebSocketService>();
+		assert(mWebSocketService != nullptr);
+	}
 }
