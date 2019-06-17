@@ -247,14 +247,15 @@ namespace nap
 
 	void WebSocketServerEndPoint::onHTTP(wspp::ConnectionHandle con)
 	{
-		/* TODO: Use this information for authentication.
+		// Generic HTTP Post request
+		// TODO: Use to generate token that can be used to validate connection
 		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con);
 		std::string res = conp->get_request_body();
+		nap::Logger::info(res);
 		std::stringstream ss;
 		ss << "got HTTP request with " << res.size() << " bytes of body data.";
 		conp->set_body(ss.str());
 		conp->set_status(websocketpp::http::status_code::ok);
-		*/
 	}
 
 
@@ -262,6 +263,10 @@ namespace nap
 	{
 		// TODO: Validate incoming connection here, ie: accept or reject.
 		// Right now simply accept all incoming connections.
+		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con);
+		const std::vector<std::string>& extra_subp = conp->get_requested_subprotocols();
+		if(!extra_subp.empty())
+			conp->select_subprotocol(extra_subp[0]);
 		return true;
 	}
 

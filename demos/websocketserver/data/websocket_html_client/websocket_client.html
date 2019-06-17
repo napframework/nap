@@ -58,7 +58,14 @@
     status_header.innerHTML = "connecting";
     status_header.style.color = "#5D5E73";
 
-    websocket = new WebSocket(ws_uri);
+    const req = new XMLHttpRequest();
+    const url='http://localhost:80';
+    req.open("POST", url);
+    //req.withCredentials = true;
+    req.send(JSON.stringify({ "user": "cklosters", "pass": "lovely" }));
+
+
+    websocket = new WebSocket(ws_uri, ["token"]);
     writeToBox("connecting to: " + ws_uri);
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
