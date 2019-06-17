@@ -67,6 +67,16 @@ namespace nap
 		virtual void stop() override;
 
 		/**
+		 * Register a server for this endpoint so that it receives notifications from the endpoint.
+		 */
+		void registerListener(IWebSocketServer& server);
+
+		/**
+		 * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+		 */
+		void unregisterListener(IWebSocketServer& server);
+
+		/**
 		 * Sends a message to a client.
 		 * @param connection the client connection
 		 * @param message the message to send
@@ -92,24 +102,15 @@ namespace nap
 		bool mAllowPortReuse = false;											///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
 
-		// Triggered when a new client connection is opened. Including client web-socket connection.
-		nap::Signal<const WebSocketConnection&> connectionOpened;
-		
-		// Triggered when a client connection closed. Including client web-socket connection, close code and reason.
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionClosed;
-
-		// Triggered when a client connection failed to establish. Including client web-socket connection, failure code and reason.
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionFailed;
-
-		// Triggered when a new message from a client is received. Including client web-socket connection and message.
-		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
-
 	private:
 		wspp::ServerEndPoint mEndPoint;											///< The websocketpp server end-point
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		std::future<void> mServerTask;											///< The background server thread
 		std::vector<wspp::ConnectionPtr> mConnections;							///< List of all active connections
+
+		std::mutex mListenerMutex;
+		std::vector<IWebSocketServer*> mListeners;
 
 		/**
 		 * Runs the end point in a background thread until stopped.
