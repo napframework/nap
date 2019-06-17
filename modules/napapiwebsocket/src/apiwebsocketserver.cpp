@@ -21,7 +21,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIWebSocketServer::~APIWebSocketServer() { }
+	APIWebSocketServer::~APIWebSocketServer() 
+	{
+		if (mEndPoint != nullptr)
+			mEndPoint->unregisterListener(*this);
+	}
 
 
 	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : 
@@ -37,19 +41,7 @@ namespace nap
 		if (!IWebSocketServer::init(errorState))
 			return false;
 
-		// Connect to all received signals
-		mConnectionClosed.setFunction(std::bind(&APIWebSocketServer::onConnectionClosed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		mEndPoint->connectionClosed.connect(mConnectionClosed);
-
-		mConnectionFailed.setFunction(std::bind(&APIWebSocketServer::onConnectionFailed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		mEndPoint->connectionFailed.connect(mConnectionFailed);
-
-		mConnectionOpened.setFunction(std::bind(&APIWebSocketServer::onConnectionOpened, this, std::placeholders::_1));
-		mEndPoint->connectionOpened.connect(mConnectionOpened);
-
-		mMessageReceived.setFunction(std::bind(&APIWebSocketServer::onMessageReceived, this, std::placeholders::_1, std::placeholders::_2));
-		mEndPoint->messageReceived.connect(mMessageReceived);
-		
+		mEndPoint->registerListener(*this);	
 		return true;
 	}
 

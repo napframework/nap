@@ -147,20 +147,16 @@ namespace nap
 		void sendErrorReply(const WebSocketConnection& connection, nap::utility::ErrorState& error);
 
 		// Called by web-socket server endpoint when a new message is received
-		void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message);
-		nap::Slot<const WebSocketConnection&, const WebSocketMessage&> mMessageReceived;
+		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) override;
 
 		// Called by web-socket server endpoint when a client connection opened
-		void onConnectionOpened(const WebSocketConnection& connection);
-		nap::Slot<const WebSocketConnection&> mConnectionOpened;
+		virtual void onConnectionOpened(const WebSocketConnection& connection) override;
 
 		// Called by web-socket server endpoint when a client connection closed
-		void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason);
-		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionClosed;
+		virtual void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason) override;
 
 		// Called by web-socket server endpoint when a client connection failed to extablish
-		void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason);
-		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionFailed;
+		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) override;
 	};
 
 	// Object creator used for constructing the the api web-socket server

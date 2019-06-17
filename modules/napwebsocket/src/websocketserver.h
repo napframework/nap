@@ -29,6 +29,18 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		// Called by web-socket server endpoint when a new message is received
+		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) = 0;
+
+		// Called by web-socket server endpoint when a client connection opened
+		virtual void onConnectionOpened(const WebSocketConnection& connection) = 0;
+
+		// Called by web-socket server endpoint when a client connection closed
+		virtual void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason) = 0;
+
+		// Called by web-socket server endpoint when a client connection failed to establish
+		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) = 0;
+
 		ResourcePtr<WebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
 	};
 
@@ -103,8 +115,7 @@ namespace nap
 		 * Generates and forwards a nap::WebSocketConnectionEvent to the running application on the main thread.
 		 * @param connection client connection
 		 */
-		void onConnectionOpened(const WebSocketConnection& connection);
-		nap::Slot<const WebSocketConnection&> mConnectionOpened;
+		virtual void onConnectionOpened(const WebSocketConnection& connection) override;
 
 		/**
 		 * Called by web-socket server endpoint when the connection is closed.
@@ -113,8 +124,7 @@ namespace nap
 		 * @param code the closing code
 		 * @param reason the reason why the connection was closed.
 		 */
-		void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason);
-		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionClosed;
+		virtual void onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason) override;
 
 		/**
 		 * Called by web-socket server endpoint when the connection failed to establish.
@@ -123,8 +133,7 @@ namespace nap
 		 * @param code the closing code
 		 * @param reason the reason why connecting failed.
 		 */
-		void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason);
-		nap::Slot<const WebSocketConnection&, int, const std::string&> mConnectionFailed;
+		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) override;
 
 		/**
 		 * Called by web-socket server endpoint when a new message is received.
@@ -132,8 +141,7 @@ namespace nap
 		 * @param connection the client connection.
 		 * @param message the message received from the client.
 		 */
-		void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message);
-		nap::Slot<const WebSocketConnection&, const WebSocketMessage&> mMessageReceived;
+		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) override;
 	};
 
 	// Object creator used for constructing the web-socket server
