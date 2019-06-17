@@ -41,11 +41,10 @@ namespace nap
 			{
 				sequence->setStartTime(time);
 				time += sequence->getDuration();
-				mSequences.push_back(sequence.get());
+				mSequences.emplace_back(sequence.get());
 			}
 
 			return true;
 		}
 	}
-
 }

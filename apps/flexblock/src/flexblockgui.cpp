@@ -14,6 +14,7 @@
 #include <sequence.h>
 #include <sequenceplayercomponent.h>
 #include <iomanip>
+#include <nap/logger.h>
 
 
 namespace nap
@@ -76,14 +77,46 @@ namespace nap
 		for (int i = 0; i < 8; i++)
 		{
 			//
-			OSCInputComponentInstance* oscInput = mApp.GetBlockEntity()->findComponentByID<OSCInputComponentInstance>("OSCInput " + std::to_string(i + 1));
-			mOscInputs.emplace_back(oscInput);
+			OSCInputComponentInstance* oscInput = mApp.GetBlockEntity()->findComponent<OSCInputComponentInstance>();
+			
+			if (oscInput != nullptr)
+			{
+				mOscInputs.emplace_back(oscInput);
 
-			//
-			oscInput->messageReceived.connect([this, i](const OSCEvent& message)-> void {
-				float value = message.getArgument(0)->asFloat();
-				mParameters[i]->setValue(value);
-			});
+				//
+				oscInput->messageReceived.connect([this, i](const OSCEvent& message)-> void {
+					std::vector<std::string> parts;
+					utility::splitString(message.getAddress(), '/', parts);
+					assert(parts.size() > 3);
+
+					// Erase the first part
+					parts.erase(parts.begin(), parts.begin() + 1);
+
+					if (parts[0] != "flexblock")
+					{
+						nap::Logger::warn("unknown osc event: %s", message.getAddress().c_str());
+						return;
+					}
+
+					int index = std::stoi(parts[1]) - 1;
+					if (index < 0 || index > 7)
+					{
+						nap::Logger::warn("unknown index: %i", index);
+						return;
+					}
+
+					if (message.getArgument(0)->isFloat())
+					{
+						float value = message.getArgument(0)->asFloat();
+						mParameters[index]->setValue(value);
+					}
+					else
+					{
+						nap::Logger::warn("unknown value type in osc message: %s", message.getAddress().c_str());
+					}
+				});
+			}
+
 		}
 	}
 
@@ -386,22 +419,22 @@ namespace nap
 				}
 			}
 
-							// draw the polylines and text
-				for (int l = 0; l < 8; l++)
-				{
-					draw_list->AddPolyline(
-						&*curvePoints[l].begin(),
-						curvePoints[l].size(),
-						ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
-						false,
-						2.0f,
-						true);
+			// draw the polylines and text
+			for (int l = 0; l < 8; l++)
+			{
+				draw_list->AddPolyline(
+					&*curvePoints[l].begin(),
+					curvePoints[l].size(),
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)),
+					false,
+					2.0f,
+					true);
 
-					draw_list->AddText(
-						ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
-						ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
-						std::to_string(8 - l).c_str());
-				}
+				draw_list->AddText(
+					ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
+					ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+					std::to_string(8 - l).c_str());
+			}
 
 			// draw player position 
 			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_size.x;

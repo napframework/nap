@@ -118,11 +118,13 @@ namespace nap
 
 		//
 		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+		Renderable2DTextComponentInstance& motor_label = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		for (int i = 0; i < points.size(); i++)
 		{
-			Renderable2DTextComponentInstance* motor_label = mTextEntity->findComponentByID<Renderable2DTextComponentInstance>("MotorLabel " + std::to_string(i+1));
-			motor_label->setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRect()) + glm::vec3(0, 10, 0));
-			motor_label->draw(mRenderWindow->getBackbuffer());
+			utility::ErrorState error;
+			motor_label.setText(std::to_string(i+1), error);
+			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRect()) + glm::vec3(0, 10, 0));
+			motor_label.draw(mRenderWindow->getBackbuffer());
 		}
 
 		// Render gui to window

@@ -78,7 +78,7 @@ namespace nap
 		return true;
 	}
 
-	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
+	void FlexBlockComponentInstance::setMotorInput(int index, float value)
 	{
 		// 
 		mMotorInputs[remapMotorInput(index)] = value;

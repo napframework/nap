@@ -13,7 +13,7 @@ namespace nap
 		// 
 		mFrequency = 200;
 		mObjShape = flexblockShape;
-		mCountInputs = mObjShape->mInputs;
+		mCountInputs = mObjShape->mMotorCount;
 
 		//
 		mForceObject = 10;
@@ -45,15 +45,15 @@ namespace nap
 		// convert unit points to real size
 		for (int i = 0; i < mPointsObject.size(); i++)
 		{
-			mPointsObject[i].x *= mObjShape->mSizes[0]->mValues->mObject.x * 0.5f;
-			mPointsObject[i].y *= mObjShape->mSizes[0]->mValues->mObject.y * 0.5f;
-			mPointsObject[i].z *= mObjShape->mSizes[0]->mValues->mObject.z * 0.5f;
+			mPointsObject[i].x *= mObjShape->mSize->mValues->mObject.x * 0.5f;
+			mPointsObject[i].y *= mObjShape->mSize->mValues->mObject.y * 0.5f;
+			mPointsObject[i].z *= mObjShape->mSize->mValues->mObject.z * 0.5f;
 		}
 		for (int i = 0; i < mPointsFrame.size(); i++)
 		{
-			mPointsFrame[i].x *= mObjShape->mSizes[0]->mValues->mFrame.x * 0.5f;
-			mPointsFrame[i].y *= mObjShape->mSizes[0]->mValues->mFrame.y * 0.5f;
-			mPointsFrame[i].z *= mObjShape->mSizes[0]->mValues->mFrame.z * 0.5f;
+			mPointsFrame[i].x *= mObjShape->mSize->mValues->mFrame.x * 0.5f;
+			mPointsFrame[i].y *= mObjShape->mSize->mValues->mFrame.y * 0.5f;
+			mPointsFrame[i].z *= mObjShape->mSize->mValues->mFrame.z * 0.5f;
 		}
 
 		// init
@@ -140,7 +140,7 @@ namespace nap
 			std::vector<float> inputs(8);
 			copyMotorInput(inputs);
 
-			setMotorInput(inputs);
+			setMotorInputInternal(inputs);
 
 			calcDeltaLengths();
 

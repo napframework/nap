@@ -28,7 +28,7 @@ namespace nap
 	};
 
 	/**
-	* FlexBlockShapePoints
+	* FlexBlockShapeSize
 	* A description of the size of the shape ( will be multiplied with FlexBlockShapePoints in flex algorithm )
 	*/
 	class NAPAPI FlexBlockShapeSize : public Resource
@@ -88,10 +88,10 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::string										mName;
-		int												mInputs;
-		std::vector<ResourcePtr<FlexBlockShapeSize>>	mSizes;
-		ResourcePtr<FlexBlockElements>					mElements;
-		ResourcePtr<FlexBlockShapePoints>				mPoints;
+		std::string										mName;			///< Property: 'Name' 
+		int												mMotorCount;	///< Property: 'MotorCount' amount of motors
+		ResourcePtr<FlexBlockShapeSize>					mSize;			///< Property: 'Size' Definition of this shape
+		ResourcePtr<FlexBlockElements>					mElements;		///< Property: 'FlexBlockElements' FlexBlockElements
+		ResourcePtr<FlexBlockShapePoints>				mPoints;		///< Property: 'Points' FlexBlockPoints
 	};
 }

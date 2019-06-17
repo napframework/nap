@@ -11,7 +11,7 @@ RTTI_END_CLASS
 */
 
 RTTI_BEGIN_CLASS(nap::flexblock::FlexblockSequenceTransition)
-RTTI_PROPERTY("Inputs", &nap::flexblock::FlexblockSequenceTransition::mInputs, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Motor Inputs", &nap::flexblock::FlexblockSequenceTransition::mMotorInputs, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -26,7 +26,7 @@ namespace nap
 		bool FlexblockSequenceTransition::init(utility::ErrorState& errorState)
 		{
 			mEndParameters.clear();
-			for (float input : mInputs)
+			for (float input : mMotorInputs)
 			{
 				mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
 				mOwnedParameters.back()->setValue(input);
