@@ -27,10 +27,6 @@ namespace nap
 
 	FlexBlockSerialComponentInstance::~FlexBlockSerialComponentInstance()
 	{
-		if (mSerialPort != nullptr)
-		{
-			mSerialPort->mIsBeingDeconstructed.disconnect(mDestroySlot);
-		}
 
 		if (mIsRunning)
 		{
