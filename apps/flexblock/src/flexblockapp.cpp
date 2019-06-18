@@ -123,7 +123,7 @@ namespace nap
 		{
 			utility::ErrorState error;
 			motor_label.setText(std::to_string(i+1), error);
-			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRect()) + glm::vec3(0, 10, 0));
+			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRectPixels()) + glm::vec3(0, 10, 0));
 			motor_label.draw(mRenderWindow->getBackbuffer());
 		}
 

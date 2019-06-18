@@ -147,9 +147,18 @@ namespace nap
 		virtual uint getNumber() const override;
 
 		/**
+		 * Creates a rectangle based on the current width and height of the render window.
+		 * Note that the returned dimensions of the rectangle can differ from the actual size in pixels on a high dpi monitor.
+		 * To obtain a rectangle that contains the actual size of the window in pixels use: getRectPixels
 		 * @return the window as a rectangle
 		 */
 		math::Rect getRect() const;
+
+		/**
+		 * Creates a rectangle based on the current width and height of the render window in pixels.
+		 * @return the window as rectangle
+		 */
+		math::Rect getRectPixels() const;
 
 		/**
 		* The back buffer for an OpenGL window isn't an actual frame buffer
