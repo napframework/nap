@@ -64,6 +64,8 @@ namespace nap
 			// properties
 			std::vector<SequenceElement*> mElements;
 
+			std::string mName;
+		public:
 			//
 			std::vector<Parameter*> mStartParameters;
 			std::vector<Parameter*> mStartParametersReference;

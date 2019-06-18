@@ -5,7 +5,7 @@ RTTI_BEGIN_CLASS(nap::timeline::Sequence)
 	// Put additional properties here
 	RTTI_PROPERTY("Elements", &nap::timeline::Sequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("StartParameters", &nap::timeline::Sequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
-
+	RTTI_PROPERTY("Name", &nap::timeline::Sequence::mName, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Index", &nap::timeline::Sequence::mIndexInSequenceContainer, nap::rtti::EPropertyMetaData::ReadOnly)
 	RTTI_PROPERTY("Use Reference", &nap::timeline::Sequence::mUseReference, nap::rtti::EPropertyMetaData::ReadOnly)
 RTTI_END_CLASS
@@ -58,6 +58,11 @@ namespace nap
 						mID.c_str()))
 						return false;
 				}
+			}
+
+			if (mName == "")
+			{
+				mName = mID;
 			}
 
 			return true;

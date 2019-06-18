@@ -13,7 +13,7 @@ RTTI_DEFINE_BASE(nap::timeline::SequenceElement)
 
 RTTI_BEGIN_CLASS(nap::timeline::SequenceElement)
 // Put additional properties here
-
+RTTI_PROPERTY("Name", &nap::timeline::SequenceElement::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,6 +65,11 @@ namespace nap
 				{
 					mEndParameters.emplace_back(group->mParameters[i].get());
 				}
+			}
+
+			if (mName == "")
+			{
+				mName = mID.c_str();
 			}
 
 			return true;

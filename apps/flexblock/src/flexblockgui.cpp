@@ -36,6 +36,8 @@ namespace nap
 	static int selectedShowIndex = 0;
 	static bool inPopup = false;
 
+	static timeline::Sequence* selectedSequence = nullptr;
+
 	// 200, 105, 105
 	ImU32 colorRed = ImGui::ColorConvertFloat4ToU32(ImVec4(200.0f / 255.0f, 105.0f / 255.0f, 105.0f / 255.0f, 1.0f));
 
@@ -50,7 +52,6 @@ namespace nap
 
 	// 82, 84, 106
 	ImU32 colorDarkGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(82.0f / 255.0f, 84.0f / 255.0f, 106.0f / 255.0f, 1.0f));
-
 
 	enum TimeLineActions
 	{
@@ -206,7 +207,7 @@ namespace nap
 	void FlexblockGui::showTimeLineWindow()
 	{
 		// set next window content size to timeline ( child ) width to make scroll bar fit
-		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 150.0f ));
+		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 200.0f ));
 
 		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
@@ -322,13 +323,17 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
+		//
+		bool needToOpenPopup = false;
+		std::string popupIdToOpen = "";
+
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			//
-			const ImVec2 child_size = ImVec2(child_width, child_height - 100.0f);
+			const ImVec2 child_size = ImVec2(child_width, child_height - 125.0f);
 
 			// start top left with a little bit of margin
 			ImVec2 top_left = ImGui::GetCursorScreenPos();
@@ -367,14 +372,45 @@ namespace nap
 				// draw sequence line
 				draw_list->AddLine(
 					ImVec2(top_left.x + start_x, top_left.y), 
-					ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75), 
+					ImVec2(top_left.x + start_x, top_left.y + child_size.y + 100), 
 					colorWhite);
 
 				// draw sequence text
 				draw_list->AddText(
-					ImVec2(top_left.x + start_x + 5, top_left.y + child_size.y + 60),
+					ImVec2(top_left.x + start_x + 5, top_left.y + child_size.y + 55),
 					colorWhite,
-					sequences[i]->getID().c_str());
+					sequences[i]->mName.c_str());
+
+				// draw sequence box
+				ImVec2 sequenceBoxUpperLeft = ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75);
+				ImVec2 sequenceBoxLowerRight = ImVec2(top_left.x + start_x + 25, top_left.y + child_size.y + 100);
+				
+				draw_list->AddRect(
+					sequenceBoxUpperLeft,
+					sequenceBoxLowerRight,
+					colorWhite);
+
+				// rename sequence action
+				if (currentTimelineAction == TimeLineActions::NONE)
+				{
+					if (ImGui::IsMouseHoveringRect(sequenceBoxUpperLeft, sequenceBoxLowerRight))
+					{
+						draw_list->AddRectFilled(
+							sequenceBoxUpperLeft,
+							sequenceBoxLowerRight,
+							colorWhite);
+
+						if (ImGui::IsMouseClicked(1))
+						{
+							needToOpenPopup = true;
+							popupIdToOpen = "SequenceActions";
+
+							selectedSequence = sequences[i];
+							currentTimelineAction = TimeLineActions::POPUP;
+							inPopup = true;
+						}
+					}
+				}
 
 				// draw element lines and positions
 				for (auto* element : sequences[i]->mElements)
@@ -398,7 +434,7 @@ namespace nap
 					draw_list->AddText(
 						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
 						colorLightGrey,
-						element->getID().c_str());
+						element->mName.c_str());
 
 					// draw dragger of element, changes duration of previous element
 					{
@@ -418,6 +454,19 @@ namespace nap
 								{
 									currentTimelineAction = TimeLineActions::DRAGGING_ELEMENT;
 									selectedElement = element;
+								}
+								else if (ImGui::IsMouseClicked(1))
+								{
+									// rename sequence action
+									if (currentTimelineAction == TimeLineActions::NONE)
+									{
+										needToOpenPopup = true;
+										popupIdToOpen = "ElementActions";
+
+										selectedElement = element;
+										currentTimelineAction = TimeLineActions::POPUP;
+										inPopup = true;
+									}
 								}
 							}
 						}
@@ -656,10 +705,6 @@ namespace nap
 										adjust = (mousePos.x - x) / element_size_width;
 										point.mPos.mTime += adjust;
 										point.mPos.mTime = math::clamp(point.mPos.mTime, 0.0f, 1.0f);
-
-										// update and reconstruct
-										curves[m]->invalidate();
-										mSequencePlayer->reconstruct();
 									}
 
 									// translate 
@@ -698,10 +743,6 @@ namespace nap
 										
 										adjust = (mousePos.x - x) / element_size_width;
 										tangentPtr->mTime += adjust;
-											
-										// update
-										curves[m]->invalidate();
-										mSequencePlayer->reconstruct();
 									}
 
 									// translate
@@ -739,6 +780,23 @@ namespace nap
 
 										adjust = (mousePos.x - x) / element_size_width;
 										tangentPtr->mTime += adjust;
+									}
+
+									if(currentTimelineAction == TimeLineActions::DRAGGING_TANGENT &&
+										tangentPtr == &point.mOutTan)
+									{
+										point.mInTan.mTime = -tangentPtr->mTime;
+										point.mInTan.mValue = -tangentPtr->mValue;
+
+										curves[m]->invalidate();
+										mSequencePlayer->reconstruct();
+									}
+
+									if (currentTimelineAction == TimeLineActions::DRAGGING_TANGENT &&
+										tangentPtr == &point.mInTan)
+									{
+										point.mOutTan.mTime = -tangentPtr->mTime;
+										point.mOutTan.mValue = -tangentPtr->mValue;
 
 										curves[m]->invalidate();
 										mSequencePlayer->reconstruct();
@@ -866,14 +924,28 @@ namespace nap
 				}
 			}
 
+			// handle insertion of elements or sequences
+			/*
+			if (currentTimelineAction == TimeLineActions::NONE &&
+				ImGui::IsMouseClicked(1) &&
+				ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+			{
+				inPopup = true;
+				currentTimelineAction = TimeLineActions::POPUP;
+
+				ImGui::OpenPopup("Insert");
+			}
+			*/
+
 			//printf("currentTimeLineAction %i \n", currentTimelineAction);
 
 			// release mouse
-			if (ImGui::IsMouseReleased(0))
+			if (ImGui::IsMouseReleased(0) && !inPopup)
 			{
 				selectedElement = nullptr;
 				tangentPtr = nullptr;
 				curvePointPtr = nullptr;
+				selectedSequence = nullptr;
 				motorDragged = 0;
 
 				currentTimelineAction = TimeLineActions::NONE;
@@ -949,6 +1021,7 @@ namespace nap
 			}
 		}
 
+		// save as popup
 		if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			const std::string showDir = "Shows";
@@ -1026,9 +1099,87 @@ namespace nap
 			ImGui::EndPopup();
 		}
 
+		if (needToOpenPopup)
+		{
+			ImGui::OpenPopup(popupIdToOpen.c_str());
+		}
+
+		// sequence popup
+		if (ImGui::BeginPopupModal("SequenceActions", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			char buffer[256];
+
+			strcpy(*&buffer, selectedSequence->mName.c_str());
+
+			ImGui::Text("Rename : ");
+			ImGui::SameLine();
+			if (ImGui::InputText("Rename : ", *&buffer, 256))
+			{
+				std::string newName(buffer);
+				selectedSequence->mName = newName;
+			}
+			if (ImGui::Button("Done"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		// element popup
+		if (ImGui::BeginPopupModal("ElementActions", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			char buffer[256];
+
+			strcpy(*&buffer, selectedElement->mName.c_str());
+
+			ImGui::Text("Rename : ");
+			ImGui::SameLine();
+			if (ImGui::InputText("Rename : ", *&buffer, 256))
+			{
+				std::string newName(buffer);
+				selectedElement->mName = newName;
+			}
+			if (ImGui::Button("Done"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		// insertion popup
+		if (ImGui::BeginPopupModal("Insert", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (ImGui::Button("Insert Element"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::Button("Insert Sequence"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::Button("Done"))
+			{
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
-
-
 	}
 
 	template<typename T1>

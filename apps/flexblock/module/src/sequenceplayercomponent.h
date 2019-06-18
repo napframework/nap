@@ -135,7 +135,7 @@ namespace nap
 			/**
 			* @return pointer to current sequence
 			*/
-			const Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
+			Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
 
 			/**
 			* @return current time in sequence

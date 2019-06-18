@@ -80,6 +80,7 @@ namespace nap
 			bool mUsePreset	= false;
 			std::string mPreset;
 			std::vector<Parameter*> mEndParameters;
+			std::string mName;
 		protected:
 			double mStartTime = 0.0;
 			SequenceElement* mPreviousElement = nullptr;
