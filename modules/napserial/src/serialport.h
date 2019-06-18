@@ -110,14 +110,13 @@ namespace nap
 			std::string mMessage = "";					///< Message associated with this error
 		};
 
-
 		/**
 		 * Default constructor
 		 */
 		SerialPort();
 
 		// Stops the device
-		virtual ~SerialPort() override;
+		virtual ~SerialPort();
 
 		/**
 		* Initialize this object after de-serialization.
