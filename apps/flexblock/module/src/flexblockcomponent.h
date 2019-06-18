@@ -124,9 +124,7 @@ namespace nap
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
 
 		//
-		ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance
-			= initComponentInstancePtr(this, &FlexBlockComponent::mFlexBlockSerialComponent);
-
+        ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
 		// Initialize flexblock unique ptr to null
 		std::unique_ptr<Flex> mFlexLogic = nullptr;
 

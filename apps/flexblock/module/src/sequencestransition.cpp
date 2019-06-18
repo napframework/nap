@@ -75,7 +75,7 @@ namespace nap
 				else
 				{
 					errorState.check(false, "No process function for type %s in %s",
-						mEndParameters[i]->get_type().get_name(), mID.c_str());
+						mEndParameters[i]->get_type().get_name().to_string().c_str(), mID.c_str());
 
 					return false;
 				}

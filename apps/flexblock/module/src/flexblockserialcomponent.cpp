@@ -1,5 +1,5 @@
 // Local Includes
-#include "FlexBlockSerialComponent.h"
+#include "flexblockserialcomponent.h"
 
 // External Includes
 #include <entity.h>

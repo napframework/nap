@@ -331,7 +331,6 @@ namespace nap
 			mElementsVector[i] = p;
 		}
 
-		float sum = 0.0f;
 		std::vector<float> elementsLength(mElementsLength.size());
 		for (int i = 0; i < mElementsVector.size(); i++)
 		{

@@ -132,7 +132,7 @@ namespace nap
 		void copyMotorInput(std::vector<float>& outputs);
 	protected:
 
-		std::atomic_bool mIsRunning = false;
+        std::atomic_bool mIsRunning = { false };
 		std::thread mUpdateThread;
 		std::mutex mMotorInputMutex;
 
