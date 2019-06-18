@@ -26,6 +26,9 @@
 		<file>icons/file.png</file>
 		<file>icons/folder.png</file>
 		<file>icons/folder_page.png</file>
+		<file>icons/frame-selection-h.png</file>
+		<file>icons/frame-selection-v.png</file>
+		<file>icons/frame-selection.png</file>
 		<file>icons/information.png</file>
 		<file>icons/link.png</file>
 		<file>icons/nap-logo.png</file>

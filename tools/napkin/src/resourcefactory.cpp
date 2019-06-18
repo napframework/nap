@@ -16,14 +16,13 @@ using namespace nap;
 using namespace nap::rtti;
 
 
-
 napkin::ResourceFactory::ResourceFactory()
 {
 	mObjectIconMap = {
-			{RTTI_OF(Entity),     QRC_ICONS_ENTITY},
-			{RTTI_OF(Scene),      QRC_ICONS_SCENE},
-			{RTTI_OF(Component),  QRC_ICONS_COMPONENT},
-			{RTTI_OF(Object), QRC_ICONS_RTTIOBJECT},
+			{RTTI_OF(Entity),    QRC_ICONS_ENTITY},
+			{RTTI_OF(Scene),     QRC_ICONS_SCENE},
+			{RTTI_OF(Component), QRC_ICONS_COMPONENT},
+			{RTTI_OF(Object),    QRC_ICONS_RTTIOBJECT},
 	};
 
 	mFileTypes = {

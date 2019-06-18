@@ -24,6 +24,11 @@ void InspectorModel::setPath(const PropertyPath& path)
 	populateItems();
 }
 
+const PropertyPath& InspectorModel::path() const
+{
+	return mPath;
+}
+
 void InspectorModel::clearItems()
 {
 	removeRows(0, rowCount());
@@ -203,8 +208,17 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// Rebuild
-	rebuild(path);
+	//	If the object name changed, the property path in the model is now invalid because it's string-based
+	if (path.getName() == sIDPropertyName)
+	{
+		auto parent = path.getParent();
+		if (dynamic_cast<nap::rtti::Object*>(parent.getObject()))
+			setPath(parent);
+	}
+	else
+	{
+		rebuild(path);
+	}
 }
 
 void InspectorPanel::setPath(const PropertyPath& path)
@@ -213,15 +227,9 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
 		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
-
-		auto p = path.toString();
-		if (p.at(0) == '.')
-			p = path.getRootEntity()->mEntity->mID + p.substr(1, p.size()-1);
-
 	}
 	else
 	{
-//		mPathField.setText("");
 		mTitle.setText("");
 		mSubTitle.setText("");
 	}
@@ -233,14 +241,13 @@ void InspectorPanel::setPath(const PropertyPath& path)
 
 void InspectorPanel::clear()
 {
-	mTreeView.getSelectedItems().clear();
 	mModel.clearItems();
 	mPathField.setText("");
 	mTitle.setText("");
 	mSubTitle.setText("");
 }
 
-void napkin::InspectorPanel::rebuild(PropertyPath selection)
+void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 {
 	// Get vertical scroll pos so we can restore it later
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
@@ -251,7 +258,6 @@ void napkin::InspectorPanel::rebuild(PropertyPath selection)
 	mTreeView.getTreeView().expandAll();
 
 	// Find item based on path name
-	QList<nap::rtti::Object*> objects = { selection.getObject() };
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
@@ -259,10 +265,7 @@ void napkin::InspectorPanel::rebuild(PropertyPath selection)
 			return false;
 
 		if (pitem->getPath().toString() == selection.toString())
-		{
-			nap::Logger::info(pitem->getPath().toString());
 			return true;
-		}
 		return false;
 	});
 

@@ -1,6 +1,6 @@
 {
     "title": "Emography",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "modules": [
         "mod_napapp",
         "mod_emography",

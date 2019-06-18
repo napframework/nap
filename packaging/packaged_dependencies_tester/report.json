@@ -1,0 +1,323 @@
+{
+    "demos": {
+        "audioanalysis": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "audioplayback": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "blobtrace": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "copystamp": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "curveball": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "dynamicgeo": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "heightmap": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "helloworld": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "lineblending": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "multiwindow": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "oscmidi": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "videomodulation": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "vinyl": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
+        "websocketserver": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        }
+    },
+    "napkin": {
+        "demoPackagedWith": "audioanalysis",
+        "packageWithDemo": {
+            "success": true
+        },
+        "runFromBuildOutput": {
+            "success": true,
+            "unexpectedLibraries": []
+        },
+        "runFromPackagedOutput": {
+            "success": true,
+            "unexpectedLibraries": []
+        }
+    },
+    "run": {
+        "duration": "11m12s",
+        "frameworkBuildInfo": {
+            "buildNumber": 66,
+            "gitRevision": "6f6ff79af4da734c2ac2cb19847ece9a360f2f89",
+            "label": "",
+            "majorVersion": 0,
+            "minorVersion": 2,
+            "patchVersion": 3,
+            "timetamp": "2019.06.14T16.30",
+            "version": "0.2.3"
+        },
+        "frameworkPath": "c:\\naivi\\nap\\NAP-0.2.3-Win64-2019.06.14T16.30",
+        "startTime": "2019.06.14T16.33",
+        "success": true,
+        "warnings": []
+    },
+    "templateProject": {
+        "build": {
+            "success": true
+        },
+        "create": {
+            "success": true
+        },
+        "generate": {
+            "success": true
+        },
+        "package": {
+            "success": true
+        },
+        "runFromBuildOutput": {
+            "success": true,
+            "unexpectedLibraries": []
+        },
+        "runFromPackagedOutput": {
+            "success": true,
+            "unexpectedLibraries": []
+        }
+    }
+}

@@ -165,7 +165,7 @@ namespace nap
  		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
-		void destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows);
+		void destroyGLContextResources(const std::vector<RenderWindow*> renderWindows);
 
 		/**
 		 * Add a new window for the specified resource
@@ -185,14 +185,14 @@ namespace nap
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
 		 * @return the render window associated with the native window
 		 */
-		rtti::ObjectPtr<RenderWindow> findWindow(void* nativeWindow) const;
+		RenderWindow* findWindow(void* nativeWindow) const;
 
 		/**
-		 * Find a RenderWindow based on a window id
-		 * @param the associated window id
+		 * Find a RenderWindow based on the window number
+		 * @param the associated window number
 		 * @return the RenderWindowResource, nullptr if not found
 		 */
-		rtti::ObjectPtr<RenderWindow> getWindow(uint id) const;
+		RenderWindow* findWindow(uint id) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)

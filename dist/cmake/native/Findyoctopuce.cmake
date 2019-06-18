@@ -1,4 +1,9 @@
-set(YOCTOPUCE_DIR ${THIRDPARTY_DIR}/yoctopuce)
+find_path(
+  YOCTOPUCE_DIR
+  NAMES include/yocto_api.h
+  HINTS ${THIRDPARTY_DIR}/yoctopuce
+  )
+
 set(YOCTOPUCE_INCLUDE_DIRS ${YOCTOPUCE_DIR}/include ${YOCTOPUCE_DIR}/include/yapi)
 set(YOCTOPUCE_LIBS_DIR ${YOCTOPUCE_DIR}/bin)
 
@@ -26,7 +31,7 @@ mark_as_advanced(YOCTOPUCE_LIBS_RELEASE)
 
 # Promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTOPUCE_DIR YOCTOPUCE_INCLUDE_DIRS YOCTOPUCE_LIBS_DEBUG YOCTOPUCE_LIBS_RELEASE YOCTOPUCE_LIBS_DIR)
+find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTOPUCE_DIR)
 
 
 add_library(yoctopuce SHARED IMPORTED)

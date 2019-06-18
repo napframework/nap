@@ -34,7 +34,7 @@ namespace nap
 			{
 				rtti::Factory factory;
 
-				bool success = rtti::readJSONFile(std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mPresetReadResult, errorState);
+				bool success = rtti::readJSONFile(std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, mPresetReadResult, errorState);
 				if (!errorState.check(success,
 					"Error loading preset %s", this->mID.c_str()))
 					return false;

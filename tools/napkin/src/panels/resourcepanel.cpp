@@ -201,17 +201,7 @@ void napkin::ResourcePanel::onFileClosing(const QString& filename)
 
 void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-	// Grab selected nap objects
-	QList<PropertyPath> selectedPaths;
-	for (auto m : mTreeView.getSelectedItems())
-	{
-		auto item = dynamic_cast<ObjectItem*>(m);
-		if (!item)
-			continue;
-		selectedPaths << item->propertyPath();
-	}
-
-	selectionChanged(selectedPaths);
+	emitSelectionChanged();
 }
 
 
@@ -233,6 +223,7 @@ void napkin::ResourcePanel::populate()
 {
 	mModel.populate();
 	mTreeView.getTreeView().expandAll();
+	emitSelectionChanged();
 }
 
 
@@ -281,5 +272,20 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	}
 
 	mModel.removeEmbeddedObjects();
+}
+
+void ResourcePanel::emitSelectionChanged()
+{
+	// Grab selected nap objects
+	QList<PropertyPath> selectedPaths;
+	for (auto m : mTreeView.getSelectedItems())
+	{
+		auto item = dynamic_cast<ObjectItem*>(m);
+		if (!item)
+			continue;
+		selectedPaths << item->propertyPath();
+	}
+
+	selectionChanged(selectedPaths);
 }
 
