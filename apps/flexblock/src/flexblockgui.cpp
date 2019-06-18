@@ -2,7 +2,9 @@
 #include "flexblockgui.h"
 #include "flexblockapp.h"
 #include "flexblockcomponent.h"
-
+#include "flexblocksequence.h"
+#include "flexblocksequencetransition.h"
+#include "sequencepause.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -16,6 +18,7 @@
 #include <iomanip>
 #include <sequencetransition.h>
 
+//#include <ctime.h>
 
 namespace nap
 {
@@ -292,22 +295,29 @@ namespace nap
 		lengthPerSecond = math::clamp<float>(lengthPerSecond, 10.0f, 200.0f);
 		child_width = mSequencePlayer->getDuration() * lengthPerSecond;
 
+		//
+		bool needToOpenPopup = false;
+		std::string popupIdToOpen = "";
+
 		// handle save button
 		ImGui::SameLine();
 
 		if (ImGui::Button("Save As"))
 		{
-			ImGui::OpenPopup("Save As");
+			popupIdToOpen = "Save As";
 			//mSequencePlayer->save("test.json");
 			inPopup = true;
+			needToOpenPopup = true;
+
 		}
 
 		// handle load
 		ImGui::SameLine();
 		if (ImGui::Button("Load"))
 		{
-			ImGui::OpenPopup("Load");
+			popupIdToOpen = "Load";
 			inPopup = true;
+			needToOpenPopup = true;
 		}
 
 		if (inPopup)
@@ -323,9 +333,7 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
-		//
-		bool needToOpenPopup = false;
-		std::string popupIdToOpen = "";
+
 
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
@@ -925,7 +933,7 @@ namespace nap
 			}
 
 			// handle insertion of elements or sequences
-			/*
+			
 			if (currentTimelineAction == TimeLineActions::NONE &&
 				ImGui::IsMouseClicked(1) &&
 				ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
@@ -933,9 +941,10 @@ namespace nap
 				inPopup = true;
 				currentTimelineAction = TimeLineActions::POPUP;
 
-				ImGui::OpenPopup("Insert");
+				needToOpenPopup = true;
+				popupIdToOpen = "Insert";
 			}
-			*/
+			
 
 			//printf("currentTimeLineAction %i \n", currentTimelineAction);
 
@@ -1019,6 +1028,8 @@ namespace nap
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
 			}
+
+			ImGui::EndPopup();
 		}
 
 		// save as popup
@@ -1113,11 +1124,25 @@ namespace nap
 
 			ImGui::Text("Rename : ");
 			ImGui::SameLine();
-			if (ImGui::InputText("Rename : ", *&buffer, 256))
+			if (ImGui::InputText("", *&buffer, 256))
 			{
 				std::string newName(buffer);
 				selectedSequence->mName = newName;
 			}
+
+			if (mSequencePlayer->getSequences().size() > 1)
+			{
+				if (ImGui::Button("Delete"))
+				{
+					mSequencePlayer->removeSequence(selectedSequence);
+
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+
 			if (ImGui::Button("Done"))
 			{
 				inPopup = false;
@@ -1137,11 +1162,30 @@ namespace nap
 
 			ImGui::Text("Rename : ");
 			ImGui::SameLine();
-			if (ImGui::InputText("Rename : ", *&buffer, 256))
+			if (ImGui::InputText("", *&buffer, 256))
 			{
 				std::string newName(buffer);
 				selectedElement->mName = newName;
 			}
+
+			timeline::Sequence* owningSequence = mSequencePlayer->getSequenceAtTime(selectedElement->getStartTime());
+
+			if (owningSequence != nullptr && 
+				owningSequence->mElements.size() > 1)
+			{
+				if (ImGui::Button("Delete"))
+				{
+					owningSequence->removeElement(selectedElement);
+					
+					owningSequence->reset();
+					mSequencePlayer->reconstruct();
+
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			if (ImGui::Button("Done"))
 			{
 				inPopup = false;
@@ -1155,8 +1199,47 @@ namespace nap
 		// insertion popup
 		if (ImGui::BeginPopupModal("Insert", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			if (ImGui::Button("Insert Element"))
+			if (ImGui::Button("Insert Pause"))
 			{
+				double time = mSequencePlayer->getCurrentTime();
+				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
+				timeline::SequenceElement* element = sequence->getElementAtTime(time);
+				element->mDuration = time - (element->getStartTime());
+
+				utility::ErrorState errorState;
+				std::unique_ptr<timeline::SequencePause> newElement = std::make_unique<timeline::SequencePause>();
+				newElement->mID = "GeneratedPause" + getTimeString();
+				newElement->mDuration = 1.0;
+				newElement->init(errorState);
+
+				sequence->insertElement(std::move(newElement));
+				sequence->reset();
+
+				mSequencePlayer->reconstruct();
+
+				inPopup = false;
+				currentTimelineAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::Button("Insert Transition"))
+			{
+				double time = mSequencePlayer->getCurrentTime();
+				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
+				timeline::SequenceElement* element = sequence->getElementAtTime(time);
+				element->mDuration = time - (element->getStartTime());
+
+				utility::ErrorState errorState;
+				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
+				newElement->mID = "GeneratedPause" + getTimeString();
+				newElement->mDuration = 1.0;
+				newElement->init(errorState);
+
+				sequence->insertElement(std::move(newElement));
+				sequence->reset();
+
+				mSequencePlayer->reconstruct();
+
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
@@ -1164,6 +1247,48 @@ namespace nap
 
 			if (ImGui::Button("Insert Sequence"))
 			{
+				double time = mSequencePlayer->getCurrentTime();
+				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
+				timeline::SequenceElement* element = sequence->getElementAtTime(time);
+				element->mDuration = time - ( element->getStartTime() );
+				
+				int index = -1;
+				for (int i = 0; i < sequence->mElements.size(); i++)
+				{
+					if (element == sequence->mElements[i])
+					{
+						index = i;
+						break;
+					}
+				}
+
+				if (index >= 0 && index < sequence->mElements.size() - 1)
+				{
+					sequence->mElements.erase(sequence->mElements.begin() + index + 1, sequence->mElements.end());
+				}
+
+				sequence->reset();
+
+				std::unique_ptr<flexblock::FlexblockSequence> newSequence = std::make_unique<flexblock::FlexblockSequence>();
+
+				utility::ErrorState errorState;
+
+				std::string timeString = getTimeString();
+				newSequence->mID = "GeneratedSequence" + timeString;
+				newSequence->mName = newSequence->mID;
+				newSequence->mIndexInSequenceContainer = sequence->mIndexInSequenceContainer;
+				newSequence->setStartTime(time);
+
+				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
+				newElement->mID = "GeneratedElement" + timeString;
+				newElement->mDuration = 1.0;
+				newElement->init(errorState);
+
+				newSequence->insertElement(std::move(newElement));
+				newSequence->init(errorState);
+
+				mSequencePlayer->insertSequence(std::move(newSequence));
+
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
@@ -1294,5 +1419,18 @@ namespace nap
 		}
 
 		return result;
+	}
+
+	std::string FlexblockGui::getTimeString()
+	{
+		time_t rawtime;
+		struct tm * timeinfo;
+		char buffer[80];
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		strftime(buffer, sizeof(buffer), "%d-%m-%Y%H:%M:%S", timeinfo);
+		return std::string(buffer);
 	}
 }

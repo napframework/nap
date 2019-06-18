@@ -103,6 +103,11 @@ namespace nap
 			/**
 			 * 
 			 */
+			void removeSequence(const Sequence* sequence);
+
+			/**
+			 * 
+			 */
 			bool save(std::string showName, utility::ErrorState& errorState);
 
 			bool load(std::string showName, utility::ErrorState& errorState);
@@ -136,6 +141,10 @@ namespace nap
 			* @return pointer to current sequence
 			*/
 			Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
+
+			Sequence* getSequenceAtTime(const double time);
+
+			void insertSequence(std::unique_ptr<Sequence> sequence);
 
 			/**
 			* @return current time in sequence
@@ -177,6 +186,7 @@ namespace nap
 
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 			rtti::DeserializeResult mDeserializeResult;
+			std::vector<std::unique_ptr<Sequence>> mOwnedSequences;
 		};
 	}
 }

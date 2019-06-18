@@ -40,8 +40,19 @@ namespace nap
 			*/
 			void reinit();
 
-			std::vector<Sequence*>				mSequences;								
-			std::vector<ResourcePtr<Sequence>>	mSequenceLinks;
+			/**
+			 * 
+			 */
+			void removeSequence(const Sequence * sequence);
+
+			/**
+			*
+			*/
+			void insertSequence(std::unique_ptr<Sequence> sequence);
+
+			std::vector<Sequence*>					mSequences;								
+			std::vector<ResourcePtr<Sequence>>		mSequenceLinks;
+			std::vector<std::unique_ptr<Sequence>>	mOwnedSequences;
 		};
 	}
 }

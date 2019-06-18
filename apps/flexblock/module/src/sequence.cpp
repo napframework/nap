@@ -119,5 +119,64 @@ namespace nap
 
 			return 0;
 		}
+
+
+		SequenceElement* Sequence::getElementAtTime(const double time) const
+		{
+			for (int i = 0; i < mElements.size(); i++)
+			{
+				if (time >= mElements[i]->getStartTime() &&
+					time < mElements[i]->getStartTime() + mElements[i]->mDuration)
+				{
+					return mElements[i];
+				}
+			}
+
+			return nullptr;
+		}
+
+
+		void Sequence::removeElement(SequenceElement* element)
+		{
+			int indexToRemove = -1;
+			for (int i = 0; i < mElements.size(); i++)
+			{
+				if (mElements[i] == element)
+				{
+					indexToRemove = i;
+					break;
+				}
+			}
+
+			if (indexToRemove >= 0)
+			{
+				mElements.erase(mElements.begin() + indexToRemove);
+			}
+
+			if (indexToRemove >= 0)
+			{
+				indexToRemove = -1;
+				for (int i = 0; i < mOwnedElements.size(); i++)
+				{
+					if (mOwnedElements[i].get() == element)
+					{
+						indexToRemove = i;
+						break;;
+					}
+				}
+
+				if (indexToRemove >= 0)
+				{
+					mOwnedElements.erase(mOwnedElements.begin() + indexToRemove);
+				}
+			}
+
+		}
+
+		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)
+		{
+			mElements.emplace_back(element.get());
+			mOwnedElements.emplace_back(std::move(element));
+		}
 	}
 }

@@ -75,12 +75,78 @@ namespace nap
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
+
+				mSequences[i]->mIndexInSequenceContainer = i;
 			}
 
 			for (int i = 1; i < mSequences.size(); i++)
 			{
 				mSequences[i]->mElements[0]->setPreviousElement(mSequences[i - 1]->mElements.back());
 			}
+		}
+
+
+		void SequenceContainer::removeSequence(const Sequence * sequence)
+		{
+			int indexToRemove = -1;
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (sequence == mSequences[i])
+				{
+					indexToRemove = i;
+					break;
+				}
+			}
+
+			if (indexToRemove > -1)
+			{
+				mSequences.erase(mSequences.begin() + indexToRemove);
+			}
+
+			for (int i = 0; i < mOwnedSequences.size(); i++)
+			{
+				if (mOwnedSequences[i].get() == sequence)
+				{
+					mOwnedSequences.erase(mOwnedSequences.begin() + i);
+					break;
+				}
+			}
+
+			reinit();
+		}
+
+		void SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
+		{
+			bool inserted = false;
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (sequence->getStartTime() > mSequences[i]->getStartTime())
+				{
+					mSequences.insert(mSequences.begin() + i, sequence.get());
+					inserted = true;
+					break;
+				}
+			}
+
+			if (!inserted)
+				mSequences.emplace_back(sequence.get());
+
+			sort(mSequences.begin(), mSequences.end(), [](
+				const Sequence *a,
+				const Sequence *b)-> bool
+			{
+				return a->getStartTime() < b->getStartTime();
+			});
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mIndexInSequenceContainer = i;
+			}
+
+			reinit();
+			reconstruct();
+
+			mOwnedSequences.emplace_back(std::move(sequence));
 		}
 
 		void SequenceContainer::reconstruct()
@@ -98,11 +164,11 @@ namespace nap
 				{
 					mSequences[i]->mUseReference = false;
 				}
+				mSequences[i]->mIndexInSequenceContainer = i;
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
 			}
 		}
 	}
-
 }

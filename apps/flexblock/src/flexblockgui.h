@@ -89,5 +89,7 @@ namespace nap
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);
+
+		std::string getTimeString();
 	};
 }

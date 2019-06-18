@@ -176,6 +176,20 @@ namespace nap
 			}
 		}
 
+		Sequence* SequencePlayerComponentInstance::getSequenceAtTime(double time)
+		{
+			for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+			{
+				if (time >= mSequenceContainer->mSequences[i]->getStartTime() &&
+					time < mSequenceContainer->mSequences[i]->getStartTime() + mSequenceContainer->mSequences[i]->getDuration())
+				{
+					return mSequenceContainer->mSequences[i];
+				}
+			}
+
+			return nullptr;
+		}
+
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
 			mTime = math::clamp<double>(time, 0.0, mDuration);
@@ -281,6 +295,21 @@ namespace nap
 			reconstruct();
 
 			return true;
+		}
+
+
+		void SequencePlayerComponentInstance::insertSequence(std::unique_ptr<Sequence> sequence)
+		{
+			mSequenceContainer->insertSequence(std::move(sequence));
+
+			reconstruct();
+		}
+
+
+		void SequencePlayerComponentInstance::removeSequence(const Sequence* sequence)
+		{
+			mSequenceContainer->removeSequence(sequence);
+			reconstruct();
 		}
 	}
 }

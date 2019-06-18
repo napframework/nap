@@ -41,6 +41,18 @@ namespace nap
 			*/
 			void reset();
 
+			void insertElement(std::unique_ptr<SequenceElement> element);
+
+			void removeElement(SequenceElement* element);
+
+			SequenceElement* getElementAtTime(const double time)  const;
+
+			/**
+			* Sets the start time of this sequence
+			* @param startTime, the new start time
+			*/
+			void setStartTime(double startTime);
+
 			/**
 			* @return returns the total duration of this sequence
 			*/
@@ -60,6 +72,8 @@ namespace nap
 			* @return returns pointer to current element pointed to by current element index
 			*/
 			const SequenceElement* getCurrentElement() const{ return mElements[mCurrentElementIndex]; }
+		
+		
 		public:
 			// properties
 			std::vector<SequenceElement*> mElements;
@@ -78,11 +92,9 @@ namespace nap
 			double mStartTime = 0.0;
 			int mCurrentElementIndex = 0;
 
-			/**
-			* Sets the start time of this sequence, can only be called by friend class SequenceContainer
-			* @param startTime, the new start time
-			*/
-			void setStartTime(double startTime);
+			std::vector<std::unique_ptr<SequenceElement>> mOwnedElements;
+
+
 		};
 	}
 }
