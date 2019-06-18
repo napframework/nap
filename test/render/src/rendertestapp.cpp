@@ -57,8 +57,6 @@ namespace nap
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		mRenderService->setRenderState(render_state);
 
-		rtti::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
-
 		return true;
 	}
 	
@@ -140,7 +138,7 @@ namespace nap
 	// Called when the window is going to render
 	void RenderTestApp::render()
 	{
-		mRenderService->destroyGLContextResources(mRenderWindows);
+		mRenderService->destroyGLContextResources({ mRenderWindows[0].get(), mRenderWindows[1].get() });
 		
 		// Render offscreen surface(s)
 		{

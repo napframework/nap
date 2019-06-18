@@ -9,21 +9,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIEvent::APIEvent(const std::string& action) : mName(action), 
+	APIEvent::APIEvent(const std::string& name) : mName(name), 
 		mID(math::generateUUID())
 	{
 
 	}
 
 
-	APIEvent::APIEvent(const std::string&& action) : mName(std::move(action)), 
+	APIEvent::APIEvent(std::string&& name) : mName(std::move(name)), 
 		mID(math::generateUUID())
-	{
-
-	}
-
-
-	APIEvent::APIEvent() : mID(math::generateUUID())
 	{
 
 	}
@@ -36,7 +30,7 @@ namespace nap
 	}
 
 
-	APIEvent::APIEvent(const std::string&& name, const std::string&& id) : mName(std::move(name)), 
+	APIEvent::APIEvent(std::string&& name, std::string&& id) : mName(std::move(name)), 
 		mID(std::move(id))
 	{
 

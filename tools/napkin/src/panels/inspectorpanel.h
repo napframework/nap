@@ -38,6 +38,11 @@ namespace napkin
 		void setPath(const PropertyPath& path);
 
 		/**
+		 * Retrieve the path that is currently being edited
+		 */
+		 const PropertyPath& path() const;
+
+		/**
 		 * @return The object currently displayed/edited by this model
 		 */
 		nap::rtti::Object* getObject();
@@ -144,7 +149,7 @@ namespace napkin
 		 * @param selection the property path that should be selected after rebuilding the model
 		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
 		 */
-		void rebuild(PropertyPath selection);
+		void rebuild(const PropertyPath& selection);
 		
 		/**
 		 * Called just before the current document is closed

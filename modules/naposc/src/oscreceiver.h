@@ -30,9 +30,6 @@ namespace nap
 		friend class OSCService;
 		RTTI_ENABLE(Device)
 	public:
-		// Default constructor
-		OSCReceiver() = default;
-
 		// Constructor used by factory
 		OSCReceiver(OSCService& service);
 

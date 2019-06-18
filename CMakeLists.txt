@@ -148,6 +148,8 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
+add_subdirectory(demos/websocketserver)
+add_subdirectory(demos/websocketserver/module)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -183,6 +185,8 @@ add_subdirectory(modules/napapi)
 add_subdirectory(modules/napparameter)
 add_subdirectory(modules/napparametergui)
 add_subdirectory(modules/napserial)
+add_subdirectory(modules/napwebsocket)
+add_subdirectory(modules/napapiwebsocket)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

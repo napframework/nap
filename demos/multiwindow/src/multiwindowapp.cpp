@@ -128,7 +128,7 @@ namespace nap
 		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
 
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindowOne });
+		mRenderService->destroyGLContextResources({ mRenderWindowOne.get() });
 
 		// Render Window One : Sphere
 		{
@@ -262,7 +262,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				rtti::ObjectPtr<nap::RenderWindow> window = mRenderService->getWindow(press_event->mWindow);
+				nap::RenderWindow* window = mRenderService->findWindow(press_event->mWindow);
 				window->toggleFullscreen();
 			}
 		}
