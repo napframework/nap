@@ -104,11 +104,11 @@ namespace nap
 
 		ResourcePtr<SerialPort>					mSerialPort;
 
-		std::atomic_bool						mIsRunning = false;
+        std::atomic_bool						mIsRunning =  { false };
 		std::thread								mWriteThread;
 		std::deque<std::string>					mWriteBuffer;
 		std::mutex								mWriteBufferMutex;
-		std::atomic_long						mThreadUpdateIntervalMs = 10;
+        std::atomic_long						mThreadUpdateIntervalMs = { 10 };
 		int										mMaxWriteBufferSize = 4;
 	};
 }

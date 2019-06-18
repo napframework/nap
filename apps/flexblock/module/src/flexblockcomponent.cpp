@@ -1,6 +1,5 @@
 // local includes
-#include "FlexBlockComponent.h"
-#include "rtti/jsonreader.h"
+#include "flexblockcomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -8,6 +7,7 @@
 #include <mathutils.h>
 #include <math.h>
 #include <glm/geometric.hpp>
+#include <rtti/jsonreader.h>
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
