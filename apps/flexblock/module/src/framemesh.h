@@ -47,12 +47,6 @@ namespace nap
 		// Position Attribute data
 		nap::Vec3VertexAttribute* mPositionAttr = nullptr;
 
-		// Normal attribute data
-		nap::Vec3VertexAttribute* mNormalsAttr = nullptr;
-
-		// UV attribute data
-		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
-
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
 

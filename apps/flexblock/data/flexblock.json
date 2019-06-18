@@ -774,23 +774,15 @@
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
                     "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
                     "MeshAttributeID": "Color0",
                     "ShaderAttributeID": "in_Color0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
                 }
             ],
             "BlendMode": "Opaque",
@@ -811,7 +803,7 @@
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -967,15 +959,15 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "ControlPointShader",
-            "mVertShader": "shaders/control_point.vert",
-            "mFragShader": "shaders/control_point.frag"
-        },
-        {
-            "Type": "nap::Shader",
             "mID": "FontShader",
             "mVertShader": "shaders/font.vert",
             "mFragShader": "shaders/font.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FrameShader",
+            "mVertShader": "shaders/frame.vert",
+            "mFragShader": "shaders/frame.frag"
         },
         {
             "Type": "nap::UniformVec3",
@@ -1012,8 +1004,6 @@
                 }
             ],
             "Start Parameters": [],
-            "Elements": [],
-            "StartParameters": [],
             "Motor Inputs": [
                 0.0,
                 0.0,

@@ -280,18 +280,6 @@ namespace nap
 		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
 		mPositionAttr->setData(verts);
 
-		// Create normal attribute
-		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()));
-
-		// Create initial normal data
-		std::vector<glm::vec3> normals(vertCount, { 0.0f, 1.0f,0.0f });
-		mNormalsAttr->setData(normals);
-
-		// Create initial uv data
-		std::vector<glm::vec3> uvs(vertCount, { 0.0f, 0.0f, 0.0f });
-		for (auto& uv_attr : mUvAttrs)
-			uv_attr->setData(uvs);
-
 		// Create initial color data
 		std::vector<glm::vec4> colors(vertCount, { 1.0f, 0.0f, 0.0f, 1.0f });
 		for (auto& color_attr : mColorAttrs)
