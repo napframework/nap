@@ -1,8 +1,7 @@
+// local includes
 #include "SequencePause.h"
 
-// nap::FlexBlockSequenceElement run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePause)
-// Put additional properties here
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

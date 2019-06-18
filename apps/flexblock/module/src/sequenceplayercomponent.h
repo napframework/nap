@@ -10,6 +10,8 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		class SequencePlayerComponentInstance;
 
 		/**
@@ -31,7 +33,7 @@ namespace nap
 			ResourcePtr<SequenceContainer>	mSequenceContainer;
 		};
 
-
+		//////////////////////////////////////////////////////////////////////////
 		/**
 		* SequencePlayerComponentInstance
 		*/

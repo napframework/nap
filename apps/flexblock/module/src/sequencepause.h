@@ -14,6 +14,8 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		 * SequencePause
 		 * A SequencePause just sets the parameters of to the values of the previous sequence element

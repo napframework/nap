@@ -1,3 +1,4 @@
+// local includes
 #include "sequence.h"
 
 // nap::flexblockstancesequence run time class definition 
@@ -60,6 +61,7 @@ namespace nap
 			return true;
 		}
 
+
 		void Sequence::setStartTime(double startTime)
 		{
 			mStartTime = startTime;
@@ -78,10 +80,12 @@ namespace nap
 			mDuration = time - mStartTime;
 		}
 
+
 		void Sequence::reset()
 		{
 			mCurrentElementIndex = 0;
 		}
+
 
 		int Sequence::process(double time, std::vector<Parameter*>& outParameters)
 		{

@@ -10,9 +10,12 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		* Bundles a set of sequences
-		*/
+		 * Sequence Container
+		 * Bundles a set of sequences
+		 */
 		class SequenceContainer : public Resource
 		{
 			RTTI_ENABLE(Resource)
@@ -31,7 +34,7 @@ namespace nap
 			const int count() const { return mSequences.size(); }
 
 			std::vector<Sequence*>				mSequences;								
-			std::vector<ResourcePtr<Sequence>>	mSequenceLinks;
+			std::vector<ResourcePtr<Sequence>>	mSequenceLinks; ///< Property: 'Sequences' vector holding references to assigned sequences
 		};
 	}
 }

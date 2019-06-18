@@ -1,5 +1,7 @@
+// local includes
 #include "sequenceelement.h"
 
+// external includes
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>

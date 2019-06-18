@@ -1,8 +1,7 @@
+// Local Includes
 #include "flexblocksequence.h"
 
-// nap::flexblockstancesequence run time class definition 
 RTTI_BEGIN_CLASS(nap::flexblock::FlexblockSequence)
-// Put additional properties here
 RTTI_PROPERTY("Motor Inputs", &nap::flexblock::FlexblockSequence::mMotorInputs, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 

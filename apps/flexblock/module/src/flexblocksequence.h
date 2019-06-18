@@ -9,6 +9,7 @@ namespace nap
 {
 	namespace flexblock
 	{
+		//////////////////////////////////////////////////////////////////////////
 		/**
 		* FlexblockSequence
 		* Extends on timeline::Sequence. The mInputs vector will override any assigned startparameters of Sequence

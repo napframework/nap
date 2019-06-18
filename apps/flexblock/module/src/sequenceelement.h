@@ -10,9 +10,16 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		* SequenceElement
-		*/
+		 * SequenceElement
+		 * Base class on which other sequence elements can extend
+		 * A sequence element holds the information of the duration of this element in the sequence, its parameters,
+		 * and its start time.
+		 * The process function does nothing with the given parameters but just returns 
+		 * a bool if given time falls within this sequence element time slot
+		 */
 		class NAPAPI SequenceElement : public Resource
 		{
 			RTTI_ENABLE(Resource)
@@ -56,7 +63,7 @@ namespace nap
 			void setStartTime(const double startTime) { mStartTime = startTime; }
 
 			/**
-			* @return returns start time of this element in sequence
+			* @return returns start time of this element
 			*/
 			double getStartTime() const { return mStartTime; }
 
@@ -66,9 +73,10 @@ namespace nap
 			const std::string getID() const { return mID; }
 		public:
 			// properties
-			float mDuration = 0.0f;
-			bool mUsePreset	= false;
-			std::string mPreset;
+			float mDuration = 0.0f;		///< Property: 'Duration' duration of this element
+			bool mUsePreset	= false;	///< Property: 'Use Preset' wether parameters of this element needed to be loaded from a preset json file
+			std::string mPreset;		///< Property: 'JSON' preset file
+		public:
 			std::vector<Parameter*> mEndParameters;
 		protected:
 			double mStartTime = 0.0;

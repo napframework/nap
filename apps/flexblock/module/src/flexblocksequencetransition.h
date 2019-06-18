@@ -16,6 +16,8 @@ namespace nap
 {
 	namespace flexblock
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		* FlexblockSequenceTransition
 		* Extends on timeline::SequenceTransition. The mInputs vector will override any assigned parameters of this

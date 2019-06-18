@@ -1,3 +1,4 @@
+// local includes
 #include "sequencecontainer.h"
 
 // nap::compositioncontainer run time class definition 
@@ -13,6 +14,7 @@ namespace nap
 	namespace timeline
 	{
 		SequenceContainer::~SequenceContainer() { }
+
 
 		bool SequenceContainer::init(utility::ErrorState& errorState)
 		{

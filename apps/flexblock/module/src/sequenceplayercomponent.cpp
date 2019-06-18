@@ -1,7 +1,10 @@
+// Local includes
 #include "sequenceplayercomponent.h"
 
 // External Includes
 #include <entity.h>
+
+//////////////////////////////////////////////////////////////////////////
 
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
@@ -26,6 +29,7 @@ namespace nap
 
 		}
 
+
 		void SequencePlayerComponentInstance::skipToSequence(const Sequence * sequence)
 		{
 			for (const auto* sequence_ : mSequenceContainer->mSequences)
@@ -40,6 +44,7 @@ namespace nap
 				}
 			}
 		}
+
 
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
@@ -57,6 +62,7 @@ namespace nap
 
 			return true;
 		}
+
 
 		void SequencePlayerComponentInstance::update(double deltaTime)
 		{
@@ -115,38 +121,38 @@ namespace nap
 			}
 		}
 
+
 		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
 		{
 			int currentSequenceIndex = 0;
-			//if (mIsPlaying)
-			//{
-				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+
+			for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+			{
+				int result = mSequenceContainer->mSequences[currentSequenceIndex]->process(time, output);
+
+				if (result != 0)
 				{
-					int result = mSequenceContainer->mSequences[currentSequenceIndex]->process(time, output);
+					currentSequenceIndex += result;
 
-					if (result != 0)
+					int size = mSequenceContainer->mSequences.size();
+					if (currentSequenceIndex >= size)
 					{
-						currentSequenceIndex += result;
-
-						int size = mSequenceContainer->mSequences.size();
-						if (currentSequenceIndex >= size)
-						{
-							currentSequenceIndex = 0;
-							i = 0;
-						}
-						else if (currentSequenceIndex < 0)
-						{
-							currentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
-							i = 0;
-						}
+						currentSequenceIndex = 0;
+						i = 0;
 					}
-					else
+					else if (currentSequenceIndex < 0)
 					{
-						break;
+						currentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+						i = 0;
 					}
 				}
-			//}
+				else
+				{
+					break;
+				}
+			}
 		}
+
 
 		void SequencePlayerComponentInstance::play()
 		{
@@ -163,6 +169,7 @@ namespace nap
 			}
 		}
 
+
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
 			mTime = math::clamp<double>(time, 0.0, mDuration);
@@ -174,10 +181,12 @@ namespace nap
 			}
 		}
 
+
 		void SequencePlayerComponentInstance::pause()
 		{
 			mIsPaused = true;
 		}
+
 
 		void SequencePlayerComponentInstance::stop()
 		{

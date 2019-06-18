@@ -1,7 +1,11 @@
+// Local Includes
 #include "flex.h"
 
+// External Includes
 #include <mathutils.h>
 #include <glm/geometric.hpp>
+
+//////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
@@ -96,10 +100,12 @@ namespace nap
 		calcDeltaLengths();
 	}
 
+
 	Flex::~Flex()
 	{
 		stop();
 	}
+
 
 	void Flex::start()
 	{
@@ -110,6 +116,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::stop()
 	{
 		if (mIsRunning)
@@ -119,6 +126,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::setMotorInput(const std::vector<float>& inputs)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
@@ -126,12 +134,14 @@ namespace nap
 		mMotorInput = inputs;
 	} 
 
+
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
 
 		outputs = mMotorInput;
 	}
+
 
 	void Flex::update()
 	{
@@ -236,6 +246,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::setMotorInputInternal(std::vector<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
@@ -249,10 +260,12 @@ namespace nap
 		}
 	}
 
+
 	void Flex::getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec)
 	{
 		outVec = mElementsLengthDelta[elidx] * mForceObject * (float)direction * mElementsVector[elidx];
 	}
+
 
 	void Flex::getProjectedSuspensionForcesOnOppositePointOfElement(int objectElementId, int oppositeColumn, glm::vec3& outVec)
 	{
@@ -266,6 +279,7 @@ namespace nap
 		getProjectedSuspensionForceOnOppositePointOfElement(objectElementId, suspensionElementId, oppositePoint, outVec);
 	}
 
+
 	void Flex::getProjectedSuspensionForceOnOppositePointOfElement(int objectElementId, int suspensionElementId, int opposite_point, glm::vec3& outVec)
 	{
 		glm::vec3 v1 = mElementsVector[objectElementId];
@@ -276,10 +290,12 @@ namespace nap
 		outVec = d * mElementsVector[objectElementId];
 	}
 
+
 	void Flex::getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec)
 	{
 		outVec = mElementsLength[elidx] * mElementsVector[elidx] * mElementsInput[point];
 	}
+
 
 	void Flex::getIdsOfSuspensionElementsOnPoint(int pointId, std::vector<int> &outIDs)
 	{
@@ -296,6 +312,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::calcDeltaLengths()
 	{
 		mElementsLengthDelta = std::vector<float>(mElementsLength.size());
@@ -304,6 +321,7 @@ namespace nap
 			mElementsLengthDelta[i] = mElementsLength[i] - mElementsLengthRef[i];
 		}
 	}
+
 
 	void Flex::calcElements()
 	{
@@ -339,6 +357,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::concatElements()
 	{
 		// elements
@@ -373,6 +392,7 @@ namespace nap
 		mElementsAll = newElementsAll;
 	}
 
+
 	void Flex::concatPoints()
 	{
 		std::vector<glm::vec3> newPoints;
@@ -388,6 +408,7 @@ namespace nap
 
 		mPoints = newPoints;
 	}
+
 
 	const std::vector<float> Flex::getRopeLengths() const
 	{

@@ -1,3 +1,4 @@
+// local includes
 #include "FlexBlockComponent.h"
 #include "rtti/jsonreader.h"
 
@@ -6,15 +7,6 @@
 #include <meshutils.h>
 #include <mathutils.h>
 #include <math.h>
-
-// json
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/error/en.h>
-#include <fstream>
-#include <utility/fileutils.h>
-
 #include <glm/geometric.hpp>
 
 // nap::FlexBlockComponent run time class definition 
@@ -39,6 +31,7 @@ namespace nap
 	void FlexBlockComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 	}
+
 
 	FlexBlockComponentInstance::~FlexBlockComponentInstance()
 	{
@@ -78,11 +71,13 @@ namespace nap
 		return true;
 	}
 
+
 	void FlexBlockComponentInstance::setMotorInput(int index, float value)
 	{
 		// 
 		mMotorInputs[remapMotorInput(index)] = value;
 	}
+
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
@@ -142,6 +137,7 @@ namespace nap
 		outPoints[6] = inPoints[1];
 		outPoints[7] = inPoints[0];
 	}
+
 
 	const int FlexBlockComponentInstance::remapMotorInput(const int index) const
 	{

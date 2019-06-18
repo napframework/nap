@@ -1,14 +1,5 @@
+// local includes
 #include "flexblocksequencetransition.h"
-
-/*
-RTTI_BEGIN_CLASS(nap::flexblock::FlexblockSequenceTransition)
-// Put additional properties here
-RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Curve", &nap::timeline::SequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Preset File", &nap::timeline::SequenceElement::mPreset, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Use Preset", &nap::timeline::SequenceElement::mUsePreset, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-*/
 
 RTTI_BEGIN_CLASS(nap::flexblock::FlexblockSequenceTransition)
 RTTI_PROPERTY("Motor Inputs", &nap::flexblock::FlexblockSequenceTransition::mMotorInputs, nap::rtti::EPropertyMetaData::Default)

@@ -10,6 +10,12 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * FrameMesh
+	 * Renders the frame of a flexblock object
+	 */
 	class NAPAPI FrameMesh : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
