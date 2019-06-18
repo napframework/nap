@@ -13,6 +13,9 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		// Default constructor
+		WebSocketTicket() = default;
+
 		/**
 		* Initialize this object after de-serialization
 		* @param errorState contains the error message when initialization fails
@@ -23,6 +26,11 @@ namespace nap
 		 * Converts this ticket into a binary string
 		 */
 		bool toBinaryString(std::string& outString, utility::ErrorState& error);
+
+		/**
+		 * Converts this 
+		 */
+		bool fromBinaryString(const std::string& binaryString, utility::ErrorState& error);
 
 		std::string mUsername = "";			///< Property: 'UserName'
 		std::string mPassword = "";			///< Property: 'Password'

@@ -6,9 +6,9 @@
 // External Includes
 #include <nap/logger.h>
 #include <mathutils.h>
-#include <rtti/deserializeresult.h>
-#include <utility/memorystream.h>
-#include <rtti/binaryreader.h>
+
+
+
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
@@ -291,9 +291,6 @@ namespace nap
 
 	bool WebSocketServerEndPoint::onValidate(wspp::ConnectionHandle con)
 	{
-		// TODO: Validate incoming connection here, ie: accept or reject.
-		// Right now simply accept all incoming connections.
-		
 		// Get connection handle
 		std::error_code stdec;
 		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con, stdec);
@@ -305,6 +302,7 @@ namespace nap
 		}
 
 		// Select sub-protocol if one is specified
+		// The sub-protocol also acts as the client ticket when this server has any associated clients
 		const std::vector<std::string>& extra_subp = conp->get_requested_subprotocols();
 		std::string binary_ticket;
 		if (!extra_subp.empty())
@@ -313,27 +311,25 @@ namespace nap
 			conp->select_subprotocol(binary_ticket);
 		}
 		
-		// If there are no tickets, all connections are considered valid 
+		// If there are no tickets, all incoming connections are accepted
 		if(mTickets.empty())
 			return true;
 
-		// Convert entire bitset into byte array
-		std::vector<uint8_t> vec;
-		vec.reserve(binary_ticket.size() / 8);
-		for (int i = 0; i < binary_ticket.size(); i += 8)
-			vec.emplace_back(std::bitset<8>(binary_ticket.substr(i, i + 8)).to_ulong());
+		// Make sure the client has supplied us with a ticket
+		if (binary_ticket.empty())
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information, 
+				"unable to extract ticket");
+			return false;
+		}
 
-		// De-serialize binary ticket
-		rtti::Factory factory;
-		rtti::DeserializeResult deserialize_result;
-		utility::MemoryStream stream(vec.data(), vec.size());
-		
+		WebSocketTicket client_ticket;
 		utility::ErrorState error;
-		if (!rtti::deserializeBinary(stream, factory, deserialize_result, error))
+		if (!client_ticket.fromBinaryString(binary_ticket, error))
 		{
 			nap::Logger::error(error.toString());
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
-				error.toString());
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information);
+			return false;
 		}
 
 		// All good!
