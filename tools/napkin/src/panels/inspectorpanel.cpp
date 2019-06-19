@@ -223,6 +223,11 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 
 void InspectorPanel::setPath(const PropertyPath& path)
 {
+	auto doc = mModel.path().getDocument();
+
+	if (doc)
+		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+
 	if (path.isValid())
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
@@ -236,6 +241,11 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
+
+	doc = path.getDocument();
+	if (doc)
+		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+
 	mTreeView.getTreeView().expandAll();
 }
 
@@ -295,6 +305,13 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 	});
 
 	mTreeView.selectAndReveal(pathItem);
+}
+
+void InspectorPanel::onObjectRemoved(Object* obj)
+{
+	// If the currently edited object is being removed, clear the view
+	if (obj == mModel.path().getObject())
+		setPath({});
 }
 
 bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
