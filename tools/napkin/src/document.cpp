@@ -569,7 +569,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 	objectChanged(&scene);
 }
 
-size_t Document::arrayAddValue(const PropertyPath& path)
+int Document::arrayAddValue(const PropertyPath& path)
 {
 
 	ResolvedPath resolved_path = path.resolve();
@@ -581,8 +581,11 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-	nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
-	assert(wrapped_type.can_create_instance());
+	if (!wrapped_type.can_create_instance())
+	{
+		nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
+		return -1;
+	}
 
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
 	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
