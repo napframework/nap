@@ -178,7 +178,8 @@ TEST_CASE("Serialization", "[Serialization]")
 
 		// Write to binary
 		rtti::BinaryWriter binary_writer;
-		REQUIRE(serializeObjects({ root }, binary_writer, error_state));
+		if (!serializeObjects({ root }, binary_writer, error_state))
+			FAIL(error_state.toString());
 
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
