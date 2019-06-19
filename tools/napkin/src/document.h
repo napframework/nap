@@ -44,9 +44,9 @@ namespace napkin
 		bool isDirty() const { return !mUndoStack.isClean(); }
 
 		/**
-		 * @return All the objects (resources?) that are currently loaded.
+		 * @return A reference to all the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }
+		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
 
 		/**
 		 * Get all objects from this document, derived from the specified type.
@@ -70,12 +70,7 @@ namespace napkin
 		}
 
 		/**
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
-
-		/**
-		 * @return All the objects (resources?) that are currently loaded.
+		 * @return All the objects that are currently loaded.
 		 */
 		nap::rtti::ObjectList getObjectPointers() const;
 
@@ -396,6 +391,21 @@ namespace napkin
 		 * @return true if this object is being pointed to by an embedded pointer
 		 */
 		bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj);
+
+		/**
+		 * If this object is pointed to by an embedded pointer, return the object that declares that pointer.
+		 * Return nullptr when there is no such object.
+		 * @param obj The object being pointed to.
+		 * @return The given (embedded) object's owner.
+		 */
+		nap::rtti::Object* getEmbeddedObjectOwner(const nap::rtti::Object& obj);
+
+		/**
+		 * Retrieve objects embedded in the given object.
+		 * @param owner The object that declares embedded pointers
+		 * @return A list of objects, owned by the given object.
+		 */
+		std::vector<nap::rtti::Object*> getEmbeddedObjects(const nap::rtti::Object& owner);
 
 		/**
 		 * Get the absolute path of an object

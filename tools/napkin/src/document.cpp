@@ -263,7 +263,7 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
-	// Another special case for our snowflake: InstanceProperty
+	// Remove instance properties for this object
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
@@ -287,12 +287,18 @@ void Document::removeObject(Object& object)
 		reparentEntity(*entity, nullptr);
 	}
 
-	auto component = rtti_cast<nap::Component>(&object);
-	if (component != nullptr)
+	// Remove embedded objects under the given owner
+	for (auto embeddedObject : getEmbeddedObjects(object))
+		removeObject(*embeddedObject);
+
+	// Remove this object's components
+	if (auto component = rtti_cast<nap::Component>(&object))
 	{
-		nap::Entity* owner = getOwner(*component);
-		if (owner)
-			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
+		if (auto owner = getOwner(*component))
+		{
+			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
+			owner->mComponents.erase(it, owner->mComponents.end());
+		}
 	}
 
 	// All clean. Remove our object
@@ -892,14 +898,28 @@ std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& 
 
 bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 {
+	return bool(getEmbeddedObjectOwner(obj));
+}
+
+nap::rtti::Object* Document::getEmbeddedObjectOwner(const nap::rtti::Object& obj)
+{
 	for (const auto& path : getPointersTo(obj, false, false))
 	{
-		//assert(path.isPointer());
 		if (path.isEmbeddedPointer())
-			return true;
+			return path.getObject();
 	}
+	return nullptr;
+}
 
-	return false;
+std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)
+{
+	std::vector<nap::rtti::Object*> embeddedObjects;
+	for (auto& obj : getObjects())
+	{
+		if (getEmbeddedObjectOwner(*obj.get()) == &owner)
+			embeddedObjects.emplace_back(obj.get());
+	}
+	return embeddedObjects;
 }
 
 nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)
