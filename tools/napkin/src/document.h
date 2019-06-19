@@ -308,7 +308,7 @@ namespace napkin
 		 * @param path The path to the array property to add the element to
 		 * @return The index of the newly created element
 		 */
-		size_t arrayAddValue(const PropertyPath& path);
+		int arrayAddValue(const PropertyPath& path);
 
 		/**
 		 * Add an existing pointer to the array
