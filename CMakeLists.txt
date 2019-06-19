@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+project(NAP)
 
 #if(WIN32)
 #    find_file(PYEXE
