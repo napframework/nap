@@ -29,12 +29,19 @@ namespace nap
 			virtual bool init(utility::ErrorState& errorState) override;
 
 			/**
-			* @return the number of available compositions in this container
+			* @return the number of available sequences in this container
 			*/
 			const int count() const { return mSequences.size(); }
-
-			std::vector<Sequence*>				mSequences;								
+					
+			/**
+			* @return reference to sequences
+			*/
+			const std::vector<Sequence*>& getSequences() const { return mSequences; }
+		public:
+			// properties
 			std::vector<ResourcePtr<Sequence>>	mSequenceLinks; ///< Property: 'Sequences' vector holding references to assigned sequences
+		protected:
+			std::vector<Sequence*>				mSequences;
 		};
 	}
 }

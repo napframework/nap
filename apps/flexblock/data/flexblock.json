@@ -156,17 +156,17 @@
                     "SerialPort": "SerialPort"
                 },
                 {
-                    "Type": "nap::timeline::SequencePlayerComponent",
-                    "mID": "SequencePlayerComponent",
-                    "TimelineParameters": "Motor Inputs Parameters",
-                    "SequenceContainer": "SequenceContainer"
-                },
-                {
                     "Type": "nap::OSCInputComponent",
                     "mID": "OSCMotorInputs",
                     "Addresses": [
                         "/flexblock"
                     ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePlayerComponent",
+                    "mID": "nap::timeline::SequencePlayerComponent_b9bef377",
+                    "TimelineParameters": "Motor Inputs Parameters",
+                    "SequenceContainer": "SequenceContainer_c623e319"
                 }
             ],
             "Children": [
@@ -981,34 +981,39 @@
         },
         {
             "Type": "nap::flexblock::FlexblockSequence",
-            "mID": "First Act",
+            "mID": "FlexblockSequence_c7564c6e",
             "Sequence Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
-                    "mID": "FlexblockSequenceTransition",
-                    "Duration": 2.0,
-                    "Curve": "",
+                    "mID": "FlexblockSequenceTransition_4761ff90",
+                    "Duration": 1.0,
+                    "Curve": "Bezier Curve",
                     "Parameters": [],
                     "Preset File": "",
                     "Use Preset": false,
                     "Motor Inputs": [
                         1.0,
+                        0.0,
+                        0.0,
                         1.0,
-                        0.0,
-                        0.0,
                         0.0,
                         1.0,
                         0.0,
                         0.0
                     ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePause",
+                    "mID": "SequencePause_7a175366",
+                    "Duration": 1.0
                 }
             ],
             "Start Parameters": [],
             "Motor Inputs": [
                 0.0,
+                1.0,
                 0.0,
-                0.0,
-                0.0,
+                1.0,
                 0.0,
                 0.0,
                 0.0,
@@ -1071,9 +1076,9 @@
         },
         {
             "Type": "nap::timeline::SequenceContainer",
-            "mID": "SequenceContainer",
+            "mID": "SequenceContainer_c623e319",
             "Sequences": [
-                "First Act"
+                "FlexblockSequence_c7564c6e"
             ]
         }
     ]

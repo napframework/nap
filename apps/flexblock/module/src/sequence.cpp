@@ -4,8 +4,8 @@
 // nap::flexblockstancesequence run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::Sequence)
 	// Put additional properties here
-	RTTI_PROPERTY("Sequence Elements", &nap::timeline::Sequence::mSequenceElements, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Start Parameters", &nap::timeline::Sequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Sequence Elements", &nap::timeline::Sequence::mSequenceElementsResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Start Parameters", &nap::timeline::Sequence::mStartParametersResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -20,9 +20,19 @@ namespace nap
 
 		bool Sequence::init(utility::ErrorState& errorState)
 		{
-			if (!errorState.check(mSequenceElements.size() > 0,
+			if (!errorState.check(mSequenceElementsResourcePtrs.size() > 0,
 				"need at least 1 element %s", this->mID.c_str()))
 				return false;
+
+			for (int i = 0; i < mSequenceElementsResourcePtrs.size(); i++)
+			{
+				mSequenceElements.emplace_back(mSequenceElementsResourcePtrs[i].get());
+			}
+
+			for (int i = 0; i < mStartParametersResourcePtrs.size(); i++)
+			{
+				mStartParameters.emplace_back(mStartParametersResourcePtrs[i].get());
+			}
 
 			std::vector<Parameter*> startParameters = mStartParameters;
 			double time = 0.0;

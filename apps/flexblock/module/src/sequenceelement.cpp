@@ -30,7 +30,7 @@ namespace nap
 				"Duration must be bigger or equal then 0 %s", this->mID.c_str()))
 				return false;
 
-			if (mUsePreset)
+ 			if (mUsePreset)
 			{
 				rtti::Factory factory;
 
@@ -62,7 +62,15 @@ namespace nap
 				mEndParameters.clear();
 				for (int i = 0; i < group->mParameters.size(); i++)
 				{
-					mEndParameters.push_back(group->mParameters[i].get());
+					mEndParameters.emplace_back(group->mParameters[i].get());
+				}
+			}
+			else
+			{
+				mEndParameters.clear();
+				for (int i = 0; i < mEndParameterResourcePtrs.size(); i++)
+				{
+					mEndParameters.emplace_back(mEndParameterResourcePtrs[i].get());
 				}
 			}
 

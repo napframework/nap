@@ -9,7 +9,7 @@ RTTI_BEGIN_CLASS(nap::timeline::SequenceTransition)
 // Put additional properties here
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Curve", &nap::timeline::SequenceTransition::mCurve, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameters, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameterResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Preset File", &nap::timeline::SequenceTransition::mPreset, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Use Preset", &nap::timeline::SequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

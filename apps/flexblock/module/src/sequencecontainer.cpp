@@ -18,6 +18,10 @@ namespace nap
 
 		bool SequenceContainer::init(utility::ErrorState& errorState)
 		{
+			if (!errorState.check(mSequenceLinks.size() > 0,
+				"Must have at least one sequence %s", mID.c_str()))
+				return false;
+
 			if (mSequenceLinks.size() > 0)
 			{
 				const std::vector<Parameter*>& parameters = mSequenceLinks[0]->mStartParameters;

@@ -23,7 +23,7 @@ namespace nap
 				mOwnedParameters.back()->setValue(input);
 
 				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
-				mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+				mEndParameterResourcePtrs.emplace_back(parameterFloatPtr);
 			}
 
 			if (!timeline::SequenceTransition::init(errorState))

@@ -77,10 +77,11 @@ namespace nap
 			bool mUsePreset	= false;	///< Property: 'Use Preset' wether parameters of this element needed to be loaded from a preset json file
 			std::string mPreset;		///< Property: 'JSON' preset file
 		public:
-			std::vector<Parameter*> mEndParameters;
+			std::vector<ResourcePtr<Parameter>> mEndParameterResourcePtrs;
 		protected:
 			double mStartTime = 0.0;
 			
+			std::vector<Parameter*> mEndParameters;
 			std::vector<Parameter*> mStartParameters;
 			rtti::DeserializeResult mPresetReadResult;
 		};

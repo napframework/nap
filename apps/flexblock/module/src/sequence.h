@@ -64,16 +64,24 @@ namespace nap
 			* @return returns pointer to current element pointed to by current element index
 			*/
 			const SequenceElement* getCurrentElement() const{ return mSequenceElements[mCurrentElementIndex]; }
+
+			/**
+			* @return returns pointer to current element pointed to by current element index
+			*/
+			const std::vector<SequenceElement*>& getSequenceElements() const { return mSequenceElements; }
 		public:
 			// properties
-			std::vector<SequenceElement*> mSequenceElements;
+			std::vector<ResourcePtr<SequenceElement>> mSequenceElementsResourcePtrs;
 
 			//
-			std::vector<Parameter*> mStartParameters;
+			std::vector<ResourcePtr<Parameter>> mStartParametersResourcePtrs;
 		protected:
 			double mDuration = 0.0;
 			double mStartTime = 0.0;
 			int mCurrentElementIndex = 0;
+
+			std::vector<SequenceElement*> mSequenceElements;
+			std::vector<Parameter*> mStartParameters;
 
 			/**
 			* Sets the start time of this sequence, can only be called by friend class SequenceContainer

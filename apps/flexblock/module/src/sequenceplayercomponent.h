@@ -126,7 +126,7 @@ namespace nap
 			/**
 			* @return pointer to current sequence
 			*/
-			const Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
+			const Sequence* getCurrentSequence() const{ return mSequenceContainer->getSequences()[mCurrentSequenceIndex];}
 
 			/**
 			* @return current time in sequence
@@ -151,7 +151,7 @@ namespace nap
 			/**
 			* @return vector of pointers to sequences
 			*/
-			const std::vector<Sequence*>& getSequences() { return mSequenceContainer->mSequences;}
+			const std::vector<Sequence*>& getSequences() const { return mSequenceContainer->getSequences();}
 		protected:
 			//
 			SequenceContainer* mSequenceContainer = nullptr;

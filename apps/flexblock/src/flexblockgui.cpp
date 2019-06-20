@@ -308,9 +308,6 @@ namespace nap
 		// 
 		float scroll_x = ImGui::GetScrollX();
 
-		// create list of point lists
-		std::vector<std::vector<ImVec2>> curvePoints(8);
-
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
 		{
@@ -366,7 +363,8 @@ namespace nap
 					sequences[i]->getID().c_str());
 
 				// draw element lines and positions
-				for (const auto* element : sequences[i]->mSequenceElements)
+				const auto& sequenceElements = sequences[i]->getSequenceElements();
+				for (const auto* element : sequenceElements)
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 
@@ -409,6 +407,9 @@ namespace nap
 							parameters.emplace_back(parametersPts.back().get());
 						}
 
+						// create list of point lists
+						std::vector<std::vector<ImVec2>> curvePoints(8);
+
 						// zoom in on the part that is shown in the window
 						const int steps = curveResolution;
 						float part =  windowWidth / child_width;
@@ -430,20 +431,24 @@ namespace nap
 									bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
 							}
 						}
+
+						for (int l = 0; l < 8; l++)
+						{
+							draw_list->AddPolyline(
+								&*curvePoints[l].begin(),
+								curvePoints[l].size(),
+								colorRed,
+								false,
+								1.5f,
+								false);
+						}
 					}
 				}
 			}
 
-			// draw the polylines and text
+			// draw the  text
 			for (int l = 0; l < 8; l++)
 			{
-				draw_list->AddPolyline(
-					&*curvePoints[l].begin(),
-					curvePoints[l].size(),
-					colorRed,
-					false,
-					2.0f,
-					true);
 
 				draw_list->AddText(
 					ImVec2(top_left.x - 15, top_left.y + (child_size.y / 8) * l + 4),
@@ -539,7 +544,7 @@ namespace nap
 
 				if (ImGui::TreeNode(std::string(sequence->getID() + " Elements").c_str()))
 				{
-					const auto& elements = sequence->mSequenceElements;
+					const auto& elements = sequence->getSequenceElements();
 
 					for(const auto* element : elements)
 					{

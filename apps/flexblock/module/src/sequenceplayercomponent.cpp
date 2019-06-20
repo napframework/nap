@@ -32,14 +32,14 @@ namespace nap
 
 		void SequencePlayerComponentInstance::skipToSequence(const Sequence * sequence)
 		{
-			for (const auto* sequence_ : mSequenceContainer->mSequences)
+			for (const auto* sequence_ : mSequenceContainer->getSequences())
 			{
 				if (sequence_ == sequence)
 				{
-					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					mTime = sequence->getStartTime();
 					mCurrentSequenceIndex = 0;
-					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					break;
 				}
 			}
@@ -57,8 +57,8 @@ namespace nap
 				mParameters.emplace_back(parameter.get());
 			}
 
-			if( mSequenceContainer->mSequences.size() > 0 )
-				mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
+			if( mSequenceContainer->getSequences().size() > 0 )
+				mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 
 			return true;
 		}
@@ -73,15 +73,15 @@ namespace nap
 					mTime += deltaTime * mSpeed;
 				}
 
-				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+				for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 				{
-					int result = mSequenceContainer->mSequences[mCurrentSequenceIndex]->process(mTime, mParameters);
+					int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
 					
 					if (result != 0)
 					{
 						mCurrentSequenceIndex += result;
 
-						int size = mSequenceContainer->mSequences.size();
+						int size = mSequenceContainer->getSequences().size();
 						if (mCurrentSequenceIndex >= size)
 						{
 							if (mIsLooping)
@@ -101,7 +101,7 @@ namespace nap
 						{
 							if (mIsLooping)
 							{
-								mCurrentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+								mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
 								i = 0;
 								mTime = mDuration - deltaTime;
 							}
@@ -126,15 +126,15 @@ namespace nap
 		{
 			int currentSequenceIndex = 0;
 
-			for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 			{
-				int result = mSequenceContainer->mSequences[currentSequenceIndex]->process(time, output);
+				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->process(time, output);
 
 				if (result != 0)
 				{
 					currentSequenceIndex += result;
 
-					int size = mSequenceContainer->mSequences.size();
+					int size = mSequenceContainer->getSequences().size();
 					if (currentSequenceIndex >= size)
 					{
 						currentSequenceIndex = 0;
@@ -142,7 +142,7 @@ namespace nap
 					}
 					else if (currentSequenceIndex < 0)
 					{
-						currentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+						currentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
 						i = 0;
 					}
 				}
@@ -175,7 +175,7 @@ namespace nap
 			mTime = math::clamp<double>(time, 0.0, mDuration);
 			mCurrentSequenceIndex = 0;
 
-			for (const auto& sequence : mSequenceContainer->mSequences)
+			for (const auto& sequence : mSequenceContainer->getSequences())
 			{
 				sequence->reset();
 			}
