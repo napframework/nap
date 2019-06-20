@@ -6,9 +6,10 @@
 // External Includes
 #include <nap/logger.h>
 #include <mathutils.h>
-
-
-
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/error/en.h>
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
@@ -171,6 +172,10 @@ namespace nap
 			&WebSocketServerEndPoint::onMessageReceived, this,
 			std::placeholders::_1, std::placeholders::_2
 		));
+
+		// Create unique hashes out of tickets
+		for (const auto& ticket : mTickets)
+			mHashes.emplace(ticket->toHash());
 		
 		return true;
 	}
@@ -267,10 +272,26 @@ namespace nap
 		// Get request body
 		std::string body = conp->get_request_body();
 		
+		// Try to parse as JSON
+		rapidjson::Document document;
+		rapidjson::ParseResult parse_result = document.Parse(body.c_str());
+		if (!parse_result || !document.IsObject())
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request, "unable to parse as JSON");
+			return;
+		}
+
+		// Extract user information
+		if (!document.HasMember("user") || !document.HasMember("pass"))
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request, "invalid JSON");
+			return;
+		}
+
 		// Create ticket
 		nap::WebSocketTicket ticket;
-		ticket.mPassword = "letmein!";
-		ticket.mUsername = "cklosters";
+		ticket.mUsername = document["user"].GetString();
+		ticket.mPassword = document["pass"].GetString();
 		ticket.mID = math::generateUUID();
 		
 		// Convert to binary blob
@@ -301,38 +322,50 @@ namespace nap
 			return false;
 		}
 
-		// Select sub-protocol if one is specified
-		// The sub-protocol also acts as the client ticket when this server has any associated clients
-		const std::vector<std::string>& extra_subp = conp->get_requested_subprotocols();
-		std::string binary_ticket;
-		if (!extra_subp.empty())
+		// If the client requested to use a sub-protocol and we don't have any clients the request is invalid
+		// The server only accepts the sub-protocol as a method of identification.
+		const std::vector<std::string>& sub_protocol = conp->get_requested_subprotocols();
+		if (mTickets.empty())
 		{
-			binary_ticket = extra_subp[0];
-			conp->select_subprotocol(binary_ticket);
-		}
-		
-		// If there are no tickets, all incoming connections are accepted
-		if(mTickets.empty())
-			return true;
+			// All good -> every has access and no protocol is provided.
+			if (sub_protocol.empty())
+				return true;
 
-		// Make sure the client has supplied us with a ticket
-		if (binary_ticket.empty())
-		{
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information, 
-				"unable to extract ticket");
+			// Sub-protocol requested but can't authenticate.
+			conp->set_status(websocketpp::http::status_code::not_found, "invalid sub-protocol");
 			return false;
 		}
 
+		// We have tickets and therefore specific clients we accept.
+		// Use the sub_protocol to extract client information
+		if (sub_protocol.empty() || sub_protocol[0].empty())
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"unable to extract ticket");
+		}
+
+		// Extract ticket
+		conp->select_subprotocol(sub_protocol[0]);
+		
+		// Convert from binary into string
 		WebSocketTicket client_ticket;
 		utility::ErrorState error;
-		if (!client_ticket.fromBinaryString(binary_ticket, error))
+		if (!client_ticket.fromBinaryString(sub_protocol[0], error))
 		{
-			nap::Logger::error(error.toString());
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information);
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"first sub-protocol argument is not a valid ticket object");
 			return false;
 		}
 
-		// All good!
+		// Locate ticket
+		if (mHashes.find(client_ticket.toHash()) == mHashes.end())
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"not a valid ticket");
+			return false;
+		}
+
+		// Welcome!
 		return true;
 	}
 
