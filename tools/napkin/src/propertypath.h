@@ -271,6 +271,8 @@ namespace napkin
 
 		void updateObjectName(const std::string& oldName, const std::string& newName);
 
+		Document* getDocument() const { return mDocument; }
+
 	private:
 		void iterateArrayElements(PropertyVisitor visitor, int flags) const;
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;

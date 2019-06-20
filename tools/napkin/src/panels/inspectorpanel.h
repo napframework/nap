@@ -15,7 +15,7 @@ namespace napkin
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static constexpr char* sNapkinMimeData = "application/napkin-path";
+	static constexpr char* sNapkinMimeData = (char*) "application/napkin-path";
 
 	class ArrayPropertyItem;
 
@@ -142,6 +142,11 @@ namespace napkin
 		 * Called when another property needs to be selected
 		 */
 		void onPropertySelectionChanged(const PropertyPath& prop);
+
+		/**
+		 * Called when an object has been removed
+		 */
+	 	void onObjectRemoved(nap::rtti::Object* obj);
 
 		/**
 		 * Rebuilds view and model and applies path as selection

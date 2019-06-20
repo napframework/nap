@@ -263,7 +263,7 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
-	// Another special case for our snowflake: InstanceProperty
+	// Remove instance properties for this object
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
@@ -287,12 +287,18 @@ void Document::removeObject(Object& object)
 		reparentEntity(*entity, nullptr);
 	}
 
-	auto component = rtti_cast<nap::Component>(&object);
-	if (component != nullptr)
+	// Remove embedded objects under the given owner
+	for (auto embeddedObject : getEmbeddedObjects(object))
+		removeObject(*embeddedObject);
+
+	// Remove this object's components
+	if (auto component = rtti_cast<nap::Component>(&object))
 	{
-		nap::Entity* owner = getOwner(*component);
-		if (owner)
-			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
+		if (auto owner = getOwner(*component))
+		{
+			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
+			owner->mComponents.erase(it, owner->mComponents.end());
+		}
 	}
 
 	// All clean. Remove our object
@@ -563,7 +569,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 	objectChanged(&scene);
 }
 
-size_t Document::arrayAddValue(const PropertyPath& path)
+int Document::arrayAddValue(const PropertyPath& path)
 {
 
 	ResolvedPath resolved_path = path.resolve();
@@ -575,8 +581,11 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-	nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
-	assert(wrapped_type.can_create_instance());
+	if (!wrapped_type.can_create_instance())
+	{
+		nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
+		return -1;
+	}
 
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
 	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
@@ -892,14 +901,36 @@ std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& 
 
 bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 {
+	return bool(getEmbeddedObjectOwner(obj));
+}
+
+nap::rtti::Object* Document::getEmbeddedObjectOwner(const nap::rtti::Object& obj)
+{
+	auto path = getEmbeddedObjectOwnerPath(obj);
+	if (path.isValid())
+		return path.getObject();
+	return nullptr;
+}
+
+PropertyPath Document::getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj)
+{
 	for (const auto& path : getPointersTo(obj, false, false))
 	{
-		//assert(path.isPointer());
 		if (path.isEmbeddedPointer())
-			return true;
+			return path;
 	}
+	return {};
+}
 
-	return false;
+std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)
+{
+	std::vector<nap::rtti::Object*> embeddedObjects;
+	for (auto& obj : getObjects())
+	{
+		if (getEmbeddedObjectOwner(*obj.get()) == &owner)
+			embeddedObjects.emplace_back(obj.get());
+	}
+	return embeddedObjects;
 }
 
 nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)

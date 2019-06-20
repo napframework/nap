@@ -130,7 +130,7 @@ void MainWindow::updateWindowTitle()
 	if (filename.isEmpty()) {
 		filename = napkin::TXT_UNTITLED_DOCUMENT;
 	} else {
-		filename = QFileInfo(filename).fileName();
+		filename = QFileInfo(filename).filePath();
 	}
 
 	QString changed = AppContext::get().getDocument()->isDirty() ? "*" : "";
