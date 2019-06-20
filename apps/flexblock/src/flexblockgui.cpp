@@ -1020,9 +1020,12 @@ namespace nap
 		ImGui::PopItemWidth();
 
 		// handle scroll wheel input
-		lengthPerSecond += ImGui::GetIO().MouseWheel;
-		lengthPerSecond = math::clamp<float>(lengthPerSecond, 4.0f, 60.0f);
-		child_width = ( mSequencePlayer->getDuration() / lengthPerSecond ) * ImGui::GetWindowWidth();
+		if (!inPopup)
+		{
+			lengthPerSecond += ImGui::GetIO().MouseWheel;
+			lengthPerSecond = math::clamp<float>(lengthPerSecond, 4.0f, 60.0f);
+			child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
+		}
 
 		// handle save button
 		ImGui::SameLine();
