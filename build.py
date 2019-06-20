@@ -59,7 +59,7 @@ def main(targets):
         elif platform == 'darwin':
             # macOS
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-            call(d, ['xcodebuild', '-project', 'Project.xcodeproj', '-target', t, '-configuration', 'Debug'])
+            call(d, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', t, '-configuration', 'Debug'])
 
         else:
             # Windows
