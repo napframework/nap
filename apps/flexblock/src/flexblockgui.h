@@ -56,6 +56,18 @@ namespace nap
 
 		void showTimeLineWindow();
 
+		void handleInsertionPopup();
+
+		void drawTimeline(bool & outPopupOpened, std::string & popupId);
+
+		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
+
+		void handleLoadPopup();
+
+		void handleSequenceActionsPopup();
+
+		void handleSaveAsPopup();
+
 	private:
 		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
 		ParameterService&					mParameterService;
@@ -83,6 +95,8 @@ namespace nap
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 
 		void showSequencesWindow();
+
+		void handleElementActionsPopup();
 
 		void initParameters();
 		void updateInput(int index, float value);
