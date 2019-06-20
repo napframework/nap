@@ -77,4 +77,11 @@ namespace nap
 		// Done
 		return true;
 	}
+
+
+	WebSocketTicketHash WebSocketTicket::toHash() const
+	{
+		return WebSocketTicketHash(*this);
+	}
+
 }

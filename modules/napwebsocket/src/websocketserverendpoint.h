@@ -14,6 +14,7 @@
 #include <nap/signalslot.h>
 #include <nap/resourceptr.h>
 #include <mutex>
+#include <unordered_set>
 
 namespace nap
 {
@@ -160,7 +161,8 @@ namespace nap
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
-		bool mRunning = false;			///< If the server is accepting and managing client connections.
-		std::mutex mConnectionMutex;	///< Ensures connections are added / removed safely.
+		bool mRunning = false;					///< If the server is accepting and managing client connections.
+		std::mutex mConnectionMutex;			///< Ensures connections are added / removed safely.
+		std::unordered_set<WebSocketTicketHash> mHashes;
 	};
 }
