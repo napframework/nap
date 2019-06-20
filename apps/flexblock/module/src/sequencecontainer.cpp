@@ -152,6 +152,7 @@ namespace nap
 		void SequenceContainer::reconstruct()
 		{
 			double time = 0.0;
+			SequenceElement* lastElement = nullptr;
 			for (int i = 0; i < mSequences.size(); i++)
 			{
 				if (i > 0)
@@ -168,6 +169,12 @@ namespace nap
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
+
+				for (int j = 0; j < mSequences[i]->mElements.size(); j++)
+				{
+					mSequences[i]->mElements[j]->setPreviousElement(lastElement);
+					lastElement = mSequences[i]->mElements[j];
+				}
 			}
 		}
 	}
