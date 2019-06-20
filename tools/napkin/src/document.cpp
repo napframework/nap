@@ -906,12 +906,20 @@ bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 
 nap::rtti::Object* Document::getEmbeddedObjectOwner(const nap::rtti::Object& obj)
 {
+	auto path = getEmbeddedObjectOwnerPath(obj);
+	if (path.isValid())
+		return path.getObject();
+	return nullptr;
+}
+
+PropertyPath Document::getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj)
+{
 	for (const auto& path : getPointersTo(obj, false, false))
 	{
 		if (path.isEmbeddedPointer())
-			return path.getObject();
+			return path;
 	}
-	return nullptr;
+	return {};
 }
 
 std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)

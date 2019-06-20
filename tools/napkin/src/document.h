@@ -172,7 +172,7 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent,
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr,
 									 bool selectNewObject = true, const std::string& name = std::string());
 
 		/**
@@ -399,6 +399,13 @@ namespace napkin
 		 * @return The given (embedded) object's owner.
 		 */
 		nap::rtti::Object* getEmbeddedObjectOwner(const nap::rtti::Object& obj);
+
+		/**
+		 * If this object retrieve the [property] path pointing to this object.
+		 * @param obj The object being pointed to
+		 * @return The property path pointing to the given object, or an invalid path
+		 */
+		PropertyPath getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj);
 
 		/**
 		 * Retrieve objects embedded in the given object.

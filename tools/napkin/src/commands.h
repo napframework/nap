@@ -306,4 +306,20 @@ namespace napkin
 		size_t mNewIndex; ///< The actual new index (may have been shifted)
 	};
 
+	class ReplaceEmbeddedPointerCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * Create or replace an embedded object
+		 */
+		 ReplaceEmbeddedPointerCommand(const PropertyPath& path, rttr::type objectType);
+
+		void redo() override;
+		void undo() override;
+	private:
+		PropertyPath mPath;
+		PropertyPath mCreatedObject;
+		rttr::type mType;
+	};
+
 };
