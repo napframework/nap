@@ -24,6 +24,11 @@ namespace nap
 	 * tries to connect to the server. When a connection is established the onConnectionOpened
 	 * function is called. If the connection failed to establish the onConnectionFailed function
 	 * is called. Call reconnect() to establish a new connection at run-time.
+	 *
+	 * A 'ticket' can be added to every client to specify additional authorization information. 
+	 * This information is automatically given to the server when the client tries to establish a connection. 
+	 * The server can accept or reject the connection based on that information. When no ticket is provided
+	 * the client will try to connect without any authorization.
 	 */
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
@@ -128,6 +133,11 @@ namespace nap
 	 * Use a nap::WebSocketComponent to receive and react to web-socket events in your application.
 	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint and
 	 * tries to connect to the server. Call reconnect() to establish a new connection at run-time.
+	 *
+	 * A 'ticket' can be added to specify additional authorization information (username / password).
+	 * This information is automatically given to the server when the client tries to establish a connection.
+	 * The server can accept or reject the connection based on that information. When no ticket is provided
+	 * the client will try to connect without any authorization.
 	 */
 	class NAPAPI WebSocketClient : public IWebSocketClient
 	{
