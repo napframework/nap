@@ -9,7 +9,8 @@ namespace nap
 
 	/**
 	 * Websocket ticket created and issued by a nap::WebSocketServerEndPoint.
-	 * This ticket can be used by a client to gain access to a web-socket server.
+	 * A ticket is used by a server end-point to reject or accept a client connection request.
+	 * For more information on authorization look at the nap::WebSocketServerEndPoint documentation.
 	 */
 	class NAPAPI WebSocketTicket : public Resource
 	{
@@ -35,7 +36,7 @@ namespace nap
 		bool fromBinaryString(const std::string& binaryString, utility::ErrorState& error);
 
 		/**
-		 * Creates a hashable ticket based on the info in this ticket
+		 * Creates a hash-able ticket based on the info in this ticket
 		 */
 		WebSocketTicketHash toHash() const;
 
@@ -54,15 +55,13 @@ namespace nap
 	struct NAPAPI WebSocketTicketHash final
 	{
 	public:
-		WebSocketTicketHash(const WebSocketTicket& ticket) :
-			mHash(ticket.mUsername+ticket.mPassword)	{ }
-		std::string mHash;
-
+		WebSocketTicketHash(const WebSocketTicket& ticket);
+	
 		bool operator== (const WebSocketTicketHash& rhs) const		{ return rhs.mHash == mHash; }
+		bool operator!=	(const WebSocketTicketHash& rhs) const		{ return !(rhs == *this); }
 
-		bool operator!=(const WebSocketTicketHash& rhs) const		{ return !(rhs == *this); }
+		std::string mHash;	///< Hash generated based on a ticket.
 	};
-
 }
 
 
