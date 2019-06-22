@@ -3,6 +3,7 @@
 // Local Includes
 #include "websocketclientendpoint.h"
 #include "websocketinterface.h"
+#include "websocketticket.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -69,6 +70,7 @@ namespace nap
 		const WebSocketConnection& getConnection() const				{ return mConnection; }
 
 		ResourcePtr<WebSocketClientEndPoint> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
+		ResourcePtr<WebSocketTicket> mTicket = nullptr;					///< Property: 'Ticket' optional identification token. 
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
 
 	protected:
