@@ -147,15 +147,16 @@
         {
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
+            "AccessMode" : "Reserved",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 80,
             "LibraryLogLevel": "Warning",
-            "Tickets": [
+            "Clients": [
                 {
                     "Type": "nap::WebSocketTicket",
                     "mID": "WebSocketTicket_060c060d",
-                    "UserName": "cklosters",
+                    "UserName": "napuser",
                     "Password": "letmein!"
                 }
             ]
