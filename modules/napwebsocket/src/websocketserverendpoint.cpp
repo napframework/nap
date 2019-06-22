@@ -296,6 +296,14 @@ namespace nap
 		// set whether the response can be shared with requesting code from the given origin.
 		conp->append_header("Access-Control-Allow-Origin", mAccessAllowControlOrigin);
 
+		// When there is no access policy the server doesn't generate tickets
+		if (mMode == EAccessMode::EveryOne)
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request,
+				"unable to generate ticket, no access policy set");
+			return;
+		}
+
 		// Get request body
 		std::string body = conp->get_request_body();
 		
