@@ -18,12 +18,14 @@ RTTI_BEGIN_ENUM(nap::WebSocketServerEndPoint::EAccessMode)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
-	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPoint::mMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPoint::mClients,				nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPoint::mMode,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ConnectionLimit",		&nap::WebSocketServerEndPoint::mConnectionLimit,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowControlOrigin",		&nap::WebSocketServerEndPoint::mAccessAllowControlOrigin,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPoint::mClients,					nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
@@ -94,6 +96,22 @@ namespace nap
 		return true;
 	}
 
+
+	int WebSocketServerEndPoint::getConnectionCount()
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		return mConnections.size();
+	}
+
+
+	bool WebSocketServerEndPoint::acceptsNewConnections()
+	{
+		if (mConnectionLimit < 0)
+			return true;
+
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		return mConnections.size() < mConnectionLimit;
+	}
 
 	void WebSocketServerEndPoint::run()
 	{
@@ -274,7 +292,9 @@ namespace nap
 			conp->set_status(websocketpp::http::status_code::internal_server_error);
 			return;
 		}
-		conp->append_header("Access-Control-Allow-Origin", "*");
+
+		// set whether the response can be shared with requesting code from the given origin.
+		conp->append_header("Access-Control-Allow-Origin", mAccessAllowControlOrigin);
 
 		// Get request body
 		std::string body = conp->get_request_body();
@@ -297,8 +317,15 @@ namespace nap
 
 		// Create ticket
 		nap::WebSocketTicket ticket;
-		ticket.mUsername = document["user"].GetString();
 		ticket.mID = math::generateUUID();
+		ticket.mUsername = document["user"].GetString();
+
+		// Ensure user name is not empty
+		if (ticket.mUsername.empty())
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request, "member 'user' is empty");
+			return;
+		}
 		
 		// The password is optional and left empty when not specified
 		if (document.HasMember("pass"))
@@ -329,6 +356,14 @@ namespace nap
 		{
 			nap::Logger::error(stdec.message());
 			conp->set_status(websocketpp::http::status_code::internal_server_error);
+			return false;
+		}
+
+		// Make sure we accept new connections
+		if (!acceptsNewConnections())
+		{
+			conp->set_status(websocketpp::http::status_code::too_many_requests,
+				"client connection count exceeded");
 			return false;
 		}
 

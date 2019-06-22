@@ -101,12 +101,15 @@ namespace nap
 		 */
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
-		EAccessMode mMode = EAccessMode::EveryOne;								///< Property: "AccessMode" client connection access mode
-		int mPort = 80;															///< Property: "Port" to open and listen to for client requests.
-		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
-		bool mAllowPortReuse = false;											///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
-		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
-		std::vector<ResourcePtr<WebSocketTicket>> mClients;						///< Property: "All authorized clients when mode is set to 'Reserved'"
+		/**
+		 * @return total number of active client connections
+		 */
+		int getConnectionCount();
+
+		/**
+		 * @return if the server end point accepts new connections
+		 */
+		bool acceptsNewConnections();
 
 		// Triggered when a new client connection is opened. Including client web-socket connection.
 		nap::Signal<const WebSocketConnection&> connectionOpened;
@@ -120,13 +123,16 @@ namespace nap
 		// Triggered when a new message from a client is received. Including client web-socket connection and message.
 		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
 
-	private:
-		wspp::ServerEndPoint mEndPoint;											///< The websocketpp server end-point
-		uint32 mLogLevel = 0;													///< Converted library log level
-		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
-		std::future<void> mServerTask;											///< The background server thread
-		std::vector<wspp::ConnectionPtr> mConnections;							///< List of all active connections
+		EAccessMode mMode = EAccessMode::EveryOne;							///< Property: "AccessMode" client connection access mode.
+		int mConnectionLimit = -1;											///< Property: "ConnectionLimit" number of allowed client connections at once, -1 = no limit
+		int mPort = 80;														///< Property: "Port" to open and listen to for client requests.
+		bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
+		bool mAllowPortReuse = false;										///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
+		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
+		std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
+		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
 
+	private:
 		/**
 		 * Runs the end point in a background thread until stopped.
 		 */
@@ -173,8 +179,14 @@ namespace nap
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
-		bool mRunning = false;					///< If the server is accepting and managing client connections.
-		std::mutex mConnectionMutex;			///< Ensures connections are added / removed safely.
-		std::unordered_set<WebSocketTicketHash> mClientHashes;
+		bool mRunning = false;													///< If the server is accepting and managing client connections.
+		std::mutex mConnectionMutex;											///< Ensures connections are added / removed safely.
+		std::unordered_set<WebSocketTicketHash> mClientHashes;					///< Accepted client ticket hashes
+		wspp::ServerEndPoint mEndPoint;											///< The websocketpp server end-point
+		uint32 mLogLevel = 0;													///< Converted library log level
+		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
+		std::future<void> mServerTask;											///< The background server thread
+		std::vector<wspp::ConnectionPtr> mConnections;							///< List of all active connections
+
 	};
 }

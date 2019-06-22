@@ -55,6 +55,10 @@
     requestLogin();
   }
 
+  /*
+   * Sends an http request to get a ticket from the web-socket server
+   * The ticket is used to on login to validate the connection
+  */
   function requestLogin()
   {
     const req = new XMLHttpRequest();

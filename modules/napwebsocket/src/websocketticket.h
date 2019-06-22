@@ -49,7 +49,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Hash-able web-socket ticket
+	 * WebSocketTicket hash representation
 	 */
 	struct NAPAPI WebSocketTicketHash final
 	{

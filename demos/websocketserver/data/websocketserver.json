@@ -148,6 +148,7 @@
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
             "AccessMode" : "Reserved",
+            "ConnectionLimit" : 20,
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 80,
