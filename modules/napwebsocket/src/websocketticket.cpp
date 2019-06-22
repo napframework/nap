@@ -10,7 +10,7 @@
 // nap::websocketticket run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketTicket)
 	RTTI_PROPERTY("UserName", &nap::WebSocketTicket::mUsername, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Password", &nap::WebSocketTicket::mPassword, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Password", &nap::WebSocketTicket::mPassword, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -20,6 +20,8 @@ namespace nap
 {
 	bool WebSocketTicket::init(utility::ErrorState& errorState)
 	{
+		if (errorState.check(mUsername.empty(), "%s: no username specified"))
+			return false;
 		return true;
 	}
 
@@ -41,6 +43,10 @@ namespace nap
 
 	bool WebSocketTicket::fromBinaryString(const std::string& binaryString, utility::ErrorState& error)
 	{
+		// Make sure it's a binary stream
+		if (!error.check(!binaryString.empty() && binaryString.size() % 8 == 0, "invalid binary bit-stream"))
+			return false;
+
 		// Convert entire bitset into byte array
 		std::vector<uint8_t> vec;
 		vec.reserve(binaryString.size() / 8);
@@ -82,6 +88,13 @@ namespace nap
 	WebSocketTicketHash WebSocketTicket::toHash() const
 	{
 		return WebSocketTicketHash(*this);
+	}
+
+
+	WebSocketTicketHash::WebSocketTicketHash(const WebSocketTicket& ticket) :
+		mHash(ticket.mUsername + ticket.mPassword)
+	{
+
 	}
 
 }

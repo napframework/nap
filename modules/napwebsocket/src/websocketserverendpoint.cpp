@@ -199,9 +199,14 @@ namespace nap
 		));
 
 		// Create unique hashes out of tickets
+		// Server side tickets are required to have a password and username
 		for (const auto& ticket : mClients)
+		{
+			if (errorState.check(ticket->mPassword.empty(), "%s: %s has no password", this->mID.c_str(), ticket->mID.c_str()))
+				return false;
+
 			mClientHashes.emplace(ticket->toHash());
-		
+		}
 		return true;
 	}
 	
@@ -312,45 +317,58 @@ namespace nap
 		rapidjson::ParseResult parse_result = document.Parse(body.c_str());
 		if (!parse_result || !document.IsObject())
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request, "unable to parse as JSON");
-			return;
-		}
-
-		// Extract user information, this field is required.
-		if (!document.HasMember("user"))
-		{
-			conp->set_status(websocketpp::http::status_code::bad_request, "missing required member: 'user");
+			conp->set_status(websocketpp::http::status_code::bad_request, 
+				"unable to parse as JSON");
 			return;
 		}
 
 		// Create ticket
 		nap::WebSocketTicket ticket;
 		ticket.mID = math::generateUUID();
-		ticket.mUsername = document["user"].GetString();
 
-		// Ensure user name is not empty
+		// Extract user information, this field is required
+		if (!document.HasMember("user"))
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request, 
+				"missing required member: 'user");
+			return;	
+		}
+
+		// Copy username, ensure it's not empty
+		ticket.mUsername = document["user"].GetString();
 		if (ticket.mUsername.empty())
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request, "member 'user' is empty");
+			conp->set_status(websocketpp::http::status_code::bad_request, "no username given");
 			return;
 		}
-		
+
 		// If we only allow specific clients we extract the password here.
 		// The pass is used in combination with the username to create a validation hash.
 		if (mMode == EAccessMode::Reserved)
 		{
-			// Extract user information, this field is required.
+			// Extract password, necessary when mode is 'Reserved'
 			if (!document.HasMember("pass"))
 			{
-				conp->set_status(websocketpp::http::status_code::bad_request, "missing required member: 'pass");
+				conp->set_status(websocketpp::http::status_code::bad_request,
+					"missing required member: 'pass");
 				return;
 			}
 			ticket.mPassword = document["pass"].GetString();
+
+			// Locate ticket, if there is no tick that matches the request
+			// The username or password is wrong and the request invalid
+			if (mClientHashes.find(ticket.toHash()) == mClientHashes.end())
+			{
+				conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+					"invalid username or password");
+				return;
+			}
 		}
-		
-		// Convert to binary blob
-		utility::ErrorState error;
+
+		// Convert ticket to binary blob
+		// This ticket can now be used to validate the request
 		std::string ticket_str;
+		utility::ErrorState error;
 		if (!ticket.toBinaryString(ticket_str, error))
 		{
 			nap::Logger::error(error.toString());
