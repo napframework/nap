@@ -11,12 +11,19 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
 
+RTTI_BEGIN_ENUM(nap::WebSocketServerEndPoint::EAccessMode)
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::EveryOne,	"Everyone"),
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::Ticket,		"Ticket"),
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::Reserved,	"Reserved")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPoint::mMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Tickets",				&nap::WebSocketServerEndPoint::mTickets,				nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPoint::mClients,				nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
@@ -174,8 +181,8 @@ namespace nap
 		));
 
 		// Create unique hashes out of tickets
-		for (const auto& ticket : mTickets)
-			mHashes.emplace(ticket->toHash());
+		for (const auto& ticket : mClients)
+			mClientHashes.emplace(ticket->toHash());
 		
 		return true;
 	}
@@ -281,18 +288,21 @@ namespace nap
 			return;
 		}
 
-		// Extract user information
-		if (!document.HasMember("user") || !document.HasMember("pass"))
+		// Extract user information, this field is required.
+		if (!document.HasMember("user"))
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request, "invalid JSON");
+			conp->set_status(websocketpp::http::status_code::bad_request, "missing member: 'user");
 			return;
 		}
 
 		// Create ticket
 		nap::WebSocketTicket ticket;
 		ticket.mUsername = document["user"].GetString();
-		ticket.mPassword = document["pass"].GetString();
 		ticket.mID = math::generateUUID();
+		
+		// The password is optional and left empty when not specified
+		if (document.HasMember("pass"))
+			ticket.mPassword = document["pass"].GetString();
 		
 		// Convert to binary blob
 		utility::ErrorState error;
@@ -322,12 +332,12 @@ namespace nap
 			return false;
 		}
 
-		// If the client requested to use a sub-protocol and we don't have any clients the request is invalid
-		// The server only accepts the sub-protocol as a method of identification.
+		// Get sub-protocol field
 		const std::vector<std::string>& sub_protocol = conp->get_requested_subprotocols();
-		if (mTickets.empty())
+		
+		// When every client connection is allowed no sub-protocol field must be defined.
+		if (mMode == EAccessMode::EveryOne)
 		{
-			// All good -> every has access and no protocol is provided.
 			if (sub_protocol.empty())
 				return true;
 
@@ -357,8 +367,12 @@ namespace nap
 			return false;
 		}
 
+		// Valid ticket was extracted, allowed access
+		if (mMode == EAccessMode::Ticket)
+			return true;
+
 		// Locate ticket
-		if (mHashes.find(client_ticket.toHash()) == mHashes.end())
+		if (mClientHashes.find(client_ticket.toHash()) == mClientHashes.end())
 		{
 			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
 				"not a valid ticket");

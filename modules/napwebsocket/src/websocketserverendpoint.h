@@ -36,6 +36,17 @@ namespace nap
 		friend class IWebSocketServer;
 		RTTI_ENABLE(Device)
 	public:
+
+		/**
+		 * Various client access modes
+		 */
+		enum class EAccessMode : int
+		{
+			EveryOne		= 0,			///< Every client connection is allowed
+			Ticket			= 1,			///< Every client connection with a ticket is allowed
+			Reserved		= 2				///< Only clients that have a matching ticket are allowed
+		};
+
 		// default constructor
 		WebSocketServerEndPoint();
 
@@ -90,11 +101,12 @@ namespace nap
 		 */
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
+		EAccessMode mMode = EAccessMode::EveryOne;								///< Property: "AccessMode" client connection access mode
 		int mPort = 80;															///< Property: "Port" to open and listen to for client requests.
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
 		bool mAllowPortReuse = false;											///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
-		std::vector<ResourcePtr<WebSocketTicket>> mTickets;						///< Property: "All valid tickets"
+		std::vector<ResourcePtr<WebSocketTicket>> mClients;						///< Property: "All authorized clients when mode is set to 'Reserved'"
 
 		// Triggered when a new client connection is opened. Including client web-socket connection.
 		nap::Signal<const WebSocketConnection&> connectionOpened;
@@ -163,6 +175,6 @@ namespace nap
 
 		bool mRunning = false;					///< If the server is accepting and managing client connections.
 		std::mutex mConnectionMutex;			///< Ensures connections are added / removed safely.
-		std::unordered_set<WebSocketTicketHash> mHashes;
+		std::unordered_set<WebSocketTicketHash> mClientHashes;
 	};
 }
