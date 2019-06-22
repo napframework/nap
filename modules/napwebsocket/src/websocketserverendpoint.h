@@ -22,14 +22,45 @@ namespace nap
 
 	/**
 	 * Server endpoint role. Manages all client connections.
+	 *
 	 * On start the web-socket endpoint starts listening to connection requests, updates and messages on a background thread.
 	 * The endpoint is a device that can be started and stopped. When stopped all
 	 * active client-server connections are closed. This occurs when file changes are detected
 	 * and the content of the application is hot-reloaded. A call to open is non blocking. 
 	 * Messages are forwarded to all clients that implement the nap::IWebSocketClient interface.
 	 * Clients must register themselves to the various signals to receive connection updates and messages.
-	 * Right now SSL encryption is NOT supported and all client connections are accepted. This will change in the future,
-	 * but for now there is no interface to reject or accept an incoming client connection request.
+	 * Right now SSL encryption is NOT supported. This will change in the future.
+	 *
+	 * By default the server accepts all client connection requests. Change the 'AccessMode' property to 'Ticket'
+	 * or 'Reserved' to add a client identification scheme. When set to 'Ticket' the server accepts
+	 * every client connection with a ticket. When set to 'Reserved' the server only accepts the connection
+	 * if it has a matching ticket. Tickets that are accepted by the server can be added to the 'Clients' property.
+	 * 
+	 * A good analogy is that of attending a concert. When the mode is set to 'Everyone' you don't need to 
+	 * pick up a ticket in order to enter the venue. You can just walk in. When the mode is set to 'Ticket' 
+	 * you need to pick up a (free) ticket and show it at the door. Everyone with a ticket is accepted. 
+	 * When the mode is set to 'Reserved' you need to buy a ticket. The ticket is cross-referenced on entrance. 
+	 * If you're not in the system you are not allowed to enter the venue.
+	 *
+	 * For both modes (Ticket and Reserved) you need to acquire a ticket by sending a HTTP 'POST' request 
+	 * to the server. The body of the post should contain a JSON formatted string that contains 2 fields:
+	 * 'user' and 'pass'. The username is obligatory, the password only when the mode is set to 'Reserved'. For example:
+	 *
+	 *	{
+	 *		"user": "napuser"
+	 *		"pass": "letmein"
+	 *	}
+	 *
+	 * The server generates a new ticket based on the provided information and sends it back to the client that made the request.
+	 * The received ticket should be specified as the first SUB-PROTOCOL argument when creating the web-socket. The server extracts the ticket 
+	 * on authorization and checks if it is valid. After validation the connection is accepted or rejected. Note that when the
+	 * mode is set to 'Everyone' the server will not serve any tickets and you should not provide the system with one when 
+	 * connecting to the server. In that case: connect without specifying a sub-protocol.
+	 * 
+	 * The reason for having the 'Ticket' validation mode (next to 'Reserved') is to prevent any user or bot to log in 
+	 * automatically but allow 'interested' users free access. Every nap::WebSocketClient can make it's own ticket and 
+	 * therefore doesn't require the http post request. The NAP client still needs to have a correct username and password 
+	 * if required by the server.
 	 */
 	class NAPAPI WebSocketServerEndPoint : public Device
 	{
