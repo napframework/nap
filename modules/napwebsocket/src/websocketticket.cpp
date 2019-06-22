@@ -1,9 +1,8 @@
 #include "websocketticket.h"
-#include <rtti/binarywriter.h>
-#include <rtti/binaryreader.h>
+
+// External Includes
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <utility/memorystream.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rtticast.h>
 #include <bitset>
@@ -28,14 +27,13 @@ namespace nap
 	bool WebSocketTicket::toBinaryString(std::string& outString, utility::ErrorState& error)
 	{
 		// Serialize to binary
-		rtti::JSONWriter binaryWriter;
-		if (!rtti::serializeObjects({ this }, binaryWriter, error))
+		rtti::JSONWriter writer;
+		if (!rtti::serializeObjects({ this }, writer, error))
 			return false;
 
 		// Convert to bitwise string
-		std::string binary_string(binaryWriter.GetJSON());
-
-		for (auto character : binary_string)
+		std::string json(writer.GetJSON());
+		for (auto character : json)
 			outString += std::bitset<8>(character).to_string();
 		return true;
 	}
@@ -52,11 +50,10 @@ namespace nap
 		// De-serialize binary ticket
 		rtti::Factory factory;
 		rtti::DeserializeResult deserialize_result;
-		utility::MemoryStream stream(vec.data(), vec.size());
-		std::string json_string(vec.begin(), vec.end());
+		std::string json(vec.begin(), vec.end());
 
 		// De-serialize
-		if (!rtti::deserializeJSON(json_string, rtti::EPropertyValidationMode::AllowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, deserialize_result, error))
+		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::AllowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, deserialize_result, error))
 			return false;
 
 		// Ensure we have at least 1 object
