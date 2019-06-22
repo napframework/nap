@@ -319,7 +319,7 @@ namespace nap
 		// Extract user information, this field is required.
 		if (!document.HasMember("user"))
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request, "missing member: 'user");
+			conp->set_status(websocketpp::http::status_code::bad_request, "missing required member: 'user");
 			return;
 		}
 
@@ -335,9 +335,18 @@ namespace nap
 			return;
 		}
 		
-		// The password is optional and left empty when not specified
-		if (document.HasMember("pass"))
+		// If we only allow specific clients we extract the password here.
+		// The pass is used in combination with the username to create a validation hash.
+		if (mMode == EAccessMode::Reserved)
+		{
+			// Extract user information, this field is required.
+			if (!document.HasMember("pass"))
+			{
+				conp->set_status(websocketpp::http::status_code::bad_request, "missing required member: 'pass");
+				return;
+			}
 			ticket.mPassword = document["pass"].GetString();
+		}
 		
 		// Convert to binary blob
 		utility::ErrorState error;
