@@ -38,6 +38,10 @@
   var connected = false;
   var box_char_count = 0;
   var status_header;
+  
+  // Identification information
+  const username = "napuser"
+  const password = "letmein!"
 
   // On load
   function init()
@@ -76,7 +80,7 @@
       }
     }
     writeToBox("requesting login ticket: " + url);
-    req.send(JSON.stringify({ "user": "napuser", "pass": "letmein!" }));
+    req.send(JSON.stringify({ "user": username, "pass": password }));
   }
 
   // Run simple websocket

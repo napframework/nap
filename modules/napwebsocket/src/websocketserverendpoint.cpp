@@ -387,6 +387,7 @@ namespace nap
 		{
 			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
 				"unable to extract ticket");
+			return false;
 		}
 
 		// Extract ticket
