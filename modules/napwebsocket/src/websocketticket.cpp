@@ -49,9 +49,19 @@ namespace nap
 
 		// Convert entire bitset into byte array
 		std::vector<uint8_t> vec;
-		vec.reserve(binaryString.size() / 8);
-		for (int i = 0; i < binaryString.size(); i += 8)
-			vec.emplace_back(std::bitset<8>(binaryString.substr(i, i + 8)).to_ulong());
+		try 
+		{
+			vec.reserve(binaryString.size() / 8);
+			for (int i = 0; i < binaryString.size(); i += 8)
+			{
+				vec.emplace_back(std::bitset<8>(binaryString.substr(i, i + 8)).to_ulong());
+			}
+		}
+		catch (std::exception& e)
+		{
+			error.fail(utility::stringFormat("invalid binary bit-stream: %s", e.what()));
+			return false;
+		}
 
 		// De-serialize binary ticket
 		rtti::Factory factory;
