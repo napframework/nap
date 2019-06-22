@@ -8,9 +8,9 @@ namespace nap
 	struct WebSocketTicketHash;
 
 	/**
-	 * Websocket ticket created and issued by a nap::WebSocketServerEndPoint.
+	 * Created and issued by a nap::WebSocketServerEndPoint.
 	 * A ticket is used by a server end-point to reject or accept a client connection request.
-	 * For more information on authorization look at the nap::WebSocketServerEndPoint documentation.
+	 * For more information on authorization look refer to the nap::WebSocketServerEndPoint documentation.
 	 */
 	class NAPAPI WebSocketTicket : public Resource
 	{
@@ -26,17 +26,25 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Converts this ticket into a binary string
+		 * Converts this ticket into a binary string representation.
+		 * @param outString contains the result of the conversion
+		 * @param error contains the error if conversion fails.
+		 * @return if conversion succeeded.
 		 */
 		bool toBinaryString(std::string& outString, utility::ErrorState& error);
 
 		/**
-		 * Converts this from a binary string into a ticket
+		 * Applies a binary string to this ticket. The binary string 
+		 * must be acquired through toBinaryString.
+		 * @param binaryString the binary string representation of a ticket.
+		 * @param error contains the error if conversion fails.
+		 * @return if conversion succeeded.
 		 */
 		bool fromBinaryString(const std::string& binaryString, utility::ErrorState& error);
 
 		/**
-		 * Creates a hash-able ticket based on the info in this ticket
+		 * Creates a hash-able ticket based on the info in this ticket.
+		 * @return hashable ticket representation.
 		 */
 		WebSocketTicketHash toHash() const;
 
