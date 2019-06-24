@@ -19,6 +19,15 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformTextureArray)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniformStruct)
+	RTTI_PROPERTY("Uniforms", &nap::UniformStruct::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformStructArray)
+	RTTI_PROPERTY("Structs", &nap::UniformStructArray::mStructs, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
+
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
 	RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)
@@ -77,6 +86,32 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	void UniformStruct::addUniform(Uniform& uniform)
+	{
+		mUniforms.push_back(&uniform);
+	}
+
+	Uniform* UniformStruct::findUniform(const std::string& name)
+	{
+		auto pos = std::find_if(mUniforms.begin(), mUniforms.end(), [name](auto& uniform)
+		{
+			return uniform->mName == name;
+		});
+
+		if (pos == mUniforms.end())
+			return nullptr;
+
+		return (*pos).get();
+	}
+
+	void UniformStructArray::insertStruct(int index, UniformStruct& uniformStruct)
+	{
+		if (mStructs.size() <= index)
+			mStructs.resize(index + 1);
+		
+		mStructs[index] = &uniformStruct;
+	}
+
 	void UniformInt::push(const opengl::UniformDeclaration& declaration) const
 	{
 		glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&mValue));

@@ -241,12 +241,24 @@ namespace nap
 		*/
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
+	private:
+		Uniform* addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
+		UniformStruct& getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created);
+		UniformStructArray& getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created);
+
 	public:
 		std::vector<ResourcePtr<Uniform>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>						mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
 		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
+
+	private:
+		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
+		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
+
+		UniformStructMap						mOwnedStructUniforms;
+		UniformStructArrayMap					mOwnedStructArrayUniforms;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

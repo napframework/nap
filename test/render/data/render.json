@@ -179,7 +179,6 @@
 				]
 			}
 		},	
-		
 		{
 			"Type" : "nap::Material",
 			"mID": "GeneralMaterial",
@@ -214,7 +213,42 @@
 						"z" : 0.0,
 						"w" : 1.0						
 					}
-				}
+				},
+				{
+					"Type" : "nap::UniformStructArray",
+					"Name" : "mLight",
+					"Structs" : 
+					[
+						{
+							"Type" : "nap::UniformStruct",
+							"Name" : "Dummy",
+							"Uniforms" : 
+							[
+								{
+									"Type" : "nap::UniformFloatArray",
+									"Name" : "mTest",
+									"Values" : 
+									[
+										1.0,
+										0.0
+									]
+								},
+								{
+									"Type" : "nap::UniformStruct",
+									"Name" : "mPoint",
+									"Uniforms" : 
+									[
+										{
+											"Type" : "nap::UniformFloat",
+											"Name" : "x",
+											"Value" : 1.0
+										}						
+									]
+								}
+							]
+						}
+					]
+				}				
 			]			
 		},
 		
@@ -313,6 +347,15 @@
 								"Type" : "nap::UniformTexture2D",
 								"Name" : "testTexture",
 								"Texture" : "TestTexture"
+							},
+							{
+								"Type" : "nap::UniformFloatArray",
+								"Name" : "mTest",
+								"Values" : [
+									1.0,
+									1.0,
+									2.0
+								]		
 							}
 						]
 					}

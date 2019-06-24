@@ -427,12 +427,227 @@ namespace nap
 	// Material
 	//////////////////////////////////////////////////////////////////////////
 
+	UniformStruct& Material::getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created)
+	{
+		auto pos = mOwnedStructUniforms.find(globalName);
+		if (pos == mOwnedStructUniforms.end())
+		{
+			auto inserted = mOwnedStructUniforms.insert(std::make_pair(globalName, std::make_unique<UniformStruct>()));
+			inserted.first->second->mName = localName;
+			created = true;
+			return *inserted.first->second;
+		}
+
+		created = false;
+		return *pos->second;
+	}
+
+	UniformStructArray& Material::getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created)
+	{
+		auto pos = mOwnedStructArrayUniforms.find(globalName);
+		if (pos == mOwnedStructArrayUniforms.end())
+		{
+			auto inserted = mOwnedStructArrayUniforms.insert(std::make_pair(globalName, std::make_unique<UniformStructArray>()));
+			inserted.first->second->mName = localName;
+			created = true;
+			return *inserted.first->second;
+		}
+
+		created = false;
+		return *pos->second;
+	}
+
+
+	Uniform* Material::addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform)
+	{
+		assert(partIndex < parts.size());
+
+		const std::string& part = parts[partIndex];
+
+		size_t bracketPos = part.find_first_of('[');
+		bool isArray = bracketPos != std::string::npos;
+		bool isStruct = partIndex < parts.size() - 1;
+
+		std::string currentPath = path;
+		if (!currentPath.empty())
+			currentPath += ".";
+
+		currentPath += part;
+
+		if (isArray && isStruct)
+		{
+			std::string localName = part.substr(0, bracketPos);
+
+			size_t arrayStartPos = currentPath.find_last_of('[');
+			assert(arrayStartPos != std::string::npos);
+			
+			int array_index = (int)strtol(currentPath.data() + arrayStartPos + 1, nullptr, 10);			
+
+			UniformStructArray& array = getOrCreateUniformStructArray(currentPath.substr(0, arrayStartPos), localName, didCreateUniform);			
+
+			bool did_create_child_struct = false;
+			UniformStruct& child_struct = getOrCreateUniformStruct(currentPath, part, did_create_child_struct);
+
+			if (did_create_child_struct)
+				array.insertStruct(array_index, child_struct);
+
+			bool did_create_child = false;
+			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
+			assert(child_uniform != nullptr);
+
+			if (did_create_child)
+				child_struct.addUniform(*child_uniform);
+
+			return &array;
+		}
+		else if (isStruct)
+		{			
+			UniformStruct& uniform_struct = getOrCreateUniformStruct(currentPath, part, didCreateUniform);
+
+			bool did_create_child = false;
+			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
+			assert(child_uniform != nullptr);
+
+			if (did_create_child)
+				uniform_struct.addUniform(*child_uniform);
+
+			return &uniform_struct;
+		}
+		else
+		{
+			std::string localName = part;
+			if (isArray)
+				localName = part.substr(0, bracketPos);
+
+			Uniform* result = nullptr;
+			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
+			new_uniform->mName = localName;
+			result = new_uniform.get();
+			AddUniform(std::move(new_uniform), declaration);
+
+			didCreateUniform = true;
+			return result;
+		}
+	}
+
+	bool applyUniformsRecursive(const std::string& shaderID, UniformStruct& sourceStruct, UniformStruct& destStruct, utility::ErrorState& errorState)
+	{
+		for (auto& source_uniform : sourceStruct.mUniforms)
+		{
+			Uniform* dest_uniform = destStruct.findUniform(source_uniform->mName);
+			if (!errorState.check(dest_uniform != nullptr, "Uniform %s could not be matched with an uniform in the shader %s", source_uniform->mName.c_str(), shaderID.c_str()))
+				return false;
+
+			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform %s (source type = %s, target type = %s) in shader %s",
+								  source_uniform->mName.c_str(), source_uniform.get_type().get_name().data(), dest_uniform->get_type().get_name().data(), shaderID.c_str()))
+			{
+				return false;
+			}
+
+			UniformStructArray* source_struct_array = rtti_cast<UniformStructArray>(source_uniform.get());
+			if (source_struct_array != nullptr)
+			{
+				UniformStructArray* dest_struct_array = (UniformStructArray*)dest_uniform;
+
+				size_t source_size = source_struct_array->mStructs.size();
+				size_t dest_size = dest_struct_array->mStructs.size();
+				if (!errorState.check(source_size <= dest_size, "Amount of elements (%d) in uniform %s exceeds the amount of elements (%d) declared in shader %s", source_size, source_struct_array->mName.c_str(), dest_size, shaderID.c_str()))
+					return false;
+
+				for (int index = 0; index < std::min(source_size, dest_size); ++index)
+				{
+					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_struct_array->mStructs[index].get());
+					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_struct_array->mStructs[index].get());
+
+					if (!applyUniformsRecursive(shaderID, *source_uniform_struct, *dest_uniform_struct, errorState))
+						return false;
+				}
+			}
+			else
+			{
+				UniformStruct* source_struct = rtti_cast<UniformStruct>(source_uniform.get());
+				if (source_struct != nullptr)
+				{
+					UniformStruct* dest_struct = (UniformStruct*)dest_uniform;
+					if (!applyUniformsRecursive(shaderID, *source_struct, *dest_struct, errorState))
+						return false;
+				}
+				else
+				{
+					nap::rtti::copyObject(*source_uniform, *dest_uniform);
+				}
+			}
+		}
+
+		return true;
+	}
+
 	bool Material::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
 		const opengl::UniformDeclarations& uniform_declarations = mShader->getShader().getUniformDeclarations();
+
+		for (auto& kvp : uniform_declarations)
+		{
+			const opengl::UniformDeclaration& declaration = *kvp.second;
+
+			std::vector<std::string> parts = utility::splitString(declaration.mName, '.');
+
+			bool did_create_uniform = false;
+			addUniformRecursive(declaration, "", parts, 0, did_create_uniform);
+		}
+
+		for (ResourcePtr<Uniform>& uniform : mUniforms)
+		{
+			UniformStructArray* source_uniform_struct_array = rtti_cast<UniformStructArray>(uniform.get());
+			if (source_uniform_struct_array != nullptr)
+			{
+				UniformStructArrayMap::iterator pos = mOwnedStructArrayUniforms.find(source_uniform_struct_array->mName);
+				if (!errorState.check(pos != mOwnedStructArrayUniforms.end(), "Structure array uniform %s could not be found in shader %s: either it doesn't exist, or the type doesn't match", source_uniform_struct_array->mName.c_str(), mID.c_str()))
+					return false;
+
+				UniformStructArray* dest_uniform_struct_array = pos->second.get();
+
+				size_t source_size = source_uniform_struct_array->mStructs.size();
+				size_t dest_size = dest_uniform_struct_array->mStructs.size();
+				if (!errorState.check(source_size <= dest_size, "Amount of elements (%d) in uniform %s exceeds the amount of elements (%d) declared in shader %s", source_size, source_uniform_struct_array->mName.c_str(), dest_size, mID.c_str()))
+					return false;
+
+				for (int index = 0; index < std::min(source_size, dest_size); ++index)
+				{
+					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_uniform_struct_array->mStructs[index].get());
+					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_uniform_struct_array->mStructs[index].get());
+
+					if (!applyUniformsRecursive(mID, *source_uniform_struct, *dest_uniform_struct, errorState))
+						return false;
+				}
+			}
+			else
+			{
+				UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(uniform.get());
+				if (source_uniform_struct != nullptr)
+				{
+					UniformStructMap::iterator pos = mOwnedStructUniforms.find(source_uniform_struct->mName);
+					if (!errorState.check(pos != mOwnedStructUniforms.end(), "Unable to match uniform %s with shader", source_uniform_struct->mName.c_str()))
+						return false;
+
+					UniformStruct* dest_uniform_struct = pos->second.get();
+					if (!applyUniformsRecursive(mID, *source_uniform_struct, *dest_uniform_struct, errorState))
+						return false;
+				}
+				else
+				{
+					Uniform* dest_uniform = findUniform(uniform->mName);
+					if (!errorState.check(dest_uniform != nullptr, "Unable to match uniform %s with shader", uniform->mName.c_str()))
+						return false;
+
+					nap::rtti::copyObject(*uniform, *dest_uniform);
+				}
+			}
+		}
+
 
 		// Here we are going to create a set of uniforms for all the uniforms that are present in the shader.
 		// Some of those uniforms are also present in our input data (mUniforms), in that case we copy the
@@ -446,7 +661,7 @@ namespace nap
 		// - The separation makes it easy to build faster mappings for textures and values, and to provide a map interface
 		//   instead of a vector interface (which is what is supported at the moment for serialization).
 
-		for (auto& kvp : uniform_declarations)
+		/*for (auto& kvp : uniform_declarations)
 		{
 			const std::string& name = kvp.first;
 			const opengl::UniformDeclaration& declaration = *kvp.second;
@@ -475,7 +690,7 @@ namespace nap
 			}
 
 			AddUniform(std::move(new_uniform), declaration);
-		}
+		}*/
 
 		return true;
 	}

@@ -17,6 +17,15 @@ bool mShow = true;
 
 namespace nap 
 {
+	class LightUniform : public Uniform
+	{
+		UniformFloatArray mTest;
+		UniformTexture2DArray mTestSampler;
+	};
+
+
+
+
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
