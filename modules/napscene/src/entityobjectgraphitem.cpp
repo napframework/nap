@@ -52,8 +52,8 @@ namespace nap
 			for (rtti::TypeInfo& type : dependent_types)
 			{
 				ObjectsByTypeMap::const_iterator dependent_component = mObjectsByType->find(type);
-				if (!errorState.check(dependent_component != mObjectsByType->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
-					return false;
+				if (dependent_component == mObjectsByType->end())
+					return true;
 
 				const std::vector<rtti::Object*> components = dependent_component->second;
 				for (rtti::Object* component : components)

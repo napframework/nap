@@ -41,7 +41,9 @@ namespace nap
 
 		// Get the render-able mesh that has the video material
 		// We know it's there because we added it as a dependency above
-		mVideoMesh = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
+		mVideoMesh = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(mVideoMesh != nullptr, "%s: missing RenderableMeshComponent", mID.c_str()))
+			return false;
 
 		// Select one
 		selectVideo(resource->mIndex);

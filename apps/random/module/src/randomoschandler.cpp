@@ -36,8 +36,9 @@ namespace nap
 		mControlGroups = getComponent<RandomOSCHandler>()->mControlGroups.get();
 
 		// Get the osc input component, should be there because this guy depends on it
-		mOSCInputComponent = &(getEntityInstance()->getComponent<OSCInputComponentInstance>());
-		assert(mOSCInputComponent != nullptr);
+		mOSCInputComponent = getEntityInstance()->findComponent<OSCInputComponentInstance>();
+		if (!errorState.check(mOSCInputComponent != nullptr, "%s: missing OSCInputComponent", mID.c_str()))
+			return false;
 
 		// Connect osc received signal to our slot that forward the input to the handleMessageReceived Function
 		mOSCInputComponent->messageReceived.connect(eventReceivedSlot);
