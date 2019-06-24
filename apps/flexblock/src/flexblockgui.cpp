@@ -611,7 +611,7 @@ namespace nap
 										// get a reference
 										auto& point = curves[m]->mPoints[p];
 
-										// translate to element space
+										// translate from element space to screen space
 										float x = top_left.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
 										float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ((point.mPos.mValue * range) + start_curve);
 
@@ -1429,7 +1429,8 @@ namespace nap
 	{
 		if (ImGui::BeginPopup("Insert"))
 		{
-			
+			std::string errorString = "";
+
 			if (ImGui::Button("Insert Pause"))
 			{
 				double time = mSequencePlayer->getCurrentTime();
@@ -1446,15 +1447,22 @@ namespace nap
 
 				newElement->mDuration = deltaDuration;
 				newElement->setStartTime(time);
-				newElement->init(errorState);
 
-				sequence->insertElement(std::move(newElement));
+				if (!newElement->init(errorState))
+				{
+					ImGui::BeginPopup("Insert Error");
+					errorString = errorState.toString();
+				}
+				else 
+				{
+					sequence->insertElement(std::move(newElement));
 
-				mSequencePlayer->reconstruct();
+					mSequencePlayer->reconstruct();
 
-				inPopup = false;
-				currentTimelineAction = TimeLineActions::NONE;
-				ImGui::CloseCurrentPopup();
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
 			if (ImGui::Button("Insert Transition"))
@@ -1474,15 +1482,22 @@ namespace nap
 
 				newElement->mDuration = deltaDuration;
 				newElement->setStartTime(time);
-				newElement->init(errorState);
 
-				sequence->insertElement(std::move(newElement));
+				if (!newElement->init(errorState))
+				{
+					ImGui::BeginPopup("Insert Error");
+					errorString = errorState.toString();
+				}
+				else
+				{
+					sequence->insertElement(std::move(newElement));
 
-				mSequencePlayer->reconstruct();
+					mSequencePlayer->reconstruct();
 
-				inPopup = false;
-				currentTimelineAction = TimeLineActions::NONE;
-				ImGui::CloseCurrentPopup();
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
 			if (ImGui::Button("Insert Sequence"))
@@ -1493,23 +1508,6 @@ namespace nap
 				float newDuration = time - (element->getStartTime());
 				float deltaDuration = element->mDuration - newDuration;
 				element->mDuration = newDuration;
-
-				int index = -1;
-				for (int i = 0; i < sequence->mElements.size(); i++)
-				{
-					if (element == sequence->mElements[i])
-					{
-						index = i;
-						break;
-					}
-				}
-
-				if (index >= 0 && index < sequence->mElements.size() - 1)
-				{
-					sequence->mElements.erase(sequence->mElements.begin() + index + 1, sequence->mElements.end());
-				}
-
-				sequence->reset();
 
 				std::unique_ptr<flexblock::FlexblockSequence> newSequence = std::make_unique<flexblock::FlexblockSequence>();
 
@@ -1524,16 +1522,47 @@ namespace nap
 				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
 				newElement->mID = "GeneratedElement" + timeString;
 				newElement->mDuration = deltaDuration;
-				newElement->init(errorState);
 
-				newSequence->insertElement(std::move(newElement));
-				newSequence->init(errorState);
+				if (!newElement->init(errorState))
+				{
+					ImGui::OpenPopup("Insert Error");
+					errorString = errorState.toString();
+				}
+				else
+				{
+					newSequence->insertElement(std::move(newElement));
 
-				mSequencePlayer->insertSequence(std::move(newSequence));
+					if (!newSequence->init(errorState))
+					{
+						errorString = errorState.toString();
+						ImGui::OpenPopup("Insert Error");
+					}
+					else
+					{
+						int index = -1;
+						for (int i = 0; i < sequence->mElements.size(); i++)
+						{
+							if (element == sequence->mElements[i])
+							{
+								index = i;
+								break;
+							}
+						}
 
-				inPopup = false;
-				currentTimelineAction = TimeLineActions::NONE;
-				ImGui::CloseCurrentPopup();
+						if (index >= 0 && index < sequence->mElements.size() - 1)
+						{
+							sequence->mElements.erase(sequence->mElements.begin() + index + 1, sequence->mElements.end());
+						}
+
+						sequence->reset();
+
+						mSequencePlayer->insertSequence(std::move(newSequence));
+
+						inPopup = false;
+						currentTimelineAction = TimeLineActions::NONE;
+						ImGui::CloseCurrentPopup();
+					}
+				}
 			}
 
 			if (ImGui::Button("Cancel"))
@@ -1541,6 +1570,18 @@ namespace nap
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Insert Error"))
+			{
+				ImGui::Text(errorString.c_str());
+
+				if (ImGui::Button("Ok"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
 
 			ImGui::EndPopup();
