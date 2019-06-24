@@ -54,7 +54,7 @@ namespace nap
 		}
 
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
- 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
  			return false;
 
 		// Copy cliprect. Any modifications are done per instance
