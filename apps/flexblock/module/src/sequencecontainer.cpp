@@ -1,3 +1,4 @@
+// local includes
 #include "sequencecontainer.h"
 
 // nap::compositioncontainer run time class definition 
@@ -125,7 +126,7 @@ namespace nap
 					mSequences.insert(mSequences.begin() + i, sequence.get());
 					inserted = true;
 					break;
-				}
+	}
 			}
 
 			if (!inserted)

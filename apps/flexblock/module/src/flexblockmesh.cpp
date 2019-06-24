@@ -1,8 +1,10 @@
+// Local Includes
 #include "flexblockmesh.h"
 
+// External Includes
 #include <meshutils.h>
 
-// nap::boxmesh run time class definition 
+
 RTTI_BEGIN_CLASS(nap::FlexBlockMesh)
 RTTI_PROPERTY("Size", &nap::FlexBlockMesh::mSize, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -31,6 +33,7 @@ namespace nap
 		return true;
 	}
 
+
 	void FlexBlockMesh::setup()
 	{
 		// Create mesh instance
@@ -40,6 +43,7 @@ namespace nap
 		mBox = math::Box(mSize.x, mSize.y, mSize.z, glm::vec3(0.0f, 0.0f, 0.0f));
 		constructBox(mBox, *mMeshInstance);
 	}
+
 
 	void FlexBlockMesh::setControlPoints(const std::vector<glm::vec3>& controlPoints)
 	{
@@ -91,6 +95,7 @@ namespace nap
 		utility::ErrorState error;
 		mMeshInstance->update(error);
 	}
+
 
 	void FlexBlockMesh::constructBox(const math::Box& box, nap::MeshInstance& mesh)
 	{

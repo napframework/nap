@@ -16,6 +16,8 @@ namespace nap
 {
 	namespace flexblock
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		* FlexblockSequenceTransition
 		* Extends on timeline::SequenceTransition. The mInputs vector will override any assigned parameters of this
@@ -37,7 +39,7 @@ namespace nap
 			/**
 			* 8 floating point values that will be used to create parameter resources during init
 			*/
-			std::vector<float> mInputs = std::vector<float>(8);
+			std::vector<float> mMotorInputs = std::vector<float>(8);
 		protected:
 			/**
 			 * A vector holder unique pointers to created parameters

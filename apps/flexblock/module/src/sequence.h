@@ -9,15 +9,15 @@ namespace nap
 {
 	namespace timeline
 	{
-		class SequenceContainer;
+		//////////////////////////////////////////////////////////////////////////
 
 		/**
 		* Sequence
+		 * A sequence contains Sequence Elements
+		 * When playing a sequence it looks up the element that needs to do something in the given time
 		*/
 		class NAPAPI Sequence : public Resource
 		{
-			friend class SequenceContainer;
-
 			RTTI_ENABLE(Resource)
 		public:
 			virtual ~Sequence();
@@ -37,7 +37,7 @@ namespace nap
 			virtual int process(double time, std::vector<Parameter*>& outParameters);
 
 			/**
-			* Resets current element index
+			* Resets current element index, 
 			*/
 			void reset();
 
@@ -73,16 +73,22 @@ namespace nap
 			*/
 			const SequenceElement* getCurrentElement() const{ return mElements[mCurrentElementIndex]; }
 		
+			/*
+			 *
+			 */
+			std::vector<SequenceElement*> getElements() const { return mElements; }
 		
 		public:
 			// properties
-			std::vector<SequenceElement*> mElements;
+			std::vector<ResourcePtr<SequenceElement>> mSequenceElementsResourcePtrs;
+			std::vector<ResourcePtr<Parameter>> mStartParametersResourcePtrs;
 
 			std::string mName;
 		public:
 			//
 			std::vector<Parameter*> mStartParameters;
 			std::vector<Parameter*> mStartParametersReference;
+			std::vector<SequenceElement*> mElements;
 
 			int mIndexInSequenceContainer = 0;
 

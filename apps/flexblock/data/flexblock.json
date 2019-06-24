@@ -148,7 +148,7 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "SerialComponent": "./FlexBlockSerialComponent",
-                    "FlexBlockShape": "FlexBlockShape"
+                    "FlexBlockShape": "ProtoShapeSize"
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -156,67 +156,17 @@
                     "SerialPort": "SerialPort"
                 },
                 {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCMotorInputs",
+                    "Addresses": [
+                        "/flexblock"
+                    ]
+                },
+                {
                     "Type": "nap::timeline::SequencePlayerComponent",
-                    "mID": "SequencePlayerComponent",
-                    "TimelineParameters": "Inputs",
-                    "SequenceContainer": "",
-                    "StartShowFile": "shows/lange show.json"
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 1",
-                    "Addresses": [
-                        "/flexblock/1"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 2",
-                    "Addresses": [
-                        "/flexblock/2"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 3",
-                    "Addresses": [
-                        "/flexblock/3"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 4",
-                    "Addresses": [
-                        "/flexblock/4"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 5",
-                    "Addresses": [
-                        "/flexblock/5"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 6",
-                    "Addresses": [
-                        "/flexblock/6"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 7",
-                    "Addresses": [
-                        "/flexblock/7"
-                    ]
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInput 8",
-                    "Addresses": [
-                        "/flexblock/8"
-                    ]
+                    "mID": "nap::timeline::SequencePlayerComponent_b9bef377",
+                    "TimelineParameters": "Motor Inputs Parameters",
+                    "StartShowFile": "shows/start_template.json"
                 }
             ],
             "Children": [
@@ -282,7 +232,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 1",
                     "Text": "1",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -300,7 +250,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 2",
                     "Text": "2",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -318,7 +268,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 3",
                     "Text": "3",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -336,7 +286,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 4",
                     "Text": "4",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -354,7 +304,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 5",
                     "Text": "5",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -372,7 +322,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 6",
                     "Text": "6",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -390,7 +340,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 7",
                     "Text": "7",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -408,7 +358,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "MotorLabel 8",
                     "Text": "8",
-                    "Font": "Font",
+                    "Font": "Montserrat Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
@@ -459,7 +409,7 @@
         {
             "Type": "nap::FlexBlockElements",
             "mID": "ProtoElements",
-            "Object": [
+            "Object Element Connections": [
                 [
                     0,
                     1
@@ -497,6 +447,10 @@
                     4
                 ],
                 [
+                    0,
+                    4
+                ],
+                [
                     1,
                     5
                 ],
@@ -509,7 +463,7 @@
                     7
                 ]
             ],
-            "Object2Frame": [
+            "Object Element Connections With Frame": [
                 [
                     0,
                     0
@@ -543,7 +497,7 @@
                     7
                 ]
             ],
-            "Frame": [
+            "Frame Element Connects": [
                 [
                     0,
                     1
@@ -605,12 +559,10 @@
         },
         {
             "Type": "nap::FlexBlockShape",
-            "mID": "FlexBlockShape",
-            "Name": "block",
-            "Inputs": 8,
-            "Sizes": [
-                "FlexBlockShapeSize"
-            ],
+            "mID": "ProtoShapeSize",
+            "Name": "block_proto",
+            "Motor Count": 8,
+            "Size": "FlexBlockShapeSize",
             "Elements": "ProtoElements",
             "Points": "ProtoShapePoints"
         },
@@ -724,7 +676,7 @@
         },
         {
             "Type": "nap::Font",
-            "mID": "Font",
+            "mID": "Montserrat Font",
             "Properties": {
                 "Size": 24,
                 "DPI": 96
@@ -780,6 +732,15 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "Font Material",
+            "Uniforms": [],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "FontMaterial",
             "Uniforms": [
                 {
@@ -813,34 +774,17 @@
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
                     "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
                     "MeshAttributeID": "Color0",
                     "ShaderAttributeID": "in_Color0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
                 }
             ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "Material",
-            "Uniforms": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -859,7 +803,7 @@
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -890,7 +834,7 @@
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "Inputs",
+            "mID": "Motor Inputs Parameters",
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
@@ -1031,15 +975,15 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "ControlPointShader",
-            "mVertShader": "shaders/control_point.vert",
-            "mFragShader": "shaders/control_point.frag"
-        },
-        {
-            "Type": "nap::Shader",
             "mID": "FontShader",
             "mVertShader": "shaders/font.vert",
             "mFragShader": "shaders/font.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FrameShader",
+            "mVertShader": "shaders/frame.vert",
+            "mFragShader": "shaders/frame.frag"
         },
         {
             "Type": "nap::UniformVec3",

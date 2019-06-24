@@ -1,9 +1,11 @@
+// Local Includes
 #include "flex.h"
 
+// External Includes
 #include <mathutils.h>
 #include <glm/geometric.hpp>
 
-#define MOTORSTEPS 12.73239f
+//////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
@@ -15,7 +17,7 @@ namespace nap
 		// 
 		mFrequency = 200;
 		mObjShape = flexblockShape;
-		mCountInputs = mObjShape->mInputs;
+		mCountInputs = mObjShape->mMotorCount;
 
 		//
 		mForceObject = 10;
@@ -47,15 +49,15 @@ namespace nap
 		// convert unit points to real size
 		for (int i = 0; i < mPointsObject.size(); i++)
 		{
-			mPointsObject[i].x *= mObjShape->mSizes[0]->mValues->mObject.x * 0.5f;
-			mPointsObject[i].y *= mObjShape->mSizes[0]->mValues->mObject.y * 0.5f;
-			mPointsObject[i].z *= mObjShape->mSizes[0]->mValues->mObject.z * 0.5f;
+			mPointsObject[i].x *= mObjShape->mSize->mValues->mObject.x * 0.5f;
+			mPointsObject[i].y *= mObjShape->mSize->mValues->mObject.y * 0.5f;
+			mPointsObject[i].z *= mObjShape->mSize->mValues->mObject.z * 0.5f;
 		}
 		for (int i = 0; i < mPointsFrame.size(); i++)
 		{
-			mPointsFrame[i].x *= mObjShape->mSizes[0]->mValues->mFrame.x * 0.5f;
-			mPointsFrame[i].y *= mObjShape->mSizes[0]->mValues->mFrame.y * 0.5f;
-			mPointsFrame[i].z *= mObjShape->mSizes[0]->mValues->mFrame.z * 0.5f;
+			mPointsFrame[i].x *= mObjShape->mSize->mValues->mFrame.x * 0.5f;
+			mPointsFrame[i].y *= mObjShape->mSize->mValues->mFrame.y * 0.5f;
+			mPointsFrame[i].z *= mObjShape->mSize->mValues->mFrame.z * 0.5f;
 		}
 
 		// init
@@ -95,13 +97,15 @@ namespace nap
 		}
 
 		// calc input
-		calcInput();
+		calcDeltaLengths();
 	}
+
 
 	Flex::~Flex()
 	{
 		stop();
 	}
+
 
 	void Flex::start()
 	{
@@ -112,6 +116,7 @@ namespace nap
 		}
 	}
 
+
 	void Flex::stop()
 	{
 		if (mIsRunning)
@@ -121,12 +126,14 @@ namespace nap
 		}
 	}
 
+
 	void Flex::setMotorInput(const std::vector<float>& inputs)
 	{
 		std::lock_guard<std::mutex> l(mMotorInputMutex);
 
 		mMotorInput = inputs;
 	} 
+
 
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
@@ -135,6 +142,7 @@ namespace nap
 		outputs = mMotorInput;
 	}
 
+
 	void Flex::update()
 	{
 		while (mIsRunning)
@@ -142,9 +150,9 @@ namespace nap
 			std::vector<float> inputs(8);
 			copyMotorInput(inputs);
 
-			setInput(inputs);
+			setMotorInputInternal(inputs);
 
-			calcInput();
+			calcDeltaLengths();
 
 			for (int i = 0; i < mPointsObject.size(); i++)
 			{
@@ -238,7 +246,8 @@ namespace nap
 		}
 	}
 
-	void Flex::setInput(std::vector<float>& inputs)
+
+	void Flex::setMotorInputInternal(std::vector<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
 		{
@@ -251,10 +260,12 @@ namespace nap
 		}
 	}
 
+
 	void Flex::getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec)
 	{
 		outVec = mElementsLengthDelta[elidx] * mForceObject * (float)direction * mElementsVector[elidx];
 	}
+
 
 	void Flex::getProjectedSuspensionForcesOnOppositePointOfElement(int objectElementId, int oppositeColumn, glm::vec3& outVec)
 	{
@@ -268,6 +279,7 @@ namespace nap
 		getProjectedSuspensionForceOnOppositePointOfElement(objectElementId, suspensionElementId, oppositePoint, outVec);
 	}
 
+
 	void Flex::getProjectedSuspensionForceOnOppositePointOfElement(int objectElementId, int suspensionElementId, int opposite_point, glm::vec3& outVec)
 	{
 		glm::vec3 v1 = mElementsVector[objectElementId];
@@ -278,10 +290,12 @@ namespace nap
 		outVec = d * mElementsVector[objectElementId];
 	}
 
+
 	void Flex::getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec)
 	{
 		outVec = mElementsLength[elidx] * mElementsVector[elidx] * mElementsInput[point];
 	}
+
 
 	void Flex::getIdsOfSuspensionElementsOnPoint(int pointId, std::vector<int> &outIDs)
 	{
@@ -298,7 +312,8 @@ namespace nap
 		}
 	}
 
-	void Flex::calcInput()
+
+	void Flex::calcDeltaLengths()
 	{
 		mElementsLengthDelta = std::vector<float>(mElementsLength.size());
 		for (int i = 0; i < mElementsLengthDelta.size(); i++)
@@ -306,6 +321,7 @@ namespace nap
 			mElementsLengthDelta[i] = mElementsLength[i] - mElementsLengthRef[i];
 		}
 	}
+
 
 	void Flex::calcElements()
 	{
@@ -315,7 +331,6 @@ namespace nap
 			mElementsVector[i] = p;
 		}
 
-		float sum = 0.0f;
 		std::vector<float> elementsLength(mElementsLength.size());
 		for (int i = 0; i < mElementsVector.size(); i++)
 		{
@@ -326,9 +341,9 @@ namespace nap
 		float a = 0.0f;
 		for (int i = 12; i < 19; i++)
 		{
-			float n_a = math::abs(mElementsLength[i] - elementsLength[i]);
-			if (n_a > a)
-				a = n_a;
+			float new_a = math::abs(mElementsLength[i] - elementsLength[i]);
+			if (new_a > a)
+				a = new_a;
 		}
 		motorSpd = a * mFrequency;
 
@@ -340,6 +355,7 @@ namespace nap
 			mElementsVector[i] /= mElementsLength[i];
 		}
 	}
+
 
 	void Flex::concatElements()
 	{
@@ -375,6 +391,7 @@ namespace nap
 		mElementsAll = newElementsAll;
 	}
 
+
 	void Flex::concatPoints()
 	{
 		std::vector<glm::vec3> newPoints;
@@ -391,6 +408,7 @@ namespace nap
 		mPoints = newPoints;
 	}
 
+
 	const std::vector<float> Flex::getRopeLengths() const
 	{
 		std::vector<float> ropes;
@@ -399,14 +417,6 @@ namespace nap
 			ropes.push_back(mElementsLength[i]);
 		}
 
-		for (int i = 0; i < ropes.size(); i++)
-		{
-			float a = ropes[i] * 1000.0f;
-			a *= MOTORSTEPS;
-			a -= 7542;
-			ropes[i] = a;
-		}
-		
 		return ropes;
 	}
 }

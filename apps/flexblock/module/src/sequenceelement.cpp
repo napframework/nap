@@ -1,5 +1,7 @@
+// local includes
 #include "sequenceelement.h"
 
+// external includes
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
@@ -7,9 +9,6 @@
 #include <rtti/epropertyvalidationmode.h>
 #include <utility/fileutils.h>
 #include <fstream>
-
-
-RTTI_DEFINE_BASE(nap::timeline::SequenceElement)
 
 RTTI_BEGIN_CLASS(nap::timeline::SequenceElement)
 // Put additional properties here
@@ -31,11 +30,11 @@ namespace nap
 				"Duration must be bigger or equal then 0 %s", this->mID.c_str()))
 				return false;
 
-			if (mUsePreset)
+ 			if (mUsePreset)
 			{
 				rtti::Factory factory;
 
-				bool success = rtti::readJSONFile(std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mPresetReadResult, errorState);
+				bool success = rtti::readJSONFile(std::string(mPreset), rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, mPresetReadResult, errorState);
 				if (!errorState.check(success,
 					"Error loading preset %s", this->mID.c_str()))
 					return false;
@@ -75,10 +74,12 @@ namespace nap
 			return true;
 		}
 
+
 		bool SequenceElement::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			return (time >= mStartTime && time < mStartTime + mDuration);
 		}
+
 
 		void SequenceElement::setStartParameters(const std::vector<Parameter*>& startParameters)
 		{

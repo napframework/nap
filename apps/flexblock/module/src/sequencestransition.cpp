@@ -1,5 +1,7 @@
+//internal includes
 #include "sequencetransition.h"
 
+// external includes
 #include <parametercolor.h>
 
 // nap::FlexBlockSequenceElement run time class definition 
@@ -7,7 +9,7 @@ RTTI_BEGIN_CLASS(nap::timeline::SequenceTransition)
 // Put additional properties here
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Curves", &nap::timeline::SequenceTransition::mCurves, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameters, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Parameters", &nap::timeline::SequenceTransition::mEndParameterResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Preset File", &nap::timeline::SequenceTransition::mPreset, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Use Preset", &nap::timeline::SequenceTransition::mUsePreset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -79,7 +81,7 @@ namespace nap
 				}
 			}
 
-			mEvaluateFunction = &SequenceTransition::evaluateCurve;
+				mEvaluateFunction = &SequenceTransition::evaluateCurve;
 
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
@@ -89,7 +91,7 @@ namespace nap
 				{
 					curve = mCurves[i];
 				}
-				else
+			else
 				{
 					needInsert = true;
 				}
@@ -115,6 +117,7 @@ namespace nap
 			return true;
 		}
 
+
 		bool SequenceTransition::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if (!SequenceElement::process(time, outParameters))
@@ -125,32 +128,29 @@ namespace nap
 			mCurveIndex = 0;
 			for (int i = 0; i < outParameters.size(); i++)
 			{
-				(this->*mFunctions[i])(
-					progress, 
-					mStartParameters[i], 
-					mEndParameters[i],
-					outParameters[i]);
-				mCurveIndex++;
+				(this->*mFunctions[i])(progress, *mStartParameters[i], *mEndParameters[i], *outParameters[i]);
 			}
 
 			return true;
 		}
+
 
 		const float SequenceTransition::evaluateCurve(float progress)
 		{
 			return mCurves[mCurveIndex]->evaluate(progress);
 		}
 
+
 		template<typename T1, typename T2>
 		void SequenceTransition::process(float progress,
-			const Parameter * inA,
-			const Parameter * inB,
-			Parameter * out)
+			const Parameter & inA,
+			const Parameter & inB,
+			Parameter & out)
 		{
-			static_cast<T1*>(out)->setValue(
+			static_cast<T1&>(out).setValue(
 				math::lerp<T2>(
-					static_cast<const T1*>(inA)->mValue,
-					static_cast<const T1*>(inB)->mValue,
+					static_cast<const T1&>(inA).mValue,
+					static_cast<const T1&>(inB).mValue,
 					(this->*mEvaluateFunction)(progress)));
 		}
 	}
@@ -168,6 +168,7 @@ namespace nap
 			return return_v;
 		}
 
+
 		template<>
 		glm::ivec3 lerp<glm::ivec3>(const glm::ivec3& start, const glm::ivec3& end, float percent)
 		{
@@ -178,6 +179,7 @@ namespace nap
 			return return_v;
 		}
 
+
 		template<>
 		glm::ivec2 lerp<glm::ivec2>(const glm::ivec2& start, const glm::ivec2& end, float percent)
 		{
@@ -187,11 +189,13 @@ namespace nap
 			return return_v;
 		}
 
+
 		template<>
 		int lerp<int>(const int& start, const int& end, float percent)
 		{
 			return glm::mix<int>(start, end, percent);
 		}
+
 
 		template<>
 		nap::RGBColorFloat lerp<RGBColorFloat>(const nap::RGBColorFloat& start, const nap::RGBColorFloat& end, float percent)
@@ -202,6 +206,7 @@ namespace nap
 			r.setBlue(lerp<float>(start.getBlue(), end.getBlue(), percent));
 			return r;
 		}
+
 
 		template<>
 		nap::RGBAColorFloat lerp<RGBAColorFloat>(const nap::RGBAColorFloat& start, const nap::RGBAColorFloat& end, float percent)
@@ -214,6 +219,7 @@ namespace nap
 			return r;
 		}
 
+
 		template<>
 		nap::RGBColor8 lerp<RGBColor8>(const nap::RGBColor8& start, const nap::RGBColor8& end, float percent)
 		{
@@ -223,6 +229,7 @@ namespace nap
 			r.setBlue(lerp<int>(start.getBlue(), end.getBlue(), percent));
 			return r;
 		}
+
 
 		template<>
 		nap::RGBAColor8 lerp<RGBAColor8>(const nap::RGBAColor8& start, const nap::RGBAColor8& end, float percent)

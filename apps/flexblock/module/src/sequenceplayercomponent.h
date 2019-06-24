@@ -10,6 +10,8 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		class SequencePlayerComponentInstance;
 
 		/**
@@ -31,7 +33,7 @@ namespace nap
 			ResourcePtr<ParameterGroup>		mParameterGroup;
 		};
 
-
+		//////////////////////////////////////////////////////////////////////////
 		/**
 		* SequencePlayerComponentInstance
 		*/
@@ -60,6 +62,8 @@ namespace nap
 			* Play a sequence
 			*/
 			void play();
+
+			Sequence * getSequenceAtTime(double time);
 
 			/**
 			* Stops playing, resets time
@@ -112,6 +116,8 @@ namespace nap
 
 			bool load(std::string showName, utility::ErrorState& errorState);
 
+			void insertSequence(std::unique_ptr<Sequence> sequence);
+
 			const std::string getShowName() const { return mShowName; }
 
 			/**
@@ -125,7 +131,8 @@ namespace nap
 			const bool getIsPlaying() const { return mIsPlaying; }
 
 			/**
-			 * 
+			 * Evaluate acts the same as process but doesn't advance the
+			 * current element index or finishes 
 			 */
 			const void evaluate(double time, std::vector<Parameter*> &output) const;
 
@@ -142,11 +149,7 @@ namespace nap
 			/**
 			* @return pointer to current sequence
 			*/
-			Sequence* getCurrentSequence() const{ return mSequenceContainer->mSequences[mCurrentSequenceIndex];}
-
-			Sequence* getSequenceAtTime(const double time);
-
-			void insertSequence(std::unique_ptr<Sequence> sequence);
+			Sequence* getCurrentSequence() const { return mSequenceContainer->getSequences()[mCurrentSequenceIndex]; }
 
 			/**
 			* @return current time in sequence
@@ -171,24 +174,23 @@ namespace nap
 			/**
 			* @return vector of pointers to sequences
 			*/
-			const std::vector<Sequence*>& getSequences() { return mSequenceContainer->mSequences;}
+			const std::vector<Sequence*>& getSequences() const { return mSequenceContainer->getSequences();}
 		protected:
-			double mTime = 0.0;
-			bool mIsPlaying = false;
-			bool mIsPaused = false;
-			bool mIsFinished = false;
-			bool mIsLooping = false;
-			int mCurrentSequenceIndex = 0;
-			float mSpeed = 1.0f;
-
-			double mDuration = 0.0;
+			double mTime				= 0.0;
+			bool mIsPlaying				= false;
+			bool mIsPaused				= false;
+			bool mIsFinished			= false;
+			bool mIsLooping				= false;
+			int mCurrentSequenceIndex	= 0;
+			float mSpeed				= 1.0f;
+			double mDuration			= 0.0;
 
 			std::string mShowName;
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 			rtti::DeserializeResult mDeserializeResult;
 			std::vector<std::unique_ptr<Sequence>> mOwnedSequences;
 
-			std::unique_ptr<SequenceContainer> mSequenceContainer = nullptr;
+			std::unique_ptr<timeline::SequenceContainer> mSequenceContainer = nullptr;
 		};
 	}
 }

@@ -1,21 +1,13 @@
-#include "FlexBlockComponent.h"
-#include "rtti/jsonreader.h"
+// local includes
+#include "flexblockcomponent.h"
 
 // External Includes
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
 #include <math.h>
-
-// json
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/error/en.h>
-#include <fstream>
-#include <utility/fileutils.h>
-
 #include <glm/geometric.hpp>
+#include <rtti/jsonreader.h>
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
@@ -39,6 +31,7 @@ namespace nap
 	void FlexBlockComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 	}
+
 
 	FlexBlockComponentInstance::~FlexBlockComponentInstance()
 	{
@@ -78,11 +71,13 @@ namespace nap
 		return true;
 	}
 
-	void FlexBlockComponentInstance::SetMotorInput(int index, float value)
+
+	void FlexBlockComponentInstance::setMotorInput(int index, float value)
 	{
 		// 
 		mMotorInputs[remapMotorInput(index)] = value;
 	}
+
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
@@ -106,6 +101,15 @@ namespace nap
 			mUpdateSerialTime = 0.0;
 
 			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+
+			for (int i = 0; i < ropeLengths.size(); i++)
+			{
+				float a = ropeLengths[i] * 1000.0f;
+				a *= 12.73239f;
+				a -= 7542;
+				ropeLengths[i] = a;
+			}
+
 			std::string data = "<";
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{
@@ -133,6 +137,7 @@ namespace nap
 		outPoints[6] = inPoints[1];
 		outPoints[7] = inPoints[0];
 	}
+
 
 	const int FlexBlockComponentInstance::remapMotorInput(const int index) const
 	{

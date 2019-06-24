@@ -98,7 +98,7 @@ namespace nap
 
 		// Load the parameters from the preset
 		rtti::DeserializeResult deserialize_result;
-		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
+		if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, getCore().getResourceManager()->getFactory(), deserialize_result, errorState))
 			return false;
 
 		// Resolve links
@@ -148,6 +148,7 @@ namespace nap
 
 	void ParameterService::resourcesLoaded()
 	{
+		// Whenever the main json is (re)loaded, update the root parameter group
 		// We search for the root parameter group by finding the group that has no parent
 		using ParentMap = std::unordered_map<const ParameterGroup*, const ParameterGroup*>;
 		ParentMap parent_map;

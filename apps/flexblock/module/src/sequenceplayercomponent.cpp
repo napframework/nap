@@ -1,3 +1,4 @@
+// Local includes
 #include "sequenceplayercomponent.h"
 
 // External Includes
@@ -8,6 +9,8 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
+
+//////////////////////////////////////////////////////////////////////////
 
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
@@ -33,20 +36,22 @@ namespace nap
 
 		}
 
+
 		void SequencePlayerComponentInstance::skipToSequence(const Sequence * sequence)
 		{
-			for (const auto* sequence_ : mSequenceContainer->mSequences)
+			for (const auto* sequence_ : mSequenceContainer->getSequences())
 			{
 				if (sequence_ == sequence)
 				{
-					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					mTime = sequence->getStartTime();
 					mCurrentSequenceIndex = 0;
-					mSequenceContainer->mSequences[mCurrentSequenceIndex]->reset();
+					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					break;
 				}
 			}
 		}
+
 
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
@@ -65,11 +70,12 @@ namespace nap
 			if (!load(resource->mDefaultShow, errorState))
 				return false;
 
-			if( mSequenceContainer->mSequences.size() > 0 )
-				mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
+			if( mSequenceContainer->getSequences().size() > 0 )
+				mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 
 			return true;
 		}
+
 
 		void SequencePlayerComponentInstance::update(double deltaTime)
 		{
@@ -80,15 +86,15 @@ namespace nap
 					mTime += deltaTime * mSpeed;
 				}
 
-				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+				for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 				{
-					int result = mSequenceContainer->mSequences[mCurrentSequenceIndex]->process(mTime, mParameters);
+					int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
 					
 					if (result != 0)
 					{
 						mCurrentSequenceIndex += result;
 
-						int size = mSequenceContainer->mSequences.size();
+						int size = mSequenceContainer->getSequences().size();
 						if (mCurrentSequenceIndex >= size)
 						{
 							if (mIsLooping)
@@ -108,7 +114,7 @@ namespace nap
 						{
 							if (mIsLooping)
 							{
-								mCurrentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
+								mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
 								i = 0;
 								mTime = mDuration - deltaTime;
 							}
@@ -131,41 +137,40 @@ namespace nap
 		void SequencePlayerComponentInstance::reconstruct()
 		{
 			mSequenceContainer->reconstruct();
-			mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
+			mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 		}
 
 		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
 		{
 			int currentSequenceIndex = 0;
-			//if (mIsPlaying)
-			//{
-				for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+
+			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
+			{
+				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->process(time, output);
+
+				if (result != 0)
 				{
-					int result = mSequenceContainer->mSequences[currentSequenceIndex]->process(time, output);
+					currentSequenceIndex += result;
 
-					if (result != 0)
+					int size = mSequenceContainer->getSequences().size();
+					if (currentSequenceIndex >= size)
 					{
-						currentSequenceIndex += result;
-
-						int size = mSequenceContainer->mSequences.size();
-						if (currentSequenceIndex >= size)
-						{
-							currentSequenceIndex = 0;
-							i = 0;
-						}
-						else if (currentSequenceIndex < 0)
-						{
-							currentSequenceIndex = mSequenceContainer->mSequences.size() - 1;
-							i = 0;
-						}
+						currentSequenceIndex = 0;
+						i = 0;
 					}
-					else
+					else if (currentSequenceIndex < 0)
 					{
-						break;
+						currentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
+						i = 0;
 					}
 				}
-			//}
+				else
+				{
+					break;
+				}
+			}
 		}
+
 
 		void SequencePlayerComponentInstance::play()
 		{
@@ -184,12 +189,12 @@ namespace nap
 
 		Sequence* SequencePlayerComponentInstance::getSequenceAtTime(double time)
 		{
-			for (int i = 0; i < mSequenceContainer->mSequences.size(); i++)
+			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 			{
-				if (time >= mSequenceContainer->mSequences[i]->getStartTime() &&
-					time < mSequenceContainer->mSequences[i]->getStartTime() + mSequenceContainer->mSequences[i]->getDuration())
+				if (time >= mSequenceContainer->getSequences()[i]->getStartTime() &&
+					time < mSequenceContainer->getSequences()[i]->getStartTime() + mSequenceContainer->getSequences()[i]->getDuration())
 				{
-					return mSequenceContainer->mSequences[i];
+					return mSequenceContainer->getSequences()[i];
 				}
 			}
 
@@ -201,16 +206,18 @@ namespace nap
 			mTime = math::clamp<double>(time, 0.0, mDuration);
 			mCurrentSequenceIndex = 0;
 
-			for (const auto& sequence : mSequenceContainer->mSequences)
+			for (const auto& sequence : mSequenceContainer->getSequences())
 			{
 				sequence->reset();
 			}
 		}
 
+
 		void SequencePlayerComponentInstance::pause()
 		{
 			mIsPaused = true;
 		}
+
 
 		void SequencePlayerComponentInstance::stop()
 		{
@@ -233,7 +240,7 @@ namespace nap
 			// Serialize current set of parameters to json
 			rtti::JSONWriter writer;
 			rtti::ObjectList sequenceList;
-			for (const auto& sequence : mSequenceContainer->mSequences)
+			for (const auto& sequence : mSequenceContainer->getSequences())
 			{
 				sequenceList.emplace_back(sequence);
 			}
@@ -268,7 +275,7 @@ namespace nap
 
 			// Load the parameters from the preset
 			rtti::Factory factory;
-			if (!rtti::readJSONFile(show_path, rtti::EPropertyValidationMode::DisallowMissingProperties, factory, mDeserializeResult, errorState))
+			if (!rtti::readJSONFile(showPath, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, mDeserializeResult, errorState))
 				return false;
 
 			// Resolve links
@@ -290,7 +297,7 @@ namespace nap
 				}
 			}
 
-			mSequenceContainer->mSequences.clear();
+			mSequenceContainer->getSequences().clear();
 
 			mSequenceContainer->mSequences = std::vector<Sequence*>(sequenceMap.size());
 			for (int i = 0 ; i < sequenceMap.size(); i++)

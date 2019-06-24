@@ -16,9 +16,14 @@ namespace nap
 {
 	namespace timeline
 	{
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		* SequenceTransition
-		*/
+		 * SequenceTransition
+		 * Describes a transition from given start parameters to given end parameters
+		 * Can have a fcurve assigned which it will use to evaluate the transition over given duration
+		 * I no fcurve is assigned, a linear interpolation between start and end will take place
+		 */
 		class NAPAPI SequenceTransition : public SequenceElement
 		{
 			RTTI_ENABLE(SequenceElement)
@@ -52,9 +57,9 @@ namespace nap
 			*/
 			std::vector<void(SequenceTransition::*)(
 				float progress, 
-				const Parameter * inA, 
-				const Parameter * inB, 
-				Parameter * out)> mFunctions;
+				const Parameter & inA, 
+				const Parameter & inB, 
+				Parameter & out)> mFunctions;
 
 			/**
 			* The pointer to the evaluation function
@@ -64,12 +69,12 @@ namespace nap
 			/**
 			* The internal process function template
 			* @param progress the progression, value between 0-1
-			* @param inA a pointer to the start parameter
-			* @param inB a pointer to the end parameter
-			* @param out a pointer to the parameter that will be changed
+			* @param inA a reference to the start parameter
+			* @param inB a reference to the end parameter
+			* @param out a reference to the parameter that will be changed
 			*/
 			template<typename T1, typename T2>
-			void process(float progress, const Parameter* inA, const Parameter* inB, Parameter * out);
+			void process(float progress, const Parameter& inA, const Parameter& inB, Parameter & out);
 
 			/**
 			* Linear interpolation function

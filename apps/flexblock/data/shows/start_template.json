@@ -3,7 +3,7 @@
         {
             "Type": "nap::flexblock::FlexblockSequence",
             "mID": "GeneratedSequence18-06-201914:39:16",
-            "Elements": [
+            "Sequence Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement18-06-201914:39:16",
@@ -87,7 +87,7 @@
                     ],
                     "Preset File": "",
                     "Use Preset": false,
-                    "Inputs": [
+                    "Motor Inputs": [
                         0.0,
                         0.0,
                         0.0,
@@ -103,7 +103,7 @@
             "Name": "Finish",
             "Index": 2,
             "Use Reference": true,
-            "Inputs": [
+            "Motor Inputs": [
                 0.0,
                 0.0,
                 0.0,
@@ -117,7 +117,7 @@
         {
             "Type": "nap::flexblock::FlexblockSequence",
             "mID": "GeneratedSequence18-06-201914:39:53",
-            "Elements": [
+            "Sequence Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement18-06-201914:39:53",
@@ -201,7 +201,7 @@
                     ],
                     "Preset File": "",
                     "Use Preset": false,
-                    "Inputs": [
+                    "Motor Inputs": [
                         0.0,
                         0.0,
                         0.0,
@@ -217,7 +217,7 @@
             "Name": "second sequence",
             "Index": 1,
             "Use Reference": true,
-            "Inputs": [
+            "Motor Inputs": [
                 0.0,
                 0.0,
                 0.0,
@@ -231,7 +231,7 @@
         {
             "Type": "nap::flexblock::FlexblockSequence",
             "mID": "first act",
-            "Elements": [
+            "Sequence Elements": [
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 3",
@@ -315,7 +315,7 @@
                     ],
                     "Preset File": "",
                     "Use Preset": false,
-                    "Inputs": [
+                    "Motor Inputs": [
                         1.0,
                         0.0,
                         1.0,
@@ -396,7 +396,7 @@
             "Name": "first sequence",
             "Index": 0,
             "Use Reference": false,
-            "Inputs": [
+            "Motor Inputs": [
                 0.0,
                 0.0,
                 0.0,

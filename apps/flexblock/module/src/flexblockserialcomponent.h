@@ -11,17 +11,20 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
 	class FlexBlockSerialComponentInstance;
 
 	/**
-	 *	FlexBlockSerialComponent
-	 */
+	  * FlexBlockSerialComponentInstance
+	  * FlexBlockSerial component holds a reference to the serial port and is responsible for 
+	  * starting a thread which writes to the serial port.
+	  */
 	class NAPAPI FlexBlockSerialComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FlexBlockSerialComponent, FlexBlockSerialComponentInstance)
 	public:
-		ResourcePtr<SerialPort> mSerialPort;
+		ResourcePtr<SerialPort> mSerialPort; ///< Property: 'Serial Port' reference to the serial port
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -30,9 +33,11 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * FlexBlockSerialComponentInstance	
+	 * Instance of FlexBlockSerialComponent
 	 */
 	class NAPAPI FlexBlockSerialComponentInstance : public ComponentInstance
 	{
@@ -62,7 +67,7 @@ namespace nap
 		void stop();
 
 		/**
-		 * put stuff in write buffer
+		 * put string in write buffer
 		 * @param data string being put in buffer
 		 */ 
 		void write(std::string data);
@@ -99,11 +104,11 @@ namespace nap
 
 		ResourcePtr<SerialPort>					mSerialPort;
 
-		std::atomic_bool						mIsRunning = false;
+        std::atomic_bool						mIsRunning =  { false };
 		std::thread								mWriteThread;
 		std::deque<std::string>					mWriteBuffer;
 		std::mutex								mWriteBufferMutex;
-		std::atomic_long						mThreadUpdateIntervalMs = 10;
+        std::atomic_long						mThreadUpdateIntervalMs = { 10 };
 		int										mMaxWriteBufferSize = 4;
 	};
 }

@@ -123,6 +123,7 @@ namespace nap
 	void FlexblockGui::initOscInputs()
 	{
 		mOscInputs.clear();
+		/*
 		for (int i = 0; i < 8; i++)
 		{
 			//
@@ -134,7 +135,7 @@ namespace nap
 				float value = message.getArgument(0)->asFloat();
 				mParameters[i]->setValue(value);
 			});
-		}
+		}*/
 	}
 
 	void FlexblockGui::initParameters()
@@ -166,7 +167,7 @@ namespace nap
 
 	void FlexblockGui::updateInput(int index, float value)
 	{
-		mFlexBlock->SetMotorInput(index, value);
+		mFlexBlock->setMotorInput(index, value);
 	}
 
 	void FlexblockGui::update()
@@ -356,7 +357,7 @@ namespace nap
 				}
 
 				// draw element lines and positions
-				for (auto* element : sequences[i]->mElements)
+				for (auto* element : sequences[i]->getElements())
 				{
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 					float element_width = element->mDuration / sequences[i]->getDuration();

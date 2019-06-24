@@ -16,16 +16,16 @@ RTTI_PROPERTY("Frame", &nap::FlexBlockShapePoints::mFrame, nap::rtti::EPropertyM
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FlexBlockElements)
-RTTI_PROPERTY("Object", &nap::FlexBlockElements::mObject, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Object2Frame", &nap::FlexBlockElements::mObject2Frame, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Frame", &nap::FlexBlockElements::mFrame, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Object Element Connections", &nap::FlexBlockElements::mObject, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Object Element Connections With Frame", &nap::FlexBlockElements::mObject2Frame, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Frame Element Connects", &nap::FlexBlockElements::mFrame, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FlexBlockShape)
 RTTI_PROPERTY("Name", &nap::FlexBlockShape::mName, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Inputs", &nap::FlexBlockShape::mInputs, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Sizes", &nap::FlexBlockShape::mSizes, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Elements", &nap::FlexBlockShape::mElements, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Motor Count", &nap::FlexBlockShape::mMotorCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Size", &nap::FlexBlockShape::mSize, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Elements", &nap::FlexBlockShape::mElements, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Points", &nap::FlexBlockShape::mPoints, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -104,16 +104,9 @@ namespace nap
 
 	bool FlexBlockShape::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mSizes.size() > 0,
-			"No flexblockshapesizes assigned %s", this->mID.c_str()))
+		if (!errorState.check(mSize != nullptr,
+			"No flexblockshapesize assigned %s", this->mID.c_str()))
 			return false;
-
-		for (const auto& shapeSize : mSizes)
-		{
-			if (!errorState.check(shapeSize != nullptr,
-				"ShapeSize not assigned %s", this->mID.c_str()))
-				return false;
-		}
 
 		if (!errorState.check(mElements != nullptr,
 			"Elements not assigned %s", this->mID.c_str()))

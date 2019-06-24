@@ -64,7 +64,7 @@ namespace nap
 		if (new_window == nullptr)
 			return nullptr;
 
-		mWindows.push_back(&window);
+		mWindows.emplace_back(&window);
 
 		// After window creation, make sure the primary window stays active, so that render resource creation always goes to that context
 		getPrimaryWindow().makeCurrent();
@@ -75,25 +75,36 @@ namespace nap
 
 	void RenderService::removeWindow(RenderWindow& window)
 	{
-		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val == &window; });
+		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val == &window; 
+		});
+		
 		assert(pos != mWindows.end());
 		mWindows.erase(pos);
 	}
 	
 
-	rtti::ObjectPtr<RenderWindow> RenderService::findWindow(void* nativeWindow) const
+	RenderWindow* RenderService::findWindow(void* nativeWindow) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val->getWindow()->getNativeWindow() == nativeWindow; 
+		});
+
 		if (pos != mWindows.end())
 			return *pos;
-
 		return nullptr;
 	}
 
 
-	rtti::ObjectPtr<RenderWindow> RenderService::getWindow(uint id) const
+	RenderWindow* RenderService::findWindow(uint id) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getNumber() == id; });
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val->getNumber() == id; 
+		});
+
 		if (pos != mWindows.end())
 			return *pos;
 		return nullptr;
@@ -114,7 +125,7 @@ namespace nap
 
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
-        rtti::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
+        nap::Window* window = findWindow(windowEvent->mWindow);
 		assert (window != nullptr);
 		window->addEvent(std::move(windowEvent));
 	}
@@ -351,7 +362,7 @@ namespace nap
 	}
 
 
-	void RenderService::destroyGLContextResources(const std::vector<rtti::ObjectPtr<RenderWindow>>& renderWindows)
+	void RenderService::destroyGLContextResources(const std::vector<RenderWindow*> renderWindows)
 	{
 		// If there is anything scheduled, destroy
 		if (!mGLContextResourcesToDestroy.empty())

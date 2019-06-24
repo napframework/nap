@@ -34,7 +34,7 @@ endif()
 mark_as_advanced(FREEIMAGE_INCLUDE_DIRS)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(freeimage REQUIRED_VARS FREEIMAGE_INCLUDE_DIRS FREEIMAGE_LIBRARIES)
+find_package_handle_standard_args(freeimage REQUIRED_VARS FREEIMAGE_DIR)
 
 # Copy the freeimage dynamic linked lib into the build directory
 macro(copy_freeimage_dll)

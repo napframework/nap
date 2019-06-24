@@ -1,13 +1,11 @@
+// local includes
 #include "sequence.h"
 
 // nap::flexblockstancesequence run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::Sequence)
 	// Put additional properties here
-	RTTI_PROPERTY("Elements", &nap::timeline::Sequence::mElements, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StartParameters", &nap::timeline::Sequence::mStartParameters, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Name", &nap::timeline::Sequence::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Index", &nap::timeline::Sequence::mIndexInSequenceContainer, nap::rtti::EPropertyMetaData::ReadOnly)
-	RTTI_PROPERTY("Use Reference", &nap::timeline::Sequence::mUseReference, nap::rtti::EPropertyMetaData::ReadOnly)
+	RTTI_PROPERTY("Sequence Elements", &nap::timeline::Sequence::mSequenceElementsResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Start Parameters", &nap::timeline::Sequence::mStartParametersResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -22,9 +20,19 @@ namespace nap
 
 		bool Sequence::init(utility::ErrorState& errorState)
 		{
-			if (!errorState.check(mElements.size() > 0,
+			if (!errorState.check(mSequenceElementsResourcePtrs.size() > 0,
 				"need at least 1 element %s", this->mID.c_str()))
 				return false;
+
+			for (const auto& sequenceElementResourcePtr : mSequenceElementsResourcePtrs)
+			{
+				mElements.emplace_back(sequenceElementResourcePtr.get());
+			}
+
+			for (const auto& startParameterResourcePtr : mStartParametersResourcePtrs)
+			{
+				mStartParameters.emplace_back(startParameterResourcePtr.get());
+			}
 
 			std::vector<Parameter*> startParameters = mStartParameters;
 			double time = 0.0;

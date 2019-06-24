@@ -93,7 +93,7 @@ namespace nap
 	void FlexblockApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mMainWindow });
+		mRenderService->destroyGLContextResources({ mMainWindow.get() });
 
 		// Activate current window for drawing
 		mMainWindow->makeActive();
@@ -121,16 +121,18 @@ namespace nap
 
 		//
 		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+		Renderable2DTextComponentInstance& motor_label = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		for (int i = 0; i < points.size(); i++)
 		{
-			Renderable2DTextComponentInstance* motor_label = mTextEntity->findComponentByID<Renderable2DTextComponentInstance>("MotorLabel " + std::to_string(i+1));
-			motor_label->setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mMainWindow->getRect()) + glm::vec3(0, 10, 0));
-			motor_label->draw(mMainWindow->getBackbuffer());
+			utility::ErrorState error;
+			motor_label.setText(std::to_string(i+1), error);
+			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mMainWindow->getRectPixels()) + glm::vec3(0, 10, 0));
+			motor_label.draw(mMainWindow->getBackbuffer());
 		}
 
 		//
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mTimelineWindow });
+		mRenderService->destroyGLContextResources({ mTimelineWindow.get() });
 
 		// Activate current window for drawing
 		mTimelineWindow->makeActive();

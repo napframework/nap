@@ -1,5 +1,6 @@
 #pragma once
 
+// internal includes
 #include "framemesh.h"
 #include "flexblockmesh.h"
 #include "flexblockdata.h"
@@ -7,6 +8,7 @@
 #include "visualizenormalsmesh.h"
 #include "flexblockserialcomponent.h"
 
+// external includes
 #include <component.h>
 #include <boxmesh.h>
 #include <renderablemeshcomponent.h>
@@ -16,36 +18,53 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
 	class FlexBlockComponentInstance;
 
 	/**
-	 *	FlexBlockComponent
+	 * FlexBlockComponent controls a flexblock mesh, frame mesh and optionally writes
+	 * data to serial motors. 
+	 * FlexBlockComponent needs a flexblock shape definition. See FlexBlockShape and flexblockdata.h
 	 */
 	class NAPAPI FlexBlockComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FlexBlockComponent, FlexBlockComponentInstance)
 	public:
-		//
-		ResourcePtr<FrameMesh> mFrameMesh;
-		ResourcePtr<FlexBlockMesh> mFlexBlockMesh;
-		ResourcePtr<FlexBlockShape> mFlexBlockShape;
 		
-		//
-		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent;
-	
+		/**
+		 * Resource pointer to the mesh of the frame
+		 */
+		ResourcePtr<FrameMesh> mFrameMesh; ///< Property: 'FrameMesh' Reference to the frame mesh
 
 		/**
-		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		* @param components the components this object depends on
-		*/
+		 * Resource pointer to the flexblock mesh 
+		 */
+		ResourcePtr<FlexBlockMesh> mFlexBlockMesh; ///< Property: 'FlexBlockMesh' Reference to the FlexBlockMesh 
+
+		/**
+		 * Resource pointer to the shape definition
+		 */
+		ResourcePtr<FlexBlockShape> mFlexBlockShape; ///< Property: 'FlexBlockShape' Reference to the shape definition of the block 
+		
+		/**
+		 * Reference to the component of the FlexBlockSerialComponent
+		 */
+		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
+	
+		/**
+		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
+		 * @param components the components this object depends on
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * FlexBlockComponentInstance	
-	 */
+	* FlexBlockComponentInstance
+	* Instantiated flexblock component
+	*/
 	class NAPAPI FlexBlockComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -73,7 +92,7 @@ namespace nap
 		* @param index index of motor [0..8]
 		* @param value motor input 0-1
 		*/
-		void SetMotorInput(int index, float value);
+		void setMotorInput(int index, float value);
 
 		/**
 		 * @return returns object points in local space
@@ -105,9 +124,7 @@ namespace nap
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
 
 		//
-		ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance
-			= initComponentInstancePtr(this, &FlexBlockComponent::mFlexBlockSerialComponent);
-
+        ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
 		// Initialize flexblock unique ptr to null
 		std::unique_ptr<Flex> mFlexLogic = nullptr;
 

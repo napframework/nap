@@ -1,4 +1,5 @@
-#include "FlexBlockSerialComponent.h"
+// Local Includes
+#include "flexblockserialcomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -23,12 +24,9 @@ namespace nap
 
 	}
 
+
 	FlexBlockSerialComponentInstance::~FlexBlockSerialComponentInstance()
 	{
-		if (mSerialPort != nullptr)
-		{
-			mSerialPort->mIsBeingDeconstructed.disconnect(mDestroySlot);
-		}
 
 		if (mIsRunning)
 		{
@@ -36,6 +34,7 @@ namespace nap
 			mWriteThread.join();
 		}
 	}
+
 
 	bool FlexBlockSerialComponentInstance::init(utility::ErrorState& errorState)
 	{
@@ -50,10 +49,12 @@ namespace nap
 		return true;
 	}
 
+
 	void FlexBlockSerialComponentInstance::onSerialPortDestroy(SerialPort * port)
 	{
 		stop();
 	}
+
 
 	void FlexBlockSerialComponentInstance::start(utility::ErrorState& error)
 	{
@@ -68,6 +69,7 @@ namespace nap
 		}
 	}
 
+
 	void FlexBlockSerialComponentInstance::stop()
 	{
 		if (mIsRunning)
@@ -79,6 +81,7 @@ namespace nap
 		if( mSerialPort->isOpen() )
 			mSerialPort->stop();
 	}
+
 
 	void FlexBlockSerialComponentInstance::write(std::string data)
 	{
@@ -92,12 +95,14 @@ namespace nap
 		}
 	}
 
+
 	void FlexBlockSerialComponentInstance::consumeBuffer(std::deque<std::string>& outBuffer)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
 
 		outBuffer.swap(mWriteBuffer);
 	}
+
 
 	void FlexBlockSerialComponentInstance::writeThreadFunc()
 	{
