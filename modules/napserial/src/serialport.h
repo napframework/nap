@@ -110,14 +110,13 @@ namespace nap
 			std::string mMessage = "";					///< Message associated with this error
 		};
 
-
 		/**
 		 * Default constructor
 		 */
 		SerialPort();
 
 		// Stops the device
-		virtual ~SerialPort() override;
+		virtual ~SerialPort();
 
 		/**
 		* Initialize this object after de-serialization.
@@ -340,7 +339,7 @@ namespace nap
 		int mInterByteTimeout = 0;										///< Property: "InterByteTimeout" the max amount of time in ms between receiving bytes that can pass before a timeout occurs. Setting this to 0 will prevent inter byte timeouts.
 		bool mAllowFailure = false;										///< Property: "AllowFailure" when set to true opening the port is allowed to fail on startup.
 	private:
-		std::unique_ptr<serial::Serial> mSerialPort = nullptr;
+		std::unique_ptr<serial::Serial> mSerialPort;
 		
 	};
 }

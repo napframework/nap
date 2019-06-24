@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * Mode that the CameraController is currently operating in. 
 	 */
-	enum class NAPAPI ECameraMode : uint8_t
+	enum class ECameraMode : uint8_t
 	{
 		None						= 0x00,
 

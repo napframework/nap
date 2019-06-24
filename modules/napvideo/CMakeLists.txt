@@ -14,6 +14,7 @@ source_group("sources" FILES ${SOURCES})
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
+set(FFMPEG_FIND_QUIETLY TRUE)
 find_package(FFmpeg REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
