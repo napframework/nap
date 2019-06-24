@@ -59,7 +59,7 @@ namespace nap
         std::string outBuffer(buffer, size);
         AAsset_close(asset);
 
-        if (!rtti::deserializeJSON(outBuffer, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserializeResult, errorState))
+        if (!rtti::deserializeJSON(outBuffer, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, mResourceManager->getFactory(), deserializeResult, errorState))
             return false;
 
         return true;
