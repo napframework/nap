@@ -49,7 +49,7 @@ namespace nap
 		if (resource->mMesh != nullptr)
 		{
 			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
-			if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+			if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 				return false;
 		}
 
