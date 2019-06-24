@@ -27,7 +27,7 @@ namespace nap
 		mReceivedEvents.reserve(25);
 
 		OSCInputComponentInstance* osc_input = getEntityInstance()->findComponent<OSCInputComponentInstance>();
-		if (!errorState.check(osc_input != nullptr, "%s: missing OSCInputComponent"), mID.c_str())
+		if (!errorState.check(osc_input != nullptr, "%s: missing OSCInputComponent", mID.c_str()))
 			return false;
 
         osc_input->messageReceived.connect(eventReceivedSlot);

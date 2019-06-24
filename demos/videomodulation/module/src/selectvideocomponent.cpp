@@ -42,12 +42,12 @@ namespace nap
 
 		// Get the render-able mesh that has the video material
 		mVideoMesh = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(mVideoMesh != nullptr, "%s: missing RenderableMeshComponent"), mID.c_str())
+		if (!errorState.check(mVideoMesh != nullptr, "%s: missing RenderableMeshComponent", mID.c_str()))
 			return false;
 
 		// Get the audio component
 		mAudioComponent = getEntityInstance()->findComponent<audio::VideoAudioComponentInstance>();
-		if (!errorState.check(mAudioComponent != nullptr, "%s: missing VideoAudioComponent"), mID.c_str())
+		if (!errorState.check(mAudioComponent != nullptr, "%s: missing VideoAudioComponent", mID.c_str()))
 			return false;
 
 		// Select one
