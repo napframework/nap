@@ -27,7 +27,7 @@ namespace nap
 		mReceivedEvents.reserve(25);
 
 		MidiInputComponentInstance* midi_input = getEntityInstance()->findComponent<MidiInputComponentInstance>();
-		if (!errorState.check(midi_input != nullptr, "%s: missing MidiInputComponent"), mID.c_str())
+		if (!errorState.check(midi_input != nullptr, "%s: missing MidiInputComponent", mID.c_str()))
 			return false;
 
         midi_input->messageReceived.connect(eventReceivedSlot);
