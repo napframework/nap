@@ -55,8 +55,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
-			components.push_back(RTTI_OF(OrbitController));
-			components.push_back(RTTI_OF(FirstPersonController));
+			components.emplace_back(RTTI_OF(OrbitController));
+			components.emplace_back(RTTI_OF(FirstPersonController));
 		}
 
 		nap::EntityPtr	mLookAtTarget;		///< Object to look at, for orbit and ortho controller
