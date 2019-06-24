@@ -263,9 +263,7 @@ namespace nap
 		bool SequencePlayerComponentInstance::load(std::string showPath, utility::ErrorState& errorState)
 		{
 			//
-			mDeserializeResult.mFileLinks.clear();
-			mDeserializeResult.mReadObjects.clear();
-			mDeserializeResult.mUnresolvedPointers.clear();
+			rtti::DeserializeResult result;
 
 			//
 			mShowName = utility::getFileNameWithoutExtension(showPath);
@@ -275,16 +273,17 @@ namespace nap
 
 			// Load the parameters from the preset
 			rtti::Factory factory;
-			if (!rtti::readJSONFile(showPath, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, mDeserializeResult, errorState))
+			if (!rtti::readJSONFile(showPath, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
 				return false;
 
 			// Resolve links
-			if (!rtti::DefaultLinkResolver::sResolveLinks(mDeserializeResult.mReadObjects, mDeserializeResult.mUnresolvedPointers, errorState))
+			if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
 				return false;
 
 			std::map<int, Sequence*> sequenceMap;
+
 			// Find the root parameter group in the preset file and apply parameters
-			for (auto& object : mDeserializeResult.mReadObjects)
+			for (auto& object : result.mReadObjects)
 			{
 				if (!object->init(errorState))
 					return false;
@@ -293,8 +292,14 @@ namespace nap
 				{
 					Sequence* sequence = static_cast<Sequence*>(object.get());
 					sequenceMap.insert(std::pair<int, Sequence*>(sequence->mIndexInSequenceContainer, sequence));
-
 				}
+			}
+
+			// transfer ownership
+			mOwnedObjects.clear();
+			for (int i = 0; i < result.mReadObjects.size(); i++)
+			{
+				mOwnedObjects.emplace_back(std::move(result.mReadObjects[i]));
 			}
 
 			mSequenceContainer->getSequences().clear();

@@ -6,6 +6,7 @@ RTTI_BEGIN_CLASS(nap::timeline::Sequence)
 	// Put additional properties here
 	RTTI_PROPERTY("Sequence Elements", &nap::timeline::Sequence::mSequenceElementsResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Start Parameters", &nap::timeline::Sequence::mStartParametersResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Index", &nap::timeline::Sequence::mIndexInSequenceContainer, nap::rtti::EPropertyMetaData::ReadOnly)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -20,14 +21,31 @@ namespace nap
 
 		bool Sequence::init(utility::ErrorState& errorState)
 		{
-			if (!errorState.check(mSequenceElementsResourcePtrs.size() > 0,
-				"need at least 1 element %s", this->mID.c_str()))
+			if (!errorState.check(
+				mSequenceElementsResourcePtrs.size() > 0 ||
+				mElements.size() > 0,
+				"Need at least 1 element in sequence %s", this->mID.c_str()))
 				return false;
 
+			std::vector<SequenceElement*> elements = mElements;
+
+			mElements.clear();
 			for (const auto& sequenceElementResourcePtr : mSequenceElementsResourcePtrs)
 			{
 				mElements.emplace_back(sequenceElementResourcePtr.get());
 			}
+
+			for (auto* element : elements)
+			{
+				mElements.emplace_back(element);
+			}
+
+			sort(mElements.begin(), mElements.end(), [](
+				const SequenceElement *a,
+				const SequenceElement *b)-> bool
+			{
+				return a->getStartTime() < b->getStartTime();
+			});
 
 			for (const auto& startParameterResourcePtr : mStartParametersResourcePtrs)
 			{
@@ -198,7 +216,6 @@ namespace nap
 			}
 
 			mCurrentElementIndex = 0;
-
 
 			mOwnedElements.emplace_back(std::move(element));
 		}

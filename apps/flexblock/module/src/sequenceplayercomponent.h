@@ -187,7 +187,7 @@ namespace nap
 
 			std::string mShowName;
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
-			rtti::DeserializeResult mDeserializeResult;
+			rtti::OwnedObjectList mOwnedObjects;
 			std::vector<std::unique_ptr<Sequence>> mOwnedSequences;
 
 			std::unique_ptr<timeline::SequenceContainer> mSequenceContainer = nullptr;

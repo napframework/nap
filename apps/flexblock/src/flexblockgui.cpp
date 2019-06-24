@@ -1094,10 +1094,9 @@ namespace nap
 				return true;
 			}, &shows, shows.size());
 
-
+			utility::ErrorState errorState;
 			if (ImGui::Button("Load"))
 			{
-				utility::ErrorState errorState;
 				if (mSequencePlayer->load(files_in_directory[selectedShowIndex], errorState))
 				{
 					ImGui::CloseCurrentPopup();
@@ -1105,18 +1104,7 @@ namespace nap
 					currentTimelineAction = TimeLineActions::NONE;
 				}
 				else
-					ImGui::OpenPopup("Failed to load preset");
-
-				if (ImGui::BeginPopupModal("Failed to load preset"))
-				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
-					{
-						ImGui::CloseCurrentPopup();
-					}
-
-					ImGui::EndPopup();
-				}
+					ImGui::OpenPopup("Failed to load show");
 			}
 
 			ImGui::SameLine();
@@ -1125,6 +1113,17 @@ namespace nap
 				ImGui::CloseCurrentPopup();
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
+			}
+
+			if (ImGui::BeginPopupModal("Failed to load show", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text(errorState.toString().c_str());
+				if (ImGui::Button("OK"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
 
 			ImGui::EndPopup();

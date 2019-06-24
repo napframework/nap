@@ -99,8 +99,6 @@ namespace nap
 			int mCurrentElementIndex = 0;
 
 			std::vector<std::unique_ptr<SequenceElement>> mOwnedElements;
-
-
 		};
 	}
 }
