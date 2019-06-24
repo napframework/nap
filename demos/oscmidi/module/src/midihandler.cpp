@@ -25,8 +25,12 @@ namespace nap
     bool MidiHandlerComponentInstance::init(utility::ErrorState& errorState)
     {
 		mReceivedEvents.reserve(25);
-        auto& midiInputComponent = getEntityInstance()->getComponent<MidiInputComponentInstance>();
-        midiInputComponent.messageReceived.connect(eventReceivedSlot);
+
+		MidiInputComponentInstance* midi_input = getEntityInstance()->findComponent<MidiInputComponentInstance>();
+		if (!errorState.check(midi_input != nullptr, "%s: missing MidiInputComponent", mID.c_str()))
+			return false;
+
+        midi_input->messageReceived.connect(eventReceivedSlot);
         return true;
     }
     

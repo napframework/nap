@@ -31,7 +31,7 @@ namespace nap
 		if (!RenderableTextComponentInstance::init(errorState))
 			return false;
 
-		if (!errorState.check(hasTransform(), "%s doesn't have a transform component", getEntityInstance()->mID.c_str()))
+		if (!errorState.check(hasTransform(), "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Copy flags

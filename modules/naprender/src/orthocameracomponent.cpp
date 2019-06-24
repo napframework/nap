@@ -43,7 +43,7 @@ namespace nap
 	{
 		mProperties = getComponent<OrthoCameraComponent>()->mProperties;
 		mTransformComponent =	getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		return true;

@@ -153,7 +153,14 @@ namespace nap
 
 	public:
 		/**
-		 * Populates a list of all component types this component depends on (i.e. must be initialized before this one)
+		 * Populates a list of components this component depends on.
+		 * Every component dependency, when found, is initialized before this component.
+		 * A dependency is NOT a hard requirement. Serialization will not fail if the dependent component 
+		 * isn't declared in JSON. It only means that when a component is declared under the same entity,
+		 * and that component is tagged as a dependency of this component, it is initialized before this component.
+		 * It is your responsibility to return false on initialization if the dependency is a hard requirement 
+		 * and can't be found. To ensure the right order of initialization based on a hard requirement it
+		 * is advised to use a nap::ComponentPtr instead.
 		 * @param components list of component types this resource depends on.
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const { }
