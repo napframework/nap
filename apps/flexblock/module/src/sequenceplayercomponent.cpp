@@ -13,7 +13,7 @@
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
 // Put additional properties here
 RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("SequenceContainer", &nap::timeline::SequencePlayerComponent::mSequenceContainer, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("StartShowFile", &nap::timeline::SequencePlayerComponent::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 
 RTTI_END_CLASS
 
@@ -51,13 +51,19 @@ namespace nap
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
 			SequencePlayerComponent* resource = getComponent<SequencePlayerComponent>();
-			mSequenceContainer = resource->mSequenceContainer.get();
+
+			mSequenceContainer = std::make_unique<SequenceContainer>();
+			if (!mSequenceContainer->init(errorState))
+				return false;
 
 			const auto& parameterGroup = resource->mParameterGroup;
 			for (const auto& parameter : parameterGroup->mParameters)
 			{
 				mParameters.emplace_back(parameter.get());
 			}
+
+			if (!load(resource->mDefaultShow, errorState))
+				return false;
 
 			if( mSequenceContainer->mSequences.size() > 0 )
 				mDuration = mSequenceContainer->mSequences.back()->getStartTime() + mSequenceContainer->mSequences.back()->getDuration();
@@ -247,17 +253,18 @@ namespace nap
 			return true;
 		}
 
-		bool SequencePlayerComponentInstance::load(std::string showName, utility::ErrorState& errorState)
+		bool SequencePlayerComponentInstance::load(std::string showPath, utility::ErrorState& errorState)
 		{
 			//
 			mDeserializeResult.mFileLinks.clear();
 			mDeserializeResult.mReadObjects.clear();
 			mDeserializeResult.mUnresolvedPointers.clear();
 
-			// Ensure the presets directory exists
-			const std::string dir = utility::getAbsolutePath("shows");
+			//
+			mShowName = utility::getFileNameWithoutExtension(showPath);
 
-			std::string show_path = dir + "/" + showName;
+			//
+			std::string show_path = showPath;
 
 			// Load the parameters from the preset
 			rtti::Factory factory;

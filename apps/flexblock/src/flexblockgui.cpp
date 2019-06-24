@@ -38,7 +38,7 @@ namespace nap
 	static int motorDragged = 0;
 	static int selectedShowIndex = 0;
 	static bool inPopup = false;
-	static int enableMotorHandlerIndex = -1;
+	static int enableMotorHandlerIndexBitMask = 0;
 	static float currentTimeOfMouseInSequence = 0.0f;
 
 	static timeline::Sequence* selectedSequence = nullptr;
@@ -271,7 +271,7 @@ namespace nap
 		float scroll_x = ImGui::GetScrollX();
 
 		// begin timeline child
-		ImGui::BeginChild("", ImVec2(child_width + 20, child_height), false, ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("", ImVec2(child_width + 30, child_height), false, ImGuiWindowFlags_NoMove);
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -467,7 +467,7 @@ namespace nap
 						float motor_height = child_size.y / 8.0f;
 						for (int m = 0; m < 8; m++)
 						{
-							if (m == enableMotorHandlerIndex)
+							if ((enableMotorHandlerIndexBitMask >> m) & 1UL)
 							{
 								const float circleSize = 6.0f;
 
@@ -546,7 +546,7 @@ namespace nap
 							float motor_height = child_size.y / 8.0f;
 							for (int m = 0; m < 8; m++)
 							{
-								if (m == enableMotorHandlerIndex)
+								if ((enableMotorHandlerIndexBitMask >> m) & 1UL)
 								{
 									// get the range of the difference between start and finish
 									float range = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue - static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
@@ -851,13 +851,13 @@ namespace nap
 
 						if (ImGui::IsMouseClicked(0))
 						{
-							if (enableMotorHandlerIndex == motorId)
+							if ( (enableMotorHandlerIndexBitMask >> motorId ) & 1UL )
 							{
-								enableMotorHandlerIndex = -1;
+								enableMotorHandlerIndexBitMask &= ~(1UL << motorId);
 							}
 							else
 							{
-								enableMotorHandlerIndex = motorId;
+								enableMotorHandlerIndexBitMask |= 1UL << motorId;
 							}
 							currentTimelineAction = TimeLineActions::ENABLING_HANDLERS;
 						}
@@ -865,7 +865,7 @@ namespace nap
 				}
 
 				if (!filled)
-					filled = enableMotorHandlerIndex == motorId;
+					filled = (enableMotorHandlerIndexBitMask >> motorId) & 1UL;
 
 				if (!filled)
 				{
@@ -909,7 +909,6 @@ namespace nap
 					{
 						currentTimelineAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
 
-						
 						mSequencePlayer->setTime(currentTimeOfMouseInSequence);
 					}
 				}
@@ -919,6 +918,7 @@ namespace nap
 					// handle drag in timeline
 					if (ImGui::IsMouseDragging())
 					{
+						// translate mouseposition to position in sequenceplayer
 						ImVec2 mousePos = ImGui::GetMousePos();
 						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
 						float pos = mousePos.x / child_size.x;
@@ -1056,6 +1056,10 @@ namespace nap
 			outPopupOpened = true;
 			currentTimelineAction = TimeLineActions::LOAD_POPUP;
 		}
+
+		//
+		ImGui::SameLine();
+		ImGui::Text(("CurrentShow : " + mSequencePlayer->getShowName()).c_str());
 	}
 
 	void FlexblockGui::handleLoadPopup()
@@ -1093,7 +1097,7 @@ namespace nap
 			if (ImGui::Button("Load"))
 			{
 				utility::ErrorState errorState;
-				if (mSequencePlayer->load(shows[selectedShowIndex], errorState))
+				if (mSequencePlayer->load(files_in_directory[selectedShowIndex], errorState))
 				{
 					ImGui::CloseCurrentPopup();
 					inPopup = false;
@@ -1202,12 +1206,17 @@ namespace nap
 			{
 				ParameterService::PresetFileList* show_files = (ParameterService::PresetFileList*)data;
 				*out_text = (*show_files)[index].data();
+
 				return true;
 			}, &shows, shows.size()))
 			{
 				if (selectedShowIndex == shows.size() - 1)
 				{
 					ImGui::OpenPopup("New");
+				}
+				else
+				{
+					ImGui::OpenPopup("Overwrite");
 				}
 			}
 
@@ -1223,11 +1232,34 @@ namespace nap
 				}
 				else
 				{
-					ImGui::OpenPopup("Failed to save preset");
+					ImGui::OpenPopup("Failed to save show");
 				}
 			}
 
-			if (ImGui::BeginPopupModal("Failed to save preset"))
+			if (ImGui::BeginPopupModal("Overwrite"))
+			{
+				ImGui::Text(("Are you sure you want to overwrite " + shows[selectedShowIndex] + " ?").c_str());
+				if (ImGui::Button("OK"))
+				{
+					if (mSequencePlayer->save(shows[selectedShowIndex], errorState))
+					{
+					}
+					else
+					{
+						ImGui::OpenPopup("Failed to save show");
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Failed to save show"))
 			{
 				ImGui::Text(errorState.toString().c_str());
 				if (ImGui::Button("OK"))
@@ -1360,7 +1392,7 @@ namespace nap
 				}
 			}
 
-			if (ImGui::Button("Done"))
+			if (ImGui::Button("Cancel"))
 			{
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
@@ -1397,22 +1429,26 @@ namespace nap
 	{
 		if (ImGui::BeginPopup("Insert"))
 		{
-			/*
+			
 			if (ImGui::Button("Insert Pause"))
 			{
 				double time = mSequencePlayer->getCurrentTime();
 				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 				timeline::SequenceElement* element = sequence->getElementAtTime(time);
-				element->mDuration = time - (element->getStartTime());
+
+				float newDuration = time - (element->getStartTime());
+				float deltaDuration = element->mDuration - newDuration;
+				element->mDuration = newDuration;
 
 				utility::ErrorState errorState;
 				std::unique_ptr<timeline::SequencePause> newElement = std::make_unique<timeline::SequencePause>();
 				newElement->mID = "GeneratedPause" + getTimeString();
-				newElement->mDuration = 1.0;
+
+				newElement->mDuration = deltaDuration;
+				newElement->setStartTime(time);
 				newElement->init(errorState);
 
 				sequence->insertElement(std::move(newElement));
-				sequence->reset();
 
 				mSequencePlayer->reconstruct();
 
@@ -1426,16 +1462,21 @@ namespace nap
 				double time = mSequencePlayer->getCurrentTime();
 				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 				timeline::SequenceElement* element = sequence->getElementAtTime(time);
-				element->mDuration = time - (element->getStartTime());
+
+				float newDuration = time - (element->getStartTime());
+				float deltaDuration = element->mDuration - newDuration;
+				element->mDuration = newDuration;
 
 				utility::ErrorState errorState;
 				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
-				newElement->mID = "GeneratedPause" + getTimeString();
-				newElement->mDuration = 1.0;
+				newElement->mID = "GeneratedTransition" + getTimeString();
+				newElement->setStartParameters(element->getEndParameters());
+
+				newElement->mDuration = deltaDuration;
+				newElement->setStartTime(time);
 				newElement->init(errorState);
 
 				sequence->insertElement(std::move(newElement));
-				sequence->reset();
 
 				mSequencePlayer->reconstruct();
 
@@ -1443,7 +1484,6 @@ namespace nap
 				currentTimelineAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
 			}
-			*/
 
 			if (ImGui::Button("Insert Sequence"))
 			{
@@ -1496,7 +1536,7 @@ namespace nap
 				ImGui::CloseCurrentPopup();
 			}
 
-			if (ImGui::Button("Done"))
+			if (ImGui::Button("Cancel"))
 			{
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;

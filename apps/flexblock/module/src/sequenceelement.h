@@ -46,6 +46,11 @@ namespace nap
 			void setPreviousElement(SequenceElement* element) { mPreviousElement = element; }
 
 			/**
+			*
+			*/
+			void setNextElement(SequenceElement* element) { mNextElement = element; }
+
+			/**
 			* @return returns a reference to the end parameters of this sequence
 			*/
 			const std::vector<Parameter*>& getEndParameters() const { return mEndParameters; }
@@ -74,6 +79,11 @@ namespace nap
 			 * 
 			 */
 			SequenceElement* getPreviousElement() const { return mPreviousElement; }
+
+			/**
+			* 
+			*/
+			SequenceElement* getNextElement() const { return mNextElement; }
 		public:
 			// properties
 			float mDuration = 0.0f;
@@ -84,7 +94,8 @@ namespace nap
 		protected:
 			double mStartTime = 0.0;
 			SequenceElement* mPreviousElement = nullptr;
-			
+			SequenceElement* mNextElement = nullptr;
+
 			std::vector<Parameter*> mStartParameters;
 			rtti::DeserializeResult mPresetReadResult;
 		};

@@ -27,8 +27,8 @@ namespace nap
 			*/
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
+			std::string						mDefaultShow;
 			ResourcePtr<ParameterGroup>		mParameterGroup;
-			ResourcePtr<SequenceContainer>	mSequenceContainer;
 		};
 
 
@@ -112,6 +112,8 @@ namespace nap
 
 			bool load(std::string showName, utility::ErrorState& errorState);
 
+			const std::string getShowName() const { return mShowName; }
+
 			/**
 			* @return true if loaded sequence
 			*/
@@ -171,9 +173,6 @@ namespace nap
 			*/
 			const std::vector<Sequence*>& getSequences() { return mSequenceContainer->mSequences;}
 		protected:
-			//
-			SequenceContainer* mSequenceContainer = nullptr;
-
 			double mTime = 0.0;
 			bool mIsPlaying = false;
 			bool mIsPaused = false;
@@ -184,9 +183,12 @@ namespace nap
 
 			double mDuration = 0.0;
 
+			std::string mShowName;
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 			rtti::DeserializeResult mDeserializeResult;
 			std::vector<std::unique_ptr<Sequence>> mOwnedSequences;
+
+			std::unique_ptr<SequenceContainer> mSequenceContainer = nullptr;
 		};
 	}
 }

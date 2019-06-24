@@ -74,7 +74,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;
 
 		// Resources
-		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the render window
+		ObjectPtr<RenderWindow>	mMainWindow = nullptr;				//< Pointer to the render window
+		ObjectPtr<RenderWindow>	mTimelineWindow = nullptr;				//< Pointer to the timeline window
 
 		// Gui
 		std::unique_ptr<FlexblockGui> mGui = nullptr;

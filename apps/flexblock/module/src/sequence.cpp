@@ -176,6 +176,22 @@ namespace nap
 		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)
 		{
 			mElements.emplace_back(element.get());
+
+			sort(mElements.begin(), mElements.end(), [](
+				const SequenceElement *a,
+				const SequenceElement *b)-> bool
+			{
+				return a->getStartTime() < b->getStartTime();
+			});
+
+			for (int i = 1; i < mElements.size(); i++)
+			{
+				mElements[i]->setPreviousElement(mElements[i - 1]);
+			}
+
+			mCurrentElementIndex = 0;
+
+
 			mOwnedElements.emplace_back(std::move(element));
 		}
 	}

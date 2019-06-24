@@ -44,7 +44,10 @@ namespace nap
 			return false;
 
 		// Get the render window
-		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
+		mMainWindow = mResourceManager->findObject<RenderWindow>("MainWindow");
+
+		//
+		mTimelineWindow = mResourceManager->findObject<RenderWindow>("TimelineWindow");
 
 		// Find the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -57,9 +60,9 @@ namespace nap
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
 		mGui->init();
+		mGuiService->selectWindow(mTimelineWindow);
 
 		//
-
 		return true;
 	}
 	
@@ -77,7 +80,7 @@ namespace nap
 		
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(*mMainWindow, input_router, entities);
 
 		// Upate GUI
 		mGui->update();
@@ -90,13 +93,13 @@ namespace nap
 	void FlexblockApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		mRenderService->destroyGLContextResources({ mMainWindow });
 
 		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		mMainWindow->makeActive();
 
 		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		mRenderService->clearRenderTarget(mMainWindow->getBackbuffer());
 
 		// Update camera position
 		setCameraPosition();
@@ -106,7 +109,7 @@ namespace nap
 
 		// Get the perspective camera
 		PerspCameraComponentInstance& persp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_cam);
+		mRenderService->renderObjects(mMainWindow->getBackbuffer(), persp_cam);
 
 		// draw point labels
 		FlexBlockComponentInstance& flex_block = mFlexBlockEntity->getComponent<FlexBlockComponentInstance>();
@@ -121,15 +124,29 @@ namespace nap
 		for (int i = 0; i < points.size(); i++)
 		{
 			Renderable2DTextComponentInstance* motor_label = mTextEntity->findComponentByID<Renderable2DTextComponentInstance>("MotorLabel " + std::to_string(i+1));
-			motor_label->setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mRenderWindow->getRect()) + glm::vec3(0, 10, 0));
-			motor_label->draw(mRenderWindow->getBackbuffer());
+			motor_label->setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mMainWindow->getRect()) + glm::vec3(0, 10, 0));
+			motor_label->draw(mMainWindow->getBackbuffer());
 		}
+
+		//
+		// Clear opengl context related resources that are not necessary any more
+		mRenderService->destroyGLContextResources({ mTimelineWindow });
+
+		// Activate current window for drawing
+		mTimelineWindow->makeActive();
+
+		// Clear back-buffer
+		mRenderService->clearRenderTarget(mTimelineWindow->getBackbuffer());
 
 		// Render gui to window
 		mGuiService->draw();
 
 		// Swap screen buffers
-		mRenderWindow->swap();
+		mTimelineWindow->swap();
+
+		mMainWindow->makeActive();
+
+		mMainWindow->swap();
 	}
 	
 	
@@ -161,7 +178,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				mRenderWindow->toggleFullscreen();
+				mMainWindow->toggleFullscreen();
 			}
 
 			// If 'h' is pressed toggle gui visibility
