@@ -31,7 +31,7 @@ namespace nap
 	bool XformSmoothComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransform != nullptr, "Missing transform component"))
+		if (!errorState.check(mTransform != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Set start value for smoother
