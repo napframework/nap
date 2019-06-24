@@ -28,6 +28,31 @@ namespace nap
 		std::string mName;		///< Name of uniform as in shader
 	};
 
+	class NAPAPI UniformStruct : public Uniform
+	{
+		RTTI_ENABLE(Uniform)
+	public:
+
+		void addUniform(Uniform& uniform);
+		Uniform* findUniform(const std::string& name);
+
+		virtual opengl::EGLSLType getGLSLType() const { return opengl::EGLSLType::Int; }
+
+	public:
+		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
+	};
+
+	class NAPAPI UniformStructArray : public Uniform
+	{
+		RTTI_ENABLE(Uniform)
+	public:
+		void insertStruct(int index, UniformStruct& uniformStruct);
+
+		virtual opengl::EGLSLType getGLSLType() const { return opengl::EGLSLType::Int; }
+
+	public:
+		std::vector<rtti::ObjectPtr<UniformStruct>> mStructs;
+	};
 
 	/**
 	* Represents a 'value' uniform, or: something that is not a texture.
