@@ -203,7 +203,7 @@ namespace nap
 
 		/**
 		 * Called when a http request is made.
-		 * At the moment this just prints the request, we don't act upon it.
+		 * Creates and serves a ticket based on the current Access Mode.
 		 */
 		void onHTTP(wspp::ConnectionHandle con);
 
