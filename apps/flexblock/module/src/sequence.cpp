@@ -27,17 +27,10 @@ namespace nap
 				"Need at least 1 element in sequence %s", this->mID.c_str()))
 				return false;
 
-			std::vector<SequenceElement*> elements = mElements;
-
 			mElements.clear();
 			for (const auto& sequenceElementResourcePtr : mSequenceElementsResourcePtrs)
 			{
 				mElements.emplace_back(sequenceElementResourcePtr.get());
-			}
-
-			for (auto* element : elements)
-			{
-				mElements.emplace_back(element);
 			}
 
 			sort(mElements.begin(), mElements.end(), [](
@@ -84,11 +77,6 @@ namespace nap
 						mID.c_str()))
 						return false;
 				}
-			}
-
-			if (mName == "")
-			{
-				mName = mID;
 			}
 
 			return true;
@@ -179,28 +167,42 @@ namespace nap
 				mElements.erase(mElements.begin() + indexToRemove);
 			}
 
-			if (indexToRemove >= 0)
+			indexToRemove = -1;
+			for (int i = 0; i < mSequenceElementsResourcePtrs.size(); i++)
 			{
-				indexToRemove = -1;
-				for (int i = 0; i < mOwnedElements.size(); i++)
+				if (mSequenceElementsResourcePtrs[i].get() == element)
 				{
-					if (mOwnedElements[i].get() == element)
-					{
-						indexToRemove = i;
-						break;;
-					}
-				}
-
-				if (indexToRemove >= 0)
-				{
-					mOwnedElements.erase(mOwnedElements.begin() + indexToRemove);
+					indexToRemove = i;
+					break;
 				}
 			}
 
+			if (indexToRemove >= 0)
+			{
+				mSequenceElementsResourcePtrs.erase(mSequenceElementsResourcePtrs.begin() + indexToRemove);
+			}
+
+			indexToRemove = -1;
+			for (int i = 0; i < mOwnedElements.size(); i++)
+			{
+				if (mOwnedElements[i].get() == element)
+				{
+					indexToRemove = i;
+					break;;
+				}
+			}
+
+			if (indexToRemove >= 0)
+			{
+				mOwnedElements.erase(mOwnedElements.begin() + indexToRemove);
+			}
 		}
 
 		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)
 		{
+			ResourcePtr<SequenceElement> elementResourcePtr(element.get());
+			mSequenceElementsResourcePtrs.emplace_back(elementResourcePtr);
+
 			mElements.emplace_back(element.get());
 
 			sort(mElements.begin(), mElements.end(), [](

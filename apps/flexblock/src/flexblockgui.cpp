@@ -272,7 +272,7 @@ namespace nap
 		float scroll_x = ImGui::GetScrollX();
 
 		// begin timeline child
-		ImGui::BeginChild("", ImVec2(child_width + 30, child_height), false, ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("", ImVec2(child_width + 32, child_height), false, ImGuiWindowFlags_NoMove);
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -1042,7 +1042,7 @@ namespace nap
 		if (ImGui::Button("Save As"))
 		{
 			popupId = "Save As";
-			//mSequencePlayer->save("test.json");
+
 			inPopup = true;
 			outPopupOpened = true;
 			currentTimelineAction = TimeLineActions::SAVE_POPUP;
@@ -1229,6 +1229,15 @@ namespace nap
 				if (mSequencePlayer->save(newFilename, errorState))
 				{
 					selectedShowIndex = shows.size() - 1;
+
+					if (mSequencePlayer->load(newFilename, errorState))
+					{
+
+					}
+					else
+					{
+						ImGui::OpenPopup("Failed to load show after saving");
+					}
 				}
 				else
 				{
@@ -1243,6 +1252,14 @@ namespace nap
 				{
 					if (mSequencePlayer->save(shows[selectedShowIndex], errorState))
 					{
+						if (mSequencePlayer->load(shows[selectedShowIndex], errorState))
+						{
+
+						}
+						else
+						{
+							ImGui::OpenPopup("Failed to load show after saving");
+						}
 					}
 					else
 					{
