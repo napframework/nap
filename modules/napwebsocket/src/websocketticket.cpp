@@ -3,7 +3,6 @@
 // External Includes
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <rtti/deserializeresult.h>
 #include <rtti/rtticast.h>
 #include <bitset>
 
@@ -45,7 +44,7 @@ namespace nap
 	}
 
 
-	bool WebSocketTicket::fromBinaryString(const std::string& binaryString, utility::ErrorState& error)
+	WebSocketTicket* WebSocketTicket::fromBinaryString(const std::string& binaryString, rtti::DeserializeResult& result, utility::ErrorState& error)
 	{
 		// Make sure it's a binary stream
 		if (!error.check(!binaryString.empty() && binaryString.size() % 8 == 0, "invalid binary bit-stream"))
@@ -69,33 +68,28 @@ namespace nap
 
 		// De-serialize binary ticket
 		rtti::Factory factory;
-		rtti::DeserializeResult deserialize_result;
 		std::string json(vec.begin(), vec.end());
 
 		// De-serialize
-		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::AllowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, deserialize_result, error))
-			return false;
+		if (!rtti::deserializeJSON(json, rtti::EPropertyValidationMode::AllowMissingProperties, rtti::EPointerPropertyMode::OnlyRawPointers, factory, result, error))
+			return nullptr;
 
 		// Ensure we have at least 1 object
-		if (error.check(deserialize_result.mReadObjects.empty(), "no ticket in object list"))
-			return false;
+		if (error.check(result.mReadObjects.empty(), "no ticket in object list"))
+			return nullptr;
 
 		// First object should be the ticket
-		if (!error.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(WebSocketTicket),
+		if (!error.check(result.mReadObjects[0]->get_type() == RTTI_OF(WebSocketTicket),
 			"extracted object not a: ", RTTI_OF(WebSocketTicket).get_name().to_string().c_str()))
-			return false;
+			return nullptr;
 
 		// Now get the first item as a ticket
-		WebSocketTicket* ticket = rtti_cast<WebSocketTicket>(deserialize_result.mReadObjects[0].get());
+		WebSocketTicket* ticket = rtti_cast<WebSocketTicket>(result.mReadObjects[0].get());
 		if (!error.check(ticket != nullptr, 
 			"extracted object not a: ", RTTI_OF(WebSocketTicket).get_name().to_string().c_str()))
-			return false;
+			return nullptr;
 
-		// Copy object
-		rtti::copyObject(*ticket, *this);
-
-		// Done
-		return true;
+		return ticket;
 	}
 
 

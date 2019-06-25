@@ -426,10 +426,10 @@ namespace nap
 		conp->select_subprotocol(sub_protocol[0]);
 		
 		// Convert from binary into string
-		WebSocketTicket client_ticket;
-		client_ticket.setEnableObjectPtrs(false);
 		utility::ErrorState error;
-		if (!client_ticket.fromBinaryString(sub_protocol[0], error))
+		rtti::DeserializeResult result;
+		WebSocketTicket* client_ticket = WebSocketTicket::fromBinaryString(sub_protocol[0], result, error);
+		if (client_ticket == nullptr)
 		{
 			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
 				"first sub-protocol argument is not a valid ticket object");
@@ -441,7 +441,7 @@ namespace nap
 			return true;
 
 		// Locate ticket
-		if (mClientHashes.find(client_ticket.toHash()) == mClientHashes.end())
+		if (mClientHashes.find(client_ticket->toHash()) == mClientHashes.end())
 		{
 			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
 				"not a valid ticket");
