@@ -2,6 +2,7 @@
 
 // External Includes
 #include <nap/resource.h>
+#include <rtti/deserializeresult.h>
 
 namespace nap
 {
@@ -34,13 +35,12 @@ namespace nap
 		bool toBinaryString(std::string& outString, utility::ErrorState& error);
 
 		/**
-		 * Applies a binary string to this ticket. The binary string 
-		 * must be acquired through toBinaryString.
+		 * Creates a web-socket ticket based on a previously acquired binary string. 
 		 * @param binaryString the binary string representation of a ticket.
 		 * @param error contains the error if conversion fails.
-		 * @return if conversion succeeded.
+		 * @return the web-socket ticket, nullptr if conversion fails
 		 */
-		bool fromBinaryString(const std::string& binaryString, utility::ErrorState& error);
+		static WebSocketTicket* fromBinaryString(const std::string& binaryString, rtti::DeserializeResult& result, utility::ErrorState& error);
 
 		/**
 		 * Creates a hash-able ticket based on the info in this ticket.
