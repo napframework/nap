@@ -73,7 +73,7 @@ namespace nap
 				msg = "No Connected Clients";
 			
 			// Display block of text
-			ImGui::InputTextMultiline("OSC Messages", &msg[0], msg.size(), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputTextMultiline("Clients", &msg[0], msg.size(), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
 		}
 
 		ImGui::End();

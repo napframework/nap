@@ -63,7 +63,7 @@ namespace nap
 		catch (std::exception& e)
 		{
 			error.fail(utility::stringFormat("invalid binary bit-stream: %s", e.what()));
-			return false;
+			return nullptr;
 		}
 
 		// De-serialize binary ticket
