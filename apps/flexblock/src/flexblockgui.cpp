@@ -40,7 +40,7 @@ namespace nap
 	static bool inPopup = false;
 	static int enableMotorHandlerIndexBitMask = 0;
 	static float currentTimeOfMouseInSequence = 0.0f;
-
+	static std::string errorString;
 	static timeline::Sequence* selectedSequence = nullptr;
 
 	// 200, 105, 105
@@ -325,7 +325,7 @@ namespace nap
 				ImVec2 textPos = end;
 				textPos.x += 3;
 				textPos.y -= 6;
-				draw_list->AddText(textPos, colorWhite, convertToString<float>(time, 2).c_str());
+				draw_list->AddText(textPos, colorWhite, formatTimeString(time).c_str());
 			}
 
 			// needed to avoid elements texts from overlapping later on
@@ -945,7 +945,7 @@ namespace nap
 			draw_list->AddText(
 				ImVec2(top_left.x + player_pos + 5, top_left.y - 20),
 				colorRed,
-				convertToString(mSequencePlayer->getCurrentTime(), 2).c_str());
+				formatTimeString(mSequencePlayer->getCurrentTime()).c_str());
 
 			// handle dragging of timeline
 			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
@@ -1170,7 +1170,10 @@ namespace nap
 					currentTimelineAction = TimeLineActions::NONE;
 				}
 				else
+				{
+					errorString = errorState.toString();
 					ImGui::OpenPopup("Failed to load show");
+				}
 			}
 
 			ImGui::SameLine();
@@ -1183,7 +1186,7 @@ namespace nap
 
 			if (ImGui::BeginPopupModal("Failed to load show", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text(errorState.toString().c_str());
+				ImGui::Text(errorString.c_str());
 				if (ImGui::Button("OK"))
 				{
 					ImGui::CloseCurrentPopup();
@@ -1300,11 +1303,13 @@ namespace nap
 					}
 					else
 					{
-						ImGui::OpenPopup("Failed to load show after saving");
+						errorString = errorState.toString();
+						ImGui::OpenPopup("Failed to load show");
 					}
 				}
 				else
 				{
+					errorString = errorState.toString();
 					ImGui::OpenPopup("Failed to save show");
 				}
 			}
@@ -1322,11 +1327,13 @@ namespace nap
 						}
 						else
 						{
-							ImGui::OpenPopup("Failed to load show after saving");
+							errorString = errorState.toString();
+							ImGui::OpenPopup("Failed  to save show");
 						}
 					}
 					else
 					{
+						errorString = errorState.toString();
 						ImGui::OpenPopup("Failed to save show");
 					}
 
@@ -1342,7 +1349,7 @@ namespace nap
 
 			if (ImGui::BeginPopupModal("Failed to save show"))
 			{
-				ImGui::Text(errorState.toString().c_str());
+				ImGui::Text(errorString.c_str());
 				if (ImGui::Button("OK"))
 				{
 					ImGui::CloseCurrentPopup();
@@ -1374,6 +1381,32 @@ namespace nap
 		streamObj << std::fixed;
 		streamObj << std::setprecision(precision) << number;
 		return streamObj.str();
+	}
+
+	std::string FlexblockGui::formatTimeString(float time)
+	{
+		int hours = time / 3600.0f;
+		int minutes = (int) (time / 60.0f) % 60;
+		int seconds = (int) time % 60;
+
+		std::stringstream stringStream;
+
+		stringStream << std::setw(2) << std::setfill('0') << seconds;
+		std::string secondsString = stringStream.str();
+
+		stringStream = std::stringstream();
+		stringStream << std::setw(2) << std::setfill('0') << minutes;
+		std::string minutesString = stringStream.str();
+
+		std::string hoursString = "";
+		if (hours > 0)
+		{
+			stringStream = std::stringstream();
+			stringStream << std::setw(2) << std::setfill('0') << hours;
+			hoursString = stringStream.str() + ":";
+		}
+
+		return hoursString + minutesString + ":" + secondsString;
 	}
 
 	void FlexblockGui::showSequencesWindow()

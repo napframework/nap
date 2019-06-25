@@ -94,6 +94,8 @@ namespace nap
 
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 
+		std::string formatTimeString(float time);
+
 		void showSequencesWindow();
 
 		void handleElementActionsPopup();

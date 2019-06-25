@@ -22,12 +22,13 @@ namespace nap
 				mEndParameters.clear();
 				mOwnedParameters.clear();
 				mEndParameterResourcePtrs.clear();
-				for (float input : mMotorInputs)
+				for (int i = 0; i < mMotorInputs.size(); i++)
 				{
 					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
-					mOwnedParameters.back()->setValue(input);
+					mOwnedParameters.back()->setValue(mMotorInputs[i]);
 
 					ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					parameterFloatPtr->mID = mID + "GeneratedParameter" + std::to_string(i);
 					mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
 					mEndParameterResourcePtrs.emplace_back(parameterFloatPtr);
 				}
