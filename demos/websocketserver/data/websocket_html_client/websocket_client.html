@@ -4,10 +4,14 @@
   <script language="javascript" type="text/javascript">
 
   // Websocket url, change to server web-socket address!
-  var ws_uri = "ws://localhost:80";
+  var uri = "localhost:80";
   
-  // JSON formatted api message.
-  // Acts as a template for a request to the server to change text.
+  /*
+   * JSON formatted api message.
+   * Acts as a template for a request to the server to change text.
+   * This var is parsed as JSON and the 'Value' of the APIString is changed
+   * before the message is send to the server.
+   */
   var nap_msg = `
   {
      "Objects": 
@@ -30,6 +34,7 @@
   }`
 
   // Some global document vars.
+  var ticket;
   var api_msg;
   var textbox;
   var request_p;
@@ -37,8 +42,14 @@
   var connected = false;
   var box_char_count = 0;
   var status_header;
+  
+  // Identification information
+  const username = "napuser"
+  const password = "letmein!"
 
-  // On load
+  /*
+   * Executed when document loads
+   */
   function init()
   {
     textbox = document.getElementById("textbox");
@@ -49,17 +60,48 @@
     api_msg = JSON.parse(nap_msg);
     box_char_count = 0;
     connected = false;
-    startWebSocket();
+
+    // Request login, on success start websocket
+    requestLogin();
   }
 
-  // Run simple websocket
-  function startWebSocket()
+  /*
+   * Sends an http request to get a ticket from the web-socket server
+   * The ticket is used to on login to validate the connection
+   */
+  function requestLogin()
+  {
+    const req = new XMLHttpRequest();
+    const url = 'http://' + uri;
+    req.open("POST", url, true);
+    req.onreadystatechange =  function() 
+    { 
+      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) 
+      {
+        writeToBox("received login ticket");    
+        startWebSocket(this.responseText);
+      }
+    }
+    writeToBox("requesting login ticket: " + url);
+    req.send(JSON.stringify({ "user": username, "pass": password }));
+  }
+
+  
+  /**
+   * Called after receiving a ticket from the web-socket server
+   * The ticket is used to validate the connection when the web-socket
+   * connection is opened. 
+   */
+  function startWebSocket(ticket)
   {
     status_header.innerHTML = "connecting";
     status_header.style.color = "#5D5E73";
 
-    websocket = new WebSocket(ws_uri);
+    const ws_uri = "ws://"+uri;
+    websocket = new WebSocket(ws_uri, ticket);
     writeToBox("connecting to: " + ws_uri);
+    
+    // Callbacks
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
     websocket.onmessage = function(evt) { onMessage(evt) };
@@ -92,10 +134,12 @@
     writeToBox("connection failed");
     updateStatus(false);
   }
-
-  // Called when text input field changes.
-  // Constructs a nap api request to change the text
-  // And sends it to the server.
+ 
+  /*
+   * Called when text input field changes.
+   * Constructs a nap api request to change the text.
+   * And sends it to the server.
+   */
   function doSend()
   {
     // Set the text to change in the json api messae object
