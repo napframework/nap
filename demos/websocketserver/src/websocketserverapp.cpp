@@ -58,6 +58,24 @@ namespace nap
 		ImGui::TextColored(clr, "Use the javascript client in the 'data/websocket_html_client' directory.");
 		ImGui::TextColored(clr, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Connected Clients"))
+		{
+			// Get all connected clients
+			std::vector<std::string> host_names;
+			mServerEndPoint->getHostNames(host_names);
+			
+			// Combine for display
+			std::string msg;
+			for (const auto& name : host_names)
+				msg += (name + "\n");
+
+			if (msg.empty())
+				msg = "No Connected Clients";
+			
+			// Display block of text
+			ImGui::InputTextMultiline("OSC Messages", &msg[0], msg.size(), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
+		}
+
 		ImGui::End();
 	}
 
