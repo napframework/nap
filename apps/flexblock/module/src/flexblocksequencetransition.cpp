@@ -16,15 +16,28 @@ namespace nap
 	{
 		bool FlexblockSequenceTransition::init(utility::ErrorState& errorState)
 		{
-			mEndParameters.clear();
-			mOwnedParameters.clear();
-			for (float input : mMotorInputs)
+		
+			if (mEndParameterResourcePtrs.size() != mMotorInputs.size())
 			{
-				mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
-				mOwnedParameters.back()->setValue(input);
+				mEndParameters.clear();
+				mOwnedParameters.clear();
+				mEndParameterResourcePtrs.clear();
+				for (float input : mMotorInputs)
+				{
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(input);
 
-				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
-				mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+					ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+					mEndParameterResourcePtrs.emplace_back(parameterFloatPtr);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < mEndParameterResourcePtrs.size(); i++)
+				{
+					mEndParameters.emplace_back(mEndParameterResourcePtrs[i].get());
+				}
 			}
 
 			if (!timeline::SequenceTransition::init(errorState))

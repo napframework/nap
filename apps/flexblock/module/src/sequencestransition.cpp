@@ -81,7 +81,7 @@ namespace nap
 				}
 			}
 
-				mEvaluateFunction = &SequenceTransition::evaluateCurve;
+			mEvaluateFunction = &SequenceTransition::evaluateCurve;
 
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
@@ -91,7 +91,7 @@ namespace nap
 				{
 					curve = mCurves[i];
 				}
-			else
+				else
 				{
 					needInsert = true;
 				}
@@ -129,6 +129,7 @@ namespace nap
 			for (int i = 0; i < outParameters.size(); i++)
 			{
 				(this->*mFunctions[i])(progress, *mStartParameters[i], *mEndParameters[i], *outParameters[i]);
+				mCurveIndex++;
 			}
 
 			return true;

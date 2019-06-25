@@ -1069,6 +1069,20 @@ namespace nap
 		// handle save button
 		ImGui::SameLine();
 
+		if (ImGui::Button("Save"))
+		{
+			std::string currentShowName = mSequencePlayer->getShowName();
+			currentShowName += ".json";
+
+			utility::ErrorState errorState;
+			if (mSequencePlayer->save(currentShowName, errorState))
+			{
+				mSequencePlayer->load("shows/" + currentShowName, errorState);
+			}
+		}
+
+		ImGui::SameLine();
+
 		if (ImGui::Button("Save As"))
 		{
 			popupId = "Save As";

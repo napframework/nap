@@ -47,7 +47,7 @@ namespace nap
 			// properties
 
 			/**
-			 * Curve can be nullptr, in which case the transition will use linear interpolation
+			 * Array of curves, each parameter can have its own curve
 			 */
 			std::vector<ResourcePtr<math::FloatFCurve>> mCurves;
 		protected:

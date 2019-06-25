@@ -99,10 +99,8 @@
                     ]
                 }
             ],
-            "StartParameters": [],
-            "Name": "Finish",
+            "Start Parameters": [],
             "Index": 2,
-            "Use Reference": true,
             "Motor Inputs": [
                 0.0,
                 0.0,
@@ -121,8 +119,8 @@
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement18-06-201914:39:53",
-                    "Name": "T",
-                    "Duration": 6.183333396911621,
+                    "Name": "Bladiebla",
+                    "Duration": 6.816684246063232,
                     "Curves": [
                         "GeneratedElement18-06-201914:39:53Generated_Curve0",
                         "GeneratedElement18-06-201914:39:53Generated_Curve1",
@@ -138,7 +136,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:53GeneratedParameter0",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4906666874885559,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -213,10 +211,8 @@
                     ]
                 }
             ],
-            "StartParameters": [],
-            "Name": "second sequence",
+            "Start Parameters": [],
             "Index": 1,
-            "Use Reference": true,
             "Motor Inputs": [
                 0.0,
                 0.0,
@@ -236,7 +232,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 3",
                     "Name": "Transition",
-                    "Duration": 3.116666555404663,
+                    "Duration": 9.187705993652344,
                     "Curves": [
                         "Transition 3Generated_Curve0",
                         "Transition 3Generated_Curve1",
@@ -252,7 +248,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3GeneratedParameter0",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -327,75 +323,8 @@
                     ]
                 }
             ],
-            "StartParameters": [
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 0",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 1",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 2",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 3",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 4",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 5",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 6",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "first act GeneratedParameter 7",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                }
-            ],
-            "Name": "first sequence",
+            "Start Parameters": [],
             "Index": 0,
-            "Use Reference": false,
             "Motor Inputs": [
                 0.0,
                 0.0,
@@ -743,6 +672,22 @@
                     "OutTangent": {
                         "Time": 0.10000000149011612,
                         "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.299516886472702,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.05314017832279205,
+                        "Value": 0.5581221580505371
+                    },
+                    "OutTangent": {
+                        "Time": 0.05314017832279205,
+                        "Value": -0.5581221580505371
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
