@@ -274,6 +274,11 @@ namespace nap
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(child_width + 32, child_height), false, ImGuiWindowFlags_NoMove);
 		{
+			float timeInDisplayStart = ( math::max(0.0f, scroll_x - 32 ) / child_width) * mSequencePlayer->getDuration();
+			float timeInDisplayEnd = timeInDisplayStart + (windowWidth / child_width) * mSequencePlayer->getDuration();
+
+			//printf("%f %f \n", timeInDisplayStart, timeInDisplayEnd);
+
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			//
@@ -310,6 +315,16 @@ namespace nap
 			const auto & sequences = mSequencePlayer->getSequences();
 			for (int i = 0; i < sequences.size(); i++)
 			{
+				float sequenceStartTime = sequences[i]->getStartTime();
+				float sequenceEndTime = sequences[i]->getStartTime() + sequences[i]->getDuration();
+
+				bool sequenceInDisplay =
+					(sequenceStartTime > timeInDisplayStart && sequenceStartTime < timeInDisplayEnd) ||
+					(sequenceEndTime > timeInDisplayStart && sequenceEndTime < timeInDisplayEnd);
+
+				if( !sequenceInDisplay )
+					continue;
+
 				float width = child_size.x * (sequences[i]->getDuration() / mSequencePlayer->getDuration());
 				float start_x = child_size.x * (sequences[i]->getStartTime() / mSequencePlayer->getDuration());
 
@@ -318,6 +333,7 @@ namespace nap
 					ImVec2(top_left.x + start_x, top_left.y),
 					ImVec2(top_left.x + start_x, top_left.y + child_size.y + 100),
 					colorWhite);
+				
 
 				// draw sequence text
 				draw_list->AddText(
@@ -328,7 +344,7 @@ namespace nap
 				// draw sequence box
 				ImVec2 sequenceBoxUpperLeft = ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75);
 				ImVec2 sequenceBoxLowerRight = ImVec2(top_left.x + start_x + 25, top_left.y + child_size.y + 100);
-
+				
 				draw_list->AddRect(
 					sequenceBoxUpperLeft,
 					sequenceBoxLowerRight,
@@ -359,6 +375,16 @@ namespace nap
 				// draw element lines and positions
 				for (auto* element : sequences[i]->getElements())
 				{
+					float elementStartTime = element->getStartTime();
+					float elementEndTime = element->getStartTime() + element->mDuration;
+
+					bool elementInDisplay =
+						(elementStartTime > timeInDisplayStart && elementStartTime < timeInDisplayEnd) ||
+						(elementEndTime > timeInDisplayStart && elementEndTime < timeInDisplayEnd);
+
+					if( !elementInDisplay )
+						continue;
+
 					float element_pos = (element->getStartTime() - sequences[i]->getStartTime()) / sequences[i]->getDuration();
 					float element_width = element->mDuration / sequences[i]->getDuration();
 
@@ -379,6 +405,7 @@ namespace nap
 						ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
 						colorLightGrey,
 						element->mName.c_str());
+					
 
 					// draw dragger of element, changes duration of previous element
 					{
@@ -450,6 +477,7 @@ namespace nap
 								elementTimeDragRectEnd,
 								colorLightGrey);
 						}
+						
 					}
 
 					// set a height offset of the next text so they don't overlap to much
@@ -460,8 +488,6 @@ namespace nap
 					}
 
 					bool drawHandlers = false;
-
-
 					bool draggingMotor = false;
 					// draw motor end positions in element
 					{
@@ -510,28 +536,32 @@ namespace nap
 									mSequencePlayer->reconstruct();
 								}
 
-								if (!filled)
+								if (elementInDisplay)
 								{
-									draw_list->AddCircle(
-										ImVec2(x, y),
-										circleSize,
-										colorRed,
-										12,
-										2.0f);
-								}
-								else
-								{
-									draw_list->AddCircleFilled(
-										ImVec2(x, y),
-										circleSize,
-										colorRed,
-										12);
+									if (!filled)
+									{
+										draw_list->AddCircle(
+											ImVec2(x, y),
+											circleSize,
+											colorRed,
+											12,
+											2.0f);
+									}
+									else
+									{
+										draw_list->AddCircleFilled(
+											ImVec2(x, y),
+											circleSize,
+											colorRed,
+											12);
+									}
 								}
 							}
 						}
 					}
 
 					// draw curve points of element
+					if (elementInDisplay)
 					{
 						// width of this element in child
 						float element_size_width = element_width * width;
@@ -1033,8 +1063,8 @@ namespace nap
 		{
 			lengthPerSecond += ImGui::GetIO().MouseWheel;
 			lengthPerSecond = math::clamp<float>(lengthPerSecond, 4.0f, 60.0f);
-			child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
 		}
+		child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
 
 		// handle save button
 		ImGui::SameLine();
@@ -1138,9 +1168,7 @@ namespace nap
 
 			strcpy(*&buffer, selectedSequence->mName.c_str());
 
-			ImGui::Text("Rename : ");
-			ImGui::SameLine();
-			if (ImGui::InputText("", *&buffer, 256))
+			if (ImGui::InputText("Rename", *&buffer, 256))
 			{
 				std::string newName(buffer);
 				selectedSequence->mName = newName;
@@ -1383,15 +1411,19 @@ namespace nap
 
 			strcpy(*&buffer, selectedElement->mName.c_str());
 
-			ImGui::Text("Rename : ");
-			ImGui::SameLine();
-			if (ImGui::InputText("", *&buffer, 256))
+
+			if (ImGui::InputText("Rename", *&buffer, 256))
 			{
 				std::string newName(buffer);
 				selectedElement->mName = newName;
 			}
 
 			timeline::Sequence* owningSequence = mSequencePlayer->getSequenceAtTime(selectedElement->getStartTime());
+
+			if (ImGui::DragFloat("Duration", &selectedElement->mDuration, 0.1f, 0.1f, 99999.0f))
+			{
+				mSequencePlayer->reconstruct();
+			}
 
 			if (owningSequence != nullptr &&
 				owningSequence->mElements.size() > 1)
@@ -1409,7 +1441,7 @@ namespace nap
 				}
 			}
 
-			if (ImGui::Button("Cancel"))
+			if (ImGui::Button("Done"))
 			{
 				inPopup = false;
 				currentTimelineAction = TimeLineActions::NONE;
