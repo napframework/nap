@@ -145,24 +145,6 @@
             "mFragShader": "shaders/font.frag"
         },
         {
-            "Type": "nap::WebSocketClient",
-            "mID": "WebSocketClient",
-            "URI": "ws://localhost:80",
-            "EndPoint": "WebSocketClientEndPoint",
-            "Ticket": {
-                "Type": "nap::WebSocketTicket",
-                "mID": "WebSocketTicket_7c597cde",
-                "UserName": "napuser",
-                "Password": "letmein!"
-            }
-        },
-        {
-            "Type": "nap::WebSocketClientEndPoint",
-            "mID": "WebSocketClientEndPoint",
-            "LogConnectionUpdates": true,
-            "LibraryLogLevel": "Warning"
-        },
-        {
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
             "AllowPortReuse": true,
