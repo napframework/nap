@@ -24,7 +24,13 @@ namespace nap
 
 		Object::~Object()
 		{
-			ObjectPtrManager::get().resetPointers(*this);
+			// During deserialization, there is an option to use only raw pointers instead of ObjectPtrs (EPointerPropertyMode). When using only raw pointers, the ObjectPtrManager
+			// is never used for these objects. The main reason why we disable this behaviour is for scenarios where we are deserializing on multiple threads. The ObjectPtrManager 
+			// is not thread-safe and we prefer not to add locks to each ObjectPtr access. In such scenarios, we don't need the ObjectPtr functionality that enable us to hotload. 
+			// The deserializer disables any ObjectPtrManager access. It is therefore also forbidden to use ObjectPtrs to point to objects that were deserialized
+			// with 'OnlyRawPointers' enabled (the ObjectPtrs will never be reset to nullptr when the Object goes out of scope).
+			if (mEnableObjectPtrs)
+				ObjectPtrManager::get().resetPointers(*this);
 		}
 	}
 }

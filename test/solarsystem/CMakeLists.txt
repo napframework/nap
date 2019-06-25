@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(solarsystem)
 
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)

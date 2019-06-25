@@ -6,8 +6,7 @@
 
 namespace nap
 {
-	// Forward declares54
-	class TransformComponent;
+	// Forward declares
 	class ParticleEmitterComponentInstance;
 	class ParticleMesh;
 
@@ -42,11 +41,6 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(ParticleEmitterComponent, ParticleEmitterComponentInstance)
-
-		/**
-		 * The particle component needs a transform
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
 
 	public:
 		float				mSpawnRate = 3.0f;				///< Amount of particles to spawn every second
