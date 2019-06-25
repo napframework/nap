@@ -15,6 +15,7 @@
 #include <nap/resourceptr.h>
 #include <mutex>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace nap
 {
@@ -217,7 +218,6 @@ namespace nap
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		std::future<void> mServerTask;											///< The background server thread
-		std::vector<wspp::ConnectionPtr> mConnections;							///< List of all active connections
-
+		std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
 	};
 }
