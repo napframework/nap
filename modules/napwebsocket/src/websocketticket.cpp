@@ -48,7 +48,7 @@ namespace nap
 	{
 		// Make sure it's a binary stream
 		if (!error.check(!binaryString.empty() && binaryString.size() % 8 == 0, "invalid binary bit-stream"))
-			return false;
+			return nullptr;
 
 		// Convert entire bitset into byte array
 		std::vector<uint8_t> vec;
