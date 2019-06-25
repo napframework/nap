@@ -443,8 +443,6 @@ namespace nap
 			return false;
 		}
 
-		std::string host = conp->get_host();
-
 		// Valid ticket was extracted, allowed access
 		if (mMode == EAccessMode::Ticket)
 			return true;
