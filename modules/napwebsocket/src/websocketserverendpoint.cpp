@@ -97,6 +97,29 @@ namespace nap
 	}
 
 
+	std::string WebSocketServerEndPoint::getHostName(const WebSocketConnection& connection)
+	{
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
+		return stdec ? "" : cptr->get_host();
+	}
+
+
+	void WebSocketServerEndPoint::getHostNames(std::vector<std::string>& outHosts)
+	{
+		outHosts.clear();
+		std::error_code stdec;
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		outHosts.reserve(mConnections.size());
+		for (auto& connection : mConnections)
+		{
+			wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+			if (!stdec)
+				outHosts.emplace_back(cptr->get_host());
+		}
+	}
+
+
 	int WebSocketServerEndPoint::getConnectionCount()
 	{
 		std::lock_guard<std::mutex> lock(mConnectionMutex);
