@@ -13,30 +13,6 @@
             ]
         },
         {
-            "Type": "nap::APISignature",
-            "mID": "ChangeTextColor",
-            "Arguments": [
-                {
-                    "Type": "nap::APIFloat",
-                    "mID": "APIFloat",
-                    "Name": "Red",
-                    "Value": 0.0
-                },
-                {
-                    "Type": "nap::APIFloat",
-                    "mID": "APIFloat_2",
-                    "Name": "Green",
-                    "Value": 0.0
-                },
-                {
-                    "Type": "nap::APIFloat",
-                    "mID": "APIFloat_3",
-                    "Name": "Blue",
-                    "Value": 0.0
-                }
-            ]
-        },
-        {
             "Type": "nap::APIWebSocketServer",
             "mID": "WebSocketServer",
             "EndPoint": "WebSocketServerEndPoint",
@@ -69,8 +45,7 @@
                     "Type": "nap::APIComponent",
                     "mID": "APIComponent",
                     "Methods": [
-                        "ChangeText",
-                        "ChangeTextColor"
+                        "ChangeText"
                     ]
                 },
                 {
