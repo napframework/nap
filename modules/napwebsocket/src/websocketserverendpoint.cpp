@@ -246,9 +246,16 @@ namespace nap
 			std::lock_guard<std::mutex> lock(mConnectionMutex);
 			auto found_it = std::find_if(mConnections.begin(), mConnections.end(), [&](const auto& it)
 			{
-				return it == cptr;
+				wspp::ConnectionPtr client_ptr = mEndPoint.get_con_from_hdl(it, stdec);
+				if (stdec)
+				{
+					nap::Logger::error(stdec.message());
+					return false;
+				}
+				return cptr == client_ptr;
 			});
 
+			// Having no connection to remove is a serious error and should never occur.
 			if (found_it == mConnections.end())
 			{
 				assert(false);
@@ -435,6 +442,8 @@ namespace nap
 				"first sub-protocol argument is not a valid ticket object");
 			return false;
 		}
+
+		std::string host = conp->get_host();
 
 		// Valid ticket was extracted, allowed access
 		if (mMode == EAccessMode::Ticket)
