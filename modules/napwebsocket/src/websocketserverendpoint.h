@@ -134,6 +134,17 @@ namespace nap
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		/**
+		 * @return a client connection host-name, empty string if the connection is not managed by this end-point.
+		 */
+		std::string getHostName(const WebSocketConnection& connection);
+
+		/**
+		 * Returns a list of all currently connected client host-names.
+		 * @param outHosts the list of connected client host-names.
+		 */
+		void getHostNames(std::vector<std::string>& outHosts);
+
+		/**
 		 * @return total number of active client connections
 		 */
 		int getConnectionCount();
