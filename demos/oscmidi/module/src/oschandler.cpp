@@ -25,8 +25,12 @@ namespace nap
     bool OscHandlerComponentInstance::init(utility::ErrorState& errorState)
     {
 		mReceivedEvents.reserve(25);
-        auto& oscInputComponent = getEntityInstance()->getComponent<OSCInputComponentInstance>();
-        oscInputComponent.messageReceived.connect(eventReceivedSlot);
+
+		OSCInputComponentInstance* osc_input = getEntityInstance()->findComponent<OSCInputComponentInstance>();
+		if (!errorState.check(osc_input != nullptr, "%s: missing OSCInputComponent", mID.c_str()))
+			return false;
+
+        osc_input->messageReceived.connect(eventReceivedSlot);
         return true;
     }
     

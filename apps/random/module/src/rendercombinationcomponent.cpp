@@ -33,7 +33,10 @@ namespace nap
 		mRenderTarget = getComponent<RenderCombinationComponent>()->mRenderTarget.get();
 
 		// Find the renderable mesh component
-		mRenderableMesh = &(this->getEntityInstance()->getComponent<RenderableMeshComponentInstance>());
+		mRenderableMesh = this->getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(mRenderableMesh != nullptr, "%s: missing RenderableMeshComponent", mID.c_str()))
+			return false;
+
 
 		// Get the render service
 		mRenderService = getEntityInstance()->getCore()->getService<nap::RenderService>();
