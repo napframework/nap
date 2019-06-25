@@ -308,6 +308,26 @@ namespace nap
 				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
 				colorWhite);
 
+			// draw timesteps on top of timeline
+			const int timeStamps = 10;
+			float timePart = (timeInDisplayEnd - timeInDisplayStart) / timeStamps;
+			for (int i = 1; i < timeStamps; i++)
+			{
+				float time = (timeInDisplayStart + i * timePart);
+				ImVec2 start(
+					top_left.x + (time / mSequencePlayer->getDuration()) * child_width,
+					top_left.y);
+				ImVec2 end = start;
+				end.y -= 10;
+
+				draw_list->AddLine(start, end, colorWhite, 2.0f);
+				
+				ImVec2 textPos = end;
+				textPos.x += 3;
+				textPos.y -= 6;
+				draw_list->AddText(textPos, colorWhite, convertToString<float>(time, 2).c_str());
+			}
+
 			// needed to avoid elements texts from overlapping later on
 			int y_text_offset = 0;
 
@@ -320,7 +340,8 @@ namespace nap
 
 				bool sequenceInDisplay =
 					(sequenceStartTime > timeInDisplayStart && sequenceStartTime < timeInDisplayEnd) ||
-					(sequenceEndTime > timeInDisplayStart && sequenceEndTime < timeInDisplayEnd);
+					(sequenceEndTime > timeInDisplayStart && sequenceEndTime < timeInDisplayEnd) ||
+					(sequenceStartTime < timeInDisplayStart && sequenceEndTime > timeInDisplayEnd );
 
 				if( !sequenceInDisplay )
 					continue;
@@ -380,7 +401,8 @@ namespace nap
 
 					bool elementInDisplay =
 						(elementStartTime > timeInDisplayStart && elementStartTime < timeInDisplayEnd) ||
-						(elementEndTime > timeInDisplayStart && elementEndTime < timeInDisplayEnd);
+						(elementEndTime > timeInDisplayStart && elementEndTime < timeInDisplayEnd) ||
+						(elementStartTime < timeInDisplayStart && elementEndTime > timeInDisplayEnd);
 
 					if( !elementInDisplay )
 						continue;
