@@ -445,7 +445,7 @@ namespace nap
 
 		// We have tickets and therefore specific clients we accept.
 		// Use the sub_protocol to extract client information
-		if (sub_protocol.empty() || sub_protocol[0].empty())
+		if (sub_protocol.empty())
 		{
 			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
 				"unable to extract ticket");
