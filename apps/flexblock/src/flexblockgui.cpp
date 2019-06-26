@@ -1549,137 +1549,63 @@ namespace nap
 		{
 			std::string errorString = "";
 
+			// insert pause element at current time
 			if (ImGui::Button("Insert Pause"))
 			{
-				double time = mSequencePlayer->getCurrentTime();
-				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
-				timeline::SequenceElement* element = sequence->getElementAtTime(time);
-
-				float newDuration = time - (element->getStartTime());
-				float deltaDuration = element->mDuration - newDuration;
-				element->mDuration = newDuration;
-
 				utility::ErrorState errorState;
-				std::unique_ptr<timeline::SequencePause> newElement = std::make_unique<timeline::SequencePause>();
-				newElement->mID = "GeneratedPause" + getTimeString();
+				bool success = insertNewElement(std::make_unique<timeline::SequencePause>(), errorState);
 
-				newElement->mDuration = deltaDuration;
-				newElement->setStartTime(time);
-
-				if (!newElement->init(errorState))
+				if (!success)
 				{
+					// handle error
 					ImGui::BeginPopup("Insert Error");
 					errorString = errorState.toString();
 				}
 				else 
 				{
-					sequence->insertElement(std::move(newElement));
-
-					mSequencePlayer->reconstruct();
-
+					// exit popup
 					inPopup = false;
 					currentTimelineAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
+			// insert transition element
 			if (ImGui::Button("Insert Transition"))
 			{
-				double time = mSequencePlayer->getCurrentTime();
-				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
-				timeline::SequenceElement* element = sequence->getElementAtTime(time);
-
-				float newDuration = time - (element->getStartTime());
-				float deltaDuration = element->mDuration - newDuration;
-				element->mDuration = newDuration;
-
 				utility::ErrorState errorState;
-				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
-				newElement->mID = "GeneratedTransition" + getTimeString();
-				newElement->setStartParameters(element->getEndParameters());
+				bool success = insertNewElement(std::make_unique<flexblock::FlexblockSequenceTransition>(), errorState);
 
-				newElement->mDuration = deltaDuration;
-				newElement->setStartTime(time);
-
-				if (!newElement->init(errorState))
+				if (!success)
 				{
+					// handle error
 					ImGui::BeginPopup("Insert Error");
 					errorString = errorState.toString();
 				}
 				else
 				{
-					sequence->insertElement(std::move(newElement));
-
-					mSequencePlayer->reconstruct();
-
+					// exit popup
 					inPopup = false;
 					currentTimelineAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
+			// insert new sequence
 			if (ImGui::Button("Insert Sequence"))
 			{
-				double time = mSequencePlayer->getCurrentTime();
-				timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
-				timeline::SequenceElement* element = sequence->getElementAtTime(time);
-				float newDuration = time - (element->getStartTime());
-				float deltaDuration = element->mDuration - newDuration;
-				element->mDuration = newDuration;
-
-				std::unique_ptr<flexblock::FlexblockSequence> newSequence = std::make_unique<flexblock::FlexblockSequence>();
-
 				utility::ErrorState errorState;
 
-				std::string timeString = getTimeString();
-				newSequence->mID = "GeneratedSequence" + timeString;
-				newSequence->mName = newSequence->mID;
-				newSequence->mIndexInSequenceContainer = sequence->mIndexInSequenceContainer;
-				newSequence->setStartTime(time);
-
-				std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
-				newElement->mID = "GeneratedElement" + timeString;
-				newElement->mDuration = deltaDuration;
-
-				if (!newElement->init(errorState))
+				if (!insertNewSequence(std::make_unique<flexblock::FlexblockSequence>(), errorState))
 				{
 					ImGui::OpenPopup("Insert Error");
 					errorString = errorState.toString();
 				}
 				else
 				{
-					newSequence->insertElement(std::move(newElement));
-
-					if (!newSequence->init(errorState))
-					{
-						errorString = errorState.toString();
-						ImGui::OpenPopup("Insert Error");
-					}
-					else
-					{
-						int index = -1;
-						for (int i = 0; i < sequence->mElements.size(); i++)
-						{
-							if (element == sequence->mElements[i])
-							{
-								index = i;
-								break;
-							}
-						}
-
-						if (index >= 0 && index < sequence->mElements.size() - 1)
-						{
-							sequence->mElements.erase(sequence->mElements.begin() + index + 1, sequence->mElements.end());
-						}
-
-						sequence->reset();
-
-						mSequencePlayer->insertSequence(std::move(newSequence));
-
-						inPopup = false;
-						currentTimelineAction = TimeLineActions::NONE;
-						ImGui::CloseCurrentPopup();
-					}
+					inPopup = false;
+					currentTimelineAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
 				}
 			}
 
@@ -1740,6 +1666,108 @@ namespace nap
 		}
 
 		return result;
+	}
+
+	bool FlexblockGui::insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState)
+	{
+		// retrieve sequence and element at current time
+		double time = mSequencePlayer->getCurrentTime();
+		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
+		timeline::SequenceElement* element = sequence->getElementAtTime(time);
+
+		// calculate new duration of current element
+		// delta duration is used to set the time of the new element
+		float newDuration = time - element->getStartTime();
+		float deltaDuration = element->mDuration - newDuration;
+		element->mDuration = newDuration;
+
+		// generate the new element
+		newElement->mID = "GeneratedElement" + getTimeString();
+
+		// set duration and start of new element
+		newElement->mDuration = deltaDuration;
+		newElement->setStartTime(time);
+
+		// init new element
+		if (!newElement->init(errorState))
+		{
+			// handle error
+			return false;
+		}
+		else
+		{
+			// insert element in sequence and transfer ownership
+			sequence->insertElement(std::move(newElement));
+
+			// reconstruct the sequence
+			mSequencePlayer->reconstruct();
+		}
+
+		return true;
+	}
+
+	bool FlexblockGui::insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState)
+	{
+		// retrieve current sequence and element
+		double time = mSequencePlayer->getCurrentTime();
+		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
+		timeline::SequenceElement* element = sequence->getElementAtTime(time);
+
+		// set new duration of current element and calculate new duration of new element
+		float newDuration = time - element->getStartTime();
+		float deltaDuration = element->mDuration - newDuration;
+		element->mDuration = newDuration;
+
+		// configure new sequence
+		std::string timeString = getTimeString();
+		newSequence->mID = "GeneratedSequence" + timeString;
+		newSequence->mName = newSequence->mID;
+		newSequence->mIndexInSequenceContainer = sequence->mIndexInSequenceContainer;
+		newSequence->setStartTime(time);
+
+		// make new element and configure
+		std::unique_ptr<flexblock::FlexblockSequenceTransition> newElement = std::make_unique<flexblock::FlexblockSequenceTransition>();
+		newElement->mID = "GeneratedElement" + timeString;
+		newElement->mDuration = deltaDuration;
+
+		if (!newElement->init(errorState))
+		{
+			return false;
+		}
+		else
+		{
+			newSequence->insertElement(std::move(newElement));
+
+			if (!newSequence->init(errorState))
+			{
+				return false;
+			}
+			else
+			{
+				// delete elements in current sequence after inserted sequence
+				int index = -1;
+				for (int i = 0; i < sequence->mElements.size(); i++)
+				{
+					if (element == sequence->mElements[i])
+					{
+						index = i;
+						break;
+					}
+				}
+
+				if (index >= 0 && index < sequence->mElements.size() - 1)
+				{
+					sequence->mElements.erase(sequence->mElements.begin() + index + 1, sequence->mElements.end());
+				}
+
+				sequence->reset();
+
+				// insert the new sequence
+				mSequencePlayer->insertSequence(std::move(newSequence));
+			}
+		}
+
+		return true;
 	}
 
 	std::string FlexblockGui::getTimeString()
