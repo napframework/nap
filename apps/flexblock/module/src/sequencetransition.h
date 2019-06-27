@@ -59,12 +59,13 @@ namespace nap
 				float progress, 
 				const Parameter & inA, 
 				const Parameter & inB, 
-				Parameter & out)> mFunctions;
+				Parameter & out,
+				const int curveIndex)> mFunctions;
 
 			/**
 			* The pointer to the evaluation function
 			*/
-			const float (SequenceTransition::*mEvaluateFunction)(float t);
+			const float (SequenceTransition::*mEvaluateFunction)(float t, const int curveIndex);
 
 			/**
 			* The internal process function template
@@ -72,9 +73,10 @@ namespace nap
 			* @param inA a reference to the start parameter
 			* @param inB a reference to the end parameter
 			* @param out a reference to the parameter that will be changed
+			* @param the curve index this parameter is assigned to
 			*/
 			template<typename T1, typename T2>
-			void process(float progress, const Parameter& inA, const Parameter& inB, Parameter & out);
+			void process(float progress, const Parameter& inA, const Parameter& inB, Parameter & out, const int curveIndex);
 
 			/**
 			* Linear interpolation function
@@ -84,9 +86,7 @@ namespace nap
 			/**
 			* Use the curve to interpolate
 			*/
-			const float evaluateCurve(float progress);
-
-			int mCurveIndex = 0;
+			const float evaluateCurve(float progress, const int curveIndex);
 
 			std::vector<std::unique_ptr<math::FloatFCurve>> mOwnedCurves;
 		};

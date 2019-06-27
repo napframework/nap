@@ -125,20 +125,18 @@ namespace nap
 
 			float progress = (time - mStartTime) / mDuration;
 
-			mCurveIndex = 0;
 			for (int i = 0; i < outParameters.size(); i++)
 			{
-				(this->*mFunctions[i])(progress, *mStartParameters[i], *mEndParameters[i], *outParameters[i]);
-				mCurveIndex++;
+				(this->*mFunctions[i])(progress, *mStartParameters[i], *mEndParameters[i], *outParameters[i], i);
 			}
 
 			return true;
 		}
 
 
-		const float SequenceTransition::evaluateCurve(float progress)
+		const float SequenceTransition::evaluateCurve(float progress, const int curveIndex)
 		{
-			return mCurves[mCurveIndex]->evaluate(progress);
+			return mCurves[curveIndex]->evaluate(progress);
 		}
 
 
@@ -146,13 +144,14 @@ namespace nap
 		void SequenceTransition::process(float progress,
 			const Parameter & inA,
 			const Parameter & inB,
-			Parameter & out)
+			Parameter & out,
+			const int curveIndex)
 		{
 			static_cast<T1&>(out).setValue(
 				math::lerp<T2>(
 					static_cast<const T1&>(inA).mValue,
 					static_cast<const T1&>(inB).mValue,
-					(this->*mEvaluateFunction)(progress)));
+					(this->*mEvaluateFunction)(progress, curveIndex)));
 		}
 	}
 
