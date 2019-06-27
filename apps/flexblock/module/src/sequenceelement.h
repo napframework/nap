@@ -48,14 +48,10 @@ namespace nap
 			virtual void setStartParameters(const std::vector<Parameter*>& startParameters);
 
 			/**
-			 * 
+			 * Sets previous element
+			 * @param element previous element in sequence
 			 */
 			void setPreviousElement(SequenceElement* element) { mPreviousElement = element; }
-
-			/**
-			*
-			*/
-			void setNextElement(SequenceElement* element) { mNextElement = element; }
 
 			/**
 			* @return returns a reference to the end parameters of this sequence
@@ -83,20 +79,15 @@ namespace nap
 			const std::string getID() const { return mID; }
 
 			/**
-			 * 
+			 * @return returns previous element
 			 */
 			SequenceElement* getPreviousElement() const { return mPreviousElement; }
-
-			/**
-			* 
-			*/
-			SequenceElement* getNextElement() const { return mNextElement; }
 		public:
 			// properties
 			float mDuration = 0.0f;		///< Property: 'Duration' duration of this element
 			bool mUsePreset	= false;	///< Property: 'Use Preset' wether parameters of this element needed to be loaded from a preset json file
 			std::string mPreset;		///< Property: 'JSON' preset file
-			std::string mName;
+			std::string mName;			///< Property: 'Name' name of the element
 		public:
 			std::vector<ResourcePtr<Parameter>> mEndParameterResourcePtrs;
 		protected:
@@ -106,7 +97,6 @@ namespace nap
 			std::vector<Parameter*> mStartParameters;
 			rtti::DeserializeResult mPresetReadResult;
 
-			SequenceElement* mNextElement;
 			SequenceElement* mPreviousElement;
 		};
 	}

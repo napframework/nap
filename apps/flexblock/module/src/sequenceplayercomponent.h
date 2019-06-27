@@ -15,8 +15,12 @@ namespace nap
 		class SequencePlayerComponentInstance;
 
 		/**
-		*	SequencePlayerComponent
-		*/
+		 *	SequencePlayerComponent
+		 *	SequencePlayerComponent loads a default show from the show directory.
+		 *  A show is a list of sequences. Each sequence holds sequence elements. Elements can contain pauses or transitions. 
+		 *  The sequence player component is responsible for playing a set of given sequences. Also it contains functions and methods 
+		 *  to edit the current show.
+		 */
 		class NAPAPI SequencePlayerComponent : public Component
 		{
 			RTTI_ENABLE(Component)
@@ -35,8 +39,9 @@ namespace nap
 
 		//////////////////////////////////////////////////////////////////////////
 		/**
-		* SequencePlayerComponentInstance
-		*/
+		 * SequencePlayerComponentInstance
+		 * The instance of the sequence player component
+		 */
 		class NAPAPI SequencePlayerComponentInstance : public ComponentInstance
 		{
 			RTTI_ENABLE(ComponentInstance)
@@ -45,89 +50,108 @@ namespace nap
 				ComponentInstance(entity, resource) { }
 
 			/**
-			* Initialize SequencePlayerComponentInstance based on theSequencePlayerComponent resource
-			* @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-			* @param errorState should hold the error message when initialization fails
-			* @return if the SequencePlayerComponentInstance is initialized successfully
-			*/
+			 * Initialize SequencePlayerComponentInstance based on theSequencePlayerComponent resource
+			 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
+			 * @param errorState should hold the error message when initialization fails
+			 * @return if the SequencePlayerComponentInstance is initialized successfully
+			 */
 			virtual bool init(utility::ErrorState& errorState) override;
 
 			/**
-			* update SequencePlayerComponentInstance. This is called by NAP core automatically
-			* @param deltaTime time in between frames in seconds
-			*/
+			 * update SequencePlayerComponentInstance. This is called by NAP core automatically
+			 * @param deltaTime time in between frames in seconds
+			 */
 			virtual void update(double deltaTime) override;
 
 			/**
-			* Play a sequence
-			*/
+			 * Play a sequence
+			 */
 			void play();
 
-			Sequence * getSequenceAtTime(double time);
-
 			/**
-			* Stops playing, resets time
-			*/
+			 * Stops playing, resets time
+			 */
 			void stop();
 
 			/**
-			* Pause the sequence
-			*/
+			 * Pause the sequence
+			 */
 			void pause();
 
 			/**
-			* Plays sequence from beginning when finished
-			* @param value, true or false
-			*/
+			 * Plays sequence from beginning when finished
+			 * @param value, true or false
+			 */
 			void setIsLooping(bool isLooping) { mIsLooping = isLooping; }
 
 			/**
-			* Sets the current time of the sequence
-			* @param time, time to set sequence to
-			*/
+			 * Sets the current time of the sequence
+			 * @param time, time to set sequence to
+			 */
 			void setTime(const double time);
 
 			/**
-			* Sets the speed
-			* @param time, time to set sequence to
-			*/
+			 * Sets the speed
+			 * @param time, time to set sequence to
+			 */
 			void setSpeed(const float speed) { mSpeed = speed; }
 
 			/**
-			* Skips to sequence in time
-			* @param sequence, pointer to sequence
-			*/
+			 * Skips to sequence in time
+			 * @param sequence, pointer to sequence
+			 */
 			void skipToSequence(const Sequence * sequence);
 
 			/**
-			 * 
+			 * Reconstructs sequence container and recalculates duration, this call is necessary when changing, 
+			 * adding or removing sequences/elements
 			 */
 			void reconstruct();
 
 			/**
-			 * 
+			 * Removes sequence from sequence container, removes owned sequences as well;
+			 * param sequence, sequence that needs to be removed
 			 */
 			void removeSequence(const Sequence* sequence);
 
 			/**
-			 * 
+			 * Removes sequence element from given sequence
+			 * @param sequence, sequence containing the element
+			 * @param element, element that needs to be removed
 			 */
-			bool save(std::string showName, utility::ErrorState& errorState);
-
-			bool load(std::string showName, utility::ErrorState& errorState);
-
-			void insertSequence(std::unique_ptr<Sequence> sequence);
-
-			const std::string getShowName() const { return mShowName; }
+			void removeSequenceElement(const Sequence* sequence, const SequenceElement* element);
 
 			/**
-			* @return true if loaded sequence
-			*/
+			 * Serializes and saves the current sequence container as a json file, fileName must include filename extension.
+			 * returns true if succeeded
+			 * @param showName, name of the file, must include filename extension ( .json )
+			 * @param errorState, reference to errorState
+			 * @return true if successful
+			 */
+			bool save(std::string fileName, utility::ErrorState& errorState);
+
+			/**
+			 * Loads given file name, returns true if successful
+			 * @param fileName, name of the file, must include filename extension ( .json )
+			 * @param errorState, reference to errorState
+			 * @return true if successful
+			 */
+			bool load(std::string fileName, utility::ErrorState& errorState);
+
+			/**
+			 * Inserts sequence into sequence container, player holds unique pointer to sequence inserted
+			 * @param sequence unique_ptr to sequence, will be moved
+			 */
+			void insertSequence(std::unique_ptr<Sequence> sequence);
+
+			/**
+			 * @return true if loaded sequence
+			 */
 			const bool getIsLoaded() const { return mSequenceContainer != nullptr; }
 
 			/**
-			* @return true if playing
-			*/
+			 * @return true if playing
+			 */
 			const bool getIsPlaying() const { return mIsPlaying; }
 
 			/**
@@ -137,44 +161,54 @@ namespace nap
 			const void evaluate(double time, std::vector<Parameter*> &output) const;
 
 			/**
-			* @return true if paused
-			*/
+			 * @return true if paused
+			 */
 			const bool getIsPaused() const { return mIsPaused; };
 
 			/**
-			* @return true if finished playing
-			*/
+			 * @return true if finished playing
+			 */
 			const bool getIsFinished() const { return mIsFinished; }
 
 			/**
-			* @return pointer to current sequence
-			*/
+			 * @return pointer to current sequence
+			 */
 			Sequence* getCurrentSequence() const { return mSequenceContainer->getSequences()[mCurrentSequenceIndex]; }
 
 			/**
-			* @return current time in sequence
-			*/
+			 * @return current time in sequence
+			 */
 			const double getCurrentTime() const { return mTime; }
 
 			/**
-			* @return duration of sequence
-			*/
+			 * @return duration of sequence
+			 */
 			const double getDuration() const { return mDuration; }
 
 			/**
-			* @return true if looping
-			*/
+			 * @return true if looping
+			 */
 			const bool getIsLooping() const { return mIsLooping; }
 
 			/**
-			* @return speed
-			*/
+			 * @return speed
+			 */
 			const float getSpeed() const { return mSpeed; }
 
 			/**
-			* @return vector of pointers to sequences
-			*/
+			 * Returns pointer to sequence at given time, can be nullptr
+			 */
+			Sequence * getSequenceAtTime(double time) const;
+
+			/**
+			 * @return reference to vector of pointers to sequences
+			 */
 			const std::vector<Sequence*>& getSequences() const { return mSequenceContainer->getSequences();}
+
+			/**
+			 * @return returns current show name
+			 */
+			const std::string getShowName() const { return mShowName; }
 		protected:
 			double mTime				= 0.0;
 			bool mIsPlaying				= false;

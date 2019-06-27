@@ -52,11 +52,17 @@ namespace nap
 		 */
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
+		float mMillimeterToMotorsteps = 12.73239f; ///< Property: 'Millimeter to Motorsteps' value that we need to calculate how much steps we need the motor(s) to make
+
+		int mMotorOffset = 7542; ///< Property: 'Motor Offset' value that we need to calculate the zero position of the motor
+
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+		
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -136,5 +142,9 @@ namespace nap
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
 
 		std::vector<float> mMotorInputs = std::vector<float>(8);
+
+		float mMillimeterToMotorsteps;
+
+		int mMotorOffset;
 	};
 }

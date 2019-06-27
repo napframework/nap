@@ -46,6 +46,13 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OscInput",
+                    "Addresses": [
+                        "flexblock"
+                    ]
                 }
             ],
             "Children": []
@@ -827,7 +834,7 @@
         },
         {
             "Type": "nap::OSCReceiver",
-            "mID": "OSCReceiver",
+            "mID": "OSCInput",
             "Port": 7000,
             "EnableDebugOutput": true,
             "AllowPortReuse": false

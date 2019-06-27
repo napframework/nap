@@ -7,6 +7,7 @@ RTTI_BEGIN_CLASS(nap::timeline::Sequence)
 	RTTI_PROPERTY("Sequence Elements", &nap::timeline::Sequence::mSequenceElementsResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Start Parameters", &nap::timeline::Sequence::mStartParametersResourcePtrs, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Index", &nap::timeline::Sequence::mIndexInSequenceContainer, nap::rtti::EPropertyMetaData::ReadOnly)
+	RTTI_PROPERTY("Name", &nap::timeline::Sequence::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,11 +106,6 @@ namespace nap
 			mDuration = time - mStartTime;
 		}
 
-		void Sequence::reset()
-		{
-			mCurrentElementIndex = 0;
-		}
-
 		int Sequence::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if(time < mStartTime )
@@ -149,8 +145,52 @@ namespace nap
 			return nullptr;
 		}
 
+		void Sequence::eraseElements(const int start, const int end)
+		{
+			assert(start < end);
+			assert(end > 0 && end <= mElements.size());
+			assert(start < mElements.size() && start > 0);
 
-		void Sequence::removeElement(SequenceElement* element)
+			mElements.erase(mElements.begin() + start, mElements.begin() + end);
+			mCurrentElementIndex = 0;
+
+			std::vector<SequenceElement*> elementsToRemove;
+			for (int i = 0; i < mOwnedElements.size(); i++)
+			{
+				bool owned = false;
+				for (int j = 0; j < mElements.size(); j++)
+				{
+					if (mOwnedElements[i].get() == mElements[j])
+					{
+						owned = true;
+						break;
+					}
+				}
+
+				if (!owned)
+				{
+					elementsToRemove.emplace_back(mOwnedElements[i].get());
+				}
+			}
+
+			auto removeElement = [this](const SequenceElement* sequence)
+			{
+				for (int i = 0; i < mOwnedElements.size(); i++)
+				{
+					if (mOwnedElements[i].get() == sequence)
+					{
+						mOwnedElements.erase(mOwnedElements.begin() + i, mOwnedElements.begin() + i + 1);
+					}
+				}
+			};
+
+			for (const auto* element : elementsToRemove)
+			{
+				removeElement(element);
+			}
+		}
+
+		void Sequence::removeElement(const SequenceElement* element)
 		{
 			int indexToRemove = -1;
 			for (int i = 0; i < mElements.size(); i++)
@@ -196,6 +236,8 @@ namespace nap
 			{
 				mOwnedElements.erase(mOwnedElements.begin() + indexToRemove);
 			}
+
+			mCurrentElementIndex = 0;
 		}
 
 		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)

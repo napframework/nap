@@ -43,10 +43,8 @@ namespace nap
 			{
 				if (sequence_ == sequence)
 				{
-					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					mTime = sequence->getStartTime();
 					mCurrentSequenceIndex = 0;
-					mSequenceContainer->getSequences()[mCurrentSequenceIndex]->reset();
 					break;
 				}
 			}
@@ -134,11 +132,13 @@ namespace nap
 			}
 		}
 
+
 		void SequencePlayerComponentInstance::reconstruct()
 		{
 			mSequenceContainer->reconstruct();
 			mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 		}
+
 
 		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
 		{
@@ -187,7 +187,8 @@ namespace nap
 			}
 		}
 
-		Sequence* SequencePlayerComponentInstance::getSequenceAtTime(double time)
+
+		Sequence* SequencePlayerComponentInstance::getSequenceAtTime(double time) const
 		{
 			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 			{
@@ -205,11 +206,6 @@ namespace nap
 		{
 			mTime = math::clamp<double>(time, 0.0, mDuration);
 			mCurrentSequenceIndex = 0;
-
-			for (const auto& sequence : mSequenceContainer->getSequences())
-			{
-				sequence->reset();
-			}
 		}
 
 
@@ -227,6 +223,7 @@ namespace nap
 			mCurrentSequenceIndex = 0;
 			mTime = 0.0;
 		}
+
 
 		bool SequencePlayerComponentInstance::save(std::string showName, utility::ErrorState& errorState)
 		{
@@ -260,6 +257,7 @@ namespace nap
 			return true;
 		}
 
+
 		bool SequencePlayerComponentInstance::load(std::string showPath, utility::ErrorState& errorState)
 		{
 			//
@@ -280,7 +278,7 @@ namespace nap
 			if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
 				return false;
 
-			std::map<int, Sequence*> sequenceMap;
+			std::map<int, std::unique_ptr<Sequence>> sequenceMap;
 
 			// Find the root parameter group in the preset file and apply parameters
 			for (auto& object : result.mReadObjects)
@@ -288,10 +286,11 @@ namespace nap
 				if (!object->init(errorState))
 					return false;
 
+				// make map of sequences, transfer ownership, we will move the ownership to the sequence container later on
 				if (object->get_type().is_derived_from<Sequence>())
 				{
-					Sequence* sequence = static_cast<Sequence*>(object.get());
-					sequenceMap.insert(std::pair<int, Sequence*>(sequence->mIndexInSequenceContainer, sequence));
+					std::unique_ptr<Sequence> sequence(dynamic_cast<Sequence*>(object.release()));
+					sequenceMap.insert(std::pair<int, std::unique_ptr<Sequence>>(sequence->mIndexInSequenceContainer, std::move(sequence)));
 				}
 			}
 
@@ -299,18 +298,27 @@ namespace nap
 			mOwnedObjects.clear();
 			for (int i = 0; i < result.mReadObjects.size(); i++)
 			{
-				mOwnedObjects.emplace_back(std::move(result.mReadObjects[i]));
+				if (result.mReadObjects[i] != nullptr)
+				{
+					mOwnedObjects.emplace_back(std::move(result.mReadObjects[i]));
+				}
 			}
 
-			mSequenceContainer->getSequences().clear();
-
-			mSequenceContainer->mSequences = std::vector<Sequence*>(sequenceMap.size());
+			// fill the sequencecontainer with the right sequences
+			mSequenceContainer->clearSequences();
+			std::vector<std::unique_ptr<Sequence>> sequences(sequenceMap.size());
 			for (int i = 0 ; i < sequenceMap.size(); i++)
 			{
-				mSequenceContainer->mSequences[i] = sequenceMap[i];
+				sequences[i] = std::move(sequenceMap[i]);
 			}
 
-			mSequenceContainer->reinit();
+			for (int i = 0; i < sequences.size(); i++)
+			{
+				// transfer ownership
+				mSequenceContainer->insertSequence(std::move(sequences[i]));
+			}
+
+			// reconstruct the sequence
 			reconstruct();
 
 			return true;
@@ -328,6 +336,13 @@ namespace nap
 		void SequencePlayerComponentInstance::removeSequence(const Sequence* sequence)
 		{
 			mSequenceContainer->removeSequence(sequence);
+			reconstruct();
+		}
+
+
+		void SequencePlayerComponentInstance::removeSequenceElement(const Sequence* sequence, const SequenceElement* element)
+		{
+			mSequenceContainer->removeSequenceElement(sequence, element);
 			reconstruct();
 		}
 	}

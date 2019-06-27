@@ -15,6 +15,8 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Millimeter To Motorsteps ", &nap::FlexBlockComponent::mMillimeterToMotorsteps, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor step offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -51,6 +53,8 @@ namespace nap
 		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
+		mMillimeterToMotorsteps = resource->mMillimeterToMotorsteps;
+		mMotorOffset = resource->mMotorOffset;
 
 		// create flex logic
 		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
@@ -104,9 +108,9 @@ namespace nap
 
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{
-				float a = ropeLengths[i] * 1000.0f;
-				a *= 12.73239f;
-				a -= 7542;
+				float a = ropeLengths[i] * 1000.0f; // convert to millimeters
+				a *= mMillimeterToMotorsteps; //  millimeters to motor steps
+				a -= mMotorOffset; // step offset
 				ropeLengths[i] = a;
 			}
 

@@ -49,7 +49,7 @@ namespace nap
 			/**
 			 * Array of curves, each parameter can have its own curve
 			 */
-			std::vector<ResourcePtr<math::FloatFCurve>> mCurves;
+			std::vector<ResourcePtr<math::FloatFCurve>> mCurves; ///< Property: 'Curves' array of curves this transition holds per parameter
 		protected:
 			/**
 			* A vector containing function pointers to the different functions needed to interpolate 
