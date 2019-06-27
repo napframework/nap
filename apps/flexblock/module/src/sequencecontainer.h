@@ -58,6 +58,13 @@ namespace nap
 			void insertSequence(std::unique_ptr<Sequence> sequence);
 
 			/**
+			 * Clears the current sequence list and replaces it with a new one
+			 * The SequenceContainer will own the sequences given to it
+			 * @param sequences reference to vector holding unique pointers to sequences
+			 */
+			void setSequences(std::vector<std::unique_ptr<Sequence>>& sequences);
+
+			/**
 			 * Returns const reference to vector holding sequences
 			 * @return reference to vector holding sequences
 			 */

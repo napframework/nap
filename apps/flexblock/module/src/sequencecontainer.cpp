@@ -109,6 +109,19 @@ namespace nap
 			reconstruct();
 		}
 
+		void SequenceContainer::setSequences(std::vector<std::unique_ptr<Sequence>>& sequences)
+		{
+			mSequences.clear();
+			mOwnedSequences.clear();
+			for (std::unique_ptr<Sequence>& sequence : sequences)
+			{
+				mSequences.emplace_back(sequence.get());
+				mOwnedSequences.emplace_back(std::move(sequence));
+			}
+
+			reconstruct();
+		}
+
 
 		void SequenceContainer::clearSequences()
 		{

@@ -312,11 +312,7 @@ namespace nap
 				sequences[i] = std::move(sequenceMap[i]);
 			}
 
-			for (int i = 0; i < sequences.size(); i++)
-			{
-				// transfer ownership
-				mSequenceContainer->insertSequence(std::move(sequences[i]));
-			}
+			mSequenceContainer->setSequences(sequences);
 
 			// reconstruct the sequence
 			reconstruct();
