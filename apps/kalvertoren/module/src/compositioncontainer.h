@@ -5,6 +5,7 @@
 
 // External Includes
 #include <nap/resource.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -28,6 +29,6 @@ namespace nap
 		 */
 		int count() const						{ return mCompositions.size(); }
 
-		std::vector<Composition*>				mCompositions;								///< List of all available compositions
+		std::vector<ResourcePtr<Composition>>	mCompositions;								///< List of all available compositions
 	};
 }

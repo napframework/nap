@@ -29,44 +29,44 @@ namespace nap
 	bool OSCLaserInputHandlerInstance::init(utility::ErrorState& errorState)
 	{
 		mRotateComponent = getEntityInstance()->findComponent<nap::RotateComponentInstance>();
-		if (!errorState.check(mRotateComponent != nullptr, "missing rotate component"))
+		if (!errorState.check(mRotateComponent != nullptr, "%s: missing rotate component", mID.c_str()))
 			return false;
 
 		mInputComponent = getEntityInstance()->findComponent<nap::OSCInputComponentInstance>();
-		if (!errorState.check(mInputComponent != nullptr, "missing osc input component"))
+		if (!errorState.check(mInputComponent != nullptr, "%s: missing osc input component", mID.c_str()))
 			return false;
 
 		mBlendComponent = getEntityInstance()->findComponent<nap::LineBlendComponentInstance>();
-		if (!errorState.check(mBlendComponent != nullptr, "missing line blend component"))
+		if (!errorState.check(mBlendComponent != nullptr, "%s: missing line blend component", mID.c_str()))
 			return false;
 
 		mTransformComponent = getEntityInstance()->findComponent<nap::TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "missing transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 		mInitialScale = mTransformComponent->getUniformScale();
 
 		mColorComponent = getEntityInstance()->findComponent<nap::LineColorComponentInstance>();
-		if (!errorState.check(mColorComponent != nullptr, "missing color component"))
+		if (!errorState.check(mColorComponent != nullptr, "%s: missing color component", mID.c_str()))
 			return false;
 
 		mModulationComponent = getEntityInstance()->findComponent<nap::LineModulationComponentInstance>();
-		if(!errorState.check(mModulationComponent != nullptr, "missing modulation component"))
+		if(!errorState.check(mModulationComponent != nullptr, "%s: missing modulation component", mID.c_str()))
 			return false;
 
 		mNoiseComponent = getEntityInstance()->findComponent<nap::LineNoiseComponentInstance>();
-		if (!errorState.check(mNoiseComponent != nullptr, "missing noise component"))
+		if (!errorState.check(mNoiseComponent != nullptr, "%s: missing noise component", mID.c_str()))
 			return false;
 
 		mTraceComponent = getEntityInstance()->findComponent<nap::LineTraceComponentInstance>();
-		if (!errorState.check(mTraceComponent != nullptr, "missing trace component"))
+		if (!errorState.check(mTraceComponent != nullptr, "%s: missing trace component", mID.c_str()))
 			return false;
 
 		mSwitcher = getEntityInstance()->findComponent<nap::LineAutoSwitchComponentInstance>();
-		if (!errorState.check(mSwitcher != nullptr, "missing trace component"))
+		if (!errorState.check(mSwitcher != nullptr, "%s: missing trace component", mID.c_str()))
 			return false;
 
 		mXformSmoother = getEntityInstance()->findComponent<nap::XformSmoothComponentInstance>();
-		if (!errorState.check(mXformSmoother != nullptr, "missing xform smoother"))
+		if (!errorState.check(mXformSmoother != nullptr, "%s: missing xform smoother", mID.c_str()))
 			return false;
 
 		mPrintColor = getComponent<OSCLaserInputHandler>()->mPrintColor;

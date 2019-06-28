@@ -49,12 +49,12 @@ namespace nap
 		if (resource->mMesh != nullptr)
 		{
 			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
-			if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+			if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 				return false;
 		}
 
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
- 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
  			return false;
 
 		// Copy cliprect. Any modifications are done per instance

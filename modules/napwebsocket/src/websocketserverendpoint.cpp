@@ -1,15 +1,31 @@
 // Local Includes
 #include "websocketserverendpoint.h"
 #include "websocketserver.h"
+#include "websocketticket.h"
 
 // External Includes
 #include <nap/logger.h>
+#include <mathutils.h>
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/error/en.h>
+
+RTTI_BEGIN_ENUM(nap::WebSocketServerEndPoint::EAccessMode)
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::EveryOne,	"Everyone"),
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::Ticket,		"Ticket"),
+	RTTI_ENUM_VALUE(nap::WebSocketServerEndPoint::EAccessMode::Reserved,	"Reserved")
+RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
-	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPoint::mMode,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ConnectionLimit",		&nap::WebSocketServerEndPoint::mConnectionLimit,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowControlOrigin",		&nap::WebSocketServerEndPoint::mAccessAllowControlOrigin,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPoint::mClients,					nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
@@ -80,6 +96,45 @@ namespace nap
 		return true;
 	}
 
+
+	std::string WebSocketServerEndPoint::getHostName(const WebSocketConnection& connection)
+	{
+		std::error_code stdec;
+		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
+		return stdec ? "" : cptr->get_host();
+	}
+
+
+	void WebSocketServerEndPoint::getHostNames(std::vector<std::string>& outHosts)
+	{
+		outHosts.clear();
+		std::error_code stdec;
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		outHosts.reserve(mConnections.size());
+		for (auto& connection : mConnections)
+		{
+			wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+			if (!stdec)
+				outHosts.emplace_back(cptr->get_host());
+		}
+	}
+
+
+	int WebSocketServerEndPoint::getConnectionCount()
+	{
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		return mConnections.size();
+	}
+
+
+	bool WebSocketServerEndPoint::acceptsNewConnections()
+	{
+		if (mConnectionLimit < 0)
+			return true;
+
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		return mConnections.size() < mConnectionLimit;
+	}
 
 	void WebSocketServerEndPoint::run()
 	{
@@ -165,7 +220,11 @@ namespace nap
 			&WebSocketServerEndPoint::onMessageReceived, this,
 			std::placeholders::_1, std::placeholders::_2
 		));
-		
+
+		// Create unique hashes out of tickets
+		// Server side tickets are required to have a password and username
+		for (const auto& ticket : mClients)
+			mClientHashes.emplace(ticket->toHash());
 		return true;
 	}
 	
@@ -210,9 +269,16 @@ namespace nap
 			std::lock_guard<std::mutex> lock(mConnectionMutex);
 			auto found_it = std::find_if(mConnections.begin(), mConnections.end(), [&](const auto& it)
 			{
-				return it == cptr;
+				wspp::ConnectionPtr client_ptr = mEndPoint.get_con_from_hdl(it, stdec);
+				if (stdec)
+				{
+					nap::Logger::error(stdec.message());
+					return false;
+				}
+				return cptr == client_ptr;
 			});
 
+			// Having no connection to remove is a serious error and should never occur.
 			if (found_it == mConnections.end())
 			{
 				assert(false);
@@ -247,21 +313,172 @@ namespace nap
 
 	void WebSocketServerEndPoint::onHTTP(wspp::ConnectionHandle con)
 	{
-		/* TODO: Use this information for authentication.
-		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con);
-		std::string res = conp->get_request_body();
-		std::stringstream ss;
-		ss << "got HTTP request with " << res.size() << " bytes of body data.";
-		conp->set_body(ss.str());
+		// Get handle to connection
+		std::error_code stdec;
+		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con, stdec);
+		if (stdec)
+		{
+			nap::Logger::error(stdec.message());
+			conp->set_status(websocketpp::http::status_code::internal_server_error);
+			return;
+		}
+
+		// set whether the response can be shared with requesting code from the given origin.
+		conp->append_header("Access-Control-Allow-Origin", mAccessAllowControlOrigin);
+
+		// When there is no access policy the server doesn't generate tickets
+		if (mMode == EAccessMode::EveryOne)
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request,
+				"unable to generate ticket, no access policy set");
+			return;
+		}
+
+		// Get request body
+		std::string body = conp->get_request_body();
+		
+		// Try to parse as JSON
+		rapidjson::Document document;
+		rapidjson::ParseResult parse_result = document.Parse(body.c_str());
+		if (!parse_result || !document.IsObject())
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request, 
+				"unable to parse as JSON");
+			return;
+		}
+
+		// Extract user information, this field is required
+		if (!document.HasMember("user"))
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request,
+				"missing required member: 'user");
+			return;
+		}
+
+		// Extract pass information, this field is required
+		if (!document.HasMember("pass"))
+		{
+			conp->set_status(websocketpp::http::status_code::bad_request,
+				"missing required member: 'pass");
+			return;
+		}
+
+		// Create ticket
+		nap::WebSocketTicket ticket;
+		ticket.setEnableObjectPtrs(false);
+
+		// Populate and initialize
+		ticket.mID = math::generateUUID();
+		ticket.mUsername = document["user"].GetString();
+		ticket.mPassword = document["pass"].GetString();
+		utility::ErrorState error;
+		if(!ticket.init(error))
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				utility::stringFormat("invalid username or password: %s", error.toString().c_str()));
+			return;
+		}
+
+		// If we only allow specific clients we extract the password here.
+		// The pass is used in combination with the username to create a validation hash.
+		if (mMode == EAccessMode::Reserved)
+		{
+			// Locate ticket, if there is no tick that matches the request
+			// The username or password is wrong and the request invalid
+			if (mClientHashes.find(ticket.toHash()) == mClientHashes.end())
+			{
+				conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+					"invalid username or password");
+				return;
+			}
+		}
+
+		// Convert ticket to binary blob
+		// This ticket can now be used to validate the request
+		std::string ticket_str;
+		if (!ticket.toBinaryString(ticket_str, error))
+		{
+			nap::Logger::error(error.toString());
+			conp->set_status(websocketpp::http::status_code::internal_server_error);
+			return;
+		}
+
+		// Set ticket as body
+		conp->set_body(ticket_str);
 		conp->set_status(websocketpp::http::status_code::ok);
-		*/
 	}
 
 
 	bool WebSocketServerEndPoint::onValidate(wspp::ConnectionHandle con)
 	{
-		// TODO: Validate incoming connection here, ie: accept or reject.
-		// Right now simply accept all incoming connections.
+		// Get connection handle
+		std::error_code stdec;
+		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con, stdec);
+		if (stdec)
+		{
+			nap::Logger::error(stdec.message());
+			conp->set_status(websocketpp::http::status_code::internal_server_error);
+			return false;
+		}
+
+		// Make sure we accept new connections
+		if (!acceptsNewConnections())
+		{
+			conp->set_status(websocketpp::http::status_code::too_many_requests,
+				"client connection count exceeded");
+			return false;
+		}
+
+		// Get sub-protocol field
+		const std::vector<std::string>& sub_protocol = conp->get_requested_subprotocols();
+		
+		// When every client connection is allowed no sub-protocol field must be defined.
+		if (mMode == EAccessMode::EveryOne)
+		{
+			if (sub_protocol.empty())
+				return true;
+
+			// Sub-protocol requested but can't authenticate.
+			conp->set_status(websocketpp::http::status_code::not_found, "invalid sub-protocol");
+			return false;
+		}
+
+		// We have tickets and therefore specific clients we accept.
+		// Use the sub_protocol to extract client information
+		if (sub_protocol.empty())
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"unable to extract ticket");
+			return false;
+		}
+
+		// Extract ticket
+		conp->select_subprotocol(sub_protocol[0]);
+		
+		// Convert from binary into string
+		utility::ErrorState error;
+		rtti::DeserializeResult result;
+		WebSocketTicket* client_ticket = WebSocketTicket::fromBinaryString(sub_protocol[0], result, error);
+		if (client_ticket == nullptr)
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"first sub-protocol argument is not a valid ticket object");
+			return false;
+		}
+
+		// Valid ticket was extracted, allowed access
+		if (mMode == EAccessMode::Ticket)
+			return true;
+
+		// Locate ticket
+		if (mClientHashes.find(client_ticket->toHash()) == mClientHashes.end())
+		{
+			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				"not a valid ticket");
+			return false;
+		}
+
+		// Welcome!
 		return true;
 	}
 
