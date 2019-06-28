@@ -22,7 +22,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 target_include_directories(${PROJECT_NAME} PUBLIC src ${SOEM_INCLUDE_DIRS})
 
 # preprocessor
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC __STDC_LIMIT_MACROS)
 
 # link libs
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${SOEM_LIBS})
@@ -35,14 +35,15 @@ package_module()
 
 # Install readme
 install(FILES ${THIRDPARTY_DIR}/soem/README.md DESTINATION thirdparty/soem)
+install(FILES ${THIRDPARTY_DIR}/soem/LICENSE DESTINATION thirdparty/soem)
 
 # install inlcude
-install(DIRECTORY ${SOEM_DIR}/include DESTINATION thirdparty/soem/include)
+install(DIRECTORY ${SOEM_DIR}/include DESTINATION thirdparty/soem)
 
 #install lib
-install(DIRECTORY ${SOEM_DIR}/lib DESTINATION thirdparty/soem/lib)
+install(DIRECTORY ${SOEM_DIR}/lib DESTINATION thirdparty/soem)
 
-#install wpcap (only windows)
+#install wpcap includes (only windows)
 if(WIN32)
 	install(DIRECTORY ${WPCAP_DIR}/Include DESTINATION thirdparty/soem/wpcap)
 endif()

@@ -8,6 +8,7 @@
         "mod_napcameracontrol",
 		"mod_napparameter",
 		"mod_napserial",
-		"mod_naposc"
+		"mod_naposc",
+        "mod_napsoem"
     ]
 }
