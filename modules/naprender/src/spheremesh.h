@@ -18,7 +18,14 @@ namespace nap
  		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return the mesh instance that can be rendered to screen
+		 */
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
+		
+		/**
+		 * @return the mesh instance that can be rendered to screen
+		 */
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 	public:
