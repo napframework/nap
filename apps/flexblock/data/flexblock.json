@@ -934,7 +934,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Timeline",
-            "Sync": true,
+            "Sync": false,
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,

@@ -93,7 +93,7 @@ namespace nap
 	void FlexblockApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mMainWindow.get() });
+		mRenderService->destroyGLContextResources({ mMainWindow.get(), mTimelineWindow.get() });
 
 		// Activate current window for drawing
 		mMainWindow->makeActive();
@@ -130,9 +130,8 @@ namespace nap
 			motor_label.draw(mMainWindow->getBackbuffer());
 		}
 
-		//
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mTimelineWindow.get() });
+		// Swap main window
+		mMainWindow->swap();
 
 		// Activate current window for drawing
 		mTimelineWindow->makeActive();
@@ -145,10 +144,6 @@ namespace nap
 
 		// Swap screen buffers
 		mTimelineWindow->swap();
-
-		mMainWindow->makeActive();
-
-		mMainWindow->swap();
 	}
 	
 	
