@@ -31,3 +31,11 @@ mark_as_advanced(SOEM_INCLUDE_DIRS)
 # promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(soem REQUIRED_VARS SOEM_DIR)
+
+# soem is always linked static
+add_library(soem STATIC IMPORTED)
+set_target_properties(soem PROPERTIES
+                      IMPORTED_CONFIGURATIONS "Debug;Release"
+                      IMPORTED_LOCATION_RELEASE ${SOEM_LIBS}
+                      IMPORTED_LOCATION_DEBUG ${SOEM_LIBS}
+                      )
