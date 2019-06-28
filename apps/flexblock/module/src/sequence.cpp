@@ -83,6 +83,7 @@ namespace nap
 			return true;
 		}
 
+
 		void Sequence::setStartTime(double startTime)
 		{
 			mStartTime = startTime;
@@ -173,20 +174,30 @@ namespace nap
 				}
 			}
 
-			auto removeElement = [this](const SequenceElement* sequence)
+			auto removeElementLambda = [this](const SequenceElement* sequence)
 			{
+				for (int i = 0; i < mSequenceElementsResourcePtrs.size(); i++)
+				{
+					if (mSequenceElementsResourcePtrs[i].get() == sequence)
+					{
+						mSequenceElementsResourcePtrs.erase(mSequenceElementsResourcePtrs.begin() + i, mSequenceElementsResourcePtrs.begin() + i + 1);
+						break;
+					}
+				}
+
 				for (int i = 0; i < mOwnedElements.size(); i++)
 				{
 					if (mOwnedElements[i].get() == sequence)
 					{
 						mOwnedElements.erase(mOwnedElements.begin() + i, mOwnedElements.begin() + i + 1);
+						break;
 					}
 				}
 			};
 
 			for (const auto* element : elementsToRemove)
 			{
-				removeElement(element);
+				removeElementLambda(element);
 			}
 		}
 

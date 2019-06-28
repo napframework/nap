@@ -135,6 +135,7 @@ namespace nap
 
 		void SequencePlayerComponentInstance::reconstruct()
 		{
+			mCurrentSequenceIndex = 0;
 			mSequenceContainer->reconstruct();
 			mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 		}

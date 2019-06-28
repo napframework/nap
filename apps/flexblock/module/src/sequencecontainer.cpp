@@ -155,10 +155,13 @@ namespace nap
 				{
 					mSequences[i]->mUseReference = false;
 				}
+
+				
 				mSequences[i]->mIndexInSequenceContainer = i;
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
+				//mSequences[i]->reconstruct();
 
 				for (int j = 0; j < mSequences[i]->getElements().size(); j++)
 				{
