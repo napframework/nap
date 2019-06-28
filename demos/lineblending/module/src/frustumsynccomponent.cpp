@@ -30,7 +30,7 @@ namespace nap
 
 		// Make sure that the visualizer has a transform
 		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
+		if (!errorState.check(mCanvasTransform != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Move the frustrum back a bit so objects around 0 are sorted correctly
