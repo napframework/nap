@@ -10,7 +10,7 @@
 #include <parametervec.h>
 #include <color.h>
 
-#include "SequenceTransition.h"
+#include "sequencetransition.h"
 
 namespace nap
 {
