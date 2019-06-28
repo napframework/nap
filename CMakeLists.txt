@@ -124,6 +124,8 @@ add_subdirectory(apps/aura)
 add_subdirectory(apps/aura/module)
 add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
+add_subdirectory(apps/flexblock)
+add_subdirectory(apps/flexblock/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -183,6 +185,7 @@ add_subdirectory(modules/napdatabase)
 add_subdirectory(modules/napapi)
 add_subdirectory(modules/napparameter)
 add_subdirectory(modules/napparametergui)
+add_subdirectory(modules/napserial)
 add_subdirectory(modules/napwebsocket)
 add_subdirectory(modules/napapiwebsocket)
 
