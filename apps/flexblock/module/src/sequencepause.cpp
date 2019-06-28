@@ -1,5 +1,5 @@
 // local includes
-#include "SequencePause.h"
+#include "sequencepause.h"
 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePause)
 RTTI_PROPERTY("Duration", &nap::timeline::SequenceElement::mDuration, nap::rtti::EPropertyMetaData::Default)
