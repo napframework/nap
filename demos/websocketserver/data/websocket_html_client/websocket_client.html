@@ -4,7 +4,7 @@
   <script language="javascript" type="text/javascript">
 
   // Websocket url, change to server web-socket address!
-  var uri = "localhost:80";
+  let uri = "localhost:80";
   
   /*
    * JSON formatted api message.
@@ -12,7 +12,7 @@
    * This var is parsed as JSON and the 'Value' of the APIString is changed
    * before the message is send to the server.
    */
-  var nap_msg = `
+  let nap_msg = `
   {
      "Objects": 
       [
@@ -34,14 +34,14 @@
   }`
 
   // Some global document vars.
-  var ticket;
-  var api_msg;
-  var textbox;
-  var request_p;
-  var response_p;
-  var connected = false;
-  var box_char_count = 0;
-  var status_header;
+  let ticket;
+  let api_msg;
+  let textbox;
+  let request_p;
+  let response_p;
+  let connected = false;
+  let box_char_count = 0;
+  let status_header;
   
   // Identification information
   const username = "napuser"
@@ -143,14 +143,14 @@
   function doSend()
   {
     // Set the text to change in the json api messae object
-    var text = input.value;
+    let text = input.value;
     api_msg.Objects[0].Arguments[0].Value = text;
 
     // Generate a random id
     api_msg.Objects[0].mID = Math.floor(Math.random() * 100); 
 
     // Convert to nice looking string
-    var api_msg_string = JSON.stringify(api_msg, undefined, 4);
+    let api_msg_string = JSON.stringify(api_msg, undefined, 4);
     updateRequest(api_msg_string);
 
     // Return if we're not connected
