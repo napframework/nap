@@ -19,15 +19,14 @@ namespace nap
 		friend class APIArgument;
 		RTTI_ENABLE(Resource)
 	public:
-		APIBaseValue() = default;
-
-		// Default constructor
+		/**
+		 * Required constructor
+		 * @param contained type id, for example: RTTI_OF(float) etc.
+		 * @param name the name of this api value
+		 */
 		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) :
 			mName(name),
             mRepresentedType(type) { }
-
-		// Default destructor
-		virtual ~APIBaseValue() = default;
 
 		/**
 		 * @return the actual type represented by this API value, ie: RTTI_OF(float) etc.	
@@ -54,7 +53,7 @@ namespace nap
 	{
 		RTTI_ENABLE(APIBaseValue)
 	public:
-		NAPAPI APIValue();
+		APIValue();
 
 		/**
 		* Move Constructor

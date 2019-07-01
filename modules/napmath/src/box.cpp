@@ -19,6 +19,13 @@ namespace nap
 		}
 
 
+		Box::Box(float width, float height, float depth, const glm::vec3& position)
+		{
+			mMinCoordinates = { position.x - (width / 2.0f), position.y - (height / 2.0f) , position.z - (depth / 2.0f) };
+			mMaxCoordinates = { position.x + (width / 2.0f), position.y + (height / 2.0f) , position.z + (depth / 2.0f) };
+		}
+
+
 		Box::Box(const glm::vec2& xCoordinates, const glm::vec2& yCoordinates, const glm::vec2& zCoordinates)
 		{
 			mMinCoordinates = { xCoordinates.x, yCoordinates.x, zCoordinates.x };

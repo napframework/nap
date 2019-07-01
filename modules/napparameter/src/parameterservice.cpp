@@ -166,6 +166,8 @@ namespace nap
 				break;
 			}
 		}
+
+		fileLoaded();
 	}
 
 

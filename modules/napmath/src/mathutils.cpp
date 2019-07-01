@@ -88,11 +88,13 @@ namespace nap
 		}
 
 
+
 		template<>
 		double lerp<double>(const double& start, const double& end, float percent)
 		{
 			return glm::mix<double>(start, end, percent);
 		}
+
 
 
 		template<>

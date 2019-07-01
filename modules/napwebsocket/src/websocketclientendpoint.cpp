@@ -138,6 +138,21 @@ namespace nap
 			return false;
 		}
 
+		// Send identification information if present on client
+		if (client.mTicket != nullptr)
+		{
+			std::string binary_string;
+			if (!client.mTicket->toBinaryString(binary_string, error))
+				return false;
+
+			client_connection->add_subprotocol(binary_string, stdec);
+			if (stdec)
+			{
+				error.fail(stdec.message());
+				return false;
+			}
+		}
+
 		// Create meta client
 		std::unique_ptr<WebSocketClientWrapper> meta_client(new WebSocketClientWrapper(client,
 			mEndPoint,

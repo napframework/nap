@@ -48,6 +48,11 @@ namespace nap
 	 * 
 	 * NOTE: When the 'Mode' is set to 'APIEvent' NO connection updates (open, close and failed) are created.
 	 * When 'Verbose' is turned on the client will issue warnings if a message can't be converted into an api event.
+	 *
+	 * A 'ticket' can be added to specify additional authorization information (username / password).
+	 * This information is automatically given to the server when the client tries to establish a connection.
+	 * The server can accept or reject the connection based on that information. When no ticket is provided
+	 * the client will try to connect without any authorization.
 	 */
 
 	class NAPAPI APIWebSocketClient : public IWebSocketClient
