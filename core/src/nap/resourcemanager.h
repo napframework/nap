@@ -57,6 +57,9 @@ namespace nap
 		* The client does not need to worry about handling such cases.
 		* In case all init() calls succeed, any old objects are destructed (the cloned and the previously existing objects).
 		*
+		* Before objects are destructed, onDestroy is called. onDestroy is called in the reverse initialization order. This way, it is still safe to use any 
+		* pointers to perform cleanup of internal data. 
+		*
 		* @param filename: json file containing objects.
 		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
 		* @param errorState: if the function returns false, contains error information.
@@ -130,7 +133,7 @@ namespace nap
 		void buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
-		void destroyAllObjects();
+		void stopAndDestroyAllObjects();
 		void destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& object_graph);
 
 	private:

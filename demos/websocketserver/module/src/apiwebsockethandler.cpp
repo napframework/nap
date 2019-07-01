@@ -63,7 +63,7 @@ namespace nap
 		
 		// Ensure that the interface (client / server) that created 
 		// this event is the same as our handle to the server
-		assert(mServer != &(ws_event.getInterface()));
+		assert(mServer == &(ws_event.getInterface()));
 
 		// Construct reply, copy over the unique id of the request.
 		APIEventPtr text_changed_event = std::make_unique<APIEvent>("TextChanged", ws_event.getID());

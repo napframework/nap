@@ -35,6 +35,11 @@ namespace nap
 			virtual bool init(utility::ErrorState& errorState)	{ return true; }
 
 			/**
+			 * Override this method to perform cleanup of any internal data.
+			 */
+			virtual void onDestroy() {}
+
+			/**
 			 * @return if this is an object that holds a valid identifier attribute
 			 */
 			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
