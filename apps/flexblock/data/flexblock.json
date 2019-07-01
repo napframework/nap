@@ -155,7 +155,9 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "SerialComponent": "./FlexBlockSerialComponent",
-                    "FlexBlockShape": "ProtoShapeSize"
+                    "FlexBlockShape": "ProtoShapeSize",
+                    "Millimeter To Motorsteps ": 12.732390403747559,
+                    "Motor step offset": 7542
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -913,8 +915,8 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "MainWindow",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Borderless": false,
             "Resizable": true,
             "Title": "Flexblock",
@@ -929,8 +931,8 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "TimelineWindow",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Borderless": false,
             "Resizable": true,
             "Title": "Timeline",

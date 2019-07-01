@@ -67,7 +67,7 @@ namespace nap
 		toNapPoints(framePoints, mFramePoints);
 
 		// set points
-		mFrameMesh->setFramePoints(mFramePoints);
+		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
 
 		// start serial
 		mFlexBlockSerialComponentInstance->start(errorState);
@@ -90,7 +90,7 @@ namespace nap
 		toNapPoints(objectPoints, mObjectPoints);
 
 		// update ropes of frame
-		mFrameMesh->setControlPoints(mObjectPoints);
+		mFrameMesh->setControlPoints(objectPoints);
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);

@@ -68,6 +68,7 @@ namespace nap
 
 		void handleSaveAsPopup();
 
+		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
 	private:
 		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
 		ParameterService&					mParameterService;
@@ -111,5 +112,7 @@ namespace nap
 		std::string convertToString(T1 number, int precision);
 
 		std::string getTimeString();
+
+		glm::vec2 mWindowSize;
 	};
 }

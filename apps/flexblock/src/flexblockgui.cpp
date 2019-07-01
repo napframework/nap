@@ -26,11 +26,9 @@ namespace nap
 	 * Imgui statics
 	 */
 	static bool showInfo = false;
-	static bool showPresetWindow = false;
-	static bool showSequences = false;
 	static float lengthPerSecond = 60.0f;
 	static float child_width = 1000.0f;
-	static float child_height = 500.0f;
+	static float child_height = 350.0f;
 	static bool followPlayer = false;
 	static int totalCurveResolution = 75;
 	static timeline::SequenceElement* selectedElement = nullptr;
@@ -208,7 +206,6 @@ namespace nap
 		{
 			if (ImGui::BeginMenu("Display"))
 			{
-				ImGui::MenuItem("Parameters", NULL, &showPresetWindow);
 				ImGui::MenuItem("Information", NULL, &showInfo);
 				ImGui::MenuItem("Timeline", NULL, &mShowTimeLine);
 				ImGui::MenuItem("Sequences", NULL, &mShowSequenceList);
@@ -218,17 +215,13 @@ namespace nap
 			ImGui::EndMainMenuBar();
 		}
 
-		if (showPresetWindow)
-			mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
+		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
+		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.5f - 20));
+		mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
 
-		if (showInfo)
-			showInfoWindow();
+		showInfoWindow();
 
-		if (mShowTimeLine)
-			showTimeLineWindow();
-			
-		if (mShowSequenceList)
-			showSequencesWindow();
+		showTimeLineWindow();
 	}
 	
 
@@ -246,6 +239,10 @@ namespace nap
 
 	void FlexblockGui::showTimeLineWindow()
 	{
+		//
+		ImGui::SetNextWindowPos(ImVec2(10, 10));
+		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x - 20, mWindowSize.y * 0.5f - 20));
+
 		// set next window content size to timeline ( child ) width to make scroll bar fit
 		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 200.0f ));
 
@@ -1162,26 +1159,28 @@ namespace nap
 		// zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::DragFloat("Zoom", &child_height, 1, 350.0f, 1500.0f);
+		ImGui::SliderFloat("Vertical Zoom", &child_height, 350.0f, 1500.0f, "");
 		ImGui::PopItemWidth();
 
 		showTip("Vertical zoom");
 
+		// zoom of timeline
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100.0f);
+		ImGui::SliderFloat("Horizontal Zoom", &lengthPerSecond, 4.0f, 60.0f, "");
+		ImGui::PopItemWidth();
+
+		child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
+		
+		showTip("Horizontal zoom");
+
 		// curves resolution
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::DragInt("Curve Res.", &totalCurveResolution, 1, 25, 200);
+		ImGui::SliderInt("Curve Res.", &totalCurveResolution, 25, 200, "");
 		ImGui::PopItemWidth();
 
 		showTip("Resolution of curve, higher means a more smooth curve but heavier on rendering/generating");
-
-		// handle scroll wheel input
-		if (!inPopup)
-		{
-			lengthPerSecond += ImGui::GetIO().MouseWheel;
-			lengthPerSecond = math::clamp<float>(lengthPerSecond, 4.0f, 60.0f);
-		}
-		child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
 
 		// handle save button
 		ImGui::SameLine();
@@ -1643,6 +1642,9 @@ namespace nap
 
 	void FlexblockGui::showInfoWindow()
 	{
+		ImGui::SetNextWindowPos(ImVec2(mWindowSize.x * 0.5f + 10, mWindowSize.y * 0.5f + 10));
+		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.5f - 20));
+
 		// Color used for highlights
 		mApp.getCore().getFramerate();
 

@@ -1,5 +1,5 @@
 // Local Includes
-#include "framemesh.h"
+#include "FrameMesh.h"
 #include "meshutils.h"
 
 // External Includes
@@ -70,118 +70,105 @@ namespace nap
 		mMeshInstance->update(error);
 	}
 
-	void FrameMesh::setFramePoints(std::vector<glm::vec3> frame)
+	void FrameMesh::setFramePoints(std::vector<glm::vec3> frame, std::vector<glm::vec3> box)
 	{
-		auto box = mFlexBlockMesh->getBox();
-
-		const glm::vec3& minBox = box.getMin();
-		const glm::vec3& maxBox = box.getMax();
-		glm::vec3 minFrame(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-		glm::vec3 maxFrame(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
-
-		for (int i = 0; i < frame.size(); i++)
-		{
-			if (frame[i].x < minFrame.x)
-			{
-				minFrame.x = frame[i].x;
-			}
-			if (frame[i].y < minFrame.y)
-			{
-				minFrame.y = frame[i].y;
-			}
-			if (frame[i].z < minFrame.z)
-			{
-				minFrame.z = frame[i].z;
-			}
-
-			if (frame[i].x > maxFrame.x)
-			{
-				maxFrame.x = frame[i].x;
-			}
-			if (frame[i].y > maxFrame.y)
-			{
-				maxFrame.y = frame[i].y;
-			}
-			if (frame[i].z > maxFrame.z)
-			{
-				maxFrame.z = frame[i].z;
-			}
-		}
+		mFramePoints = frame;
+		mBoxPoints = box;
 
 		auto & verts = mPositionAttr->getData();
 		verts.clear();
 
-		// control point 1
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(minBox.x, minBox.y, maxBox.z));
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mBoxPoints[0]);
 
 		// control point 2
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(maxBox.x, minBox.y, maxBox.z));
+		verts.push_back(mFramePoints[1]);
+		verts.push_back(mBoxPoints[1]);
 
 		// control point 3
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(minBox.x, maxBox.y, maxBox.z));
+		verts.push_back(mFramePoints[2]);
+		verts.push_back(mBoxPoints[2]);
 
 		// control point 4
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(maxBox.x, maxBox.y, maxBox.z));
+		verts.push_back(mFramePoints[3]);
+		verts.push_back(mBoxPoints[3]);
 
 		// control point 5
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxBox.x, minBox.y, minBox.z));
+		verts.push_back(mFramePoints[4]);
+		verts.push_back(mBoxPoints[4]);
 
 		// control point 6
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(minBox.x, minBox.y, minBox.z));
+		verts.push_back(mFramePoints[5]);
+		verts.push_back(mBoxPoints[5]);
 
 		// control point 7
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxBox.x, maxBox.y, minBox.z));
+		verts.push_back(mFramePoints[6]);
+		verts.push_back(mBoxPoints[6]);
 
 		// control point 8
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(minBox.x, maxBox.y, minBox.z));
+		verts.push_back(mFramePoints[7]);
+		verts.push_back(mBoxPoints[7]);
 
 		// construct frame
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+		
+		
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mFramePoints[1]);
 
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mFramePoints[3]);
 
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mFramePoints[4]);
 
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+		
+		verts.push_back(mFramePoints[1]);
+		verts.push_back(mFramePoints[5]);
 
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
 
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(mFramePoints[1]);
+		verts.push_back(mFramePoints[2]);
+	
+		verts.push_back(mFramePoints[2]);
+		verts.push_back(mFramePoints[3]);
 
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(mFramePoints[2]);
+		verts.push_back(mFramePoints[6]);
 
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(mFramePoints[3]);
+		verts.push_back(mFramePoints[0]);
 
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
+		verts.push_back(mFramePoints[3]);
+		verts.push_back(mFramePoints[7]);
 
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
+		verts.push_back(mFramePoints[4]);
+		verts.push_back(mFramePoints[5]);
 
-		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+		verts.push_back(mFramePoints[4]);
+		verts.push_back(mFramePoints[7]); 
 
-		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
-		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+		verts.push_back(mFramePoints[5]);
+		verts.push_back(mFramePoints[6]);
+
+		verts.push_back(mFramePoints[6]);
+		verts.push_back(mFramePoints[7]);
 
 		int vertCount = verts.size();
 		mPositionAttr->setData(verts);
+
+		mMeshInstance->setNumVertices(vertCount);
+
+		// Create initial color data
+		std::vector<glm::vec4> colors(vertCount, { 1.0f, 0.0f, 0.0f, 1.0f });
+		for (auto& color_attr : mColorAttrs)
+			color_attr->setData(colors);
+
+		// Draw as lines
+		MeshShape& shape = mMeshInstance->getShape(0);
+		shape.setDrawMode(opengl::EDrawMode::LINES);
+
+		// Automatically generate indices
+		utility::generateIndices(shape, vertCount);
 
 		utility::ErrorState error;
 		mMeshInstance->update(error);
@@ -204,74 +191,90 @@ namespace nap
 		const glm::vec3& minFrame = frame.getMin();
 		const glm::vec3& maxFrame = frame.getMax();
 
+		/*
+		// control point 1
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mBoxPoints[0]);
+		// control point 2
+		verts.push_back(mFramePoints[1]);
+		verts.push_back(mBoxPoints[1]);
+		// control point 3
+		verts.push_back(mFramePoints[2]);
+		verts.push_back(mBoxPoints[2]);
+		// control point 4
+		verts.push_back(mFramePoints[3]);
+		verts.push_back(mBoxPoints[3]);
+		// control point 5
+		verts.push_back(mFramePoints[4]);
+		verts.push_back(mBoxPoints[4]);
+		// control point 6
+		verts.push_back(mFramePoints[5]);
+		verts.push_back(mBoxPoints[5]);
+		// control point 7
+		verts.push_back(mFramePoints[6]);
+		verts.push_back(mBoxPoints[6]);
+		// control point 8
+		verts.push_back(mFramePoints[7]);
+		verts.push_back(mBoxPoints[7]);
+		// construct frame
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mFramePoints[1]);
+		verts.push_back(mFramePoints[0]);
+		verts.push_back(mFramePoints[2]);
 		// control point 1
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z ));
 		verts.push_back(glm::vec3(minBox.x, minBox.y, maxBox.z)); 
-
 		// control point 2
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(maxBox.x, minBox.y, maxBox.z)); 
-
 		// control point 3
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(minBox.x, maxBox.y, maxBox.z)); 
-
 		// control point 4
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(maxBox.x, maxBox.y, maxBox.z)); 
-
 		// control point 5
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxBox.x, minBox.y, minBox.z)); 
-
 		// control point 6
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(minBox.x, minBox.y, minBox.z));  
-
 		// control point 7
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxBox.x, maxBox.y, minBox.z)); 
-
 		// control point 8
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(minBox.x, maxBox.y, minBox.z));
-
 		// construct frame
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
-
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
+		*/
 
+		/*
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
-
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
-
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
-
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
-
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
-
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
-
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, minFrame.z));
-
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, minFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, minFrame.z));
-
 		verts.push_back(glm::vec3(minFrame.x, minFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, minFrame.y, maxFrame.z));
-
+		*/
 		verts.push_back(glm::vec3(minFrame.x, maxFrame.y, maxFrame.z));
 		verts.push_back(glm::vec3(maxFrame.x, maxFrame.y, maxFrame.z));
+		
 
 		int vertCount = verts.size();
 		mMeshInstance->setNumVertices(vertCount);
@@ -280,21 +283,12 @@ namespace nap
 		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
 		mPositionAttr->setData(verts);
 
-		// Create initial color data
-		std::vector<glm::vec4> colors(vertCount, { 1.0f, 0.0f, 0.0f, 1.0f });
-		for (auto& color_attr : mColorAttrs)
-			color_attr->setData(colors);
-
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertCount);
 
-		// Draw as points
-		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(opengl::EDrawMode::LINES);
 
-		// Automatically generate indices
-		utility::generateIndices(shape, vertCount);
 
 		return mMeshInstance->init(error);
 	}
 }
+
