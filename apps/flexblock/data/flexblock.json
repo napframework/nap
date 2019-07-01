@@ -1,11 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::ControlPointsMesh",
-            "mID": "ControlPointsMesh",
-            "ReferenceMesh": "BoxMesh"
-        },
-        {
             "Type": "nap::Entity",
             "mID": "BlockEntity",
             "Components": [
@@ -51,6 +46,13 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OscInput",
+                    "Addresses": [
+                        "flexblock"
+                    ]
                 }
             ],
             "Children": []
@@ -85,7 +87,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspectiveCamera",
                     "Properties": {
-                        "FieldOfView": 30.0,
+                        "FieldOfView": 60.0,
                         "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
@@ -123,56 +125,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "ControlPointsEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "ControlPointsTransform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "ControlPointsMeshRenderer",
-                    "Mesh": "ControlPointsMesh",
-                    "MaterialInstance": {
-                        "Material": "ControlPointMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "FlexBlockEntity",
             "Components": [
                 {
@@ -200,14 +152,32 @@
                 {
                     "Type": "nap::FlexBlockComponent",
                     "mID": "FlexBlockComponent",
-                    "ControlPointsMesh": "ControlPointsMesh",
                     "FrameMesh": "FrameMesh",
-                    "FlexBlockMesh": "BoxMesh"
+                    "FlexBlockMesh": "BoxMesh",
+                    "SerialComponent": "./FlexBlockSerialComponent",
+                    "FlexBlockShape": "ProtoShapeSize"
+                },
+                {
+                    "Type": "nap::FlexBlockSerialComponent",
+                    "mID": "FlexBlockSerialComponent",
+                    "SerialPort": "SerialPort"
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCMotorInputs",
+                    "Addresses": [
+                        "/flexblock"
+                    ]
+                },
+                {
+                    "Type": "nap::timeline::SequencePlayerComponent",
+                    "mID": "nap::timeline::SequencePlayerComponent_b9bef377",
+                    "TimelineParameters": "Motor Inputs Parameters",
+                    "StartShowFile": "shows/start_template.json"
                 }
             ],
             "Children": [
                 "BlockEntity",
-                "ControlPointsEntity",
                 "FrameEntity"
             ]
         },
@@ -263,6 +233,157 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 1",
+                    "Text": "1",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 2",
+                    "Text": "2",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 3",
+                    "Text": "3",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 4",
+                    "Text": "4",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 5",
+                    "Text": "5",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 6",
+                    "Text": "6",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 7",
+                    "Text": "7",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "MotorLabel 8",
+                    "Text": "8",
+                    "Font": "Montserrat Font",
+                    "GlyphUniform": "glyph",
+                    "MaterialInstance": {
+                        "Material": "FontMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -293,6 +414,148 @@
             ]
         },
         {
+            "Type": "nap::FlexBlockElements",
+            "mID": "ProtoElements",
+            "Object Element Connections": [
+                [
+                    0,
+                    1
+                ],
+                [
+                    1,
+                    2
+                ],
+                [
+                    2,
+                    3
+                ],
+                [
+                    3,
+                    0
+                ],
+                [
+                    4,
+                    5
+                ],
+                [
+                    5,
+                    6
+                ],
+                [
+                    6,
+                    7
+                ],
+                [
+                    7,
+                    4
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    5
+                ],
+                [
+                    2,
+                    6
+                ],
+                [
+                    3,
+                    7
+                ]
+            ],
+            "Object Element Connections With Frame": [
+                [
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    1
+                ],
+                [
+                    2,
+                    2
+                ],
+                [
+                    3,
+                    3
+                ],
+                [
+                    4,
+                    4
+                ],
+                [
+                    5,
+                    5
+                ],
+                [
+                    6,
+                    6
+                ],
+                [
+                    7,
+                    7
+                ]
+            ],
+            "Frame Element Connects": [
+                [
+                    0,
+                    1
+                ],
+                [
+                    1,
+                    2
+                ],
+                [
+                    2,
+                    3
+                ],
+                [
+                    3,
+                    0
+                ],
+                [
+                    4,
+                    5
+                ],
+                [
+                    5,
+                    6
+                ],
+                [
+                    6,
+                    7
+                ],
+                [
+                    7,
+                    4
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    5
+                ],
+                [
+                    2,
+                    6
+                ],
+                [
+                    3,
+                    7
+                ]
+            ]
+        },
+        {
             "Type": "nap::FlexBlockMesh",
             "mID": "BoxMesh",
             "Size": {
@@ -300,6 +563,132 @@
                 "y": 1.0,
                 "z": 1.0
             }
+        },
+        {
+            "Type": "nap::FlexBlockShape",
+            "mID": "ProtoShapeSize",
+            "Name": "block_proto",
+            "Motor Count": 8,
+            "Size": "FlexBlockShapeSize",
+            "Elements": "ProtoElements",
+            "Points": "ProtoShapePoints"
+        },
+        {
+            "Type": "nap::FlexBlockShapePoints",
+            "mID": "ProtoShapePoints",
+            "Object": [
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                }
+            ],
+            "Frame": [
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": -1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": 1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                },
+                {
+                    "x": -1.0,
+                    "y": -1.0,
+                    "z": 1.0
+                }
+            ]
+        },
+        {
+            "Type": "nap::FlexBlockShapeSize",
+            "mID": "FlexBlockShapeSize",
+            "Name": "proto",
+            "Values": "ProtoShapeSizeValues"
+        },
+        {
+            "Type": "nap::FlexBlockShapeSizeValues",
+            "mID": "ProtoShapeSizeValues",
+            "Object": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Frame": {
+                "x": 2.0480000972747804,
+                "y": 1.4249999523162842,
+                "z": 1.3530000448226929
+            }
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Montserrat Font",
+            "Properties": {
+                "Size": 24,
+                "DPI": 96
+            },
+            "Font": "fonts/Montserrat-Light.otf"
         },
         {
             "Type": "nap::FrameMesh",
@@ -350,39 +739,31 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "ControlPointMaterial",
+            "mID": "Font Material",
+            "Uniforms": [],
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "FontMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3ControlPointColor",
-                    "Name": "inColor",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
                     "Value": {
-                        "x": 1.0,
-                        "y": 0.0,
-                        "z": 0.0
+                        "x": 0.800000011920929,
+                        "y": 0.800000011920929,
+                        "z": 0.800000011920929
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                }
-            ],
-            "BlendMode": "Opaque",
+            "Shader": "FontShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "AlphaBlend",
             "DepthMode": "InheritFromBlendMode"
         },
         {
@@ -400,23 +781,15 @@
                     }
                 }
             ],
-            "Shader": "ControlPointShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
                     "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
                     "MeshAttributeID": "Color0",
                     "ShaderAttributeID": "in_Color0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
                 }
             ],
             "BlendMode": "Opaque",
@@ -424,20 +797,20 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "PlaneMaterial",
+            "mID": "VisualizeNormasMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3PlaneColor",
+                    "mID": "UniformVec3ControlPointColor",
                     "Name": "inColor",
                     "Value": {
-                        "x": 0.32100000977516177,
-                        "y": 0.32899999618530276,
-                        "z": 0.41499999165534975
+                        "x": 1.0,
+                        "y": 0.0,
+                        "z": 0.0
                     }
                 }
             ],
-            "Shader": "PlaneShader",
+            "Shader": "FrameShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -460,110 +833,77 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::OSCReceiver",
+            "mID": "OSCInput",
+            "Port": 7000,
+            "EnableDebugOutput": true,
+            "AllowPortReuse": false
+        },
+        {
             "Type": "nap::ParameterGroup",
-            "mID": "Parameters",
+            "mID": "Motor Inputs Parameters",
             "Parameters": [
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 1",
-                    "Name": "",
-                    "Value": {
-                        "x": 2.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 1",
+                    "Name": "Input 1",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 2",
-                    "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 2",
+                    "Name": "Input 2",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 3",
-                    "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 3",
+                    "Name": "Input 3",
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 4",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 4",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 5",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 5",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 6",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 6",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 7",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 7",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "Control Point 8",
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 8",
                     "Name": "",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Clamp": false,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }
@@ -571,27 +911,29 @@
             "Groups": []
         },
         {
-            "Type": "nap::PlaneMesh",
-            "mID": "PlaneMesh",
-            "Size": {
-                "x": 10.0,
-                "y": 10.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
             "Type": "nap::RenderWindow",
-            "mID": "Window0",
+            "mID": "MainWindow",
             "Width": 1280,
             "Height": 720,
             "Borderless": false,
             "Resizable": true,
             "Title": "Flexblock",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "TimelineWindow",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Timeline",
             "Sync": false,
             "ClearColor": {
                 "x": 0.0,
@@ -611,8 +953,26 @@
                 {
                     "Entity": "WorldEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "TextEntity",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::SerialPort",
+            "mID": "SerialPort",
+            "PortName": "COM19",
+            "BaudRate": 9600,
+            "ByteSize": "Eight",
+            "Parity": "None",
+            "StopBits": "One",
+            "FlowControl": "None",
+            "ReadTimeout": 0,
+            "WriteTimeout": 0,
+            "InterByteTimeout": 0,
+            "AllowFailure": true
         },
         {
             "Type": "nap::Shader",
@@ -622,22 +982,25 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "ControlPointShader",
-            "mVertShader": "shaders/control_point.vert",
-            "mFragShader": "shaders/control_point.frag"
+            "mID": "FontShader",
+            "mVertShader": "shaders/font.vert",
+            "mFragShader": "shaders/font.frag"
         },
         {
             "Type": "nap::Shader",
-            "mID": "PlaneShader",
-            "mVertShader": "shaders/plane.vert",
-            "mFragShader": "shaders/plane.frag"
+            "mID": "FrameShader",
+            "mVertShader": "shaders/frame.vert",
+            "mFragShader": "shaders/frame.frag"
         },
         {
-            "Type": "nap::SphereMesh",
-            "mID": "ControlPointMesh",
-            "Radius": 0.05000000074505806,
-            "Rings": 50.0,
-            "Sectors": 50.0
+            "Type": "nap::UniformVec3",
+            "mID": "UniformVec3PlaneColor",
+            "Name": "inColor",
+            "Value": {
+                "x": 0.32100000977516177,
+                "y": 0.32899999618530276,
+                "z": 0.41499999165534975
+            }
         }
     ]
 }

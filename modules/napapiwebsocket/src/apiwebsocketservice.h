@@ -17,9 +17,9 @@ namespace nap
     public:
 		// Constructor
 		APIWebSocketService(ServiceConfiguration* configuration);
-        
+
         // Initialization
-        bool init(nap::utility::ErrorState& errorState) override;
+        virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * @return the api service
@@ -52,6 +52,9 @@ namespace nap
 		 * This service depends on the api and web socket service
 		 */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		// Creation
+		virtual void created() override;
 
 	private:
 		APIService* mAPIService = nullptr;

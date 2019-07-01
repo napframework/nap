@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(solarsystem)
 
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
@@ -16,7 +21,7 @@ source_group("shaders" FILES ${SHADERS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 
 add_dependencies(${PROJECT_NAME} fbxconverter)
 

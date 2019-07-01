@@ -39,7 +39,7 @@ namespace nap
 
 		// Must have a TransformComponent
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// If the size of this element is dependent on the aspect ratio of the image, we also need a RenderableMeshComponent

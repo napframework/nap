@@ -116,7 +116,7 @@ namespace nap
 			mCompositionInstance->finished.disconnect(mCompositionFinishedSlot);
 
 		// Create new composition (destructing old one
-		Composition* new_composition = mCurrentContainer->mCompositions[sindex];
+		Composition* new_composition = mCurrentContainer->mCompositions[sindex].get();
 		mCompositionInstance = std::make_unique<CompositionInstance>(*new_composition);
 		mCompositionInstance->setDurationScale(mDurationScale);
 

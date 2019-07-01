@@ -30,7 +30,7 @@ namespace nap
 	{
 		// Make sure we have a transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransform != nullptr, "missing transform component"))
+		if (!errorState.check(mTransform != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 		
 		// Copy over properties

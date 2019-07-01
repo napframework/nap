@@ -1,0 +1,75 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Inputs",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 1",
+                    "Name": "Input 1",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 2",
+                    "Name": "Input 2",
+                    "Value": 0.6420000195503235,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 3",
+                    "Name": "Input 3",
+                    "Value": 0.4390000104904175,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 4",
+                    "Name": "",
+                    "Value": 0.5260000228881836,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 5",
+                    "Name": "",
+                    "Value": 0.7400000095367432,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 6",
+                    "Name": "",
+                    "Value": 0.1940000057220459,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 7",
+                    "Name": "",
+                    "Value": 0.6520000100135803,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Input 8",
+                    "Name": "",
+                    "Value": 0.4320000112056732,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
+        }
+    ]
+}

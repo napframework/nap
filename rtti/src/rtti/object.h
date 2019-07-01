@@ -45,6 +45,14 @@ namespace nap
 			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
 
 			/**
+			 * Enables the use of ObjectPtrs for this Object. This is normally only used within the deserialization process for you,
+			 * but in case you're not deserializing, you need to set the use of ObjectPtrs to false when you are creating objects
+			 * manually on threads other than the main threads. Disabling it will make sure that no global access to the ObjectPtrManager
+			 * is performed.
+			 */
+			void setEnableObjectPtrs(bool enable) { mEnableObjectPtrs = enable; }
+
+			/**
 			 * Copy is not allowed
 			 */
 			Object(Object&) = delete;
@@ -56,7 +64,8 @@ namespace nap
 			Object(Object&&) = delete;
 			Object& operator=(Object&&) = delete;
 
-			std::string mID;		///< Property: 'mID' name of the object. Used as an identifier by the system
+			std::string mID;							///< Property: 'mID' name of the object. Used as an identifier by the system
+			bool		mEnableObjectPtrs = true;		///< Property: 'mEnableObjectPtrs' Enables/disables the ability to use ObjectPtrs to point to this Object
 		};
 	}
 }
