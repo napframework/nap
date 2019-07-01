@@ -21,13 +21,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	APIWebSocketServer::~APIWebSocketServer() 
-	{
-		if (mEndPoint != nullptr)
-			mEndPoint->unregisterListener(*this);
-	}
-
-
 	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : 
 		IWebSocketServer(service.getWebSocketService()), 
 		mAPIService(&(service.getAPIService()))
@@ -43,6 +36,12 @@ namespace nap
 
 		mEndPoint->registerListener(*this);	
 		return true;
+	}
+
+
+	void APIWebSocketServer::onDestroy()
+	{
+		mEndPoint->unregisterListener(*this);
 	}
 
 

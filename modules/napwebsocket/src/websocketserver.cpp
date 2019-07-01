@@ -25,13 +25,6 @@ namespace nap
 	}
 
 
-	WebSocketServer::~WebSocketServer()
-	{
-		if (mEndPoint != nullptr)
-			mEndPoint->unregisterListener(*this);
-	}
-
-
 	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
 		// Initialize base class
@@ -40,6 +33,12 @@ namespace nap
 
 		mEndPoint->registerListener(*this);
 		return true;
+	}
+
+
+	void WebSocketServer::onDestroy()
+	{
+		mEndPoint->unregisterListener(*this);
 	}
 
 

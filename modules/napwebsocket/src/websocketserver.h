@@ -69,15 +69,17 @@ namespace nap
 		 */
 		WebSocketServer(WebSocketService& service);
 
-		// Destructor
-		virtual ~WebSocketServer();
-
 		/**
 		 * Initializes the server.
 		 * @param errorState contains the error if the server can't be initialized.
 		 * @return if the server initialized correctly.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Destroys the server.
+		 */
+		virtual void onDestroy() override;
 
 		/**
 		 * Sends a message with the given opcode to a client.

@@ -88,9 +88,6 @@ namespace nap
 		RTTI_ENABLE(IWebSocketServer)
 	public:
 
-		// Destructor
-		virtual ~APIWebSocketServer();
-
 		/**
 		 * Constructor
 		 * @param service handle to the api web-socket service.
@@ -102,6 +99,11 @@ namespace nap
 		* @param errorState contains the error message when initialization fails
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		* Destroys the socket server.
+		*/
+		virtual void onDestroy() override;
 
 		/**
 		 * Sends a message in the form of an api event to a client.

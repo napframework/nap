@@ -107,7 +107,18 @@ namespace nap
 		// Destroy objects in reversed initialization order
 		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
 		for (int i = nodes.size() - 1; i >= 0; --i)
-			mObjectsToUpdate.erase(nodes[i]->mItem.getID());
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			ObjectByIDMap::iterator pos = mObjectsToUpdate.find(nodes[i]->mItem.getID());
+
+			// The set of objects that is returned from the object graph builder is potentially larger, as the object graph builder
+			// chases pointers and will discover more objects than there are present in the original set.
+			if (pos != mObjectsToUpdate.end())
+				pos->second->onDestroy();
+		}
+		mObjectsToUpdate.clear();
 	}
 
 	void ResourceManager::RollbackHelper::clear()
@@ -177,7 +188,7 @@ namespace nap
 
 	ResourceManager::~ResourceManager()
 	{
-		destroyAllObjects();
+		stopAndDestroyAllObjects();
 	}
 
 	/**
@@ -230,15 +241,29 @@ namespace nap
 	}
 
 
-	void ResourceManager::destroyAllObjects()
+	void ResourceManager::stopAndDestroyAllObjects()
 	{
 		RTTIObjectGraph object_graph;
 		buildObjectGraph({}, object_graph);
 
-		// Destroy objects in reversed init order
+		// Stop and destroy objects in reversed init order. 
 		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
 		for (int i = nodes.size() - 1; i >= 0; --i)
-			mObjects.erase(nodes[i]->mItem.getID());
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			ObjectByIDMap::iterator pos = mObjects.find(nodes[i]->mItem.getID());
+
+			Device* device = rtti_cast<Device>(pos->second.get());
+			if (device != nullptr)
+				device->stop();
+
+			pos->second->onDestroy();
+		}
+
+		// Destruction of objects is not in any particular order.
+		mObjects.clear();
 	}
 
 
@@ -250,11 +275,25 @@ namespace nap
 		const std::vector<RTTIObjectGraph::Node*> nodes = objectGraph.getSortedNodes();
 		for (int i = nodes.size() - 1; i >= 0; --i)
 		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
 			const std::string& nodeID = nodes[i]->mItem.getID();
 			if (objectIDsToDelete.find(nodeID) != objectIDsToDelete.end())
 			{
 				objects_ids_to_delete.erase(nodeID);
-				mObjects.erase(nodeID);
+
+				ObjectByIDMap::iterator pos = mObjects.find(nodeID);
+
+				// objectIDsToDelete will contain objects that are added, so it is possible that they don't exist in mObjects.
+				if (pos != mObjects.end())
+				{
+					pos->second->onDestroy();
+
+					// Note: we can't just clear mObjects here like we do in other cases, because the set of objects that needs to be destroyed
+					// may be a subset of all objects in the resource manager.
+					mObjects.erase(pos);
+				}
 			}
 		}
 
@@ -313,10 +352,6 @@ namespace nap
 				objects_to_update.emplace(std::make_pair(id, std::move(read_object)));
 			}
 		}
-
-		// At this point, all object that will be pushed into the ResourceManager are moved from the ReadObjects into objects_to_update. 
-		// ReadObjects only contains objects that we will not use, so we can clear it here and free the memory.
-		read_result.mReadObjects.clear();
 
 		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
 		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
