@@ -119,16 +119,17 @@ namespace nap
 		//
 		const std::vector<glm::vec3>& points = flex_block.getFramePoints();
 		std::vector<glm::vec3> framePoints(8);
-		flex_block.toNapPoints(points, framePoints);
+		framePoints = points;
 
 		//
 		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
 		Renderable2DTextComponentInstance& motor_label = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		for (int i = 0; i < points.size(); i++)
 		{
+			const auto& framePointWorldPos = math::objectToWorld(framePoints[i], cam_xform.getLocalTransform());
 			utility::ErrorState error;
 			motor_label.setText(std::to_string(i+1), error);
-			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mMainWindow->getRectPixels()) + glm::vec3(0, 10, 0));
+			motor_label.setLocation(persp_cam.worldToScreen(framePointWorldPos, mMainWindow->getRectPixels()) + glm::vec3(0, 10, 0));
 			motor_label.draw(mMainWindow->getBackbuffer());
 		}
 

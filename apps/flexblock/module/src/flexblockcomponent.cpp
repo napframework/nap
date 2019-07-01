@@ -64,7 +64,7 @@ namespace nap
 
 		// calculate new frame
 		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
-		toNapPoints(framePoints, mFramePoints);
+		mFramePoints = framePoints;
 
 		// set points
 		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
@@ -79,7 +79,7 @@ namespace nap
 	void FlexBlockComponentInstance::setMotorInput(int index, float value)
 	{
 		// 
-		mMotorInputs[remapMotorInput(index)] = value;
+		mMotorInputs[index] = value;
 	}
 
 
@@ -87,7 +87,7 @@ namespace nap
 	{
 		// convert flex points to nap points
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		toNapPoints(objectPoints, mObjectPoints);
+		mObjectPoints = objectPoints;
 
 		// update ropes of frame
 		mFrameMesh->setControlPoints(objectPoints);
@@ -117,7 +117,7 @@ namespace nap
 			std::string data = "<";
 			for (int i = 0; i < ropeLengths.size(); i++)
 			{
-				long c = (long)ropeLengths[remapMotorInput(i)];
+				long c = (long)ropeLengths[i];
 				data += std::to_string(c);
 				if (i + 1 < ropeLengths.size())
 					data += "|";
@@ -128,7 +128,7 @@ namespace nap
 		}
 	}
 
-
+	/*
 	void FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& inPoints, std::vector<glm::vec3>& outPoints )
 	{
 		outPoints[0] = inPoints[7];
@@ -158,5 +158,5 @@ namespace nap
 		};
 
 		return map[index];
-	}
+	}*/
 }
