@@ -216,7 +216,7 @@ namespace nap
 		}
 
 		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
-		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.5f - 20));
+		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.4f - 20));
 		mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
 
 		showInfoWindow();
@@ -1642,8 +1642,8 @@ namespace nap
 
 	void FlexblockGui::showInfoWindow()
 	{
-		ImGui::SetNextWindowPos(ImVec2(mWindowSize.x * 0.5f + 10, mWindowSize.y * 0.5f + 10));
-		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.5f - 20));
+		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.9f + 10));
+		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.1f - 20));
 
 		// Color used for highlights
 		mApp.getCore().getFramerate();
@@ -1652,6 +1652,7 @@ namespace nap
 		ImGui::Spacing();
 		getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
+		ImGui::SameLine();
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 		ImGui::End();
