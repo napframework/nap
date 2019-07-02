@@ -414,7 +414,7 @@ namespace nap
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
 		{
-			ropes.push_back(mElementsLength[i]);
+			ropes.push_back(mElementsLength[i+1]);
 		}
 
 		return ropes;
