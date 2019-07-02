@@ -124,7 +124,7 @@ namespace nap
 			}
 			data += ">";
 
-			printf("%s\n", data.c_str());
+			//printf("%s\n", data.c_str());
 			mFlexBlockSerialComponentInstance->write(data);
 		}
 	}

@@ -159,7 +159,7 @@ namespace nap
 		mMeshInstance->setNumVertices(vertCount);
 
 		// Create initial color data
-		std::vector<glm::vec4> colors(vertCount, { 1.0f, 0.0f, 0.0f, 1.0f });
+		std::vector<glm::vec4> colors(vertCount, { 139.0f / 255.0f, 140.0f / 255.0f, 160.0f / 255.0f, 1.0f });
 		for (auto& color_attr : mColorAttrs)
 			color_attr->setData(colors);
 
