@@ -201,20 +201,6 @@ namespace nap
 		if (mHide)
 			return;
 
-		// Menu
-		if (ImGui::BeginMainMenuBar())
-		{
-			if (ImGui::BeginMenu("Display"))
-			{
-				ImGui::MenuItem("Information", NULL, &showInfo);
-				ImGui::MenuItem("Timeline", NULL, &mShowTimeLine);
-				ImGui::MenuItem("Sequences", NULL, &mShowSequenceList);
-
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
-		}
-
 		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
 		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.4f - 20));
 		mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
@@ -222,6 +208,11 @@ namespace nap
 		showInfoWindow();
 
 		showTimeLineWindow();
+
+		if (mShowSequenceList)
+		{
+			showSequencesWindow();
+		}
 	}
 	
 
@@ -241,7 +232,7 @@ namespace nap
 	{
 		//
 		ImGui::SetNextWindowPos(ImVec2(10, 10));
-		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x - 20, mWindowSize.y * 0.5f - 20));
+		//ImGui::SetNextWindowSize(ImVec2(mWindowSize.x - 20, mWindowSize.y * 0.5f - 20));
 
 		// set next window content size to timeline ( child ) width to make scroll bar fit
 		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 200.0f ));
@@ -1233,6 +1224,11 @@ namespace nap
 		ImGui::Checkbox("Show tooltips", &showToolTips);
 
 		showTip("Toggle tooltips");
+
+		ImGui::SameLine();
+		ImGui::Checkbox("Show PlayList", &mShowSequenceList);
+
+		showTip("Show list of sequences");
 	}
 
 
@@ -1526,7 +1522,7 @@ namespace nap
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
 
-		ImGui::Begin("Sequence player");
+		ImGui::Begin("Playlist");
 		ImGui::Spacing();
 
 		ImGui::Spacing();
@@ -1537,12 +1533,12 @@ namespace nap
 
 			for (const auto* sequence : sequences)
 			{
-				ImVec4 color = ImVec4(1, 1, 1, 1);
+				ImVec4 color = ImGui::ColorConvertU32ToFloat4( colorWhite );
 
 				bool isSequenceBeingPlayed = mSequencePlayer->getCurrentSequence() == sequence;
 				if (isSequenceBeingPlayed)
 				{
-					color = ImVec4(1, 0, 0, 1);
+					color = ImGui::ColorConvertU32ToFloat4( colorRed );
 				}
 
 				ImGui::PushStyleColor(0, color);
@@ -1550,18 +1546,22 @@ namespace nap
 				{
 					mSequencePlayer->skipToSequence(sequence);
 				}
+				ImGui::SameLine();
+				ImGui::Text(formatTimeString(sequence->getStartTime()).c_str());
 				ImGui::PopStyleColor();
 
-				if (ImGui::TreeNode(std::string(sequence->mName + " Elements").c_str()))
+				if (ImGui::TreeNode((void*)sequence, ""))
 				{
 					const auto& elements = sequence->getElements();
 
 					for(const auto* element : elements)
 					{
 						bool isElementBeingPlayed =
-							sequence->getCurrentElement() == element;
+							isSequenceBeingPlayed && (
+								mSequencePlayer->getCurrentTime() >= element->getStartTime() &&
+								mSequencePlayer->getCurrentTime() < element->getStartTime() + element->mDuration);
 
-						if( isElementBeingPlayed && isSequenceBeingPlayed )
+						if( isElementBeingPlayed )
 							ImGui::PushStyleColor(0, color);
 
 						if (ImGui::SmallButton(element->mName.c_str()))
@@ -1569,13 +1569,26 @@ namespace nap
 							mSequencePlayer->skipToSequence(sequence);
 							mSequencePlayer->setTime(element->getStartTime());
 						}
+						ImGui::SameLine();
+						ImGui::Text(formatTimeString(element->getStartTime()).c_str());
 
-						if (isElementBeingPlayed && isSequenceBeingPlayed)
+						if (isElementBeingPlayed)
+						{
+							float progress = ( mSequencePlayer->getCurrentTime() - element->getStartTime() ) / element->mDuration;
+							int percentage = int( progress * 100.0f );
+
+							ImGui::SameLine();
+							ImGui::Text("   %i%s", percentage, "%");
+						}
+
+						if (isElementBeingPlayed )
 							ImGui::PopStyleColor();
 					}
 
 					ImGui::TreePop();
 				}
+
+				
 
 			}
 			ImGui::TreePop();
@@ -1601,8 +1614,13 @@ namespace nap
 
 			const timeline::Sequence* owningSequence = mSequencePlayer->getSequenceAtTime(selectedElement->getStartTime());
 
-			if (ImGui::DragFloat("Duration", &selectedElement->mDuration, 0.1f, 0.1f, 99999.0f))
+			if (ImGui::InputFloat("Duration", &selectedElement->mDuration, 0.1f, 0.2f, 2) )
 			{
+				if (selectedElement->mDuration < 0.01f)
+				{
+					selectedElement->mDuration = 0.01f;
+				}
+
 				mSequencePlayer->reconstruct();
 			}
 
@@ -1649,7 +1667,6 @@ namespace nap
 		mApp.getCore().getFramerate();
 
 		ImGui::Begin("Information");
-		ImGui::Spacing();
 		getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::SameLine();

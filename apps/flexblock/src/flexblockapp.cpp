@@ -82,7 +82,7 @@ namespace nap
 		// Upate GUI
 		mGui->update();
 
-		mGui->setWindowSize(glm::vec2(mMainWindow->getWidthPixels(), mMainWindow->getHeightPixels()));
+		mGui->setWindowSize(glm::vec2(mMainWindow->getWidth(), mMainWindow->getHeight()));
 	}
 
 	

@@ -81,11 +81,6 @@ namespace nap
 			* @return returns the id of this resource
 			*/
 			const std::string getID() const { return mID; }
-
-			/**
-			* @return returns pointer to current element pointed to by current element index
-			*/
-			const SequenceElement* getCurrentElement() const{ return mElements[mCurrentElementIndex]; }
 		
 			/*
 			 * @return returns const reference to sequence element vector
