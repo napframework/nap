@@ -53,12 +53,12 @@ namespace nap
 		bool mDrawMouseCursorInTimeline = false;
 		float mMouseCursorPositionInTimeline = 0.0f;
 		bool mDirty = true;
-		std::vector<std::vector<ImVec2>> mChachedCurve;
+		std::vector<std::vector<ImVec2>> mCachedCurve;
 		float mPrevScrollX = 0.0f;
 		float mPrevScrollY = 0.0f;
 		TimeLineActions mCurrentAction = TimeLineActions::NONE;
 		math::FCurvePoint<float, float> *mCurvePtr = nullptr;
 		math::FComplex<float, float> *mTangentPtr = nullptr;
-		bool mShowPlaylist = true;
+		bool mShowPlaylist = false;
 	};
 }

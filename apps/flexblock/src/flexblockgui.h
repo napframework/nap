@@ -65,8 +65,6 @@ namespace nap
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
-		bool								mShowTimeLine = false;
-		bool								mShowPlaylist = false;
 		DateTime							mDateTime;
 		double								mTime = 0.0f;
 

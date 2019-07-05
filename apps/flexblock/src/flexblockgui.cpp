@@ -169,7 +169,7 @@ namespace nap
 
 		showTimeLineWindow();
 
-		if (mShowPlaylist)
+		if (mProps.mShowPlaylist)
 		{
 			showPlaylist();
 		}
