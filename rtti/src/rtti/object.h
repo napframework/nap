@@ -14,9 +14,13 @@ namespace nap
 		static const char* sIDPropertyName = "mID";
 
 		/**
-		 * The base class for all top-level objects that need to support serialization / de-serialization.
-		 * You only need to derive from this if your object should be serialized to the root of the document or needs to be
-		 * able to be pointed to from other objects. If you're making, for example, a compound (i.e a plain struct) 
+		 *  Base class of all top-level objects that support serialization / de-serialization.
+		 *
+		 * Derive from this object if your object:
+		 *     - needs to be serialized to the root of the document.
+		 *     - needs to be able to be pointed to from other objects.
+		 *
+		 * If you're making, for example, a compound (a plain struct)
 		 * there is no need to derive from this class.
 		 */
 		class NAPAPI Object
@@ -36,10 +40,11 @@ namespace nap
 			virtual bool init(utility::ErrorState& errorState)	{ return true; }
 
 			/**
-			 * This function is called on destruction and is only invoked after a previous call to init().
-			 * It is called in reverse init order. It is therefore safe to assume that all your pointers are still valid.
-			 * In addition, this function is also called during real-time editing of JSON files if there was an error: 
-			 * any objects that were successfully initialized before the failure will have onDestroy called on them in the correct order.
+			 * This function is called on destruction and is only invoked after a successful call to init(). 
+			 * If initialization fails onDestroy will not be invoked. Objects are destroyed in reverse init order. 
+			 * It is safe to assume that when onDestroy is called all your pointers are valid. 
+			 * This function is also called when editing JSON files. If during the real-time edit stage an error occurs,
+			 * every object that initialized successfully will be destroyed in the correct order.
 			 */
 			virtual void onDestroy() {}
 
@@ -49,12 +54,14 @@ namespace nap
 			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
 
 			/**
-			 * Enables the use of ObjectPtrs for this Object. This is normally only used within the de-serialization process for you,
-			 * but in case you're not de-serializing, you need to set the use of ObjectPtrs to false when you are creating objects
-			 * manually on threads other than the main threads. Disabling it will make sure that no global access to the ObjectPtrManager
-			 * is performed.
+			 * Enables the use of ObjectPtrs for this Object. This is normally automatically set during the de-serialization process for you.
+			 * But in rare cases that does not involve a de-serialization step, for example when creating an object on the stack, 
+			 * it is recommended to set the use of ObjectPtrs to false. Disabling the use of object pointers ensures that no global access to the 
+			 * ObjectPtrManager is performed and therefore a potential race-condition is introduced. 
+			 * This is a temporary work-around that will be removed in a future release of NAP.
+			 * @param enable if ObjectPtrs should be used for this object. 
 			 */
-			void setEnableObjectPtrs(bool enable) { mEnableObjectPtrs = enable; }
+			void setEnableObjectPtrs(bool enable);
 
 			/**
 			 * Copy is not allowed
