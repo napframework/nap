@@ -48,6 +48,7 @@ namespace nap
 	static bool dirty = true;
 	static std::vector<std::vector<ImVec2>> cachedCurve;
 	static float prevScrollX = 0.0f;
+	static float prevScrollY = 0.0f;
 
 	// 200, 105, 105
 	ImU32 colorRed = ImGui::ColorConvertFloat4ToU32(ImVec4(200.0f / 255.0f, 105.0f / 255.0f, 105.0f / 255.0f, 1.0f));
@@ -304,6 +305,12 @@ namespace nap
 			prevScrollX = scrollX;
 		}
 
+		if (ImGui::GetScrollY() != prevScrollY)
+		{
+			prevScrollY = ImGui::GetScrollY();
+			dirty = true;
+		}
+
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(childWidth + 32, child_height), false, ImGuiWindowFlags_NoMove);
 		{
@@ -486,6 +493,7 @@ namespace nap
 
 										if (ImGui::IsMouseClicked(0))
 										{
+											dirty = true;
 											currentTimelineAction = TimeLineActions::DRAGGING_ELEMENT;
 											selectedElement = element;
 										}
@@ -518,6 +526,8 @@ namespace nap
 									&& ImGui::IsMouseDragging()
 									&& element == selectedElement)
 								{
+									dirty = true;
+
 									filled = true;
 
 									ImVec2 mousePs = ImGui::GetMousePos();
@@ -585,6 +595,7 @@ namespace nap
 													currentTimelineAction = TimeLineActions::DRAGGING_MOTORVALUE;
 													motorDragged = m;
 													selectedElement = element;
+													dirty = true;
 												}
 											}
 										}
@@ -595,6 +606,7 @@ namespace nap
 											element == selectedElement)
 										{
 											filled = true;
+											dirty = true;
 
 											ImVec2 mousePos = ImGui::GetMousePos();
 
@@ -646,6 +658,9 @@ namespace nap
 								{
 									if ((enableMotorHandlerIndexBitMask >> m) & 1UL)
 									{
+										//
+										dirty = true;
+
 										// get the range of the difference between start and finish
 										float range = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue - static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
 
@@ -676,6 +691,8 @@ namespace nap
 											currentTimelineAction == TimeLineActions::NONE)
 										{
 											currentTimelineAction = TimeLineActions::ADD_CURVEPOINT;
+
+											dirty = true;
 
 											// range can be negative, if curves moves downwards, thats why we need to flip the input later on
 											bool flip = range < 0.0f;
@@ -747,6 +764,8 @@ namespace nap
 
 														currentTimelineAction = TimeLineActions::DELETE_CURVEPOINT;
 													}
+
+													dirty = true;
 												}
 											}
 
@@ -768,6 +787,8 @@ namespace nap
 												adjust = (mousePos.x - x) / element_size_width;
 												point.mPos.mTime += adjust;
 												point.mPos.mTime = math::clamp(point.mPos.mTime, 0.0f, 1.0f);
+											
+												dirty = true;
 											}
 
 											// translate 
@@ -791,6 +812,8 @@ namespace nap
 												{
 													currentTimelineAction = TimeLineActions::DRAGGING_TANGENT;
 													tangentPtr = &point.mOutTan;
+
+													dirty = true;
 												}
 											}
 
@@ -806,6 +829,8 @@ namespace nap
 
 												adjust = (mousePos.x - x) / element_size_width;
 												tangentPtr->mTime += adjust;
+
+												dirty = true;
 											}
 
 											// translate
@@ -829,6 +854,8 @@ namespace nap
 												{
 													currentTimelineAction = TimeLineActions::DRAGGING_TANGENT;
 													tangentPtr = &point.mInTan;
+
+													dirty = true;
 												}
 											}
 
@@ -843,6 +870,8 @@ namespace nap
 
 												adjust = (mousePos.x - x) / element_size_width;
 												tangentPtr->mTime += adjust;
+
+												dirty = true;
 											}
 
 											if (currentTimelineAction == TimeLineActions::DRAGGING_TANGENT &&
