@@ -17,6 +17,7 @@
 
 #include "flexblockcomponent.h"
 #include "sequenceplayercomponent.h"
+#include "timelineguiproperties.h"
 
 namespace nap
 {
@@ -24,6 +25,7 @@ namespace nap
 	class FlexblockApp;
 	class ParameterGUI;
 	class ParameterService;
+	class TimelineGuiProperties;
 
 	class FlexblockGui final
 	{
@@ -73,6 +75,8 @@ namespace nap
 
 		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
+
+		TimelineGuiProperties mProps;
 
 		/**
 		 * Shows the information window
