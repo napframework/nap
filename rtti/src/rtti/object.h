@@ -28,14 +28,18 @@ namespace nap
 			virtual ~Object();
 
 			/**
-			 * Override this method to initialize the object after de-serialization
+			 * Override this method to initialize the object after de-serialization.
+			 * When called it is safe to assume that all dependencies have been resolved up to this point.
 			 * @param errorState should contain the error message when initialization fails
 			 * @return if initialization succeeded or failed
 			 */
 			virtual bool init(utility::ErrorState& errorState)	{ return true; }
 
 			/**
-			 * Override this method to perform cleanup of any internal data.
+			 * This function is called on destruction and is only invoked after a previous call to init().
+			 * It is called in reverse init order. It is therefore safe to assume that all your pointers are still valid.
+			 * In addition, this function is also called during real-time editing of JSON files if there was an error: 
+			 * any objects that were successfully initialized before the failure will have onDestroy called on them in the correct order.
 			 */
 			virtual void onDestroy() {}
 
@@ -45,8 +49,8 @@ namespace nap
 			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
 
 			/**
-			 * Enables the use of ObjectPtrs for this Object. This is normally only used within the deserialization process for you,
-			 * but in case you're not deserializing, you need to set the use of ObjectPtrs to false when you are creating objects
+			 * Enables the use of ObjectPtrs for this Object. This is normally only used within the de-serialization process for you,
+			 * but in case you're not de-serializing, you need to set the use of ObjectPtrs to false when you are creating objects
 			 * manually on threads other than the main threads. Disabling it will make sure that no global access to the ObjectPtrManager
 			 * is performed.
 			 */

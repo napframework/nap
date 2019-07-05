@@ -11,8 +11,6 @@ namespace nap
 	 *
 	 * The Device class deals with this case by providing an explicit start/stop virtual, which are called at appropriate times by the ResourceManager.
 	 * It's important that both start & stop can be called multiple times, but note that they will always be called in pairs.
-	 *
-	 * The device is not stopped when destroyed. It is important to do that yourself by calling stop() in the destructor of your device 
 	 */
 	class NAPAPI Device : public Resource
 	{
@@ -20,15 +18,16 @@ namespace nap
 	public:
 
 		/**
-		 * Start the device. Will be called after init()
-		 *
+		 * Start the device. Called after initialization.
+		 * When called it is safe to assume that all dependencies have been resolved up to this point.
 		 * @param errorState The error state
 		 * @return: true on success
 		 */
 		virtual bool start(utility::ErrorState& errorState) { return true; }
 
 		/**
-		 * Stop the device. Will be called before the object is reloaded
+		 * Called when the device needs to be stopped, but only if start has previously been called on this Device. 
+		 * It is safe to assume that when stop is called the device is in a 'started' state. Called in reverse init order.
 		 */
 		virtual void stop() {}
 	};
