@@ -17,6 +17,7 @@
 #include <sequenceplayercomponent.h>
 #include <iomanip>
 #include <sequencetransition.h>
+#include <math.h>       /* modf */
 
 //#include <ctime.h>
 
@@ -27,7 +28,7 @@ namespace nap
 	 */
 	static bool showInfo = false;
 	static float lengthPerSecond = 60.0f;
-	static float child_width = 1000.0f;
+	static float childWidth = 1000.0f;
 	static float child_height = 350.0f;
 	static bool followPlayer = false;
 	static int totalCurveResolution = 75;
@@ -41,6 +42,9 @@ namespace nap
 	static std::string errorString;
 	static timeline::Sequence* selectedSequence = nullptr;
 	static bool showToolTips = true;
+	static ImVec2 topLeft;
+	static bool drawCursor = false;
+	static float cursorPos = 0.0f;
 
 	// 200, 105, 105
 	ImU32 colorRed = ImGui::ColorConvertFloat4ToU32(ImVec4(200.0f / 255.0f, 105.0f / 255.0f, 105.0f / 255.0f, 1.0f));
@@ -196,8 +200,10 @@ namespace nap
 	}
 
 
-	void FlexblockGui::update()
+	void FlexblockGui::update(double deltaTime)
 	{
+		mTime += deltaTime;
+
 		if (mHide)
 			return;
 
@@ -211,7 +217,7 @@ namespace nap
 
 		if (mShowSequenceList)
 		{
-			showSequencesWindow();
+			showPlaylist();
 		}
 	}
 	
@@ -235,7 +241,7 @@ namespace nap
 		//ImGui::SetNextWindowSize(ImVec2(mWindowSize.x - 20, mWindowSize.y * 0.5f - 20));
 
 		// set next window content size to timeline ( child ) width to make scroll bar fit
-		ImGui::SetNextWindowContentSize(ImVec2(child_width + 100.0f, child_height + 200.0f ));
+		ImGui::SetNextWindowContentSize(ImVec2(childWidth + 100.0f, child_height + 200.0f ));
 
 		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
@@ -287,43 +293,44 @@ namespace nap
 	void FlexblockGui::drawTimeline(bool& outPopupOpened, std::string& outPopupId)
 	{
 		float windowWidth = ImGui::GetWindowWidth();
-		float scroll_x = ImGui::GetScrollX();
+		float scrollX = ImGui::GetScrollX();
 
 		// begin timeline child
-		ImGui::BeginChild("", ImVec2(child_width + 32, child_height), false, ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("", ImVec2(childWidth + 32, child_height), false, ImGuiWindowFlags_NoMove);
 		{
-			float timeInDisplayStart = ( math::max(0.0f, scroll_x - 32 ) / child_width) * mSequencePlayer->getDuration();
-			float timeInDisplayEnd = timeInDisplayStart + (windowWidth / child_width) * mSequencePlayer->getDuration();
+			float timeInDisplayStart = ( math::max(0.0f, scrollX - 32 ) / childWidth) * mSequencePlayer->getDuration();
+			float timeInDisplayEnd = timeInDisplayStart + (windowWidth / childWidth) * mSequencePlayer->getDuration();
 
 			//printf("%f %f \n", timeInDisplayStart, timeInDisplayEnd);
 
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 			//
-			const ImVec2 child_size = ImVec2(child_width, child_height - 125.0f);
+			const ImVec2 childSize = ImVec2(childWidth, child_height - 125.0f);
 
 			// start top left with a little bit of margin
-			ImVec2 top_left = ImGui::GetCursorScreenPos();
-			top_left.x += 30;
-			top_left.y += 20;
-			ImVec2 bottom_right_pos = ImVec2(top_left.x + child_size.x, top_left.y + child_size.y);
+			topLeft = ImGui::GetCursorScreenPos();
+			topLeft.x += 30;
+			topLeft.y += 20;
+			ImVec2 bottomRightPos = ImVec2(topLeft.x + childSize.x, topLeft.y + childSize.y);
 
 			// timeline background
-			draw_list->AddRectFilled(top_left, bottom_right_pos,
+			drawList->AddRectFilled(topLeft, bottomRightPos,
 				colorBlack, 1.0f);
 
 			// motors backgrounds
 			for (int l = 0; l < 8; l++)
 			{
-				draw_list->AddRect(ImVec2(top_left.x, math::lerp<float>(top_left.y, bottom_right_pos.y, (float)l / 8.0f)),
-					ImVec2(bottom_right_pos.x, math::lerp<float>(top_left.y, bottom_right_pos.y, (float)(l + 1) / 8.0f)),
+				drawList->AddRect(
+					ImVec2(topLeft.x, math::lerp<float>(topLeft.y, bottomRightPos.y, (float)l / 8.0f)),
+					ImVec2(bottomRightPos.x, math::lerp<float>(topLeft.y, bottomRightPos.y, (float)(l + 1) / 8.0f)),
 					colorWhite, 1.0f);
 			}
 
 			// right border
-			draw_list->AddLine(
-				ImVec2(top_left.x + child_size.x, top_left.y),
-				ImVec2(top_left.x + child_size.x, bottom_right_pos.y),
+			drawList->AddLine(
+				ImVec2(topLeft.x + childSize.x, topLeft.y),
+				ImVec2(topLeft.x + childSize.x, bottomRightPos.y),
 				colorWhite);
 
 			// draw timesteps on top of timeline
@@ -333,17 +340,17 @@ namespace nap
 			{
 				float time = (timeInDisplayStart + i * timePart);
 				ImVec2 start(
-					top_left.x + (time / mSequencePlayer->getDuration()) * child_width,
-					top_left.y);
+					topLeft.x + (time / mSequencePlayer->getDuration()) * childWidth,
+					topLeft.y);
 				ImVec2 end = start;
 				end.y -= 10;
 
-				draw_list->AddLine(start, end, colorWhite, 2.0f);
+				drawList->AddLine(start, end, colorWhite, 2.0f);
 				
 				ImVec2 textPos = end;
 				textPos.x += 3;
 				textPos.y -= 6;
-				draw_list->AddText(textPos, colorWhite, formatTimeString(time).c_str());
+				drawList->AddText(textPos, colorWhite, formatTimeString(time).c_str());
 			}
 
 			// needed to avoid elements texts from overlapping later on
@@ -364,26 +371,26 @@ namespace nap
 
 				if (sequenceInDisplay)
 				{
-					float width = child_size.x * (sequences[i]->getDuration() / mSequencePlayer->getDuration());
-					float start_x = child_size.x * (sequences[i]->getStartTime() / mSequencePlayer->getDuration());
+					float width = childSize.x * (sequences[i]->getDuration() / mSequencePlayer->getDuration());
+					float start_x = childSize.x * (sequences[i]->getStartTime() / mSequencePlayer->getDuration());
 
 					// draw sequence line
-					draw_list->AddLine(
-						ImVec2(top_left.x + start_x, top_left.y),
-						ImVec2(top_left.x + start_x, top_left.y + child_size.y + 100),
+					drawList->AddLine(
+						ImVec2(topLeft.x + start_x, topLeft.y),
+						ImVec2(topLeft.x + start_x, topLeft.y + childSize.y + 100),
 						colorWhite);
 
 					// draw sequence text
-					draw_list->AddText(
-						ImVec2(top_left.x + start_x + 5, top_left.y + child_size.y + 55),
+					drawList->AddText(
+						ImVec2(topLeft.x + start_x + 5, topLeft.y + childSize.y + 55),
 						colorWhite,
 						sequences[i]->mName.c_str());
 
 					// draw sequence box
-					ImVec2 sequenceBoxUpperLeft = ImVec2(top_left.x + start_x, top_left.y + child_size.y + 75);
-					ImVec2 sequenceBoxLowerRight = ImVec2(top_left.x + start_x + 25, top_left.y + child_size.y + 100);
+					ImVec2 sequenceBoxUpperLeft = ImVec2(topLeft.x + start_x, topLeft.y + childSize.y + 75);
+					ImVec2 sequenceBoxLowerRight = ImVec2(topLeft.x + start_x + 25, topLeft.y + childSize.y + 100);
 
-					draw_list->AddRect(
+					drawList->AddRect(
 						sequenceBoxUpperLeft,
 						sequenceBoxLowerRight,
 						colorWhite);
@@ -393,7 +400,7 @@ namespace nap
 					{
 						if (ImGui::IsMouseHoveringRect(sequenceBoxUpperLeft, sequenceBoxLowerRight))
 						{
-							draw_list->AddRectFilled(
+							drawList->AddRectFilled(
 								sequenceBoxUpperLeft,
 								sequenceBoxLowerRight,
 								colorWhite);
@@ -437,27 +444,27 @@ namespace nap
 							float element_width = element->mDuration / sequences[i]->getDuration();
 
 							// the bottom line
-							draw_list->AddLine(
-								ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y),
-								ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
+							drawList->AddLine(
+								ImVec2(topLeft.x + start_x + width * element_pos, bottomRightPos.y),
+								ImVec2(topLeft.x + start_x + width * element_pos, bottomRightPos.y + 50),
 								colorLightGrey);
 
 							// line in timeline
-							draw_list->AddLine(
-								ImVec2(top_left.x + start_x + width * element_pos, top_left.y),
-								ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 50),
+							drawList->AddLine(
+								ImVec2(topLeft.x + start_x + width * element_pos, topLeft.y),
+								ImVec2(topLeft.x + start_x + width * element_pos, bottomRightPos.y + 50),
 								colorLightGrey);
 
 							// the text
-							draw_list->AddText(
-								ImVec2(top_left.x + start_x + width * element_pos + 5, bottom_right_pos.y + y_text_offset),
+							drawList->AddText(
+								ImVec2(topLeft.x + start_x + width * element_pos + 5, bottomRightPos.y + y_text_offset),
 								colorLightGrey,
 								element->mName.c_str());
 
 							// draw dragger of element, changes duration of previous element
 							{
-								ImVec2 elementTimeDragRectStart(top_left.x + start_x + width * element_pos, bottom_right_pos.y + 40);
-								ImVec2 elementTimeDragRectEnd(top_left.x + start_x + width * element_pos + 10, bottom_right_pos.y + 50);
+								ImVec2 elementTimeDragRectStart(topLeft.x + start_x + width * element_pos, bottomRightPos.y + 40);
+								ImVec2 elementTimeDragRectEnd(topLeft.x + start_x + width * element_pos + 10, bottomRightPos.y + 50);
 
 								bool filled = false;
 								if (currentTimelineAction == TimeLineActions::NONE)
@@ -505,7 +512,7 @@ namespace nap
 									filled = true;
 
 									ImVec2 mousePs = ImGui::GetMousePos();
-									double time = ((mousePs.x - top_left.x) / child_size.x) * mSequencePlayer->getDuration();
+									double time = ((mousePs.x - topLeft.x) / childSize.x) * mSequencePlayer->getDuration();
 
 									auto* previousElement = element->getPreviousElement();
 									if (previousElement != nullptr)
@@ -521,14 +528,14 @@ namespace nap
 								// draw rect in timeline
 								if (!filled)
 								{
-									draw_list->AddRect(
+									drawList->AddRect(
 										elementTimeDragRectStart,
 										elementTimeDragRectEnd,
 										colorLightGrey);
 								}
 								else
 								{
-									draw_list->AddRectFilled(
+									drawList->AddRectFilled(
 										elementTimeDragRectStart,
 										elementTimeDragRectEnd,
 										colorLightGrey);
@@ -546,7 +553,7 @@ namespace nap
 							bool draggingMotor = false;
 							// draw motor end positions in element
 							{
-								float motor_height = child_size.y / 8.0f;
+								float motor_height = childSize.y / 8.0f;
 								for (int m = 0; m < 8; m++)
 								{
 									if ((enableMotorHandlerIndexBitMask >> m) & 1UL)
@@ -554,9 +561,9 @@ namespace nap
 										const float circleSize = 6.0f;
 
 										bool filled = false;
-										float x = top_left.x + start_x + width * element_pos + width * element_width;
+										float x = topLeft.x + start_x + width * element_pos + width * element_width;
 										float value = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
-										float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * value;
+										float y = (bottomRightPos.y - motor_height * (float)m) - motor_height * value;
 
 										// handle dragging of motor values
 										if (currentTimelineAction == TimeLineActions::NONE)
@@ -595,7 +602,7 @@ namespace nap
 										{
 											if (!filled)
 											{
-												draw_list->AddCircle(
+												drawList->AddCircle(
 													ImVec2(x, y),
 													circleSize,
 													colorRed,
@@ -604,7 +611,7 @@ namespace nap
 											}
 											else
 											{
-												draw_list->AddCircleFilled(
+												drawList->AddCircleFilled(
 													ImVec2(x, y),
 													circleSize,
 													colorRed,
@@ -625,7 +632,7 @@ namespace nap
 								const auto& curves = transition->getCurves();
 
 								// motor height is size of motor timeline in child height
-								float motor_height = child_size.y / 8.0f;
+								float motor_height = childSize.y / 8.0f;
 								for (int m = 0; m < 8; m++)
 								{
 									if ((enableMotorHandlerIndexBitMask >> m) & 1UL)
@@ -640,8 +647,8 @@ namespace nap
 										bool mouseInMotor = false;
 
 										if (ImGui::IsMouseHoveringRect(
-											ImVec2(top_left.x + start_x + width * element_pos, bottom_right_pos.y - motor_height * (m + 1)),
-											ImVec2(top_left.x + start_x + width * element_pos + element_size_width, bottom_right_pos.y - motor_height * m)))
+											ImVec2(topLeft.x + start_x + width * element_pos, bottomRightPos.y - motor_height * (m + 1)),
+											ImVec2(topLeft.x + start_x + width * element_pos + element_size_width, bottomRightPos.y - motor_height * m)))
 										{
 											mouseInMotor = true;
 
@@ -670,8 +677,8 @@ namespace nap
 												ImVec2 mousePos = ImGui::GetMousePos();
 
 												// translate mouse pos to curve pos
-												float p_x = (mousePos.x - (top_left.x + start_x + width * element_pos)) / element_size_width;
-												float p_y = (((bottom_right_pos.y - motor_height * (float)m) - mousePos.y) / motor_height) * range;
+												float p_x = (mousePos.x - (topLeft.x + start_x + width * element_pos)) / element_size_width;
+												float p_y = (((bottomRightPos.y - motor_height * (float)m) - mousePos.y) / motor_height) * range;
 
 												if (flip)
 												{
@@ -701,11 +708,11 @@ namespace nap
 											auto& point = curves[m]->mPoints[p];
 
 											// translate from element space to screen space
-											float x = top_left.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
-											float y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * ((point.mPos.mValue * range) + start_curve);
+											float x = topLeft.x + start_x + width * element_pos + element_size_width * point.mPos.mTime;
+											float y = (bottomRightPos.y - motor_height * (float)m) - motor_height * ((point.mPos.mValue * range) + start_curve);
 
 											// draw the position
-											draw_list->AddCircleFilled(
+											drawList->AddCircleFilled(
 												ImVec2(x, y),
 												3,
 												colorWhite,
@@ -755,17 +762,17 @@ namespace nap
 											}
 
 											// translate 
-											x = top_left.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mOutTan.mTime);
-											y = (bottom_right_pos.y - motor_height * (float)m) - motor_height *  (((point.mPos.mValue + point.mOutTan.mValue) * range) + start_curve);
+											x = topLeft.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mOutTan.mTime);
+											y = (bottomRightPos.y - motor_height * (float)m) - motor_height *  (((point.mPos.mValue + point.mOutTan.mValue) * range) + start_curve);
 
 											ImVec2 inTangentPos(x, y);
-											draw_list->AddCircleFilled(
+											drawList->AddCircleFilled(
 												inTangentPos,
 												2,
 												colorWhite,
 												12);
 
-											draw_list->AddLine(pointPos, inTangentPos, colorLightGrey);
+											drawList->AddLine(pointPos, inTangentPos, colorLightGrey);
 
 											// are we hovering this tangent ?
 											if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)) &&
@@ -793,17 +800,17 @@ namespace nap
 											}
 
 											// translate
-											x = top_left.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mInTan.mTime);
-											y = (bottom_right_pos.y - motor_height * (float)m) - motor_height * (((point.mPos.mValue + point.mInTan.mValue) * range) + start_curve);
+											x = topLeft.x + start_x + width * element_pos + element_size_width * (point.mPos.mTime + point.mInTan.mTime);
+											y = (bottomRightPos.y - motor_height * (float)m) - motor_height * (((point.mPos.mValue + point.mInTan.mValue) * range) + start_curve);
 											ImVec2 outTangentPos(x, y);
 
-											draw_list->AddCircleFilled(
+											drawList->AddCircleFilled(
 												outTangentPos,
 												2,
 												colorWhite,
 												12);
 
-											draw_list->AddLine(pointPos, outTangentPos, colorLightGrey);
+											drawList->AddLine(pointPos, outTangentPos, colorLightGrey);
 
 											// are we hovering this tangent ?
 											if (ImGui::IsMouseHoveringRect(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5)) &&
@@ -881,8 +888,8 @@ namespace nap
 
 						// zoom in on the part that is shown in the window
 						int steps = totalCurveResolution;
-						float part = windowWidth / child_width;
-						float part_start = math::clamp<float>(scroll_x - 40, 0, child_width) / child_width;
+						float part = windowWidth / childWidth;
+						float part_start = math::clamp<float>(scrollX - 40, 0, childWidth) / childWidth;
 
 						// start evaluating and create curves of motor
 						for (int p = 0; p < steps; p++)
@@ -893,19 +900,19 @@ namespace nap
 							//
 							for (int l = 0; l < 8; l++)
 							{
-								float y_part = (child_size.y / 8.0f);
+								float y_part = (childSize.y / 8.0f);
 								float y_start = y_part * l;
 
 								points[l].emplace_back(ImVec2(
-									part_start * child_width + top_left.x + child_size.x * part * (p * (1.0f / (float)steps)),
-									bottom_right_pos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+									part_start * childWidth + topLeft.x + childSize.x * part * (p * (1.0f / (float)steps)),
+									bottomRightPos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
 							}
 						}
 
 						for (int l = 0; l < 8; l++)
 						{
 							// draw the polylines 
-							draw_list->AddPolyline(
+							drawList->AddPolyline(
 								&*points[l].begin(),
 								points[l].size(),
 								colorRed,
@@ -919,16 +926,16 @@ namespace nap
 
 			for (int i = 0; i < 8; i++)
 			{
-				float y_pos = (child_size.y / 8) * i + 4;
+				float y_pos = (childSize.y / 8) * i + 4;
 				// draw motor text
-				draw_list->AddText(
-					ImVec2(top_left.x - 25, top_left.y + y_pos),
+				drawList->AddText(
+					ImVec2(topLeft.x - 25, topLeft.y + y_pos),
 					colorWhite,
 					std::to_string(8 - i).c_str());
 
 				//
-				const ImVec2 rectTopLeft(top_left.x - 15, top_left.y + y_pos + 5);
-				const ImVec2 rectBotRight(top_left.x - 5, top_left.y + y_pos + 15);
+				const ImVec2 rectTopLeft(topLeft.x - 15, topLeft.y + y_pos + 5);
+				const ImVec2 rectBotRight(topLeft.x - 5, topLeft.y + y_pos + 15);
 
 				bool filled = false;
 				int motorId = 7 - i;
@@ -965,14 +972,14 @@ namespace nap
 
 				if (!filled)
 				{
-					draw_list->AddRect(
+					drawList->AddRect(
 						rectTopLeft,
 						rectBotRight,
 						colorWhite);
 				}
 				else
 				{
-					draw_list->AddRectFilled(
+					drawList->AddRectFilled(
 						rectTopLeft,
 						rectBotRight,
 						colorWhite);
@@ -980,62 +987,85 @@ namespace nap
 			}
 
 			// draw player position 
-			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_size.x;
-			draw_list->AddLine(ImVec2(top_left.x + player_pos, top_left.y), ImVec2(top_left.x + player_pos, bottom_right_pos.y),
+			float player_pos = (mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * childSize.x;
+			drawList->AddLine(ImVec2(topLeft.x + player_pos, topLeft.y), ImVec2(topLeft.x + player_pos, bottomRightPos.y),
 				colorWhite);
 
 			// time in seconds
-			draw_list->AddText(
-				ImVec2(top_left.x + player_pos + 5, top_left.y - 20),
+			drawList->AddText(
+				ImVec2(topLeft.x + player_pos + 5, topLeft.y - 20),
 				colorRed,
 				formatTimeString(mSequencePlayer->getCurrentTime()).c_str());
 
 			// handle dragging of timeline
-			if (ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+			if (ImGui::IsMouseHoveringRect(topLeft, bottomRightPos))
 			{
-				ImVec2 mousePos = ImGui::GetMousePos();
-				mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
-				float pos = mousePos.x / child_size.x;
-				currentTimeOfMouseInSequence = pos * mSequencePlayer->getDuration();
-
-				if (currentTimelineAction == TimeLineActions::NONE)
+				drawCursor = true;
+				if (!inPopup)
 				{
-					// is clicked inside timeline ? jump to position
-					if (ImGui::IsMouseClicked(0))
-					{
-						currentTimelineAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
+					ImVec2 mousePos = ImGui::GetMousePos();
+					mousePos = ImVec2(mousePos.x - topLeft.x, mousePos.y - topLeft.y);
+					float pos = mousePos.x / childSize.x;
+					currentTimeOfMouseInSequence = pos * mSequencePlayer->getDuration();
 
-						mSequencePlayer->setTime(currentTimeOfMouseInSequence);
+					// set cursorpos 
+					cursorPos = (currentTimeOfMouseInSequence / mSequencePlayer->getDuration()) * childSize.x;
+
+					if (currentTimelineAction == TimeLineActions::NONE)
+					{
+						// is clicked inside timeline ? jump to position
+						if (ImGui::IsMouseClicked(0))
+						{
+							currentTimelineAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
+
+							mSequencePlayer->setTime(currentTimeOfMouseInSequence);
+						}
+					}
+
+					if (currentTimelineAction == TimeLineActions::DRAGGING_PLAYERPOSITION)
+					{
+						// handle drag in timeline
+						if (ImGui::IsMouseDragging())
+						{
+							// translate mouseposition to position in sequenceplayer
+							ImVec2 mousePos = ImGui::GetMousePos();
+							mousePos = ImVec2(mousePos.x - topLeft.x, mousePos.y - topLeft.y);
+							float pos = mousePos.x / childSize.x;
+							currentTimeOfMouseInSequence = pos * mSequencePlayer->getDuration();
+							mSequencePlayer->setTime(currentTimeOfMouseInSequence);
+						}
+					}
+					else
+					{
+						if (showToolTips && !inPopup)
+						{
+							ImGui::BeginTooltip();
+							ImGui::Text("Left click to jump to position, hold to drag/scrub position.\nRight click to add elements/sequences.");
+							ImGui::EndTooltip();
+						}
 					}
 				}
+			}
+			else
+			{
+				if (!inPopup)
+				{
+					drawCursor = false;
+				}
+			}
 
-				if (currentTimelineAction == TimeLineActions::DRAGGING_PLAYERPOSITION)
-				{
-					// handle drag in timeline
-					if (ImGui::IsMouseDragging())
-					{
-						// translate mouseposition to position in sequenceplayer
-						ImVec2 mousePos = ImGui::GetMousePos();
-						mousePos = ImVec2(mousePos.x - top_left.x, mousePos.y - top_left.y);
-						float pos = mousePos.x / child_size.x;
-						mSequencePlayer->setTime(pos * mSequencePlayer->getDuration());
-					}
-				}
-				else
-				{
-					if (showToolTips && !inPopup)
-					{
-						ImGui::BeginTooltip();
-						ImGui::Text("Left click to jump to position, hold to drag/scrub position.\nRight click to add elements/sequences.");
-						ImGui::EndTooltip();
-					}
-				}
+			if ( drawCursor )
+			{
+				drawList->AddLine(
+					ImVec2(topLeft.x + cursorPos, topLeft.y),
+					ImVec2(topLeft.x + cursorPos, bottomRightPos.y),
+					colorRed, 1.5f);
 			}
 
 			// handle insertion of elements or sequences
 			if (currentTimelineAction == TimeLineActions::NONE &&
 				ImGui::IsMouseClicked(1) &&
-				ImGui::IsMouseHoveringRect(top_left, bottom_right_pos))
+				ImGui::IsMouseHoveringRect(topLeft, bottomRightPos))
 			{
 				inPopup = true;
 				currentTimelineAction = TimeLineActions::INSERTION_POPUP;
@@ -1046,10 +1076,10 @@ namespace nap
 			ImGui::EndChild();
 
 			//printf("%llu\n", draw_list->_VtxCurrentIdx);
-			if (draw_list->_VtxCurrentIdx > 64000)
+			if (drawList->_VtxCurrentIdx > 64000)
 			{
 				printf("Draw list to large! Decrease resolution\n");
-				draw_list->Clear();
+				drawList->Clear();
 			}
 
 			ImGui::Spacing();
@@ -1132,7 +1162,7 @@ namespace nap
 		ImGui::Checkbox("Follow", &followPlayer);
 		if (followPlayer)
 		{
-			ImGui::SetScrollX((mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * child_width);
+			ImGui::SetScrollX((mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * childWidth);
 		}
 
 		showTip("Follow the player position with the scrollbar, keeps the player position in window");
@@ -1161,7 +1191,7 @@ namespace nap
 		ImGui::SliderFloat("Horizontal Zoom", &lengthPerSecond, 4.0f, 60.0f, "");
 		ImGui::PopItemWidth();
 
-		child_width = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
+		childWidth = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
 		
 		showTip("Horizontal zoom");
 
@@ -1226,7 +1256,13 @@ namespace nap
 		showTip("Toggle tooltips");
 
 		ImGui::SameLine();
-		ImGui::Checkbox("Show PlayList", &mShowSequenceList);
+		if (ImGui::Checkbox("Show PlayList", &mShowSequenceList))
+		{
+			if (mShowSequenceList)
+			{
+				ImGui::SetNextTreeNodeOpen(true);
+			}
+		}
 
 		showTip("Show list of sequences");
 	}
@@ -1517,7 +1553,7 @@ namespace nap
 	}
 
 
-	void FlexblockGui::showSequencesWindow()
+	void FlexblockGui::showPlaylist()
 	{
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
@@ -1527,12 +1563,14 @@ namespace nap
 
 		ImGui::Spacing();
 
-		if (ImGui::TreeNode("Sequences"))
+		if (ImGui::TreeNode("Playlist"))
 		{
 			const auto& sequences = mSequencePlayer->getSequences();
 
 			for (const auto* sequence : sequences)
 			{
+				ImGui::PushID((void*)sequence);
+
 				ImVec4 color = ImGui::ColorConvertU32ToFloat4( colorWhite );
 
 				bool isSequenceBeingPlayed = mSequencePlayer->getCurrentSequence() == sequence;
@@ -1542,7 +1580,7 @@ namespace nap
 				}
 
 				ImGui::PushStyleColor(0, color);
-				if(ImGui::SmallButton(sequence->mName.c_str()))
+				if(ImGui::Button(sequence->mName.c_str()))
 				{
 					mSequencePlayer->skipToSequence(sequence);
 				}
@@ -1550,45 +1588,45 @@ namespace nap
 				ImGui::Text(formatTimeString(sequence->getStartTime()).c_str());
 				ImGui::PopStyleColor();
 
-				if (ImGui::TreeNode((void*)sequence, ""))
+				const auto& elements = sequence->getElements();
+
+				ImGui::Indent();
+				for (const auto* element : elements)
 				{
-					const auto& elements = sequence->getElements();
+					ImGui::PushID((void*)element);
 
-					for(const auto* element : elements)
+					bool isElementBeingPlayed =
+						isSequenceBeingPlayed && (
+							mSequencePlayer->getCurrentTime() >= element->getStartTime() &&
+							mSequencePlayer->getCurrentTime() < element->getStartTime() + element->mDuration);
+
+					if (isElementBeingPlayed)
+						ImGui::PushStyleColor(0, color);
+
+					if (ImGui::SmallButton(element->mName.c_str()))
 					{
-						bool isElementBeingPlayed =
-							isSequenceBeingPlayed && (
-								mSequencePlayer->getCurrentTime() >= element->getStartTime() &&
-								mSequencePlayer->getCurrentTime() < element->getStartTime() + element->mDuration);
+						//mSequencePlayer->skipToSequence(sequence);
+						mSequencePlayer->setTime(element->getStartTime());
+					}
+					ImGui::SameLine();
+					ImGui::Text(formatTimeString(element->getStartTime()).c_str());
 
-						if( isElementBeingPlayed )
-							ImGui::PushStyleColor(0, color);
+					if (isElementBeingPlayed)
+					{
+						float progress = (mSequencePlayer->getCurrentTime() - element->getStartTime()) / element->mDuration;
+						int percentage = int(progress * 100.0f);
 
-						if (ImGui::SmallButton(element->mName.c_str()))
-						{
-							mSequencePlayer->skipToSequence(sequence);
-							mSequencePlayer->setTime(element->getStartTime());
-						}
 						ImGui::SameLine();
-						ImGui::Text(formatTimeString(element->getStartTime()).c_str());
-
-						if (isElementBeingPlayed)
-						{
-							float progress = ( mSequencePlayer->getCurrentTime() - element->getStartTime() ) / element->mDuration;
-							int percentage = int( progress * 100.0f );
-
-							ImGui::SameLine();
-							ImGui::Text("   %i%s", percentage, "%");
-						}
-
-						if (isElementBeingPlayed )
-							ImGui::PopStyleColor();
+						ImGui::Text("   %i%s", percentage, "%");
 					}
 
-					ImGui::TreePop();
-				}
+					if (isElementBeingPlayed)
+						ImGui::PopStyleColor();
 
-				
+					ImGui::PopID();
+				}
+				ImGui::Unindent();
+				ImGui::PopID();
 
 			}
 			ImGui::TreePop();
@@ -1707,6 +1745,7 @@ namespace nap
 			if (ImGui::Button("Insert Transition"))
 			{
 				utility::ErrorState errorState;
+
 				bool success = insertNewElement(std::make_unique<flexblock::FlexblockSequenceTransition>(), errorState);
 
 				if (!success)
@@ -1805,8 +1844,11 @@ namespace nap
 
 	bool FlexblockGui::insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState)
 	{
+		double time = currentTimeOfMouseInSequence;
+		mSequencePlayer->setTime(time);
+		time = mSequencePlayer->getCurrentTime();
+
 		// retrieve sequence and element at current time
-		double time = mSequencePlayer->getCurrentTime();
 		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 		timeline::SequenceElement* element = sequence->getElementAtTime(time);
 
@@ -1832,7 +1874,18 @@ namespace nap
 		else
 		{
 			// insert element in sequence and transfer ownership
-			sequence->insertElement(std::move(newElement));
+			auto* element = sequence->insertElement(std::move(newElement));
+
+			//
+			if (element->getPreviousElement() != nullptr)
+			{
+				auto* previousElement = element->getPreviousElement();
+
+				for (int i = 0; i < previousElement->mEndParameterResourcePtrs.size(); i++)
+				{
+					previousElement->mEndParameterResourcePtrs[i]->setValue(*mParameters[i]);
+				}
+			}
 
 			// reconstruct the sequence
 			mSequencePlayer->reconstruct();
@@ -1845,7 +1898,7 @@ namespace nap
 	bool FlexblockGui::insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState)
 	{
 		// retrieve current sequence and element
-		double time = mSequencePlayer->getCurrentTime();
+		double time = currentTimeOfMouseInSequence;
 		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 		timeline::SequenceElement* element = sequence->getElementAtTime(time);
 

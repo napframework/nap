@@ -40,7 +40,7 @@ namespace nap
 			 * Insert sequence element, sequence will own this element
 			 * @param element sequence element unique_ptr 
 			 */
-			void insertElement(std::unique_ptr<SequenceElement> element);
+			SequenceElement* insertElement(std::unique_ptr<SequenceElement> element);
 
 			/**
 			 * Remove element, will remove stored unique pointer of element as well

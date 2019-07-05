@@ -42,7 +42,7 @@ namespace nap
 		/**
 		 *	Update all the various gui components
 		 */
-		void update();
+		void update(double time);
 
 		/**
 		 *	Render the gui
@@ -82,6 +82,7 @@ namespace nap
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 		float								mScrub = 0.0f;
+		double								mTime = 0.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
@@ -97,7 +98,7 @@ namespace nap
 
 		std::string formatTimeString(float time);
 
-		void showSequencesWindow();
+		void showPlaylist();
 
 		void handleElementActionsPopup();
 

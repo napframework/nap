@@ -80,9 +80,10 @@ namespace nap
 		mInputService->processWindowEvents(*mMainWindow, input_router, entities);
 
 		// Upate GUI
-		mGui->update();
+		mGui->update(deltaTime);
 
 		mGui->setWindowSize(glm::vec2(mMainWindow->getWidth(), mMainWindow->getHeight()));
+
 	}
 
 	

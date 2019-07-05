@@ -251,7 +251,7 @@ namespace nap
 			mCurrentElementIndex = 0;
 		}
 
-		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)
+		SequenceElement* Sequence::insertElement(std::unique_ptr<SequenceElement> element)
 		{
 			ResourcePtr<SequenceElement> elementResourcePtr(element.get());
 			mSequenceElementsResourcePtrs.emplace_back(elementResourcePtr);
@@ -273,6 +273,8 @@ namespace nap
 			mCurrentElementIndex = 0;
 
 			mOwnedElements.emplace_back(std::move(element));
+
+			return mOwnedElements.back().get();
 		}
 	}
 }
