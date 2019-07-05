@@ -45,6 +45,9 @@ namespace nap
 	static ImVec2 topLeft;
 	static bool drawCursor = false;
 	static float cursorPos = 0.0f;
+	static bool dirty = true;
+	static std::vector<std::vector<ImVec2>> cachedCurve;
+	static float prevScrollX = 0.0f;
 
 	// 200, 105, 105
 	ImU32 colorRed = ImGui::ColorConvertFloat4ToU32(ImVec4(200.0f / 255.0f, 105.0f / 255.0f, 105.0f / 255.0f, 1.0f));
@@ -294,6 +297,12 @@ namespace nap
 	{
 		float windowWidth = ImGui::GetWindowWidth();
 		float scrollX = ImGui::GetScrollX();
+
+		if (scrollX != prevScrollX)
+		{
+			dirty = true;
+			prevScrollX = scrollX;
+		}
 
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(childWidth + 32, child_height), false, ImGuiWindowFlags_NoMove);
@@ -874,52 +883,66 @@ namespace nap
 					bool showMotorInputs = true;
 					if (showMotorInputs)
 					{
-						// create parameters that we evaluate
-						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
-						std::vector<Parameter*> parameters;
-						for (int p = 0; p < 8; p++)
+						if (dirty)
 						{
-							parametersPts.emplace_back(std::make_unique<ParameterFloat>());
-							parameters.emplace_back(parametersPts.back().get());
+							//
+							cachedCurve.clear();
+
+							cachedCurve = std::vector<std::vector<ImVec2>>(8);
+
+							// create parameters that we evaluate
+							std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
+							std::vector<Parameter*> parameters;
+							for (int p = 0; p < 8; p++)
+							{
+								parametersPts.emplace_back(std::make_unique<ParameterFloat>());
+								parameters.emplace_back(parametersPts.back().get());
+							}
+
+							// zoom in on the part that is shown in the window
+							int steps = totalCurveResolution;
+							float part = windowWidth / childWidth;
+							float part_start = math::clamp<float>(scrollX - 40, 0, childWidth) / childWidth;
+
+							// start evaluating and create curves of motor
+							for (int p = 0; p < steps; p++)
+							{
+								//
+								mSequencePlayer->evaluate(((mSequencePlayer->getDuration() * part) / (float)steps) * (float)p + (mSequencePlayer->getDuration() * part_start), parameters);
+
+								//
+								for (int l = 0; l < 8; l++)
+								{
+									float y_part = (childSize.y / 8.0f);
+									float y_start = y_part * l;
+
+									cachedCurve[l] .emplace_back(ImVec2(
+										part_start * childWidth + topLeft.x + childSize.x * part * (p * (1.0f / (float)steps)),
+										bottomRightPos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+								}
+							}
+
+							dirty = false;
 						}
-
-						// create list of point lists
-						std::vector<std::vector<ImVec2>> points(8);
-
-						// zoom in on the part that is shown in the window
-						int steps = totalCurveResolution;
-						float part = windowWidth / childWidth;
-						float part_start = math::clamp<float>(scrollX - 40, 0, childWidth) / childWidth;
-
-						// start evaluating and create curves of motor
-						for (int p = 0; p < steps; p++)
+			
+						if (cachedCurve.size() == 8)
 						{
-							//
-							mSequencePlayer->evaluate(((mSequencePlayer->getDuration() * part) / (float)steps) * (float)p + (mSequencePlayer->getDuration() * part_start), parameters);
-
-							//
 							for (int l = 0; l < 8; l++)
 							{
-								float y_part = (childSize.y / 8.0f);
-								float y_start = y_part * l;
-
-								points[l].emplace_back(ImVec2(
-									part_start * childWidth + topLeft.x + childSize.x * part * (p * (1.0f / (float)steps)),
-									bottomRightPos.y - y_start - y_part * static_cast<ParameterFloat*>(parameters[l])->mValue));
+								if (cachedCurve[l].size() > 0)
+								{
+									// draw the polylines 
+									drawList->AddPolyline(
+										&*cachedCurve[l].begin(),
+										cachedCurve[l].size(),
+										colorRed,
+										false,
+										1.5f,
+										true);
+								}
 							}
 						}
 
-						for (int l = 0; l < 8; l++)
-						{
-							// draw the polylines 
-							drawList->AddPolyline(
-								&*points[l].begin(),
-								points[l].size(),
-								colorRed,
-								false,
-								1.5f,
-								true);
-						}
 					}
 				}
 			}
@@ -1162,6 +1185,7 @@ namespace nap
 		ImGui::Checkbox("Follow", &followPlayer);
 		if (followPlayer)
 		{
+			dirty = true;
 			ImGui::SetScrollX((mSequencePlayer->getCurrentTime() / mSequencePlayer->getDuration()) * childWidth);
 		}
 
@@ -1180,7 +1204,9 @@ namespace nap
 		// zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::SliderFloat("Vertical Zoom", &child_height, 350.0f, 1500.0f, "");
+		if (ImGui::SliderFloat("Vertical Zoom", &child_height, 350.0f, 1500.0f, ""))
+			dirty = true;
+
 		ImGui::PopItemWidth();
 
 		showTip("Vertical zoom");
@@ -1188,7 +1214,8 @@ namespace nap
 		// zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::SliderFloat("Horizontal Zoom", &lengthPerSecond, 4.0f, 60.0f, "");
+		if (ImGui::SliderFloat("Horizontal Zoom", &lengthPerSecond, 4.0f, 60.0f, ""))
+			dirty = true;
 		ImGui::PopItemWidth();
 
 		childWidth = (mSequencePlayer->getDuration() / lengthPerSecond) * ImGui::GetWindowWidth();
@@ -1198,7 +1225,8 @@ namespace nap
 		// curves resolution
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		ImGui::SliderInt("Curve Res.", &totalCurveResolution, 25, 200, "");
+		if (ImGui::SliderInt("Curve Res.", &totalCurveResolution, 25, 200, ""))
+			dirty = true;
 		ImGui::PopItemWidth();
 
 		showTip("Resolution of curve, higher means a more smooth curve but heavier on rendering/generating");
@@ -1241,6 +1269,7 @@ namespace nap
 			inPopup = true;
 			outPopupOpened = true;
 			currentTimelineAction = TimeLineActions::LOAD_POPUP;
+			dirty = true;
 		}
 
 		showTip("Load show");
@@ -1358,6 +1387,7 @@ namespace nap
 				if (ImGui::Button("Delete"))
 				{
 					mSequencePlayer->removeSequence(selectedSequence);
+					dirty = true;
 
 					inPopup = false;
 					currentTimelineAction = TimeLineActions::NONE;
@@ -1660,6 +1690,7 @@ namespace nap
 				}
 
 				mSequencePlayer->reconstruct();
+				dirty = true;
 			}
 
 			// enable delete if sequence has more then one element
@@ -1669,6 +1700,7 @@ namespace nap
 				if (ImGui::Button("Delete"))
 				{
 					mSequencePlayer->removeSequenceElement(owningSequence, selectedElement);
+					dirty = true;
 
 					inPopup = false;
 					currentTimelineAction = TimeLineActions::NONE;
@@ -1844,6 +1876,8 @@ namespace nap
 
 	bool FlexblockGui::insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState)
 	{
+		dirty = true;
+
 		double time = currentTimeOfMouseInSequence;
 		mSequencePlayer->setTime(time);
 		time = mSequencePlayer->getCurrentTime();
@@ -1897,6 +1931,8 @@ namespace nap
 
 	bool FlexblockGui::insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState)
 	{
+		dirty = true;
+
 		// retrieve current sequence and element
 		double time = currentTimeOfMouseInSequence;
 		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);

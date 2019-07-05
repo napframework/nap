@@ -99,11 +99,11 @@ namespace nap
 						// move backwards or forward in index according to result
 						mCurrentSequenceIndex += result;
 
-						int size = mSequenceContainer->getSequences().size();
+						size_t size = mSequenceContainer->getSequences().size();
 						if (mCurrentSequenceIndex >= size)
 						{
 							// if we have reached the end of the sequence container, 
-							// stop or start again depending on wether loop is true or not
+							// stop or start again depending on whether loop is true or not
 							if (mIsLooping)
 							{
 								mCurrentSequenceIndex = 0;
@@ -120,7 +120,7 @@ namespace nap
 						else if (mCurrentSequenceIndex < 0)
 						{
 							// if we have reached the beginning of the sequence container ( time is smaller then zero ), 
-							// stop or start again from the end depending on wether loop is true or not
+							// stop or start again from the end depending on whether loop is true or not
 							if (mIsLooping)
 							{
 								mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
@@ -214,6 +214,7 @@ namespace nap
 			return nullptr;
 		}
 
+
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
 			mTime = math::clamp<double>(time, 0.0, mDuration);
@@ -306,7 +307,7 @@ namespace nap
 				}
 			}
 
-			// transfer ownership
+			// transfer ownership of read objects
 			mOwnedObjects.clear();
 			for (int i = 0; i < result.mReadObjects.size(); i++)
 			{

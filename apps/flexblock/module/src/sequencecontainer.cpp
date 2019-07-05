@@ -101,13 +101,18 @@ namespace nap
 			}
 		}
 
-		void SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
+
+		Sequence* SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
 		{
+			Sequence* returnSequenecePtr = sequence.get();
 			mSequences.emplace_back(sequence.get());
 			mOwnedSequences.emplace_back(std::move(sequence));
 
 			reconstruct();
+
+			return returnSequenecePtr;
 		}
+
 
 		void SequenceContainer::setSequences(std::vector<std::unique_ptr<Sequence>>& sequences)
 		{
@@ -161,7 +166,6 @@ namespace nap
 
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
-				//mSequences[i]->reconstruct();
 
 				for (int j = 0; j < mSequences[i]->getElements().size(); j++)
 				{
