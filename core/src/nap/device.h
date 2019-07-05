@@ -5,12 +5,13 @@
 namespace nap
 {
 	/**
-	 * A device is a special class of resource, intended to deal with cases where there are only a limited number of them allowed to be in existence at the same time.
-	 * For example, if you have a device that can only be opened by a single client, it's possible for the 'open' of the device to fail in case of real-time editing.
-	 * This is because during real-time edit, it's possible for the object being edited to (temporarily) have multiple 'instances'.
+	 * Special type of Resource that represents a device. Only 1 instance of a device is allowed to run at the same time.
+	 * For example: If you have a device that opens a specific port, that port can't be opened twice. Initialization should fail because of this reason. 
+	 * The solution is to start() and stop() the device when 2 (or more) instances of that same device exist during the real-time edit fase. 
+	 * In this specific case the port is closed when the device is stopped (first instance) before being opened on start (second instance).
 	 *
-	 * The Device class deals with this case by providing an explicit start/stop virtual, which are called at appropriate times by the ResourceManager.
-	 * It's important that both start & stop can be called multiple times, but note that they will always be called in pairs.
+	 * The Device class deals with this case by providing an explicit start / stop virtual, which are called at appropriate times by the ResourceManager.
+	 * It's important that both start & stop can be called multiple times. start is always called before stop. stop is only called when start succeeded.
 	 */
 	class NAPAPI Device : public Resource
 	{
