@@ -79,22 +79,31 @@ namespace nap
 		{
 			if (mIsPlaying)
 			{
+				// advance time
 				if (!mIsPaused)
 				{
 					mTime += deltaTime * mSpeed;
 				}
 
+				// iterate trough sequences
 				for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 				{
+					// get result of process
+					// -1 is we should move backwards ( time is smaller then start time of current sequence )
+					// 1 is we should move forward ( time is bigger then start time + duration of current sequence )
+					// 0 is we are in the right sequence ( time is bigger then start time and smaller then start time + duration of sequence )
 					int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
 					
 					if (result != 0)
 					{
+						// move backwards or forward in index according to result
 						mCurrentSequenceIndex += result;
 
 						int size = mSequenceContainer->getSequences().size();
 						if (mCurrentSequenceIndex >= size)
 						{
+							// if we have reached the end of the sequence container, 
+							// stop or start again depending on wether loop is true or not
 							if (mIsLooping)
 							{
 								mCurrentSequenceIndex = 0;
@@ -110,6 +119,8 @@ namespace nap
 						}
 						else if (mCurrentSequenceIndex < 0)
 						{
+							// if we have reached the beginning of the sequence container ( time is smaller then zero ), 
+							// stop or start again from the end depending on wether loop is true or not
 							if (mIsLooping)
 							{
 								mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;

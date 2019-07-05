@@ -103,8 +103,8 @@ namespace nap
 			void skipToSequence(const Sequence * sequence);
 
 			/**
-			 * Reconstructs sequence container and recalculates duration, this call is necessary when changing, 
-			 * adding or removing sequences/elements
+			 * Reconstructs sequence container and recalculates duration,
+			 * this call is necessary when changing, adding or removing sequences/elements
 			 */
 			void reconstruct();
 

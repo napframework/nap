@@ -32,13 +32,14 @@ namespace nap
 			 * Sets the parameter according to the values they are assigned to in this sequence time slot
 			 * @param time the elapsed time
 			 * @param endValues a reference to the parameters that need to be set
-			 * @return returns true if this element has to do something ( sequence falls in this time slot )
+			 * @return returns and integer. 1 if time is further then sequence -1 if time is smaller then start time of sequence and 0 if time falls within this sequence
 			 */
 			virtual int process(double time, std::vector<Parameter*>& outParameters);
 
 			/**
 			 * Insert sequence element, sequence will own this element
 			 * @param element sequence element unique_ptr 
+			 * @return returns raw pointer of newly inserted element
 			 */
 			SequenceElement* insertElement(std::unique_ptr<SequenceElement> element);
 

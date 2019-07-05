@@ -19,26 +19,26 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
-		* FlexblockSequenceTransition
-		* Extends on timeline::SequenceTransition. The mInputs vector will override any assigned parameters of this
-		* sequence and create new parameter resources during init. Pointers to new parameters
-		* will be owned by the instance of this class.
-		* 
-		* This class is designed to make creating sequences for FlexBlock easier, giving you a list of 8 inputs to start from.
-		*/
+		 * FlexblockSequenceTransition
+		 * Extends on timeline::SequenceTransition. The mInputs vector will override any assigned parameters of this
+		 * sequence and create new parameter resources during init. Pointers to new parameters
+		 * will be owned by the instance of this class.
+		 * 
+		 * This class is designed to make creating sequences for FlexBlock easier, giving you a list of 8 inputs to start from.
+		 */
 		class NAPAPI FlexblockSequenceTransition : public timeline::SequenceTransition
 		{
 			RTTI_ENABLE(timeline::SequenceTransition)
 		public:
 			/**
-			* Initialize this object after de-serialization
-			* @param errorState contains the error message when initialization fails
-			*/
+			 * Initialize this object after de-serialization
+			 * @param errorState contains the error message when initialization fails
+			 */
 			virtual bool init(utility::ErrorState& errorState) override;
 		public:
 			/**
-			* 8 floating point values that will be used to create parameter resources during init
-			*/
+			 * 8 floating point values that will be used to create parameter resources during init
+			 */
 			std::vector<float> mMotorInputs = std::vector<float>(8);
 		protected:
 			/**

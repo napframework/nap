@@ -7,19 +7,19 @@ namespace nap
 	class FlexblockCameraComponentInstance;
 
 	/**
-	* Resource class for the perspective camera. Holds static data as read from file.
-	*/
+	 * Extends on perpective camera, offsets can be given to adjust the viewport of the camera
+	 */
 	class NAPAPI FlexblockCameraComponent : public PerspCameraComponent
 	{
 		RTTI_ENABLE(PerspCameraComponent)
 		DECLARE_COMPONENT(FlexblockCameraComponent, FlexblockCameraComponentInstance)
 	public:
-		float mLeftOffset = 0.0f;
-		float mTopOffset = 0.0f;
+		float mLeftOffset = 0.0f; ///< Property: 'Left Offset' offset from the middle to right. F.E. a 0.25 value will offset the viewport 25% to the right
+		float mTopOffset = 0.0f; ///< Property: 'Top Offset' offset from the middle to the bottom. F.E. a 0.25 value will lower the viewport 25% 
 	};
 
 	/**
-	* Implementation of the perspective camera. The view matrix is calculated using the transform attached to the entity.
+	* Implementation of the FlexblockCamera
 	*/
 	class NAPAPI FlexblockCameraComponentInstance : public PerspCameraComponentInstance
 	{
