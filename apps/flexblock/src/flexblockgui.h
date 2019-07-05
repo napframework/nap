@@ -54,34 +54,18 @@ namespace nap
 		 */
 		void toggleVisibility();
 
-		void showTimeLineWindow();
-
-		void handleInsertionPopup();
-
-		void drawTimeline(bool & outPopupOpened, std::string & popupId);
-
-		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
-
-		void handleLoadPopup();
-
-		void handleSequenceActionsPopup();
-
-		void handleSaveAsPopup();
-
+		/**
+		 * Sets the window size, use for calculating positions of imgui windows
+		 */
 		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
 	private:
-		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
+		FlexblockApp&						mApp;				///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
 		bool								mShowTimeLine = false;
-		bool								mShowSequenceList = false;
+		bool								mShowPlaylist = false;
 		DateTime							mDateTime;
-		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
-		float								mTexPreviewDisplaySize = 1.0f;
-		float								mWraPreviewDisplaySize = 1.0f;
-		float								mVidPreviewDisplaySize = 1.0f;
-		float								mScrub = 0.0f;
 		double								mTime = 0.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
@@ -89,6 +73,7 @@ namespace nap
 
 		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
+
 		/**
 		 * Shows the information window
 		 */
@@ -101,6 +86,41 @@ namespace nap
 		void showPlaylist();
 
 		void handleElementActionsPopup();
+
+		/**
+		* show the timeline window
+		*/
+		void showTimeLineWindow();
+
+		/**
+		* Handle insertion popup
+		*/
+		void handleInsertionPopup();
+
+		/**
+		* Draw timeline
+		*/
+		void drawTimeline(bool & outPopupOpened, std::string & popupId);
+
+		/**
+		* Draw controls
+		*/
+		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
+
+		/**
+		* handle show load popup
+		*/
+		void handleLoadPopup();
+
+		/**
+		* handle sequence actions popup
+		*/
+		void handleSequenceActionsPopup();
+
+		/**
+		* Handle save popup
+		*/
+		void handleSaveAsPopup();
 
 		void initParameters();
 		void updateInput(int index, float value);

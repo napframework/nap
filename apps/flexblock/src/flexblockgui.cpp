@@ -219,7 +219,7 @@ namespace nap
 
 		showTimeLineWindow();
 
-		if (mShowSequenceList)
+		if (mShowPlaylist)
 		{
 			showPlaylist();
 		}
@@ -1314,9 +1314,9 @@ namespace nap
 		showTip("Toggle tooltips");
 
 		ImGui::SameLine();
-		if (ImGui::Checkbox("Show PlayList", &mShowSequenceList))
+		if (ImGui::Checkbox("Show PlayList", &mShowPlaylist))
 		{
-			if (mShowSequenceList)
+			if (mShowPlaylist)
 			{
 				ImGui::SetNextTreeNodeOpen(true);
 			}
@@ -1769,8 +1769,7 @@ namespace nap
 		getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
 		ImGui::SameLine();
-		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
-		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+		ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(colorRed), "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 		ImGui::End();
 	}
 
