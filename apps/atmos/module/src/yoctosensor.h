@@ -23,12 +23,10 @@ namespace nap
 	{
 		RTTI_ENABLE(Device)
 	public:
-		virtual ~BaseYoctoSensor();
-
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**

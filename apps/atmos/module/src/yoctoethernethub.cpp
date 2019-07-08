@@ -19,11 +19,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	YoctoEthernetHub::~YoctoEthernetHub()
-	{
-	}
-
-
 	bool YoctoEthernetHub::init(utility::ErrorState& errorState)
 	{
 		return true;
