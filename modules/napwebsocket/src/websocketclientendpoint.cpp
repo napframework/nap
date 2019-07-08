@@ -15,13 +15,7 @@ RTTI_END_CLASS
 
 
 namespace nap
-{
-	WebSocketClientEndPoint::~WebSocketClientEndPoint()
-	{
-		stop();
-	}
-
-	
+{	
 	bool WebSocketClientEndPoint::init(utility::ErrorState& errorState)
 	{
 		// Convert log levels
@@ -50,27 +44,25 @@ namespace nap
 
 
 	void WebSocketClientEndPoint::stop()
-	{
-		if (mRunning)
+	{		
+		// At this state we need to have an open end point and client thread
+		assert(mRunning);
+		assert(mClientTask.valid());
+
+		// Make sure the end point doesn't restart
+		mEndPoint.stop_perpetual();
+
+		// Wait until all still active clients exit clean
+		for (auto& client : mClients)
 		{
-			// At this state we need to have an open end point and client thread
-			assert(mClientTask.valid());
-
-			// Make sure the end point doesn't restart
-			mEndPoint.stop_perpetual();
-
-			// Wait until all clients exited clean
-			for (auto& client : mClients)
-			{
-				utility::ErrorState error;
-				if (!client->disconnect(error))
-					nap::Logger::error(error.toString());
-			}
-
-			// Wait until all clients exited
-			mClientTask.wait();
-			mRunning = false;
+			utility::ErrorState error;
+			if (!client->disconnect(error))
+				nap::Logger::error(error.toString());
 		}
+
+		// Wait until all clients exited
+		mClientTask.wait();
+		mRunning = false;
 
 		// Clear all clients
 		mClients.clear();
@@ -127,7 +119,7 @@ namespace nap
 	}
 
 
-	bool WebSocketClientEndPoint::connectClient(IWebSocketClient& client, utility::ErrorState& error)
+	bool WebSocketClientEndPoint::registerClient(IWebSocketClient& client, utility::ErrorState& error)
 	{
 		// Get shared pointer to connection
 		std::error_code stdec;
@@ -141,10 +133,12 @@ namespace nap
 		// Send identification information if present on client
 		if (client.mTicket != nullptr)
 		{
+			// Convert ticket into binary string
 			std::string binary_string;
 			if (!client.mTicket->toBinaryString(binary_string, error))
 				return false;
 
+			// Add as sub-protocol identifier.
 			client_connection->add_subprotocol(binary_string, stdec);
 			if (stdec)
 			{
@@ -153,7 +147,7 @@ namespace nap
 			}
 		}
 
-		// Create meta client
+		// Create meta client and add to the list of internally managed clients
 		std::unique_ptr<WebSocketClientWrapper> meta_client(new WebSocketClientWrapper(client,
 			mEndPoint,
 			client_connection));
@@ -162,24 +156,15 @@ namespace nap
 		// Store connection handle in client
 		client.mConnection = WebSocketConnection(client_connection->get_handle());
 
-		// Connect to client disconnect slot
-		client.disconnect.connect(mClientDisconnected);
-
-		// Try to connect
+		// TRY to connect, this occurs on a background thread.
+		// All connection related state changes are handled in the WebSocketClientWrapper.
 		mEndPoint.connect(client_connection);
 	
 		return true;
 	}
 
 
-	void WebSocketClientEndPoint::onClientDisconnected(const IWebSocketClient& client)
-	{
-		// Remove client from internally managed list
-		disconnectClient(client);
-	}
-
-
-	void WebSocketClientEndPoint::disconnectClient(const IWebSocketClient& client)
+	void WebSocketClientEndPoint::unregisterClient(const IWebSocketClient& client)
 	{
 		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
 		{
@@ -188,7 +173,6 @@ namespace nap
 
 		if (found_it == mClients.end())
 		{
-			assert(false);
 			return;
 		}
 

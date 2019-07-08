@@ -27,12 +27,6 @@ namespace nap
 	}
 
 
-	APIWebSocketClient::~APIWebSocketClient()
-	{
-
-	}
-
-
 	bool APIWebSocketClient::init(utility::ErrorState& errorState)
 	{
 		if (!IWebSocketClient::init(errorState))
