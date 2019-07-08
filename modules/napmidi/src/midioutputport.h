@@ -16,11 +16,11 @@ namespace nap {
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
-
-		virtual ~MidiOutputPort() override;
         
         /**
          * Starts the midi output port.
+		 * @param errorState contains the reason why the port could not be opened.
+		 * @return if the midi output port opened successfully.
          */
         virtual bool start(utility::ErrorState& errorState) override;
 
@@ -29,25 +29,29 @@ namespace nap {
          */
 		virtual void stop() override;
         
-        MidiService& getService() { return *mService; }
-        
-        std::string mPortName = ""; /**< The name of the port that midi messages will be sent through by this object */
-        
+		/**
+		 * @return the midi device service.
+		 */
+        MidiService& getService();
+
         /**
          * Sends a midi event through this output port.
+		 * @param event the event to send.
          */
         void sendEvent(const MidiEvent& event);
         
         /**
          * @return: the number of the midi port that messages will be sent through by this object
          */
-        int getPortNumber() const { return mPortNumber; }
-        
+        int getPortNumber() const;
+
+		std::string mPortName = "";			///< Property: 'Port' The name of the port that midi messages will be sent through.
+
     private:
-        RtMidiOut midiOut;
-        MidiService* mService = nullptr;
-        std::vector<unsigned char> outputData;
-        int mPortNumber = -1;
+        RtMidiOut					mMidiOut;
+        MidiService*				mService = nullptr;
+        std::vector<unsigned char>	mOutputData;
+        int							mPortNumber = -1;
     };
     
     // Object creator used for constructing the the OSC receiver
