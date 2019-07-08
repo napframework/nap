@@ -39,14 +39,14 @@ namespace nap
 			 */
 			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
 
-			/**
-			 * Enables the use of ObjectPtrs for this Object. This is normally only used within the deserialization process for you,
-			 * but in case you're not deserializing, you need to set the use of ObjectPtrs to false when you are creating objects
-			 * manually on threads other than the main threads. Disabling it will make sure that no global access to the ObjectPtrManager
-			 * is performed.
-			 */
-			void setEnableObjectPtrs(bool enable) { mEnableObjectPtrs = enable; }
+		private:
+			friend class ObjectPtrBase;
+			template<class T> friend class ObjectPtr;
 
+			inline void incrementObjectPtrRefCount() { mObjectPtrRefCount++; }
+			inline void decrementObjectPtrRefCount() { mObjectPtrRefCount--; };
+
+		public:
 			/**
 			 * Copy is not allowed
 			 */
@@ -59,8 +59,10 @@ namespace nap
 			Object(Object&&) = delete;
 			Object& operator=(Object&&) = delete;
 
-			std::string mID;							///< Property: 'mID' name of the object. Used as an identifier by the system
-			bool		mEnableObjectPtrs = true;		///< Property: 'mEnableObjectPtrs' Enables/disables the ability to use ObjectPtrs to point to this Object
+			std::string			mID;						///< Property: 'mID' name of the object. Used as an identifier by the system
+
+		private:
+			int					mObjectPtrRefCount = 0;		///< The number of ObjectPtrs pointing to this object. Note that this refcount is not multithread-safe: it is still expected that ObjectPtrs are pointing to an Object from the same thread (but it can be any thread).
 		};
 	}
 }
