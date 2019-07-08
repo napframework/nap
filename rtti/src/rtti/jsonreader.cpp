@@ -474,8 +474,6 @@ namespace nap
 			if (!errorState.check(object != nullptr, "Failed to instantiate object of type %s.", typeName))
 				return nullptr;
 
-			object->setEnableObjectPtrs(readState.mPointerPropertyMode != EPointerPropertyMode::OnlyRawPointers);
-
 			readState.mResult.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 			// Recursively read properties, nested compounds, etc

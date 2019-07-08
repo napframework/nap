@@ -380,7 +380,6 @@ namespace nap
 
 		// Create ticket
 		nap::WebSocketTicket ticket;
-		ticket.setEnableObjectPtrs(false);
 
 		// Populate and initialize
 		ticket.mID = math::generateUUID();
