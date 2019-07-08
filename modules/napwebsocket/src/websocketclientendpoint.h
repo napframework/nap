@@ -31,13 +31,12 @@ namespace nap
 		friend class IWebSocketClient;
 		RTTI_ENABLE(Device)
 	public:
-		virtual ~WebSocketClientEndPoint();
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails.
-		* @return if the endpoint initialized correctly.
-		*/
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails.
+		 * @return if the endpoint initialized correctly.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
@@ -91,12 +90,13 @@ namespace nap
 		void run();
 
 		/**
-		 * Connects a client to a server. The connection is managed by this endpoint.
-		 * @param uri server uri.
+		 * Connects a nap client to a server. The new connection is managed by this endpoint.
+		 * The client is added to the list of internally managed clients.
+		 * @param client the client to register
 		 * @param error contains the error is registration fails.
 		 * @return the newly created web-socket connection
 		 */
-		bool connectClient(IWebSocketClient& client, utility::ErrorState& error);
+		bool registerClient(IWebSocketClient& client, utility::ErrorState& error);
 
 		/**
 		 * Removes a client (resource) from the list of actively managed connection.
@@ -104,17 +104,7 @@ namespace nap
 		 * Asserts if the client isn't part of the system or can't be removed.
 		 * @param client the client to remove.
 		 */
-		void disconnectClient(const IWebSocketClient& client);
-
-		/**
-		 * Occurs when a client (resource) is about to be destroyed.
-		 * Closes the connection, removes all listeners and removes the client from
-		 * the list of actively managed connections.
-		 * @param client that is destroyed.
-		 */
-		void onClientDisconnected(const IWebSocketClient& client);
-		nap::Slot<const IWebSocketClient&> mClientDisconnected = { this, &WebSocketClientEndPoint::onClientDisconnected };
-
+		void unregisterClient(const IWebSocketClient& client);
 	};
 
 

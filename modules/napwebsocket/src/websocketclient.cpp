@@ -26,20 +26,20 @@ namespace nap
 	}
 
 
-	IWebSocketClient::~IWebSocketClient()
-	{
-		disconnect(*this);
-	}
-
-
 	bool IWebSocketClient::init(utility::ErrorState& errorState)
 	{
 		if (!WebSocketInterface::init(errorState))
 			return false;
 
-		if (!mEndPoint->connectClient(*this, errorState))
+		if (!mEndPoint->registerClient(*this, errorState))
 			return false;
 		return true;
+	}
+
+
+	void IWebSocketClient::onDestroy()
+	{
+		mEndPoint->unregisterClient(*this);
 	}
 
 
@@ -52,10 +52,10 @@ namespace nap
 	bool IWebSocketClient::reconnect(utility::ErrorState& error)
 	{
 		// First disconnect
-		disconnect(*this);
+		mEndPoint->unregisterClient(*this);
 
 		// Now connect again
-		if (!mEndPoint->connectClient(*this, error))
+		if (!mEndPoint->registerClient(*this, error))
 			return false;
 		return true;
 	}
@@ -96,12 +96,6 @@ namespace nap
 
 	WebSocketClient::WebSocketClient(WebSocketService& service) : IWebSocketClient(service)
 	{
-	}
-
-
-	WebSocketClient::~WebSocketClient()
-	{
-
 	}
 
 
