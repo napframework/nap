@@ -229,6 +229,9 @@ namespace nap
 		// insertion popup
 		handleInsertionPopup();
 
+		//
+		handleEditMotorvaluePopup();
+
 		// release mouse
 		if (ImGui::IsMouseReleased(0) && !mProps.mInPopup)
 		{
@@ -236,7 +239,7 @@ namespace nap
 			mProps.mTangentPtr = nullptr;
 			mProps.mCurvePtr = nullptr;
 			mProps.mSelectedSequence = nullptr;
-			mProps.mCurrentDraggedMotor = 0;
+			mProps.mCurrentSelectedMotor = 0;
 
 			mProps.mCurrentAction = TimeLineActions::NONE;
 		}
@@ -546,16 +549,32 @@ namespace nap
 												if (ImGui::IsMouseClicked(0))
 												{
 													mProps.mCurrentAction = TimeLineActions::DRAGGING_MOTORVALUE;
-													mProps.mCurrentDraggedMotor = m;
+													mProps.mCurrentSelectedMotor = m;
 													mProps.mSelectedElement = element;
 													mProps.mDirty = true;
+												}
+												else if (ImGui::IsMouseClicked(1))
+												{
+													mProps.mCurrentAction = TimeLineActions::EDIT_MOTORVALUE_POPUP;
+													mProps.mCurrentSelectedMotor = m;
+													mProps.mSelectedElement = element;
+													mProps.mDirty = true;
+													mProps.mInPopup = true;
+													outPopupOpened = true;
+													outPopupId = "Edit Motorvalue";
+												}
+												else
+												{
+													ImGui::BeginTooltip();
+													ImGui::Text("Hold left mouse button to drag \nPress right mouse button to edit value");
+													ImGui::EndTooltip();
 												}
 											}
 										}
 
 										if (mProps.mCurrentAction == TimeLineActions::DRAGGING_MOTORVALUE
 											&& ImGui::IsMouseDragging() &&
-											m == mProps.mCurrentDraggedMotor &&
+											m == mProps.mCurrentSelectedMotor &&
 											element == mProps.mSelectedElement)
 										{
 											filled = true;
@@ -1666,7 +1685,8 @@ namespace nap
 				mProps.mSelectedElement->mName = newName;
 			}
 
-			const timeline::Sequence* owningSequence = mSequencePlayer->getSequenceAtTime(mProps.mSelectedElement->getStartTime());
+			const timeline::Sequence* owningSequence 
+				= mSequencePlayer->getSequenceAtTime(mProps.mSelectedElement->getStartTime());
 
 			if (ImGui::InputFloat("Duration", &mProps.mSelectedElement->mDuration, 0.1f, 0.2f, 2) )
 			{
@@ -1735,8 +1755,6 @@ namespace nap
 	{
 		if (ImGui::BeginPopup("Insert"))
 		{
-			std::string errorString = "";
-
 			// insert pause element at current time
 			if (ImGui::Button("Insert Pause"))
 			{
@@ -1746,8 +1764,8 @@ namespace nap
 				if (!success)
 				{
 					// handle error
-					ImGui::BeginPopup("Insert Error");
-					errorString = errorState.toString();
+					ImGui::OpenPopup("Insert Error");
+					mProps.mErrorString = errorState.toString();
 				}
 				else 
 				{
@@ -1768,8 +1786,8 @@ namespace nap
 				if (!success)
 				{
 					// handle error
-					ImGui::BeginPopup("Insert Error");
-					errorString = errorState.toString();
+					ImGui::OpenPopup("Insert Error");
+					mProps.mErrorString = errorState.toString();
 				}
 				else
 				{
@@ -1788,7 +1806,7 @@ namespace nap
 				if (!insertNewSequence(std::make_unique<flexblock::FlexblockSequence>(), errorState))
 				{
 					ImGui::OpenPopup("Insert Error");
-					errorString = errorState.toString();
+					mProps.mErrorString = errorState.toString();
 				}
 				else
 				{
@@ -1807,7 +1825,7 @@ namespace nap
 
 			if (ImGui::BeginPopupModal("Insert Error"))
 			{
-				ImGui::Text(errorString.c_str());
+				ImGui::Text(mProps.mErrorString.c_str());
 
 				if (ImGui::Button("Ok"))
 				{
@@ -1822,6 +1840,48 @@ namespace nap
 		else
 		{
 			if (mProps.mCurrentAction == TimeLineActions::INSERTION_POPUP)
+			{
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				mProps.mInPopup = false;
+			}
+		}
+	}
+
+
+	void FlexblockGui::handleEditMotorvaluePopup()
+	{
+		if (ImGui::BeginPopup("Edit Motorvalue"))
+		{
+			ImGui::Text("Edit motorvalue");
+
+			if (mProps.mSelectedElement != nullptr && 
+				mProps.mCurrentSelectedMotor > -1 && 
+				mProps.mCurrentSelectedMotor < 8)
+			{
+				ParameterFloat* parameterFloat =
+					dynamic_cast<ParameterFloat*>(mProps.mSelectedElement->getEndParameters()[mProps.mCurrentSelectedMotor]);
+
+				if (parameterFloat != nullptr)
+				{
+					float value = parameterFloat->mValue;
+					ImGui::InputFloat("", &value, 0.001f, 0.01f, 3);
+					value = math::clamp(value, 0.0f, 1.0f);
+					parameterFloat->setValue(value);
+				}
+			}
+
+			if (ImGui::Button("Done"))
+			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+		else
+		{
+			if (mProps.mCurrentAction == TimeLineActions::EDIT_MOTORVALUE_POPUP)
 			{
 				mProps.mCurrentAction = TimeLineActions::NONE;
 				mProps.mInPopup = false;
@@ -1859,17 +1919,32 @@ namespace nap
 	}
 
 
-	bool FlexblockGui::insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState)
+	bool FlexblockGui::insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState& errorState)
 	{
-		mProps.mDirty = true;
-
+		// retrieve current sequence and element
 		double time = mProps.mCurrentTimeOfMouseInSequence;
-		mSequencePlayer->setTime(time);
-		time = mSequencePlayer->getCurrentTime();
-
-		// retrieve sequence and element at current time
 		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 		timeline::SequenceElement* element = sequence->getElementAtTime(time);
+
+		// make sure curves get re-evaluated
+		mProps.mDirty = true;
+
+		// check if element is not to close to other element already existing..
+		for (const auto* sequence : mSequencePlayer->getSequences())
+		{
+			for (const auto* element : sequence->getElements())
+			{
+				float diff = math::abs((float)time - (float)element->getStartTime());
+				if (!errorState.check(
+					diff > 0.05f,
+					"New element to close to element [%s] in sequence [%s]", 
+					sequence->mName.c_str(),
+					element->mName.c_str() )) // to close
+				{
+					return false;
+				}
+			}
+		}
 
 		// calculate new duration of current element
 		// delta duration is used to set the time of the new element
@@ -1914,14 +1989,27 @@ namespace nap
 	}
 
 
-	bool FlexblockGui::insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState)
+	bool FlexblockGui::insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState)
 	{
-		mProps.mDirty = true;
-
 		// retrieve current sequence and element
 		double time = mProps.mCurrentTimeOfMouseInSequence;
 		timeline::Sequence* sequence = mSequencePlayer->getSequenceAtTime(time);
 		timeline::SequenceElement* element = sequence->getElementAtTime(time);
+
+		// make sure curves get re-evaluated
+		mProps.mDirty = true;
+
+		// check if sequence is not to close to other sequence already existing..
+		for (const auto* sequence : mSequencePlayer->getSequences())
+		{
+			float diff = math::abs((float)time - (float)sequence->getStartTime());
+			if (!errorState.check(
+				diff > 0.1f,
+				"New sequence to close to other sequence existing [%s] ", sequence->mName.c_str())) // to close
+			{
+				return false;
+			}
+		}
 
 		// set new duration of current element and calculate new duration of new element
 		float newDuration = time - element->getStartTime();
@@ -1946,6 +2034,7 @@ namespace nap
 		}
 		else
 		{
+			// insert and move ownership
 			newSequence->insertElement(std::move(newElement));
 
 			if (!newSequence->init(errorState))
@@ -1970,7 +2059,7 @@ namespace nap
 					sequence->eraseElements(index + 1, sequence->getElements().size());
 				}
 
-				// insert the new sequence
+				// insert the new sequence and move ownership
 				mSequencePlayer->insertSequence(std::move(newSequence));
 			}
 		}

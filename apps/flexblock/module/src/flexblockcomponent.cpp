@@ -104,22 +104,22 @@ namespace nap
 		{
 			mUpdateSerialTime = 0.0;
 
-			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+			std::vector<float> motorSteps = mFlexLogic->getRopeLengths();
 
-			for (int i = 0; i < ropeLengths.size(); i++)
+			for (int i = 0; i < motorSteps.size(); i++)
 			{
-				float a = ropeLengths[i] * 1000.0f; // convert to millimeters
+				float a = motorSteps[i] * 1000.0f; // convert to millimeters
 				a *= mMillimeterToMotorsteps; //  millimeters to motor steps
 				a -= mMotorOffset; // step offset
-				ropeLengths[i] = a;
+				motorSteps[i] = a;
 			}
 
 			std::string data = "<";
-			for (int i = 0; i < ropeLengths.size(); i++)
+			for (int i = 0; i < motorSteps.size(); i++)
 			{
-				long c = (long)ropeLengths[i];
+				long c = (long)motorSteps[i];
 				data += std::to_string(c);
-				if (i + 1 < ropeLengths.size())
+				if (i + 1 < motorSteps.size())
 					data += "|";
 			}
 			data += ">";

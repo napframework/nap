@@ -26,7 +26,8 @@ namespace nap
 		SEQUENCE_RENAME_POPUP = 10,
 		INSERTION_POPUP = 11,
 		SAVE_POPUP = 12,
-		LOAD_POPUP = 13
+		LOAD_POPUP = 13,
+		EDIT_MOTORVALUE_POPUP = 14
 	};
 
 	class TimelineGuiProperties
@@ -41,7 +42,7 @@ namespace nap
 		bool mFollowPlayer = false;
 		int mCurveResolution = 75;
 		timeline::SequenceElement* mSelectedElement = nullptr;
-		int mCurrentDraggedMotor = 0;
+		int mCurrentSelectedMotor = 0;
 		int mSelectedShowIndex = 0;
 		bool mInPopup = false;
 		int mMotorHandlerIndexMask = 0;
