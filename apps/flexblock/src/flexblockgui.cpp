@@ -827,6 +827,7 @@ namespace nap
 												mProps.mDirty = true;
 											}
 
+											// make sure tangents are linked
 											if (mProps.mCurrentAction == TimeLineActions::DRAGGING_TANGENT &&
 												mProps.mTangentPtr == &point.mOutTan)
 											{
@@ -857,7 +858,6 @@ namespace nap
 									}
 								}
 							}
-						
 						}
 					}
 
@@ -868,9 +868,9 @@ namespace nap
 						if (mProps.mDirty)
 						{
 							//
-							mProps.mChachedCurve.clear();
+							mProps.mCachedCurve.clear();
 
-							mProps.mChachedCurve = std::vector<std::vector<ImVec2>>(8);
+							mProps.mCachedCurve = std::vector<std::vector<ImVec2>>(8);
 
 							// create parameters that we evaluate
 							std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
@@ -898,7 +898,7 @@ namespace nap
 									float yPart = (childSize.y / 8.0f);
 									float yStart = yPart * l;
 
-									mProps.mChachedCurve[l] .emplace_back(ImVec2(
+									mProps.mCachedCurve[l].emplace_back(ImVec2(
 										partStart * mProps.mChildWidth + mProps.mTopLeftPosition.x + childSize.x * part * (p * (1.0f / (float)steps)),
 										bottomRightPos.y - yStart - yPart * static_cast<ParameterFloat*>(parameters[l])->mValue));
 								}
@@ -907,16 +907,16 @@ namespace nap
 							mProps.mDirty = false;
 						}
 			
-						if (mProps.mChachedCurve.size() == 8)
+						if (mProps.mCachedCurve.size() == 8)
 						{
 							for (int l = 0; l < 8; l++)
 							{
-								if (mProps.mChachedCurve[l].size() > 0)
+								if (mProps.mCachedCurve[l].size() > 0)
 								{
 									// draw the polylines 
 									drawList->AddPolyline(
-										&*mProps.mChachedCurve[l].begin(),
-										mProps.mChachedCurve[l].size(),
+										&*mProps.mCachedCurve[l].begin(),
+										mProps.mCachedCurve[l].size(),
 										colorRed,
 										false,
 										1.5f,
@@ -929,6 +929,7 @@ namespace nap
 				}
 			}
 
+			// draw edit curve toggle
 			for (int i = 0; i < 8; i++)
 			{
 				float y_pos = (childSize.y / 8) * i + 4;
@@ -1061,6 +1062,7 @@ namespace nap
 				}
 			}
 
+			// draw position of mouse ( cursor ) in timeline
 			if (mProps.mDrawMouseCursorInTimeline )
 			{
 				drawList->AddLine(
@@ -1082,6 +1084,7 @@ namespace nap
 			}
 			ImGui::EndChild();
 
+			// make sure draw list doesnt get to high
 			//printf("%llu\n", draw_list->_VtxCurrentIdx);
 			if (drawList->_VtxCurrentIdx > 64000)
 			{
