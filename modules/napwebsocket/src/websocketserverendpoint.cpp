@@ -175,6 +175,20 @@ namespace nap
 	}
 
 
+	void WebSocketServerEndPoint::registerListener(IWebSocketServer& server)
+	{
+		std::unique_lock<std::mutex> lock(mListenerMutex);
+		mListeners.push_back(&server);
+	}
+
+
+	void WebSocketServerEndPoint::unregisterListener(IWebSocketServer& server)
+	{
+		std::unique_lock<std::mutex> lock(mListenerMutex);
+		mListeners.erase(std::remove(mListeners.begin(), mListeners.end(), &server), mListeners.end());
+	}
+
+
 	WebSocketServerEndPoint::~WebSocketServerEndPoint()
 	{
 		stop();
@@ -245,7 +259,8 @@ namespace nap
 			mConnections.emplace_back(cptr);
 		}
 
-		connectionOpened(WebSocketConnection(connection));
+		for (IWebSocketServer* listener : mListeners)
+			listener->onConnectionOpened(WebSocketConnection(connection));
 	}
 
 
@@ -260,9 +275,8 @@ namespace nap
 		}
 
 		// Signal that it closed
-		connectionClosed(WebSocketConnection(connection),
-			cptr->get_ec().value(), 
-			cptr->get_ec().message());
+		for (IWebSocketServer* listener : mListeners)
+			listener->onConnectionClosed(WebSocketConnection(connection), cptr->get_ec().value(), cptr->get_ec().message());
 
 		// Remove from internal list of connections
 		{
@@ -299,15 +313,16 @@ namespace nap
 			return;
 		}
 
-		connectionFailed(WebSocketConnection(connection),
-			cptr->get_ec().value(),
-			cptr->get_ec().message());
+		for (IWebSocketServer* listener : mListeners)
+			listener->onConnectionFailed(WebSocketConnection(connection), cptr->get_ec().value(), cptr->get_ec().message());
 	}
 
 
 	void WebSocketServerEndPoint::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
 	{
-		messageReceived(WebSocketConnection(con), WebSocketMessage(msg));
+		WebSocketMessage message(msg);
+		for (IWebSocketServer* listener : mListeners)
+			listener->onMessageReceived(WebSocketConnection(con), message);
 	}
 
 
