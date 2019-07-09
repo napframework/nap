@@ -26,11 +26,6 @@ namespace nap
 	{	}
 
 
-	OSCReceiver::~OSCReceiver()
-	{
-		stop();
-	}
-
 	/**
 	 * Creates the thread that will run the OSC message handler
 	 */
@@ -66,14 +61,12 @@ namespace nap
 
 	void OSCReceiver::stop()
 	{
-		if (mSocket != nullptr)
-		{
-			mSocket->stop();
-			mEventThread.join();
-			mService->removeReceiver(*this);
-			mSocket = nullptr;
-			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
-		}
+		assert(mSocket != nullptr);
+		mSocket->stop();
+		mEventThread.join();
+		mService->removeReceiver(*this);
+		mSocket = nullptr;
+		nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 	}
 
 

@@ -55,6 +55,11 @@ namespace nap
 		bool init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
+		 * Destroy this entity
+		 */
+		virtual void onDestroy() override {}
+
+		/**
 		 * Update this entity hierarchy
 		 */
 		void update(double deltaTime);

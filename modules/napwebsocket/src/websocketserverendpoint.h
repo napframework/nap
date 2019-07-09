@@ -113,6 +113,16 @@ namespace nap
 		virtual void stop() override;
 
 		/**
+		 * Register a server for this endpoint so that it receives notifications from the endpoint.
+		 */
+		void registerListener(IWebSocketServer& server);
+
+		/**
+		 * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+		 */
+		void unregisterListener(IWebSocketServer& server);
+
+		/**
 		 * Sends a message to a client.
 		 * @param connection the client connection
 		 * @param message the message to send
@@ -154,18 +164,6 @@ namespace nap
 		 */
 		bool acceptsNewConnections();
 
-		// Triggered when a new client connection is opened. Including client web-socket connection.
-		nap::Signal<const WebSocketConnection&> connectionOpened;
-		
-		// Triggered when a client connection closed. Including client web-socket connection, close code and reason.
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionClosed;
-
-		// Triggered when a client connection failed to establish. Including client web-socket connection, failure code and reason.
-		nap::Signal<const WebSocketConnection&, int, const std::string&> connectionFailed;
-
-		// Triggered when a new message from a client is received. Including client web-socket connection and message.
-		nap::Signal<const WebSocketConnection&, const WebSocketMessage&> messageReceived;
-
 		EAccessMode mMode = EAccessMode::EveryOne;							///< Property: "AccessMode" client connection access mode.
 		int mConnectionLimit = -1;											///< Property: "ConnectionLimit" number of allowed client connections at once, -1 = no limit
 		int mPort = 80;														///< Property: "Port" to open and listen to for client requests.
@@ -176,6 +174,9 @@ namespace nap
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
 
 	private:
+		std::mutex mListenerMutex;
+		std::vector<IWebSocketServer*> mListeners;
+
 		/**
 		 * Runs the end point in a background thread until stopped.
 		 */

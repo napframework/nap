@@ -88,8 +88,38 @@ namespace nap
 		}
 
 		rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
+
+		destroyObjects();
 	}
 
+	void ResourceManager::RollbackHelper::destroyObjects()
+	{
+		ObservedObjectList all_objects;
+		for (auto& kvp : mObjectsToUpdate)
+			all_objects.push_back(kvp.second.get());
+
+		// We create a dummy errorState here. The RTTIObjectGraphItem never uses errorState and so the building of the graph will never fail.
+		utility::ErrorState errorState;
+		RTTIObjectGraph object_graph;
+		bool result = object_graph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState);
+		assert(result);
+
+		// Destroy objects in reversed initialization order
+		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
+		for (int i = nodes.size() - 1; i >= 0; --i)
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			ObjectByIDMap::iterator pos = mObjectsToUpdate.find(nodes[i]->mItem.getID());
+
+			// The set of objects that is returned from the object graph builder is potentially larger, as the object graph builder
+			// chases pointers and will discover more objects than there are present in the original set.
+			if (pos != mObjectsToUpdate.end())
+				pos->second->onDestroy();
+		}
+		mObjectsToUpdate.clear();
+	}
 
 	void ResourceManager::RollbackHelper::clear()
 	{
@@ -156,10 +186,15 @@ namespace nap
 	}
 
 
+	ResourceManager::~ResourceManager()
+	{
+		stopAndDestroyAllObjects();
+	}
+
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
  	 */
-	bool ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
+	void ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
@@ -178,10 +213,10 @@ namespace nap
 			if (mObjects.find(kvp.first) == mObjects.end())
 				all_objects.push_back(kvp.second.get());
 
-		if (!objectGraph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState))
-			return false;
-
-		return true;
+		// We create a dummy errorState here. The RTTIObjectGraphItem never uses errorState and so the building of the graph will never fail.
+		utility::ErrorState errorState;
+		bool result = objectGraph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState);
+		assert(result);
 	}
 	
 
@@ -206,6 +241,66 @@ namespace nap
 	}
 
 
+	void ResourceManager::stopAndDestroyAllObjects()
+	{
+		RTTIObjectGraph object_graph;
+		buildObjectGraph({}, object_graph);
+
+		// Stop and destroy objects in reversed init order. 
+		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
+		for (int i = nodes.size() - 1; i >= 0; --i)
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			ObjectByIDMap::iterator pos = mObjects.find(nodes[i]->mItem.getID());
+
+			Device* device = rtti_cast<Device>(pos->second.get());
+			if (device != nullptr)
+				device->stop();
+
+			pos->second->onDestroy();
+		}
+
+		// Destruction of objects is not in any particular order.
+		mObjects.clear();
+	}
+
+
+	void ResourceManager::destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& objectGraph)
+	{
+		std::unordered_set<std::string> objects_ids_to_delete = objectIDsToDelete;
+
+		// Destroy objects in reversed init order (if they exist in the objectIDsToDelete set)
+		const std::vector<RTTIObjectGraph::Node*> nodes = objectGraph.getSortedNodes();
+		for (int i = nodes.size() - 1; i >= 0; --i)
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			const std::string& nodeID = nodes[i]->mItem.getID();
+			if (objectIDsToDelete.find(nodeID) != objectIDsToDelete.end())
+			{
+				objects_ids_to_delete.erase(nodeID);
+
+				ObjectByIDMap::iterator pos = mObjects.find(nodeID);
+
+				// objectIDsToDelete will contain objects that are added, so it is possible that they don't exist in mObjects.
+				if (pos != mObjects.end())
+				{
+					pos->second->onDestroy();
+
+					// Note: we can't just clear mObjects here like we do in other cases, because the set of objects that needs to be destroyed
+					// may be a subset of all objects in the resource manager.
+					mObjects.erase(pos);
+				}
+			}
+		}
+
+		assert(objects_ids_to_delete.empty());
+	}
+
+
 	bool ResourceManager::loadFile(const std::string& filename, utility::ErrorState& errorState)
 	{
 		return loadFile(filename, std::string(), errorState);
@@ -225,6 +320,14 @@ namespace nap
 			return false;
 		}
 
+		// We instantiate a helper that will perform three things when an error occurs during loading:
+		// - Perform a rollback of any pointer patching that we have done. We only ever need to rollback the pointer patching, 
+		//   because the resource manager remains untouched until the very end where we know that all init() calls have succeeded.
+		// - Perform a rollback of start/stopped devices in case an error occurs.
+		// - Destroy any new objects that were loaded from file in the correct order. Note that only the objects that need to be pushed
+		//   into the ResourceManager are destroyed in the correct order, any unchanged objects are not managed by RollbackHelper.
+		RollbackHelper rollback_helper(*this);
+
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
 		// a json file, pointers are unresolved. When comparing them to the existing objects, they are always different
@@ -237,7 +340,7 @@ namespace nap
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
 		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
-		ObjectByIDMap objects_to_update;
+		ObjectByIDMap& objects_to_update = rollback_helper.getObjectsToUpdate();
 		for (auto& read_object : read_result.mReadObjects)
 		{
 			std::string id = read_object->mID;
@@ -250,19 +353,12 @@ namespace nap
 			}
 		}
 
-
 		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
 		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
 		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
 		OverlayLinkResolver resolver(*this, objects_to_update);
 		if (!resolver.resolveLinks(read_result.mUnresolvedPointers, errorState))
 			return false;
-
-		// We instantiate a helper that will perform a rollback of any pointer patching that we have done.
-		// In case of success we clear this helper.
-		// We only ever need to rollback the pointer patching, because the resource manager remains untouched
-		// until the very end where we know that all init() calls have succeeded
-		RollbackHelper rollback_helper(*this);
 
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
@@ -271,8 +367,7 @@ namespace nap
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
 		RTTIObjectGraph object_graph;
-		if (!buildObjectGraph(objects_to_update, object_graph, errorState))
-			return false;
+		buildObjectGraph(objects_to_update, object_graph);
 
 		// Find out what objects to init and in what order to init them
 		std::vector<std::string> objects_to_init;
@@ -346,8 +441,16 @@ namespace nap
 			}
 		}
 
-		// In case all init() operations were successful, we can now replace the objects
-		// in the manager by the new objects. This effectively destroys the old objects as well.
+
+		// In case all init() operations were successful, we can now:
+		// 1) Delete objects in the ResourceManager that we will replace
+		// 2) Insert the new objects into the ResourceManager
+		std::unordered_set<std::string> objects_ids_to_delete;
+		for (auto& kvp : objects_to_update)
+			objects_ids_to_delete.insert(kvp.first);
+
+		destroyObjects(objects_ids_to_delete, object_graph);
+
 		for (auto& kvp : objects_to_update)
 			mObjects[kvp.first] = std::move(kvp.second);
 
