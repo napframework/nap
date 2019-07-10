@@ -9,7 +9,7 @@
             "Frequency": 44,
             "Mode":"Unicast",
             "UnicastLimit":100,
-            "Verbose":true,
+            "Verbose":false,
             "Timeout":2.0
         },
         {
