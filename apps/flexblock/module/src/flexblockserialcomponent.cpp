@@ -44,7 +44,7 @@ namespace nap
 
 		mDestroySlot = Slot<SerialPort*>(this, &FlexBlockSerialComponentInstance::onSerialPortDestroy);
 
-		mSerialPort->mIsBeingDeconstructed.connect(mDestroySlot);
+		mSerialPort->destructed.connect(mDestroySlot);
 
 		return true;
 	}

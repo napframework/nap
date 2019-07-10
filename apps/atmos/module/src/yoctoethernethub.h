@@ -13,8 +13,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Device)
 	public:
-		virtual ~YoctoEthernetHub();
-
 		/**
 		 * Initialize this object after de-serialization
 		 * @param errorState contains the error message when initialization fails

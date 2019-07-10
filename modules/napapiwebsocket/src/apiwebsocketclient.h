@@ -65,9 +65,6 @@ namespace nap
 		 */
 		APIWebSocketClient(APIWebSocketService& service);
 
-		// Destructor
-		virtual ~APIWebSocketClient();
-
 		/**
 		 * Initialize this object after de-serialization
 		 * @param errorState contains the error message when initialization fails.

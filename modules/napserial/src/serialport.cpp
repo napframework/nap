@@ -57,10 +57,10 @@ namespace nap
 		mSerialPort = std::make_unique<serial::Serial>();
 	}
 
+
 	SerialPort::~SerialPort()
 	{ 
-		stop(); 
-		mIsBeingDeconstructed.trigger(this);
+		destructed.trigger(this);
 	}
 
 
