@@ -43,15 +43,20 @@ namespace nap
 		 */
 		IWebSocketClient(WebSocketService& service);
 
-		// Destructor
-		virtual ~IWebSocketClient();
-
 		/**
 		* Registers the web-socket client interface with the endpoint.
+		* The client 'tries' to establish a connection with the server.
+		* The success of the initialization step does not depend on whether or not the client
+		* manages to connect to the service. 
 		* @param errorState contains the error message when initialization fails
 		* @return if initialization succeeded.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Unregisters the web-socket client interface with the endpoint.
+		 */
+		virtual void onDestroy() override;
 
 		/**
 		 * @return if the client is connected to the server.
@@ -117,7 +122,6 @@ namespace nap
 		void messageReceived(const WebSocketMessage& msg);
 
 		std::atomic<bool> mOpen = { false };				///< If this client is currently connected
-		nap::Signal<const IWebSocketClient&> disconnect;	///< Called when the client wants to disconnect
 	};
 
 
@@ -148,9 +152,6 @@ namespace nap
 		 * @param service the web-socket service that forwards events to the application.
 		 */
 		WebSocketClient(WebSocketService& service);
-
-		// Destructor
-		virtual ~WebSocketClient();
 
 		/**
 		 * Initialize this object after de-serialization.
