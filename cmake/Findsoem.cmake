@@ -6,11 +6,15 @@ if(WIN32)
           HINTS ${THIRDPARTY_DIR}/soem/msvc/install
           )
 
-    # library
-    set(SOEM_LIBS ${SOEM_DIR}/lib/soem.lib Ws2_32 winmm)
-
     # wpcap dir
     set(WPCAP_DIR ${THIRDPARTY_DIR}/soem/oshw/win32/wpcap)
+
+    # library
+    set(SOEM_LIBS 
+      ${SOEM_DIR}/lib/soem.lib 
+      ${WPCAP_DIR}/Lib/x64/wpcap.lib
+      ${WPCAP_DIR}/Lib/x64/Packet.lib
+      Ws2_32 winmm)
 
     # all includes for soem windows
     set(SOEM_INCLUDE_DIRS 
