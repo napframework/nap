@@ -46,5 +46,6 @@ install(DIRECTORY ${SOEM_DIR}/lib DESTINATION thirdparty/soem)
 #install wpcap includes (only windows)
 if(WIN32)
 	install(DIRECTORY ${WPCAP_DIR}/Include DESTINATION thirdparty/soem/wpcap)
+	install(DIRECTORY ${WPCAP_DIR}/Lib DESTINATION thirdparty/soem/wpcap)
 endif()
 
