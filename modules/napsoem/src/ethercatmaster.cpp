@@ -12,6 +12,28 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
+typedef struct PACKED
+{
+	uint32_t	mOperatingMode;
+	int32_t		mRequestedPosition;
+	uint32_t	mVelocity;
+	uint32_t	mAcceleration;
+	uint32_t	mTorque;
+	uint32_t	mAnalogueInput;
+} MAC_400_OUTPUTS;
+
+typedef struct PACKED
+{
+	uint32_t	mOperatingMode;
+	int32_t		mActualPosition;
+	uint32_t	mActualVelocity;
+	uint32_t	mAnalogueInput;
+	uint32_t	mErrorStatus;
+	uint32_t	mActualTorque;
+	uint32_t	mFollowError;
+	uint32_t	mActualTemperature;
+} MAC_400_INPUTS;
+
 
 namespace nap
 {
@@ -54,6 +76,9 @@ namespace nap
 		ec_slave[0].state = EC_STATE_OPERATIONAL;
 		ec_send_processdata();
 		ec_receive_processdata(EC_TIMEOUTRET);
+
+		// Bind our thread
+		mTask = std::async(std::launch::async, std::bind(&EtherCATMaster::run, this));
 
 		// request Operational state for all slaves
 		ec_writestate(0);
@@ -106,8 +131,37 @@ namespace nap
 	}
 
 
+	void EtherCATMaster::run()
+	{
+		while (!mStopRunning)
+		{
+			// Read info
+			MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)ec_slave[1].inputs;
+			inputs->mErrorStatus;
+
+			// Write info
+			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
+			mac_outputs->mOperatingMode = 2;
+			mac_outputs->mRequestedPosition = -1000000;
+			mac_outputs->mVelocity = 2700;
+			mac_outputs->mAcceleration = 360;
+			mac_outputs->mTorque = 341;
+
+			ec_send_processdata();
+			mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
+
+			// Sleep for 1 millisecond
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+	}
+
+
 	void EtherCATMaster::requestInitState()
 	{
+		assert(mTask.valid());
+		mStopRunning = true;
+		mTask.wait();
+
 		nap::Logger::info("%s: Requesting init state for all slaves", mID.c_str());
 		int chk = 200;
 		ec_slave[0].state = EC_STATE_INIT;
