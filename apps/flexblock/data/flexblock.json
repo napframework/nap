@@ -1,6 +1,11 @@
 {
     "Objects": [
         {
+            "Type": "nap::EtherCATMaster",
+            "mID": "EtherCATMaster",
+            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}" 
+        },
+        {
             "Type": "nap::Entity",
             "mID": "BlockEntity",
             "Components": [
