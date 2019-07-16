@@ -35,6 +35,20 @@ typedef struct PACKED
 } MAC_400_INPUTS;
 
 
+static int MAC400_SETUP(uint16 slave)
+{
+	uint32_t new_pos = 0;
+	ec_SDOwrite(slave, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos, EC_TIMEOUTSAFE);
+
+	// Force motor on zero.
+	uint32_t control_word = 0;
+	control_word |= 1UL << 6;
+	control_word |= 0x0 << 8;
+	ec_SDOwrite(slave, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
+
+	return 1;
+}
+
 namespace nap
 {
 	EtherCATMaster::~EtherCATMaster()			{ }
@@ -58,9 +72,15 @@ namespace nap
 		// Initialize all slaves, lib initialization is allowed to fail
 		// It simply means no slaves are available
 		if (ec_config_init(false) <= 0)
+		{
+			nap::Logger::warn("%s: no slaves found", mID.c_str());
 			return true;
+		}
+
+		ec_slavet* slave = &(ec_slave[0]);
 
 		// TODO: install callback here
+		reinterpret_cast<ec_slavet*>(getSlave(1))->PO2SOconfig = &MAC400_SETUP;
 
 		// Configure io (SDO input / output) map
 		ec_config_map(&mIOmap);
@@ -142,6 +162,11 @@ namespace nap
 		return ec_slavecount;
 	}
 
+
+	void* EtherCATMaster::getSlave(int number)
+	{
+		return &(ec_slave[number]);
+	}
 
 	void EtherCATMaster::run()
 	{
