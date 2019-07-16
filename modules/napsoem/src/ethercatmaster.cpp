@@ -77,7 +77,8 @@ namespace nap
 		ec_send_processdata();
 		ec_receive_processdata(EC_TIMEOUTRET);
 
-		// Bind our thread
+		// Bind our thread and start sending / receiving slave data
+		mStopRunning = false;
 		mTask = std::async(std::launch::async, std::bind(&EtherCATMaster::run, this));
 
 		// request Operational state for all slaves
@@ -102,8 +103,11 @@ namespace nap
 					i, ec_slave[i].state, ec_slave[i].ALstatuscode, ec_ALstatuscode2string(ec_slave[i].ALstatuscode));
 			}
 
-			// Request init state for all slaves
+			// Request init state for all slaves and close connection
+			mStopRunning = true;
+			mTask.wait();
 			requestInitState();
+			ec_close();
 			return false;
 		}
 
@@ -117,6 +121,14 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
+		// Safety guard here, task is only created when 
+		// at least 1 slave is found.
+		if (mTask.valid())
+		{
+			mStopRunning = true;
+			mTask.wait();
+		}
+
 		// Make all slaves go to initialization stage
 		requestInitState();
 
@@ -158,10 +170,6 @@ namespace nap
 
 	void EtherCATMaster::requestInitState()
 	{
-		assert(mTask.valid());
-		mStopRunning = true;
-		mTask.wait();
-
 		nap::Logger::info("%s: Requesting init state for all slaves", mID.c_str());
 		int chk = 200;
 		ec_slave[0].state = EC_STATE_INIT;
