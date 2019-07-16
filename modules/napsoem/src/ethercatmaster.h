@@ -45,6 +45,13 @@ namespace nap
 
 		std::string mAdapter;	///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
 
+	protected:
+		/**
+		 * Returns a pointer to a ec_slavet struct.
+		 * @return the slave at the given index. Does not perform any out of bounds check.
+		 */
+		void* getSlave(int index);
+
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
