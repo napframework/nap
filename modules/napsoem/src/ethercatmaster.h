@@ -4,6 +4,8 @@
 #include <nap/device.h>
 #include <nap/numeric.h>
 #include <nap/signalslot.h>
+#include <future>
+#include <atomic>
 
 namespace nap
 {
@@ -46,6 +48,11 @@ namespace nap
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
+		int  mActualWCK = 0;
+		std::future<void> mTask;											///< The background server thread
+		std::atomic<bool> mStopRunning = { false };							///< If the task should be stopped
+
+		void run();
 
 		void requestInitState();
 	};
