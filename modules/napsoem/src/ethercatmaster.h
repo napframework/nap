@@ -100,7 +100,7 @@ namespace nap
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array.
 		 */
-		virtual void onSafeOperational(void* slave, int index);
+		virtual void onSafeOperational(void* slave, int index)		{ }
 
 		/**
 		 * Called when a slave reaches the operational stage on the network.
@@ -129,6 +129,30 @@ namespace nap
 		 *	mac_outputs->mTorque = 341;
 		 */
 		virtual void onProcess() = 0;
+
+		/**
+		 * SDO write, blocking. Single subindex or complete Access.
+		 * It is not advised to write data when in operational mode.
+		 * @param slave index of the slave, starting at 1. 
+		 * @param index the index to write
+		 * @param subindex the subindex to write
+		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
+		 * @param psize size in bytes of parameter buffer
+		 * @param p pointer to parameter buffer
+		 */
+		void sdoWrite(uint16 slave, uint16 index, uint8 subindex, bool ca, int psize, void* p);
+
+		/**
+		 * SDO read, blocking. Single subindex or complete Access.
+		 * It is not advised to read data when in operational mode.
+		 * @param slave index of the slave, starting at 1.
+		 * @param index the index to read
+		 * @param subindex the subindex to read
+		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
+		 * @param psize size in bytes of parameter buffer, returns bytes read from SDO.
+		 * @param p pointer to parameter buffer
+		 */
+		void sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p);
 
 	private:
 		char mIOmap[4096];
