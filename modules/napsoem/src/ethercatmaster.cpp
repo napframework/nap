@@ -6,49 +6,12 @@
 #include <soem/ethercat.h>
 
 // nap::ethercatmaster run time class definition 
-RTTI_BEGIN_CLASS(nap::EtherCATMaster)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("Adapter",	&nap::EtherCATMaster::mAdapter,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CycleTime",	&nap::EtherCATMaster::mCycleTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
-
-typedef struct PACKED
-{
-	uint32_t	mOperatingMode;
-	int32_t		mRequestedPosition;
-	uint32_t	mVelocity;
-	uint32_t	mAcceleration;
-	uint32_t	mTorque;
-	uint32_t	mAnalogueInput;
-} MAC_400_OUTPUTS;
-
-typedef struct PACKED
-{
-	uint32_t	mOperatingMode;
-	int32_t		mActualPosition;
-	uint32_t	mActualVelocity;
-	uint32_t	mAnalogueInput;
-	uint32_t	mErrorStatus;
-	uint32_t	mActualTorque;
-	uint32_t	mFollowError;
-	uint32_t	mActualTemperature;
-} MAC_400_INPUTS;
-
-
-static int MAC400_SETUP(uint16 slave)
-{
-	uint32_t new_pos = 0;
-	ec_SDOwrite(slave, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos, EC_TIMEOUTSAFE);
-
-	// Force motor on zero.
-	uint32_t control_word = 0;
-	control_word |= 1UL << 6;
-	control_word |= 0x0 << 8;
-	ec_SDOwrite(slave, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
-
-	return 1;
-}
 
 namespace nap
 {
@@ -197,8 +160,8 @@ namespace nap
 
 	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
 	{
-		assert(index < ec_slavecount);
-		return static_cast<EtherCATMaster::ESlaveState>(ec_slave[index+1].state);
+		assert(index <= ec_slavecount);
+		return static_cast<EtherCATMaster::ESlaveState>(ec_slave[index].state);
 	}
 
 
@@ -206,12 +169,6 @@ namespace nap
 	{
 		assert(index <= ec_slavecount);
 		return &(ec_slave[index]);
-	}
-
-
-	void EtherCATMaster::onPreOperational(void* slave, int index)
-	{
-		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC400_SETUP;
 	}
 
 
@@ -225,22 +182,6 @@ namespace nap
 		control_word |= 1UL << 6;
 		control_word |= 0x0 << 8;
 		ec_SDOwrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
-	}
-
-
-	void EtherCATMaster::onProcess()
-	{
-		// Read info
-		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)ec_slave[1].inputs;
-		inputs->mErrorStatus;
-
-		// Write info
-		MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
-		mac_outputs->mOperatingMode = 2;
-		mac_outputs->mRequestedPosition = -1000000;
-		mac_outputs->mVelocity = 2700;
-		mac_outputs->mAcceleration = 360;
-		mac_outputs->mTorque = 341;
 	}
 
 

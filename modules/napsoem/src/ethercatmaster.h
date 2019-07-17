@@ -60,7 +60,7 @@ namespace nap
 
 		/**
 		 * Returns the state associated with a specific slave. 
-		 * Note that index 0 refers to the first slave on the network.
+		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
 		 * @return state of a slave at the given index, no out of bounds check is performed.
 		 */
 		ESlaveState getSlaveState(int index) const;
@@ -82,7 +82,7 @@ namespace nap
 		 * SDO communication is possible. No PDO communication.
 		 * 
 		 * Override this call to register a slave setup function, for example:
-		 * void MyMaster::onPreOperational(void* slave)
+		 * void MyMaster::onPreOperational(void* slave, int index)
 		 * {
 		 *		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC400_SETUP;
 		 * }
@@ -91,7 +91,7 @@ namespace nap
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array.
 		 */
-		virtual void onPreOperational(void* slave, int index);
+		virtual void onPreOperational(void* slave, int index)		{ }
 
 		/**
 		 * Called when a slave reaches the safe operational stage on the network.
@@ -117,15 +117,25 @@ namespace nap
 		 * reading and writing to the slave's inputs or outputs.
 		 * At this stage no SDO operations should take place, only operations that
 		 * involve the access and modification of the PDO map.
+		 * example:
+		 *
+		 *	ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(1));
+		 *	
+		 *	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
+		 *	mac_outputs->mOperatingMode = 2;
+		 *	mac_outputs->mRequestedPosition = -1000000;
+		 *	mac_outputs->mVelocity = 2700;
+		 *	mac_outputs->mAcceleration = 360;
+		 *	mac_outputs->mTorque = 341;
 		 */
-		virtual void onProcess();
+		virtual void onProcess() = 0;
 
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
-		std::future<void>	mProcessTask;								///< The background server thread
+		std::future<void>	mProcessTask;						///< The background server thread
 		std::future<void>	mErrorTask;							///< The background error checking thread
-		std::atomic<bool>	mStopProcessing = { false };			///< If the task should be stopped
+		std::atomic<bool>	mStopProcessing = { false };		///< If the task should be stopped
 		std::atomic<bool>	mStopErrorTask = { false };			///< If the error task should be stopped
 		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
 		std::atomic<bool>	mOperational = { false };			///< If the master is operational
