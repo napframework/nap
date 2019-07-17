@@ -74,7 +74,7 @@ namespace nap
 				mTargetPosition(targetPosition)	{ }
 
 			uint32 mTargetPosition = 0;			///< New requested motor position
-			uint32 mInitPosition = 0;			///< Initial motor position
+			int32 mInitPosition = 0;			///< Initial motor position
 		};
 
 		std::vector<MACPosition> mMotorPositions;	///< List of all current motor positions
