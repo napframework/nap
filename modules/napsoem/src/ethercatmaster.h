@@ -77,6 +77,12 @@ namespace nap
 		void* getSlave(int index);
 
 		/**
+		 * Called after slave enumeration and initialization.
+		 * All slaves should be in  pre-operational state.
+		 */
+		virtual void onInit() { }
+
+		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
 		 * Note that this function can be called from multiple threads.
 		 * SDO communication is possible. No PDO communication.
