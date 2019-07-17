@@ -1,12 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::MACController",
-            "mID": "MACController",
-            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
-            "CycleTime" : 605
-        },
-        {
             "Type": "nap::Entity",
             "mID": "BlockEntity",
             "Components": [
@@ -161,7 +155,9 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "SerialComponent": "./FlexBlockSerialComponent",
-                    "FlexBlockShape": "ProtoShapeSize"
+                    "FlexBlockShape": "ProtoShapeSize",
+                    "Millimeter To Motorsteps ": 12.732390403747559,
+                    "Motor step offset": 7542
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -705,6 +701,18 @@
                 "z": 2.0
             },
             "ReferenceMesh": "BoxMesh"
+        },
+        {
+            "Type": "nap::MACController",
+            "mID": "MACController",
+            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
+            "CycleTime": 605,
+            "ResetPosition": true,
+            "ResetPositionValue": 0,
+            "mRequestedPosition": 0,
+            "Velocity": 2700,
+            "Acceleration": 360,
+            "Torque": 341
         },
         {
             "Type": "nap::Material",

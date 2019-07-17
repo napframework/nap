@@ -14,7 +14,7 @@ namespace nap
 		RTTI_ENABLE(EtherCATMaster)
 
 	public:
-		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset before going into operational mode.
+		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' motor reset position value when reset position is enabled.
 		nap::uint32 mRequestedPosition = 0;		///< Property: 'RequestedPosition' new requested motor position
 		nap::uint32 mVelocity = 2700;			///< Property: 'Velocity' motor velocity
@@ -25,16 +25,7 @@ namespace nap
 
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
-		 * Note that this function can be called from multiple threads.
-		 * SDO communication is possible. No PDO communication.
-		 *
-		 * Override this call to register a slave setup function, for example:
-		 * void MyMaster::onPreOperational(void* slave)
-		 * {
-		 *		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC400_SETUP;
-		 * }
-		 *
-		 * You typically use the setup function to create your own custom PDO mapping.
+		 * Resets the motor position is requested.
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array.
 		 */
@@ -42,8 +33,8 @@ namespace nap
 
 		/**
 		 * Called when a slave reaches the safe operational stage on the network.
-		 * Note that this function can be called from multiple threads.
-		 * PDO transmission is operational (slave sends data to master).
+		 * The controller has access to the input pdo and extracts the actual motor position.
+		 * This value is used to calculate the actual position value that is used during the processing stage.
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array.
 		 */
@@ -58,5 +49,28 @@ namespace nap
 		 */
 		virtual void onProcess() override;
 
+		/**
+		 * Creates a map of all available mac motors.
+		 * Occurs when all slaves have been enumerated and configured.
+		 */
+		virtual void onInit() override;
+
+	private:
+		/**
+		 * Simple struct to keep track of the motor position.
+		 * The target position is set by the client, the 
+		 * init position is read from the PDO when the master switches to safe operational mode.
+		 */
+		class MACPosition
+		{
+		public:
+			MACPosition(uint32 targetPosition) :
+				mTargetPosition(targetPosition)	{ }
+
+			uint32 mTargetPosition = 0;			///< New requested motor position
+			uint32 mInitPosition = 0;			///< Initial motor position
+		};
+
+		std::vector<MACPosition> mMotorPositions;	///< List of all current motor positions
 	};
 }

@@ -39,13 +39,8 @@ namespace nap
 			return true;
 		}
 
-		// Bind our thread and start sending / receiving slave data
-		mStopProcessing = false;
-		mProcessTask = std::async(std::launch::async, std::bind(&EtherCATMaster::process, this));
-
-		// Bind our error thread, run until stopped
-		mStopErrorTask = false;
-		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
+		// Call init
+		onInit();
 
 		// All slaves should be in pre-op mode now
 		ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE);
@@ -71,6 +66,16 @@ namespace nap
 		{
 			onSafeOperational(&(ec_slave[i]), i);
 		}
+
+		// Bind our thread and start sending / receiving slave data
+		// We do that here to ensure a fast transition from safe to operational.
+		mStopProcessing = false;
+		mProcessTask = std::async(std::launch::async, std::bind(&EtherCATMaster::process, this));
+
+		// Bind our error thread, run until stopped
+		// We do that here to ensure a fast transition from safe to operational.
+		mStopErrorTask = false;
+		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
 		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
 		nap::Logger::info("%s: calculated workcounter: %d", mID.c_str(), mExpectedWKC);
@@ -190,21 +195,21 @@ namespace nap
 		// Keep running until stop is called
 		while (!mStopProcessing)
 		{
-			if (mOperational)
+			if (!mOperational)
 			{
-				// Process IO data
-				onProcess();
-
-				// Transmit processdata to slaves.
-				ec_send_processdata();
-
-				// Receive processdata from slaves.
-				// Store the currently available work-counter
-				mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
-
-				// Sleep xUS
 				osal_usleep(mCycleTime);
+				continue;
 			}
+
+			// Process IO data
+			onProcess();
+
+			// Transmit process-data to slaves and store actual work counter
+			ec_send_processdata();
+			mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
+		
+			// Sleep xUS
+			osal_usleep(mCycleTime);
 		}
 	}
 
