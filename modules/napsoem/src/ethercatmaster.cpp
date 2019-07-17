@@ -61,6 +61,12 @@ namespace nap
 
 		// All slaves should be in safe-op mode now
 		ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+		
+		// Send some data to make slaves happy
+		ec_send_processdata();
+		ec_receive_processdata(EC_TIMEOUTRET);
+
+		// Notify listeners
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
 			onSafeOperational(&(ec_slave[i]), i);
@@ -69,12 +75,8 @@ namespace nap
 		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
 		nap::Logger::info("%s: calculated workcounter: %d", mID.c_str(), mExpectedWKC);
 
-		// send one valid process data to all slaves to wake them up
-		ec_slave[0].state = EC_STATE_OPERATIONAL;
-		ec_send_processdata();
-		ec_receive_processdata(EC_TIMEOUTRET);
-
 		// request Operational state for all slaves
+		ec_slave[0].state = EC_STATE_OPERATIONAL;
 		ec_writestate(0);
 
 		// Wait until all slaves are in operational state
@@ -172,18 +174,16 @@ namespace nap
 	}
 
 
-	void EtherCATMaster::onSafeOperational(void* slave, int index)
+	void EtherCATMaster::sdoWrite(uint16 slave, uint16 index, uint8 subindex, bool ca, int psize, void *p)
 	{
-		uint32_t new_pos = 0;
-		ec_SDOwrite(index, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos, EC_TIMEOUTSAFE);
-
-		// Force motor on zero.
-		uint32_t control_word = 0;
-		control_word |= 1UL << 6;
-		control_word |= 0x0 << 8;
-		ec_SDOwrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
+		ec_SDOwrite(slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
 
+
+	void EtherCATMaster::sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p)
+	{
+		ec_SDOread(slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
+	}
 
 	void EtherCATMaster::process()
 	{

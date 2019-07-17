@@ -12,10 +12,14 @@ namespace nap
 	class NAPAPI MACController : public EtherCATMaster
 	{
 		RTTI_ENABLE(EtherCATMaster)
-	public:
 
-		// Stops the device
-		virtual ~MACController() override;
+	public:
+		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset before going into operational mode.
+		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' motor reset position value when reset position is enabled.
+		nap::uint32 mRequestedPosition = 0;		///< Property: 'RequestedPosition' new requested motor position
+		nap::uint32 mVelocity = 2700;			///< Property: 'Velocity' motor velocity
+		nap::uint32 mAcceleration = 360;		///< Property: 'Acceleration' motor acceleration
+		nap::uint32 mTorque = 341;				///< Property: 'Torque' motor torque
 
 	protected:
 

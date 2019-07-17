@@ -23,6 +23,9 @@ static int MAC_SETUP(uint16 slave)
 // MAC inputs / outputs
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * Data sent to slave
+ */
 typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
@@ -34,6 +37,9 @@ typedef struct PACKED
 } MAC_400_OUTPUTS;
 
 
+/**
+ * Data received from slave
+ */
 typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
@@ -53,25 +59,26 @@ typedef struct PACKED
 
 namespace nap
 {
-	MACController::~MACController()			{ }
-
-
 	void MACController::onPreOperational(void* slave, int index)
 	{
 		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC_SETUP;
+
+		// Reset position if requested
+		uint32_t new_pos = 0;
+		sdoWrite(index, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos);
+
+		// Force motor on zero.
+		uint32_t control_word = 0;
+		control_word |= 1UL << 6;
+		control_word |= 0x0 << 8;
+		sdoWrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word);
 	}
 
 
 	void MACController::onSafeOperational(void* slave, int index)
 	{
-		uint32_t new_pos = 0;
-		ec_SDOwrite(index, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos, EC_TIMEOUTSAFE);
-
-		// Force motor to zero.
-		uint32_t control_word = 0;
-		control_word |= 1UL << 6;
-		control_word |= 0x0 << 8;
-		ec_SDOwrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
+		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
+		MAC_400_OUTPUTS* inputs = (MAC_400_OUTPUTS*)cslave->inputs;
 	}
 
 
@@ -86,7 +93,7 @@ namespace nap
 		// Write info
 		MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 		mac_outputs->mOperatingMode = 2;
-		mac_outputs->mRequestedPosition = -1000000;
+		mac_outputs->mRequestedPosition = 1000000;
 		mac_outputs->mVelocity = 2700;
 		mac_outputs->mAcceleration = 360;
 		mac_outputs->mTorque = 341;
