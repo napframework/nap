@@ -7,7 +7,8 @@
 
 // nap::ethercatmaster run time class definition 
 RTTI_BEGIN_CLASS(nap::EtherCATMaster)
-	RTTI_PROPERTY("Adapter", &nap::EtherCATMaster::mAdapter, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Adapter",	&nap::EtherCATMaster::mAdapter,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CycleTime",	&nap::EtherCATMaster::mCycleTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,14 +55,12 @@ namespace nap
 	EtherCATMaster::~EtherCATMaster()			{ }
 
 
-	bool EtherCATMaster::init(utility::ErrorState& errorState)
-	{
-		return true;
-	}
-
-
 	bool EtherCATMaster::start(utility::ErrorState& errorState)
 	{
+		// No tasks should be active at this point
+		// The master shouldn't be in operation
+		assert(!mOperational);
+
 		// Try to initialize adapter
 		if (!ec_init(mAdapter.c_str()))
 		{
@@ -77,10 +76,20 @@ namespace nap
 			return true;
 		}
 
-		ec_slavet* slave = &(ec_slave[0]);
+		// Bind our thread and start sending / receiving slave data
+		mStopProcessing = false;
+		mProcessTask = std::async(std::launch::async, std::bind(&EtherCATMaster::process, this));
 
-		// TODO: install callback here
-		reinterpret_cast<ec_slavet*>(getSlave(1))->PO2SOconfig = &MAC400_SETUP;
+		// Bind our error thread, run until stopped
+		mStopErrorTask = false;
+		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
+
+		// All slaves should be in pre-op mode now
+		ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE);
+		for (int i = 1; i <= ec_slavecount; i++)
+		{
+			onPreOperational(&(ec_slave[i]), i);
+		}
 
 		// Configure io (SDO input / output) map
 		ec_config_map(&mIOmap);
@@ -88,7 +97,12 @@ namespace nap
 		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
 		// All slaves should be in safe-op mode now
-		ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
+		ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+		for (int i = 1; i <= ec_slavecount; i++)
+		{
+			onSafeOperational(&(ec_slave[i]), i);
+		}
+
 		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
 		nap::Logger::info("%s: calculated workcounter: %d", mID.c_str(), mExpectedWKC);
 
@@ -97,17 +111,15 @@ namespace nap
 		ec_send_processdata();
 		ec_receive_processdata(EC_TIMEOUTRET);
 
-		// Bind our thread and start sending / receiving slave data
-		mStopRunning = false;
-		mTask = std::async(std::launch::async, std::bind(&EtherCATMaster::run, this));
-
 		// request Operational state for all slaves
 		ec_writestate(0);
 
 		// Wait until all slaves are in operational state
 		int chk = 200;
 		while (chk-- && ec_slave[0].state != EC_STATE_OPERATIONAL)
-			ec_statecheck(0, EC_STATE_OPERATIONAL, 50000);
+		{
+			ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
+		}
 
 		// Ensure all slaves are in operational state
 		if (ec_slave[0].state != EC_STATE_OPERATIONAL)
@@ -124,15 +136,17 @@ namespace nap
 			}
 
 			// Request init state for all slaves and close connection
-			mStopRunning = true;
-			mTask.wait();
-			requestInitState();
-			ec_close();
+			stop();
 			return false;
 		}
 
 		// All slaves successfully reached operational state
 		nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
+		mOperational = true;
+		for (int i = 1; i <= ec_slavecount; i++)
+		{
+			onOperational(&(ec_slave[i]), i);
+		}
 
 		// All good
 		return true;
@@ -141,12 +155,19 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
+		// Stop error reporting task
+		if (mErrorTask.valid())
+		{
+			mStopErrorTask = true;
+			mErrorTask.wait();
+		}
+
 		// Safety guard here, task is only created when 
 		// at least 1 slave is found.
-		if (mTask.valid())
+		if (mProcessTask.valid())
 		{
-			mStopRunning = true;
-			mTask.wait();
+			mStopProcessing = true;
+			mProcessTask.wait();
 		}
 
 		// Make all slaves go to initialization stage
@@ -154,6 +175,17 @@ namespace nap
 
 		// Close socket
 		ec_close();
+
+		// Reset work-counter and other variables
+		mActualWCK		= 0;
+		mExpectedWKC	= 0;
+		mOperational	= false;
+	}
+
+
+	bool EtherCATMaster::isOperational() const
+	{
+		return mOperational;
 	}
 
 
@@ -163,32 +195,168 @@ namespace nap
 	}
 
 
-	void* EtherCATMaster::getSlave(int number)
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
 	{
-		return &(ec_slave[number]);
+		assert(index < ec_slavecount);
+		return static_cast<EtherCATMaster::ESlaveState>(ec_slave[index+1].state);
 	}
 
-	void EtherCATMaster::run()
+
+	void* EtherCATMaster::getSlave(int index)
 	{
-		while (!mStopRunning)
+		assert(index <= ec_slavecount);
+		return &(ec_slave[index]);
+	}
+
+
+	void EtherCATMaster::onPreOperational(void* slave, int index)
+	{
+		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC400_SETUP;
+	}
+
+
+	void EtherCATMaster::onSafeOperational(void* slave, int index)
+	{
+		uint32_t new_pos = 0;
+		ec_SDOwrite(index, 0x2012, 0x04, FALSE, sizeof(new_pos), &new_pos, EC_TIMEOUTSAFE);
+
+		// Force motor on zero.
+		uint32_t control_word = 0;
+		control_word |= 1UL << 6;
+		control_word |= 0x0 << 8;
+		ec_SDOwrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
+	}
+
+
+	void EtherCATMaster::onProcess()
+	{
+		// Read info
+		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)ec_slave[1].inputs;
+		inputs->mErrorStatus;
+
+		// Write info
+		MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
+		mac_outputs->mOperatingMode = 2;
+		mac_outputs->mRequestedPosition = -1000000;
+		mac_outputs->mVelocity = 2700;
+		mac_outputs->mAcceleration = 360;
+		mac_outputs->mTorque = 341;
+	}
+
+
+	void EtherCATMaster::process()
+	{
+		// Keep running until stop is called
+		while (!mStopProcessing)
 		{
-			// Read info
-			MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)ec_slave[1].inputs;
-			inputs->mErrorStatus;
+			if (mOperational)
+			{
+				// Process IO data
+				onProcess();
 
-			// Write info
-			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
-			mac_outputs->mOperatingMode = 2;
-			mac_outputs->mRequestedPosition = -1000000;
-			mac_outputs->mVelocity = 2700;
-			mac_outputs->mAcceleration = 360;
-			mac_outputs->mTorque = 341;
+				// Transmit processdata to slaves.
+				ec_send_processdata();
 
-			ec_send_processdata();
-			mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
+				// Receive processdata from slaves.
+				// Store the currently available work-counter
+				mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
 
-			// Sleep for 1 millisecond
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				// Sleep xUS
+				osal_usleep(mCycleTime);
+			}
+		}
+	}
+
+
+	void EtherCATMaster::checkForErrors()
+	{
+		int currentgroup = 0;
+		while (!mStopErrorTask)
+		{
+			// Operational stage not yet reached
+			if (!mOperational)
+			{
+				osal_usleep(10000);
+				continue;
+			}
+
+			// Work-count matches and we don't have to check slave states
+			if (mActualWCK == mExpectedWKC && 
+				!ec_group[currentgroup].docheckstate)
+			{
+				osal_usleep(10000);
+				continue;
+			}
+
+			// one ore more slaves are not responding
+			ec_group[currentgroup].docheckstate = FALSE;
+			ec_readstate();
+			for (int slave = 1; slave <= ec_slavecount; slave++)
+			{
+				if ((ec_slave[slave].group == currentgroup) && (ec_slave[slave].state != EC_STATE_OPERATIONAL))
+				{
+					// Signal slave error in group
+					ec_group[currentgroup].docheckstate = true;
+
+					// In safe state with error bit set
+					if (ec_slave[slave].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR))
+					{
+						nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", this->mID.c_str(), slave);
+						ec_slave[slave].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
+						ec_writestate(slave);
+					}
+					else if (ec_slave[slave].state == EC_STATE_SAFE_OP)
+					{
+						nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
+						onSafeOperational(&(ec_slave[slave]), slave);
+						ec_slave[slave].state = EC_STATE_OPERATIONAL;
+						ec_writestate(slave);
+					}
+					else if (ec_slave[slave].state > EC_STATE_NONE)
+					{
+						if (ec_reconfig_slave(slave, 500))
+						{
+							ec_slave[slave].islost = false;
+							nap::Logger::info("%s: slave %d reconfigured", this->mID.c_str(), slave);
+						}
+					}
+					else if (!ec_slave[slave].islost)
+					{
+						/* re-check state */
+						ec_statecheck(slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+						if (ec_slave[slave].state == EC_STATE_NONE)
+						{
+							ec_slave[slave].islost = true;
+							nap::Logger::error("%s: slave %d lost", this->mID.c_str(), slave);
+						}
+					}
+				}
+				
+				// Slave is lost
+				if (ec_slave[slave].islost)
+				{
+					if (ec_slave[slave].state == EC_STATE_NONE)
+					{
+						if (ec_recover_slave(slave, 500))
+						{
+							ec_slave[slave].islost = false;
+							nap::Logger::info("%s: slave %d recovered", this->mID.c_str(), slave);
+						}
+					}
+					else
+					{
+						ec_slave[slave].islost = false;
+						nap::Logger::info("%s: slave %d found", this->mID.c_str(), slave);
+					}
+				}
+			}
+
+			// Check current group state, notify when all slaves resumed operational state
+			if (!ec_group[currentgroup].docheckstate)
+				nap::Logger::info("%s: all slaves resumed OPERATIONAL", this->mID.c_str());
+			
+			// Wait ten ms before checking again
+			osal_usleep(10000);
 		}
 	}
 
@@ -201,7 +369,7 @@ namespace nap
 		ec_writestate(0);
 		while (chk-- && ec_slave[0].state != EC_STATE_INIT)
 		{
-			ec_statecheck(0, EC_STATE_INIT, 50000);
+			ec_statecheck(0, EC_STATE_INIT, EC_TIMEOUTSTATE);
 		}
 	}
 }
