@@ -709,7 +709,7 @@
             "CycleTime": 605,
             "ResetPosition": true,
             "ResetPositionValue": 0,
-            "mRequestedPosition": 0,
+            "Position": 0,
             "Velocity": 2700,
             "Acceleration": 360,
             "Torque": 341

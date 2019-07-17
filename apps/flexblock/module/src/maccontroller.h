@@ -7,16 +7,22 @@
 namespace nap
 {
 	/**
-	 * JVL CAM motor ethercat controller
+	 * JVL CAM motor EthetCAT controller
+	 * On initialization the controller creates a MACPosition container for every available slave on the network.
+	 * This controller assumes that every slave is of type JVL MAC400-4500, using the MAC00-EC4 controller.
+	 * When a slave reaches safe operational mode the current motor position is stored. This
+	 * value is used to calculate the actual positional offset when the motor is in operational mode.
+	 * This allows the motor to always aim for the actual position, even in between sessions
+	 * and after loss of control due to program or driver failure.
 	 */
 	class NAPAPI MACController : public EtherCATMaster
 	{
 		RTTI_ENABLE(EtherCATMaster)
 
 	public:
-		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset before going into safe operational mode.
-		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' motor reset position value when reset position is enabled.
-		nap::uint32 mRequestedPosition = 0;		///< Property: 'RequestedPosition' new requested motor position
+		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
+		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
+		nap::uint32 mRequestedPosition = 0;		///< Property: 'Position' requested motor position
 		nap::uint32 mVelocity = 2700;			///< Property: 'Velocity' motor velocity
 		nap::uint32 mAcceleration = 360;		///< Property: 'Acceleration' motor acceleration
 		nap::uint32 mTorque = 341;				///< Property: 'Torque' motor torque

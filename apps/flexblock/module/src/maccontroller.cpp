@@ -6,12 +6,12 @@
 
 // nap::maccontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::MACController)
-	RTTI_PROPERTY("ResetPosition",		&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ResetPositionValue", &nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mRequestedPosition", &nap::MACController::mRequestedPosition,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Velocity",			&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Acceleration",		&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Torque",				&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position",				&nap::MACController::mRequestedPosition,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
