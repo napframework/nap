@@ -20,6 +20,10 @@ namespace nap
 		RTTI_ENABLE(EtherCATMaster)
 
 	public:
+
+		// Destructor
+		virtual ~MACController();
+
 		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
 		nap::uint32 mRequestedPosition = 0;		///< Property: 'Position' requested motor position
@@ -67,16 +71,15 @@ namespace nap
 		 * The target position is set by the client, the 
 		 * init position is read from the PDO when the master switches to safe operational mode.
 		 */
-		class MACPosition
+		class MacOutputs
 		{
 		public:
-			MACPosition(uint32 targetPosition) :
-				mTargetPosition(targetPosition)	{ }
+			MacOutputs(nap::uint32 targetPosition) { mTargetPosition = targetPosition; }
 
-			uint32 mTargetPosition = 0;			///< New requested motor position
-			int32 mInitPosition = 0;			///< Initial motor position
+			std::atomic<nap::uint32>	mTargetPosition = { 0 };		///< New requested motor position
+			std::atomic<nap::int32>		mInitPosition	= { 0 };		///< Initial motor position
 		};
-
-		std::vector<MACPosition> mMotorPositions;	///< List of all current motor positions
+			
+		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
 	};
 }

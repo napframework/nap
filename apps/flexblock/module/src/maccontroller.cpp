@@ -64,6 +64,12 @@ typedef struct PACKED
 
 namespace nap
 {
+	MACController::~MACController()
+	{
+		mMotorParameters.clear();
+	}
+
+
 	void MACController::onPreOperational(void* slave, int index)
 	{
 		if (mResetPosition)
@@ -86,21 +92,21 @@ namespace nap
 	{
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-		mMotorPositions[index-1].mInitPosition = inputs->mActualPosition;
+		mMotorParameters[index-1]->mInitPosition = inputs->mActualPosition;
 	}
 
 
 	void MACController::onProcess()
 	{
 		int slave_count = getSlaveCount();
-		assert(mMotorPositions.size() == slave_count);
+		assert(mMotorParameters.size() == slave_count);
 		for (int i = 1; i <= slave_count; i++)
 		{
 			// Get slave to address
 			ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(i));
 
 			// Get relative motor position
-			int32 req_position = mMotorPositions[i-1].mTargetPosition - mMotorPositions[i-1].mInitPosition;
+			int32 req_position = mMotorParameters[i-1]->mTargetPosition - mMotorParameters[i-1]->mInitPosition;
 
 			// Write info
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
@@ -115,10 +121,10 @@ namespace nap
 
 	void MACController::onInit()
 	{
-		mMotorPositions.clear();
+		mMotorParameters.clear();
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
-			mMotorPositions.emplace_back(MACPosition(mRequestedPosition));
+			mMotorParameters.emplace_back(std::make_unique<MacOutputs>(mRequestedPosition));
 		}
 	}
 }
