@@ -883,69 +883,66 @@ namespace nap
 					}
 
 					// draw motor inputs 
-					bool showMotorInputs = true;
-					if (showMotorInputs)
+					if (mProps.mDirty)
 					{
-						if (mProps.mDirty)
+						//
+						mProps.mCachedCurve.clear();
+
+						mProps.mCachedCurve = std::vector<std::vector<ImVec2>>(8);
+
+						// create parameters that we evaluate
+						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
+						std::vector<Parameter*> parameters;
+						for (int p = 0; p < 8; p++)
+						{
+							parametersPts.emplace_back(std::make_unique<ParameterFloat>());
+							parameters.emplace_back(parametersPts.back().get());
+						}
+
+						// zoom in on the part that is shown in the window
+						int steps = mProps.mCurveResolution;
+						float part = windowWidth / mProps.mChildWidth;
+						float partStart = math::clamp<float>(scrollX - 40, 0, mProps.mChildWidth) / mProps.mChildWidth;
+
+						// start evaluating and create curves of motor
+						for (int p = 0; p < steps; p++)
 						{
 							//
-							mProps.mCachedCurve.clear();
+							mSequencePlayer->evaluate(((mSequencePlayer->getDuration() * part) / (float)steps) * (float)p + (mSequencePlayer->getDuration() * partStart), parameters);
 
-							mProps.mCachedCurve = std::vector<std::vector<ImVec2>>(8);
-
-							// create parameters that we evaluate
-							std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
-							std::vector<Parameter*> parameters;
-							for (int p = 0; p < 8; p++)
-							{
-								parametersPts.emplace_back(std::make_unique<ParameterFloat>());
-								parameters.emplace_back(parametersPts.back().get());
-							}
-
-							// zoom in on the part that is shown in the window
-							int steps = mProps.mCurveResolution;
-							float part = windowWidth / mProps.mChildWidth;
-							float partStart = math::clamp<float>(scrollX - 40, 0, mProps.mChildWidth) / mProps.mChildWidth;
-
-							// start evaluating and create curves of motor
-							for (int p = 0; p < steps; p++)
-							{
-								//
-								mSequencePlayer->evaluate(((mSequencePlayer->getDuration() * part) / (float)steps) * (float)p + (mSequencePlayer->getDuration() * partStart), parameters);
-
-								//
-								for (int l = 0; l < 8; l++)
-								{
-									float yPart = (childSize.y / 8.0f);
-									float yStart = yPart * l;
-
-									mProps.mCachedCurve[l].emplace_back(ImVec2(
-										partStart * mProps.mChildWidth + mProps.mTopLeftPosition.x + childSize.x * part * (p * (1.0f / (float)steps)),
-										bottomRightPos.y - yStart - yPart * static_cast<ParameterFloat*>(parameters[l])->mValue));
-								}
-							}
-
-							mProps.mDirty = false;
-						}
-			
-						if (mProps.mCachedCurve.size() == 8)
-						{
+							//
 							for (int l = 0; l < 8; l++)
 							{
-								if (mProps.mCachedCurve[l].size() > 0)
-								{
-									// draw the polylines 
-									drawList->AddPolyline(
-										&*mProps.mCachedCurve[l].begin(),
-										mProps.mCachedCurve[l].size(),
-										colorRed,
-										false,
-										1.5f,
-										false);
-								}
+								float yPart = (childSize.y / 8.0f);
+								float yStart = yPart * l;
+
+								mProps.mCachedCurve[l].emplace_back(ImVec2(
+									partStart * mProps.mChildWidth + mProps.mTopLeftPosition.x + childSize.x * part * (p * (1.0f / (float)steps)),
+									bottomRightPos.y - yStart - yPart * static_cast<ParameterFloat*>(parameters[l])->mValue));
+							}
+						}
+
+						mProps.mDirty = false;
+					}
+			
+					if (mProps.mCachedCurve.size() == 8)
+					{
+						for (int l = 0; l < 8; l++)
+						{
+							if (mProps.mCachedCurve[l].size() > 0)
+							{
+								// draw the polylines 
+								drawList->AddPolyline(
+									&*mProps.mCachedCurve[l].begin(),
+									mProps.mCachedCurve[l].size(),
+									colorRed,
+									false,
+									1.5f,
+									false);
 							}
 						}
 					}
+					
 				}
 			}
 
