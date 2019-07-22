@@ -204,11 +204,11 @@ namespace nap
 		bool needToOpenPopup = false;
 		std::string popupIdToOpen = "";
 
-		// draw player controls
-		drawTimelinePlayerControls(needToOpenPopup, popupIdToOpen);
-
 		// draw timeline
 		drawTimeline(needToOpenPopup, popupIdToOpen);
+
+		// draw player controls
+		drawTimelinePlayerControls(needToOpenPopup, popupIdToOpen);
 
 		//
 		if (needToOpenPopup)
@@ -264,6 +264,8 @@ namespace nap
 			mProps.mPrevScrollY = ImGui::GetScrollY();
 			mProps.mDirty = true;
 		}
+
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 50));
 
 		// begin timeline child
 		ImGui::BeginChild("", ImVec2(mProps.mChildWidth + 32, mProps.mChildHeight), false, ImGuiWindowFlags_NoMove);
@@ -939,11 +941,10 @@ namespace nap
 										colorRed,
 										false,
 										1.5f,
-										true);
+										false);
 								}
 							}
 						}
-
 					}
 				}
 			}
@@ -1103,14 +1104,6 @@ namespace nap
 			}
 			ImGui::EndChild();
 
-			// make sure draw list doesnt get to high
-			//printf("%llu\n", draw_list->_VtxCurrentIdx);
-			if (drawList->_VtxCurrentIdx > 64000)
-			{
-				printf("Draw list to large! Decrease resolution\n");
-				drawList->Clear();
-			}
-
 			ImGui::Spacing();
 			ImGui::Spacing();
 		}
@@ -1133,8 +1126,13 @@ namespace nap
 		};
 
 		// make sure the top elements above the timeline scroll together with the scrollbar so only timeline moves
-		float cursorPosX = ImGui::GetCursorPosX();
-		ImGui::SetCursorPos(ImVec2(cursorPosX + ImGui::GetScrollX(), ImGui::GetCursorPosY()));
+		ImGui::SetCursorPos(ImVec2(ImGui::GetScrollX(), 27 + ImGui::GetScrollY()));
+
+		//
+		ImGui::BeginChild("Controls", ImVec2( 2000, 50 ), false, ImGuiWindowFlags_NoScrollbar);
+
+		ImGui::Spacing();
+		ImGui::Indent();
 
 		// stop button
 		if (ImGui::Button("Stop"))
@@ -1230,7 +1228,7 @@ namespace nap
 		// curves resolution
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		if (ImGui::SliderInt("Curve Res.", &mProps.mCurveResolution, 25, 200, ""))
+		if (ImGui::SliderInt("Curve Res.", &mProps.mCurveResolution, 50, 666, ""))
 			mProps.mDirty = true;
 		ImGui::PopItemWidth();
 
@@ -1299,6 +1297,10 @@ namespace nap
 		}
 
 		showTip("Show list of sequences");
+
+		ImGui::EndChild();
+
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - ImGui::GetScrollY()));
 	}
 
 
