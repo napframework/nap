@@ -63,7 +63,7 @@ namespace nap
 		case opengl::EGLSLType::Int:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformIntArray>();
+					result = std::make_unique<UniformIntArray>(declaration.mSize);
 				else
 					result = std::make_unique<UniformInt>();
 				
@@ -72,7 +72,7 @@ namespace nap
 		case opengl::EGLSLType::Float:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformFloatArray>();
+					result = std::make_unique<UniformFloatArray>(declaration.mSize);
 				else
 					result = std::make_unique<UniformFloat>();
 
@@ -81,7 +81,7 @@ namespace nap
 		case opengl::EGLSLType::Vec4:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformVec4Array>();
+					result = std::make_unique<UniformVec4Array>(declaration.mSize);
 				else
 					result = std::make_unique<UniformVec4>();
 
@@ -90,7 +90,7 @@ namespace nap
 		case opengl::EGLSLType::Mat4:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformMat4Array>();
+					result = std::make_unique<UniformMat4Array>(declaration.mSize);
 				else
 					result = std::make_unique<UniformMat4>();
 
@@ -99,7 +99,7 @@ namespace nap
 		case opengl::EGLSLType::Tex2D:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformTexture2DArray>();
+					result = std::make_unique<UniformTexture2DArray>(declaration.mSize);
 				else
 					result = std::make_unique<UniformTexture2D>();
 
@@ -108,7 +108,7 @@ namespace nap
 		case opengl::EGLSLType::Vec3:
 			{
 				if (declaration.isArray())
-					result = std::make_unique<UniformVec3Array>();
+					result = std::make_unique<UniformVec3Array>(declaration.mSize);
 				else
 					result = std::make_unique<UniformVec3>();
 

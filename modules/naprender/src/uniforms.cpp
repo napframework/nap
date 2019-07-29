@@ -147,7 +147,7 @@ namespace nap
 	}
 
 
-	int UniformTexture2D::push(const opengl::UniformDeclaration& declaration, int textureUnit) const
+	int UniformTexture2D::push(const opengl::UniformDeclaration& declaration, int textureUnit) const 
 	{
 		if (mTexture == nullptr)
 			return 0;
@@ -197,15 +197,19 @@ namespace nap
 	
 	int UniformTexture2DArray::push(const opengl::UniformDeclaration& declaration, int textureUnit) const
 	{
+		int num_bound = 0;
 		for (int index = 0; index < mTextures.size(); ++index)
 		{
-			int unit = textureUnit + index;
+			if (mTextures[index] == nullptr)
+				continue;
+
+			int unit = textureUnit + num_bound++;
 			glActiveTexture(GL_TEXTURE0 + unit);
 			mTextures[index]->bind();
 			glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&unit));
 		}
 
-		return mTextures.size();
+		return num_bound;
 	}
 
 } // End Namespace NAP
