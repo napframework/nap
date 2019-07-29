@@ -21,23 +21,19 @@ namespace nap
 namespace nap
 {
 	/**
-	 * Object that receives and processes osc events
-	 * The receiver manages it's own connection in a background thread
-	 * All received messages are consumed by the OSC service
+	 * Object that receives and processes OSC events.
+	 * The receiver manages it's own connection in a background thread.
+	 * All received messages are consumed by the nap::OSCService and dispatched on the main thread 
+	 * to a valid nap::OSCInputComponent. Listen to the messageReceived signal of the OSC input component 
+	 * to receive OSC events in the running application.
 	 */
 	class NAPAPI OSCReceiver : public Device
 	{
 		friend class OSCService;
 		RTTI_ENABLE(Device)
 	public:
-		// Default constructor
-		OSCReceiver() = default;
-
 		// Constructor used by factory
 		OSCReceiver(OSCService& service);
-
-		// Destructor
-		virtual ~OSCReceiver() override;
 
 		/**
 		 * Initializes the receiver and registers it with the OSCService

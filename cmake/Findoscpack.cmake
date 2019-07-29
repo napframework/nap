@@ -26,4 +26,4 @@ mark_as_advanced(OSCPACK_INCLUDE_DIRS)
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_INCLUDE_DIRS OSCPACK_LIBS_RELEASE OSCPACK_LIBS_DEBUG)
+find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_DIR)

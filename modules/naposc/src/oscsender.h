@@ -26,7 +26,7 @@ namespace nap
 {
 	/**
 	 * Sends a single OSC message or bundle of OSC messages.
-	 * This device manages it's own connection and is constructed using a target ip address and port
+	 * This device manages it's own connection and is constructed using a target ip address and port.
 	 */
 	class NAPAPI OSCSender : public Device
 	{
@@ -37,9 +37,6 @@ namespace nap
 
 		// Constructor used by factory
 		OSCSender(OSCService& service);
-
-		// Kills connection
-		virtual ~OSCSender() override;
 
 		std::string mIPAddress = "127.0.0.1";	///< Property: 'IpAddress' target machine ip address
 		int mPort = 8000;			            ///< Property: 'Port' target machine port

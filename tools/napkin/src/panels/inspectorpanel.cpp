@@ -24,6 +24,11 @@ void InspectorModel::setPath(const PropertyPath& path)
 	populateItems();
 }
 
+const PropertyPath& InspectorModel::path() const
+{
+	return mPath;
+}
+
 void InspectorModel::clearItems()
 {
 	removeRows(0, rowCount());
@@ -144,8 +149,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Pointer?
-	auto pointer_item = dynamic_cast<PointerItem*>(item);
-	if (pointer_item != nullptr)
+	if (auto pointer_item = dynamic_cast<PointerItem*>(item))
 	{
 		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
 		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
@@ -154,6 +158,42 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			AppContext::get().selectionChanged(objects);
 		});
 		action->setEnabled(pointee != nullptr);
+	}
+
+	// Embedded pointer?
+	if (auto embeddedPointerItem = dynamic_cast<EmbeddedPointerItem*>(item))
+	{
+		nap::rtti::Object* pointee = embeddedPointerItem->getPath().getPointee();
+		QString label = QString(pointee ? "Replace" : "Create") + " Instance";
+		menu.addAction(label, [this, embeddedPointerItem, pointee]
+		{
+			auto path = embeddedPointerItem->getPath();
+			auto type = path.getWrappedType();
+
+			TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
+
+			rttr::type chosenType = showTypeSelector(this, predicate);
+
+			if (!chosenType.is_valid())
+				return;
+
+			path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
+		});
+
+		if (pointee)
+		{
+			menu.addAction("Remove Instance", [embeddedPointerItem, pointee]
+			{
+				auto doc = embeddedPointerItem->getPath().getDocument();
+				auto pointeePath = PropertyPath(*pointee, *doc);
+
+				// TODO: Make this a command
+				auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
+				doc->removeObject(*pointeePath.getObject());
+				if (ownerPath.isValid())
+					doc->propertyValueChanged(ownerPath);
+			});
+		}
 	}
 
 	// Array item?
@@ -203,44 +243,56 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// Rebuild
-	rebuild(path);
+	//	If the object name changed, the property path in the model is now invalid because it's string-based
+	if (path.getName() == sIDPropertyName)
+	{
+		auto parent = path.getParent();
+		if (dynamic_cast<nap::rtti::Object*>(parent.getObject()))
+			setPath(parent);
+	}
+	else
+	{
+		rebuild(path);
+	}
 }
 
 void InspectorPanel::setPath(const PropertyPath& path)
 {
+	auto doc = mModel.path().getDocument();
+
+	if (doc)
+		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+
 	if (path.isValid())
 	{
 		mTitle.setText(QString::fromStdString(path.getName()));
 		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
-
-		auto p = path.toString();
-		if (p.at(0) == '.')
-			p = path.getRootEntity()->mEntity->mID + p.substr(1, p.size()-1);
-
 	}
 	else
 	{
-//		mPathField.setText("");
 		mTitle.setText("");
 		mSubTitle.setText("");
 	}
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
+
+	doc = path.getDocument();
+	if (doc)
+		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+
 	mTreeView.getTreeView().expandAll();
 }
 
 void InspectorPanel::clear()
 {
-	mTreeView.getSelectedItems().clear();
 	mModel.clearItems();
 	mPathField.setText("");
 	mTitle.setText("");
 	mSubTitle.setText("");
 }
 
-void napkin::InspectorPanel::rebuild(PropertyPath selection)
+void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 {
 	// Get vertical scroll pos so we can restore it later
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
@@ -251,19 +303,13 @@ void napkin::InspectorPanel::rebuild(PropertyPath selection)
 	mTreeView.getTreeView().expandAll();
 
 	// Find item based on path name
-	QList<nap::rtti::Object*> objects = { selection.getObject() };
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
 	{
 		auto pitem = dynamic_cast<PropertyPathItem*>(item);
 		if (pitem == nullptr)
 			return false;
 
-		if (pitem->getPath().toString() == selection.toString())
-		{
-			nap::Logger::info(pitem->getPath().toString());
-			return true;
-		}
-		return false;
+		return pitem->getPath().toString() == selection.toString();
 	});
 
 	if (pathItem != nullptr)
@@ -292,6 +338,13 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 	});
 
 	mTreeView.selectAndReveal(pathItem);
+}
+
+void InspectorPanel::onObjectRemoved(Object* obj)
+{
+	// If the currently edited object is being removed, clear the view
+	if (obj == mModel.path().getObject())
+		setPath({});
 }
 
 bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const

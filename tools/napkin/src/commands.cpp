@@ -427,3 +427,29 @@ void RemoveComponentCommand::undo()
 {
 	QUndoCommand::undo();
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ReplaceEmbeddedPointerCommand::ReplaceEmbeddedPointerCommand(const PropertyPath& path, rttr::type objectType)
+		: mPath(path), mType(objectType)
+{
+
+}
+
+void ReplaceEmbeddedPointerCommand::redo()
+{
+	auto pointee = mPath.getPointee();
+	auto doc = mPath.getDocument();
+	if (pointee) // TODO: Serialize and store for undo
+		doc->removeObject(*pointee);
+
+	auto obj = doc->addObject(mType, nullptr, false);
+	mCreatedObject = {*obj, *doc};
+	mPath.setPointee(obj);
+	doc->propertyValueChanged(mPath);
+}
+
+void ReplaceEmbeddedPointerCommand::undo()
+{
+	nap::Logger::fatal("Not supported");
+}

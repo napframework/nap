@@ -37,7 +37,7 @@ namespace nap
         AAsset_close(asset);
 
         // Process the loaded JSON
-        if (!deserializeJSON(outBuffer, EPropertyValidationMode::DisallowMissingProperties, getFactory(), readResult, errorState)) 
+        if (!deserializeJSON(outBuffer, EPropertyValidationMode::DisallowMissingProperties, EPointerPropertyMode::NoRawPointers, getFactory(), readResult, errorState)) 
         {
             Logger::error("Failed to de-serialize");
             return false;            

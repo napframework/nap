@@ -32,5 +32,3 @@ copy_module_json_to_bin()
 
 # Package into platform release
 package_module()
-
-# Package information 3rd party database should go here

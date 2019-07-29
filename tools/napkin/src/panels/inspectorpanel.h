@@ -15,7 +15,7 @@ namespace napkin
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static constexpr char* sNapkinMimeData = "application/napkin-path";
+	static constexpr char* sNapkinMimeData = (char*) "application/napkin-path";
 
 	class ArrayPropertyItem;
 
@@ -36,6 +36,11 @@ namespace napkin
 		 * @param path The object or property to edit
 		 */
 		void setPath(const PropertyPath& path);
+
+		/**
+		 * Retrieve the path that is currently being edited
+		 */
+		 const PropertyPath& path() const;
 
 		/**
 		 * @return The object currently displayed/edited by this model
@@ -139,12 +144,17 @@ namespace napkin
 		void onPropertySelectionChanged(const PropertyPath& prop);
 
 		/**
+		 * Called when an object has been removed
+		 */
+	 	void onObjectRemoved(nap::rtti::Object* obj);
+
+		/**
 		 * Rebuilds view and model and applies path as selection
 		 * This is a temp work-around to ensure selection remains valid
 		 * @param selection the property path that should be selected after rebuilding the model
 		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
 		 */
-		void rebuild(PropertyPath selection);
+		void rebuild(const PropertyPath& selection);
 		
 		/**
 		 * Called just before the current document is closed
