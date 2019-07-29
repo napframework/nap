@@ -20,7 +20,7 @@ namespace nap
 		/**
 		 * All available ethercast slave states
 		 */
-		enum class ESlaveState : uint
+		enum class ESlaveState : uint16
 		{
 			None			= 0x00,				///< No valid state
 			Init			= 0x01,				///< Init state
@@ -78,9 +78,34 @@ namespace nap
 
 		/**
 		 * Called after slave enumeration and initialization.
-		 * All slaves should be in  pre-operational state.
+		 * All slaves are in  pre-operational state and can be addressed.
 		 */
-		virtual void onInit() { }
+		virtual void onStart()	{ }
+
+		/**
+		 * Called after stopping the processing and error handling threads but
+		 * before setting all slaves to init mode. Perform additional close up steps here.
+		 */
+		virtual void onStop()	{ }
+
+		/**
+		 * Called from the processing thread at a fixed interval defined by the cycle time property.
+		 * Allows for real-time interaction with an ether-cat slave on the network by
+		 * reading and writing to the slave's inputs or outputs.
+		 * At this stage no SDO operations should take place, only operations that
+		 * involve the access and modification of the PDO map.
+		 * example:
+		 *
+		 *	ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(1));
+		 *
+		 * 	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
+		 *	mac_outputs->mOperatingMode = 2;
+		 *	mac_outputs->mRequestedPosition = -1000000;
+		 *	mac_outputs->mVelocity = 2700;
+		 *	mac_outputs->mAcceleration = 360;
+		 *	mac_outputs->mTorque = 341;
+		 */
+		virtual void onProcess() = 0;
 
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
@@ -118,25 +143,6 @@ namespace nap
 		virtual void onOperational(void* slave, int index)			{ }
 
 		/**
-		 * Called from the processing thread at a fixed interval defined by the cycle time property.
-		 * Allows for real-time interaction with an ether-cat slave on the network by 
-		 * reading and writing to the slave's inputs or outputs.
-		 * At this stage no SDO operations should take place, only operations that
-		 * involve the access and modification of the PDO map.
-		 * example:
-		 *
-		 *	ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(1));
-		 *	
-		 *	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
-		 *	mac_outputs->mOperatingMode = 2;
-		 *	mac_outputs->mRequestedPosition = -1000000;
-		 *	mac_outputs->mVelocity = 2700;
-		 *	mac_outputs->mAcceleration = 360;
-		 *	mac_outputs->mTorque = 341;
-		 */
-		virtual void onProcess() = 0;
-
-		/**
 		 * SDO write, blocking. Single subindex or complete Access.
 		 * It is not advised to write data when in operational mode.
 		 * @param slave index of the slave, starting at 1. 
@@ -160,6 +166,15 @@ namespace nap
 		 */
 		void sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p);
 
+		/**
+		 * Blocking call to change the state of all slaves.
+		 * Waits 2 seconds (default timeout value) to ensure state actually changed.
+		 * The actual state of all slaves is updated after this call.
+		 * @param state the new state for all slaves.
+		 * @return lowest state of all read slave states. 
+		 */
+		ESlaveState requestState(ESlaveState state);
+
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
@@ -170,10 +185,20 @@ namespace nap
 		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
 		std::atomic<bool>	mOperational = { false };			///< If the master is operational
 
+		/**
+		 * Real-time IO operations, executed on a different thread.
+		 */
 		void process();
 		
+		/**
+		 * Automatic slave error checking and recovery.
+		 */
 		void checkForErrors();
 
-		void requestInitState();
+		/**
+		 * Reads (updates) the state of all slaves.
+		 * @return lowest state of all read slave states.
+		 */
+		ESlaveState readState();
 	};
 }

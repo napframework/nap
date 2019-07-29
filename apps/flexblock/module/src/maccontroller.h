@@ -34,6 +34,15 @@ namespace nap
 	protected:
 
 		/**
+		 * Describes various motor states
+		 */
+		enum class EMotorMode : nap::uint32
+		{
+			Passive		= 0,
+			Position	= 2
+		};
+
+		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
 		 * Resets the motor position is requested.
 		 * @param slave ec_slavet* pointer to the slave on the network.
@@ -63,7 +72,20 @@ namespace nap
 		 * Creates a map of all available mac motors.
 		 * Occurs when all slaves have been enumerated and configured.
 		 */
-		virtual void onInit() override;
+		virtual void onStart() override;
+
+		/**
+		 * Turns on passive mode for all motors
+		 */
+		virtual void onStop() override;
+
+		/**
+		 * Puts the motor in the requested mode using an sdo request.
+		 * Do not call this when the motor is in operational mode!
+		 * @param index slave index into SOEM ec_slave array.
+		 * @param mode the new motor mode
+		 */
+		void setMotorMode(int index, EMotorMode mode);
 
 	private:
 		/**
