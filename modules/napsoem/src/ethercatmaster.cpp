@@ -40,7 +40,7 @@ namespace nap
 		}
 
 		// Call init
-		onInit();
+		onStart();
 
 		// All slaves should be in pre-op mode now
 		ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE);
@@ -85,11 +85,7 @@ namespace nap
 		ec_writestate(0);
 
 		// Wait until all slaves are in operational state
-		int chk = 200;
-		while (chk-- && ec_slave[0].state != EC_STATE_OPERATIONAL)
-		{
-			ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
-		}
+		ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE * 5);
 
 		// Ensure all slaves are in operational state
 		if (ec_slave[0].state != EC_STATE_OPERATIONAL)
@@ -140,8 +136,13 @@ namespace nap
 			mProcessTask.wait();
 		}
 
+		// Call stop
+		onStop();
+
 		// Make all slaves go to initialization stage
-		requestInitState();
+		ESlaveState new_state = requestState(ESlaveState::Init);
+		if (new_state != ESlaveState::Init)
+			nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
 
 		// Close socket
 		ec_close();
@@ -162,6 +163,12 @@ namespace nap
 	int EtherCATMaster::getSlaveCount() const
 	{
 		return ec_slavecount;
+	}
+
+
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::readState()
+	{
+		return static_cast<ESlaveState>(ec_readstate());
 	}
 
 
@@ -307,15 +314,15 @@ namespace nap
 	}
 
 
-	void EtherCATMaster::requestInitState()
+	EtherCATMaster::ESlaveState EtherCATMaster::requestState(ESlaveState state)
 	{
-		nap::Logger::info("%s: Requesting init state for all slaves", mID.c_str());
+		// Force state for all slaves
 		int chk = 200;
-		ec_slave[0].state = EC_STATE_INIT;
+		ec_slave[0].state = static_cast<uint16>(state);
 		ec_writestate(0);
-		while (chk-- && ec_slave[0].state != EC_STATE_INIT)
-		{
-			ec_statecheck(0, EC_STATE_INIT, EC_TIMEOUTSTATE);
-		}
+		ec_statecheck(0, static_cast<uint16>(state), EC_TIMEOUTSTATE);
+
+		// Read back state
+		return readState();
 	}
 }
