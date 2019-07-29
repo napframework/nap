@@ -111,8 +111,7 @@ namespace nap
 	// Called when the window is going to render
 	void TommyApp::render()
 	{
-		// Make render window active
-		mRenderService->destroyGLContextResources(mRenderWindows);
+		mRenderService->destroyGLContextResources({ mRenderWindows[0].get() });
 		RenderWindow* render_window = mRenderWindows[0].get();
 		render_window->makeActive();
 

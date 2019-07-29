@@ -39,7 +39,7 @@ namespace nap
 		getEntityInstance()->getComponentsOfType<SelectColorComponentInstance>(mColorComps);
 		
 		// Make sure there are some colors to choose from
-		if (!errorState.check(!mColorComps.empty(), "No color components found"))
+		if (errorState.check(mColorComps.empty(), "%s: no color components found", mID.c_str()))
 			return false;
 
 		// Set span

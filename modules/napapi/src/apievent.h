@@ -20,14 +20,15 @@ namespace nap
 	 * To dispatch an event to an external environment call APIService::dispatchEvent after construction of this event. 
 	 *
 	 * Example: 	
-	 * // Create the event
-	 * APIEventPtr progress_event = std::make_unique<APIEvent>("CacheProgress");
-	 *
-	 * // Add an argument
-	 * progress_event->addArgument<APIInt>("Percentage", ++curr_pro);
 	 * 
-	 * // Dispatch to possible listeners
-	 * mAPIService->dispatchEvent(std::move(progress_event));
+	 *		// Create the event
+	 *		APIEventPtr progress_event = std::make_unique<APIEvent>("CacheProgress");
+	 *
+	 *		// Add an argument
+	 *		progress_event->addArgument<APIInt>("Percentage", ++curr_pro);
+	 * 
+	 *		// Dispatch to possible listeners
+	 *		mAPIService->dispatchEvent(std::move(progress_event));
 	 */
 	class NAPAPI APIEvent : public Event
 	{
@@ -36,37 +37,34 @@ namespace nap
 		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<APIArgumentList, APIArgument*>;
 
 		/**
-		 * Default constructor
-		 */
-		APIEvent();
-
-		/**
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name. A unique id is generated.
 		 * @param name name of this call
 		 */
 		APIEvent(const std::string& name);
 
 		/**
-		 * Move constructor
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name. A unique id is generated.
 		 * @param name name of this call
 		 */
-		APIEvent(const std::string&& name);
+		APIEvent(std::string&& name);
 
 		/**
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name and unique id.
+		 * Use this constructor to form a reply based on a previously received client request.
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name name of this call
 		 * @param id unique identifier of this call
 		 */
 		APIEvent(const std::string& name, const std::string& id);
 
 		/**
-		 * Move constructor
-		 * Every API call needs to be associated with an action
+		 * Construct a new api event with the given name and unique id.
+		 * Use this constructor to form a reply based on a previously received client request.
+		 * The uuid should match the uuid of the request. This allows the client to match call id's.
 		 * @param name identifier of this call
 		 * @param id unique identifier of this call
 		 */
-		APIEvent(const std::string&& name, const std::string&& id);
+		APIEvent(std::string&& name, std::string&& id);
 
 		/**
 		 * @return name (action) of this call	
@@ -86,7 +84,7 @@ namespace nap
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
-		APIArgument* addArgument(const std::string&& name, Args&&... args);
+		APIArgument* addArgument(const std::string& name, Args&&... args);
 
 		/**
 		 * Adds an api argument to this event based on the given api value.
@@ -125,6 +123,26 @@ namespace nap
 		bool matches(const nap::APISignature& signature) const;
 
 		/**
+		 * Returns this event as an event of type T.
+		 * Example: ws_event = api_event.to<APIWebSocketEvent>();
+		 * For this to work this event must be an event of type T.
+		 * Asserts if the event isn't of type T.
+		 * @return This event as T.
+		 */
+		template<typename T>
+		const T& to() const;
+
+		/**
+		 * Returns this event as an event of type T.
+		 * Example: ws_event = api_event.to<APIWebSocketEvent>();
+		 * For this to work this event must be an event of type T.
+		 * Asserts if the event isn't of type T.
+		 * @return This event as T.
+		 */
+		template<typename T>
+		T& to();
+
+		/**
 		 * Array [] subscript operator
 		 * @return the osc argument at index
 		 */
@@ -150,7 +168,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	APIArgument* nap::APIEvent::addArgument(const std::string&& name, Args&&... args)
+	APIArgument* nap::APIEvent::addArgument(const std::string& name, Args&&... args)
 	{
 		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::APIBaseValue)));
 
@@ -166,4 +184,25 @@ namespace nap
 		mArguments.emplace_back(std::move(argument));
 		return mArguments.back().get();
 	}
+
+
+	template<typename T>
+	const T& nap::APIEvent::to() const
+	{
+		const T* return_p = nullptr;
+		if (this->get_type().is_derived_from<T>())
+			return_p = reinterpret_cast<const T*>(this);
+		assert(return_p != nullptr);
+		return *return_p;
+	}
+
+
+	template<typename T>
+	T& nap::APIEvent::to()
+	{
+		T* cast_event = rtti_cast<T>(this);
+		assert(cast_event != nullptr);
+		return *cast_event;
+	}
+
 }

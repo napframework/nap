@@ -257,6 +257,11 @@ namespace nap
 			 */
 			QList<QAction*> tangentActions();
 
+			/**
+			 * @return All remaining uncategorized actions
+			 */
+			QList<QAction*> auxiliaryActions();
+
 		Q_SIGNALS:
 			void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
 
@@ -322,6 +327,7 @@ namespace nap
 			QAction mInterpBezierAction;
 			QAction mInterpSteppedAction;
 			QAction mFlattenTangentsAction;
+			QAction mFrameViewAction;
 		};
 
 		/**

@@ -39,6 +39,8 @@ namespace nap
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 		using RootEntityList = std::vector<RootEntity>;
 		using InstanceByIDMap = std::unordered_map<std::string, rtti::Object*>;
+		using SortedComponentInstanceList = std::vector<ComponentInstance*>;
+		using SpawnedComponentInstanceMap = std::unordered_map<EntityInstance*, SortedComponentInstanceList>;
 
 		Scene(Core& core);
 		virtual ~Scene() override;
@@ -49,6 +51,11 @@ namespace nap
 		 * and are accessible through #getRootEntity() and #getEntities()
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Destroy the scene. Will call onDestroy for all ComponentInstances and EntityInstances in the scene.
+		 */
+		virtual void onDestroy() override;
 
 		/**
 		 * Update all entities contained in this scene
@@ -117,7 +124,7 @@ namespace nap
 		/**
 		 * Helper for spawning entities. Used by both spawn and init functions.
 		 */
-		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState);
+		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, SortedComponentInstanceList& sortedComponentInstances, utility::ErrorState& errorState);
 
 	public:
 		RootEntityList 						mEntities;						///< List of root entities owned by the Scene
@@ -131,6 +138,8 @@ namespace nap
 		EntityByIDMap						mEntityInstancesByID;			///< Holds all spawned entities
 		InstanceByIDMap						mInstancesByID;					///< Holds all spawned entities & components
 		ClonedComponentResourceList			mAllClonedComponents;			///< All cloned components for this entity
+		SortedComponentInstanceList			mLoadedComponentInstances;		///< Sorted list of all ComponentInstances that were created during init (i.e. resource file load)
+		SpawnedComponentInstanceMap			mSpawnedComponentInstanceMap;	///< Sorted list of all ComponentInstances that were spawned at runtime, grouped by the root EntityInstance they belong to.
 	};
 
 	using SceneCreator = rtti::ObjectCreator<Scene, Core>;

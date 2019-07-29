@@ -27,4 +27,4 @@ endif()
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set RTMIDI_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(rtmidi REQUIRED_VARS RTMIDI_INCLUDE_DIR RTMIDI_LIBRARIES_RELEASE RTMIDI_LIBRARIES_DEBUG)
+find_package_handle_standard_args(rtmidi REQUIRED_VARS RTMIDI_INCLUDE_DIR)

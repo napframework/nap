@@ -61,9 +61,6 @@ namespace nap
 	 */
 	void CopystampApp::update(double deltaTime)
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
-
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -84,7 +81,7 @@ namespace nap
 	void CopystampApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 
 		// Activate current window for drawing
 		mRenderWindow->makeActive();

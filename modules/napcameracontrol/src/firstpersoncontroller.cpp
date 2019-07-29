@@ -30,17 +30,17 @@ namespace nap
 	bool FirstPersonControllerInstance::init(utility::ErrorState& errorState)
 	{
 		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();
-		if (!errorState.check(pointer_component != nullptr, "Could not find PointerInputComponent"))
+		if (!errorState.check(pointer_component != nullptr, "%s: missing PointerInputComponent", mID.c_str()))
 			return false;
 
 		// KeyInputComponent is required to receive input
 		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
-		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
+		if (!errorState.check(key_component != nullptr, "%s: missing KeyInputComponent", mID.c_str()))
 			return false;
 
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Connect mouse handlers

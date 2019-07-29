@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * Mode used by an artnet controller to send data.
 	 * When set to broadcast the message is broadcasted over the network.
-	 * When set to unicast the message is only send to compatible nodes.
+	 * When set to unicast the message is only sent to compatible nodes.
 	 * Compatible nodes match the subnet and universe of the controller.
 	 */
 	enum class EArtnetMode : int
@@ -49,8 +49,6 @@ namespace nap
 
 		// Constructor used by factory
 		ArtNetController(ArtNetService& service);
-
-		virtual ~ArtNetController() override;
 
 		/**
 		 * Creates a mapping to the subnet and address.
@@ -133,7 +131,7 @@ namespace nap
 		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
 		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
-		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the consolve
+		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the console
 		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
 		std::string			mIpAddress = "";								///< Property: 'IPAddress' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
 

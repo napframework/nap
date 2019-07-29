@@ -114,6 +114,12 @@ namespace nap
 	}
 
 
+	math::Rect RenderWindow::getRectPixels() const
+	{
+		return{ 0.0f, 0.0f, static_cast<float>(getWidthPixels()), static_cast<float>(getHeightPixels()) };
+	}
+
+
 	const opengl::BackbufferRenderTarget& RenderWindow::getBackbuffer() const
 	{
 		return mWindow->getBackbuffer();
