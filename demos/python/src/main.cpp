@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "python.h"
+#include "pythonapp.h"
 
 // Nap includes
 #include <nap/logger.h>
