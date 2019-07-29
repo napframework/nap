@@ -19,11 +19,11 @@
 
 namespace nap
 {
-    
+
     // Forward declarations
     class PythonScriptComponent;
     class PythonScriptComponentInstance;
-    
+
 
     /**
      * The resource class for the PythonScriptComponent.
@@ -37,25 +37,25 @@ namespace nap
     {
         RTTI_ENABLE(Component)
         DECLARE_COMPONENT(PythonScriptComponent, PythonScriptComponentInstance)
-        
+
         friend class PythonScriptComponentInstance;
-        
+
     public:
         bool init(utility::ErrorState& errorState) override;
-        
+
         ResourcePtr<PythonScript> mPythonScript = nullptr;  ///< property: 'PythonScript' Pointer to a python script resource that manages the script that contains the python class for this component.
         std::string mClassName;                             ///< property: 'Class' The name of the class defined in the python script
         std::vector<std::string> mDependencies;             ///< property: 'Dependencies' list of component types that need to be among this scripts siblings and that will be initialized before this component.
-        
+
         // Inherited from Component
         virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-        
+
     private:
         pybind11::module mModule;
         pybind11::object mPythonClass;
     };
-    
-    
+
+
     /**
      * Instance of a @PythonScriptComponent.
      */
@@ -65,11 +65,11 @@ namespace nap
     public:
         PythonScriptComponentInstance(EntityInstance& entity, Component& resource);
         ~PythonScriptComponentInstance();
-        
+
         // Inherited from ComponentInstance
         virtual void update(double deltaTime) override;
         bool init(utility::ErrorState& errorState) override;
-        
+
         /**
          * Tries to call a method that returns a value with name @identifier in the python script with the specified arguments @args.
          * The return value will be stored in @returnValue.
@@ -77,21 +77,21 @@ namespace nap
          */
         template <typename ReturnType, typename ...Args>
         bool get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args);
-        
+
         /**
          * Tries to call a method with name @identifier in the python script with the specified arguments @args.
          * If the call fails the error will be logged in errorState.
          */
         template <typename ...Args>
         bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
-        
+
     private:
         PythonScriptComponent* mResource = nullptr;
         pybind11::object mInstance;
         bool mInitialized = false;
     };
-    
-    
+
+
     template <typename ReturnType, typename ...Args>
     bool PythonScriptComponentInstance::get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args)
     {
@@ -106,7 +106,7 @@ namespace nap
         }
         return true;
     }
-    
+
 
     template <typename ...Args>
     bool PythonScriptComponentInstance::call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args)
@@ -122,6 +122,6 @@ namespace nap
         }
         return true;
     }
-    
-    
+
+
 }
