@@ -16,9 +16,11 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Demo application that is called from within the main loop
-	 * Logs incoming midi and osc messages and allows the user to send a simple OSC value message.
-	 * To change the computer the osc message is send to change the ip address in the json (defaults to localhost)
+	 * Very simple demo application that demonstrates how to use a PythonScriptComponent and call it's methods from within C++.
+     * A PythonScriptResource is used that references the script 'mycomponent.py'.
+     * In this script a python class is defined that contains an update(), init() and destroy() method.
+     * Additionally it contains a setValue() and getValue() method to access a member.
+     * The value of a slider is passed to the setValue() method and the return value of getValue() is displayed in the window.
 	 */
 	class PythonApp : public App
 	{
@@ -64,6 +66,7 @@ namespace nap
 		InputService* mInputService = nullptr;							///< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							///< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							///< Pointer to the render window
-        ObjectPtr<EntityInstance> mMainEntity;
+        ObjectPtr<EntityInstance> mPythonEntity = nullptr;              ///< Entity containing the PythonScriptComponent
+        float mValue = 0;   ///< Value controlled directly by the ImGui slider
 	};
 }
