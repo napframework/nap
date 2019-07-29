@@ -31,13 +31,19 @@ namespace nap
     PythonScriptComponentInstance::~PythonScriptComponentInstance()
     {
         if (mInitialized)
-            call("destroy");
+        {
+            utility::ErrorState errorState;
+            if (!call("destroy", errorState))
+                nap::Logger::warn(errorState.toString());
+        }
     }
     
     
     void PythonScriptComponentInstance::update(double deltaTime)
     {
-        call("update", getEntityInstance()->getCore()->getElapsedTime(), deltaTime);
+        utility::ErrorState errorState;
+        if (!call("update", errorState, getEntityInstance()->getCore()->getElapsedTime(), deltaTime))
+            nap::Logger::warn(errorState.toString());
     }
 
     

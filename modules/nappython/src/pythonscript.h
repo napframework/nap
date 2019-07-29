@@ -8,6 +8,7 @@
 #include <nap/resource.h>
 #include <nap/logger.h>
 #include <rtti/factory.h>
+#include <utility/errorstate.h>
 
 namespace nap {
     
@@ -29,16 +30,19 @@ namespace nap {
         bool init(utility::ErrorState& errorState) override;
         
         /**
-         * Tries to call a function with name @identifier in the python script with the specified arguments @args.
-         * The return type will be inferred, if the function has no return type use call<void>().
-         * If the call fails the error will be logged.
+         * Tries to call a method that returns a value with name @identifier in the python script with the specified arguments @args.
+         * The return value will be stored in @returnValue.
+         * If the call fails the error will be logged in errorState.
          */
         template <typename ReturnType, typename ...Args>
-        ReturnType call(const std::string& identifier, Args... args);
+        bool get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args);
         
-        // Specialization for void return type
+        /**
+         * Tries to call a method with name @identifier in the python script with the specified arguments @args.
+         * If the call fails the error will be logged in errorState.
+         */
         template <typename ...Args>
-        void call(const std::string& identifier, Args... args);
+        bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
         
         /**
          * Requests a symbol (in most cases a class or function) from the script and returns its C++ representation.
@@ -52,30 +56,34 @@ namespace nap {
     
     
     template <typename ReturnType, typename ...Args>
-    ReturnType PythonScript::call(const std::string& identifier, Args... args)
+    bool PythonScript::get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args)
     {
         try
         {
-            return mModule.attr(identifier.c_str())(args...).template cast<ReturnType>();
+            returnValue = mModule.attr(identifier.c_str())(std::forward<Args>(args)...).template cast<ReturnType>();
         }
         catch (const pybind11::error_already_set& err)
         {
-            nap::Logger::error("Runtime python error while executing %s: %s", mPath.c_str(), err.what());
+            errorState.fail("Runtime python error while executing %s: %s", mPath.c_str(), err.what());
+            return false;
         }
+        return true;
     }
 
     
     template <typename ...Args>
-    void PythonScript::call(const std::string& identifier, Args... args)
+    bool PythonScript::call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args)
     {
         try
         {
-            mModule.attr(identifier.c_str())(args...);
+            mModule.attr(identifier.c_str())(std::forward<Args>(args)...);
         }
         catch (const pybind11::error_already_set& err)
         {
-            nap::Logger::error("Runtime python error while executing %s: %s", mPath.c_str(), err.what());
+            errorState.fail("Runtime python error while executing %s: %s", mPath.c_str(), err.what());
+            return false;
         }
+        return true;
     }
     
     

@@ -2,15 +2,6 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "MainEntity",
-            "Components": [],
-            "Children": [
-                "PythonEntity",
-                "PythonEntity"
-            ]
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "PythonEntity",
             "Components": [
                 {
@@ -49,7 +40,7 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "MainEntity",
+                    "Entity": "PythonEntity",
                     "InstanceProperties": []
                 }
             ]
