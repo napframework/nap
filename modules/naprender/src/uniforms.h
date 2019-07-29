@@ -296,6 +296,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
+
+		UniformIntArray() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformIntArray(int inSize) :
+			mValues(inSize)
+		{
+		}
+
 		/**
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
@@ -323,6 +334,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
+
+		UniformFloatArray() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformFloatArray(int inSize) :
+			mValues(inSize)
+		{
+		}
+
 		/**
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
@@ -350,6 +372,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
+
+		UniformVec3Array() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformVec3Array(int inSize) :
+			mValues(inSize)
+		{
+		}
+
 		/**
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
@@ -377,6 +410,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
+
+		UniformVec4Array() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformVec4Array(int inSize) :
+			mValues(inSize)
+		{
+		}
+
 		/**
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
@@ -404,6 +448,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
+
+		UniformMat4Array() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformMat4Array(int inSize) :
+			mValues(inSize)
+		{
+		}
+
 		/**
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
@@ -431,6 +486,17 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformTextureArray)
 	public:
+
+		UniformTexture2DArray() = default;
+
+		/**
+		 * Constructor to ensure the array has the correct size to match the shader
+		 */
+		UniformTexture2DArray(int inSize) :
+			mTextures(inSize)
+		{
+		}
+
 		/**
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
