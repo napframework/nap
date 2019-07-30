@@ -144,19 +144,27 @@ namespace nap
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
 			
 			// Check if it contains an error, if so add it to the list of errors
-			if (containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError))
+			mMotorError = containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError);
+			if (mMotorError)
 			{
 				rttr::enumeration error_enum = RTTI_OF(MACController::EErrorStat).get_enumeration();
 				for (auto value : error_enum.get_values())
 				{
 					// Skip any error
 					MACController::EErrorStat cur_v = static_cast<MACController::EErrorStat>(value.to_uint32());
-					if(cur_v == MACController::EErrorStat::AnyError)
+					if (cur_v == MACController::EErrorStat::AnyError)
 						continue;
 
 					// Check if the field contains this specific error
 					if (containsError(mac_inputs->mErrorStatus, cur_v))
-						mErrors.emplace(cur_v);
+					{
+						// Check if it's new and add thread safe if so
+						if (mErrors.find(cur_v) == mErrors.end())
+						{
+							std::lock_guard<std::mutex> guard(mErrorMutex);
+							mErrors.emplace(cur_v);
+						}
+					}
 				}
 			}
 
@@ -228,6 +236,25 @@ namespace nap
 	{
 		assert(index < getSlaveCount());
 		mMotorParameters[index]->setAcceleration(acceleration);
+	}
+
+
+	std::string MACController::errorToString(EErrorStat error)
+	{
+		return RTTI_OF(MACController::EErrorStat).get_enumeration().value_to_name(error).to_string();
+	}
+
+
+	bool MACController::hasErrors() const
+	{
+		return mMotorError;
+	}
+
+
+	std::unordered_set<nap::MACController::EErrorStat> MACController::getErrors()
+	{
+		std::lock_guard<std::mutex> guard(mErrorMutex);
+		return mErrors;
 	}
 
 

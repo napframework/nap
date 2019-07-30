@@ -4,6 +4,7 @@
 #include <nap/device.h>
 #include <ethercatmaster.h>
 #include <unordered_set>
+#include <mutex>
 
 namespace nap
 {
@@ -81,6 +82,28 @@ namespace nap
 		 * @pram acceleration new motor acceleration
 		 */
 		void setAcceleration(int index, float acceleration);
+
+		/**
+		 * Converts a motor error into a human readable string
+		 * @param error the motor error
+		 * @return the string representation of the error 
+		 */
+		std::string errorToString(EErrorStat error);
+
+		/**
+		 * If the motor is in an invalid state due to 1 or more errors
+		 * Always call this function first before sampling currently active errors
+		 * Note that this is not the same as connectivity!
+		 * @return if the motor is in an invalid state due
+		 */
+		bool hasErrors() const;
+
+		/**
+		 * Returns a list of all errors associated with the motor
+		 * Check for errors before calling this function!
+		 * @return list of all available motor errors
+		 */
+		std::unordered_set<MACController::EErrorStat> getErrors();
 
 		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
@@ -193,5 +216,7 @@ namespace nap
 
 		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
 		std::unordered_set<MACController::EErrorStat> mErrors;			///< List of all current errors
+		std::atomic<bool> mMotorError = { false };						///< If any errors are associated with the motor
+		std::mutex mErrorMutex;
 	};
 }
