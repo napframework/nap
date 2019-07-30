@@ -710,9 +710,9 @@
             "ResetPosition": false,
             "ResetPositionValue": 0,
             "Position": 0,
-            "Velocity": 2700,
-            "Acceleration": 360,
-            "Torque": 341
+            "Velocity": 1000,
+            "Acceleration": 100000,
+            "Torque": 100
         },
         {
             "Type": "nap::Material",

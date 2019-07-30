@@ -22,6 +22,37 @@ namespace nap
 		// Destructor
 		virtual ~MACController();
 
+		/**
+		 * Set the position of a single motor. Does not perform an out of bounds check
+		 * @param index motor index, 0 = first slave
+		 * @param position the new motor target position
+		 */
+		void setPosition(int index, nap::uint32 position);
+
+		/**
+		 * Set the velocity in RPM of a single motor. Does not perform an out of bounds check.
+		 * 1 RPM = 2.77056 counts/sample. Max velocity = 2000
+		 * @param index motor index, 0 = first slave.
+		 * @param velocity new motor velocity
+		 */
+		void setVelocity(int index, nap::uint32 velocity);
+
+		/**
+		 * Set the torque of a single motor. Does not perform an out of bounds check
+		 * Accepted range = 0 - 300 %, where 100 % is nominal load and 300 % absolute peak load.
+		 * @param index motor index, 0 = first slave
+		 * @param torque new motor torque
+		 */
+		void setTorque(int index, float torque);
+
+		/**
+		 * Set the desired nominal acceleration in RPM of a single motor. Does not perform an out of bounds check.
+		 * 1000 RPM/s = 3.598133 counts/Sample²
+		 * @param index motor index, 0 = first slave.
+		 * @pram acceleration new motor acceleration
+		 */
+		void setAcceleration(int index, nap::uint32 acceleration);
+
 		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
 		nap::uint32 mRequestedPosition = 0;		///< Property: 'Position' requested motor position
@@ -79,10 +110,10 @@ namespace nap
 		/**
 		 * Puts the motor in the requested mode using an sdo request.
 		 * Do not call this when the motor is in operational mode!
-		 * @param index slave index into SOEM ec_slave array.
+		 * @param index slave index, 0 = all slaves, 1 = first slave
 		 * @param mode the new motor mode
 		 */
-		void setMotorMode(int index, EMotorMode mode);
+		void setMode(int index, EMotorMode mode);
 
 	private:
 		/**
@@ -93,10 +124,35 @@ namespace nap
 		class MacOutputs
 		{
 		public:
-			MacOutputs(nap::uint32 targetPosition) { mTargetPosition = targetPosition; }
+			/**
+			 * Set motor target position
+			 * @param position new motor target position
+			 */
+			void setPosition(nap::uint32 position);
+
+			/**
+			 * Set motor velocity
+			 * @param velocity new motor velocity
+			 */
+			void setVelocity(nap::uint32 velocity);
+
+			/**
+			 * Set motor torque
+			 * @param torque new motor torque
+			 */
+			void setTorque(float torque);
+
+			/**
+			 * Set motor acceleration
+			 * @param acceleration new motor acceleration
+			 */
+			void setAcceleration(nap::uint32 acceleration);
 
 			std::atomic<nap::uint32>	mTargetPosition = { 0 };		///< New requested motor position
 			std::atomic<nap::int32>		mInitPosition	= { 0 };		///< Initial motor position
+			std::atomic<nap::uint32>	mVelocity		= { 0 };		///< Motor velocity
+			std::atomic<nap::uint32>	mTorque			= { 0 };		///< Motor torque
+			std::atomic<nap::uint32>	mAcceleration	= { 0 };		///< Motor acceleration
 		};
 			
 		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
