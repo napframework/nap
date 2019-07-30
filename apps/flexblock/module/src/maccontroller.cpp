@@ -155,16 +155,16 @@ namespace nap
 					if (cur_e == MACController::EErrorStat::AnyError)
 						continue;
 
-					// Check if the field contains this specific error
-					if (containsError(mac_inputs->mErrorStatus, cur_e))
+					// Skip if the error bit is not set
+					if(!containsError(mac_inputs->mErrorStatus, cur_e))
+						continue;
+
+					// Check if it's new and add thread safe
+					if (mErrors.find(cur_e) == mErrors.end())
 					{
-						// Check if it's new and add thread safe if so
-						if (mErrors.find(cur_e) == mErrors.end())
-						{
-							nap::Logger::error("%s: slave: %d, %s", mID.c_str(), i, errorToString(cur_e).c_str());
-							std::lock_guard<std::mutex> guard(mErrorMutex);
-							mErrors.emplace(cur_e);
-						}
+						nap::Logger::error("%s: slave: %d, %s", mID.c_str(), i, errorToString(cur_e).c_str());
+						std::lock_guard<std::mutex> guard(mErrorMutex);
+						mErrors.emplace(cur_e);
 					}
 				}
 			}
