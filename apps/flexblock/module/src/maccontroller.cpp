@@ -16,6 +16,28 @@ RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::ThermalEnergyError,		"ThermalEnergyError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::FollowError,			"FollowError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::FunctionError,			"FunctionError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::BrakeResistorError,		"BrakeResistorError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SoftwarePosError,		"SoftwarePosError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::TemperatureError,		"TemperatureError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::UnderVoltageError,		"UnderVoltageError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::OverVoltageError,		"OverVoltageError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::HighCurrentError,		"HighCurrentError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SpeedError,				"SpeedError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::IndexError,				"IndexError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::ControlVoltageError,	"ControlVoltageError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::CommunicationsError,	"CommunicationsError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::CurrentLoopError,		"CurrentLoopError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SlaveError,				"SlaveError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::AnyError,				"AnyError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::InitError,				"InitError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::FlashError,				"FlashError"),
+	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SafeTorqueError,		"SafeTorqueError")
+RTTI_END_ENUM
+
 //////////////////////////////////////////////////////////////////////////
 // Static callbacks
 //////////////////////////////////////////////////////////////////////////
@@ -30,10 +52,10 @@ static int MAC_SETUP(uint16 slave)
 // MAC inputs / outputs
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr float	sVelCountSample = 2.77056f;
-static constexpr float	sAccCountSample = 3.598133f;
-static constexpr float	sTorqueMax		= 1023.0f;
-
+static constexpr float sVelCountSample = 2.77056f;
+static constexpr float sAccCountSample = 3.598133f;
+static constexpr float sTorqueMax = 1023.0f;
+static constexpr nap::uint32 sNoErrorsCode = 524304;
 
 /**
  * Data sent to slave
@@ -81,6 +103,7 @@ namespace nap
 	{
 		if (mResetPosition)
 		{
+			// Callback when going from pre-operational to safe operational
 			reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC_SETUP;
 
 			// Reset position if requested
@@ -116,6 +139,26 @@ namespace nap
 		{
 			// Get slave to address
 			ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(i));
+
+			// Get inputs (data from slave)
+			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
+			
+			// Check if it contains an error, if so add it to the list of errors
+			if (containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError))
+			{
+				rttr::enumeration error_enum = RTTI_OF(MACController::EErrorStat).get_enumeration();
+				for (auto value : error_enum.get_values())
+				{
+					// Skip any error
+					MACController::EErrorStat cur_v = static_cast<MACController::EErrorStat>(value.to_uint32());
+					if(cur_v == MACController::EErrorStat::AnyError)
+						continue;
+
+					// Check if the field contains this specific error
+					if (containsError(mac_inputs->mErrorStatus, cur_v))
+						mErrors.emplace(cur_v);
+				}
+			}
 
 			// Get relative motor position
 			std::unique_ptr<MacOutputs>& motor_parms = mMotorParameters[i - 1];
@@ -196,6 +239,12 @@ namespace nap
 	}
 
 
+	bool MACController::containsError(nap::uint32 field, EErrorStat error)
+	{
+		return (field & (1 << static_cast<uint32>(error))) > 0;
+	}
+
+
 	void MACController::MacOutputs::setPosition(nap::uint32 position)
 	{
 		mTargetPosition = position;
@@ -204,7 +253,7 @@ namespace nap
 
 	void MACController::MacOutputs::setVelocity(float velocity)
 	{
-		float fvel = math::clamp<float>(velocity, 0, 2000.0f) * sVelCountSample;
+		float fvel = math::clamp<float>(velocity, 0.0f, 3000.0f) * sVelCountSample;
 		mVelocity = static_cast<uint32>(fvel);
 	}
 

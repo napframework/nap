@@ -91,7 +91,7 @@ namespace nap
 			updateState();
 			for (int i = 1; i <= ec_slavecount; i++)
 			{
-				if (getSlaveState(i) == EtherCATMaster::ESlaveState::Operational)
+				if (ec_slave[i].state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
 					continue;
 
 				errorState.fail("Slave %d State=0x%2.2x StatusCode=0x%4.4x : %s\n",
@@ -171,7 +171,10 @@ namespace nap
 	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
 	{
 		assert(index <= ec_slavecount);
-		return static_cast<EtherCATMaster::ESlaveState>(ec_slave[index].state);
+		uint16 cstate = ec_slave[index].state;
+		return cstate > static_cast<uint16>(EtherCATMaster::ESlaveState::Operational) ? 
+			EtherCATMaster::ESlaveState::Error : 
+			static_cast<EtherCATMaster::ESlaveState>(cstate);
 	}
 
 
@@ -259,14 +262,13 @@ namespace nap
 		ec_group[slaveGroup ].docheckstate = false;
 		for (int slave = 1; slave <= ec_slavecount; slave++)
 		{
-			if ((ec_slave[slave].group == slaveGroup) && (getSlaveState(slave) != ESlaveState::Operational))
+			if ((ec_slave[slave].group == slaveGroup) && (ec_slave[slave].state != static_cast<uint16>(ESlaveState::Operational)))
 			{
 				// Signal slave error in group
 				ec_group[slaveGroup].docheckstate = true;
 
 				// In safe state with error bit set
-				if (static_cast<uint16>(getSlaveState(slave)) == 
-					static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) + 
+				if (ec_slave[slave].state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) + 
 					static_cast<uint16>(EtherCATMaster::ESlaveState::Error))
 				{
 					nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", this->mID.c_str(), slave);
@@ -277,7 +279,7 @@ namespace nap
 				}
 
 				// Safe operational
-				else if (getSlaveState(slave) == EtherCATMaster::ESlaveState::SafeOperational)
+				else if (ec_slave[slave].state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational))
 				{
 					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
 					onSafeOperational(&(ec_slave[slave]), slave);
@@ -286,7 +288,7 @@ namespace nap
 				}
 				
 				// Slave in between none and safe operational
-				else if (static_cast<uint16>(getSlaveState(slave)) > static_cast<uint16>(EtherCATMaster::ESlaveState::None))
+				else if (ec_slave[slave].state > static_cast<uint16>(EtherCATMaster::ESlaveState::None))
 				{
 					if (ec_reconfig_slave(slave, 500))
 					{
@@ -301,7 +303,7 @@ namespace nap
 					// Check if the slave is operational
 					// If slave appears to be missing (none) tag it.
 					checkState(slave, ESlaveState::Operational, 2);
-					if (getSlaveState(slave) == ESlaveState::None)
+					if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 					{
 						ec_slave[slave].islost = true;
 						nap::Logger::error("%s: slave %d lost", this->mID.c_str(), slave);
@@ -312,7 +314,7 @@ namespace nap
 			// Slave appears to be lost, 
 			if (isLost(slave))
 			{
-				if (getSlaveState(slave) == ESlaveState::None)
+				if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 				{
 					if (ec_recover_slave(slave, 500))
 					{

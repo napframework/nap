@@ -3,6 +3,7 @@
 // External Includes
 #include <nap/device.h>
 #include <ethercatmaster.h>
+#include <unordered_set>
 
 namespace nap
 {
@@ -19,6 +20,33 @@ namespace nap
 	{
 		RTTI_ENABLE(EtherCATMaster)
 	public:
+
+		/**
+		 * All available error codes
+		 */
+		enum class EErrorStat : uint32
+		{
+			ThermalEnergyError	= 0,	///< Set when the calculated thermal energy stored in the physical motor exceeds a limit.
+			FollowError			= 1,	///< Set when the follow error gets larger than register 22
+			FunctionError		= 2,	///< Set if the function error in Reg24, FNCERR, get slarger than Reg26
+			BrakeResistorError  = 3,	///< Set when the calculated energy / temperature in the internal brake resistor(power dump) get dangerousl high.
+			SoftwarePosError	= 7,	///< Set when one of the software position limits in Reg28 and Reg30 have been exceeded
+			TemperatureError	= 8,	///< Set when the value in Reg29, DEGC, exceeds the value in Reg31
+			UnderVoltageError	= 9,	///< Under voltage error
+			OverVoltageError	= 11,	///< Over voltage error.
+			HighCurrentError	= 12,	///< A much too high current was measured in one or more of the motor phases
+			SpeedError			= 13,	///< The velocity was measured to be higher than a limit for an average of 16 samples
+			IndexError			= 15,	///< The bit is set if an encoder error is detected
+			ControlVoltageError = 17,	///< This error bit get set if the control voltage, normally at 24VDC, is below 12 V. The motor must be reset!
+			CommunicationsError = 21,	///< Communications error (master or slave timeout with Modbus-Gear mode)
+			CurrentLoopError	= 22,	///< Less than 2 mA was detected on the 4-20 mA input on the MAC00-P4 / P5 module for more than 100 ms
+			SlaveError			= 23,	///< One or more error bits were set in an ERR_STAT reading from the Modbus slave or COMM_ERR
+			AnyError			= 24,	///< single bit to make easier on PLCs to chefkc if the motor has any error bits set
+			InitError			= 25,	///< Set if error was detected during motor startup that could prevent reliable operation
+			FlashError			= 26,	///< An error was detected related to the internal flash memory during startup
+			SafeTorqueError		= 27,	///< This bit gets set if the supervisor circuitry of the Safe Torque Off (STO)system detects an error.This will normally indicate an error in the electronics.
+		};
+
 		// Destructor
 		virtual ~MACController();
 
@@ -155,7 +183,15 @@ namespace nap
 			std::atomic<nap::uint32>	mTorque			= { 0 };		///< Motor torque
 			std::atomic<nap::uint32>	mAcceleration	= { 0 };		///< Motor acceleration
 		};
-			
+		
+		/**
+		 * If the current set of processed data contains the given error
+		 * @param field contains all the processed error codes as a bits
+		 * @param error the error to check for
+		 */
+		bool containsError(nap::uint32 field, EErrorStat error);
+
 		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
+		std::unordered_set<MACController::EErrorStat> mErrors;			///< List of all current errors
 	};
 }
