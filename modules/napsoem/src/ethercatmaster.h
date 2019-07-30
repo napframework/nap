@@ -28,7 +28,8 @@ namespace nap
 			Boot			= 0x03,				///< Boot state
 			SafeOperational = 0x04,				///< Safe operational state
 			Operational		= 0x08,				///< Operational state
-			Error			= 0x10				///< Error state
+			Error			= 0x10,				///< Error state
+			ACK				= 0x10				///< ACK state
 		};
 
 		// Stops the device
@@ -44,7 +45,10 @@ namespace nap
 		virtual bool start(utility::ErrorState& errorState) override;
 
 		/**
-		 * Stops the master.
+		 * Stops the master. Kills error handling and processing threads.
+		 * Tries to force all slaves into initialization mode. 
+		 * onStop() is called after killing the processing and error handling tasks
+		 * but before switching slaves to init mode.
 		 */
 		virtual void stop() override;
 
@@ -61,9 +65,18 @@ namespace nap
 		/**
 		 * Returns the state associated with a specific slave. 
 		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
+		 * @param index slave index, 0 = all slaves.
 		 * @return state of a slave at the given index, no out of bounds check is performed.
 		 */
 		ESlaveState getSlaveState(int index) const;
+
+		/**
+		 * Returns if a slave is lost or not.
+		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
+		 * @param index slave index, 0 = all slaves.
+		 * @return if a slave is lost (not visible on the network anymore)
+		 */
+		bool isLost(int index) const;
 
 		std::string mAdapter;			///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
 		int  mCycleTime = 1000;			///< Property: 'CycleTime' process cycle time in us. 
@@ -234,5 +247,11 @@ namespace nap
 		 * Automatic slave error checking and recovery.
 		 */
 		void checkForErrors();
+
+		/**
+		 * Process errors
+		 * @param slaveGroup group of slaves to process error for
+		 */
+		void processErrors(int slaveGroup);
 	};
 }

@@ -175,6 +175,13 @@ namespace nap
 	}
 
 
+	bool EtherCATMaster::isLost(int index) const
+	{
+		assert(index <= ec_slavecount);
+		return ec_slave[index].islost;
+	}
+
+
 	void* EtherCATMaster::getSlave(int index)
 	{
 		assert(index <= ec_slavecount);
@@ -236,77 +243,93 @@ namespace nap
 				osal_usleep(10000);
 				continue;
 			}
+			
+			// One or more slaves are not responding
+			processErrors(0);
+			osal_usleep(10000);
+		}
+	}
 
-			// one ore more slaves are not responding
-			ec_group[currentgroup].docheckstate = FALSE;
-			ec_readstate();
-			for (int slave = 1; slave <= ec_slavecount; slave++)
+
+	void EtherCATMaster::processErrors(int slaveGroup)
+	{
+		ec_group[slaveGroup ].docheckstate = false;
+		readState();
+
+		for (int slave = 1; slave <= ec_slavecount; slave++)
+		{
+			if ((ec_slave[slave].group == slaveGroup) && (getSlaveState(slave) != ESlaveState::Operational))
 			{
-				if ((ec_slave[slave].group == currentgroup) && (ec_slave[slave].state != EC_STATE_OPERATIONAL))
-				{
-					// Signal slave error in group
-					ec_group[currentgroup].docheckstate = true;
+				// Signal slave error in group
+				ec_group[slaveGroup].docheckstate = true;
 
-					// In safe state with error bit set
-					if (ec_slave[slave].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR))
+				// In safe state with error bit set
+				if (static_cast<uint16>(getSlaveState(slave)) == 
+					static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) + 
+					static_cast<uint16>(EtherCATMaster::ESlaveState::Error))
+				{
+					nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", this->mID.c_str(), slave);
+					ec_slave[slave].state = (
+						static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) + 
+						static_cast<uint16>(EtherCATMaster::ESlaveState::ACK));
+					writeState(slave);
+				}
+
+				// Safe operational
+				else if (getSlaveState(slave) == EtherCATMaster::ESlaveState::SafeOperational)
+				{
+					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
+					onSafeOperational(&(ec_slave[slave]), slave);
+					ec_slave[slave].state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
+					writeState(slave);
+				}
+				
+				// Slave in between none and safe operational
+				else if (static_cast<uint16>(getSlaveState(slave)) > static_cast<uint16>(EtherCATMaster::ESlaveState::None))
+				{
+					if (ec_reconfig_slave(slave, 500))
 					{
-						nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", this->mID.c_str(), slave);
-						ec_slave[slave].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
-						ec_writestate(slave);
-					}
-					else if (ec_slave[slave].state == EC_STATE_SAFE_OP)
-					{
-						nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
-						onSafeOperational(&(ec_slave[slave]), slave);
-						ec_slave[slave].state = EC_STATE_OPERATIONAL;
-						ec_writestate(slave);
-					}
-					else if (ec_slave[slave].state > EC_STATE_NONE)
-					{
-						if (ec_reconfig_slave(slave, 500))
-						{
-							ec_slave[slave].islost = false;
-							nap::Logger::info("%s: slave %d reconfigured", this->mID.c_str(), slave);
-						}
-					}
-					else if (!ec_slave[slave].islost)
-					{
-						/* re-check state */
-						ec_statecheck(slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
-						if (ec_slave[slave].state == EC_STATE_NONE)
-						{
-							ec_slave[slave].islost = true;
-							nap::Logger::error("%s: slave %d lost", this->mID.c_str(), slave);
-						}
+						ec_slave[slave].islost = false;
+						nap::Logger::info("%s: slave %d reconfigured", this->mID.c_str(), slave);
 					}
 				}
 				
-				// Slave is lost
-				if (ec_slave[slave].islost)
+				// Slave might have gone missing 
+				else if (!isLost(slave))
 				{
-					if (ec_slave[slave].state == EC_STATE_NONE)
+					// Check if the slave is operational
+					// If slave appears to be missing (none) tag it.
+					checkState(slave, ESlaveState::Operational, 2);
+					if (getSlaveState(slave) == ESlaveState::None)
 					{
-						if (ec_recover_slave(slave, 500))
-						{
-							ec_slave[slave].islost = false;
-							nap::Logger::info("%s: slave %d recovered", this->mID.c_str(), slave);
-						}
-					}
-					else
-					{
-						ec_slave[slave].islost = false;
-						nap::Logger::info("%s: slave %d found", this->mID.c_str(), slave);
+						ec_slave[slave].islost = true;
+						nap::Logger::error("%s: slave %d lost", this->mID.c_str(), slave);
 					}
 				}
 			}
 
-			// Check current group state, notify when all slaves resumed operational state
-			if (!ec_group[currentgroup].docheckstate)
-				nap::Logger::info("%s: all slaves resumed OPERATIONAL", this->mID.c_str());
-			
-			// Wait ten ms before checking again
-			osal_usleep(10000);
+			// Slave appears to be lost, 
+			if (isLost(slave))
+			{
+				if (getSlaveState(slave) == ESlaveState::None)
+				{
+					if (ec_recover_slave(slave, 500))
+					{
+						ec_slave[slave].islost = false;
+						nap::Logger::info("%s: slave %d recovered", this->mID.c_str(), slave);
+					}
+				}
+				else
+				{
+					ec_slave[slave].islost = false;
+					nap::Logger::info("%s: slave %d found", this->mID.c_str(), slave);
+				}
+			}
 		}
+
+		// Check current group state, notify when all slaves resumed operational state
+		if (!ec_group[slaveGroup].docheckstate)
+			nap::Logger::info("%s: all slaves resumed OPERATIONAL", this->mID.c_str());
 	}
 
 
