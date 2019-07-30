@@ -88,7 +88,7 @@ namespace nap
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
 			errorState.fail("%s: not all slaves reached operational state!", mID.c_str());
-			readState();
+			updateState();
 			for (int i = 1; i <= ec_slavecount; i++)
 			{
 				if (getSlaveState(i) == EtherCATMaster::ESlaveState::Operational)
@@ -162,7 +162,7 @@ namespace nap
 	}
 
 
-	nap::EtherCATMaster::ESlaveState EtherCATMaster::readState()
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::updateState()
 	{
 		return static_cast<ESlaveState>(ec_readstate());
 	}
@@ -211,7 +211,7 @@ namespace nap
 				continue;
 			}
 
-			// Process IO data
+			// Process
 			onProcess();
 
 			// Transmit process-data to slaves and store actual work counter
@@ -236,17 +236,20 @@ namespace nap
 				continue;
 			}
 
+			// Update slave state when operational
+			updateState();
+
 			// Work-count matches and we don't have to check slave states
 			if (mActualWCK == mExpectedWKC && 
 				!ec_group[currentgroup].docheckstate)
 			{
-				osal_usleep(10000);
+				osal_usleep(40000);
 				continue;
 			}
 			
 			// One or more slaves are not responding
 			processErrors(0);
-			osal_usleep(10000);
+			osal_usleep(40000);
 		}
 	}
 
@@ -254,8 +257,6 @@ namespace nap
 	void EtherCATMaster::processErrors(int slaveGroup)
 	{
 		ec_group[slaveGroup ].docheckstate = false;
-		readState();
-
 		for (int slave = 1; slave <= ec_slavecount; slave++)
 		{
 			if ((ec_slave[slave].group == slaveGroup) && (getSlaveState(slave) != ESlaveState::Operational))

@@ -18,9 +18,7 @@ namespace nap
 	class NAPAPI MACController : public EtherCATMaster
 	{
 		RTTI_ENABLE(EtherCATMaster)
-
 	public:
-
 		// Destructor
 		virtual ~MACController();
 
@@ -32,7 +30,6 @@ namespace nap
 		nap::uint32 mTorque = 341;				///< Property: 'Torque' motor torque
 
 	protected:
-
 		/**
 		 * Describes various motor states
 		 */

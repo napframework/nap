@@ -98,11 +98,6 @@ namespace nap
 
 		// Force passive mode in safe operational mode
 		setMotorMode(index, EMotorMode::Passive);
-
-		// Ensure the motor is in passive mode.
-		// uint32 new_mode = 20;
-		// int size = -1;
-		// sdoRead(index, 0x2012, 0x02, false, &size, &new_mode);
 	}
 
 
@@ -110,7 +105,6 @@ namespace nap
 	{
 		int slave_count = getSlaveCount();
 		assert(mMotorParameters.size() == slave_count);
-		
 		for (int i = 1; i <= slave_count; i++)
 		{
 			// Get slave to address
