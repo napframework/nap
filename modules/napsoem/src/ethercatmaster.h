@@ -63,6 +63,12 @@ namespace nap
 		int getSlaveCount() const;
 
 		/**
+		 * Updates the state of all slaves.
+		 * @return lowest state of all read slave states.
+		 */
+		ESlaveState updateState();
+
+		/**
 		 * Returns the state associated with a specific slave. 
 		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
 		 * @param index slave index, 0 = all slaves.
@@ -220,13 +226,6 @@ namespace nap
 		 * @return requested state, or found state after timeout.
 		 */
 		ESlaveState checkState(int index, ESlaveState state, int timeout = 2000);
-
-		/**
-		 * Updates the state of all slaves. Call this after requestState() to
-		 * update all individual slave states.
-		 * @return lowest state of all read slave states.
-		 */
-		ESlaveState readState();
 
 	private:
 		char mIOmap[4096];
