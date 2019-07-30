@@ -21,6 +21,46 @@ namespace nap
 {
 	namespace timeline
 	{
+		std::map<rttr::type, TransitionProcess> SequenceTransition::mProcessFunctions =
+		{
+			{
+				rttr::type::get<ParameterFloat>(),
+				&SequenceTransition::process<ParameterFloat, float>
+			},
+			{
+				rttr::type::get<ParameterInt>(),
+				&SequenceTransition::process<ParameterInt, int>
+			},
+			{
+				rttr::type::get<ParameterVec2>(),
+				&SequenceTransition::process<ParameterVec2, glm::vec2>
+			},
+			{
+				rttr::type::get<ParameterVec2>(),
+				&SequenceTransition::process<ParameterVec3, glm::vec3>
+			},
+			{
+				rttr::type::get<ParameterIVec2>(),
+				&SequenceTransition::process<ParameterIVec2, glm::ivec2>
+			},
+			{
+				rttr::type::get<ParameterRGBColorFloat>(),
+				&SequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>
+			},
+			{
+				rttr::type::get<ParameterRGBAColorFloat>(),
+				&SequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>
+			},
+			{
+				rttr::type::get<ParameterRGBColor8>(),
+				&SequenceTransition::process<ParameterRGBColor8, RGBColor8>
+			},
+			{
+				rttr::type::get<ParameterRGBAColor8>(),
+				&SequenceTransition::process<ParameterRGBAColor8, RGBAColor8>
+			}
+		};
+
 		bool SequenceTransition::init(utility::ErrorState& errorState)
 		{
 			if (!SequenceElement::init(errorState))
@@ -32,45 +72,10 @@ namespace nap
 
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
-				if (mEndParameters[i]->get_type().is_derived_from<ParameterFloat>())
+				rttr::type type = mEndParameters[i]->get_type();
+				if (mProcessFunctions.find(type) != mProcessFunctions.end())
 				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterFloat, float>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterInt>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterInt, int>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec2>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterVec2, glm::vec2>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterVec3>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterVec3, glm::vec3>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec2>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterIVec2, glm::ivec2>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterIVec3>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterIVec3, glm::ivec3>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColorFloat>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBColorFloat, RGBColorFloat>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColorFloat>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBAColorFloat, RGBAColorFloat>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBColor8>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBColor8, RGBColor8>);
-				}
-				else if (mEndParameters[i]->get_type().is_derived_from<ParameterRGBAColor8>())
-				{
-					mFunctions.emplace_back(&SequenceTransition::process<ParameterRGBAColor8, RGBAColor8>);
+					mFunctions.emplace_back(mProcessFunctions[type]);
 				}
 				else
 				{
@@ -80,8 +85,6 @@ namespace nap
 					return false;
 				}
 			}
-
-			mEvaluateFunction = &SequenceTransition::evaluateCurve;
 
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
@@ -134,7 +137,7 @@ namespace nap
 		}
 
 
-		const float SequenceTransition::evaluateCurve(float progress, const int curveIndex)
+		const float SequenceTransition::evaluate(float progress, const int curveIndex)
 		{
 			return mCurves[curveIndex]->evaluate(progress);
 		}
@@ -151,7 +154,7 @@ namespace nap
 				math::lerp<T2>(
 					static_cast<const T1&>(inA).mValue,
 					static_cast<const T1&>(inB).mValue,
-					(this->*mEvaluateFunction)(progress, curveIndex)));
+					this->evaluate(progress, curveIndex)));
 		}
 	}
 
