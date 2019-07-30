@@ -178,7 +178,7 @@ namespace nap
 	bool EtherCATMaster::isLost(int index) const
 	{
 		assert(index <= ec_slavecount);
-		return ec_slave[index].islost;
+		return ec_slave[index].islost > 0;
 	}
 
 
