@@ -22,7 +22,7 @@ namespace nap
 		 */
 		enum class ESlaveState : uint16
 		{
-			None			= 0x00,				///< No valid state
+			None			= 0x00,				///< No valid state, slave probably lost.
 			Init			= 0x01,				///< Init state
 			PreOperational	= 0x02,				///< Pre operational state
 			Boot			= 0x03,				///< Boot state
