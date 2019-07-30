@@ -151,18 +151,19 @@ namespace nap
 				for (auto value : error_enum.get_values())
 				{
 					// Skip any error
-					MACController::EErrorStat cur_v = static_cast<MACController::EErrorStat>(value.to_uint32());
-					if (cur_v == MACController::EErrorStat::AnyError)
+					MACController::EErrorStat cur_e = static_cast<MACController::EErrorStat>(value.to_uint32());
+					if (cur_e == MACController::EErrorStat::AnyError)
 						continue;
 
 					// Check if the field contains this specific error
-					if (containsError(mac_inputs->mErrorStatus, cur_v))
+					if (containsError(mac_inputs->mErrorStatus, cur_e))
 					{
 						// Check if it's new and add thread safe if so
-						if (mErrors.find(cur_v) == mErrors.end())
+						if (mErrors.find(cur_e) == mErrors.end())
 						{
+							nap::Logger::error("%s: slave: %d, %s", mID.c_str(), i, errorToString(cur_e).c_str());
 							std::lock_guard<std::mutex> guard(mErrorMutex);
-							mErrors.emplace(cur_v);
+							mErrors.emplace(cur_e);
 						}
 					}
 				}
