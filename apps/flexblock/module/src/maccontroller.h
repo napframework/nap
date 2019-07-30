@@ -31,15 +31,16 @@ namespace nap
 
 		/**
 		 * Set the velocity in RPM of a single motor. Does not perform an out of bounds check.
-		 * 1 RPM = 2.77056 counts/sample. Max velocity = 2000
+		 * 1 RPM = 2.77056 counts/sample. Max velocity = 2000. Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave.
 		 * @param velocity new motor velocity
 		 */
-		void setVelocity(int index, nap::uint32 velocity);
+		void setVelocity(int index, float velocity);
 
 		/**
 		 * Set the torque of a single motor. Does not perform an out of bounds check
 		 * Accepted range = 0 - 300 %, where 100 % is nominal load and 300 % absolute peak load.
+		 * Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave
 		 * @param torque new motor torque
 		 */
@@ -47,11 +48,11 @@ namespace nap
 
 		/**
 		 * Set the desired nominal acceleration in RPM of a single motor. Does not perform an out of bounds check.
-		 * 1000 RPM/s = 3.598133 counts/Sample²
+		 * 1000 RPM/s = 3.598133 counts/Sample². Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave.
 		 * @pram acceleration new motor acceleration
 		 */
-		void setAcceleration(int index, nap::uint32 acceleration);
+		void setAcceleration(int index, float acceleration);
 
 		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
@@ -134,7 +135,7 @@ namespace nap
 			 * Set motor velocity
 			 * @param velocity new motor velocity
 			 */
-			void setVelocity(nap::uint32 velocity);
+			void setVelocity(float velocity);
 
 			/**
 			 * Set motor torque
@@ -146,7 +147,7 @@ namespace nap
 			 * Set motor acceleration
 			 * @param acceleration new motor acceleration
 			 */
-			void setAcceleration(nap::uint32 acceleration);
+			void setAcceleration(float acceleration);
 
 			std::atomic<nap::uint32>	mTargetPosition = { 0 };		///< New requested motor position
 			std::atomic<nap::int32>		mInitPosition	= { 0 };		///< Initial motor position

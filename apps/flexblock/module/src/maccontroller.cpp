@@ -139,9 +139,9 @@ namespace nap
 		{
 			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>();
 			new_output->setPosition(mRequestedPosition);
-			new_output->setAcceleration(mAcceleration);
-			new_output->setVelocity(mVelocity);
-			new_output->setTorque(mTorque);
+			new_output->setAcceleration(static_cast<float>(mAcceleration));
+			new_output->setVelocity(static_cast<float>(mVelocity));
+			new_output->setTorque(static_cast<float>(mTorque));
 			mMotorParameters.emplace_back(std::move(new_output));
 		}
 	}
@@ -167,7 +167,7 @@ namespace nap
 	}
 
 
-	void MACController::setVelocity(int index, nap::uint32 velocity)
+	void MACController::setVelocity(int index, float velocity)
 	{
 		assert(index < getSlaveCount());
 		mMotorParameters[index]->setVelocity(velocity);
@@ -181,7 +181,7 @@ namespace nap
 	}
 
 
-	void MACController::setAcceleration(int index, nap::uint32 acceleration)
+	void MACController::setAcceleration(int index, float acceleration)
 	{
 		assert(index < getSlaveCount());
 		mMotorParameters[index]->setAcceleration(acceleration);
@@ -202,9 +202,9 @@ namespace nap
 	}
 
 
-	void MACController::MacOutputs::setVelocity(nap::uint32 velocity)
+	void MACController::MacOutputs::setVelocity(float velocity)
 	{
-		float fvel = math::min<float>(static_cast<float>(velocity), 2000.0f) * sVelCountSample;
+		float fvel = math::clamp<float>(velocity, 0, 2000.0f) * sVelCountSample;
 		mVelocity = static_cast<uint32>(fvel);
 	}
 
@@ -216,9 +216,9 @@ namespace nap
 	}
 
 
-	void MACController::MacOutputs::setAcceleration(nap::uint32 acceleration)
+	void MACController::MacOutputs::setAcceleration(float acceleration)
 	{
-		float paccel = (static_cast<float>(acceleration) / 1000.0f) * sAccCountSample;
+		float paccel = (static_cast<float>(math::max<float>(acceleration, 0.0f)) / 1000.0f) * sAccCountSample;
 		mAcceleration = static_cast<uint32>(paccel);
 	}
 }
