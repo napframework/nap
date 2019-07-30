@@ -142,16 +142,14 @@ namespace nap
 
 	void MACController::onStop()
 	{
-		requestState(EtherCATMaster::ESlaveState::SafeOperational);
+		// Request new state
+		EtherCATMaster::ESlaveState state = requestState(EtherCATMaster::ESlaveState::SafeOperational);
+		if (state != EtherCATMaster::ESlaveState::SafeOperational)
+			nap::Logger::warn("%s: not all slaves reached safe operational state", mID.c_str());
+
+		// Set motor to passive mode
 		for (int i = 1; i <= getSlaveCount(); i++)
-		{
-			EtherCATMaster::ESlaveState slave_state = getSlaveState(i);
-			if (!(slave_state == EtherCATMaster::ESlaveState::SafeOperational))
-			{
-				nap::Logger::warn("%s: slave %d is not in safe operational mode", mID.c_str(), i);
-			}
 			setMotorMode(i, EMotorMode::Passive);
-		}
 	}
 
 

@@ -76,6 +76,10 @@ namespace nap
 		 */
 		void* getSlave(int index);
 
+		//////////////////////////////////////////////////////////////////////////
+		// Start / Stop
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		 * Called after slave enumeration and initialization.
 		 * All slaves are in  pre-operational state and can be addressed.
@@ -87,6 +91,10 @@ namespace nap
 		 * before setting all slaves to init mode. Perform additional close up steps here.
 		 */
 		virtual void onStop()	{ }
+
+		//////////////////////////////////////////////////////////////////////////
+		// Slave State Changes
+		//////////////////////////////////////////////////////////////////////////
 
 		/**
 		 * Called from the processing thread at a fixed interval defined by the cycle time property.
@@ -142,6 +150,10 @@ namespace nap
 		 */
 		virtual void onOperational(void* slave, int index)			{ }
 
+		//////////////////////////////////////////////////////////////////////////
+		// Service Data Objects
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		 * SDO write, blocking. Single subindex or complete Access.
 		 * It is not advised to write data when in operational mode.
@@ -166,14 +178,42 @@ namespace nap
 		 */
 		void sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p);
 
+		//////////////////////////////////////////////////////////////////////////
+		// Slave State
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
 		 * Blocking call to change the state of all slaves.
+		 * Calls writeState and checkState internally.
 		 * Waits 2 seconds (default timeout value) to ensure state actually changed.
 		 * The actual state of all slaves is updated after this call.
 		 * @param state the new state for all slaves.
-		 * @return lowest state of all read slave states. 
+		 * @param timeout in milliseconds, default = 2 seconds
+		 * @return lowest state of all read slave states.
 		 */
-		ESlaveState requestState(ESlaveState state);
+		ESlaveState requestState(ESlaveState state, int timeout = 2000);
+
+		/** Write slave state, if slave = 0 then write to all slaves.
+		 * The function does not check if the actual state is changed.
+		 * @param index slave number, 0 = all slaves (master)
+		 */
+		void writeState(int index);
+
+		/**
+		 * Check the actual slave state, this is a blocking call.
+		 * @param index slave index into SOEM ec_slave array, 0 = all slaves.
+		 * @param state the state to check
+		 * @param timeout timeout in ms
+		 * @return requested state, or found state after timeout.
+		 */
+		ESlaveState checkState(int index, ESlaveState state, int timeout = 2000);
+
+		/**
+		 * Updates the state of all slaves. Call this after requestState() to
+		 * update all individual slave states.
+		 * @return lowest state of all read slave states.
+		 */
+		ESlaveState readState();
 
 	private:
 		char mIOmap[4096];
@@ -194,11 +234,5 @@ namespace nap
 		 * Automatic slave error checking and recovery.
 		 */
 		void checkForErrors();
-
-		/**
-		 * Reads (updates) the state of all slaves.
-		 * @return lowest state of all read slave states.
-		 */
-		ESlaveState readState();
 	};
 }
