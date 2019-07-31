@@ -140,12 +140,15 @@ namespace nap
 			// Get slave to address
 			ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(i));
 
+			// Get associated motor parameters
+			std::unique_ptr<MacOutputs>& motor_parms = mMotorParameters[i - 1];
+
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
 			
 			// Check if it contains an error, if so add it to the list of errors
-			mMotorError = containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError);
-			if (mMotorError)
+			motor_parms->mHasError = containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError);
+			if (motor_parms->mHasError)
 			{
 				rttr::enumeration error_enum = RTTI_OF(MACController::EErrorStat).get_enumeration();
 				for (auto value : error_enum.get_values())
@@ -160,17 +163,16 @@ namespace nap
 						continue;
 
 					// Check if it's new and add thread safe
-					if (mErrors.find(cur_e) == mErrors.end())
+					if (motor_parms->mErrors.find(cur_e) == motor_parms->mErrors.end())
 					{
 						nap::Logger::error("%s: slave: %d, %s", mID.c_str(), i, errorToString(cur_e).c_str());
-						std::lock_guard<std::mutex> guard(mErrorMutex);
-						mErrors.emplace(cur_e);
+						std::lock_guard<std::mutex> guard(motor_parms->mErrorMutex);
+						motor_parms->mErrors.emplace(cur_e);
 					}
 				}
 			}
 
 			// Get relative motor position
-			std::unique_ptr<MacOutputs>& motor_parms = mMotorParameters[i - 1];
 			int32 req_position = motor_parms->mTargetPosition - motor_parms->mInitPosition;
 
 			// Write info
@@ -196,6 +198,8 @@ namespace nap
 			new_output->setTorque(static_cast<float>(mTorque));
 			mMotorParameters.emplace_back(std::move(new_output));
 		}
+
+		nap::Logger::info("%s: found %d slaves", this->mID.c_str(), this->getSlaveCount());
 	}
 
 
@@ -246,16 +250,18 @@ namespace nap
 	}
 
 
-	bool MACController::hasErrors() const
+	bool MACController::hasErrors(int index) const
 	{
-		return mMotorError;
+		assert(mMotorParameters.size() < index);
+		return mMotorParameters[index]->mHasError;
 	}
 
 
-	std::unordered_set<nap::MACController::EErrorStat> MACController::getErrors()
+	std::unordered_set<nap::MACController::EErrorStat> MACController::getErrors(int index)
 	{
-		std::lock_guard<std::mutex> guard(mErrorMutex);
-		return mErrors;
+		assert(mMotorParameters.size() < index);
+		std::lock_guard<std::mutex> guard(mMotorParameters[index]->mErrorMutex);
+		return mMotorParameters[index]->mErrors;
 	}
 
 

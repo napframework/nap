@@ -94,16 +94,18 @@ namespace nap
 		 * If the motor is in an invalid state due to 1 or more errors
 		 * Always call this function first before sampling currently active errors
 		 * Note that this is not the same as connectivity!
+		 * @param index motor index, 0 = first slave
 		 * @return if the motor is in an invalid state due
 		 */
-		bool hasErrors() const;
+		bool hasErrors(int index) const;
 
 		/**
 		 * Returns a list of all errors associated with the motor
 		 * Check for errors before calling this function!
+		 * @param index motor index, 0 = first slave
 		 * @return list of all available motor errors
 		 */
-		std::unordered_set<MACController::EErrorStat> getErrors();
+		std::unordered_set<MACController::EErrorStat> getErrors(int index);
 
 		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
@@ -205,6 +207,9 @@ namespace nap
 			std::atomic<nap::uint32>	mVelocity		= { 0 };		///< Motor velocity
 			std::atomic<nap::uint32>	mTorque			= { 0 };		///< Motor torque
 			std::atomic<nap::uint32>	mAcceleration	= { 0 };		///< Motor acceleration
+			std::atomic<bool>			mHasError		= { false };	///< If any errors are associated with the motor
+			std::unordered_set<MACController::EErrorStat> mErrors;		///< List of all current errors
+			std::mutex mErrorMutex;
 		};
 		
 		/**
@@ -215,8 +220,5 @@ namespace nap
 		bool containsError(nap::uint32 field, EErrorStat error);
 
 		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
-		std::unordered_set<MACController::EErrorStat> mErrors;			///< List of all current errors
-		std::atomic<bool> mMotorError = { false };						///< If any errors are associated with the motor
-		std::mutex mErrorMutex;
 	};
 }
