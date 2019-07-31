@@ -131,9 +131,8 @@ namespace nap
 		assert(index <= getSlaveCount());
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-		mOutputs[index - 1]->mInitPosition   = inputs->mActualPosition;
-		
-		//mOutputs[index - 1]->mTargetPosition = inputs->mActualPosition;
+		mOutputs[index - 1]->mInitPosition		= inputs->mActualPosition;
+		mOutputs[index - 1]->mTargetPosition	= inputs->mActualPosition;
 
 		// Force passive mode in safe operational mode
 		setMode(index, EMotorMode::Passive);

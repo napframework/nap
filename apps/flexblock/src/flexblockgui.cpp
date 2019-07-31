@@ -1693,6 +1693,10 @@ namespace nap
 						ImGui::TextColored(text_color, MACController::errorToString(error).c_str());
 					}
 				}
+				else
+				{
+					ImGui::Text("No Errors");
+				}
 			}
 		}
 
