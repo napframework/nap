@@ -58,7 +58,7 @@ static constexpr float sTorqueMax = 1023.0f;
 static constexpr nap::uint32 sNoErrorsCode = 524304;
 
 /**
- * Data sent to slave
+ * IO Data sent to slave, acts as a memory lookup into PDO map
  */
 typedef struct PACKED
 {
@@ -72,7 +72,7 @@ typedef struct PACKED
 
 
 /**
- * Data received from slave
+ * IO Data received from slave, acts as a memory lookup into PDO map
  */
 typedef struct PACKED
 {
@@ -95,7 +95,8 @@ namespace nap
 {
 	MACController::~MACController()
 	{
-		mMotorParameters.clear();
+		mOutputs.clear();
+		mInputs.clear();
 	}
 
 
@@ -124,7 +125,7 @@ namespace nap
 		assert(index <= getSlaveCount());
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-		mMotorParameters[index - 1]->mInitPosition = inputs->mActualPosition;
+		mOutputs[index - 1]->mInitPosition = inputs->mActualPosition;
 
 		// Force passive mode in safe operational mode
 		setMode(index, EMotorMode::Passive);
@@ -134,72 +135,59 @@ namespace nap
 	void MACController::onProcess()
 	{
 		int slave_count = getSlaveCount();
-		assert(mMotorParameters.size() == slave_count);
+		assert(mOutputs.size() == slave_count);
+		assert(mInputs.size() == slave_count);
+
 		for (int i = 1; i <= slave_count; i++)
 		{
 			// Get slave to address
 			ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(i));
 
-			// Get associated motor parameters
-			std::unique_ptr<MacOutputs>& motor_parms = mMotorParameters[i - 1];
+			// Get associated motor output parameters
+			std::unique_ptr<MacInputs>& motor_input = mInputs[i - 1];
 
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
-			
-			// Check if it contains an error, if so add it to the list of errors
-			motor_parms->mHasError = containsError(mac_inputs->mErrorStatus, MACController::EErrorStat::AnyError);
-			if (motor_parms->mHasError)
-			{
-				rttr::enumeration error_enum = RTTI_OF(MACController::EErrorStat).get_enumeration();
-				for (auto value : error_enum.get_values())
-				{
-					// Skip any error
-					MACController::EErrorStat cur_e = static_cast<MACController::EErrorStat>(value.to_uint32());
-					if (cur_e == MACController::EErrorStat::AnyError)
-						continue;
+			motor_input->mActualPosition = mac_inputs->mActualPosition;
+			motor_input->mActualTorque = mac_inputs->mActualTorque;
+			motor_input->mErrorStatus = mac_inputs->mErrorStatus;
+			motor_input->mActualVelocity = mac_inputs->mActualVelocity;
 
-					// Skip if the error bit is not set
-					if(!containsError(mac_inputs->mErrorStatus, cur_e))
-						continue;
-
-					// Check if it's new and add thread safe
-					if (motor_parms->mErrors.find(cur_e) == motor_parms->mErrors.end())
-					{
-						nap::Logger::error("%s: slave: %d, %s", mID.c_str(), i, errorToString(cur_e).c_str());
-						std::lock_guard<std::mutex> guard(motor_parms->mErrorMutex);
-						motor_parms->mErrors.emplace(cur_e);
-					}
-				}
-			}
+			// Get associated motor output parameters
+			std::unique_ptr<MacOutputs>& motor_output = mOutputs[i - 1];
 
 			// Get relative motor position
-			int32 req_position = motor_parms->mTargetPosition - motor_parms->mInitPosition;
+			int32 req_position = motor_output->mTargetPosition - motor_output->mInitPosition;
 
 			// Write info
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 			mac_outputs->mOperatingMode = static_cast<uint32_t>(EMotorMode::Position);
 			mac_outputs->mRequestedPosition = req_position;
-			mac_outputs->mVelocity = motor_parms->mVelocity;
-			mac_outputs->mAcceleration = motor_parms->mAcceleration;
-			mac_outputs->mTorque = motor_parms->mTorque;
+			mac_outputs->mVelocity = motor_output->mVelocity;
+			mac_outputs->mAcceleration = motor_output->mAcceleration;
+			mac_outputs->mTorque = motor_output->mTorque;
 		}
 	}
 
 
 	void MACController::onStart()
 	{
-		mMotorParameters.clear();
+		mOutputs.clear();
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
+			// Create unique output
 			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>();
 			new_output->setPosition(mRequestedPosition);
 			new_output->setAcceleration(static_cast<float>(mAcceleration));
 			new_output->setVelocity(static_cast<float>(mVelocity));
 			new_output->setTorque(static_cast<float>(mTorque));
-			mMotorParameters.emplace_back(std::move(new_output));
+			mOutputs.emplace_back(std::move(new_output));
+
+			// Create unique input
+			mInputs.emplace_back(std::make_unique<MacInputs>());
 		}
 
-		nap::Logger::info("%s: found %d slaves", this->mID.c_str(), this->getSlaveCount());
+		nap::Logger::info("%s: found %d slave(s)", this->mID.c_str(), this->getSlaveCount());
 	}
 
 
@@ -219,28 +207,28 @@ namespace nap
 	void MACController::setPosition(int index, nap::uint32 position)
 	{
 		assert(index < getSlaveCount());
-		mMotorParameters[index]->setPosition(position);
+		mOutputs[index]->setPosition(position);
 	}
 
 
 	void MACController::setVelocity(int index, float velocity)
 	{
 		assert(index < getSlaveCount());
-		mMotorParameters[index]->setVelocity(velocity);
+		mOutputs[index]->setVelocity(velocity);
 	}
 
 
 	void MACController::setTorque(int index, float torque)
 	{
 		assert(index < getSlaveCount());
-		mMotorParameters[index]->setTorque(torque);
+		mOutputs[index]->setTorque(torque);
 	}
 
 
 	void MACController::setAcceleration(int index, float acceleration)
 	{
 		assert(index < getSlaveCount());
-		mMotorParameters[index]->setAcceleration(acceleration);
+		mOutputs[index]->setAcceleration(acceleration);
 	}
 
 
@@ -250,18 +238,23 @@ namespace nap
 	}
 
 
-	bool MACController::hasErrors(int index) const
+	void MACController::errorToString(EErrorStat error, std::string& outString)
 	{
-		assert(mMotorParameters.size() < index);
-		return mMotorParameters[index]->mHasError;
+		outString = RTTI_OF(MACController::EErrorStat).get_enumeration().value_to_name(error).to_string();
 	}
 
 
-	std::unordered_set<nap::MACController::EErrorStat> MACController::getErrors(int index)
+	bool MACController::hasError(int index) const
 	{
-		assert(mMotorParameters.size() < index);
-		std::lock_guard<std::mutex> guard(mMotorParameters[index]->mErrorMutex);
-		return mMotorParameters[index]->mErrors;
+		assert(mOutputs.size() < index);
+		return mInputs[index]->hasError();
+	}
+
+
+	void MACController::getErrors(int index, std::vector<MACController::EErrorStat>& outErrors) const
+	{
+		assert(mOutputs.size() < index);
+		return mInputs[index]->getErrors(outErrors);
 	}
 
 
@@ -273,7 +266,7 @@ namespace nap
 	}
 
 
-	bool MACController::containsError(nap::uint32 field, EErrorStat error)
+	bool MACController::MacInputs::checkErrorBit(nap::uint32 field, EErrorStat error)
 	{
 		return (field & (1 << static_cast<uint32>(error))) > 0;
 	}
@@ -303,5 +296,39 @@ namespace nap
 	{
 		float paccel = (static_cast<float>(math::max<float>(acceleration, 0.0f)) / 1000.0f) * sAccCountSample;
 		mAcceleration = static_cast<uint32>(paccel);
+	}
+
+
+	bool MACController::MacInputs::hasError() const
+	{
+		return checkErrorBit(mErrorStatus, MACController::EErrorStat::AnyError);
+	}
+
+
+	void MACController::MacInputs::getErrors(std::vector<nap::MACController::EErrorStat>& errors) const
+	{
+		// No errors
+		errors.clear();
+		if (checkErrorBit(mErrorStatus, MACController::EErrorStat::AnyError))
+		{
+			// Iterate over all the possible errors and check if bit is set
+			rttr::enumeration error_enum = RTTI_OF(MACController::EErrorStat).get_enumeration();
+			auto enum_values = error_enum.get_values();
+			errors.reserve(enum_values.size());
+			for (auto value : enum_values)
+			{
+				// Skip any error
+				MACController::EErrorStat cur_e = static_cast<MACController::EErrorStat>(value.to_uint32());
+				if (cur_e == MACController::EErrorStat::AnyError)
+					continue;
+
+				// Skip if the error bit is not set
+				if (!checkErrorBit(mErrorStatus, cur_e))
+					continue;
+
+				// Add
+				errors.emplace_back(cur_e);
+			}
+		}
 	}
 }

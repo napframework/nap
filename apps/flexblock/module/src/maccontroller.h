@@ -84,20 +84,13 @@ namespace nap
 		void setAcceleration(int index, float acceleration);
 
 		/**
-		 * Converts a motor error into a human readable string
-		 * @param error the motor error
-		 * @return the string representation of the error 
-		 */
-		std::string errorToString(EErrorStat error);
-
-		/**
 		 * If the motor is in an invalid state due to 1 or more errors
 		 * Always call this function first before sampling currently active errors
 		 * Note that this is not the same as connectivity!
 		 * @param index motor index, 0 = first slave
 		 * @return if the motor is in an invalid state due
 		 */
-		bool hasErrors(int index) const;
+		bool hasError(int index) const;
 
 		/**
 		 * Returns a list of all errors associated with the motor
@@ -105,14 +98,29 @@ namespace nap
 		 * @param index motor index, 0 = first slave
 		 * @return list of all available motor errors
 		 */
-		std::unordered_set<MACController::EErrorStat> getErrors(int index);
+		void getErrors(int index, std::vector<MACController::EErrorStat>& outErrors) const;
 
-		bool mResetPosition = false;			///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
-		nap::uint32 mResetPositionValue = 0;	///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
-		nap::uint32 mRequestedPosition = 0;		///< Property: 'Position' requested motor position
-		nap::uint32 mVelocity = 2700;			///< Property: 'Velocity' motor velocity
-		nap::uint32 mAcceleration = 360;		///< Property: 'Acceleration' motor acceleration
-		nap::uint32 mTorque = 341;				///< Property: 'Torque' motor torque
+		/**
+		 * Converts a motor error into a human readable string
+		 * @param error the motor error
+		 * @return the string representation of the error
+		 */
+		static std::string errorToString(EErrorStat error);
+
+		/**
+		 * Converts a motor error into a human readable string
+		 * @param error the motor error
+		 * @param outString error converted to string
+		 * @return the string representation of the error
+		 */
+		static void errorToString(EErrorStat error, std::string& outString);
+
+		bool mResetPosition				= false;	///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
+		nap::uint32 mResetPositionValue = 0;		///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
+		nap::uint32 mRequestedPosition	= 0;		///< Property: 'Position' requested motor position
+		nap::uint32 mVelocity			= 2700;		///< Property: 'Velocity' motor velocity
+		nap::uint32 mAcceleration		= 360;		///< Property: 'Acceleration' motor acceleration
+		nap::uint32 mTorque				= 341;		///< Property: 'Torque' motor torque
 
 	protected:
 		/**
@@ -170,8 +178,13 @@ namespace nap
 		void setMode(int index, EMotorMode mode);
 
 	private:
+
+		//////////////////////////////////////////////////////////////////////////
+		// MAC motor outputs
+		//////////////////////////////////////////////////////////////////////////
+
 		/**
-		 * Simple struct to keep track of the motor position.
+		 * Simple struct to keep track of motor output parameters
 		 * The target position is set by the client, the 
 		 * init position is read from the PDO when the master switches to safe operational mode.
 		 */
@@ -207,18 +220,47 @@ namespace nap
 			std::atomic<nap::uint32>	mVelocity		= { 0 };		///< Motor velocity
 			std::atomic<nap::uint32>	mTorque			= { 0 };		///< Motor torque
 			std::atomic<nap::uint32>	mAcceleration	= { 0 };		///< Motor acceleration
-			std::atomic<bool>			mHasError		= { false };	///< If any errors are associated with the motor
-			std::unordered_set<MACController::EErrorStat> mErrors;		///< List of all current errors
-			std::mutex mErrorMutex;
 		};
-		
-		/**
-		 * If the current set of processed data contains the given error
-		 * @param field contains all the processed error codes as a bits
-		 * @param error the error to check for
-		 */
-		bool containsError(nap::uint32 field, EErrorStat error);
 
-		std::vector<std::unique_ptr<MacOutputs>> mMotorParameters;		///< List of all current motor positions
+		//////////////////////////////////////////////////////////////////////////
+		// MAC motor inputs
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Simple struct to keep track of motor inputs (data received from slave).
+		 * This struct also keeps track of the motor error state
+		 */
+		class MacInputs
+		{
+		public:
+
+			/**
+			 * @return if this motor is malfunctioning.
+			 */
+			bool hasError() const;
+
+			/**
+			 * Returns all errors associated with this motor
+			 * Make sure to check if this motor has any errors before calling this function!
+			 * @outErrors contains all the errors associated with this motor
+			 */
+			void getErrors(std::vector<MACController::EErrorStat>& outErrors) const;
+
+			std::atomic<nap::uint32>	mActualPosition = { 0 };		///< Current motor position
+			std::atomic<nap::uint32>	mActualVelocity = { 0 };		///< Current motor velocity
+			std::atomic<nap::uint32>	mErrorStatus	= { 0 };		///< Current error status
+			std::atomic<nap::uint32>	mActualTorque	= { 0 };		///< Current motor torque
+
+		private:
+			/**
+			 * If the current set of processed data contains the given error
+			 * @param field contains all the processed error codes as a bits
+			 * @param error the error to check for
+			 */
+			static bool checkErrorBit(nap::uint32 field, EErrorStat error);
+		};
+
+		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;		///< List of all current motor positions
+		std::vector<std::unique_ptr<MacInputs>>		mInputs;		///< List of all current motor positions
 	};
 }
