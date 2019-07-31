@@ -14,6 +14,8 @@
 #include <parametervec.h>
 #include <sequenceplayercomponent.h>
 #include <oscinputcomponent.h>
+#include <maccontroller.h>
+#include <nap/timer.h>
 
 #include "flexblockcomponent.h"
 #include "sequenceplayercomponent.h"
@@ -81,12 +83,19 @@ namespace nap
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 		float								mScrub = 0.0f;
+		nap::SystemTimer					mTimer;
+		float								mUpdateTime = 0.0f;
+		float								vel = 0.0f;
+		float								tor = 0.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
 
 		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
+
+		ResourcePtr<MACController> mController;
+
 		/**
 		 * Shows the information window
 		 */

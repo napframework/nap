@@ -12,8 +12,11 @@ RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Position",				&nap::MACController::mRequestedPosition,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
@@ -52,10 +55,11 @@ static int MAC_SETUP(uint16 slave)
 // MAC inputs / outputs
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr float sVelCountSample = 2.77056f;
-static constexpr float sAccCountSample = 3.598133f;
-static constexpr float sTorqueMax = 1023.0f;
-static constexpr nap::uint32 sNoErrorsCode = 524304;
+static constexpr float sVelCountSample		= 2.18435f;
+static constexpr float sGetVelCountSample	= 0.134f;
+static constexpr float sAccCountSample		= 3.598133f;
+static constexpr float sTorqueNom			= 341.0f;
+static constexpr nap::uint32 sNoErrorsCode	= 524304;
 
 /**
  * IO Data sent to slave, acts as a memory lookup into PDO map
@@ -78,10 +82,10 @@ typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
 	int32_t		mActualPosition;
-	uint32_t	mActualVelocity;
+	int32_t		mActualVelocity;
 	uint32_t	mAnalogueInput;
 	uint32_t	mErrorStatus;
-	uint32_t	mActualTorque;
+	int32_t		mActualTorque;
 	uint32_t	mFollowError;
 	uint32_t	mActualTemperature;
 } MAC_400_INPUTS;
@@ -122,10 +126,14 @@ namespace nap
 	void MACController::onSafeOperational(void* slave, int index)
 	{
 		// Store initial motor position
+		// This step is important as it ensures that the positional commands that are
+		// given to the motor are relative to the initial position.
 		assert(index <= getSlaveCount());
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-		mOutputs[index - 1]->mInitPosition = inputs->mActualPosition;
+		mOutputs[index - 1]->mInitPosition   = inputs->mActualPosition;
+		
+		//mOutputs[index - 1]->mTargetPosition = inputs->mActualPosition;
 
 		// Force passive mode in safe operational mode
 		setMode(index, EMotorMode::Passive);
@@ -136,7 +144,7 @@ namespace nap
 	{
 		int slave_count = getSlaveCount();
 		assert(mOutputs.size() == slave_count);
-		assert(mInputs.size() == slave_count);
+		assert(mInputs.size()  == slave_count);
 
 		for (int i = 1; i <= slave_count; i++)
 		{
@@ -163,9 +171,9 @@ namespace nap
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 			mac_outputs->mOperatingMode = static_cast<uint32_t>(EMotorMode::Position);
 			mac_outputs->mRequestedPosition = req_position;
-			mac_outputs->mVelocity = motor_output->mVelocity;
-			mac_outputs->mAcceleration = motor_output->mAcceleration;
-			mac_outputs->mTorque = motor_output->mTorque;
+			mac_outputs->mVelocity = motor_output->mVelocityCNT;
+			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
+			mac_outputs->mTorque = motor_output->mTorqueCNT;
 		}
 	}
 
@@ -176,7 +184,7 @@ namespace nap
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
 			// Create unique output
-			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>();
+			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>(mMaxVelocity, mVelocitySetRatio);
 			new_output->setPosition(mRequestedPosition);
 			new_output->setAcceleration(static_cast<float>(mAcceleration));
 			new_output->setVelocity(static_cast<float>(mVelocity));
@@ -186,7 +194,6 @@ namespace nap
 			// Create unique input
 			mInputs.emplace_back(std::make_unique<MacInputs>());
 		}
-
 		nap::Logger::info("%s: found %d slave(s)", this->mID.c_str(), this->getSlaveCount());
 	}
 
@@ -211,6 +218,19 @@ namespace nap
 	}
 
 
+	uint32 MACController::getPosition(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mOutputs[index]->mTargetPosition;
+	}
+
+	nap::int32 MACController::getActualPosition(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->getActualPosition();
+	}
+
+
 	void MACController::setVelocity(int index, float velocity)
 	{
 		assert(index < getSlaveCount());
@@ -218,10 +238,31 @@ namespace nap
 	}
 
 
+	float MACController::getVelocity(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mOutputs[index]->getVelocity();
+	}
+
+
+	float MACController::getActualVelocity(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->getActualVelocity(mVelocityGetRatio);
+	}
+
+
 	void MACController::setTorque(int index, float torque)
 	{
 		assert(index < getSlaveCount());
 		mOutputs[index]->setTorque(torque);
+	}
+
+
+	float MACController::getActualTorque(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->getActualTorque();
 	}
 
 
@@ -246,14 +287,14 @@ namespace nap
 
 	bool MACController::hasError(int index) const
 	{
-		assert(mOutputs.size() < index);
+		assert(index < getSlaveCount());
 		return mInputs[index]->hasError();
 	}
 
 
 	void MACController::getErrors(int index, std::vector<MACController::EErrorStat>& outErrors) const
 	{
-		assert(mOutputs.size() < index);
+		assert(index < getSlaveCount());
 		return mInputs[index]->getErrors(outErrors);
 	}
 
@@ -266,46 +307,52 @@ namespace nap
 	}
 
 
-	bool MACController::MacInputs::checkErrorBit(nap::uint32 field, EErrorStat error)
+	bool MacInputs::checkErrorBit(nap::uint32 field, MACController::EErrorStat error)
 	{
 		return (field & (1 << static_cast<uint32>(error))) > 0;
 	}
 
 
-	void MACController::MacOutputs::setPosition(nap::uint32 position)
+	void MacOutputs::setPosition(nap::uint32 position)
 	{
 		mTargetPosition = position;
 	}
 
 
-	void MACController::MacOutputs::setVelocity(float velocity)
+	void MacOutputs::setVelocity(float velocity)
 	{
-		float fvel = math::clamp<float>(velocity, 0.0f, 3000.0f) * sVelCountSample;
-		mVelocity = static_cast<uint32>(fvel);
+		mVelocityRPM = math::clamp<float>(velocity, 0.0f, mMaxVelocityRPM);
+		mVelocityCNT = static_cast<uint32>(mVelocityRPM * mRatio);
 	}
 
 
-	void MACController::MacOutputs::setTorque(float torque)
+	float MacOutputs::getVelocity() const
 	{
-		float ptorque = math::fit<float>(torque, 0.0f, 300.0f, 0.0f, sTorqueMax);
-		mTorque = static_cast<uint32>(ptorque);
+		return mVelocityRPM;
 	}
 
 
-	void MACController::MacOutputs::setAcceleration(float acceleration)
+	void MacOutputs::setTorque(float torque)
+	{
+		float ptorqe = (math::clamp<float>(torque, 0.0f, 300.0f) / 100.0f) * sTorqueNom;
+		mTorqueCNT = static_cast<uint32>(ptorqe);
+	}
+
+
+	void MacOutputs::setAcceleration(float acceleration)
 	{
 		float paccel = (static_cast<float>(math::max<float>(acceleration, 0.0f)) / 1000.0f) * sAccCountSample;
-		mAcceleration = static_cast<uint32>(paccel);
+		mAccelerationCNT = static_cast<uint32>(paccel);
 	}
 
 
-	bool MACController::MacInputs::hasError() const
+	bool MacInputs::hasError() const
 	{
 		return checkErrorBit(mErrorStatus, MACController::EErrorStat::AnyError);
 	}
 
 
-	void MACController::MacInputs::getErrors(std::vector<nap::MACController::EErrorStat>& errors) const
+	void MacInputs::getErrors(std::vector<nap::MACController::EErrorStat>& errors) const
 	{
 		// No errors
 		errors.clear();
@@ -330,5 +377,17 @@ namespace nap
 				errors.emplace_back(cur_e);
 			}
 		}
+	}
+
+
+	float MacInputs::getActualVelocity(float velRatio) const
+	{
+		return static_cast<float>(mActualVelocity) / velRatio;
+	}
+
+
+	float nap::MacInputs::getActualTorque() const
+	{
+		return (static_cast<float>(mActualTorque) / sTorqueNom) * 100.0f;
 	}
 }

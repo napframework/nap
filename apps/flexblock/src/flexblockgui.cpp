@@ -108,6 +108,9 @@ namespace nap
 		//
 		mFlexBlock = mApp.GetBlockEntity()->findComponent<FlexBlockComponentInstance>();
 
+		mController = resourceManager->findObject<MACController>("MACController");
+		mTimer.start();
+
 		//
 		initParameters();
 
@@ -1652,6 +1655,47 @@ namespace nap
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
+
+		if(mTimer.getElapsedTime() > mUpdateTime)
+		{
+			tor = mController->getActualTorque(0);
+			vel = mController->getActualVelocity(0);
+			mUpdateTime += 1.0f;
+		}
+
+		for (int i = 0; i < mController->getSlaveCount(); i++)
+		{
+			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
+			{
+				ImGui::Text("Current Motor Position: %d", mController->getActualPosition(i));
+				int req_pos = static_cast<int>(mController->getPosition(i));
+				if (ImGui::SliderInt("Position", &req_pos, 0, 5000000))
+				{
+					mController->setPosition(i, req_pos);
+				}
+
+				ImGui::Text("Current Motor Velocity: %.1f", vel);
+
+				int req_vel = mController->getVelocity(i);
+				if (ImGui::SliderInt("Velocity", &req_vel, 0, mController->mMaxVelocity))
+				{
+					mController->setVelocity(i, static_cast<float>(req_vel));
+				}
+				
+				ImGui::Text("Motor Torque: %.1f", tor);
+				ImGui::Separator();
+				if (mController->hasError(i))
+				{
+					std::vector<MACController::EErrorStat> errors;
+					mController->getErrors(i, errors);
+					for (const auto& error : errors)
+					{
+						ImGui::TextColored(text_color, MACController::errorToString(error).c_str());
+					}
+				}
+			}
+		}
+
 		ImGui::End();
 	}
 

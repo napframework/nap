@@ -8,6 +8,13 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// MAC Controller
+	//////////////////////////////////////////////////////////////////////////
+
+	class MacOutputs;
+	class MacInputs;
+
 	/**
 	 * JVL CAM motor EthetCAT controller
 	 * On initialization the controller creates a MACPosition container for every available slave on the network.
@@ -59,12 +66,39 @@ namespace nap
 		void setPosition(int index, nap::uint32 position);
 
 		/**
-		 * Set the velocity in RPM of a single motor. Does not perform an out of bounds check.
-		 * 1 RPM = 2.77056 counts/sample. Max velocity = 2000. Negative values are clamped to 0.
+		 * Returns the requested motor position for the given slave.
+		 * @param index motor index, 0 = first slave
+		 * @return the requested motor position
+		 */
+		uint32 getPosition(int index) const;
+
+		/**
+		 * Returns the actual position of a single motor. Does not perform an out of bounds check
+		 * @param index motor index, 0 = first slave
+		 * @return the actual motor position
+		 */
+		nap::int32 getActualPosition(int index) const;
+
+		/**
+		 * Set the requested velocity in RPM of a single motor. Does not perform an out of bounds check.
+		 * 1 RPM = 2.77056 counts/sample. Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave.
 		 * @param velocity new motor velocity
 		 */
 		void setVelocity(int index, float velocity);
+
+		/**
+		 * @return the requested velocity at the given motor index in RPM
+		 */
+		float getVelocity(int index) const;
+
+		/**
+		 * Returns the actual motor velocity in RPM. Does not perform an out of bounds check.
+		 * 1 RPM = 2.77056 counts/sample.
+		 * @param index motor index, 0 = first slave.
+		 * @return the actual motor velocity in RPM
+		 */
+		float getActualVelocity(int index) const;
 
 		/**
 		 * Set the torque of a single motor. Does not perform an out of bounds check
@@ -74,6 +108,13 @@ namespace nap
 		 * @param torque new motor torque
 		 */
 		void setTorque(int index, float torque);
+
+		/**
+		 * Returns the actual torque of a single motor. Does not perform an out of bounds check.
+		 * @param index motor index, 0 = first slave.
+		 * @return the actual torque of a single motor in the range of 0 - 300%
+		 */
+		float getActualTorque(int index) const;
 
 		/**
 		 * Set the desired nominal acceleration in RPM of a single motor. Does not perform an out of bounds check.
@@ -121,6 +162,9 @@ namespace nap
 		nap::uint32 mVelocity			= 2700;		///< Property: 'Velocity' motor velocity
 		nap::uint32 mAcceleration		= 360;		///< Property: 'Acceleration' motor acceleration
 		nap::uint32 mTorque				= 341;		///< Property: 'Torque' motor torque
+		nap::uint32 mMaxVelocity		= 4300;		///< Property: 'MaxVelocity' max allowed motor velocity
+		float mVelocityGetRatio			= 0.134f;	///< Property: 'VelocityGetRatio' Velocity counts / sample to RPM get ratio
+		float mVelocitySetRatio			= 2.18435f;	///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
 
 	protected:
 		/**
@@ -178,89 +222,128 @@ namespace nap
 		void setMode(int index, EMotorMode mode);
 
 	private:
-
-		//////////////////////////////////////////////////////////////////////////
-		// MAC motor outputs
-		//////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * Simple struct to keep track of motor output parameters
-		 * The target position is set by the client, the 
-		 * init position is read from the PDO when the master switches to safe operational mode.
-		 */
-		class MacOutputs
-		{
-		public:
-			/**
-			 * Set motor target position
-			 * @param position new motor target position
-			 */
-			void setPosition(nap::uint32 position);
-
-			/**
-			 * Set motor velocity
-			 * @param velocity new motor velocity
-			 */
-			void setVelocity(float velocity);
-
-			/**
-			 * Set motor torque
-			 * @param torque new motor torque
-			 */
-			void setTorque(float torque);
-
-			/**
-			 * Set motor acceleration
-			 * @param acceleration new motor acceleration
-			 */
-			void setAcceleration(float acceleration);
-
-			std::atomic<nap::uint32>	mTargetPosition = { 0 };		///< New requested motor position
-			std::atomic<nap::int32>		mInitPosition	= { 0 };		///< Initial motor position
-			std::atomic<nap::uint32>	mVelocity		= { 0 };		///< Motor velocity
-			std::atomic<nap::uint32>	mTorque			= { 0 };		///< Motor torque
-			std::atomic<nap::uint32>	mAcceleration	= { 0 };		///< Motor acceleration
-		};
-
-		//////////////////////////////////////////////////////////////////////////
-		// MAC motor inputs
-		//////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * Simple struct to keep track of motor inputs (data received from slave).
-		 * This struct also keeps track of the motor error state
-		 */
-		class MacInputs
-		{
-		public:
-
-			/**
-			 * @return if this motor is malfunctioning.
-			 */
-			bool hasError() const;
-
-			/**
-			 * Returns all errors associated with this motor
-			 * Make sure to check if this motor has any errors before calling this function!
-			 * @outErrors contains all the errors associated with this motor
-			 */
-			void getErrors(std::vector<MACController::EErrorStat>& outErrors) const;
-
-			std::atomic<nap::uint32>	mActualPosition = { 0 };		///< Current motor position
-			std::atomic<nap::uint32>	mActualVelocity = { 0 };		///< Current motor velocity
-			std::atomic<nap::uint32>	mErrorStatus	= { 0 };		///< Current error status
-			std::atomic<nap::uint32>	mActualTorque	= { 0 };		///< Current motor torque
-
-		private:
-			/**
-			 * If the current set of processed data contains the given error
-			 * @param field contains all the processed error codes as a bits
-			 * @param error the error to check for
-			 */
-			static bool checkErrorBit(nap::uint32 field, EErrorStat error);
-		};
-
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;		///< List of all current motor positions
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;		///< List of all current motor positions
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// MAC motor outputs
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Simple struct to keep track of motor output parameters
+	 * The target position is set by the client, the
+	 * init position is read from the PDO when the master switches to safe operational mode.
+	 */
+	class MacOutputs
+	{
+		friend class MACController;
+	public:
+		/**
+		 * Constructor
+		 * @param maxVelocity the maximum allowed velocity in RPM 
+		 * @param velRatio ratio used to convert counts per sample into RPM
+		 */
+		MacOutputs(float maxVelocity, float velRatio) :
+			mMaxVelocityRPM(maxVelocity),
+			mRatio(velRatio)	{ }
+
+		/**
+		 * Set motor target position
+		 * @param position new motor target position
+		 */
+		void setPosition(nap::uint32 position);
+
+		/**
+		 * Set motor velocity
+		 * @param velocity new motor velocity in RPM
+		 * @param maxVelocity the maximum allowed velocity in RPM
+		 * @param velRatio ratio used to convert counts per sample into RPM
+		 */
+		void setVelocity(float velocity);
+
+		/**
+		 * @return the currently set motor velocity in RPM
+		 */
+		float getVelocity() const;
+
+		/**
+		 * Set motor torque
+		 * @param torque new motor torque
+		 */
+		void setTorque(float torque);
+
+		/**
+		 * Set motor acceleration
+		 * @param acceleration new motor acceleration
+		 */
+		void setAcceleration(float acceleration);
+
+	private:
+		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
+		std::atomic<nap::int32>		mInitPosition = { 0 };		///< Initial motor position
+		std::atomic<nap::uint32>	mVelocityCNT = { 0 };		///< Motor velocity
+		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
+		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
+
+		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
+		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
+		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// MAC motor inputs
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Simple struct to keep track of motor inputs (data received from slave).
+ 	 * This struct also keeps track of the motor error state
+	 */
+	class MacInputs
+	{
+		friend class MACController;
+	public:
+		/**
+		 * @return if this motor is malfunctioning.
+		 */
+		bool hasError() const;
+
+		/**
+		 * Returns all errors associated with this motor
+		 * Make sure to check if this motor has any errors before calling this function!
+		 * @outErrors contains all the errors associated with this motor
+		 */
+		void getErrors(std::vector<MACController::EErrorStat>& outErrors) const;
+
+		/**
+		 * @return actual motor position
+		 */
+		nap::int32 getActualPosition() const					{ return mActualPosition; }
+
+		/**
+		 * @param velRatio ratio used to convert cnts / sample into RPM
+		 * @return actual motor velocity
+		 */
+		float getActualVelocity(float velRatio) const;
+
+		/**
+		 * @return actual torque
+		 */
+		float getActualTorque() const;
+
+	private:
+		std::atomic<nap::int32>	 mActualPosition	= { 0 };	///< Current motor position
+		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
+		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
+		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
+
+		/**
+		 * If the current set of processed data contains the given error
+		 * @param field contains all the processed error codes as a bits
+		 * @param error the error to check for
+		 */
+		static bool checkErrorBit(nap::uint32 field, MACController::EErrorStat error);
 	};
 }
