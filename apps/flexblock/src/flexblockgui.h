@@ -95,6 +95,7 @@ namespace nap
 		std::vector<ParameterFloat*> mParameters;
 
 		ResourcePtr<MACController> mController;
+		int mResetMotorPos = 0;
 
 		/**
 		 * Shows the information window

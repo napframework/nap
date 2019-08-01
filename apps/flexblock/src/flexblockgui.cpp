@@ -1684,6 +1684,15 @@ namespace nap
 				
 				ImGui::Text("Motor Torque: %.1f", tor);
 				ImGui::Separator();
+				ImGui::SliderInt("New Position", &mResetMotorPos, 0, 5000000);
+				ImGui::SameLine();
+				if (ImGui::Button("Reset Position"))
+				{
+					utility::ErrorState error;
+					mController->resetPosition(mResetMotorPos, error);
+				}
+
+				ImGui::Separator();
 				if (mController->hasError(i))
 				{
 					if (ImGui::Button("Clear Errors"))

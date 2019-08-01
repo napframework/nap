@@ -63,7 +63,7 @@ typedef struct PACKED
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
-	int32_t		mResetErrors;
+	uint32_t	mProgramCommands;
 } MAC_400_OUTPUTS;
 
 
@@ -104,9 +104,8 @@ namespace nap
 		// following positional commands are relative and difficult to synchronize
 		uint32_t control_bits = 0;
 		control_bits |= 1UL << 5;		///< Restores position between modes
-		control_bits |= 1UL << 7;		///< Enable position backup at power loss
 
-		// Reset motor position to new abolsute value using control bits
+		// Reset motor position to new absolute value using control bits
 		if (mResetPosition)
 		{
 			// Reset position if requested
@@ -119,6 +118,10 @@ namespace nap
 
 		// Write control bits
 		sdoWrite(index, 0x2012, 0x24, false, sizeof(control_bits), &control_bits);
+
+		// uint32_t extra_bits = 0;
+		// extra_bits |= 1UL << 7;
+		// sdoWrite(index, 0x2012, 0xEC, false, sizeof(extra_bits), &extra_bits);
 
 		// Always force motor to passive mode before launch
 		uint32 motor_mode = static_cast<uint32>(MACController::EMotorMode::Passive);
@@ -171,12 +174,12 @@ namespace nap
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
 			{
-				mac_outputs->mResetErrors = sClearErrorCode;
+				mac_outputs->mProgramCommands = sClearErrorCode;
 				motor_input->mClearErrors = false;
 			}
 			else
 			{
-				mac_outputs->mResetErrors = 0;
+				mac_outputs->mProgramCommands = 0;
 			}
 		}
 	}
@@ -185,6 +188,7 @@ namespace nap
 	void MACController::onStart()
 	{
 		mOutputs.clear();
+		mInputs.clear();
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
 			// Create unique output
@@ -307,6 +311,16 @@ namespace nap
 		assert(index < getSlaveCount());
 		return mInputs[index]->clearErrors();
 	}
+
+
+	bool MACController::resetPosition(nap::uint32 newPosition, utility::ErrorState& error)
+	{
+		mResetPosition = true;
+		mResetPositionValue = newPosition;
+		stop();
+		return start(error);
+	}
+
 
 	void MACController::setMode(int index, EMotorMode mode)
 	{

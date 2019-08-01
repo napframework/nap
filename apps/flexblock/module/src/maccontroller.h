@@ -149,6 +149,18 @@ namespace nap
 		void clearErrors(int index);
 
 		/**
+		 * Resets the position of all motors to the given value.
+		 * This call needs to restart the device in order to update motor state.
+		 * Do not call this function every frame!
+		 * This overrides the current absolute and target position of the motor, ie:
+		 * 'current_position = newPosition' and target_postion = newPosition.
+		 * If this call fails the device will not be running.
+		 * @param newPosition new absolute motor position
+		 * @param error contains the error when resetting the position fails.
+		 */
+		bool resetPosition(nap::uint32 newPosition, utility::ErrorState& error);
+
+		/**
 		 * Converts a motor error into a human readable string
 		 * @param error the motor error
 		 * @return the string representation of the error
@@ -301,7 +313,7 @@ namespace nap
 		std::atomic<nap::uint32>	mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
-
+		
 		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
 		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
 		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
