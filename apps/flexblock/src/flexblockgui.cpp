@@ -1676,22 +1676,21 @@ namespace nap
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
 			{
+				ImGui::Text("Curent Motor Mode: %s", mController->modeToString(mController->getActualMode(i)).c_str());
 				ImGui::Text("Current Motor Position: %d", mController->getActualPosition(i));
+				ImGui::Text("Current Motor Velocity: %.1f", vel);
+				ImGui::Text("Current Motor Torque: %.1f", tor);
 				int req_pos = static_cast<int>(mController->getPosition(i));
 				if (ImGui::SliderInt("Position", &req_pos, 0, 5000000))
 				{
 					mController->setPosition(i, req_pos);
 				}
 
-				ImGui::Text("Current Motor Velocity: %.1f", vel);
-
 				int req_vel = mController->getVelocity(i);
 				if (ImGui::SliderInt("Velocity", &req_vel, 0, mController->mMaxVelocity))
 				{
 					mController->setVelocity(i, static_cast<float>(req_vel));
 				}
-				
-				ImGui::Text("Motor Torque: %.1f", tor);
 				ImGui::Separator();
 				bool error = false;
 				if (mController->hasError(i))

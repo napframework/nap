@@ -205,6 +205,21 @@ namespace nap
 		 */
 		static void errorToString(EErrorStat error, std::string& outString);
 
+		/**
+		 * Converts a motor mode into a human readable string
+		 * @param mode the motor state
+		 * @return the string representation of the mode
+		 */
+		static std::string modeToString(EMotorMode mode);
+
+		/**
+		* Converts a motor mode into a human readable string
+		* @param mode the motor mode
+		* @param outString mode converted to string
+		* @return the string representation of the mode
+		*/
+		static void modeToString(EMotorMode mode, std::string& outString);
+
 		bool mResetPosition				= false;				///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
 		nap::int32  mVelocity			= 2700;					///< Property: 'Velocity' motor velocity

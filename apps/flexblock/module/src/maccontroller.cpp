@@ -305,6 +305,18 @@ namespace nap
 	}
 
 
+	std::string MACController::modeToString(EMotorMode mode)
+	{
+		return RTTI_OF(MACController::EMotorMode).get_enumeration().value_to_name(mode).to_string();
+	}
+
+
+	void MACController::modeToString(EMotorMode mode, std::string& outString)
+	{
+		outString = RTTI_OF(MACController::EMotorMode).get_enumeration().value_to_name(mode).to_string();
+	}
+
+
 	bool MACController::hasError(int index) const
 	{
 		assert(index < getSlaveCount());
