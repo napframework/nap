@@ -125,6 +125,13 @@ namespace nap
 		void setAcceleration(int index, float acceleration);
 
 		/**
+		 * Returns the temperature (c) of a single motor. Does not perform an out of bounds check.
+		 * @param index motor index, 0 = first slave.
+		 * @return motor drive temperature in c.
+		 */
+		uint32 getActualTemperature(int index) const;
+
+		/**
 		 * If the motor is in an invalid state due to 1 or more errors
 		 * Always call this function first before sampling currently active errors
 		 * Note that this is not the same as connectivity!
@@ -158,7 +165,6 @@ namespace nap
 
 		bool mResetPosition				= false;	///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;		///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
-		nap::uint32 mRequestedPosition	= 0;		///< Property: 'Position' requested motor position
 		nap::uint32 mVelocity			= 2700;		///< Property: 'Velocity' motor velocity
 		nap::uint32 mAcceleration		= 360;		///< Property: 'Acceleration' motor acceleration
 		nap::uint32 mTorque				= 341;		///< Property: 'Torque' motor torque
@@ -224,6 +230,13 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;		///< List of all current motor positions
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;		///< List of all current motor positions
+
+		/**
+		 * Updates the initial and target motor position when motor is in passive mode
+		 * This is required in order to always maintain the accurate position delta to
+		 * compute the actual motor position when the motor is in active mode.
+		 */
+		void updatePositionDelta(void* slave, int index);
 	};
 
 
@@ -253,32 +266,42 @@ namespace nap
 		 * Set motor target position
 		 * @param position new motor target position
 		 */
-		void setPosition(nap::uint32 position);
+		void setTargetPosition(nap::uint32 position);
 
 		/**
-		 * Set motor velocity
+		 * @return motor target position
+		 */
+		uint32 getTargetPosition() const;
+
+		/**
+		 * Set motor velocity in RPM
 		 * @param velocity new motor velocity in RPM
 		 * @param maxVelocity the maximum allowed velocity in RPM
 		 * @param velRatio ratio used to convert counts per sample into RPM
 		 */
-		void setVelocity(float velocity);
+		void setTargetVelocity(float velocity);
 
 		/**
-		 * @return the currently set motor velocity in RPM
+		 * @return the currently set motor velocity in RPM.
 		 */
-		float getVelocity() const;
+		float getTargetVelocity() const;
 
 		/**
-		 * Set motor torque
+		 * Set requested motor torque from 0 to 300 %
 		 * @param torque new motor torque
 		 */
-		void setTorque(float torque);
+		void setTargetTorque(float torque);
+
+		/**
+		 * Get requested motor torque in 0 - 300 %
+		 */
+		float getTargetTorque() const;
 
 		/**
 		 * Set motor acceleration
 		 * @param acceleration new motor acceleration
 		 */
-		void setAcceleration(float acceleration);
+		void setTargetAcceleration(float acceleration);
 
 	private:
 		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
@@ -290,6 +313,7 @@ namespace nap
 		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
 		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
 		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
+		float						mTorquePCT = 0.0f;			///< Torque in percentage
 	};
 
 
@@ -329,15 +353,21 @@ namespace nap
 		float getActualVelocity(float velRatio) const;
 
 		/**
-		 * @return actual torque
+		 * @return actual torque in percentage from 0 - 300%
 		 */
 		float getActualTorque() const;
+
+		/**
+		 * @return temperature measured inside the drive
+		 */
+		uint32 getActualTemperature() const;
 
 	private:
 		std::atomic<nap::int32>	 mActualPosition	= { 0 };	///< Current motor position
 		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
 		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
 		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
+		std::atomic<nap::uint32> mActualTemperature = { 0 };	///< Current motor drive temperature
 
 		/**
 		 * If the current set of processed data contains the given error

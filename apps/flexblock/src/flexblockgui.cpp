@@ -1683,6 +1683,8 @@ namespace nap
 				}
 				
 				ImGui::Text("Motor Torque: %.1f", tor);
+				ImGui::Text("Motor Temperature: %d", static_cast<int>(mController->getActualTemperature(i)));
+				
 				ImGui::Separator();
 				if (mController->hasError(i))
 				{

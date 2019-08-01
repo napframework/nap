@@ -10,7 +10,6 @@
 RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Position",				&nap::MACController::mRequestedPosition,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
@@ -112,30 +111,33 @@ namespace nap
 			reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC_SETUP;
 
 			// Reset position if requested
-			sdoWrite(index, 0x2012, 0x04, FALSE, sizeof(mResetPositionValue), &mResetPositionValue);
+			sdoWrite(index, 0x2012, 0x04, false, sizeof(mResetPositionValue), &mResetPositionValue);
 
 			// Force motor on zero.
 			uint32_t control_word = 0;
 			control_word |= 1UL << 6;
 			control_word |= 0x0 << 8;
-			sdoWrite(index, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word);
+			sdoWrite(index, 0x2012, 0x24, false, sizeof(control_word), &control_word);
 		}
+
+		// Always force motor to passive mode before launch
+		uint32 motor_mode = static_cast<uint32>(MACController::EMotorMode::Passive);
+		sdoWrite(index, 0x2012, 0x02, false, sizeof(motor_mode), &motor_mode);
 	}
 
 
 	void MACController::onSafeOperational(void* slave, int index)
 	{
-		// Store initial motor position
-		// This step is important as it ensures that the positional commands that are
-		// given to the motor are relative to the initial position.
-		assert(index <= getSlaveCount());
+		// Ensure target position matches actual position
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-		mOutputs[index - 1]->mInitPosition		= inputs->mActualPosition;
-		mOutputs[index - 1]->mTargetPosition	= inputs->mActualPosition;
-
-		// Force passive mode in safe operational mode
-		setMode(index, EMotorMode::Passive);
+		assert(index <= getSlaveCount());
+		mOutputs[index - 1]->setTargetPosition(inputs->mActualPosition);
+		
+		// When the motor is in a passive state, make sure to update the initial position
+		// Safe operational can be called after motor disconnect
+		if (inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
+			mOutputs[index-1]->mInitPosition = inputs->mActualPosition;
 	}
 
 
@@ -155,19 +157,29 @@ namespace nap
 
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
+
 			motor_input->mActualPosition = mac_inputs->mActualPosition;
 			motor_input->mActualTorque = mac_inputs->mActualTorque;
 			motor_input->mErrorStatus = mac_inputs->mErrorStatus;
 			motor_input->mActualVelocity = mac_inputs->mActualVelocity;
+			motor_input->mActualTemperature = mac_inputs->mActualTemperature;
 
 			// Get associated motor output parameters
 			std::unique_ptr<MacOutputs>& motor_output = mOutputs[i - 1];
+			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 
-			// Get relative motor position
+			// When in passive mode update init position, this is a very important step
+			// Without resetting the initial position to the actual position
+			// The controller won't be able to calculate the actual position based on the relative offset.
+			if (mac_inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
+				motor_output->mInitPosition = mac_inputs->mActualPosition;
+
+			// Get relative motor position, the relative position is based on the current target
+			// And motor initialization position. The difference between the two is the actual amount
+			// of turns the motor has to perform.
 			int32 req_position = motor_output->mTargetPosition - motor_output->mInitPosition;
 
 			// Write info
-			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 			mac_outputs->mOperatingMode = static_cast<uint32_t>(EMotorMode::Position);
 			mac_outputs->mRequestedPosition = req_position;
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
@@ -184,10 +196,9 @@ namespace nap
 		{
 			// Create unique output
 			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>(mMaxVelocity, mVelocitySetRatio);
-			new_output->setPosition(mRequestedPosition);
-			new_output->setAcceleration(static_cast<float>(mAcceleration));
-			new_output->setVelocity(static_cast<float>(mVelocity));
-			new_output->setTorque(static_cast<float>(mTorque));
+			new_output->setTargetAcceleration(static_cast<float>(mAcceleration));
+			new_output->setTargetVelocity(static_cast<float>(mVelocity));
+			new_output->setTargetTorque(static_cast<float>(mTorque));
 			mOutputs.emplace_back(std::move(new_output));
 
 			// Create unique input
@@ -213,14 +224,14 @@ namespace nap
 	void MACController::setPosition(int index, nap::uint32 position)
 	{
 		assert(index < getSlaveCount());
-		mOutputs[index]->setPosition(position);
+		mOutputs[index]->setTargetPosition(position);
 	}
 
 
 	uint32 MACController::getPosition(int index) const
 	{
 		assert(index < getSlaveCount());
-		return mOutputs[index]->mTargetPosition;
+		return mOutputs[index]->getTargetPosition();
 	}
 
 	nap::int32 MACController::getActualPosition(int index) const
@@ -233,14 +244,14 @@ namespace nap
 	void MACController::setVelocity(int index, float velocity)
 	{
 		assert(index < getSlaveCount());
-		mOutputs[index]->setVelocity(velocity);
+		mOutputs[index]->setTargetVelocity(velocity);
 	}
 
 
 	float MACController::getVelocity(int index) const
 	{
 		assert(index < getSlaveCount());
-		return mOutputs[index]->getVelocity();
+		return mOutputs[index]->getTargetVelocity();
 	}
 
 
@@ -254,7 +265,7 @@ namespace nap
 	void MACController::setTorque(int index, float torque)
 	{
 		assert(index < getSlaveCount());
-		mOutputs[index]->setTorque(torque);
+		mOutputs[index]->setTargetTorque(torque);
 	}
 
 
@@ -268,7 +279,14 @@ namespace nap
 	void MACController::setAcceleration(int index, float acceleration)
 	{
 		assert(index < getSlaveCount());
-		mOutputs[index]->setAcceleration(acceleration);
+		mOutputs[index]->setTargetAcceleration(acceleration);
+	}
+
+
+	uint32 MACController::getActualTemperature(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->getActualTemperature();
 	}
 
 
@@ -306,39 +324,65 @@ namespace nap
 	}
 
 
+	void MACController::updatePositionDelta(void* slave, int index)
+	{
+		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
+		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
+
+		if (inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
+		{
+			assert(index <= getSlaveCount());
+			mOutputs[index - 1]->mInitPosition		= inputs->mActualPosition;
+			mOutputs[index - 1]->mTargetPosition	= inputs->mActualPosition;
+		}
+	}
+
+
 	bool MacInputs::checkErrorBit(nap::uint32 field, MACController::EErrorStat error)
 	{
 		return (field & (1 << static_cast<uint32>(error))) > 0;
 	}
 
 
-	void MacOutputs::setPosition(nap::uint32 position)
+	void MacOutputs::setTargetPosition(nap::uint32 position)
 	{
 		mTargetPosition = position;
 	}
 
 
-	void MacOutputs::setVelocity(float velocity)
+	uint32 MacOutputs::getTargetPosition() const
+	{
+		return mTargetPosition;
+	}
+
+
+	void MacOutputs::setTargetVelocity(float velocity)
 	{
 		mVelocityRPM = math::clamp<float>(velocity, 0.0f, mMaxVelocityRPM);
 		mVelocityCNT = static_cast<uint32>(mVelocityRPM * mRatio);
 	}
 
 
-	float MacOutputs::getVelocity() const
+	float MacOutputs::getTargetVelocity() const
 	{
 		return mVelocityRPM;
 	}
 
 
-	void MacOutputs::setTorque(float torque)
+	void MacOutputs::setTargetTorque(float torque)
 	{
-		float ptorqe = (math::clamp<float>(torque, 0.0f, 300.0f) / 100.0f) * sTorqueNom;
-		mTorqueCNT = static_cast<uint32>(ptorqe);
+		mTorquePCT = math::clamp<float>(torque, 0.0f, 300.0f);
+		mTorqueCNT = static_cast<uint32>((mTorquePCT / 100.0f) * sTorqueNom);
 	}
 
 
-	void MacOutputs::setAcceleration(float acceleration)
+	float MacOutputs::getTargetTorque() const
+	{
+		return mTorquePCT;
+	}
+
+
+	void MacOutputs::setTargetAcceleration(float acceleration)
 	{
 		float paccel = (static_cast<float>(math::max<float>(acceleration, 0.0f)) / 1000.0f) * sAccCountSample;
 		mAccelerationCNT = static_cast<uint32>(paccel);
@@ -382,6 +426,12 @@ namespace nap
 	float MacInputs::getActualVelocity(float velRatio) const
 	{
 		return static_cast<float>(mActualVelocity) / velRatio;
+	}
+
+
+	uint32 MacInputs::getActualTemperature() const
+	{
+		return mActualTemperature;
 	}
 
 
