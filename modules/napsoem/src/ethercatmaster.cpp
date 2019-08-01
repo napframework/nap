@@ -156,9 +156,21 @@ namespace nap
 	}
 
 
+	bool EtherCATMaster::isOnline(int index) const
+	{
+		return !isLost(index + 1);
+	}
+
+
 	int EtherCATMaster::getSlaveCount() const
 	{
 		return ec_slavecount;
+	}
+
+
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
+	{
+		return getState(index + 1);
 	}
 
 
@@ -168,7 +180,7 @@ namespace nap
 	}
 
 
-	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::getState(int index) const
 	{
 		assert(index <= ec_slavecount);
 		uint16 cstate = ec_slave[index].state;
@@ -306,7 +318,6 @@ namespace nap
 					if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 					{
 						ec_slave[slave].islost = true;
-						nap::Logger::error("%s: slave %d lost", this->mID.c_str(), slave);
 					}
 				}
 			}

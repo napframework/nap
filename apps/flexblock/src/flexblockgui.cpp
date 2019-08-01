@@ -1663,6 +1663,15 @@ namespace nap
 			mUpdateTime += 1.0f;
 		}
 
+		ImGui::Separator();
+		ImGui::SliderInt("New Position", &mResetMotorPos, 0, 5000000);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset Position"))
+		{
+			utility::ErrorState error;
+			mController->resetPosition(mResetMotorPos, error);
+		}
+
 		for (int i = 0; i < mController->getSlaveCount(); i++)
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
@@ -1684,15 +1693,7 @@ namespace nap
 				
 				ImGui::Text("Motor Torque: %.1f", tor);
 				ImGui::Separator();
-				ImGui::SliderInt("New Position", &mResetMotorPos, 0, 5000000);
-				ImGui::SameLine();
-				if (ImGui::Button("Reset Position"))
-				{
-					utility::ErrorState error;
-					mController->resetPosition(mResetMotorPos, error);
-				}
-
-				ImGui::Separator();
+				bool error = false;
 				if (mController->hasError(i))
 				{
 					if (ImGui::Button("Clear Errors"))
@@ -1704,8 +1705,14 @@ namespace nap
 					{
 						ImGui::TextColored(text_color, MACController::errorToString(error).c_str());
 					}
+					error = true;
 				}
-				else
+				if (!mController->isOnline(i))
+				{
+					ImGui::TextColored(text_color, "Slave Lost!");
+					error = true;
+				}
+				if(!error)
 				{
 					ImGui::Text("No Errors");
 				}

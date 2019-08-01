@@ -6,18 +6,6 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 
-// nap::maccontroller run time class definition 
-RTTI_BEGIN_CLASS(nap::MACController)
-	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
 RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::ThermalEnergyError,		"ThermalEnergyError"),
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::FollowError,			"FollowError"),
@@ -39,6 +27,25 @@ RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::FlashError,				"FlashError"),
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SafeTorqueError,		"SafeTorqueError")
 RTTI_END_ENUM
+
+RTTI_BEGIN_ENUM(nap::MACController::EMotorMode)
+	RTTI_ENUM_VALUE(nap::MACController::EMotorMode::Passive,				"Passive"),
+	RTTI_ENUM_VALUE(nap::MACController::EMotorMode::Velocity,				"Velocity"),
+	RTTI_ENUM_VALUE(nap::MACController::EMotorMode::Position,				"Position")
+RTTI_END_ENUM
+
+// nap::maccontroller run time class definition 
+RTTI_BEGIN_CLASS(nap::MACController)
+	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mode",					&nap::MACController::mMode,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,13 +126,10 @@ namespace nap
 		// Write control bits
 		sdoWrite(index, 0x2012, 0x24, false, sizeof(control_bits), &control_bits);
 
-		// uint32_t extra_bits = 0;
-		// extra_bits |= 1UL << 7;
-		// sdoWrite(index, 0x2012, 0xEC, false, sizeof(extra_bits), &extra_bits);
-
-		// Always force motor to passive mode before launch
-		uint32 motor_mode = static_cast<uint32>(MACController::EMotorMode::Passive);
-		sdoWrite(index, 0x2012, 0x02, false, sizeof(motor_mode), &motor_mode);
+		// STORE AFTER POWER 
+		//uint32_t extra_bits = 0;
+		//extra_bits |= 1UL << 7;
+		//sdoWrite(index, 0x2012, 0xEC, false, sizeof(extra_bits), &extra_bits);
 	}
 
 
@@ -159,13 +163,14 @@ namespace nap
 			motor_input->mActualTorque = mac_inputs->mActualTorque;
 			motor_input->mErrorStatus = mac_inputs->mErrorStatus;
 			motor_input->mActualVelocity = mac_inputs->mActualVelocity;
+			motor_input->mActualMode = mac_inputs->mOperatingMode;
 
 			// Get associated motor output parameters
 			std::unique_ptr<MacOutputs>& motor_output = mOutputs[i - 1];
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 
 			// Write info
-			mac_outputs->mOperatingMode = static_cast<uint32_t>(EMotorMode::Position);
+			mac_outputs->mOperatingMode = motor_output->mRunMode;
 			mac_outputs->mRequestedPosition = motor_output->mTargetPosition;
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
@@ -196,6 +201,7 @@ namespace nap
 			new_output->setTargetAcceleration(static_cast<float>(mAcceleration));
 			new_output->setTargetVelocity(static_cast<float>(mVelocity));
 			new_output->setTargetTorque(static_cast<float>(mTorque));
+			new_output->setTargetMode(mMode);
 			mOutputs.emplace_back(std::move(new_output));
 
 			// Create unique input
@@ -214,7 +220,7 @@ namespace nap
 
 		// Set motor to passive mode
 		for (int i = 1; i <= getSlaveCount(); i++)
-			setMode(i, EMotorMode::Passive);
+			setModeSDO(i, EMotorMode::Passive);
 	}
 
 
@@ -280,6 +286,13 @@ namespace nap
 	}
 
 
+	void MACController::setMode(int index, EMotorMode mode)
+	{
+		assert(index < getSlaveCount());
+		mOutputs[index]->setTargetMode(mode);
+	}
+
+
 	std::string MACController::errorToString(EErrorStat error)
 	{
 		return RTTI_OF(MACController::EErrorStat).get_enumeration().value_to_name(error).to_string();
@@ -317,16 +330,29 @@ namespace nap
 	{
 		mResetPosition = true;
 		mResetPositionValue = newPosition;
-		stop();
-		return start(error);
+		this->stop();
+		return this->start(error);
 	}
 
 
-	void MACController::setMode(int index, EMotorMode mode)
+	void MACController::emergencyStop()
+	{
+		this->stop();
+	}
+
+
+	void MACController::setModeSDO(int index, EMotorMode mode)
 	{
 		// Ensure the motor is in passive mode.
 		uint32 new_mode = static_cast<nap::uint32>(mode);
 		sdoWrite(index, 0x2012, 0x02, FALSE, sizeof(new_mode), &new_mode);
+	}
+
+
+	MACController::EMotorMode MACController::getActualMode(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->getActualMode();
 	}
 
 
@@ -384,6 +410,26 @@ namespace nap
 	{
 		float paccel = (static_cast<float>(math::max<float>(acceleration, 0.0f)) / 1000.0f) * sAccCountSample;
 		mAccelerationCNT = static_cast<uint32>(paccel);
+	}
+
+
+	void MacOutputs::setTargetMode(MACController::EMotorMode mode)
+	{
+		mRunMode = static_cast<uint32>(mode);
+	}
+
+
+	MACController::EMotorMode MacOutputs::getTargetMode(MACController::EMotorMode mode) const
+	{
+		uint32 cmode = mRunMode;
+		return static_cast<MACController::EMotorMode>(cmode);
+	}
+
+
+	nap::MACController::EMotorMode MacInputs::getActualMode() const
+	{
+		uint32 mode = mActualMode;
+		return static_cast<MACController::EMotorMode>(mode);
 	}
 
 

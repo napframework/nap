@@ -54,6 +54,16 @@ namespace nap
 			SafeTorqueError		= 27,	///< This bit gets set if the supervisor circuitry of the Safe Torque Off (STO)system detects an error.This will normally indicate an error in the electronics.
 		};
 
+		/**
+		 * Describes various motor states
+		 */
+		enum class EMotorMode : nap::uint32
+		{
+			Passive		= 0,
+			Velocity	= 1,
+			Position	= 2
+		};
+
 		// Destructor
 		virtual ~MACController();
 
@@ -87,6 +97,7 @@ namespace nap
 		void setVelocity(int index, float velocity);
 
 		/**
+		 * @param index motor index, 0 = first slave.
 		 * @return the requested velocity at the given motor index in RPM
 		 */
 		float getVelocity(int index) const;
@@ -122,6 +133,19 @@ namespace nap
 		 * @pram acceleration new motor acceleration
 		 */
 		void setAcceleration(int index, float acceleration);
+
+		/**
+		 * Sets the motor mode to use. Does not perform an out of bounds check.
+		 * @param index slave index, 0 = first slave.
+		 */
+		void setMode(int index, EMotorMode mode);
+
+		/**
+		 * Returns the actual motor mode.
+		 * @param index motor index, 0 = first slave.
+		 * @return the actual motor mode.
+		 */
+		EMotorMode getActualMode(int index) const;
 
 		/**
 		 * If the motor is in an invalid state due to 1 or more errors
@@ -161,6 +185,12 @@ namespace nap
 		bool resetPosition(nap::uint32 newPosition, utility::ErrorState& error);
 
 		/**
+		 * Emergency stop call.
+		 * Stops the device from running and puts all motors in a passive state.
+		 */
+		void emergencyStop();
+
+		/**
 		 * Converts a motor error into a human readable string
 		 * @param error the motor error
 		 * @return the string representation of the error
@@ -175,25 +205,17 @@ namespace nap
 		 */
 		static void errorToString(EErrorStat error, std::string& outString);
 
-		bool mResetPosition				= false;	///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
-		nap::uint32 mResetPositionValue = 0;		///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
-		nap::uint32 mVelocity			= 2700;		///< Property: 'Velocity' motor velocity
-		nap::uint32 mAcceleration		= 360;		///< Property: 'Acceleration' motor acceleration
-		nap::uint32 mTorque				= 341;		///< Property: 'Torque' motor torque
-		nap::uint32 mMaxVelocity		= 4300;		///< Property: 'MaxVelocity' max allowed motor velocity
-		float mVelocityGetRatio			= 0.134f;	///< Property: 'VelocityGetRatio' Velocity counts / sample to RPM get ratio
-		float mVelocitySetRatio			= 2.18435f;	///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
+		bool mResetPosition				= false;				///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
+		nap::uint32 mResetPositionValue = 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
+		nap::uint32 mVelocity			= 2700;					///< Property: 'Velocity' motor velocity
+		nap::uint32 mAcceleration		= 360;					///< Property: 'Acceleration' motor acceleration
+		nap::uint32 mTorque				= 341;					///< Property: 'Torque' motor torque
+		nap::uint32 mMaxVelocity		= 4300;					///< Property: 'MaxVelocity' max allowed motor velocity
+		EMotorMode	mMode				= EMotorMode::Position;	///< Property: 'Mode' the actual operating mode of the drive
+		float mVelocityGetRatio			= 0.134f;				///< Property: 'VelocityGetRatio' Velocity counts / sample to RPM get ratio
+		float mVelocitySetRatio			= 2.18435f;				///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
 
 	protected:
-		/**
-		 * Describes various motor states
-		 */
-		enum class EMotorMode : nap::uint32
-		{
-			Passive		= 0,
-			Position	= 2
-		};
-
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
 		 * Resets the motor position is requested.
@@ -237,7 +259,7 @@ namespace nap
 		 * @param index slave index, 0 = all slaves, 1 = first slave
 		 * @param mode the new motor mode
 		 */
-		void setMode(int index, EMotorMode mode);
+		void setModeSDO(int index, EMotorMode mode);
 
 	private:
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;					///< List of all current motor positions
@@ -308,12 +330,25 @@ namespace nap
 		 */
 		void setTargetAcceleration(float acceleration);
 
+		/**
+		 * Set the target motor mode
+		 * @param mode the motor mode to use
+		 */
+		void setTargetMode(MACController::EMotorMode mode);
+
+		/**
+		 * Returns the requested motor mode
+		 * @return the requested motor mode
+		 */
+		MACController::EMotorMode getTargetMode(MACController::EMotorMode mode) const;
+
 	private:
 		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
 		std::atomic<nap::uint32>	mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
-		
+		std::atomic<nap::uint32>	mRunMode = { 0 };
+
 		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
 		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
 		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
@@ -351,6 +386,11 @@ namespace nap
 		float getActualTorque() const;
 
 		/**
+		 * @return actual motor operating mode
+		 */
+		MACController::EMotorMode getActualMode() const;
+
+		/**
 		 * @return if this motor is malfunctioning.
 		 */
 		bool hasError() const;
@@ -373,6 +413,7 @@ namespace nap
 		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
 		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
 		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
+		std::atomic<nap::uint32> mActualMode		= { 0 };	///< Current Motor Mode
 		std::atomic<bool>		 mClearErrors		= { true };	///< If the errors should be cleared
 
 		/**

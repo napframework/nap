@@ -53,9 +53,17 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * @return if the master reached the operational stage and is therefore running
+		 * @return if the master reached the operational stage and is therefore running.
 		 */
 		bool isRunning() const;
+		
+		/**
+		 * Returns if a given slave is on-line (not lost). Index 0 refers to the first slave
+		 * A slave that is on-line is not necessarily operations. Use getSlaveState() to get the actual status of a slave.
+		 * @param index slave index, 0 = first slave. Does not perform an out of bounds check
+		 * @return if a slave is on-line
+		 */
+		bool isOnline(int index) const;
 
 		/**
 		 * @return number of ether-cat slaves on the network.
@@ -63,26 +71,16 @@ namespace nap
 		int getSlaveCount() const;
 
 		/**
-		 * Updates the state of all slaves.
-		 * @return lowest state of all read slave states.
-		 */
-		ESlaveState updateState();
-
-		/**
-		 * Returns the state associated with a specific slave. 
-		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
-		 * @param index slave index, 0 = all slaves.
-		 * @return state of a slave at the given index, no out of bounds check is performed.
+		 * @param index the index of the slave, 0 = first slave
+		 * @return the states of a slave on the network.
 		 */
 		ESlaveState getSlaveState(int index) const;
 
 		/**
-		 * Returns if a slave is lost or not.
-		 * Note that index 0 refers to all slaves and index 1 to the first actual slave on the network.
-		 * @param index slave index, 0 = all slaves.
-		 * @return if a slave is lost (not visible on the network anymore)
+		 * Updates the state of all slaves.
+		 * @return lowest state of all read slave states.
 		 */
-		bool isLost(int index) const;
+		ESlaveState updateState();
 
 		std::string mAdapter;			///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
 		int  mCycleTime = 1000;			///< Property: 'CycleTime' process cycle time in us. 
@@ -110,6 +108,22 @@ namespace nap
 		 * before setting all slaves to init mode. Perform additional close up steps here.
 		 */
 		virtual void onStop()	{ }
+
+		/**
+		 * Returns the state associated with a specific slave.
+		 * Index 1 refers to the first actual slave on the network.
+		 * @param index slave index, 0 = master, 1 = first slave.
+		 * @return state of a slave at the given index, no out of bounds check is performed.
+		 */
+		ESlaveState getState(int index) const;
+
+		/**
+		 * Returns if a slave is lost or not.
+		 * Index 1 refers to the first actual slave on the network.
+		 * @param index slave index, 0 = master, 1 = first slave.
+		 * @return if a slave is lost (not visible on the network anymore)
+		 */
+		bool isLost(int index) const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Slave State Changes
@@ -147,7 +161,7 @@ namespace nap
 		 * 
 		 * You typically use the setup function to create your own custom PDO mapping.
 		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array.
+		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
 		 */
 		virtual void onPreOperational(void* slave, int index)		{ }
 
@@ -156,7 +170,7 @@ namespace nap
 		 * Note that this function can be called from multiple threads.
 		 * PDO transmission is operational (slave sends data to master).
 		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array.
+		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
 		 */
 		virtual void onSafeOperational(void* slave, int index)		{ }
 
@@ -165,7 +179,7 @@ namespace nap
 		 * Note that this function can be called from multiple threads.
 		 * Drive fully operational, master responds to data via received PDO.
 		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array.
+		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
 		 */
 		virtual void onOperational(void* slave, int index)			{ }
 
@@ -177,7 +191,7 @@ namespace nap
 		 * SDO write, blocking. Single subindex or complete Access.
 		 * It is not advised to write data when in operational mode.
 		 * @param slave index of the slave, starting at 1. 
-		 * @param index the index to write
+		 * @param index the index to write, 1 = first slave, 0 = master
 		 * @param subindex the subindex to write
 		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
 		 * @param psize size in bytes of parameter buffer
@@ -189,7 +203,7 @@ namespace nap
 		 * SDO read, blocking. Single subindex or complete Access.
 		 * It is not advised to read data when in operational mode.
 		 * @param slave index of the slave, starting at 1.
-		 * @param index the index to read
+		 * @param index the index to read, 1 = first slave, 0 = master
 		 * @param subindex the subindex to read
 		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
 		 * @param psize size in bytes of parameter buffer, returns bytes read from SDO.
