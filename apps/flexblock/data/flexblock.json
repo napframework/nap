@@ -708,11 +708,12 @@
             "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
             "CycleTime": 605,
             "ResetPosition": false,
-            "ResetPositionValue": 0,
-            "Position": 0,
+            "ResetPositionValue": 1000000,
             "Velocity": 1000,
+            "MaxVelocity" : 4300,
             "Acceleration": 100000,
-            "Torque": 100
+            "Torque": 100,
+            "Mode": "Position"
         },
         {
             "Type": "nap::Material",

@@ -207,7 +207,7 @@ namespace nap
 
 		bool mResetPosition				= false;				///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
-		nap::uint32 mVelocity			= 2700;					///< Property: 'Velocity' motor velocity
+		nap::int32  mVelocity			= 2700;					///< Property: 'Velocity' motor velocity
 		nap::uint32 mAcceleration		= 360;					///< Property: 'Acceleration' motor acceleration
 		nap::uint32 mTorque				= 341;					///< Property: 'Torque' motor torque
 		nap::uint32 mMaxVelocity		= 4300;					///< Property: 'MaxVelocity' max allowed motor velocity
@@ -344,7 +344,7 @@ namespace nap
 
 	private:
 		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
-		std::atomic<nap::uint32>	mVelocityCNT = { 0 };		///< Motor velocity
+		std::atomic<nap::int32>		mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
 		std::atomic<nap::uint32>	mRunMode = { 0 };

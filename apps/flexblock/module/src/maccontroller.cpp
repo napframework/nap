@@ -66,7 +66,7 @@ typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
 	int32_t		mRequestedPosition;
-	uint32_t	mVelocity;
+	int32_t		mVelocity;
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
@@ -197,7 +197,7 @@ namespace nap
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
 			// Create unique output
-			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>(mMaxVelocity, mVelocitySetRatio);
+			std::unique_ptr<MacOutputs> new_output = std::make_unique<MacOutputs>(static_cast<float>(mMaxVelocity), mVelocitySetRatio);
 			new_output->setTargetAcceleration(static_cast<float>(mAcceleration));
 			new_output->setTargetVelocity(static_cast<float>(mVelocity));
 			new_output->setTargetTorque(static_cast<float>(mTorque));
@@ -328,16 +328,22 @@ namespace nap
 
 	bool MACController::resetPosition(nap::uint32 newPosition, utility::ErrorState& error)
 	{
+		if (isRunning())
+		{
+			this->stop();
+		}
 		mResetPosition = true;
 		mResetPositionValue = newPosition;
-		this->stop();
 		return this->start(error);
 	}
 
 
 	void MACController::emergencyStop()
 	{
-		this->stop();
+		if (isRunning())
+		{
+			this->stop();
+		}
 	}
 
 
@@ -382,8 +388,8 @@ namespace nap
 
 	void MacOutputs::setTargetVelocity(float velocity)
 	{
-		mVelocityRPM = math::clamp<float>(velocity, 0.0f, mMaxVelocityRPM);
-		mVelocityCNT = static_cast<uint32>(mVelocityRPM * mRatio);
+		mVelocityRPM = math::clamp<float>(velocity, mMaxVelocityRPM*-1.0f, mMaxVelocityRPM);
+		mVelocityCNT = static_cast<int32>(mVelocityRPM * mRatio);
 	}
 
 
