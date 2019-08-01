@@ -40,25 +40,17 @@ RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::SafeTorqueError,		"SafeTorqueError")
 RTTI_END_ENUM
 
-//////////////////////////////////////////////////////////////////////////
-// Static callbacks
-//////////////////////////////////////////////////////////////////////////
-
-static int MAC_SETUP(uint16 slave)
-{
-	return 1;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 // MAC inputs / outputs
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr float sVelCountSample		= 2.18435f;
-static constexpr float sGetVelCountSample	= 0.134f;
-static constexpr float sAccCountSample		= 3.598133f;
-static constexpr float sTorqueNom			= 341.0f;
-static constexpr nap::uint32 sNoErrorsCode	= 524304;
+static constexpr float sVelCountSample			= 2.18435f;
+static constexpr float sGetVelCountSample		= 0.134f;
+static constexpr float sAccCountSample			= 3.598133f;
+static constexpr float sTorqueNom				= 341.0f;
+static constexpr nap::uint32 sNoErrorsCode		= 524304;
+static constexpr nap::uint32 sClearErrorCode	= 16777441;
 
 /**
  * IO Data sent to slave, acts as a memory lookup into PDO map
@@ -71,6 +63,7 @@ typedef struct PACKED
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
+	int32_t		mResetErrors;
 } MAC_400_OUTPUTS;
 
 
@@ -105,20 +98,27 @@ namespace nap
 
 	void MACController::onPreOperational(void* slave, int index)
 	{
+		// Control bits, very important on startup
+		// The 5th bit ensures that when switching from passive to position mode
+		// the internal motor position is updated! Without this bit set
+		// following positional commands are relative and difficult to synchronize
+		uint32_t control_bits = 0;
+		control_bits |= 1UL << 5;		///< Restores position between modes
+		control_bits |= 1UL << 7;		///< Enable position backup at power loss
+
+		// Reset motor position to new abolsute value using control bits
 		if (mResetPosition)
 		{
-			// Callback when going from pre-operational to safe operational
-			reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC_SETUP;
-
 			// Reset position if requested
 			sdoWrite(index, 0x2012, 0x04, false, sizeof(mResetPositionValue), &mResetPositionValue);
 
-			// Force motor on zero.
-			uint32_t control_word = 0;
-			control_word |= 1UL << 6;
-			control_word |= 0x0 << 8;
-			sdoWrite(index, 0x2012, 0x24, false, sizeof(control_word), &control_word);
+			// Force motor to requested position.
+			control_bits |= 1UL << 6;
+			control_bits |= 0x0 << 8;
 		}
+
+		// Write control bits
+		sdoWrite(index, 0x2012, 0x24, false, sizeof(control_bits), &control_bits);
 
 		// Always force motor to passive mode before launch
 		uint32 motor_mode = static_cast<uint32>(MACController::EMotorMode::Passive);
@@ -133,11 +133,6 @@ namespace nap
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
 		assert(index <= getSlaveCount());
 		mOutputs[index - 1]->setTargetPosition(inputs->mActualPosition);
-		
-		// When the motor is in a passive state, make sure to update the initial position
-		// Safe operational can be called after motor disconnect
-		if (inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
-			mOutputs[index-1]->mInitPosition = inputs->mActualPosition;
 	}
 
 
@@ -157,34 +152,32 @@ namespace nap
 
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
-
 			motor_input->mActualPosition = mac_inputs->mActualPosition;
 			motor_input->mActualTorque = mac_inputs->mActualTorque;
 			motor_input->mErrorStatus = mac_inputs->mErrorStatus;
 			motor_input->mActualVelocity = mac_inputs->mActualVelocity;
-			motor_input->mActualTemperature = mac_inputs->mActualTemperature;
 
 			// Get associated motor output parameters
 			std::unique_ptr<MacOutputs>& motor_output = mOutputs[i - 1];
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 
-			// When in passive mode update init position, this is a very important step
-			// Without resetting the initial position to the actual position
-			// The controller won't be able to calculate the actual position based on the relative offset.
-			if (mac_inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
-				motor_output->mInitPosition = mac_inputs->mActualPosition;
-
-			// Get relative motor position, the relative position is based on the current target
-			// And motor initialization position. The difference between the two is the actual amount
-			// of turns the motor has to perform.
-			int32 req_position = motor_output->mTargetPosition - motor_output->mInitPosition;
-
 			// Write info
 			mac_outputs->mOperatingMode = static_cast<uint32_t>(EMotorMode::Position);
-			mac_outputs->mRequestedPosition = req_position;
+			mac_outputs->mRequestedPosition = motor_output->mTargetPosition;
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
+
+			// Clear errors if requested
+			if (motor_input->mClearErrors)
+			{
+				mac_outputs->mResetErrors = sClearErrorCode;
+				motor_input->mClearErrors = false;
+			}
+			else
+			{
+				mac_outputs->mResetErrors = 0;
+			}
 		}
 	}
 
@@ -283,13 +276,6 @@ namespace nap
 	}
 
 
-	uint32 MACController::getActualTemperature(int index) const
-	{
-		assert(index < getSlaveCount());
-		return mInputs[index]->getActualTemperature();
-	}
-
-
 	std::string MACController::errorToString(EErrorStat error)
 	{
 		return RTTI_OF(MACController::EErrorStat).get_enumeration().value_to_name(error).to_string();
@@ -316,6 +302,12 @@ namespace nap
 	}
 
 
+	void MACController::clearErrors(int index)
+	{
+		assert(index < getSlaveCount());
+		return mInputs[index]->clearErrors();
+	}
+
 	void MACController::setMode(int index, EMotorMode mode)
 	{
 		// Ensure the motor is in passive mode.
@@ -324,17 +316,9 @@ namespace nap
 	}
 
 
-	void MACController::updatePositionDelta(void* slave, int index)
+	void MacInputs::clearErrors()
 	{
-		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
-		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
-
-		if (inputs->mOperatingMode == static_cast<nap::uint32>(MACController::EMotorMode::Passive))
-		{
-			assert(index <= getSlaveCount());
-			mOutputs[index - 1]->mInitPosition		= inputs->mActualPosition;
-			mOutputs[index - 1]->mTargetPosition	= inputs->mActualPosition;
-		}
+		mClearErrors = true;
 	}
 
 
@@ -426,12 +410,6 @@ namespace nap
 	float MacInputs::getActualVelocity(float velRatio) const
 	{
 		return static_cast<float>(mActualVelocity) / velRatio;
-	}
-
-
-	uint32 MacInputs::getActualTemperature() const
-	{
-		return mActualTemperature;
 	}
 
 

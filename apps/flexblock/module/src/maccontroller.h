@@ -17,7 +17,6 @@ namespace nap
 
 	/**
 	 * JVL CAM motor EthetCAT controller
-	 * On initialization the controller creates a MACPosition container for every available slave on the network.
 	 * This controller assumes that every slave is of type JVL MAC400-4500, using the MAC00-EC4 controller.
 	 * When a slave reaches safe operational mode the current motor position is stored. This
 	 * value is used to calculate the actual positional offset when the motor is in operational mode.
@@ -125,13 +124,6 @@ namespace nap
 		void setAcceleration(int index, float acceleration);
 
 		/**
-		 * Returns the temperature (c) of a single motor. Does not perform an out of bounds check.
-		 * @param index motor index, 0 = first slave.
-		 * @return motor drive temperature in c.
-		 */
-		uint32 getActualTemperature(int index) const;
-
-		/**
 		 * If the motor is in an invalid state due to 1 or more errors
 		 * Always call this function first before sampling currently active errors
 		 * Note that this is not the same as connectivity!
@@ -147,6 +139,14 @@ namespace nap
 		 * @return list of all available motor errors
 		 */
 		void getErrors(int index, std::vector<MACController::EErrorStat>& outErrors) const;
+
+		/**
+		 * Clears errors associated with a specific motor.
+		 * When the error state of a motor is reset the motor tries to resume operational state.
+		 * Errors are reset by default when the controller is started
+		 * @param index the motor index to clear the errors for, 0 = first slave
+		 */
+		void clearErrors(int index);
 
 		/**
 		 * Converts a motor error into a human readable string
@@ -228,15 +228,8 @@ namespace nap
 		void setMode(int index, EMotorMode mode);
 
 	private:
-		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;		///< List of all current motor positions
-		std::vector<std::unique_ptr<MacInputs>>		mInputs;		///< List of all current motor positions
-
-		/**
-		 * Updates the initial and target motor position when motor is in passive mode
-		 * This is required in order to always maintain the accurate position delta to
-		 * compute the actual motor position when the motor is in active mode.
-		 */
-		void updatePositionDelta(void* slave, int index);
+		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;					///< List of all current motor positions
+		std::vector<std::unique_ptr<MacInputs>>		mInputs;					///< List of all current motor positions
 	};
 
 
@@ -305,7 +298,6 @@ namespace nap
 
 	private:
 		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
-		std::atomic<nap::int32>		mInitPosition = { 0 };		///< Initial motor position
 		std::atomic<nap::uint32>	mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
@@ -329,17 +321,6 @@ namespace nap
 	{
 		friend class MACController;
 	public:
-		/**
-		 * @return if this motor is malfunctioning.
-		 */
-		bool hasError() const;
-
-		/**
-		 * Returns all errors associated with this motor
-		 * Make sure to check if this motor has any errors before calling this function!
-		 * @outErrors contains all the errors associated with this motor
-		 */
-		void getErrors(std::vector<MACController::EErrorStat>& outErrors) const;
 
 		/**
 		 * @return actual motor position
@@ -358,16 +339,29 @@ namespace nap
 		float getActualTorque() const;
 
 		/**
-		 * @return temperature measured inside the drive
+		 * @return if this motor is malfunctioning.
 		 */
-		uint32 getActualTemperature() const;
+		bool hasError() const;
+
+		/**
+		 * Returns all errors associated with this motor
+		 * Make sure to check if this motor has any errors before calling this function!
+		 * @outErrors contains all the errors associated with this motor
+		 */
+		void getErrors(std::vector<MACController::EErrorStat>& outErrors) const;
+
+		/**
+		 * When called the clear errors flag is set.
+		 * This causes the motor to erase all errors and resume (potential) operation.
+		 */
+		void clearErrors();
 
 	private:
 		std::atomic<nap::int32>	 mActualPosition	= { 0 };	///< Current motor position
 		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
 		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
 		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
-		std::atomic<nap::uint32> mActualTemperature = { 0 };	///< Current motor drive temperature
+		std::atomic<bool>		 mClearErrors		= { true };	///< If the errors should be cleared
 
 		/**
 		 * If the current set of processed data contains the given error
