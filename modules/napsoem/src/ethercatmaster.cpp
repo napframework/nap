@@ -150,7 +150,7 @@ namespace nap
 	}
 
 
-	bool EtherCATMaster::isOperational() const
+	bool EtherCATMaster::isRunning() const
 	{
 		return mOperational;
 	}

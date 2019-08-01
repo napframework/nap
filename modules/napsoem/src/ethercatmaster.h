@@ -18,7 +18,7 @@ namespace nap
 		RTTI_ENABLE(Device)
 	public:
 		/**
-		 * All available ethercast slave states
+		 * All available ethercat slave states
 		 */
 		enum class ESlaveState : uint16
 		{
@@ -55,7 +55,7 @@ namespace nap
 		/**
 		 * @return if the master reached the operational stage and is therefore running
 		 */
-		bool isOperational() const;
+		bool isRunning() const;
 
 		/**
 		 * @return number of ether-cat slaves on the network.
