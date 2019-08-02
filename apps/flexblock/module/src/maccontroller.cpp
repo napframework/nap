@@ -5,6 +5,7 @@
 #include <soem/ethercat.h>
 #include <nap/logger.h>
 #include <mathutils.h>
+#include <thread>
 
 RTTI_BEGIN_ENUM(nap::MACController::EErrorStat)
 	RTTI_ENUM_VALUE(nap::MACController::EErrorStat::ThermalEnergyError,		"ThermalEnergyError"),
@@ -143,6 +144,9 @@ namespace nap
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
 		assert(index <= getSlaveCount());
 		mOutputs[index - 1]->setTargetPosition(inputs->mActualPosition);
+
+		// Set motor to passive mode before processing in operational mode
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 
 
