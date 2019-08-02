@@ -62,6 +62,7 @@ static constexpr nap::uint32 sClearErrorCode	= 16777441;
 
 /**
  * IO Data sent to slave, acts as a memory lookup into PDO map
+ * Needs to match the Cyclic Data Write setup in MacTalk!
  */
 typedef struct PACKED
 {
@@ -77,6 +78,7 @@ typedef struct PACKED
 
 /**
  * IO Data received from slave, acts as a memory lookup into PDO map
+ * Needs to match the Cyclic Data Read setup in MacTalk!
  */
 typedef struct PACKED
 {
