@@ -10,7 +10,7 @@ add_include_to_interface_target(mod_napsoem ${SOEM_DIR}/include)
 add_include_to_interface_target(mod_napsoem ${SOEM_DIR}/include/soem)
 
 if(WIN32)
-	add_include_to_interface_target(mod_napsoem ${WPCAP_DIR}/Include))
+	add_include_to_interface_target(mod_napsoem ${WPCAP_DIR}/Include)
 endif()
 
 add_define_to_interface_target(mod_napsoem __STDC_LIMIT_MACROS)
