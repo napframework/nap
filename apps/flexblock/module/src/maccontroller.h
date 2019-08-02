@@ -117,7 +117,7 @@ namespace nap
 
 		/**
 		 * Set the requested velocity in RPM of a single motor. Does not perform an out of bounds check.
-		 * 1 RPM = 2.77056 counts/sample. Negative values are clamped to 0.
+		 * 1 RPM = approx 2.77056 counts/sample. Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave.
 		 * @param velocity new motor velocity
 		 */
@@ -131,7 +131,7 @@ namespace nap
 
 		/**
 		 * Returns the actual motor velocity in RPM. Does not perform an out of bounds check.
-		 * 1 RPM = 2.77056 counts/sample.
+		 * 1 RPM = approx 2.77056 counts/sample.
 		 * @param index motor index, 0 = first slave.
 		 * @return the actual motor velocity in RPM
 		 */
@@ -155,7 +155,7 @@ namespace nap
 
 		/**
 		 * Set the desired nominal acceleration in RPM of a single motor. Does not perform an out of bounds check.
-		 * 1000 RPM/s = 3.598133 counts/Sample². Negative values are clamped to 0.
+		 * 1000 RPM/s = approx 3.598133 counts/Sample². Negative values are clamped to 0.
 		 * @param index motor index, 0 = first slave.
 		 * @pram acceleration new motor acceleration
 		 */
@@ -249,9 +249,9 @@ namespace nap
 
 		bool mResetPosition				= false;				///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
 		nap::uint32 mResetPositionValue = 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
-		nap::int32  mVelocity			= 2700;					///< Property: 'Velocity' motor velocity
-		nap::uint32 mAcceleration		= 360;					///< Property: 'Acceleration' motor acceleration
-		nap::uint32 mTorque				= 341;					///< Property: 'Torque' motor torque
+		nap::int32  mVelocity			= 0;					///< Property: 'Velocity' motor velocity in RPM
+		nap::uint32 mAcceleration		= 360;					///< Property: 'Acceleration' motor acceleration in RPM
+		nap::uint32 mTorque				= 341;					///< Property: 'Torque' motor torque from 0 to 300%
 		nap::uint32 mMaxVelocity		= 4300;					///< Property: 'MaxVelocity' max allowed motor velocity
 		EMotorMode	mMode				= EMotorMode::Position;	///< Property: 'Mode' the actual operating mode of the drive
 		float mVelocityGetRatio			= 0.134f;				///< Property: 'VelocityGetRatio' Velocity counts / sample to RPM get ratio
