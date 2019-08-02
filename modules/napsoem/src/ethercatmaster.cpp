@@ -23,6 +23,7 @@ namespace nap
 		// No tasks should be active at this point
 		// The master shouldn't be in operation
 		assert(!mOperational);
+		assert(!mStarted);
 
 		// Try to initialize adapter
 		if (!ec_init(mAdapter.c_str()))
@@ -36,6 +37,7 @@ namespace nap
 		if (ec_config_init(false) <= 0)
 		{
 			nap::Logger::warn("%s: no slaves found", mID.c_str());
+			mStarted = true;
 			return true;
 		}
 
@@ -112,6 +114,7 @@ namespace nap
 		}
 
 		// All good
+		mStarted = true;
 		return true;
 	}
 
@@ -151,12 +154,19 @@ namespace nap
 		mActualWCK		= 0;
 		mExpectedWKC	= 0;
 		mOperational	= false;
+		mStarted		= false;
 	}
 
 
 	bool EtherCATMaster::isRunning() const
 	{
 		return mOperational;
+	}
+
+
+	bool EtherCATMaster::started() const
+	{
+		return mStarted;
 	}
 
 

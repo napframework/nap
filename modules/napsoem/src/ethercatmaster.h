@@ -11,9 +11,21 @@
 namespace nap
 {
 	/**
-	 * Ethercat Master Base Device. 
-	 * Derive from this class to implement your own ethercat master.
+	 * Ethercat Master Device. Derive from this class to implement your own ethercat master.
+	 * 
 	 * The ethercat master finds and manages ethercat slaves on the network.
+	 * When starting the master an ethernet port is opened. The port to 
+	 * open is controlled by the 'Adapter' property. Without a valid port
+	 * the startup procedure will fail. The SOEM service prints all available ports on
+	 * startup of the service. Pick one of the ports to discover slaves on the network.
+	 *
+	 * IMPORTANT: On Linux and OSX you must run the application that uses the 
+	 * Ethercat master as administrator, ie: with sudo privileges. Failure
+	 * to do so will result in a failure to start the device, and therefore
+	 * the application.
+	 *
+	 * Override the various virtuals to read / write from the device SDO and 
+	 * constructor or interface with the device SDO. 
 	 */
 	class NAPAPI EtherCATMaster : public Device
 	{
@@ -55,9 +67,19 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * @return if the master reached the operational stage and is therefore running.
+		 * When true the operational stage for all slaves is reached. Processing and error handling
+		 * tasks are performed in the background. When running the device also started.
+		 * @return if the master reached the operational stage for all slaves and is therefore running.
 		 */
 		bool isRunning() const;
+
+		/**
+		 * Returns if the device started successfully. If no slaves are found on the network the device
+		 * still started but is not running. No processing tasks are performed in the background
+		 * but the ethernet port opened successfully.
+		 * @return if the master started. This does not mean the master is operational.
+		 */
+		bool started() const;
 		
 		/**
 		 * Returns if a given slave is on-line (not lost). Index 0 refers to the first slave
@@ -101,7 +123,7 @@ namespace nap
 
 		/**
 		 * Called after slave enumeration and initialization.
-		 * All slaves are in  pre-operational state and can be addressed.
+		 * All slaves are in  PRE-Operational state and can be addressed.
 		 */
 		virtual void onStart()	{ }
 
@@ -252,6 +274,7 @@ namespace nap
 		std::atomic<bool>	mStopErrorTask = { false };			///< If the error task should be stopped
 		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
 		std::atomic<bool>	mOperational = { false };			///< If the master is operational
+		bool				mStarted = false;					///< If the master started, this does not mean it's operational
 
 		/**
 		 * Real-time IO operations, executed on a different thread.
