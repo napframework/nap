@@ -15,10 +15,10 @@
 #include <sequenceplayercomponent.h>
 #include <oscinputcomponent.h>
 #include <maccontroller.h>
-#include <nap/timer.h>
 
 #include "flexblockcomponent.h"
 #include "sequenceplayercomponent.h"
+#include "timelineguiproperties.h"
 
 namespace nap
 {
@@ -26,6 +26,7 @@ namespace nap
 	class FlexblockApp;
 	class ParameterGUI;
 	class ParameterService;
+	class TimelineGuiProperties;
 
 	class FlexblockGui final
 	{
@@ -44,7 +45,7 @@ namespace nap
 		/**
 		 *	Update all the various gui components
 		 */
-		void update();
+		void update(double time);
 
 		/**
 		 *	Render the gui
@@ -56,33 +57,20 @@ namespace nap
 		 */
 		void toggleVisibility();
 
-		void showTimeLineWindow();
-
-		void handleInsertionPopup();
-
-		void drawTimeline(bool & outPopupOpened, std::string & popupId);
-
-		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
-
-		void handleLoadPopup();
-
-		void handleSequenceActionsPopup();
-
-		void handleSaveAsPopup();
-
+		/**
+		 * Sets the window size, use for calculating positions of imgui windows
+		 */
+		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
 	private:
-		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
+		FlexblockApp&						mApp;				///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
-		bool								mShowTimeLine = false;
-		bool								mShowSequenceList = false;
 		DateTime							mDateTime;
+		double								mTime = 0.0f;
+		nap::ResourcePtr<MACController>		mMotorController;
+		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
-		float								mTexPreviewDisplaySize = 1.0f;
-		float								mWraPreviewDisplaySize = 1.0f;
-		float								mVidPreviewDisplaySize = 1.0f;
-		float								mScrub = 0.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
@@ -90,32 +78,75 @@ namespace nap
 		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
 
-		ResourcePtr<MACController> mController;
-		int mResetMotorPos = 0;
+		TimelineGuiProperties mProps;
 
 		/**
 		 * Shows the information window
 		 */
 		void showInfoWindow();
 
+		/**
+		 * Shows motor control window
+		 */
+		void showMotorControlWindow();
+
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 
 		std::string formatTimeString(float time);
 
-		void showSequencesWindow();
+		void showPlaylist();
 
 		void handleElementActionsPopup();
+
+		/**
+		* show the timeline window
+		*/
+		void showTimeLineWindow();
+
+		/**
+		* Handle insertion popup
+		*/
+		void handleInsertionPopup();
+
+		void handleEditMotorvaluePopup();
+
+		/**
+		* Draw timeline
+		*/
+		void drawTimeline(bool & outPopupOpened, std::string & popupId);
+
+		/**
+		* Draw controls
+		*/
+		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
+
+		/**
+		* handle show load popup
+		*/
+		void handleLoadPopup();
+
+		/**
+		* handle sequence actions popup
+		*/
+		void handleSequenceActionsPopup();
+
+		/**
+		* Handle save popup
+		*/
+		void handleSaveAsPopup();
 
 		void initParameters();
 		void updateInput(int index, float value);
 
-		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState);
+		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState& errorState);
 
-		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState);
+		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState);
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);
 
 		std::string getTimeString();
+
+		glm::vec2 mWindowSize;
 	};
 }

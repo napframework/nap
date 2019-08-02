@@ -64,10 +64,10 @@ namespace nap
 
 		// calculate new frame
 		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
-		toNapPoints(framePoints, mFramePoints);
+		mFramePoints = framePoints;
 
 		// set points
-		mFrameMesh->setFramePoints(mFramePoints);
+		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
 
 		// start serial
 		mFlexBlockSerialComponentInstance->start(errorState);
@@ -79,7 +79,7 @@ namespace nap
 	void FlexBlockComponentInstance::setMotorInput(int index, float value)
 	{
 		// 
-		mMotorInputs[remapMotorInput(index)] = value;
+		mMotorInputs[index] = value;
 	}
 
 
@@ -87,10 +87,10 @@ namespace nap
 	{
 		// convert flex points to nap points
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		toNapPoints(objectPoints, mObjectPoints);
+		mObjectPoints = objectPoints;
 
 		// update ropes of frame
-		mFrameMesh->setControlPoints(mObjectPoints);
+		mFrameMesh->setControlPoints(objectPoints);
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
@@ -104,31 +104,32 @@ namespace nap
 		{
 			mUpdateSerialTime = 0.0;
 
-			std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+			std::vector<float> motorSteps = mFlexLogic->getRopeLengths();
 
-			for (int i = 0; i < ropeLengths.size(); i++)
+			for (int i = 0; i < motorSteps.size(); i++)
 			{
-				float a = ropeLengths[i] * 1000.0f; // convert to millimeters
+				float a = motorSteps[i] * 1000.0f; // convert to millimeters
 				a *= mMillimeterToMotorsteps; //  millimeters to motor steps
 				a -= mMotorOffset; // step offset
-				ropeLengths[i] = a;
+				motorSteps[i] = a;
 			}
 
 			std::string data = "<";
-			for (int i = 0; i < ropeLengths.size(); i++)
+			for (int i = 0; i < motorSteps.size(); i++)
 			{
-				long c = (long)ropeLengths[remapMotorInput(i)];
+				long c = (long)motorSteps[i];
 				data += std::to_string(c);
-				if (i + 1 < ropeLengths.size())
+				if (i + 1 < motorSteps.size())
 					data += "|";
 			}
 			data += ">";
 
+			//printf("%s\n", data.c_str());
 			mFlexBlockSerialComponentInstance->write(data);
 		}
 	}
 
-
+	/*
 	void FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& inPoints, std::vector<glm::vec3>& outPoints )
 	{
 		outPoints[0] = inPoints[7];
@@ -158,5 +159,5 @@ namespace nap
 		};
 
 		return map[index];
-	}
+	}*/
 }

@@ -103,8 +103,8 @@ namespace nap
 			void skipToSequence(const Sequence * sequence);
 
 			/**
-			 * Reconstructs sequence container and recalculates duration, this call is necessary when changing, 
-			 * adding or removing sequences/elements
+			 * Reconstructs sequence container and recalculates duration,
+			 * this call is necessary when changing, adding or removing sequences/elements
 			 */
 			void reconstruct();
 
@@ -156,7 +156,7 @@ namespace nap
 
 			/**
 			 * Evaluate acts the same as process but doesn't advance the
-			 * current element index or finishes 
+			 * current element index or finishes the player
 			 */
 			const void evaluate(double time, std::vector<Parameter*> &output) const;
 
@@ -215,7 +215,7 @@ namespace nap
 			bool mIsPaused				= false;
 			bool mIsFinished			= false;
 			bool mIsLooping				= false;
-			int mCurrentSequenceIndex	= 0;
+			size_t mCurrentSequenceIndex	= 0;
 			float mSpeed				= 1.0f;
 			double mDuration			= 0.0;
 

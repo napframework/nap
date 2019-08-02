@@ -34,12 +34,13 @@ namespace nap
 			void reconstruct();
 
 			/**
-			 * removes all sequences, also removes owning sequences from memory
+			 * Removes all sequences, also removes owning sequences from memory
 			 */
 			void clearSequences();
 
 			/**
-			 * Removes sequences from vector holding the sequences
+			 * Removes sequences from vector holding the sequences,
+			 * sequence will be reconstructed upon removal. Owning pointer will be deleted as well
 			 * @param sequence raw pointer to sequence that needs to be removed
 			 */
 			void removeSequence(const Sequence * sequence);
@@ -54,8 +55,9 @@ namespace nap
 			/**
 			 * Inserts sequences to vector containing sequences
 			 * @param sequence unique pointer of sequence, sequence container will own the unique_ptr
+			 * @return returns raw pointer to inserted sequence
 			 */
-			void insertSequence(std::unique_ptr<Sequence> sequence);
+			Sequence* insertSequence(std::unique_ptr<Sequence> sequence);
 
 			/**
 			 * Clears the current sequence list and replaces it with a new one

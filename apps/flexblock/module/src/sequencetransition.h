@@ -18,6 +18,15 @@ namespace nap
 	{
 		//////////////////////////////////////////////////////////////////////////
 
+		class SequenceTransition;
+
+		using TransitionProcess =  void(SequenceTransition::*)(
+			float progress,
+			const Parameter & inA,
+			const Parameter & inB,
+			Parameter & out,
+			const int curveIndex);
+
 		/**
 		 * SequenceTransition
 		 * Describes a transition from given start parameters to given end parameters
@@ -55,17 +64,7 @@ namespace nap
 			* A vector containing function pointers to the different functions needed to interpolate 
 			* between the different parameters
 			*/
-			std::vector<void(SequenceTransition::*)(
-				float progress, 
-				const Parameter & inA, 
-				const Parameter & inB, 
-				Parameter & out,
-				const int curveIndex)> mFunctions;
-
-			/**
-			* The pointer to the evaluation function
-			*/
-			const float (SequenceTransition::*mEvaluateFunction)(float t, const int curveIndex);
+			std::vector<TransitionProcess> mFunctions;
 
 			/**
 			* The internal process function template
@@ -79,16 +78,13 @@ namespace nap
 			void process(float progress, const Parameter& inA, const Parameter& inB, Parameter & out, const int curveIndex);
 
 			/**
-			* Linear interpolation function
-			*/
-			const float evaluateLinear(float progress) { return progress; }
-
-			/**
 			* Use the curve to interpolate
 			*/
-			const float evaluateCurve(float progress, const int curveIndex);
+			const float evaluate(float progress, const int curveIndex);
 
 			std::vector<std::unique_ptr<math::FloatFCurve>> mOwnedCurves;
+
+			static std::map<rttr::type, TransitionProcess> mProcessFunctions;
 		};
 	}
 

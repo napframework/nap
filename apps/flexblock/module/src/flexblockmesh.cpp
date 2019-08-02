@@ -49,44 +49,46 @@ namespace nap
 	{
 		auto verts = mNormalsAttr->getData();
 
-		verts[0] = controlPoints[0]; //< Front Lower left
-		verts[13] = controlPoints[0]; //< Left Lower right
-		verts[16] = controlPoints[0];	//< Bottom Lower left
+		
+		verts[0] = controlPoints[7]; //< Front Lower left
+		verts[13] = controlPoints[7]; //< Left Lower right
+		verts[16] = controlPoints[7];	//< Bottom Lower left
 
-											// m2
-		verts[1] = controlPoints[1];	//< Front Lower right
-		verts[4] = controlPoints[1];	//< Right Lower Left
-		verts[17] = controlPoints[1]; //< Bottom Lower right
+							// m2
+		verts[1] = controlPoints[6];	//< Front Lower right
+		verts[4] = controlPoints[6];	//< Right Lower Left
+		verts[17] = controlPoints[6]; //< Bottom Lower right
 
 										  // m3
-		verts[2] = controlPoints[2];	//< Front Top left
-		verts[15] = controlPoints[2]; //< Left Top right
-		verts[20] = controlPoints[2]; //< Top Lower left
+		verts[2] = controlPoints[4];	//< Front Top left
+		verts[15] = controlPoints[4]; //< Left Top right
+		verts[20] = controlPoints[4]; //< Top Lower left
 
 										  // m4
-		verts[3] = controlPoints[3];	//< Front Top right
-		verts[6] = controlPoints[3];	//< Right Top left
-		verts[21] = controlPoints[3];	//< Top Lower right
+		verts[3] = controlPoints[5];	//< Front Top right
+		verts[6] = controlPoints[5];	//< Right Top left
+		verts[21] = controlPoints[5];	//< Top Lower right
 
 											// m5
-		verts[8] = controlPoints[4];	//< Back Lower left
-		verts[19] = controlPoints[4];	//< Bottom Top right
-		verts[5] = controlPoints[4]; //< Right Lower Right
+		verts[8] = controlPoints[2];	//< Back Lower left
+		verts[19] = controlPoints[2];	//< Bottom Top right
+		verts[5] = controlPoints[2]; //< Right Lower Right
 
 										 // m6
-		verts[9] = controlPoints[5];	//< Back lower right
-		verts[12] = controlPoints[5]; //< Left Lower left
-		verts[18] = controlPoints[5]; //< Bottom Top left
+		verts[9] = controlPoints[3];	//< Back lower right
+		verts[12] = controlPoints[3]; //< Left Lower left
+		verts[18] = controlPoints[3]; //< Bottom Top left
 
 										  // m7
-		verts[10] = controlPoints[6]; //< Back Top left
-		verts[23] = controlPoints[6]; //< Top Top right
-		verts[7] = controlPoints[6]; //< Right Top right
+		verts[10] = controlPoints[1]; //< Back Top left
+		verts[23] = controlPoints[1]; //< Top Top right
+		verts[7] = controlPoints[1]; //< Right Top right
 
 										 // m8
-		verts[11] = controlPoints[7]; //< Back Top right
-		verts[14] = controlPoints[7]; //< Left Top left
-		verts[22] = controlPoints[7]; //< Top Top left
+		verts[11] = controlPoints[0]; //< Back Top right
+		verts[14] = controlPoints[0]; //< Left Top left
+		verts[22] = controlPoints[0]; //< Top Top left
+
 
 		mPositionAttr->setData(verts);
 

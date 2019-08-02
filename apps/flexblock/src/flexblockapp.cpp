@@ -46,9 +46,6 @@ namespace nap
 		// Get the render window
 		mMainWindow = mResourceManager->findObject<RenderWindow>("MainWindow");
 
-		//
-		mTimelineWindow = mResourceManager->findObject<RenderWindow>("TimelineWindow");
-
 		// Find the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mCameraEntity = scene->findEntity("CameraEntity");
@@ -60,7 +57,7 @@ namespace nap
 		// Create gui
 		mGui = std::make_unique<FlexblockGui>(*this);
 		mGui->init();
-		mGuiService->selectWindow(mTimelineWindow);
+		mGuiService->selectWindow(mMainWindow);
 
 		//
 		return true;
@@ -83,7 +80,10 @@ namespace nap
 		mInputService->processWindowEvents(*mMainWindow, input_router, entities);
 
 		// Upate GUI
-		mGui->update();
+		mGui->update(deltaTime);
+
+		mGui->setWindowSize(glm::vec2(mMainWindow->getWidth(), mMainWindow->getHeight()));
+
 	}
 
 	
@@ -93,7 +93,7 @@ namespace nap
 	void FlexblockApp::render()
 	{
 		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mMainWindow.get(), mTimelineWindow.get() });
+		mRenderService->destroyGLContextResources({ mMainWindow.get() });
 
 		// Activate current window for drawing
 		mMainWindow->makeActive();
@@ -117,33 +117,26 @@ namespace nap
 		//
 		const std::vector<glm::vec3>& points = flex_block.getFramePoints();
 		std::vector<glm::vec3> framePoints(8);
-		flex_block.toNapPoints(points, framePoints);
+		framePoints = points;
 
 		//
 		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
 		Renderable2DTextComponentInstance& motor_label = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		for (int i = 0; i < points.size(); i++)
 		{
+			const auto& framePointWorldPos = math::objectToWorld(framePoints[i], cam_xform.getLocalTransform());
+			
 			utility::ErrorState error;
 			motor_label.setText(std::to_string(i+1), error);
-			motor_label.setLocation(persp_cam.worldToScreen(framePoints[flex_block.remapMotorInput(i)], mMainWindow->getRectPixels()) + glm::vec3(0, 10, 0));
+			motor_label.setLocation(persp_cam.worldToScreen(framePointWorldPos, mMainWindow->getRectPixels()) + glm::vec3(0, 10, 0));
 			motor_label.draw(mMainWindow->getBackbuffer());
 		}
-
-		// Swap main window
-		mMainWindow->swap();
-
-		// Activate current window for drawing
-		mTimelineWindow->makeActive();
-
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mTimelineWindow->getBackbuffer());
 
 		// Render gui to window
 		mGuiService->draw();
 
-		// Swap screen buffers
-		mTimelineWindow->swap();
+		// Swap main window
+		mMainWindow->swap();
 	}
 	
 	
