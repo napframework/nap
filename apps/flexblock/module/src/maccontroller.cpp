@@ -147,7 +147,7 @@ namespace nap
 
 		// Motor controller has issues with synchronization when coming back-up from power failure.
 		// Giving it some slack helps it getting into the right state.
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 
 
