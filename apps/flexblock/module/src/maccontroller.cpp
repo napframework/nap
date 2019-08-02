@@ -145,7 +145,8 @@ namespace nap
 		assert(index <= getSlaveCount());
 		mOutputs[index - 1]->setTargetPosition(inputs->mActualPosition);
 
-		// Set motor to passive mode before processing in operational mode
+		// Motor controller has issues with synchronization when coming back-up from power failure.
+		// Giving it some slack helps it getting into the right state.
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 
