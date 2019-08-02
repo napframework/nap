@@ -1,4 +1,3 @@
-if(WIN32)
   # default soem directory
   find_path(SOEM_DIR
           NO_CMAKE_FIND_ROOT_PATH
@@ -6,6 +5,7 @@ if(WIN32)
           HINTS ${THIRDPARTY_DIR}/soem
           )
 
+if(WIN32)
     # wpcap dir
     set(WPCAP_DIR ${THIRDPARTY_DIR}/soem/wpcap)
 
@@ -21,14 +21,7 @@ if(WIN32)
         ${SOEM_DIR}/include 
         ${SOEM_DIR}/include/soem 
         ${WPCAP_DIR}/Include)
-
 elseif(APPLE)
-  # default soem directory
-  find_path(SOEM_DIR
-          NO_CMAKE_FIND_ROOT_PATH
-          NAMES include/soem/ethercat.h
-          HINTS ${THIRDPARTY_DIR}/soem
-          )
     # library
     set(SOEM_LIBS 
       ${SOEM_DIR}/lib/libsoem.a
@@ -40,8 +33,16 @@ elseif(APPLE)
         ${SOEM_DIR}/include 
         ${SOEM_DIR}/include/soem)
 else()
-    #set(SERIAL_LIBS_DEBUG ${SERIAL_DIR}/linux/Debug/libserial.a)
-    #set(SERIAL_LIBS_RELEASE ${SERIAL_DIR}/linux/Release/libserial.a)
+    # library
+    set(SOEM_LIBS 
+      ${SOEM_DIR}/lib/libsoem.a
+      pthread 
+      rt)
+
+    # all includes for soem windows
+    set(SOEM_INCLUDE_DIRS 
+        ${SOEM_DIR}/include 
+        ${SOEM_DIR}/include/soem)
 endif()
 
 mark_as_advanced(SOEM_INCLUDE_DIRS)
