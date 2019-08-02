@@ -711,7 +711,7 @@
             "CycleTime": 605,
             "ResetPosition": false,
             "ResetPositionValue": 1000000,
-            "Velocity": 1000,
+            "Velocity": 0,
             "MaxVelocity" : 4300,
             "Acceleration": 100000,
             "Torque": 100,

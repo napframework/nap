@@ -2090,7 +2090,7 @@ namespace nap
 	{
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::Begin("Motor Controls");
-		ImGui::SliderInt("Reset Value", &mResetMotorPos, 0, 5000000);
+		ImGui::SliderInt("Reset Value", &mResetMotorPos, -5000000, 5000000);
 		ImGui::SameLine();
 		if (ImGui::Button("Reset Position"))
 		{
@@ -2108,7 +2108,7 @@ namespace nap
 				ImGui::Text("Current Motor Velocity: %.1f", mMotorController->getActualVelocity(i));
 				ImGui::Text("Current Motor Torque: %.1f", mMotorController->getActualTorque(i));
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
-				if (ImGui::SliderInt("Position", &req_pos, 0, 5000000))
+				if (ImGui::SliderInt("Position", &req_pos, -5000000, 5000000))
 				{
 					mMotorController->setPosition(i, req_pos);
 				}

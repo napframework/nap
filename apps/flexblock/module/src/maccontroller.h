@@ -99,14 +99,14 @@ namespace nap
 		 * @param index motor index, 0 = first slave
 		 * @param position the new motor target position
 		 */
-		void setPosition(int index, nap::uint32 position);
+		void setPosition(int index, nap::int32 position);
 
 		/**
 		 * Returns the requested motor position for the given slave.
 		 * @param index motor index, 0 = first slave
 		 * @return the requested motor position
 		 */
-		uint32 getPosition(int index) const;
+		int32 getPosition(int index) const;
 
 		/**
 		 * Returns the actual position of a single motor. Does not perform an out of bounds check
@@ -209,7 +209,7 @@ namespace nap
 		 * @param newPosition new absolute motor position
 		 * @param error contains the error when resetting the position fails.
 		 */
-		bool resetPosition(nap::uint32 newPosition, utility::ErrorState& error);
+		bool resetPosition(nap::int32 newPosition, utility::ErrorState& error);
 
 		/**
 		 * Emergency stop call.
@@ -248,7 +248,7 @@ namespace nap
 		static void modeToString(EMotorMode mode, std::string& outString);
 
 		bool mResetPosition				= false;				///< Property: 'ResetPosition' if the motor position should be reset to the 'ResetPositionValue' before going into safe operational mode.
-		nap::uint32 mResetPositionValue = 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
+		nap::int32 mResetPositionValue	= 0;					///< Property: 'ResetPositionValue' the initial motor position value when reset position is turned on.
 		nap::int32  mVelocity			= 0;					///< Property: 'Velocity' motor velocity in RPM
 		nap::uint32 mAcceleration		= 360;					///< Property: 'Acceleration' motor acceleration in RPM
 		nap::uint32 mTorque				= 341;					///< Property: 'Torque' motor torque from 0 to 300%
@@ -336,12 +336,12 @@ namespace nap
 		 * Set motor target position
 		 * @param position new motor target position
 		 */
-		void setTargetPosition(nap::uint32 position);
+		void setTargetPosition(nap::int32 position);
 
 		/**
 		 * @return motor target position
 		 */
-		uint32 getTargetPosition() const;
+		int32 getTargetPosition() const;
 
 		/**
 		 * Set motor velocity in RPM
@@ -386,7 +386,7 @@ namespace nap
 		MACController::EMotorMode getTargetMode(MACController::EMotorMode mode) const;
 
 	private:
-		std::atomic<nap::uint32>	mTargetPosition = { 0 };	///< New requested motor position
+		std::atomic<nap::int32>		mTargetPosition = { 0 };	///< New requested motor position
 		std::atomic<nap::int32>		mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration

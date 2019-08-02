@@ -233,14 +233,14 @@ namespace nap
 	}
 
 
-	void MACController::setPosition(int index, nap::uint32 position)
+	void MACController::setPosition(int index, nap::int32 position)
 	{
 		assert(index < getSlaveCount());
 		mOutputs[index]->setTargetPosition(position);
 	}
 
 
-	uint32 MACController::getPosition(int index) const
+	int32 MACController::getPosition(int index) const
 	{
 		assert(index < getSlaveCount());
 		return mOutputs[index]->getTargetPosition();
@@ -347,7 +347,7 @@ namespace nap
 	}
 
 
-	bool MACController::resetPosition(nap::uint32 newPosition, utility::ErrorState& error)
+	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
 		if (started())
 		{
@@ -395,13 +395,13 @@ namespace nap
 	}
 
 
-	void MacOutputs::setTargetPosition(nap::uint32 position)
+	void MacOutputs::setTargetPosition(nap::int32 position)
 	{
 		mTargetPosition = position;
 	}
 
 
-	uint32 MacOutputs::getTargetPosition() const
+	int32 MacOutputs::getTargetPosition() const
 	{
 		return mTargetPosition;
 	}
