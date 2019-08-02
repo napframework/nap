@@ -713,7 +713,8 @@
             "MaxVelocity" : 4300,
             "Acceleration": 100000,
             "Torque": 100,
-            "Mode": "Position"
+            "Mode": "Position",
+            "DisableErrorHandling" : false
         },
         {
             "Type": "nap::Material",

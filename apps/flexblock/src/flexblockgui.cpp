@@ -1656,7 +1656,7 @@ namespace nap
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 
 		ImGui::Separator();
-		ImGui::SliderInt("New Position", &mResetMotorPos, 0, 5000000);
+		ImGui::SliderInt("Reset Value", &mResetMotorPos, 0, 5000000);
 		ImGui::SameLine();
 		if (ImGui::Button("Reset Position"))
 		{
@@ -1664,6 +1664,7 @@ namespace nap
 			mController->resetPosition(mResetMotorPos, error);
 		}
 
+		ImGui::Separator();
 		for (int i = 0; i < mController->getSlaveCount(); i++)
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
@@ -1709,6 +1710,8 @@ namespace nap
 				}
 			}
 		}
+		if (mController->getSlaveCount() == 0)
+			ImGui::Text("No slaves found");
 
 		ImGui::End();
 	}

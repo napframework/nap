@@ -18,10 +18,37 @@ namespace nap
 	/**
 	 * JVL CAM motor EthetCAT controller
 	 * This controller assumes that every slave is of type JVL MAC400-4500, using the MAC00-EC4 controller.
-	 * When a slave reaches safe operational mode the current motor position is stored. This
-	 * value is used to calculate the actual positional offset when the motor is in operational mode.
-	 * This allows the motor to always aim for the actual position, even in between sessions
-	 * and after loss of control due to program or driver failure.
+	 * The number of found slaves can be queried using: getSlaveCount(). The controller does not 
+	 * impose a certain number of slaves. The code that interfaces with the controller must perform 
+	 * an additional bounds check to ensure the right number of slaves are available on startup. 
+	 * 
+	 * Every slave interface function (setPosition, getActualPosition etc.) does not perform a bounds check.
+	 * Make sure that before accessing the functions the index is not out of range. Other the device asserts.
+	 *
+	 * IMPORTANT: On Linux and OSX you must run the application that uses the controller as administrator, ie: with sudo privileges. 
+	 * Failure to do so will result in a failure to start the device, and therefore the application!
+	 *
+	 * IMPORTANT: For the slave to function correctly make sure to ENABLE and SAVE in motor (using MACTalk):
+	 *		- Position backup at powerloss (advanced tab)
+	 *		- Resynchronize position after passive mode (advanced tab)
+	 *		- Enable 8 cyclic R/W words (MAC00-EC -EtherCAT tab)
+	 *		- Motor set velocity = 0 (MAC00-EC -EtherCAT tab)
+	 *		- Startup operating mode = Passive + Change Actual Mode (main tab)
+	 *
+	 *	IMPORTANT: DISABLE and SAVE in motor (using MACTalk):
+	 *		- Enable DSP402 drive profile (MAC00-EC -EtherCAT tab)
+	 *
+	 * IMPORTANT: Add '983040 - General Command' as the 7th write word in the cyclic data setup (MAC00-EC -EtherCAT tab).
+	 *
+	 * Some of these settings are recommended but the last one is REQUIRED (cyclic word), otherwise the motor will not be able
+	 * to clear any errors and a runtime failure is likely to occur. If you are unable to alter the cyclic write data
+	 * set the 'DisableErrorHandling' property to true, this will prevent writing into the 7th (non default) SDO 
+	 * output register.
+	 *
+	 * To reset all the motors to a certain position at startup set the 'ResetPosition' property to true. This ensures
+	 * that when the device is started the absolute and target motor position is set to the 'ResetPositionValue'. Alternatively:
+	 * you can set the absolute motor position at runtime by calling resetPosition(). Without the 'ResetPosition' value set to
+	 * true the target motor position is aligned with the current motor position, assuring the motor will not move on startup.
 	 */
 	class NAPAPI MACController : public EtherCATMaster
 	{
@@ -229,6 +256,7 @@ namespace nap
 		EMotorMode	mMode				= EMotorMode::Position;	///< Property: 'Mode' the actual operating mode of the drive
 		float mVelocityGetRatio			= 0.134f;				///< Property: 'VelocityGetRatio' Velocity counts / sample to RPM get ratio
 		float mVelocitySetRatio			= 2.18435f;				///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
+		bool mDisableErrorHandling		= false;				///< Property: 'DisableErrorHandling' disables error handling when processing real-time data
 
 	protected:
 		/**

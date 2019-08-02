@@ -36,15 +36,16 @@ RTTI_END_ENUM
 
 // nap::maccontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::MACController)
-	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Mode",					&nap::MACController::mMode,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DisableErrorHandling",	&nap::MACController::mDisableErrorHandling,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mode",					&nap::MACController::mMode,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -179,12 +180,16 @@ namespace nap
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
 			{
-				mac_outputs->mProgramCommands = sClearErrorCode;
+				if (!mDisableErrorHandling)
+					mac_outputs->mProgramCommands = sClearErrorCode;
+				else
+					nap::Logger::warn("%s: unable to clear errors, error handling disabled", mID.c_str());
 				motor_input->mClearErrors = false;
 			}
 			else
 			{
-				mac_outputs->mProgramCommands = 0;
+				if(!mDisableErrorHandling)
+					mac_outputs->mProgramCommands = 0;
 			}
 		}
 	}
@@ -344,7 +349,7 @@ namespace nap
 
 	bool MACController::resetPosition(nap::uint32 newPosition, utility::ErrorState& error)
 	{
-		if (isRunning())
+		if (started())
 		{
 			this->stop();
 		}
@@ -356,7 +361,7 @@ namespace nap
 
 	void MACController::emergencyStop()
 	{
-		if (isRunning())
+		if (started())
 		{
 			this->stop();
 		}
