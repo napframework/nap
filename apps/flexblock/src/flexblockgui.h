@@ -83,10 +83,6 @@ namespace nap
 		float								mWraPreviewDisplaySize = 1.0f;
 		float								mVidPreviewDisplaySize = 1.0f;
 		float								mScrub = 0.0f;
-		nap::SystemTimer					mTimer;
-		float								mUpdateTime = 0.0f;
-		float								vel = 0.0f;
-		float								tor = 0.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;

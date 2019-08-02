@@ -109,7 +109,6 @@ namespace nap
 		mFlexBlock = mApp.GetBlockEntity()->findComponent<FlexBlockComponentInstance>();
 
 		mController = resourceManager->findObject<MACController>("MACController");
-		mTimer.start();
 
 		//
 		initParameters();
@@ -1656,13 +1655,6 @@ namespace nap
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
 
-		if(mTimer.getElapsedTime() > mUpdateTime)
-		{
-			tor = mController->getActualTorque(0);
-			vel = mController->getActualVelocity(0);
-			mUpdateTime += 1.0f;
-		}
-
 		ImGui::Separator();
 		ImGui::SliderInt("New Position", &mResetMotorPos, 0, 5000000);
 		ImGui::SameLine();
@@ -1678,8 +1670,8 @@ namespace nap
 			{
 				ImGui::Text("Curent Motor Mode: %s", mController->modeToString(mController->getActualMode(i)).c_str());
 				ImGui::Text("Current Motor Position: %d", mController->getActualPosition(i));
-				ImGui::Text("Current Motor Velocity: %.1f", vel);
-				ImGui::Text("Current Motor Torque: %.1f", tor);
+				ImGui::Text("Current Motor Velocity: %.1f", mController->getActualVelocity(i));
+				ImGui::Text("Current Motor Torque: %.1f", mController->getActualTorque(i));
 				int req_pos = static_cast<int>(mController->getPosition(i));
 				if (ImGui::SliderInt("Position", &req_pos, 0, 5000000))
 				{

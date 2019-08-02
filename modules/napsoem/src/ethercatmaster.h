@@ -11,7 +11,9 @@
 namespace nap
 {
 	/**
-	 * ethercatmaster
+	 * Ethercat Master Base Device. 
+	 * Derive from this class to implement your own ethercat master.
+	 * The ethercat master finds and manages ethercat slaves on the network.
 	 */
 	class NAPAPI EtherCATMaster : public Device
 	{

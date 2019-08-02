@@ -213,6 +213,10 @@ namespace nap
 
 	void MACController::onStop()
 	{
+		// Only set mode when there are slaves managed on the network
+		if (this->getSlaveCount() == 0)
+			return;
+
 		// Request new state
 		EtherCATMaster::ESlaveState state = requestState(EtherCATMaster::ESlaveState::SafeOperational);
 		if (state != EtherCATMaster::ESlaveState::SafeOperational)

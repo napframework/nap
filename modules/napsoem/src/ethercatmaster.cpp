@@ -133,12 +133,16 @@ namespace nap
 			mProcessTask.wait();
 		}
 
-		// Call stop
+		// Call stop and request init state for all slaves
 		onStop();
-
-		// Make all slaves go to initialization stage
-		if (requestState(ESlaveState::Init)  != ESlaveState::Init)
-			nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
+		if (getSlaveCount() > 0)
+		{
+			// Make all slaves go to initialization stage
+			if (requestState(ESlaveState::Init) != ESlaveState::Init)
+			{
+				nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
+			}
+		}
 
 		// Close socket
 		ec_close();
