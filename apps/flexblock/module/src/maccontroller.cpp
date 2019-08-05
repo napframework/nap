@@ -47,6 +47,7 @@ RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RecoveryTimeout",		&nap::MACController::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -129,11 +130,6 @@ namespace nap
 
 		// Write control bits
 		sdoWrite(index, 0x2012, 0x24, false, sizeof(control_bits), &control_bits);
-
-		// STORE AFTER POWER 
-		//uint32_t extra_bits = 0;
-		//extra_bits |= 1UL << 7;
-		//sdoWrite(index, 0x2012, 0xEC, false, sizeof(extra_bits), &extra_bits);
 	}
 
 
@@ -147,7 +143,7 @@ namespace nap
 
 		// Motor controller has issues with synchronization when coming back-up from power failure.
 		// Giving it some slack helps it getting into the right state.
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(mRecoveryTimeout));
 	}
 
 

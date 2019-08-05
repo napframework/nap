@@ -716,7 +716,9 @@
             "Acceleration": 100000,
             "Torque": 100,
             "Mode": "Position",
-            "DisableErrorHandling" : false
+            "DisableErrorHandling" : false,
+            "RecoveryTimeout" : 100,
+            "ForceOperational" : false
         },
         {
             "Type": "nap::Material",

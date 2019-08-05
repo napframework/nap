@@ -7,8 +7,9 @@
 
 // nap::ethercatmaster run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
-	RTTI_PROPERTY("Adapter",	&nap::EtherCATMaster::mAdapter,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CycleTime",	&nap::EtherCATMaster::mCycleTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CycleTime",			&nap::EtherCATMaster::mCycleTime,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +59,7 @@ namespace nap
 
 		// All slaves should be in safe-op mode now
 		checkState(0, ESlaveState::SafeOperational, 2000);
-		
+
 		// Send some data to make slaves happy
 		ec_send_processdata();
 		ec_receive_processdata(EC_TIMEOUTRET);
@@ -81,39 +82,50 @@ namespace nap
 
 		// Calculate slave work counter, used to check in the error loop if slaves got lost
 		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
-		nap::Logger::info("%s: calculated workcounter: %d", mID.c_str(), mExpectedWKC);
+		nap::Logger::info("%s: calculated work-counter: %d", mID.c_str(), mExpectedWKC);
 
-		// request Operational state for all slaves
+		// request Operational state for all slaves, give it 10 seconds
 		EtherCATMaster::ESlaveState state = requestState(ESlaveState::Operational, 10000);
+		updateState();
+		mOperational = true;
 
 		// Ensure all slaves are in operational state
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
-			errorState.fail("%s: not all slaves reached operational state!", mID.c_str());
-			updateState();
+			std::string fail_msg = utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str());
+			nap::Logger::warn(fail_msg);
+			errorState.fail(fail_msg);
 			for (int i = 1; i <= ec_slavecount; i++)
 			{
 				if (ec_slave[i].state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
 					continue;
 
-				errorState.fail("Slave %d State=0x%2.2x StatusCode=0x%4.4x : %s\n",
+				// Get error code
+				std::string fail_state = utility::stringFormat("Slave %d State=0x%2.2x StatusCode=0x%4.4x : %s\n",
 					i, ec_slave[i].state, ec_slave[i].ALstatuscode, ec_ALstatuscode2string(ec_slave[i].ALstatuscode));
+
+				nap::Logger::warn(fail_state);
+				errorState.fail(fail_state);
 			}
 
-			// Request init state for all slaves and close connection
-			stop();
-			return false;
+			if (!mForceOperational)
+			{
+				stop();
+				return false;
+			}
+		}
+		else
+		{
+			nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
 		}
 
 		// All slaves successfully reached operational state
-		nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
-		mOperational = true;
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
-			onOperational(&(ec_slave[i]), i);
+			if (ec_slave[i].state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
+				onOperational(&(ec_slave[i]), i);
 		}
 
-		// All good
 		mStarted = true;
 		return true;
 	}
@@ -311,6 +323,17 @@ namespace nap
 					onSafeOperational(&(ec_slave[slave]), slave);
 					ec_slave[slave].state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
 					writeState(slave);
+					
+					// Call onoperational if state changed
+					if (checkState(slave, ESlaveState::Operational) == ESlaveState::Operational)
+					{
+						onOperational(&(ec_slave[slave]), slave);
+						nap::Logger::info("%s: slave %d OPERATIONAL", mID.c_str(), slave);
+					}
+					else
+					{
+						nap::Logger::info("%s: slave %d unable to reach OPERATIONAL state");
+					}
 				}
 				
 				// Slave in between none and safe operational
