@@ -135,9 +135,6 @@ namespace opengl
 				printMessage(EGLSLMessageType::Warning, "unsupported uniform of type: %d", type);
 			}
 
-			// Remove possible brackets
-			//std::string unique_name = std::regex_replace(std::string(name), std::regex("\\[.*\\]"), "");
-
 			// Add
 			printMessage(EGLSLMessageType::Info, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
 			outUniforms.emplace(std::make_pair(name, std::make_unique<UniformDeclaration>(program, std::string(name), type, location, size)));
