@@ -28,6 +28,9 @@ namespace nap
 		std::string mName;		///< Name of uniform as in shader
 	};
 
+	/**
+	 * Represents a 'struct' uniform. A struct can contain other uniforms, but does not directly map onto a uniform in the shader
+	 */
 	class NAPAPI UniformStruct : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
@@ -42,6 +45,9 @@ namespace nap
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
 	};
 
+	/**
+	 * Represents an 'array of structures' uniform. A UniformStructArray can contain UniformStructs, but does not directly map onto a uniform in the shader
+	 */
 	class NAPAPI UniformStructArray : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
@@ -78,7 +84,13 @@ namespace nap
 	class NAPAPI UniformValueArray : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
+
 	public:
+		/**
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const = 0;
 	};
 
@@ -110,10 +122,13 @@ namespace nap
 	class NAPAPI UniformTextureArray : public UniformTexture
 	{
 		RTTI_ENABLE(UniformTexture)
+
 	public:
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const = 0;
 	};
 
@@ -290,7 +305,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	* Stores integer data and is capable of updating the integer uniform in the shader.
+	* Stores an array of integer data and is capable of updating the integer uniform in the shader.
 	*/
 	class NAPAPI UniformIntArray : public UniformValueArray
 	{
@@ -314,8 +329,10 @@ namespace nap
 		virtual void push(const opengl::UniformDeclaration& declaration) const override;
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mValues.size(); }
 
 		/**
@@ -328,7 +345,7 @@ namespace nap
 
 
 	/**
-	* Stores float data and is capable of updating the integer uniform in the shader.
+	* Stores an array of float data and is capable of updating the integer uniform in the shader.
 	*/
 	class NAPAPI UniformFloatArray : public UniformValueArray
 	{
@@ -357,8 +374,10 @@ namespace nap
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Float; }
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mValues.size(); }
 
 		std::vector<float> mValues;			///< Data storage
@@ -366,7 +385,7 @@ namespace nap
 
 
 	/**
-	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
+	* Stores an array of vec3 data and is capable of updating the vec3 uniform in the shader.
 	*/
 	class NAPAPI UniformVec3Array : public UniformValueArray
 	{
@@ -395,8 +414,10 @@ namespace nap
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec3; }
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mValues.size(); }
 
 		std::vector<glm::vec3> mValues;		///< Data storage
@@ -404,7 +425,7 @@ namespace nap
 
 
 	/**
-	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
+	* Stores an array of vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/
 	class NAPAPI UniformVec4Array : public UniformValueArray
 	{
@@ -433,8 +454,10 @@ namespace nap
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec4; }
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mValues.size(); }
 
 		std::vector<glm::vec4> mValues;		///< Data storage
@@ -442,7 +465,7 @@ namespace nap
 
 
 	/**
-	* Stores mat4 data and is capable of updating the mat4 uniform in the shader.
+	* Stores an array of mat4 data and is capable of updating the mat4 uniform in the shader.
 	*/
 	class NAPAPI UniformMat4Array : public UniformValueArray
 	{
@@ -471,8 +494,10 @@ namespace nap
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Mat4; }
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mValues.size(); }
 
 		std::vector<glm::mat4> mValues;		///< Data storage
@@ -480,7 +505,7 @@ namespace nap
 
 
 	/**
-	* Texture2D type uniform
+	* Array of Texture2D type uniform
 	*/
 	class NAPAPI UniformTexture2DArray : public UniformTextureArray
 	{
@@ -512,8 +537,10 @@ namespace nap
 		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Tex2D; }
 
 		/**
-		* @return the amount of elements in the array.
-		*/
+		 * Retrieve the number of elements in this array
+		 *
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const override { return mTextures.size(); }
 
 		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;		///< Texture to use for this uniform

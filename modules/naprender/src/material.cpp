@@ -151,6 +151,17 @@ namespace nap
 		return true;
 	}
 
+	static bool verifyArrayUniforms(const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
+	{
+		int source_size = getNumArrayElements(sourceUniform);
+		int dest_size = getNumArrayElements(destUniform);
+
+		if (!errorState.check(source_size == dest_size, "The number of elements (%d) in uniform %s does not match the number of elements (%d) declared in shader %s", source_size, sourceUniform.mName.c_str(), dest_size, shaderID.c_str()))
+			return false;
+
+		return true;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////
@@ -442,6 +453,7 @@ namespace nap
 		return *pos->second;
 	}
 
+
 	UniformStructArray& Material::getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created)
 	{
 		auto pos = mOwnedStructArrayUniforms.find(globalName);
@@ -458,56 +470,117 @@ namespace nap
 	}
 
 
+	/**
+	 * This function recursively creates uniform for the specified declaration. It correctly deals with regular uniforms, arrays of uniforms, structures and all combinations.
+	 * It works by inspecting the 'path' to a particular uniform. For example, consider the following shader code:
+	 *
+	 * struct Point
+	 * {
+	 *     float x;
+	 *     float y;
+	 * };
+	 *
+	 * struct Light
+	 * {
+	 *     Point		mPoint;
+	 *     float 		mTest[2];
+	 *     sampler2D 	mTestSampler[2];
+	 * };
+	 *
+     * uniform Light mLight[2];
+	 *
+	 * This will result in a number of shader declarations that looks like the following (assuming all uniforms are actually used by the shader):
+	 *
+	 * mLight[0].mPoint.x
+	 * mLight[0].mPoint.y
+	 * mLight[0].mTest[0]
+	 * mLight[1].mPoint.x
+	 * mLight[1].mPoint.y
+	 * mLight[1].mTest[0]
+	 *
+	 * Note a few things:
+	 * - There are only declarations for the 'leaf' elements, i.e. the actual uniforms. There are no separate declarations for intermediate structs or arrays that are on the 'path'
+	 * - Leaf arrays (mTest in the above example) only have a single declaration, not one per element. The size of the declaration will be set to the number of elements in the array.
+	 * - Non-leaf arrays (mLight in the above example) have declaration for each used element
+	 *
+	 * While recursing into each element, we'll create the appropriate type of element (Uniform, UniformStructArray or UniformStruct) to represent each 'part'. 
+	 * The name given to each uniform will be the name of the current part we're in, without the path and without the brackets.  In the above example, 
+	 * the uniform 'mLight[0].mTest[0]' will be given the name 'mTest'. 
+	 *
+	 * This naming scheme was chosen to ensure that the user doesn't need to specify the full path when declaring these uniforms in the material; the full path can always 
+	 * be deduced (during the 'apply') phase as we recursively go through the uniforms.
+	 */
 	Uniform* Material::addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform)
 	{
 		assert(partIndex < parts.size());
 
 		const std::string& part = parts[partIndex];
 
+		// Determine the type of the uniform. The cases we're interested in are:
+		// - There is a bracket present in the current part. This must mean that we're currently in an array
+		// - The path consists of multiple elements and we're not at the last element yet. This must mean that we're currently in a struct, otherwise there wouldn't be multiple parts in the first place.
+		//
+		// Note that it is possible to both be in an array and in a struct (i.e. array of structures).
 		size_t bracketPos = part.find_first_of('[');
 		bool isArray = bracketPos != std::string::npos;
 		bool isStruct = partIndex < parts.size() - 1;
 
+		// Build up the full path as we go. This allows us to give each uniform we construct along the way a unique 'name'
 		std::string currentPath = path;
 		if (!currentPath.empty())
 			currentPath += ".";
 
 		currentPath += part;
 
+		// If the part is both an array and a struct, we need to create multiple elements:
+		// - An element to represent the array (UniformStructArray)
+		// - An element to represent the struct inside the array (UniformStruct)
 		if (isArray && isStruct)
 		{
-			std::string localName = part.substr(0, bracketPos);
+			// The local name for a uniform is the part without the brackets and without the full path (i.e. mLight in the above example)
+			std::string local_name = part.substr(0, bracketPos);
 
+			// Determine the index of the array we're currently at. We do this by looking for the last opening bracket and assuming it's followed by a number.
 			size_t arrayStartPos = currentPath.find_last_of('[');
 			assert(arrayStartPos != std::string::npos);
-			
+
 			int array_index = (int)strtol(currentPath.data() + arrayStartPos + 1, nullptr, 10);			
 
-			UniformStructArray& array = getOrCreateUniformStructArray(currentPath.substr(0, arrayStartPos), localName, didCreateUniform);			
+			// Ensure there's an element to represent the array
+			UniformStructArray& array = getOrCreateUniformStructArray(currentPath.substr(0, arrayStartPos), local_name, didCreateUniform);			
 
+			// Note that since non-leaf arrays can be present in multiple declarations, we can
+
+			// Ensure there's an element to represent the struct at this index
 			bool did_create_child_struct = false;
 			UniformStruct& child_struct = getOrCreateUniformStruct(currentPath, part, did_create_child_struct);
 
+			// Since the array / struct can be present in multiple declarations (see the x, y members of the point struct in the above example),
+			// we only want to add the struct into the array if this is the first time we're seeing it (i.e. we just created it). Otherwise, we would end up with duplicates.
 			if (did_create_child_struct)
 				array.insertStruct(array_index, child_struct);
 
+			// Recurse into struct to add the uniform
 			bool did_create_child = false;
 			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
 			assert(child_uniform != nullptr);
 
+			// If we created a new uniform, add it to the struct. Note that we need to deal with duplicates here again, in cases of nested structs.
 			if (did_create_child)
 				child_struct.addUniform(*child_uniform);
 
 			return &array;
 		}
 		else if (isStruct)
-		{			
+		{
+			// The part is just a struct; we can recurse directly into it
 			UniformStruct& uniform_struct = getOrCreateUniformStruct(currentPath, part, didCreateUniform);
 
 			bool did_create_child = false;
 			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
 			assert(child_uniform != nullptr);
 
+			// If we created a new uniform, add it to the struct. Note that we need to deal with duplicates here again, in cases of nested structs.
 			if (did_create_child)
 				uniform_struct.addUniform(*child_uniform);
 
@@ -515,14 +588,17 @@ namespace nap
 		}
 		else
 		{
-			std::string localName = part;
+			// The current part represents the actual uniform; if it's a array of primitives, strip off the brackets from the name
+			std::string local_name = part;
 			if (isArray)
-				localName = part.substr(0, bracketPos);
+				local_name = part.substr(0, bracketPos);
 
-			Uniform* result = nullptr;
+			// Create a new uniform from the declaration and set its name
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
-			new_uniform->mName = localName;
-			result = new_uniform.get();
+			new_uniform->mName = local_name;
+
+			// Add the container
+			Uniform* result = new_uniform.get();
 			AddUniform(std::move(new_uniform), declaration);
 
 			didCreateUniform = true;
@@ -530,30 +606,39 @@ namespace nap
 		}
 	}
 
+
+	/**
+	 * Recursively apply uniforms in the source struct onto the destination struct
+	 */
 	bool applyUniformsRecursive(const std::string& shaderID, UniformStruct& sourceStruct, UniformStruct& destStruct, utility::ErrorState& errorState)
 	{
 		for (auto& source_uniform : sourceStruct.mUniforms)
 		{
+			// All uniforms in the source (i.e. defined in the material) should also be present in the destination (i.e. defined in shader)
 			Uniform* dest_uniform = destStruct.findUniform(source_uniform->mName);
 			if (!errorState.check(dest_uniform != nullptr, "Uniform %s could not be matched with an uniform in the shader %s", source_uniform->mName.c_str(), shaderID.c_str()))
 				return false;
 
+			// Typed must match
 			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform %s (source type = %s, target type = %s) in shader %s",
 								  source_uniform->mName.c_str(), source_uniform.get_type().get_name().data(), dest_uniform->get_type().get_name().data(), shaderID.c_str()))
 			{
 				return false;
 			}
 
+			// If the uniform is an array of structures, recursively apply the nested uniforms
 			UniformStructArray* source_struct_array = rtti_cast<UniformStructArray>(source_uniform.get());
 			if (source_struct_array != nullptr)
 			{
 				UniformStructArray* dest_struct_array = (UniformStructArray*)dest_uniform;
 
+				// Size of the source must be <= the size in the dest (shader)
 				size_t source_size = source_struct_array->mStructs.size();
 				size_t dest_size = dest_struct_array->mStructs.size();
-				if (!errorState.check(source_size <= dest_size, "Amount of elements (%d) in uniform %s exceeds the amount of elements (%d) declared in shader %s", source_size, source_struct_array->mName.c_str(), dest_size, shaderID.c_str()))
+				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, source_struct_array->mName.c_str(), dest_size, shaderID.c_str()))
 					return false;
 
+				// Recurse
 				for (int index = 0; index < std::min(source_size, dest_size); ++index)
 				{
 					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_struct_array->mStructs[index].get());
@@ -565,6 +650,7 @@ namespace nap
 			}
 			else
 			{
+				// If the uniform is a struct, just recurse
 				UniformStruct* source_struct = rtti_cast<UniformStruct>(source_uniform.get());
 				if (source_struct != nullptr)
 				{
@@ -574,6 +660,11 @@ namespace nap
 				}
 				else
 				{
+					// Regular uniform; verify array lengths match if it's an array uniform
+					if (!verifyArrayUniforms(*source_uniform, *dest_uniform, shaderID, errorState))
+						return false;
+
+					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
 					nap::rtti::copyObject(*source_uniform, *dest_uniform);
 				}
 			}
@@ -582,13 +673,38 @@ namespace nap
 		return true;
 	}
 
+
+	/**
+	 * The Material init will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
+	 * the Uniforms defined in the material must match the Uniforms declared by the shader. If the shader declares a Uniform that is not present in the Material, a 
+	 * default Uniform will be used. 
+	 
+	 * To prevent us from having to check everywhere whether a uniform is present in the material or not, we create Uniforms for *all* uniforms
+	 * declared by the shader, even if they're present in the material. Then, if the Uniform is also present in the material, we simply copy the existing uniform over the
+	 * newly-constructed uniform. Furthermore, it is important to note why we always create new uniforms and do not touch the input data:
+	 *
+	 * - Because we create default uniforms with default values, the ownership of those newly created objects
+	 *   lies within the Material. It is very inconvenient if half of the Uniforms is owned by the system and
+	 *   half of the Uniforms by Material. Instead, Material owns all of them.
+	 * - It is important to maintain a separation between the input data (mUniforms) and the runtime data. Json objects
+	 *   should always be considered constant.
+	 * - The separation makes it easy to build faster mappings for textures and values, and to provide a map interface
+	 *   instead of a vector interface (which is what is supported at the moment for serialization).
+	 *
+	 * Thus, the Material init happens in two passes:
+	 * - First, we create uniforms for all uniforms declared in the shader. This is a recursive process, due to the presence of arrays/struct uniforms
+	 * - Then, we apply all uniforms that are present in the material (mUniforms) onto the newly-constructed uniforms. This is also a recursive process.
+	 *
+	 * Note that the first pass creates a 'tree' of uniforms (arrays can contain structs, which can contains uniforms, etc); the tree of uniforms defined in the material 
+	 * must match the tree generated in the first pass.
+	 */
 	bool Material::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
+		// First pass: recursively create uniforms for all declarations present in the shader.
 		const opengl::UniformDeclarations& uniform_declarations = mShader->getShader().getUniformDeclarations();
-
 		for (auto& kvp : uniform_declarations)
 		{
 			const opengl::UniformDeclaration& declaration = *kvp.second;
@@ -599,22 +715,30 @@ namespace nap
 			addUniformRecursive(declaration, "", parts, 0, did_create_uniform);
 		}
 
+		// Second pass: recursively apply uniforms present in the material on top of the uniforms we created in the first pass
+		// Note that the list of uniforms in mUniforms only contains the 'root' uniforms; any uniforms within a struct or array will be contained within 
+		// the corresponding UniformStructArray or UniformStruct.
 		for (ResourcePtr<Uniform>& uniform : mUniforms)
 		{
+			// If the uniform is a an array of structures, we need to go through all elements (structures) in the array and recursively apply the uniforms inside each element
 			UniformStructArray* source_uniform_struct_array = rtti_cast<UniformStructArray>(uniform.get());
 			if (source_uniform_struct_array != nullptr)
 			{
+				// There must be a uniform with matching name
 				UniformStructArrayMap::iterator pos = mOwnedStructArrayUniforms.find(source_uniform_struct_array->mName);
-				if (!errorState.check(pos != mOwnedStructArrayUniforms.end(), "Structure array uniform %s could not be found in shader %s: either it doesn't exist, or the type doesn't match", source_uniform_struct_array->mName.c_str(), mID.c_str()))
+				if (!errorState.check(pos != mOwnedStructArrayUniforms.end(), "Structure array uniform '%s' could not be found in shader %s: either it doesn't exist, or the type doesn't match", source_uniform_struct_array->mName.c_str(), mID.c_str()))
 					return false;
 
 				UniformStructArray* dest_uniform_struct_array = pos->second.get();
 
+				// The uniform defined by the user must have at most the number of elements in the shader. Less is fine, since it will just mean that the undefined elements
+				// will get default values.
 				size_t source_size = source_uniform_struct_array->mStructs.size();
 				size_t dest_size = dest_uniform_struct_array->mStructs.size();
-				if (!errorState.check(source_size <= dest_size, "Amount of elements (%d) in uniform %s exceeds the amount of elements (%d) declared in shader %s", source_size, source_uniform_struct_array->mName.c_str(), dest_size, mID.c_str()))
+				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, source_uniform_struct_array->mName.c_str(), dest_size, mID.c_str()))
 					return false;
 
+				// Apply recursively
 				for (int index = 0; index < std::min(source_size, dest_size); ++index)
 				{
 					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_uniform_struct_array->mStructs[index].get());
@@ -626,71 +750,36 @@ namespace nap
 			}
 			else
 			{
+				// If the uniform is a structure, apply recursively
 				UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(uniform.get());
 				if (source_uniform_struct != nullptr)
 				{
+					// There must be a uniform with matching name
 					UniformStructMap::iterator pos = mOwnedStructUniforms.find(source_uniform_struct->mName);
-					if (!errorState.check(pos != mOwnedStructUniforms.end(), "Unable to match uniform %s with shader", source_uniform_struct->mName.c_str()))
+					if (!errorState.check(pos != mOwnedStructUniforms.end(), "Unable to match uniform '%s' with shader", source_uniform_struct->mName.c_str()))
 						return false;
 
+					// Recurse
 					UniformStruct* dest_uniform_struct = pos->second.get();
 					if (!applyUniformsRecursive(mID, *source_uniform_struct, *dest_uniform_struct, errorState))
 						return false;
 				}
 				else
 				{
+					// Regular uniform; there must be a matching uniform
 					Uniform* dest_uniform = findUniform(uniform->mName);
-					if (!errorState.check(dest_uniform != nullptr, "Unable to match uniform %s with shader", uniform->mName.c_str()))
+					if (!errorState.check(dest_uniform != nullptr, "Unable to match uniform '%s' with shader", uniform->mName.c_str()))
 						return false;
 
+					// If the uniform is an array uniform, verify that the lengths match
+					if (!verifyArrayUniforms(*uniform, *dest_uniform, mID, errorState))
+						return false;
+
+					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
 					nap::rtti::copyObject(*uniform, *dest_uniform);
 				}
 			}
 		}
-
-
-		// Here we are going to create a set of uniforms for all the uniforms that are present in the shader.
-		// Some of those uniforms are also present in our input data (mUniforms), in that case we copy the
-		// rtti attributes from those input objects. In any other case we create default uniforms.
-		// It is important to note why we always create new uniforms and do not touch the input data:
-		// - Because we create default uniforms with default values, the ownership of those newly created objects
-		//   lies within the Material. It is very inconvenient if half of the Uniforms is owned by the system and
-		//   half of the Uniforms by Material. Instead, materials owns all of them.
-		// - It is important to maintain a separation between the input data (mUniforms) and the runtime data. Json objects
-		//   should always be considered constant.
-		// - The separation makes it easy to build faster mappings for textures and values, and to provide a map interface
-		//   instead of a vector interface (which is what is supported at the moment for serialization).
-
-		/*for (auto& kvp : uniform_declarations)
-		{
-			const std::string& name = kvp.first;
-			const opengl::UniformDeclaration& declaration = *kvp.second;
-
-			// See if we have a matching uniform in our input data
-			Uniform* matching_uniform = nullptr;
-			for (ResourcePtr<Uniform>& uniform : mUniforms)
-			{
-				if (uniform->mName == name)
-				{
-					matching_uniform = uniform.get();
-					break;
-				}
-			}
-
-			// Create a new uniform
-			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
-
-			// If there is a match, see if the types match and copy the attributes from the input object
-			if (matching_uniform != nullptr)
-			{
-				if (!verifyUniform(*matching_uniform, declaration, mShader->mID, errorState))
-					return false;
-
-				nap::rtti::copyObject(*matching_uniform, *new_uniform.get());
-			}
-
-			AddUniform(std::move(new_uniform), declaration);
-		}*/
 
 		return true;
 	}

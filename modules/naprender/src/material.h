@@ -229,7 +229,6 @@ namespace nap
 		*/
 		EDepthMode getDepthMode() const			{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
 
-
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
@@ -242,8 +241,21 @@ namespace nap
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	private:
+		/**
+		 * Recursively add uniforms for the specified declaration
+		 */
 		Uniform* addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
+
+		/**
+		 * Ensure a UniformStruct with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
+		 * identifier that should only be unique within the container that the uniform is being added to
+		 */
 		UniformStruct& getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created);
+
+		/**
+		 * Ensure a UniformStructArray with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
+		 * identifier that should only be unique within the container that the uniform is being added to
+		 */
 		UniformStructArray& getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created);
 
 	public:
@@ -257,8 +269,8 @@ namespace nap
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
-		UniformStructMap						mOwnedStructUniforms;
-		UniformStructArrayMap					mOwnedStructArrayUniforms;
+		UniformStructMap						mOwnedStructUniforms;								///< Runtime map of struct uniforms
+		UniformStructArrayMap					mOwnedStructArrayUniforms;							///< Runtime map of struct array uniforms
 	};
 
 	//////////////////////////////////////////////////////////////////////////
