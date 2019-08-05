@@ -106,6 +106,7 @@ namespace nap
 		 */
 		ESlaveState updateState();
 
+		bool mForceOperational = false;	///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
 		std::string mAdapter;			///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
 		int  mCycleTime = 1000;			///< Property: 'CycleTime' process cycle time in us. 
 
