@@ -25,31 +25,20 @@ namespace nap
 	}
 
 
-	WebSocketServer::~WebSocketServer()
-	{
-	}
-
-
 	bool WebSocketServer::init(utility::ErrorState& errorState)
 	{
 		// Initialize base class
 		if (!IWebSocketServer::init(errorState))
 			return false;
 
-		mConnectionClosed.setFunction(std::bind(&WebSocketServer::onConnectionClosed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		mEndPoint->connectionClosed.connect(mConnectionClosed);
-		
-		mConnectionFailed.setFunction(std::bind(&WebSocketServer::onConnectionFailed, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		mEndPoint->connectionFailed.connect(mConnectionFailed);
-
-		mConnectionOpened.setFunction(std::bind(&WebSocketServer::onConnectionOpened, this, std::placeholders::_1));
-		mEndPoint->connectionOpened.connect(mConnectionOpened);
-
-		mMessageReceived.setFunction(std::bind(&WebSocketServer::onMessageReceived, this, std::placeholders::_1, std::placeholders::_2));
-		mEndPoint->messageReceived.connect(mMessageReceived);
-
-		// Register the server with our service
+		mEndPoint->registerListener(*this);
 		return true;
+	}
+
+
+	void WebSocketServer::onDestroy()
+	{
+		mEndPoint->unregisterListener(*this);
 	}
 
 

@@ -11,14 +11,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)
     {
         auto inputPort = static_cast<MidiInputPort*>(userData);
         auto portNames = inputPort->getPortNames();
         auto event = std::make_unique<MidiEvent>(*message, inputPort->mID);
-        if (inputPort->mDebugOutput)
-            nap::Logger::info("midi input on " + portNames + ": " + event->toString());
+		if (inputPort->mDebugOutput)
+			nap::Logger::info("midi input on " + portNames + ": " + event->toString());
         inputPort->receiveEvent(std::move(event));
     }
     
@@ -27,12 +26,6 @@ namespace nap
 		mService(&service)
     {
     }
-    
-
-	MidiInputPort::~MidiInputPort()
-	{
-		stop();
-	}
 
 
 	bool MidiInputPort::start(utility::ErrorState& errorState)
@@ -73,7 +66,7 @@ namespace nap
                 auto midiIn = std::make_unique<RtMidiIn>();
                 midiIn->openPort(portNumber);
                 midiIn->setCallback(&midiCallback, this);
-                midiIns.emplace_back(std::move(midiIn));
+                mMidiIns.emplace_back(std::move(midiIn));
             }
             
             mService->registerInputPort(*this);
@@ -86,25 +79,33 @@ namespace nap
         }
     }
     
+
 	void MidiInputPort::stop()
 	{
-		midiIns.clear();
+		mMidiIns.clear();
 		mPortNumbers.clear();
 		mPortNames.clear();
 		mService->unregisterInputPort(*this);
 	}
     
-    std::string MidiInputPort::getPortNames() const
+
+	nap::MidiService& MidiInputPort::getService()
+	{
+		return *mService;
+	}
+
+	
+	std::string MidiInputPort::getPortNames() const
     {
         std::string result;
         for (auto& portName : mPortNames)
         {
             result.append(portName);
-            if (portName != mPortNames.back())
-                result.append(", ");
+			if (portName != mPortNames.back())
+			{
+				result.append(", ");
+			}
         }
         return result;
     }
-
-    
 }

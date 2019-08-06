@@ -37,11 +37,6 @@ namespace nap
 		mService(&service)
 	{
 	}
-
-	ArtNetController::~ArtNetController()
-	{
-		stop();
-	}
  
 
 	bool ArtNetController::start(nap::utility::ErrorState& errorState)
@@ -115,21 +110,19 @@ namespace nap
 
 	void ArtNetController::stop()
 	{
-		if (mNode != nullptr)
+		// Stop polling background task
+		assert(mNode != nullptr);
+		if (mMode == EArtnetMode::Unicast)
 		{
-			// Stop polling background task
-			if (mMode == EArtnetMode::Unicast)
-			{
-				assert(mReadTask.valid());
-				stopPolling();
-				mReadTask.wait();
-			}
-
-			// Remove controller from service
-			mService->removeController(*this);
-			artnet_destroy(mNode);
-			mNode = nullptr;
+			assert(mReadTask.valid());
+			stopPolling();
+			mReadTask.wait();
 		}
+
+		// Remove controller from service
+		mService->removeController(*this);
+		artnet_destroy(mNode);
+		mNode = nullptr;
 	}
 
 

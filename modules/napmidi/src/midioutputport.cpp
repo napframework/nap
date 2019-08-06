@@ -16,12 +16,6 @@ namespace nap
 		mService(&service)
     {
     }
-
-
-	MidiOutputPort::~MidiOutputPort()
-	{
-		stop();
-	}
     
     
     bool MidiOutputPort::start(utility::ErrorState& errorState)
@@ -34,10 +28,11 @@ namespace nap
                 errorState.fail("Midi output port not found: " + mPortName);
                 return false;
             }
-            midiOut.openPort(mPortNumber);
+            mMidiOut.openPort(mPortNumber);
             return true;
         }
-        catch(RtMidiError& error) {
+        catch(RtMidiError& error) 
+		{
             errorState.fail(error.getMessage());
             return false;
         }
@@ -46,19 +41,33 @@ namespace nap
 
 	void MidiOutputPort::stop()
 	{
-		midiOut.closePort();
+		mMidiOut.closePort();
 	}
     
-    void MidiOutputPort::sendEvent(const MidiEvent& event)
+
+	nap::MidiService& MidiOutputPort::getService()
+	{
+		return *mService;
+	}
+
+
+	void MidiOutputPort::sendEvent(const MidiEvent& event)
     {
-        outputData = event.getData();
-        try {
-            midiOut.sendMessage(&outputData);
+        mOutputData = event.getData();
+        try 
+		{
+            mMidiOut.sendMessage(&mOutputData);
         }
-        catch(RtMidiError& error) {
+        catch(RtMidiError& error) 
+		{
             nap::Logger::fatal(error.getMessage());
         }
     }
 
     
+	int MidiOutputPort::getPortNumber() const
+	{
+		return mPortNumber;
+	}
+
 }
