@@ -70,6 +70,7 @@ namespace nap
 				"parameters must be at least larger then zero %s", this->mID.c_str()))
 				return false;
 
+			mFunctions.clear();
 			for (int i = 0; i < mEndParameters.size(); i++)
 			{
 				rttr::type type = mEndParameters[i]->get_type();

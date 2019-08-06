@@ -913,7 +913,7 @@ namespace nap
 							//
 							for (int l = 0; l < 8; l++)
 							{
-								float yPart = (childSize.y / 8.0f);
+								float yPart = childSize.y / 8.0f;
 								float yStart = yPart * l;
 
 								mProps.mCachedCurve[l].emplace_back(ImVec2(

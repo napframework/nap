@@ -345,6 +345,7 @@ namespace nap
 		void SequencePlayerComponentInstance::removeSequence(const Sequence* sequence)
 		{
 			mSequenceContainer->removeSequence(sequence);
+
 			reconstruct();
 		}
 
