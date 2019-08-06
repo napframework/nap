@@ -14,6 +14,7 @@
 #include <parametervec.h>
 #include <sequenceplayercomponent.h>
 #include <oscinputcomponent.h>
+#include <maccontroller.h>
 
 #include "flexblockcomponent.h"
 #include "sequenceplayercomponent.h"
@@ -67,6 +68,9 @@ namespace nap
 		bool								mHide = false;
 		DateTime							mDateTime;
 		double								mTime = 0.0f;
+		nap::ResourcePtr<MACController>		mMotorController;
+		int									mResetMotorPos = 0;
+		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
@@ -80,6 +84,11 @@ namespace nap
 		 * Shows the information window
 		 */
 		void showInfoWindow();
+
+		/**
+		 * Shows motor control window
+		 */
+		void showMotorControlWindow();
 
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 

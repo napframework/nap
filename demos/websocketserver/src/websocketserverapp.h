@@ -67,10 +67,6 @@ namespace nap
 	 * This application uses it's own custom event handler: 'nap::APIWebSocketHandler'. 
 	 * This handler actually reacts and responds to the received query.
 	 * The handler ships as part of this demo and is located inside the mod_websocketserver module.
-	 *
-	 * Note that the server accepts all client connections! This is not optional at this moment: there is
-	 * currently no client validation support. We will add SSL encryption and client validation 
-	 * support in a future release of NAP.
 	 */
 	class WebSocketServerApp : public App
 	{

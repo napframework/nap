@@ -94,10 +94,11 @@ namespace nap
 		/**
 		 * Init all components in the object graph in the correct order
 		 */
-		static bool sInitComponents(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+		static bool sInitComponents(EntityCreationParameters& entityCreationParams, Scene::SortedComponentInstanceList& sortedComponentInstances, utility::ErrorState& errorState)
 		{
 			std::vector<EntityObjectGraph::Node*> sorted_nodes = entityCreationParams.mObjectGraph->getSortedNodes();
 
+			bool success = true;
 			for (EntityObjectGraph::Node* node : sorted_nodes)
 			{
 				Component* component = rtti_cast<Component>(node->mItem.mObject);
@@ -112,11 +113,28 @@ namespace nap
 					continue;
 
 				for (ComponentInstance* component_instance : pos->second)
+				{
 					if (!component_instance->init(errorState))
-						return false;
+					{
+						success = false;
+						break;
+					}
+
+					sortedComponentInstances.push_back(component_instance);
+				}
 			}
 
-			return true;
+			if (!success)
+			{
+				// When one of the objects could not be initialized, we call onDestroy for them in reverse order.
+				// Destruction of objects will be done later, in no particular order.
+				for (int node_index = sortedComponentInstances.size() - 1; node_index >= 0; --node_index)
+					sortedComponentInstances[node_index]->onDestroy();
+
+				sortedComponentInstances.clear();
+			}
+
+			return success;
 		}
 
 
@@ -629,12 +647,10 @@ namespace nap
 	bool Scene::spawnInternal(const RootEntityList& rootEntities,
 							  const std::vector<rtti::Object*>& allObjects,
 							  bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances,
-							  utility::ErrorState& errorState)
+							  SortedComponentInstanceList& sortedComponentInstances, utility::ErrorState& errorState)
 	{
-		EntityObjectGraph object_graph;
-		// Used by EntityObjectGraphItem to find dependencies between types
-		ObjectsByTypeMap objects_by_type;
-		// Used by EntityObjectGraphItem to add edges to cloned resources
+		EntityObjectGraph object_graph;		// Used by EntityObjectGraphItem to find dependencies between types
+		ObjectsByTypeMap objects_by_type;	// Used by EntityObjectGraphItem to add edges to cloned resources
 		ClonedResourceMap cloned_resource_map;
 
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
@@ -681,39 +697,29 @@ namespace nap
 				// Clone target component. The cloned resources are not going into the regular resource manager resource lists, 
 				// but into a special map of cloned resources that is thrown away whenever something changes
 				// Note: We have to generate a unique ID for it because the ObjectGraph expects IDs to be unique
-				std::unique_ptr<Component> cloned_target_component =
-						rtti::cloneObject<Component>(*instance_property.mTargetComponent, mCore->getResourceManager()->getFactory());
+				std::unique_ptr<Component> cloned_target_component = rtti::cloneObject<Component>(*instance_property.mTargetComponent, mCore->getResourceManager()->getFactory());
 				cloned_target_component->mID = SceneInstantiation::sGenerateUniqueID(cloned_target_component->mID + "_instanceproperties", cloned_component_ids);
 				cloned_target_component->mOriginalComponent = instance_property.mTargetComponent.get();
 
 				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
-				SceneInstantiation::sRecursiveAddToObjectsByType(*cloned_target_component,
-																 cloned_target_component->get_type(), objects_by_type);
+				SceneInstantiation::sRecursiveAddToObjectsByType(*cloned_target_component, cloned_target_component->get_type(), objects_by_type);
 				cloned_resource_map[instance_property.mTargetComponent.get()].push_back(cloned_target_component.get());
 
 				ComponentResourcePath resolved_component_path;
-				bool success = ComponentResourcePath::fromString(*entity,
-																 instance_property.mTargetComponent.getInstancePath(),
-																 resolved_component_path, errorState);
-				if (!errorState.check(success,
-									  "Failed to apply instance property for entity %s: invalid component path %s",
-									  entity->mID.c_str(),
-									  instance_property.mTargetComponent.getInstancePath().c_str()))
+				bool success = ComponentResourcePath::fromString(*entity, instance_property.mTargetComponent.getInstancePath(), resolved_component_path, errorState);
+				if (!errorState.check(success, "Failed to apply instance property for entity %s: invalid component path %s", entity->mID.c_str(), instance_property.mTargetComponent.getInstancePath().c_str()))
 					return false;
 
 				// Apply instance properties to the cloned object
 				for (const TargetAttribute& attribute : instance_property.mTargetAttributes)
-					if (!errorState.check(attribute.apply(*cloned_target_component, errorState),
-										  "Failed to apply instance properties for entity %s",
-										  entity->mID.c_str()))
+					if (!errorState.check(attribute.apply(*cloned_target_component, errorState), "Failed to apply instance properties for entity %s", entity->mID.c_str()))
 						return false;
 
 				clonedComponents.emplace_back(ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));
 			}
 		}
 
-		// After cloning all relevant resources, we need to rebuild the object graph,
-		// in order to incorporate the newly cloned nodes and their incoming/outgoing links
+		// After cloning all relevant resources, we need to rebuild the object graph, in order to incorporate the newly cloned nodes and their incoming/outgoing links
 		// Otherwise, the depth of some nodes may be wrong, leading to the wrong init order
 		if (!object_graph.rebuild(errorState))
 			return false;
@@ -729,13 +735,10 @@ namespace nap
 
 			// Store the cloned components used for this entity
 			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_index);
-			entityCreationParams.mCurrentEntityClonedComponents =
-					clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
+			entityCreationParams.mCurrentEntityClonedComponents = clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
 
 			// Spawn the entity hierarchy
-			if (!errorState.check(
-					createEntityInstance(*root_entity_resource, entityCreationParams, errorState) != nullptr,
-					"Failed to create entity instance"))
+			if (!errorState.check(createEntityInstance(*root_entity_resource, entityCreationParams, errorState) != nullptr,"Failed to create entity instance"))
 				return false;
 		}
 
@@ -753,14 +756,11 @@ namespace nap
 			}
 		}
 
-		// After all entity hierarchies and their components are created,
-		// the component & entity pointers are resolved and then initted in the correct order.
-		if (!errorState.check(SceneInstantiation::sResolveInstancePointers(entityCreationParams, errorState),
-							  "Unable to resolve pointers in components"))
+		// After all entity hierarchies and their components are created,the component & entity pointers are resolved and then initted in the correct order.
+		if (!errorState.check(SceneInstantiation::sResolveInstancePointers(entityCreationParams, errorState), "Unable to resolve pointers in components"))
 			return false;
 
-		if (!errorState.check(SceneInstantiation::sInitComponents(entityCreationParams, errorState),
-							  "Unable to init components!"))
+		if (!errorState.check(SceneInstantiation::sInitComponents(entityCreationParams, sortedComponentInstances, errorState), "Unable to init components!"))
 			return false;
 
 		// In realtime editing scenarios, clients may have pointers to Entity & Component Instances that will have been respawned.
@@ -794,32 +794,20 @@ namespace nap
 		rootEntity.mEntity = const_cast<Entity*>(&entity);
 
 		std::vector<EntityInstance*> spawnedRootEntities;
-		if (!spawnInternal({rootEntity}, all_objects, false, spawnedRootEntities, errorState))
+		SortedComponentInstanceList sortedComponentInstances;
+		if (!spawnInternal({rootEntity}, all_objects, false, spawnedRootEntities, sortedComponentInstances, errorState))
 			return nullptr;
+
+		// Store the association between this root entity and all the ComponentInstances that were spawned for this hierarchy
+		mSpawnedComponentInstanceMap.insert(std::make_pair(spawnedRootEntities[0], std::move(sortedComponentInstances)));
 
 		assert(spawnedRootEntities.size() == 1);
 		return SpawnedEntityInstance(spawnedRootEntities[0]);
 	}
 
 
-	static void sGetInstancesToDestroyRecursive(EntityInstance& entity, std::vector<rtti::Object*>& instancesToDestroy)
-	{
-		instancesToDestroy.push_back(&entity);
-
-		for (ComponentInstance* instance : entity.getComponents())
-			instancesToDestroy.push_back(instance);
-
-		for (EntityInstance* child : entity.getChildren())
-			sGetInstancesToDestroyRecursive(*child, instancesToDestroy);
-	}
-
-
 	void Scene::destroy(SpawnedEntityInstance& entity)
 	{
-		// Recursively get all instances to destroy (i.e. Entity and Component instances)
-		std::vector<rtti::Object*> all_instances;
-		sGetInstancesToDestroyRecursive(*entity, all_instances);
-
 		// First remove the entity from the root
 		mRootEntityInstance->removeChild(*entity);
 
@@ -828,25 +816,36 @@ namespace nap
 		// This is needed so that we can still access the entity's data during iteration
 		std::vector<std::unique_ptr<EntityInstance>> entity_instances_to_delete;
 
-		// Remove instances from the map, but don't delete them yet
-		for (rtti::Object* instance : all_instances)
+		// Find all ComponentInstances for this SpawnedEntityInstance
+		SpawnedComponentInstanceMap::iterator pos = mSpawnedComponentInstanceMap.find(entity.get().get());
+		assert(pos != mSpawnedComponentInstanceMap.end());
+
+		// Call onDestroy in reverse initialization order, and remove both ComponentInstance and EntityInstance from the instance maps.
+		for (int index = pos->second.size() - 1; index >= 0; --index)
 		{
-			rtti::TypeInfo type_info = instance->get_type();
+			ComponentInstance* componentInstance = pos->second[index];
 
-			if (type_info.is_derived_from<EntityInstance>())
+			componentInstance->onDestroy();
+			mInstancesByID.erase(componentInstance->mID);
+
+			std::string entityInstanceID = componentInstance->getEntityInstance()->mID;
+			EntityByIDMap::iterator entity_instance = mEntityInstancesByID.find(entityInstanceID);
+			if (entity_instance != mEntityInstancesByID.end())
 			{
-				EntityByIDMap::iterator entity_instance = mEntityInstancesByID.find(instance->mID);
-				assert(entity_instance != mEntityInstancesByID.end());
 				entity_instances_to_delete.emplace_back(std::move(entity_instance->second));
-
-				mEntityInstancesByID.erase(instance->mID);
-				mInstancesByID.erase(instance->mID);
-			}
-			else if (type_info.is_derived_from<ComponentInstance>())
-			{
-				mInstancesByID.erase(instance->mID);
+				mEntityInstancesByID.erase(entityInstanceID);
+				mInstancesByID.erase(entityInstanceID);
 			}
 		}
+
+		// We call onDestroy for all the entity instances. There is no particular order in EntityInstance destruction,
+		// because there is also no specific init order. Although we have Entity pointers, they only affect ComponentInstance
+		// initialization order, as the Entity pointers live in ComponentInstances.
+		for (auto& entityInstance : entity_instances_to_delete)
+			entityInstance->onDestroy();
+
+		// Remove this SpawnedEntityInstance
+		mSpawnedComponentInstanceMap.erase(pos);
 	}
 
 
@@ -857,7 +856,40 @@ namespace nap
 		all_objects.push_back(this);
 
 		std::vector<EntityInstance*> spawnedRootEntities;
-		return spawnInternal(mEntities, all_objects, true, spawnedRootEntities, errorState);
+		return spawnInternal(mEntities, all_objects, true, spawnedRootEntities, mLoadedComponentInstances, errorState);
+	}
+
+
+	/**
+     * Here we forward OnDestroy calls to ComponentInstances. We do not clear all the associated instance maps, as these structures will
+	 * be destroyed when Scene goes out of scope (which is directly after onDestroy).
+	 * 
+	 * Note that each SpawnInternal call will spawn a single hierarchy of entities. These hierarchies do not have pointers to each other, so
+	 * we don't have to sort any destruction order between those entity hierarchies.
+	 * Therefore, we can destroy each separate hierarchy by itself. A hierarchy is either a separate real-time spawn that was performed through 
+	 * spawn(), or a hierarchy of objects that was loaded through the file loading process. This is reflected in the mSpawnedComponentInstanceMap 
+	 * (one entry for each spawn) and through mLoadedComponentInstances (for a file load).
+	 */
+	void Scene::onDestroy()
+	{
+		// Call onDestroy for all objects that were loaded through file in reverse init order.
+		for (int index = mLoadedComponentInstances.size() - 1; index >= 0; --index)
+			mLoadedComponentInstances[index]->onDestroy();
+
+		// For all entity hierarchies that were spawned
+		for (auto& kvp : mSpawnedComponentInstanceMap)
+		{
+			// Call onDestroy for all spawned objects within a hierarchy, in reverse init order.
+			for (int index = kvp.second.size() - 1; index >= 0; --index)
+				kvp.second[index]->onDestroy();
+		}
+
+		// We call onDestroy for all the entity instances. There is no particular order in EntityInstance destruction,
+		// because there is also no specific init order. Although we have Entity pointers, they only affect ComponentInstance
+		// initialization order, as the Entity pointers live in ComponentInstances.
+		for (auto& kvp : mEntityInstancesByID)
+			kvp.second->onDestroy();
+
 	}
 
 

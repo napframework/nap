@@ -191,7 +191,7 @@ namespace nap
 	void FlexblockApp::setCameraPosition()
 	{
 		// Get the perspective camera xform
-		TransformComponentInstance& cam_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
 
 		// Set the camera position in block shader
 		RenderableMeshComponentInstance& block_render_comp = mBlockEntity->getComponent<RenderableMeshComponentInstance>();

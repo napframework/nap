@@ -64,6 +64,9 @@ namespace nap
 		//
 		mFlexBlock = mApp.GetBlockEntity()->findComponent<FlexBlockComponentInstance>();
 
+		// Controller
+		mMotorController = resourceManager->findObject<MACController>("MACController");
+
 		//
 		initParameters();
 
@@ -173,6 +176,8 @@ namespace nap
 		{
 			showPlaylist();
 		}
+
+		showMotorControlWindow();
 	}
 	
 
@@ -2079,4 +2084,70 @@ namespace nap
 		strftime(buffer, sizeof(buffer), "%d-%m-%Y%H:%M:%S", timeinfo);
 		return std::string(buffer);
 	}
+
+
+	void FlexblockGui::showMotorControlWindow()
+	{
+		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
+		ImGui::Begin("Motor Controls");
+		ImGui::SliderInt("Reset Value", &mResetMotorPos, -5000000, 5000000);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset Position"))
+		{
+			utility::ErrorState error;
+			mMotorController->resetPosition(mResetMotorPos, error);
+		}
+
+		ImGui::Separator();
+		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
+		{
+			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
+			{
+				ImGui::Text("Curent Motor Mode: %s", mMotorController->modeToString(mMotorController->getActualMode(i)).c_str());
+				ImGui::Text("Current Motor Position: %d", mMotorController->getActualPosition(i));
+				ImGui::Text("Current Motor Velocity: %.1f", mMotorController->getActualVelocity(i));
+				ImGui::Text("Current Motor Torque: %.1f", mMotorController->getActualTorque(i));
+				int req_pos = static_cast<int>(mMotorController->getPosition(i));
+				if (ImGui::SliderInt("Position", &req_pos, -5000000, 5000000))
+				{
+					mMotorController->setPosition(i, req_pos);
+				}
+
+				int req_vel = mMotorController->getVelocity(i);
+				if (ImGui::SliderInt("Velocity", &req_vel, 0, mMotorController->mMaxVelocity))
+				{
+					mMotorController->setVelocity(i, static_cast<float>(req_vel));
+				}
+				ImGui::Separator();
+				bool error = false;
+				if (mMotorController->hasError(i))
+				{
+					if (ImGui::Button("Clear Errors"))
+						mMotorController->clearErrors(i);
+
+					std::vector<MACController::EErrorStat> errors;
+					mMotorController->getErrors(i, errors);
+					for (const auto& error : errors)
+					{
+						ImGui::TextColored(text_color, MACController::errorToString(error).c_str());
+					}
+					error = true;
+				}
+				if (!mMotorController->isOnline(i))
+				{
+					ImGui::TextColored(text_color, "Slave Lost!");
+					error = true;
+				}
+				if (!error)
+				{
+					ImGui::Text("No Errors");
+				}
+			}
+		}
+		if (mMotorController->getSlaveCount() == 0)
+			ImGui::Text("No slaves found");
+
+		ImGui::End();
+	}
+
 }

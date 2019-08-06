@@ -705,6 +705,22 @@
             "ReferenceMesh": "BoxMesh"
         },
         {
+            "Type": "nap::MACController",
+            "mID": "MACController",
+            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
+            "CycleTime": 1000,
+            "ResetPosition": false,
+            "ResetPositionValue": 1000000,
+            "Velocity": 0,
+            "MaxVelocity" : 4300,
+            "Acceleration": 100000,
+            "Torque": 100,
+            "Mode": "Position",
+            "DisableErrorHandling" : false,
+            "RecoveryTimeout" : 100,
+            "ForceOperational" : false
+        },
+        {
             "Type": "nap::Material",
             "mID": "BlockMaterial",
             "Uniforms": [
