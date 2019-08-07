@@ -14,7 +14,7 @@ void main(void)
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
 	
 	// Check which image to get
-	int tex_id = int(pass_PID+0.1) % 2;
+	int tex_id = int(pass_PID+0.1) % input.length();
 
 	// Get texture color
 	vec4 tex_color = texture(input[tex_id], uvs);
@@ -24,7 +24,7 @@ void main(void)
 	float g = pow(tex_color.g,0.9);
 	float b = pow(tex_color.b,0.9);
 	tex_color = vec4(r,g,b,tex_color.a);
-
+	
 	// Set output color
 	out_Color = tex_color * pass_Color;
 }
