@@ -163,28 +163,28 @@ namespace nap
 
 	void UniformIntArray::push(const opengl::UniformDeclaration& declaration) const
 	{
-		glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(mValues.data()));
+		glUniform1iv(declaration.mLocation, mValues.size(), static_cast<const GLint*>(mValues.data()));
 		glAssert();
 	}
 
 
 	void UniformFloatArray::push(const opengl::UniformDeclaration& declaration) const
 	{
-		glUniform1fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(mValues.data()));
+		glUniform1fv(declaration.mLocation, mValues.size(), static_cast<const GLfloat*>(mValues.data()));
 		glAssert();
 	}
 
 
 	void UniformVec3Array::push(const opengl::UniformDeclaration& declaration) const
 	{
-		glUniform3fv(declaration.mLocation, declaration.mSize, (const GLfloat*)(mValues.data()));
+		glUniform3fv(declaration.mLocation, mValues.size(), (const GLfloat*)(mValues.data()));
 		glAssert();
 	}
 
 
 	void UniformVec4Array::push(const opengl::UniformDeclaration& declaration) const
 	{
-		glUniform4fv(declaration.mLocation, declaration.mSize, (const GLfloat*)(mValues.data()));
+		glUniform4fv(declaration.mLocation, mValues.size(), (const GLfloat*)(mValues.data()));
 		glAssert();
 	}
 

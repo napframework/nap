@@ -156,7 +156,7 @@ namespace nap
 		int source_size = getNumArrayElements(sourceUniform);
 		int dest_size = getNumArrayElements(destUniform);
 
-		if (!errorState.check(source_size == dest_size, "The number of elements (%d) in uniform %s does not match the number of elements (%d) declared in shader %s", source_size, sourceUniform.mName.c_str(), dest_size, shaderID.c_str()))
+		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, sourceUniform.mName.c_str(), dest_size, shaderID.c_str()))
 			return false;
 
 		return true;
