@@ -131,6 +131,33 @@
                         "y": 1.0,
                         "z": 1.0
                     }
+                },
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_af2d9fe4",
+                    "Name": "light",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_de59dce3",
+                            "Name": "mPosition",
+                            "Value": {
+                                "x": 50.0,
+                                "y": 0.0,
+                                "z": 100.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_dfee004c",
+                            "Name": "mIntensity",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "CopyShader",
