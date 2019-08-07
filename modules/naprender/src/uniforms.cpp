@@ -24,7 +24,7 @@ RTTI_BEGIN_CLASS(nap::UniformStruct)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformStructArray)
-	RTTI_PROPERTY("Structs", &nap::UniformStructArray::mStructs, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Structs", &nap::UniformStructArray::mStructs, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 

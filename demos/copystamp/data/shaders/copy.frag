@@ -16,7 +16,7 @@ struct PointLight
 // uniform inputs
 uniform vec3 		color;
 uniform vec3		cameraLocation;							// World Space location of the camera
-uniform PointLight	light;
+uniform PointLight	lights[1];
 
 // Light Uniforms
 const float			ambientIntensity = 0.4;					// Ambient light intensity
@@ -36,25 +36,25 @@ void main()
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(light.mPosition - frag_position);
+	vec3 surfaceToLight = normalize(lights[0].mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 cameraPosition = cameraLocation;
 	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
 
 	// Ambient color
-	vec3 ambient = color.rgb * light.mIntensity * ambientIntensity;
+	vec3 ambient = color.rgb * lights[0].mIntensity * ambientIntensity;
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * light.mIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * lights[0].mIntensity;
     
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
 	float specularCoefficient = 0.0;
     if(diffuseCoefficient > 0.0)
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
-    vec3 specular = specularCoefficient * specularColor * light.mIntensity * specularIntensity;
+    vec3 specular = specularCoefficient * specularColor * lights[0].mIntensity * specularIntensity;
     
 	//linear color (color before gamma correction)
     vec3 linearColor = ambient + specular + diffuse;
