@@ -6,12 +6,20 @@ in vec3 passNormal;						//< frag normal in object space
 in vec3 passPosition;					//< frag position in object space
 in mat4 passModelMatrix;				//< modelMatrix
 
+// Point light structure
+struct PointLight
+{
+	vec3		mPosition;
+	float 		mIntensity;
+};
+
 // uniform inputs
-uniform vec3 	inCameraPosition;		//< Camera World Space Position
-uniform vec3 	inBlobPosition;			//< Blob position in uv space
-uniform float 	inTime;					//< Modulation time
-uniform float 	inVelocity;				//< Velocity used for modulating frequency
-uniform vec3 	inMousePosition;		//< Current mouse position in uv space
+uniform vec3 		inCameraPosition;		//< Camera World Space Position
+uniform vec3 		inBlobPosition;			//< Blob position in uv space
+uniform float 		inTime;					//< Modulation time
+uniform float 		inVelocity;				//< Velocity used for modulating frequency
+uniform vec3 		inMousePosition;		//< Current mouse position in uv space
+uniform PointLight	inLight;				//< Light
 
 // output
 out vec4 out_Color;
@@ -24,8 +32,6 @@ const float		minFrequency = 499.8;
 const float		maxFrequency = 500;
 const float		minDistribution = 2.25;
 const float		maxDistribution = 4.0;
-const vec3		lightPos = vec3(0.0, 2.0, 1.0);
-const float 	lightIntensity = 1.0;
 const float 	specularIntensity = 0.5;
 const vec3  	specularColor = vec3(0.545, 0.549, 0.627);
 const float 	shininess = 10;
@@ -121,7 +127,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lightPos - ws_position);
+	vec3 surfaceToLight = normalize(inLight.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 surfaceToCamera = normalize(inCameraPosition - ws_position);
@@ -131,14 +137,14 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * color * inLight.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * specularColor * inLight.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;
