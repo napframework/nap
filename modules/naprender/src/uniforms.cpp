@@ -206,7 +206,7 @@ namespace nap
 			int unit = textureUnit + num_bound++;
 			glActiveTexture(GL_TEXTURE0 + unit);
 			mTextures[index]->bind();
-			glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&unit));
+			glUniform1iv(declaration.mLocation+index, 1, static_cast<const GLint*>(&unit));
 		}
 
 		return num_bound;
