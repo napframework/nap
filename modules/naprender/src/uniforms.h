@@ -91,7 +91,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const = 0;
+		virtual int getCount() const = 0;
 	};
 
 	/**
@@ -334,7 +334,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const override { return mValues.size(); }
+		virtual int getCount() const override { return mValues.size(); }
 
 		/**
 		* @return integer GLSL type.
@@ -380,7 +380,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const override { return mValues.size(); }
+		virtual int getCount() const override { return mValues.size(); }
 
 		std::vector<float> mValues;			///< Data storage
 	};
@@ -421,7 +421,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const override { return mValues.size(); }
+		virtual int getCount() const override { return mValues.size(); }
 
 		std::vector<glm::vec3> mValues;		///< Data storage
 	};
@@ -462,7 +462,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const override { return mValues.size(); }
+		virtual int getCount() const override { return mValues.size(); }
 
 		std::vector<glm::vec4> mValues;		///< Data storage
 	};
@@ -503,7 +503,7 @@ namespace nap
 		 *
 		 * @return The number of elements in this array
 		 */
-		virtual int getNumElements() const override { return mValues.size(); }
+		virtual int getCount() const override { return mValues.size(); }
 
 		std::vector<glm::mat4> mValues;		///< Data storage
 	};

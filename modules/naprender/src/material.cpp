@@ -124,7 +124,7 @@ namespace nap
 	{
 		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
 		if (value_array != nullptr)
-			return value_array->getNumElements();
+			return value_array->getCount();
 
 		const UniformTextureArray* texture_array = rtti_cast<const UniformTextureArray>(&uniform);
 		if (texture_array != nullptr)
