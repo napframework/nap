@@ -370,8 +370,9 @@ namespace nap
 
 		const opengl::UniformDeclaration* declaration = pos->second.get();
 		std::unique_ptr<Uniform> uniform = createUniformFromDeclaration(*declaration);
-		return AddUniform(std::move(uniform), *declaration);
+		return addUniform(std::move(uniform), *declaration);
 	}
+
 
 	bool MaterialInstance::init(MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
@@ -391,7 +392,7 @@ namespace nap
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
 			nap::rtti::copyObject(*uniform, *new_uniform.get());
 
-			AddUniform(std::move(new_uniform), *declaration->second);
+			addUniform(std::move(new_uniform), *declaration->second);
 		}
 
 		return true;
@@ -599,7 +600,7 @@ namespace nap
 
 			// Add the container
 			Uniform* result = new_uniform.get();
-			AddUniform(std::move(new_uniform), declaration);
+			addUniform(std::move(new_uniform), declaration);
 
 			didCreateUniform = true;
 			return result;

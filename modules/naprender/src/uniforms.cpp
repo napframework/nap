@@ -27,7 +27,6 @@ RTTI_BEGIN_CLASS(nap::UniformStructArray)
 	RTTI_PROPERTY("Structs", &nap::UniformStructArray::mStructs, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
 	RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)
