@@ -505,7 +505,7 @@ namespace nap
 
 
 	/**
-	* Array of Texture2D type uniform
+	* Array of Texture2D type uniform. 
 	*/
 	class NAPAPI UniformTexture2DArray : public UniformTextureArray
 	{
@@ -544,5 +544,8 @@ namespace nap
 		virtual int getNumElements() const override { return mTextures.size(); }
 
 		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;		///< Texture to use for this uniform
+
+	private:
+		mutable std::vector<int> mTextureUnits;
 	};
 }

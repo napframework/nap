@@ -191,13 +191,20 @@ namespace nap
 
 	void UniformMat4Array::push(const opengl::UniformDeclaration& declaration) const
 	{
-		glUniformMatrix4fv(declaration.mLocation, declaration.mSize, GL_FALSE, (const GLfloat*)(mValues.data()));
+		glUniformMatrix4fv(declaration.mLocation, mValues.size(), GL_FALSE, (const GLfloat*)(mValues.data()));
 		glAssert();
 	}
 	
+
 	int UniformTexture2DArray::push(const opengl::UniformDeclaration& declaration, int textureUnit) const
 	{
 		int num_bound = 0;
+		mTextureUnits.clear();
+		mTextureUnits.resize(mTextures.size());
+		
+		// Iterate over every user declared uniform texture in the array.
+		// Bind it to the right texture unit and store list of used units
+		// to upload later on.
 		for (int index = 0; index < mTextures.size(); ++index)
 		{
 			if (mTextures[index] == nullptr)
@@ -206,9 +213,11 @@ namespace nap
 			int unit = textureUnit + num_bound++;
 			glActiveTexture(GL_TEXTURE0 + unit);
 			mTextures[index]->bind();
-			glUniform1iv(declaration.mLocation+index, 1, static_cast<const GLint*>(&unit));
+			mTextureUnits.emplace_back(unit);
 		}
 
+		// Upload list of used texture units.
+		glUniform1iv(declaration.mLocation, mTextureUnits.size(), static_cast<const GLint*>(mTextureUnits.data()));
 		return num_bound;
 	}
 
