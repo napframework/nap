@@ -200,7 +200,7 @@ namespace nap
 	{
 		int num_bound = 0;
 		mTextureUnits.clear();
-		mTextureUnits.resize(mTextures.size());
+		mTextureUnits.reserve(mTextures.size());
 		
 		// Iterate over every user declared uniform texture in the array.
 		// Bind it to the right texture unit and store list of used units
