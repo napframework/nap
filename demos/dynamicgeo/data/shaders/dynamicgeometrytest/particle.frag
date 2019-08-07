@@ -6,8 +6,7 @@ in float pass_PID;
 
 out vec4 out_Color;
 
-uniform sampler2D	particleTextureOne;
-uniform sampler2D	particleTextureTwo;
+uniform sampler2D input[2];
 
 void main(void)
 {
@@ -18,15 +17,7 @@ void main(void)
 	int tex_id = int(pass_PID+0.1) % 2;
 
 	// Get texture color
-	vec4 tex_color = vec4(0,0,0,0);
-	if(tex_id == 1)
-	{
-		tex_color = texture(particleTextureTwo, uvs);
-	}
-	else
-	{
-		tex_color = texture(particleTextureOne, uvs);
-	}
+	vec4 tex_color = texture(input[tex_id], uvs);
 
 	// Boost colors a bit
 	float r = pow(tex_color.r,0.9);
