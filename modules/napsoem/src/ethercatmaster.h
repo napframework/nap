@@ -13,19 +13,26 @@ namespace nap
 	/**
 	 * Ethercat Master Device. Derive from this class to implement your own ethercat master.
 	 * 
-	 * The ethercat master finds and manages ethercat slaves on the network.
-	 * When starting the master an ethernet port is opened. The port to 
-	 * open is controlled by the 'Adapter' property. Without a valid port
-	 * the startup procedure will fail. The SOEM service prints all available ports on
-	 * startup of the service. Pick one of the ports to discover slaves on the network.
+	 * The Ethercat master finds and manages Ethercat slaves on the network.
+	 * An Ethernet port is opened on start. The port to open is controlled by the 'Adapter' property. 
+	 * Without a valid port the startup procedure will fail. 
+	 * The SOEM service prints all available ports on startup of the service. 
+	 * Pick one of the ports to discover slaves on the network.
+	 *
+	 * Override the various virtual functions to read / write to the slave SDO.
+	 * Override the onProcess function to broadcast high priority control and status
+	 * information using the slave PDO. onProcess() is called from a separate thread and
+	 * runs on a frequency controlled by the 'CycleTime' property. Error
+	 * reporting and slave recovery is also handled on a separate thread.
 	 *
 	 * IMPORTANT: On Linux and OSX you must run the application that uses the 
 	 * Ethercat master as administrator, ie: with sudo privileges. Failure
 	 * to do so will result in a failure to start the device, and therefore
 	 * the application.
 	 *
-	 * Override the various virtuals to read / write from the device SDO and 
-	 * constructor or interface with the device SDO. 
+	 * IMPORTANT: winpcap is required on windows. Download it here: https://www.winpcap.org/
+	 * NAP builds against the winpcap library but does not ship with the dll or driver.
+	 * Installing winpcap should be enough. Administator priviliges are not required.
 	 */
 	class NAPAPI EtherCATMaster : public Device
 	{
