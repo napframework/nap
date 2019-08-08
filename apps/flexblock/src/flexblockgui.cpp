@@ -228,11 +228,12 @@ namespace nap
 		// 
 		handleSequenceActionsPopup();
 
+		// insertion popup
+		handleInsertionPopup();
+
 		//
 		handleElementActionsPopup();
 
-		// insertion popup
-		handleInsertionPopup();
 
 		//
 		handleEditMotorvaluePopup();
@@ -390,7 +391,7 @@ namespace nap
 								outPopupId = "SequenceActions";
 
 								mProps.mSelectedSequence = sequences[i];
-								mProps.mCurrentAction = TimeLineActions::SEQUENCE_RENAME_POPUP;
+								mProps.mCurrentAction = TimeLineActions::SEQUENCE_ACTION_POPUP;
 								mProps.mInPopup = true;
 							}
 							else
@@ -469,7 +470,7 @@ namespace nap
 												outPopupId = "ElementActions";
 
 												mProps.mSelectedElement = element;
-												mProps.mCurrentAction = TimeLineActions::ELEMENT_RENAME_POPUP;
+												mProps.mCurrentAction = TimeLineActions::ELEMENT_ACTION_POPUP;
 												mProps.mInPopup = true;
 											}
 										}
@@ -1415,7 +1416,7 @@ namespace nap
 		}
 		else
 		{
-			if (mProps.mCurrentAction == TimeLineActions::SEQUENCE_RENAME_POPUP)
+			if (mProps.mCurrentAction == TimeLineActions::SEQUENCE_ACTION_POPUP)
 			{
 				mProps.mCurrentAction = TimeLineActions::NONE;
 				mProps.mInPopup = false;
@@ -1729,7 +1730,7 @@ namespace nap
 		}
 		else
 		{
-			if (mProps.mCurrentAction == TimeLineActions::ELEMENT_RENAME_POPUP)
+			if (mProps.mCurrentAction == TimeLineActions::ELEMENT_ACTION_POPUP)
 			{
 				mProps.mCurrentAction = TimeLineActions::NONE;
 				mProps.mInPopup = false;
@@ -1759,11 +1760,17 @@ namespace nap
 	{
 		if (ImGui::BeginPopup("Insert"))
 		{
+			bool openElementActionPopup = false;
+			bool openSequenceActionPopup = false;
+
 			// insert pause element at current time
 			if (ImGui::Button("Insert Pause"))
 			{
 				utility::ErrorState errorState;
-				bool success = insertNewElement(std::make_unique<timeline::SequencePause>(), errorState);
+				std::unique_ptr<timeline::SequencePause> elementUniquePtr = std::make_unique<timeline::SequencePause>();
+				timeline::SequencePause* elementPtr = elementUniquePtr.get();
+
+				bool success = insertNewElement(std::move(elementUniquePtr), errorState);
 
 				if (!success)
 				{
@@ -1777,6 +1784,10 @@ namespace nap
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
+
+					//
+					openElementActionPopup = true;
+					mProps.mSelectedElement = elementPtr;
 				}
 			}
 
@@ -1785,7 +1796,12 @@ namespace nap
 			{
 				utility::ErrorState errorState;
 
-				bool success = insertNewElement(std::make_unique<flexblock::FlexblockSequenceTransition>(), errorState);
+				flexblock::FlexblockSequenceTransition* elementPtr = nullptr;
+				std::unique_ptr<flexblock::FlexblockSequenceTransition> elementUniquePtr 
+					= std::make_unique<flexblock::FlexblockSequenceTransition>();
+				elementPtr = elementUniquePtr.get();
+
+				bool success = insertNewElement(std::move(elementUniquePtr), errorState);
 
 				if (!success)
 				{
@@ -1799,6 +1815,9 @@ namespace nap
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
+
+					mProps.mSelectedElement = elementPtr;
+					openElementActionPopup = true;
 				}
 			}
 
@@ -1807,7 +1826,11 @@ namespace nap
 			{
 				utility::ErrorState errorState;
 
-				if (!insertNewSequence(std::make_unique<flexblock::FlexblockSequence>(), errorState))
+				std::unique_ptr<flexblock::FlexblockSequence> sequenceUniquePtr
+					= std::make_unique<flexblock::FlexblockSequence>();
+				flexblock::FlexblockSequence* sequencePtr = sequenceUniquePtr.get();
+
+				if (!insertNewSequence(std::move(sequenceUniquePtr), errorState))
 				{
 					ImGui::OpenPopup("Insert Error");
 					mProps.mErrorString = errorState.toString();
@@ -1817,6 +1840,9 @@ namespace nap
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
+
+					mProps.mSelectedSequence = sequencePtr;
+					openSequenceActionPopup = true;
 				}
 			}
 
@@ -1840,6 +1866,20 @@ namespace nap
 			}
 
 			ImGui::EndPopup();
+
+			if (openElementActionPopup)
+			{
+				mProps.mInPopup = true;
+				mProps.mCurrentAction = TimeLineActions::ELEMENT_ACTION_POPUP;
+				ImGui::OpenPopup("ElementActions");
+			}
+
+			if (openSequenceActionPopup)
+			{
+				mProps.mInPopup = true;
+				mProps.mCurrentAction = TimeLineActions::SEQUENCE_ACTION_POPUP;
+				ImGui::OpenPopup("SequenceActions");
+			}
 		}
 		else
 		{
@@ -2147,7 +2187,13 @@ namespace nap
 		if (mMotorController->getSlaveCount() == 0)
 			ImGui::Text("No slaves found");
 
+		ImGui::PushStyleColor(0, colorRed);
+		if (ImGui::Button("!STOP!"))
+		{
+			mMotorController->emergencyStop();
+		}
+		ImGui::PopStyleColor();
+
 		ImGui::End();
 	}
-
 }

@@ -707,18 +707,20 @@
         {
             "Type": "nap::MACController",
             "mID": "MACController",
-            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
+            "ForceOperational": false,
+            "Adapter": "\\Device\\NPF_{9CCC1944-63F4-4A06-8585-73BDAE9D120C}",
             "CycleTime": 1000,
             "ResetPosition": false,
+            "DisableErrorHandling": false,
             "ResetPositionValue": 1000000,
+            "Mode": "Position",
             "Velocity": 0,
-            "MaxVelocity" : 4300,
+            "MaxVelocity": 4300,
             "Acceleration": 100000,
             "Torque": 100,
-            "Mode": "Position",
-            "DisableErrorHandling" : false,
-            "RecoveryTimeout" : 100,
-            "ForceOperational" : false
+            "VelocityGetRatio": 0.1340000033378601,
+            "VelocitySetRatio": 2.18435001373291,
+            "RecoveryTimeout": 100
         },
         {
             "Type": "nap::Material",
