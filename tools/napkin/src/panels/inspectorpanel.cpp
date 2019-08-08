@@ -247,8 +247,29 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	if (path.getName() == sIDPropertyName)
 	{
 		auto parent = path.getParent();
-		if (dynamic_cast<nap::rtti::Object*>(parent.getObject()))
-			setPath(parent);
+		auto object = dynamic_cast<nap::rtti::Object*>(parent.getObject());
+		if (object)
+		{
+			auto doc = path.getDocument();
+			auto embeddedOwner = doc->getEmbeddedObjectOwner(*object);
+			if (embeddedOwner)
+			{
+				// This is an embedded object name, refresh, but make sure to only show the root object
+
+				// Walk up embedded owners until the root object is found
+				while (true) {
+					auto embeddedOwnerParent = doc->getEmbeddedObjectOwner(*embeddedOwner);
+					if (!embeddedOwnerParent)
+						break;
+					embeddedOwner = embeddedOwnerParent;
+				}
+				clear();
+
+				setPath(PropertyPath(*embeddedOwner, *doc));
+			} else {
+				setPath(parent);
+			}
+		}
 	}
 	else
 	{
