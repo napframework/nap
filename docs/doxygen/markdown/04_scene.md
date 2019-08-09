@@ -443,5 +443,5 @@ You can now edit the link in JSON. This works the same as authoring links to com
 
 ### Array of Entities {#multiple_entity_link} ###
 
-Instead of linking to a single entity it is possible to link to multiple entities at once. The entities are grouped together in an array. The declaration of this array is the same as declaring an [array of component pointers](@ref multiple_component_link), but uses ['initEntityInstancePtr()'](@ref nap::initEntityInstancePtr) instad of ['initComponentInstancePtr()'](@ref nap::initComponentInstancePtr). To declare an array of entity pointers as a property of a component use a standard C++ vector: ['std::vector<EntityPtr>'](@ref nap::ComponentPtr).
+Instead of linking to a single entity it is possible to link to multiple entities at once. The entities are grouped together in an array. The declaration of this array is the same as declaring an [array of component pointers](@ref multiple_component_link), but uses ['initEntityInstancePtr()'](@ref nap::initEntityInstancePtr) instad of ['initComponentInstancePtr()'](@ref nap::initComponentInstancePtr). To declare an array of entity pointers as a property of a component use a standard C++ vector: ['std::vector<nap::EntityPtr>'](@ref nap::EntityPtr).
 
