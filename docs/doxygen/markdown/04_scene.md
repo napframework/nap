@@ -1,15 +1,17 @@
 Scene Management {#scene}
 =======================
 *	[Overview](@ref scene_overview)
-*	[Setup](@ref scene_setup)
+*	[Example](@ref scene_setup)
 *	[Resources vs Instances](@ref resources_instances)
 *	[Components](@ref component_ov)	
 	*	[Creating Components](@ref creating_components)
 		*	[The Resource](@ref component_resource)
 		*	[The Instance](@ref component_instance)
-*	[Links](@ref scene_linking)
+*	[Creating Links](@ref scene_linking)
 	*	[To Components](@ref component_link)
+			*	[Array of Components] (@ref multiple_component_link)
 	*	[To Entities](@ref entity_link)
+			*	[Array of Entities](@ref multiple_entity_link) 
 
 
 Overview {#scene_overview}
@@ -27,7 +29,7 @@ Listed below are the most important objects and their roles within the system:
 - Entities are [instantiable](@ref nap::EntityInstance), ie: you can create multiple versions based on the same template
 - [Components](@ref nap::ComponentInstance) are updated every frame
 
-Scene Setup {#scene_setup}
+Example {#scene_setup}
 =======================
 
 Consider this example:
@@ -259,9 +261,9 @@ The registration of this part of the component in the .cpp file should look fami
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(nap::LineBlendComponent)
-	RTTI_PROPERTY("Target",		&nap::LineBlendComponent::mTarget,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendValue",	&nap::LineBlendComponent::mBlendValue,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendSpeed",	&nap::LineBlendComponent::mBlendSpeed,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionOne",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionTwo",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Target",			&nap::LineBlendComponent::mTarget,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 ~~~~~~~~~~~~~~~  
 
@@ -275,8 +277,8 @@ public:
 	LineBlendComponentInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)			{}
 
-	ComponentInstancePtr<LineSelectionComponent>  	mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
-	ComponentInstancePtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentOne);
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentTwo);
 }
 ~~~~~~~~~~~~~~~
 
@@ -327,6 +329,72 @@ You can now author the links in JSON:
 
 Notice how we use a relative path? We tell the system to look for the selection component on the same entity. You can also walk further up or or down the tree to create links to other components. More on that in a later section. If there is only one component called 'LineSelectionOne' you can also link to it directly by name without specifying a relative path. In this case that would be "LineSelectorOne". Always give your component an identifier if you want to link to them.
 
+### Array of Components {#multiple_component_link} ###
+
+Instead of linking to a single component it is possible to link to multiple components at once. The components are grouped together in an array and all components in that array share the same base class. The only difference (from a single link) is that the definition and declaration of the link is a vector, just as you would normally use a vector in C++. Based on the previous example we can group both links into an array: 
+
+~~~~~~~~~~~~~~~{.cpp}
+class LineBlendComponent : public Component
+{
+	RTTI_ENABLE(Component)
+	DECLARE_COMPONENT(LineBlendComponent, LineBlendComponentInstance)
+
+public:
+	// property: Link to selection component one
+	std::vector<ComponentPtr<LineSelectionComponent>> mComponents;
+
+	// property: link to the mesh to store the blend result
+	ResourcePtr<nap::PolyLine> mTarget;
+};
+~~~~~~~~~~~~~~~
+
+The registration in the .cpp file should look familiar. Instead of defining both links separately we define only the array as a property:
+
+~~~~~~~~~~~~~~~{.cpp}
+RTTI_BEGIN_CLASS(nap::LineBlendComponent)
+	RTTI_PROPERTY("Components",			&nap::LineBlendComponent::mComponents,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Target",				&nap::LineBlendComponent::mTarget,		nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+~~~~~~~~~~~~~~~  
+
+The instance part of the 'LineBlendComponent' also requires an array, but instead of holding a list of resources it holds a list of instances. The system automatically resolves the links for you. After initialization you are able to access the individual components immediately in your application:
+
+~~~~~~~~~~~~~~~{.cpp}
+class LineBlendComponentInstance : public ComponentInstance
+{
+	RTTI_ENABLE(ComponentInstance)
+public:
+	LineBlendComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource)			{}
+
+		std::vector<ComponentInstancePtr<LineSelectionComponent>> mComponents = initComponentInstancePtr(this, &LineBlendComponent::mComponents);
+}
+~~~~~~~~~~~~~~~
+
+You can now add both links to the same array in JSON:
+
+```
+{
+	"Type" : "nap::Entity",
+	"mID": "LaserEntity",
+	"Components" : 
+	[
+		...
+
+		{
+			"Type" : "nap::LineBlendComponent",
+			"mID" : "LineBlender",
+			"Target" : "LaserLineMesh1",
+			"Components" : 
+			[
+				"./LineSelectorOne",
+				"./LineSelectorTwo"
+			]
+		}
+	]
+}
+```
+
 To Entities {#entity_link}
 -----------------------
 
@@ -359,7 +427,7 @@ class NAPAPI CameraControllerInstance : public ComponentInstance
 public:
 	CameraControllerInstance(EntityInstance& entity, Component& resource);
 	...
-	EntityInstancePtr mLookAtTarget = { this, &CameraController::mLookAtTarget };	// The resolved runtime lookat target
+	EntityInstancePtr mLookAtTarget = initEntityInstancePtr(this, &CameraController::mLookAtTarget);	// The resolved runtime lookat target
 }
 ~~~~~~~~~~~~~~~
 
@@ -372,4 +440,8 @@ RTTI_END_CLASS
 ~~~~~~~~~~~~~~~
 
 You can now edit the link in JSON. This works the same as authoring links to components. See example above.
+
+### Array of Entities {#multiple_entity_link} ###
+
+Instead of linking to a single entity it is possible to link to multiple entities at once. The entities are grouped together in an array. The declaration of this array is the same as declaring an [array of component pointers](@ref multiple_component_link), but uses ['initEntityInstancePtr()'](@ref nap::initEntityInstancePtr) instad of ['initComponentInstancePtr()'](@ref nap::initComponentInstancePtr). To declare an array of entity pointers as a property of a component use a standard C++ vector: ['std::vector<EntityPtr>'](@ref nap::ComponentPtr).
 

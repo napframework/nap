@@ -250,10 +250,7 @@ namespace nap
 	* @return A EntityInstancePtrInitProxy which can be passed to the EntityInstancePtr constructor
 	*/
 	template<typename SourceComponentType>
-	EntityInstancePtrInitProxy<SourceComponentType> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer))
-	{
-		return{ sourceComponentInstance, entityMemberPointer };
-	}
+	EntityInstancePtrInitProxy<SourceComponentType> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer));
 
 	/**
 	* Init a std::vector of EntityInstancePtrs. Returns a std::vector which is then used to initialize the target std::vector of EntityInstancePtrs
@@ -264,24 +261,13 @@ namespace nap
 	* @return std::vector of initialized EntityInstancePtrs
 	*/
 	template<typename SourceComponentType>
-	std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer))
-	{
-		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
-		std::vector<EntityPtr>& target_entity_resource = resource->*entityMemberPointer;
-
-		std::vector<EntityInstancePtr> result;
-		result.resize(target_entity_resource.size());
-
-		for (int i = 0; i != result.size(); ++i)
-			sourceComponentInstance->addToEntityLinkMap(target_entity_resource[i].get(), target_entity_resource[i].getInstancePath(), &result[i].mInstance);
-
-		return result;
-	}
+	std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer));
 }
 
-/**
-* The following construct is required to support EntityPtr in RTTR as a regular pointer.
-*/
+
+//////////////////////////////////////////////////////////////////////////
+// The following construct is required to support EntityPtr in RTTR as a regular pointer.
+//////////////////////////////////////////////////////////////////////////
 namespace rttr
 {
 	template<>
@@ -300,4 +286,36 @@ namespace rttr
 			return nap::EntityPtr(value);
 		}
 	};
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Template Definitions
+//////////////////////////////////////////////////////////////////////////
+namespace nap
+{
+	template<typename SourceComponentType>
+	nap::EntityInstancePtrInitProxy<SourceComponentType>
+		initEntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer))
+	{
+		return{ sourceComponentInstance, entityMemberPointer };
+	}
+
+
+	template<typename SourceComponentType>
+	std::vector<nap::EntityInstancePtr>
+		initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer))
+	{
+		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+		std::vector<EntityPtr>& target_entity_resource = resource->*entityMemberPointer;
+
+		std::vector<EntityInstancePtr> result;
+		result.resize(target_entity_resource.size());
+
+		for (int i = 0; i != result.size(); ++i)
+			sourceComponentInstance->addToEntityLinkMap(target_entity_resource[i].get(), target_entity_resource[i].getInstancePath(), &result[i].mInstance);
+
+		return result;
+	}
+
 }

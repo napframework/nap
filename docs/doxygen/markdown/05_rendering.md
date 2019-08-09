@@ -82,7 +82,7 @@ But let's begin by defining some of the resources in JSON:
 },
 
 {
-	"Type" : "nap::Image",	
+	"Type" : "nap::ImageFromFile ",	
 	"mID" : "WorldTexture",
 	"ImagePath" : "world_texture.png"
 },
