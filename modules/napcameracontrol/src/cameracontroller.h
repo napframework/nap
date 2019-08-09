@@ -86,13 +86,10 @@ namespace nap
 	private:
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 		void onKeyPress(const KeyPressEvent& keyReleaseEvent);
-
-	private:
 		void storeLastPerspTransform();
 		void switchMode(ECameraMode targetMode);
 
-	private:
-		EntityInstancePtr					mLookAtTarget = { this, &CameraController::mLookAtTarget };
+		EntityInstancePtr					mLookAtTarget = initEntityInstancePtr(this, &CameraController::mLookAtTarget);
 		ECameraMode							mMode = ECameraMode::FirstPerson;		///< Camera mode
 		OrbitControllerInstance*			mOrbitComponent = nullptr;				///< Orbit Controller
 		FirstPersonControllerInstance*		mFirstPersonComponent = nullptr;		///< FPS Controller
