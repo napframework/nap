@@ -38,15 +38,16 @@ namespace nap
 	NAPAPI SystemTimeStamp getCurrentTime();
 
 	/**
-	 * @return a structure that contains the current date and time.
+	 * Returns the current system data / time.
 	 * Note that the time will be Local to this computer and includes daylight savings.
+	 * @return a structure that contains the current date and time.
 	 */
 	NAPAPI DateTime	getCurrentDateTime();
 
 	/**
 	 * Populates a DateTime structure that contains the current date and time
 	 * Note that the time will be Local to this computer and includes daylight savings
-	 * @param dateTime the time structure to populate with the current date and time
+	 * @param outDateTime the time structure to populate with the current date and time
 	 */
 	NAPAPI void	getCurrentDateTime(DateTime& outDateTime);
 
@@ -55,7 +56,7 @@ namespace nap
 	 * Also takes care of milliseconds using %ms
 	 * @param time the timestamp to format into a string
 	 * @param format the strftime-like format string
-	 * @param outstring the resulting string
+	 * @return the formatted date / time string
 	 */
 	NAPAPI std::string timeFormat(const SystemTimeStamp& time, const std::string& format = "%Y-%m-%d %H:%M:%S.%ms");
 

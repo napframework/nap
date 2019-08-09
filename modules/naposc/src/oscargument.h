@@ -113,7 +113,7 @@ namespace nap
 		bool isNil() const;
 
 		/**
-		 *	@param outValue the value as string
+		 *	@return outValue the value as string
 		 */
         std::string toString();
 
