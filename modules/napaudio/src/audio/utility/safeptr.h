@@ -96,7 +96,7 @@ namespace nap
             
         protected:
             /**
-             * Transfer ownership of the object in @source to this. Source will be pointing to nothing.
+             * Transfer ownership of the object in source to this. Source will be pointing to nothing.
              * If we are currently holding any object it will be deleted safely using the DeletionQueue.
              */
             void assign(SafeOwnerBase& source)
@@ -163,7 +163,7 @@ namespace nap
             }
             
             /**
-             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the @DeletionQueue, from which it will be deleted on a safe moment.
+             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the DeletionQueue, from which it will be deleted on a safe moment.
              */
             ~SafeOwner()
             {
@@ -338,7 +338,12 @@ namespace nap
         
 
         /**
-         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. When the owner goes out of scope and the pointed object will be moved into the @DeletionQueue the SafePtr will return true when checked if it equals nullptr. However the object it points to can still be used and safely accessed using the * and -> operators and the @get() method until the next time the @DeletionQueue is cleared. This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, as long as you check if the SafePtr != nullptr before use.
+         * A SafePtr points to an object that is owned by a SafeOwner somewhere. 
+		 * When the owner goes out of scope and the pointed object will be moved into the DeletionQueue,
+		 * the SafePtr will return true when checked if it equals nullptr. 
+		 * However: the object it points to can still be used and safely accessed using the * and -> operators and the get() method until the next time the DeletionQueue is cleared. 
+		 * This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, 
+		 * as long as you check if the SafePtr is not nullptr before use.
          */
         template <typename T>
         class SafePtr final : public SafePtrBase

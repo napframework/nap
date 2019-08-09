@@ -12,8 +12,7 @@
 #include <audio/core/audiopin.h>
 
 namespace nap
-{
-    
+{   
     namespace audio
     {
         // Forward declarations
@@ -128,9 +127,6 @@ namespace nap
             
             NodeManager* mNodeManager = nullptr; // The node manager that this node is processed on            
         };
-        
-        
-
     }
 }
 

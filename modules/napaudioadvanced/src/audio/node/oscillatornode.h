@@ -41,7 +41,8 @@ namespace nap
             inline SampleValue operator[](long index) const;
             
             /**
-             * Read from the waveform at a certain index between 0 and @getSize()
+             * Read from the waveform at a certain index between 0 and getSize()
+			 * @param index waveform index
              */
             inline SampleValue interpolate(double index) const;
             
