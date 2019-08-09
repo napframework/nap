@@ -991,6 +991,8 @@ render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentI
 mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
 ~~~~~~~~~~~~~~~
 
+Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used to apply a 'post process' render step.
+
 Cameras {#cameras}
 =======================
 

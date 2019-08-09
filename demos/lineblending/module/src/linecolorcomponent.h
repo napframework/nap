@@ -115,7 +115,7 @@ namespace nap
 		void link(bool value)											{ mLink = value; }
 
 	private:
-		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent = initComponentInstancePtr(this, &LineColorComponent::mBlendComponent);		// Holds the line we want to color
 		RGBColorFloat mFirstColor  = { 1.0f, 1.0f, 1.0f };		// Start point lookup in uv space
 		RGBColorFloat mSecondColor = { 1.0f, 0.0f, 0.0f };		// End point lookup in uv space
 		float mIntensity = 1.0f;								// Final intensity
