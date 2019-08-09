@@ -335,7 +335,7 @@ namespace nap
 
 		/**
 		 * Default Constructor
-		 * @param timestamp time since epoch as long
+		 * @param timeStamp time since epoch as long
 		 */
 		TimeStamp(int64_t timeStamp) : mTimeStamp(timeStamp)	{ }
 

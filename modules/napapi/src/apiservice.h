@@ -200,7 +200,7 @@ namespace nap
 		 * Sends an array of ints to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with int array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 * @return if sending succeeded
@@ -211,7 +211,7 @@ namespace nap
 		 * Sends an array of floats to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with float array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 * @return if sending succeeded
@@ -233,7 +233,7 @@ namespace nap
 		 * Sends an array of string values to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with string array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
 		 * @return if sending succeeded

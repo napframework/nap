@@ -139,9 +139,13 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// OSC Values
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	* Base class for all known OSC types
-	*/
+	 * Base class for all known OSC types
+	 */
 	class NAPAPI OSCBaseValue
 	{
 		friend OSCArgument;
@@ -151,9 +155,9 @@ namespace nap
 		virtual ~OSCBaseValue() = default;
 
 		/**
-		* Converts the value to a string
-		* @param value the value as string
-		*/
+		 * Converts the value to a string
+		 * @return the value as a string
+		 */
         virtual std::string toString() const = 0;
 	protected:
 		/**
@@ -170,7 +174,7 @@ namespace nap
 
 
 	/**
-	 * Simple OSC Value
+	 * Simple OSC Value, for example: float, int etc.
 	 */
 	template<typename T>
 	class OSCValue : public OSCBaseValue
@@ -180,6 +184,10 @@ namespace nap
 		OSCValue(const T& value)  : mValue(value)								{ }
 		OSCValue(const T&& value) : mValue(std::move(value))					{ }
 		T mValue;
+		
+		/**
+		 * @return the value as a string.
+		 */
         virtual std::string toString() const override;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
@@ -197,6 +205,10 @@ namespace nap
 		OSCString(const std::string& string) : mString(string)						{ }
 		OSCString(const std::string&& string) : mString(std::move(string))			{ }
 		std::string mString;
+
+		/**
+		 * @return the message itself
+		 */
         virtual std::string toString() const override;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
@@ -211,7 +223,10 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-        virtual std::string toString() const override					{ return "null"; }
+		/**
+		 * @return 'null'
+		 */
+        virtual std::string toString() const override								{ return "null"; }
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override		{ outPacket << osc::OscNil; }
 		virtual std::size_t size() const override									{ return sizeof(osc::OscNil); }
@@ -227,10 +242,14 @@ namespace nap
 	public:
 		OSCTimeTag(nap::uint64 timeTag) : mTimeTag(timeTag)	{ }
 		nap::uint64 mTimeTag;
-        virtual std::string toString() const override				{ std::ostringstream os; os << mTimeTag; return os.str(); }
+
+		/**
+		 * @return the time tag as a string
+		 */
+        virtual std::string toString() const override								{ std::ostringstream os; os << mTimeTag; return os.str(); }
 	protected:
-		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::TimeTag(mTimeTag); }
-		virtual size_t size() const override									{ return sizeof(nap::uint64); }
+		virtual void add(osc::OutboundPacketStream& outPacket) const override		{ outPacket << osc::TimeTag(mTimeTag); }
+		virtual size_t size() const override										{ return sizeof(nap::uint64); }
 	};
 
 
@@ -250,7 +269,7 @@ namespace nap
 		OSCBlob(const void* sourceData, int size);
 		
 		/**
-		 *	On Destruction the blob data is deleted
+		 * On Destruction the blob data is deleted
 		 */
 		virtual ~OSCBlob();
 
@@ -259,6 +278,9 @@ namespace nap
 		 */
 		void* getCopy();
 
+		/**
+		 * @return an empty string
+		 */
         virtual std::string toString() const override				{ return ""; }
 
 		// Data associated with the blob
@@ -281,7 +303,11 @@ namespace nap
 		RTTI_ENABLE(OSCBaseValue)
 	public:
 		OSCColor(nap::uint32 color) : mColor(color)								{ }
-        virtual std::string toString() const override				{ std::ostringstream os; os << mColor; return os.str(); }
+
+		/**
+		 * @return the osc color as a string.
+		 */
+        virtual std::string toString() const override							{ std::ostringstream os; os << mColor; return os.str(); }
 
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;

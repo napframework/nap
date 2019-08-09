@@ -382,9 +382,9 @@ namespace nap
 		T getGreen() const														{ return Color<T,3>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to the incoming value
-		* @param blue color value
-		*/
+		 * Sets the blue channel to the given color value
+		 * @param value color value
+		 */
 		void setBlue(T value)													{ Color<T,3>::setValue(EColorChannel::Blue, value); }
 
 		/**
@@ -393,7 +393,7 @@ namespace nap
 		T getBlue() const														{ return Color<T,3>::getValue(EColorChannel::Blue); }
 
 		/**
-		 *	@return the color as a vec3 (float)
+		 * @return the color as a vec3 (float)
 		 */
 		glm::vec3 toVec3() const;
 	};
@@ -425,14 +425,14 @@ namespace nap
 		void setRed(T value)													{ Color<T,4>::setValue(EColorChannel::Red, value); }
 
 		/*
-		* @return the red color value
-		*/
+		 * @return the red color value
+		 */
 		T getRed() const														{ return Color<T,4>::getValue(EColorChannel::Red); }
 
 		/**
-		* Sets the green channel to the incoming value
-		* @param value green color value
-		*/
+		 * Sets the green channel to the given value
+		 * @param value green color value
+		 */
 		void setGreen(T value)													{ Color<T,4>::setValue(EColorChannel::Green, value); }
 
 		/*
@@ -441,14 +441,14 @@ namespace nap
 		T getGreen() const														{ return Color<T,4>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to the incoming value
-		* @param blue color value
-		*/
+		 * Sets the blue channel to the given value.
+		 * @param value new color value
+		 */
 		void setBlue(T value)													{ Color<T,4>::setValue(EColorChannel::Blue, value); }
 
 		/*
-		* @return the blue color value
-		*/
+		 * @return the blue color value
+		 */
 		T getBlue() const														{ return Color<T,4>::getValue(EColorChannel::Blue); }
 
 		/**
