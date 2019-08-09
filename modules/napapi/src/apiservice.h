@@ -239,7 +239,8 @@ namespace nap
 		 * Dispatches an event to an external environment.
 		 * NAP applications often dispatch events as a reply to a previously received message, after processing.
 		 * Events are dispatched immediately, there is no dispatch queue.
-		 * In order for an external environment to receive this message it needs to listen to the messageDispatched signal.
+		 * In order for an external environment to receive this message at least one 
+		 * type of EventDispatcher needs to be declared in json.
 		 * The given event is destroyed after calling this function.
 		 * @param apiEvent the event to send to the external environment.
 		 */
@@ -265,7 +266,7 @@ namespace nap
 		virtual void shutdown() override;
 
 		/**
-		 * Consumes and pushes all api events	
+		 * Consumes and pushes all api events to registered api components
 		 */
 		virtual void update(double deltaTime) override;
 
@@ -295,7 +296,7 @@ namespace nap
 		 */
 		void consumeEvents(std::queue<APIEventPtr>& outEvents);
 
-		// All the osc components currently available to the system
+		// All the api components currently available to the system
 		std::vector<APIComponentInstance*> mAPIComponents;
 
 		// All the api events to process

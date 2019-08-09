@@ -9,6 +9,7 @@ file(GLOB sources src/*.cpp src/*.h)
 include_directories(src)
 
 # Add TCLAP
+set(TCLAP_FIND_QUIETLY TRUE)
 find_package(tclap REQUIRED)
 include_directories(${TCLAP_INCLUDE_DIRS})
 

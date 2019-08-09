@@ -4,6 +4,9 @@
 		<file>icons/curveinterp-bezier.png</file>
 		<file>icons/curveinterp-linear.png</file>
 		<file>icons/curveinterp-stepped.png</file>
+		<file>icons/frame-selection-h.png</file>
+		<file>icons/frame-selection-v.png</file>
+		<file>icons/frame-selection.png</file>
 		<file>icons/tangents-aligned.png</file>
 		<file>icons/tangents-broken.png</file>
 		<file>icons/tangents-flat.png</file>

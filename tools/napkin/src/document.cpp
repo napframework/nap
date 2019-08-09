@@ -1,9 +1,12 @@
 #include "document.h"
 
-#include <nap/logger.h>
 #include <QList>
 #include <QtDebug>
 #include <QStack>
+#include <QUuid>
+
+#include <nap/logger.h>
+#include <mathutils.h>
 #include <utility/fileutils.h>
 
 #include "naputils.h"
@@ -87,15 +90,20 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	auto newName = getUniqueName(name, object);
+	auto newName = getUniqueName(name, object, false);
 	if (newName == object.mID)
 		return object.mID;
 
 	auto oldName = object.mID;
 	object.mID = newName;
 
+	// Ensure all relevant property paths point to the new object name
 	for (auto& p : mPropertyPaths)
 		p->updateObjectName(oldName, newName);
+
+	// Update pointers to this object
+	for (auto propPath : getPointersTo(object, false, false, false))
+		propPath.setPointee(&object);
 
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
@@ -117,7 +125,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
-	comp->mID = getUniqueName(type.get_name().data(), *comp);
+	comp->mID = getUniqueName(type.get_name().data(), *comp, true);
 
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
@@ -150,7 +158,7 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
 	Object* objptr = obj.get();
 	assert(objptr != nullptr);
-	obj->mID = getUniqueName(base_name, *objptr);
+	obj->mID = getUniqueName(base_name, *objptr, true);
 	mObjects.emplace_back(std::move(obj));
 
 	// Handle adding to a parent
@@ -203,14 +211,20 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 	return *e;
 }
 
-std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object)
+std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
 {
 	std::string newName = suggestedName;
+	if (useUUID)
+		newName += "_" + createSimpleUUID();
 	int i = 2;
 	auto obj = getObject(newName);
 	while (obj != nullptr && obj != &object)
 	{
-		newName = suggestedName + "_" + std::to_string(i++);
+		if (useUUID)
+			newName = suggestedName + "_" + createSimpleUUID();
+		else
+			newName = suggestedName + std::to_string(i++);
+
 		obj = getObject(newName);
 	}
 	return newName;
@@ -254,7 +268,7 @@ void Document::removeObject(Object& object)
 	// Emit signal first so observers can act before the change
 	objectRemoved(&object);
 
-	// Another special case for our snowflake: InstanceProperty
+	// Remove instance properties for this object
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
@@ -278,12 +292,18 @@ void Document::removeObject(Object& object)
 		reparentEntity(*entity, nullptr);
 	}
 
-	auto component = rtti_cast<nap::Component>(&object);
-	if (component != nullptr)
+	// Remove embedded objects under the given owner
+	for (auto embeddedObject : getEmbeddedObjects(object))
+		removeObject(*embeddedObject);
+
+	// Remove this object's components
+	if (auto component = rtti_cast<nap::Component>(&object))
 	{
-		nap::Entity* owner = getOwner(*component);
-		if (owner)
-			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
+		if (auto owner = getOwner(*component))
+		{
+			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
+			owner->mComponents.erase(it, owner->mComponents.end());
+		}
 	}
 
 	// All clean. Remove our object
@@ -554,7 +574,7 @@ void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 	objectChanged(&scene);
 }
 
-size_t Document::arrayAddValue(const PropertyPath& path)
+int Document::arrayAddValue(const PropertyPath& path)
 {
 
 	ResolvedPath resolved_path = path.resolve();
@@ -566,8 +586,11 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-	nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
-	assert(wrapped_type.can_create_instance());
+	if (!wrapped_type.can_create_instance())
+	{
+		nap::Logger::error("Cannot create instance of type '%s'", wrapped_type.get_name().data());
+		return -1;
+	}
 
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
 	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
@@ -883,14 +906,36 @@ std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& 
 
 bool Document::isPointedToByEmbeddedPointer(const nap::rtti::Object& obj)
 {
+	return bool(getEmbeddedObjectOwner(obj));
+}
+
+nap::rtti::Object* Document::getEmbeddedObjectOwner(const nap::rtti::Object& obj)
+{
+	auto path = getEmbeddedObjectOwnerPath(obj);
+	if (path.isValid())
+		return path.getObject();
+	return nullptr;
+}
+
+PropertyPath Document::getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj)
+{
 	for (const auto& path : getPointersTo(obj, false, false))
 	{
-		//assert(path.isPointer());
 		if (path.isEmbeddedPointer())
-			return true;
+			return path;
 	}
+	return {};
+}
 
-	return false;
+std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)
+{
+	std::vector<nap::rtti::Object*> embeddedObjects;
+	for (auto& obj : getObjects())
+	{
+		if (getEmbeddedObjectOwner(*obj.get()) == &owner)
+			embeddedObjects.emplace_back(obj.get());
+	}
+	return embeddedObjects;
 }
 
 nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)
@@ -960,14 +1005,6 @@ size_t findCommonStartingElements(const std::deque<std::string>& a, const std::d
 void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap::rtti::Object& target,
 									  std::deque<std::string>& result) const
 {
-	// This implementation is based off the description in componentptr.h
-	// Notes:
-	// - Sibling component paths start with a single period, but other paths (parent/child) do not.
-	//   What is the meaning of the period, can we get rid of it? It would make it more consistent
-	// - No speak of pointers to children, so making assumptions here.
-
-	// Going for Entity -> Component path here.
-	// In other words, we always start from an Entity
 
 	// Grab the origin entity (ignore component if provided)
 	auto originEntity = rtti_cast<const nap::Entity>(&origin);
@@ -978,33 +1015,50 @@ void Document::relativeObjectPathList(const nap::rtti::Object& origin, const nap
 	}
 	assert(originEntity != nullptr);
 
-	auto targetComponent = rtti_cast<const nap::Component>(&target);
-	auto targetEntity = getOwner(*targetComponent);
-
-	// Sibling component found? Return only one element
-	if (targetEntity != nullptr && originEntity == targetEntity)
+	// Componentptrs and EntityPtrs have to be handled differently. Check for entity first
+	if (auto targetEntity = rtti_cast<const nap::Entity>(&target))
 	{
-		result.emplace_back("."); // TODO: Probably not necessary
-		result.push_back(targetComponent->mID);
+		result.emplace_back(targetEntity->mID);
 		return;
 	}
 
-	// Get absolute paths and compare
-	std::deque<std::string> absOriginPath;
-	std::deque<std::string> absTargetPath;
+	// This implementation is based off the description in componentptr.h
+	// Notes:
+	// - Sibling component paths start with a single period, but other paths (parent/child) do not.
+	//   What is the meaning of the period, can we get rid of it? It would make it more consistent
+	// - No speak of pointers to children, so making assumptions here.
 
-	absoluteObjectPathList(*originEntity, absOriginPath);
-	absoluteObjectPathList(*targetComponent, absTargetPath);
+	// Going for Entity -> Component path here.
+	// In other words, we always start from an Entity
+	if (auto targetComponent = rtti_cast<const nap::Component>(&target))
+	{
+		auto targetEntity = getOwner(*targetComponent);
 
-	size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
-	for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
-		result.emplace_back("..");
+		// Sibling component found? Return only one element
+		if (targetEntity != nullptr && originEntity == targetEntity)
+		{
+			result.emplace_back("."); // TODO: Probably not necessary
+			result.push_back(targetComponent->mID);
+			return;
+		}
 
-	if (result.empty()) // Add a period to be consistent with sibling path?
-		result.emplace_back("."); // TODO: Probably not necessary
+		// Get absolute paths and compare
+		std::deque<std::string> absOriginPath;
+		std::deque<std::string> absTargetPath;
 
-	for (size_t i = commonidx, len=absTargetPath.size(); i<len; i++)
-		result.push_back(absTargetPath[i]);
+		absoluteObjectPathList(*originEntity, absOriginPath);
+		absoluteObjectPathList(*targetComponent, absTargetPath);
+
+		size_t commonidx = findCommonStartingElements(absOriginPath, absTargetPath);
+		for (size_t i = commonidx, len = absOriginPath.size(); i < len; i++)
+			result.emplace_back("..");
+
+		if (result.empty()) // Add a period to be consistent with sibling path?
+			result.emplace_back("."); // TODO: Probably not necessary
+
+		for (size_t i = commonidx, len = absTargetPath.size(); i < len; i++)
+			result.push_back(absTargetPath[i]);
+	}
 }
 
 std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const nap::rtti::Object& target) const
@@ -1012,5 +1066,14 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	std::deque<std::string> path;
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
+}
+
+std::string Document::createSimpleUUID()
+{
+	auto uuid = QUuid::createUuid().toString();
+	// just take the last couple of characters
+	int charCount = 8;
+	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
+	return shortuuid.toStdString();
 }
 

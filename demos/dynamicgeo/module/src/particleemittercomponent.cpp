@@ -2,7 +2,6 @@
 #include "particleemittercomponent.h"
 
 #include <entity.h>
-#include <transformcomponent.h>
 #include <rect.h>
 #include <glm/gtx/transform.hpp>
 #include <mathutils.h>

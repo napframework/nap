@@ -34,6 +34,8 @@ namespace nap
 	public:
 		ResourceManager(nap::Core& core);
 
+		~ResourceManager();
+
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
 		*/
@@ -54,6 +56,9 @@ namespace nap
 		* In case one of the init() calls fail, the previous state is completely restored by patching the pointers back and destroying objects that were read.
 		* The client does not need to worry about handling such cases.
 		* In case all init() calls succeed, any old objects are destructed (the cloned and the previously existing objects).
+		*
+		* Before objects are destructed, onDestroy is called. onDestroy is called in the reverse initialization order. This way, it is still safe to use any 
+		* pointers to perform cleanup of internal data. 
 		*
 		* @param filename: json file containing objects.
 		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
@@ -125,10 +130,12 @@ namespace nap
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 
-		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
+		void buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
-		
+		void stopAndDestroyAllObjects();
+		void destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& object_graph);
+
 	private:
 
 		/**
@@ -145,11 +152,17 @@ namespace nap
 			void addExistingDevice(Device& device);
 			void addNewDevice(Device& device);
 
+			ObjectByIDMap& getObjectsToUpdate() { return mObjectsToUpdate; }
+
 		private:
-			ResourceManager&		mService;
-			std::vector<Device*>	mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
-			std::vector<Device*>	mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
-			bool					mRollbackObjects = true;
+			void destroyObjects();
+
+		private:
+			ResourceManager&			mService;
+			ObjectByIDMap				mObjectsToUpdate;			///< Owned map of all objects that need to be pushed into the ResourceManager.
+			std::vector<Device*>		mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
+			std::vector<Device*>		mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
+			bool						mRollbackObjects = true;
 		};
 
 		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;
@@ -171,7 +184,6 @@ namespace nap
 	template<class T>
 	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const
 	{
-		rtti::TypeInfo type = RTTI_OF(T);
 		std::vector<rtti::ObjectPtr<T>> result;
 		for (auto& kvp : mObjects)
 		{

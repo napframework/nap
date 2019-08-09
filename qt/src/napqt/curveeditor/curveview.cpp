@@ -1011,6 +1011,11 @@ void CurveView::initActions()
 	connect(&mFlattenTangentsAction, &QAction::triggered,
 			[this]() { setSelectedTangentsFlat(); });
 
+	mFrameViewAction.setText("Frame Selection");
+	mFrameViewAction.setIcon(QIcon(nap::qt::QRC_ICONS_FRAME_SELECTION));
+	connect(&mFrameViewAction, &QAction::triggered,
+			[this]() { frameSelected(); });
+
 }
 
 void CurveView::deleteSelectedItems()
@@ -1546,6 +1551,13 @@ QList<QAction*> CurveView::tangentActions()
 	return actions;
 }
 
+QList<QAction*> CurveView::auxiliaryActions()
+{
+	QList<QAction*> actions;
+	actions << &mFrameViewAction;
+	return actions;
+}
+
 CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 {
 	setLayout(&mLayout);
@@ -1583,6 +1595,20 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 		mToolbarLayout.addWidget(btAction);
 		action->setEnabled(false);
 	}
+
+	mToolbarLayout.addWidget(new Separator(Qt::Vertical));
+
+	for (const auto action : mCurveView.auxiliaryActions())
+	{
+		auto btAction = new QToolButton();
+		btAction->setDefaultAction(action);
+		mToolbarLayout.addWidget(btAction);
+//		action->setEnabled(true);
+	}
+
+
+	auto btFrameAction = new QToolButton();
+
 
 	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
 	connect(&mTimeSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onTimeChanged);

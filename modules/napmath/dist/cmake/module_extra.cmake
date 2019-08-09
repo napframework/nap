@@ -6,5 +6,9 @@ endif()
 
 add_include_to_interface_target(mod_napmath ${GLM_INCLUDE_DIRS})
 
+if(WIN32)
+	add_define_to_interface_target(mod_napmath NOMINMAX)
+endif()
+
 # Install thirdparty licenses into lib
 install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)

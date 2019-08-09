@@ -161,6 +161,8 @@ namespace napkin
 		void menuHook(QMenu& menu);
 
 	private:
+		void emitSelectionChanged();
+
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model
 		nap::qt::FilterTreeView mTreeView; // Treeview

@@ -24,10 +24,7 @@ QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	if (widget->objectName().isEmpty())
 		widget->setObjectName(QString("%1_Widget").arg(name));
 
-	QAction* action = mWindowMenu->addAction(name);
-	action->setCheckable(true);
-	action->setChecked(true);
-	connect(action, &QAction::triggered, [dock, action]() { dock->setVisible(action->isChecked()); });
+	mWindowMenu->addAction(dock->toggleViewAction());
 	addDockWidget(area, dock);
 	return dock;
 }

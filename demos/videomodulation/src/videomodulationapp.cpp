@@ -103,7 +103,7 @@ namespace nap
 	 */
 	void VideoModulationApp::render()
 	{
-		mRenderService->destroyGLContextResources({mRenderWindow});
+		mRenderService->destroyGLContextResources({mRenderWindow.get()});
 
 		// Make render window active for drawing
 		mRenderWindow->makeActive();
