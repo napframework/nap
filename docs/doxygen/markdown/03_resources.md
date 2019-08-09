@@ -296,9 +296,7 @@ This diagram doesn't take [components](@ref nap::Component) into account. You ca
 Devices {#devices}
 =======================
 
-A [device](@ref nap::Device) is a special type of resource. You can think of a device as a class that represents and manages the connection to an external piece of hardware (such as a DAC) or a computer. Every device has a [start()](@ref nap::Device::start) and [stop()](@ref nap::Device::stop) method that you can override. Both methods are called by the resource manager at the appropiate time, ie: when the device is created, has changed or is removed from the resource tree.
-
-The resource manager does not 'stop' a device when it is destroyed. This occurs when the application is terminated. <b>It is important to do that yourself by calling stop() in the destructor of your device</b>.
+A [device](@ref nap::Device) is a special type of resource. You can think of a device as a class that represents and manages the connection to an external piece of hardware (such as a DAC) or a computer. Every device has a [start()](@ref nap::Device::start) and [stop()](@ref nap::Device::stop) method that you can override. Both methods are called by the resource manager at the appropiate time, ie: when the device is created, has changed or is removed from the resource tree. The resource manager 'stops' a device that is running before it is destroyed. 
 
 NAP ships with a couple of devices such as the [OSCReceiver](@ref nap::OSCReceiver), [OSCSender](@ref nap::OSCSender), [ArtnetController](@ref nap::ArtNetController), [EtherDreamDac](@ref nap::EtherDreamDac) etc.
 

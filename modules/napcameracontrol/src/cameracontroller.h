@@ -89,7 +89,8 @@ namespace nap
 		void storeLastPerspTransform();
 		void switchMode(ECameraMode targetMode);
 
-		EntityInstancePtr					mLookAtTarget = initEntityInstancePtr(this, &CameraController::mLookAtTarget);
+	private:
+		EntityInstancePtr					mLookAtTarget = { this, &CameraController::mLookAtTarget };
 		ECameraMode							mMode = ECameraMode::FirstPerson;		///< Camera mode
 		OrbitControllerInstance*			mOrbitComponent = nullptr;				///< Orbit Controller
 		FirstPersonControllerInstance*		mFirstPersonComponent = nullptr;		///< FPS Controller
