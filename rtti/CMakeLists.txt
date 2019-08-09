@@ -6,6 +6,7 @@ filter_platform_specific_files(SOURCES)
 
 find_rttr()
 
+set(rapidjson_FIND_QUIETLY TRUE)
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 

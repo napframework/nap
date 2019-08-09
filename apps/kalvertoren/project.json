@@ -1,6 +1,6 @@
 {
     "title": "Kalvertoren",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "modules": [
         "mod_kalvertoren",
         "mod_napimgui",

@@ -93,7 +93,7 @@ namespace nap
 
 	void KalvertorenApp::render()
 	{
-		renderService->destroyGLContextResources(std::vector<rtti::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
+		renderService->destroyGLContextResources({renderWindow.get()});
 
 		// Render offscreen surface(s)
 		{

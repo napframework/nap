@@ -26,12 +26,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	BaseYoctoSensor::~BaseYoctoSensor()		
-	{ 
-		stop(); 
-	}
-
-
 	bool BaseYoctoSensor::init(utility::ErrorState& errorState)
 	{
 		return true;

@@ -29,6 +29,9 @@ namespace napkin
 	static const QString QRC_ICONS_FILE                     = ":/icons/file.png";
 	static const QString QRC_ICONS_FOLDER                   = ":/icons/folder.png";
 	static const QString QRC_ICONS_FOLDER_PAGE              = ":/icons/folder_page.png";
+	static const QString QRC_ICONS_FRAME_SELECTION_H        = ":/icons/frame-selection-h.png";
+	static const QString QRC_ICONS_FRAME_SELECTION_V        = ":/icons/frame-selection-v.png";
+	static const QString QRC_ICONS_FRAME_SELECTION          = ":/icons/frame-selection.png";
 	static const QString QRC_ICONS_INFORMATION              = ":/icons/information.png";
 	static const QString QRC_ICONS_LINK                     = ":/icons/link.png";
 	static const QString QRC_ICONS_NAP_LOGO                 = ":/icons/nap-logo.png";

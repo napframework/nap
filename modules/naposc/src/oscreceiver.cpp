@@ -10,7 +10,7 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_BEGIN_CLASS(nap::OSCReceiver)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)
@@ -25,11 +25,6 @@ namespace nap
 	OSCReceiver::OSCReceiver(OSCService& service) : mService(&service)
 	{	}
 
-
-	OSCReceiver::~OSCReceiver()
-	{
-		stop();
-	}
 
 	/**
 	 * Creates the thread that will run the OSC message handler
@@ -48,6 +43,7 @@ namespace nap
 		catch (const std::runtime_error& exception)
 		{
 			errorState.fail("Failed to create OSCReceiver: %s", exception.what());
+			mSocket = nullptr;
 			return false;
 		}		
 
@@ -65,14 +61,12 @@ namespace nap
 
 	void OSCReceiver::stop()
 	{
-		if (mSocket != nullptr)
-		{
-			mSocket->stop();
-			mEventThread.join();
-			mService->removeReceiver(*this);
-			mSocket = nullptr;
-			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
-		}
+		assert(mSocket != nullptr);
+		mSocket->stop();
+		mEventThread.join();
+		mService->removeReceiver(*this);
+		mSocket = nullptr;
+		nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 	}
 
 

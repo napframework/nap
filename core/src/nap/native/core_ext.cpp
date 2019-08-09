@@ -141,7 +141,7 @@ namespace nap
         std::string config_file_path;        
         if (findProjectFilePath(SERVICE_CONFIG_FILENAME, config_file_path))
         {
-            if (rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserializeResult, errorState))
+            if (rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, mResourceManager->getFactory(), deserializeResult, errorState))
                 return true;
         }
 
