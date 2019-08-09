@@ -21,10 +21,10 @@ namespace nap
 
         
         /**
-         * The DeletionQueue holds the data that was previously owned by @SafeOwner smart-pointers before they went out of scope.
+         * The DeletionQueue holds the data that was previously owned by smart-pointers before they went out of scope.
          * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the object.
          * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object held by the queue will be cleared as well.
-         * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
+         * By making use of the DeletionQueue in combination with SafeOwner and SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
          */
         class DeletionQueue final
         {
