@@ -185,7 +185,7 @@ namespace nap
             RTTI_ENABLE()
         public:
             /**
-             * @param parent: the owner node if this output
+             * @param node: the owner of this output
              */
             OutputPin(Node* node);
             
@@ -202,7 +202,7 @@ namespace nap
             bool isConnected() const { return !mOutputs.empty(); }
             
             /**
-             * Used by @InputPin to poll this output for a new buffer of output samples
+             * Used by the input pin to poll this output for a new buffer of output samples
              */
             SampleBuffer* pull();
             

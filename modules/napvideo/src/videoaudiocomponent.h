@@ -15,11 +15,12 @@ namespace nap
     
     namespace audio
     {
-    
+		// Forward Declares
         class VideoAudioComponentInstance;
         
         /**
-         * Audio object to output audio channels from a playing @Video object
+         * Component that outputs audio from a playing Video.
+		 * Without this component no video-audio is processed.
          */
         class NAPAPI VideoAudioComponent : public AudioComponentBase
         {
@@ -30,13 +31,14 @@ namespace nap
             VideoAudioComponent() : AudioComponentBase() { }
             
             // Properties
-            rtti::ObjectPtr<Video> mVideo = nullptr; ///< Property: 'Video' The @Video object that the audio channels are taken from
-            int mChannelCount = 2; ///< Property: 'ChannelCount' The number of channels of audio that will be requested from the Video object
+            rtti::ObjectPtr<Video> mVideo = nullptr;	///< Property: 'Video' The Video that has audio.
+            int mChannelCount = 2;						///< Property: 'ChannelCount' The number of channels of audio that will be requested from the Video object, defaults to 2.
         };
 
         
         /**
-         * Instance of an Audio object that outputs audio channels from a playing @Video object
+         * Instance of an Audio object that outputs the audio of a Video.
+		 * Without this component no video-audio is processed.
          */
         class NAPAPI VideoAudioComponentInstance : public AudioComponentBaseInstance
         {
@@ -47,19 +49,24 @@ namespace nap
             // Initialize the component
             bool init(utility::ErrorState& errorState) override;
             
-            // Inherited from AudioComponentBaseInstance
-            int getChannelCount() const override { return mNode->getChannelCount(); }
-            OutputPin& getOutputForChannel(int channel) override { return mNode->getOutput(channel); }
+            /**
+             * @return the total number of audio channels
+             */
+            int getChannelCount() const override					{ return mNode->getChannelCount(); }
+
+			/**
+			 * @param channel index of the output channel.
+			 * @return the output pin associated with the given channel.
+			 */
+            OutputPin& getOutputForChannel(int channel) override	{ return mNode->getOutput(channel); }
 
             /**
-             * Set the @Video object whose audio channels will be output
+			 * @param video the audio-video source.
              */
             void setVideo(Video& video);
             
         private:
-            SafeOwner<VideoNode> mNode = nullptr; ///< The audio node that polls the Video object for audio output
+            SafeOwner<VideoNode> mNode = nullptr;					///< The audio node that polls the Video object for audio output
         };
-        
-    }
-    
+    }   
 }

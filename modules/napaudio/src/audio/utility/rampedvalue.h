@@ -35,8 +35,9 @@ namespace nap
             
             /**
              * Start a ramp
-             * @param destination: the finishing value
-             * @param stepCount: the number of steps
+             * @param destination the finishing value
+             * @param stepCount the number of steps
+			 * @param mode the ramp interpolation mode
              */
             void ramp(const T& destination, int stepCount, RampMode mode = RampMode::Linear)
             {
