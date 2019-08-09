@@ -12,96 +12,124 @@ namespace nap
 	namespace math
 	{
 		/**
-		 * PI as defined by cmath
+		 * @return value of pi as defined in math.h
 		 */
 		double NAPAPI pi();
 
 		/**
-		* Maps @inValue to new range defined by parameters
-		* @return interpolated value
-		*/
+		 * Maps a value from min/max to outMin/outMax.
+		 * For example: fit<float>(10.0f, 0.0f, 20.0f, 100.0f, 200.0f) -> returns 150.0f.
+		 * Output is clamped to the requested outMin and outMax values.
+		 * @param value the value to map
+		 * @param min the min input value
+		 * @param max the max input value
+		 * @param outMin min output value
+		 * @param outMax max output value
+		 * @return mapped value
+		 */
 		template<typename T>
 		float fit(T value, T min, T max, T outMin, T outMax);
 
 		/**
-		 * Blend between @start and @end value based on percent
-		 * @param start minumum value
-		 * @param end maximum value
-		 * @param percent the amount to blend between start and end, 0-1
+		 * Blends a value between start and end value based on percentage (0-1).
+		 * @param start begin value
+		 * @param end end value
+		 * @param percent the amount to blend between start and end, in between 0 and 1.
+		 * @return interpolated value.
 		 */
 		template<typename T>
 		T lerp(const T& start, const T& end, float percent);
 
 		/**
-		 *	Clamps value between min and max
+		 * Clamp a value between min and max. 
+		 * The value will never exceed max parameter or fall below min.
+		 * @param value value to clamp.
+		 * @param min lower limit of value.
+		 * @param max upper limit of value. 
+		 * @return value clamped to min and max.
 		 */
 		template<typename T>
 		T clamp(T value, T min, T max);
 
 		/**
-		 *Returns the minumum of the Left and Right values
+		 * Returns the lowest of 2 values.
+		 * @param left first value.
+		 * @param right second value.
+		 * @return the lowest value.
 		 */
 		template<typename T>
 		T min(T left, T right);
 
 		/**
-		 *	Returns the maximum of the Left and Right values
+		 * Returns the highest of 2 values.
+		 * @param left first value.
+		 * @param right second value.
+		 * @return the highest value.
 		 */
 		template<typename T>
 		T max(T left, T right);
 
 		/**
-		 * Rounds down a value
+		 * Rounds value downward, returning the largest integral value that is not greater than value.
+		 * For example: 2.3 -> 2.0, -3.8 -> -4.0
+		 * @param value value to floor.
 		 * @return floored value of T
 		 */
 		template<typename T>
 		T floor(T value);
 
 		/**
-		 *	Rounds up a value
+		 * Rounds value upward, returning the smallest integral value that is not less than x.
+		 * For example: 2.3 -> 3.0, -2.3 -> 2.0
+		 * @param value value to ceil
+		 * @return The smallest integral value that is not less than x (as a floating-point value).
 		 */
 		template<typename T>
 		T ceil(T value);
 
 		/**
-		 *	@return value raised to power of exponent
+		 * @param value parameter to raise.
+		 * @param exp power exponent.
+		 * @return Return base raised to the power exponent.
 		 */
 		template<typename T>
 		T power(T value, T exp);
 
 		/**
-		 * @return absolute value of T
+		 * @return absolute value.
 		 */
 		template<typename T>
 		T abs(T value);
 
 		/**
-		 * @return epsilon of T
+		 * Returns the machine epsilon, that is, the difference between 1.0 and the next value representable by the floating-point type T. 
+		 * Only works for non-integral types.
+		 * @return epsilon of type T.
 		 */
 		template<typename T>
 		T epsilon();
 
 		/**
-		 *	@return the maximum possible value of T
+		 * @return the maximum possible value of type T
 		 */
 		template<typename T>
 		T max();
 		
 		/**
-		 *	@return the lowest possible value of T
+		 * @return the lowest possible value of type T
 		 */
 		template<typename T>
 		T min();
 
 		/**
-		 * @return the sign of @value, 1 for values > 0, -1 for values < 0, 0 for values of exactly 0
-		 * @param value the value to get the sign for
+		 * @param value requested sign value
+		 * @return the sign of the given value, 1 for values > 0, -1 for values < 0, 0 for values of exactly 0.
 		 */
 		template<typename T>
 		T sign(T value);
 
 		/**
-		 * @return a bell shaped curve based on value t (0-1)
+		 * @return a bell shaped curve based on value T (0-1)
 		 * @param time value in the range 0-1 to get value for
 		 * @param strength exponent of the bell curve
 		 */
@@ -109,9 +137,12 @@ namespace nap
 		T bell(T time, T strength);
 
 		/**
-		 * @return a random number in range
+		 * Returns a random number of type T in the range of the given min / max value.
+		 * Note that the random number is based on the seed set by setRandomSeed.
+		 * @return a random number in range min / max. 
 		 * @param min min random number
 		 * @param max max random number
+		 * @return the generated random number.
 		 */
 		template<typename T>
 		T random(T min, T max);
@@ -123,10 +154,10 @@ namespace nap
 		void NAPAPI setRandomSeed(int value);
 
 		/**
-		 * Interpolates a value over time to a @target using a dampening model
-		 * @param currentValue the current blend value, often the @return value
+		 * Interpolates a float value over time to a target using a dampening model
+		 * @param currentValue the current blend value, often the return value
 		 * @param targetValue the value to blend to
-		 * @param currentVelocity the current velocity used to blend to @target
+		 * @param currentVelocity the current velocity used to blend to target
 		 * @param time in seconds between cooks
 		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
 		 * @param maxSpeed allows you to clamp the maximum speed
@@ -135,10 +166,11 @@ namespace nap
 		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = 1000.0f);
 
 		/**
-		* Smoothly interpolates a value over time to a @target using a dampening model
+		* Smoothly interpolates a value of type T over time to a target using a dampening model.
+		* This is a specialization of the default smoothDamp() function.
 		* @param currentValue the current blend value, will be updated after calling
 		* @param targetValue the value to blend to
-		* @param currentVelocity the current velocity used to blend to @target
+		* @param currentVelocity the current velocity used to blend to target
 		* @param time in seconds between cooks
 		* @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
 		* @param maxSpeed allows you to clamp the maximum speed
@@ -165,13 +197,13 @@ namespace nap
 		glm::quat NAPAPI eulerToQuat(const glm::vec3& eulerAngle);
 
 		/**
-		* Converts euler angles in to a quaternion
-		* The euler angle axis are interpreted as: roll(x), pitch(y), yaw(z),
-		* @param roll the x axis rotation value in radians
-		* @param pitch the y axis rotation value in radians
-		* @param yaw the z axis rotation value in radians
-		* @return the composed quaternion
-		*/
+		 * Converts euler angles in to a quaternion
+		 * The euler angle axis are interpreted as: roll(x), pitch(y), yaw(z),
+		 * @param roll the x axis rotation value in radians
+		 * @param pitch the y axis rotation value in radians
+		 * @param yaw the z axis rotation value in radians
+		 * @return the composed quaternion
+		 */
 		glm::quat NAPAPI eulerToQuat(float roll, float pitch, float yaw);
 
 		/**
@@ -192,14 +224,14 @@ namespace nap
 		glm::vec3 NAPAPI radians(float roll, float pitch, float yaw);
 
 		/**
-		 * Converts degrees to radians
+		 * Converts degrees to radians.
 		 * @param degrees angle in degrees
 		 * @return angle as radians
 		 */
 		float NAPAPI radians(float degrees);
 
 		/**
-		 * Converts radians to degrees
+		 * Converts radians to degrees.
 		 * @param radians angle in radians
 		 * @return angle in degrees
 		 */
@@ -207,14 +239,14 @@ namespace nap
 
 		/**
 		 * Extracts the position component from a 4x4 matrix.
-		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
+		 * This call assumes the matrix is column major, the outermost array dimension is a column.
 		 * @param matrix column major matrix
 		 * @return the position component from a 4x4 matrix
 		 */
 		glm::vec3 NAPAPI extractPosition(const glm::mat4x4& matrix);
 
 		/**
-		 * Converts a point in object space to world space using the given object to world matrix
+		 * Converts a point in object space to world space using the given object to world matrix.
 		 * @param point the point in object space
 		 * @param objectToWorldMatrix local to world space transformation matrix
 		 * @return point in world space

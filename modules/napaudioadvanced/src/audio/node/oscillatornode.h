@@ -11,7 +11,6 @@ namespace nap
 {
     namespace audio
     {
-        
         /**
          * A wavetable that can be used as waveform data for an oscillator.
          * Contains a buffer with one cycle of samples for a periodic waveform.
