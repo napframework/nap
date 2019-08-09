@@ -55,8 +55,9 @@ namespace nap
 
 		/**
 		 * Converts this message into a JSON readable string
-		 * @param outJSON the output of the conversion
+		 * @param outString the output of the conversion
 		 * @param error contains the error if the message couldn't be converted into a string
+		 * @return if the message converted to JSON successfully. 
 		 */
 		bool toJSON(std::string& outString, utility::ErrorState& error);
 

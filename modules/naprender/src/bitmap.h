@@ -75,7 +75,6 @@ namespace nap
 		 * Initializes this bitmap from file. The settings associated with
 		 * this bitmap will match the settings loaded from file. If you want
 		 * to manually allocate pixel data call init() without a path.
-		 * The pixel data associated with the image @path is copied over
 		 * @param path the path to the image on disk to load
 		 * @param errorState contains the error if the image could not be loaded
 		 * @return if the bitmap loaded successfully
@@ -83,10 +82,9 @@ namespace nap
 		virtual bool initFromFile(const std::string& path, nap::utility::ErrorState& errorState);
 
 		/**
-		 * Initializes this bitmap from a 2D texture. 
-		 * The settings associated with this bitmap will match the settings of the 2D texture.
+		 * Initializes this bitmap based on the provided settings. 
 		 * Memory is allocated but the GPU pixel data is NOT copied over
-		 * @param texture the GPU texture to initialize this bitmap from
+		 * @param settings the settings used to initialize this texture.
 		 */
 		void initFromTexture(const opengl::Texture2DSettings& settings);
 
@@ -199,7 +197,7 @@ namespace nap
 		void setPixelColor(int x, int y, const T& color);
 
 		/**
-		 * Populates @outColor with the RGB values of a pixel. 
+		 * Populates outColor with the RGB values of a pixel. 
 		 * This call asserts when the bitmap doesn't have 3 channels
 		 * This call does not convert incompatible types and asserts when the data types do not match
 		 * @param x the horizontal coordinate of the pixel
@@ -221,7 +219,7 @@ namespace nap
 		RGBColor<Type> getRGBColor(int x, int y) const;
 
 		/**
-		* Populates @outColor with the RGBA values of a pixel. 
+		* Populates outColor with the RGBA values of a pixel. 
 		* This call asserts when the bitmap doesn't have 4 channels
 		* This call does not convert incompatible types and asserts when the data types don't match
 		* @param x the horizontal coordinate of the pixel
@@ -243,23 +241,23 @@ namespace nap
 		RGBAColor<Type> getRGBAColor(int x, int y) const;
 
 		/**
-		 * Populates @outValue with the color value @channel
+		 * Populates outValue with the color specified by channel.
 		 * This call does not convert incompatible types and asserts when the underlying data types don't match
 		 * @param x the horizontal coordinate of the pixel
 		 * @param y the vertical coordinate of the pixel
 		 * @param channel the color channel to get the value for
-		 * @param outValue copy of the color value associated with @channel
+		 * @param outValue copy of the color value specified by channel
 		 */
 		template<typename Type>
 		void getColorValue(int x, int y, nap::EColorChannel channel, RColor<Type>& outValue) const;
 
 		/**
-		* Returns a copy of the color value @channel
+		* Returns a copy of the color specified by channel.
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @param channel the color channel to get the value for
-		* @return copy of the color value associated with @channel
+		* @return copy of the color value specified by channel
 		*/
 		template<typename Type>
 		RColor<Type> getColorValue(int x, int y, nap::EColorChannel channel) const;
@@ -352,23 +350,23 @@ namespace nap
 		RGBColor<Type*> getRGBColorData(int x, int y) const;
 
 		/**
-		* Populates @outValue with the address of the color value @channel
+		* Populates outValue with the address of the color value of the given channel.
 		* This call is useful to retrieve the memory location of a pixel's color channel in a bitmap
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @param outValue pointer to the color data associated with the @channel
+		* @param outValue pointer to the value found at the given channel.
 		*/
 		template<typename Type>
 		void getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const;
 
 		/**
-		* returns a pointer to the address of the color value @channel
+		* returns a pointer to the address of the color value of the given channel.
 		* This call is useful to retrieve the memory location of a pixel's color channel in a bitmap
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @return pointer to the color data associated with the value @channel
+		* @return pointer to the value found at the given channel.
 		*/
 		template<typename Type>
 		RColor<Type*> getColorValueData(int x, int y, nap::EColorChannel channel) const;

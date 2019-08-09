@@ -158,7 +158,7 @@ NAP contains a powerful ‘real-time editing’ engine. This means that it is po
 
 From a programmer perspective there are some rules to adhere to. Each resource follows the same initialization pattern. When a file is loaded, all objects are initialized in the correct order. When an init() call returns false it means that resource could not be initialized correctly. In that case, the entire load is cancelled and the system returns back to the original state before load was called. The returned error message describes what went wrong during (re)loading. It is guaranteed that all the objects remain in their original state until the initialization sequence is completed successfully. When there is no original state (ie, the file is loaded for the first time) and initialization fails the application will exit immediately.
 
-Here are the rules for writing a correct [init](@ref nap::RTTIObject::init) function:
+Here are the rules for writing a correct [init](@ref nap::rtti::Object::init) function:
 - Return true on success, false on failure
 - Only assert (or halt program execution in any other way) on programmer errors, never on user errors
 - If the function fails make sure that a clear error message is presented to the [ErrorState](@ref nap::utility::ErrorState) object that is passed to init().

@@ -71,7 +71,7 @@ namespace nap
 	 * Pointing directly to one of these TransformComponents using a component path is not possible,
 	 * because it would be ambiguous.
 	 * To disambiguate which specific child entity is meant,
-	 * the user can append a ':<child_index>' to the ChildEntityID on the path.
+	 * the user can append a ':[child_index]' to the ChildEntityID on the path.
 	 *
 	 * In this case, to point to the TransformComponent of the second wheel,
 	 * the user would use the following path: './WheelEntity:1/TransformComponent'

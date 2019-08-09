@@ -255,7 +255,7 @@ public:
 };
 ~~~~~~~~~~~~~~~
 
-This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ResourcePtr](@ref nap::ObjectPtr)). Both input lines are extracted from a different component that live under the same entity, in this case a line selection component. Input one and two are therefore links to a different component and are required by the blend component to perform the blend operation.
+This component blends two lines based on a blend value. The end result is stored in 'mTarget'. The blend target is a link to a regular resource ([ResourcePtr](@ref nap::rtti::ObjectPtr)). Both input lines are extracted from a different component that live under the same entity, in this case a line selection component. Input one and two are therefore links to a different component and are required by the blend component to perform the blend operation.
 
 The registration of this part of the component in the .cpp file should look familiar. Links to components are registered as regular properties:
 

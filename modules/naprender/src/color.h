@@ -73,7 +73,7 @@ namespace nap
 		virtual bool isPointer() const = 0;
 
 		/**
-		 * Converts and copies the values associated with this color in to @target.
+		 * Converts and copies the values associated with this color in to the target color.
 		 * It's required that the source has an equal or higher amount of color channels compared to target
 		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
 		 * This call asserts if the conversion can't be performed.
@@ -90,7 +90,7 @@ namespace nap
 		void convert(BaseColor& target) const;
 
 		/**
-		* @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
+		* @return a color converter to convert source color in to target color, nullptr if no such converter exists
 		* Use this call when dealing with the same color conversion multiple times in, for example, a loop
 		*/
 		Converter getConverter(const BaseColor& target) const;
@@ -214,10 +214,11 @@ namespace nap
 		bool isPointer() const override;
 
 		/**
-		* @param the channel to get the value for
-		* @return the color value associated with the specified channel
-		* This call asserts when the channel is not available
-		*/
+		 * Returns the color value associated with a given channel.
+		 * This call asserts when the channel is not available
+		 * @param channel the channel to get the value for
+		 * @return the color value associated with the specified channel
+		 */
 		T getValue(EColorChannel channel) const;
 
 		/** 

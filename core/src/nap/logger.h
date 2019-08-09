@@ -124,14 +124,14 @@ namespace nap
 	/**
 	 * Minimal log message formatter, containing only the level and the message
 	 * @param msg the LogMessage to format
-	 * @param result string into which to write the formatted message
+	 * @return string into which to write the formatted message
 	 */
 	std::string basicLogMessageFormatter(const LogMessage& msg);
 
 	/**
 	 * LogMessage string formatter that includes a timestamp in ISO format
 	 * @param msg the LogMessage to format
-	 * @param result string into which to write the formatted message
+	 * @return string into which to write the formatted message
 	 */
 	std::string timestampLogMessageFormatter(const LogMessage& msg);
 

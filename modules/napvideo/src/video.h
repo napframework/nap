@@ -134,7 +134,6 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param video: video to play
-		 * @param maxPacketQueueSize
 		 */
 		AVState(Video& video);
 
@@ -146,6 +145,8 @@ namespace nap
 		/**
 		 * Initializes stream and codec.
 		 * @param stream Video or audio stream index.
+		 * @param codec codec to use
+		 * @param context associated with the codec
 		 */
 		void init(int stream, AVCodec* codec, AVCodecContext* codecContext);
 
@@ -166,12 +167,12 @@ namespace nap
 
 		/**
 		 * Spawns the decode thread.
-		 * @param clearFrameQueueFunction An optional function that can be used to perform additional work when the frame queue is cleared.
+		 * @param onClearFrameQueueFunction An optional function that can be used to perform additional work when the frame queue is cleared.
 		 */
 		void startDecodeThread(const OnClearFrameQueueFunction& onClearFrameQueueFunction = OnClearFrameQueueFunction());
 
 		/**
-		 * Stops the decode thread and blocks waiting for it to exit if @join is true.
+		 * Stops the decode thread and blocks waiting for it to exit if join is true.
 		 * @param join If true, the function blocks until the thread is exited, otherwise false.
 		 */
 		void exitDecodeThread(bool join);
@@ -221,13 +222,15 @@ namespace nap
 		/**
 		 * Adds a packet to the packet queue.
 		 * @param packet The packet to add.
-		 * @param exitIOThreadsignalled When I/O thread is in exit mode, this must be true.
+		 * @param exitIOThreadSignalled When I/O thread is in exit mode, this must be true.
+		 * @return if packet was added
 		 */
 		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
 
 		/**
 		 * Wait for the frame to be empty
-		 * @param exitIOThreadsignalled When I/O thread is in exit mode, this must be true.
+		 * @param exitIOThreadSignalled When I/O thread is in exit mode, this must be true.
+		 * @return if the queue emptied.
 		 */
 		bool waitForFrameQueueEmpty(bool& exitIOThreadSignalled);
 
