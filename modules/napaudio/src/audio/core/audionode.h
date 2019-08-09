@@ -16,11 +16,8 @@ namespace nap
     
     namespace audio
     {
-    
-        
         // Forward declarations
         class NodeManager;
-        
         
         /**
          * A node performs audio processing and is the smallest unit of a DSP network.
@@ -93,10 +90,9 @@ namespace nap
              */
             virtual void bufferSizeChanged(int bufferSize) { }
             
-            
             /**
-             * Use this function within descendants @process() implementation to access the buffers that need to be filled with output.
-             * @param: the output that the buffer is requested for
+             * Use this function within descendants process() implementation to access the buffers that need to be filled with output.
+             * @param output: the output that the buffer is requested for
              */
             SampleBuffer& getOutputBuffer(OutputPin& output);
             
