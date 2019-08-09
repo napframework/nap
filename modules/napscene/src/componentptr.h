@@ -281,7 +281,7 @@ namespace nap
 		* Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
 		*/
 		template<class SourceComponentType>
-		ComponentInstancePtr(ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
+		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
 			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
 		{
 		}
