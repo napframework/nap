@@ -250,13 +250,15 @@ namespace nap
 		/**
 		 * Convenience function to start logging to a file.
 		 * @param filename The filename to write log entries to.
-		 * @param level The minimum level the handler should process
 		 */
 		static void addFileHandler(const std::string& filename);
 
 		/**
-		 * Start logging to a file in the specified directory, will write into a file with the timestamp in the name.
-		 * @param directory
+		 * Start logging to a file in the specified directory.
+		 * Writes all log information into a file with the current date/time in the name.
+		 * Final log filename: {directory}/{prefix}_{timestamp}.log
+		 * @param directory the directory to log to. 
+		 * @param prefix name of the log_file.
 		 */
 		static void logToDirectory(const std::string& directory, const std::string& prefix = "log");
 

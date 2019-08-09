@@ -146,7 +146,7 @@ namespace nap
 		 * Initializes stream and codec.
 		 * @param stream Video or audio stream index.
 		 * @param codec codec to use
-		 * @param context associated with the codec
+		 * @param codecContext context associated with the codec
 		 */
 		void init(int stream, AVCodec* codec, AVCodecContext* codecContext);
 
@@ -407,13 +407,14 @@ namespace nap
 
 		/**
 		 * Updates the internal textures if a new frame has been decoded.
+		 * @param deltaTime time in seconds in between calls.
 		 * @param errorState Contains detailed information about errors if this function return false.
 		 * @return True on success, false otherwise.
 		 */
 		bool update(double deltaTime, utility::ErrorState& errorState);
 
 		/**
-		 * Starts playback of the video at the offset given by @startTimeSecs.
+		 * Starts playback of the video at the offset given by startTimeSecs.
 		 * @param startTimeSecs The offset in seconds to start the video at.
 		 */
 		void play(double startTimeSecs = 0.0);

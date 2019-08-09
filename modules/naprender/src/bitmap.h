@@ -162,7 +162,7 @@ namespace nap
 		* Valid values for T are RGBColor8, RColorFloat etc.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @param outColor holds the converted pixel colors
+		* @return color of pixel at given coordinates
 		*/
 		template<typename T>
 		T getPixel(int x, int y) const;

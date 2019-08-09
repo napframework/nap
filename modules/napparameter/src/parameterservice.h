@@ -32,7 +32,6 @@ namespace nap
 
 		/**
 		 * Get all parameter groups
-		 *
 		 * @return The list of all parameter groups
 		 */
 		ParameterGroupList getParameterGroups();
@@ -48,6 +47,7 @@ namespace nap
 		 * Load a preset from the specified file. The parameters in the Preset will be automatically applied.
 		 * The list of available presets files can be retrieved through getPresets()
 		 *
+		 * @param group the parameter group.
 		 * @param presetFile The path to the the preset file to load
 		 * @param errorState Detailed error information when load fails
 		 *
@@ -58,6 +58,7 @@ namespace nap
 		/**
 		 * Save the current set of parameters/values to the specified file as a preset.
 		 *
+		 * @param group the parameter group.
 		 * @param presetFile The path to save to
 		 * @param errorState Detailed error information when save fails
 		 *
@@ -86,8 +87,8 @@ namespace nap
 
 
 		/**
-		* Signal that is emitted when a file reload occurs
-		*/
+		 * Signal that is emitted when a file reload occurs
+		 */
 		nap::Signal<> fileLoaded;
 
 	protected:
@@ -98,9 +99,8 @@ namespace nap
 
 		/**
 		 * Get the full path to the preset file
-		 *
+		 * @param groupID The group id
 		 * @param filename The preset file to get the full path of
-		 *
 		 * @return Full path to the preset file
 		 */
 		std::string getPresetPath(const std::string& groupID, const std::string& filename) const;
@@ -109,7 +109,6 @@ namespace nap
 		 * Get the directory that presets for the specified group are stored in
 		 * 
 		 * @param groupID The group id
-		 *
 		 * @return The directory that presets for the specified group are stored in
 		 */
 		std::string getGroupPresetDirectory(const std::string& groupID) const;

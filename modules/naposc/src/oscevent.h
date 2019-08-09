@@ -44,7 +44,11 @@ namespace nap
 
 		/**
 		 * Adds an OSCArgument to this event. The template type must be of type OSCBaseValue.
-		 * The arguments are used to construct the OSCValue, ie: addArgument<OSCFloat>(1.0f) or addArgument<OSCString>("ola!")
+		 * The arguments are used to construct the OSCValue, for example: 
+		 *
+		 *		addArgument<OSCFloat>(1.0f) 
+		 *		addArgument<OSCString>("ola!")
+		 *
 		 * @args the arguments that are used for constructing the specified OSCValue. 
 		 * @return the newly created and added argument
 		 */
@@ -52,8 +56,11 @@ namespace nap
 		OSCArgument* addArgument(Args&&... args);
 
 		/**
-		 * Adds an OSCArgument to this event. The argument wraps an OSCValue of type T, ie:
-		 * addValue<float>(1.0f) adds an OSCValue<float> and addValue<int>(1) creates an OSCValue<int>.
+		 * Adds an OSCArgument to this event. The argument wraps an OSCValue of type T, for example:
+		 *
+		 * addValue<float>(1.0f)	-> adds an OSCValue<float> 
+		 * addValue<int>(1)			-> adds an OSCValue<int>.
+		 *
 		 * This is a utility function that wraps addArgument based on the given OSC value type.
 		 * Note that only registered OSC value types are considered valid.
 		 * @param args the value that is used to construct the OSCValue.
@@ -81,13 +88,13 @@ namespace nap
 		const ArgumentConstIterator getArguments() const					{ return ArgumentConstIterator(mArguments); }
 
 		/**
-		 * @return an argument based on @index
+		 * @return an argument based on index
 		 * @param index the index of the argument, will throw an exception when out of bounds
 		 */
 		const OSCArgument* getArgument(int index) const;
 
 		/**
-		 * @return an argument based on @index
+		 * @return an argument based on index
 		 * @param index the index of the argument
 		 */
 		OSCArgument* getArgument(int index);

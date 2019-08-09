@@ -97,7 +97,7 @@ namespace nap
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
-		 * @param comps the components to render to @renderTarget
+		 * @param comps the components to render to renderTarget
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
@@ -106,15 +106,17 @@ namespace nap
 		*
 		* @param renderTarget the target to render to
 		* @param camera the camera used for rendering all the available components
-		* @param comps the components to render to @renderTarget
+		* @param comps the components to render to renderTarget
 		* @param sortFunction The function used to sort the components to render
 		*/
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
-		* Clears the renderTarget using @flags.
-		* @param renderTarget the opengl target to clear
-		*/
+		 * Clears specific parts of the renderTarget using the given flags. 
+		 * The flags can be bitmasked together, for example: EClearFlags::Color | EClearFlags::Color.
+		 * @param renderTarget the opengl target to clear.
+		 * @param flags what parts to clear.
+		 */
 		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
 
 		/**
@@ -188,9 +190,9 @@ namespace nap
 		RenderWindow* findWindow(void* nativeWindow) const;
 
 		/**
-		 * Find a RenderWindow based on the window number
-		 * @param the associated window number
-		 * @return the RenderWindowResource, nullptr if not found
+		 * Find a RenderWindow based on a window number.
+		 * @param id the number of the window to find.
+		 * @return the window, nullptr if not found
 		 */
 		RenderWindow* findWindow(uint id) const;
 
@@ -205,9 +207,9 @@ namespace nap
 		const std::string& getPrimaryWindowID() const;
 
 		/**
-		 * Add a window event that is processed later, ownership is transferred here
-		 * The window number in the event is used to find the right render window to forward the event to
-		 * @param event the event to add
+		 * Add a window event that is processed later, ownership is transferred here.
+		 * The window number in the event is used to find the right render window to forward the event to.
+		 * @param windowEvent the window event to add.
 		 */
 		void addEvent(WindowEventPtr windowEvent);
 
@@ -235,20 +237,21 @@ namespace nap
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
-		* Sets the renderer, the service will own the renderer
-		* @param errorState contains the error message if the service could not be initialized
-		* @return if the service has been initialized successfully
-		*/
+		 * Initialize the renderer, the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * Updates
-		 * @param time in between frames
+		 * Called before update, ensures the primary window is the active window before update is called.
+		 * @param deltaTime time in seconds in between frames.
 		 */
 		virtual void preUpdate(double deltaTime) override;
 
 		/**
-		 *	Process all received messages
+		 * Process all received window events.
+		 * @param deltaTime time in seconds in between frames.
 		 */
 		virtual void update(double deltaTime) override;
 

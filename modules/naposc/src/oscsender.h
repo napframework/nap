@@ -56,7 +56,7 @@ namespace nap
 		/**
 		 * Sends an OSC message immediately without adding it to the queue
 		 * Note that it's more efficient to add a message to the queue and send them as a bundle
-		 * @param oscEVent the event to send
+		 * @param oscEvent the event to send
 		 */
 		bool send(const OSCEvent& oscEvent);
 

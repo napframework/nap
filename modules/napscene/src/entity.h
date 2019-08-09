@@ -178,7 +178,7 @@ namespace nap
 
 		/**
 		 * Removes a single child from the entity instance
-		 * @param EntityInstance to remove.
+		 * @param entityInstance to remove.
 		 */
 		void removeChild(const EntityInstance& entityInstance);
 

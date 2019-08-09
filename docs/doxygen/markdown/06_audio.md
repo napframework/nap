@@ -92,7 +92,7 @@ else {
 Audio Input {#audio_input_comp}
 ==========================
 
-In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::InputComponent):
+In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::AudioInputComponent):
 
 ~~~
 {

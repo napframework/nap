@@ -52,6 +52,7 @@ namespace nap
 		 * Initialize the renderer.
 		 * This call sets up the render attributes, create the first window and
 		 * initializes the opengl engine. After initialization the primary window is active.
+		 * @param rendererSettings settings used to initialize the renderer
 		 * @param errorState contains the error when the renderer can't be initialized
 		 * @return if the renderer initialized successfully
 		 */

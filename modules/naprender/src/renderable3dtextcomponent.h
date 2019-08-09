@@ -60,7 +60,6 @@ namespace nap
 		 * The normalization factor is based on reference text which can be updated by calling: computeNormalizationFactor()
 		 * Calling computeNormalizationFactor() ensures that the size of the letters don't change size at runtime.
 		 * @param enable disable or enable normalization
-		 * @param referenceText the text used to calculate the normalization factor, can be left empty when disabled
 		 */
 		void normalizeText(bool enable)													{ mNormalize = enable; }
 
