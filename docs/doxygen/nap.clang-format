@@ -179,36 +179,36 @@ STRIP_FROM_PATH        =
 # specify the list of include paths that are normally passed to the compiler
 # using the -I flag.
 
-STRIP_FROM_INC_PATH    = C:/naivi/nap/core/src \
-                         C:\naivi\nap\rtti\src \
-                         C:\naivi\nap\modules\napapi\src \
-                         C:\naivi\nap\modules\napapiwebsocket\src \
-                         C:\naivi\nap\modules\napapp\src \
-                         C:\naivi\nap\modules\napartnet\src \
-                         C:\naivi\nap\modules\napaudio\src \
-                         C:\naivi\nap\modules\napaudioadvanced\src \
-                         C:\naivi\nap\modules\napcameracontrol\src \
-                         C:\naivi\nap\modules\napdatabase\src \
-                         C:\naivi\nap\modules\napetherdream\src \
-                         C:\naivi\nap\modules\napfont\src \
-                         C:\naivi\nap\modules\napimgui\src \
-                         C:\naivi\nap\modules\napinput\src \
-                         C:\naivi\nap\modules\napmath\src \
-                         C:\naivi\nap\modules\napmidi\src \
-                         C:\naivi\nap\modules\naposc\src \
-                         C:\naivi\nap\modules\napparameter\src \
-                         C:\naivi\nap\modules\napparametergui\src \
-                         C:\naivi\nap\modules\nappython\src \
-                         C:\naivi\nap\modules\naprender\src \
-                         C:\naivi\nap\modules\napsandbox\src \
-                         C:\naivi\nap\modules\napscene\src \
-                         C:\naivi\nap\modules\napsdlinput\src \
-                         C:\naivi\nap\modules\napserial\src \
-                         C:\naivi\nap\modules\napsvg\src \
-                         C:\naivi\nap\modules\napvideo\src \
-                         C:\naivi\nap\modules\napwebsocket\src \
-                         C:\naivi\nap\modules\napyoctopuce\src \
-                         C:\naivi\nap\utility\src
+STRIP_FROM_INC_PATH    = $(NAP_WORKING_DIR)\core\src \
+                         $(NAP_WORKING_DIR)\rtti\src \
+                         $(NAP_WORKING_DIR)\modules\napapi\src \
+                         $(NAP_WORKING_DIR)\modules\napapiwebsocket\src \
+                         $(NAP_WORKING_DIR)\modules\napapp\src \
+                         $(NAP_WORKING_DIR)\modules\napartnet\src \
+                         $(NAP_WORKING_DIR)\modules\napaudio\src \
+                         $(NAP_WORKING_DIR)\modules\napaudioadvanced\src \
+                         $(NAP_WORKING_DIR)\modules\napcameracontrol\src \
+                         $(NAP_WORKING_DIR)\modules\napdatabase\src \
+                         $(NAP_WORKING_DIR)\napetherdream\src \
+                         $(NAP_WORKING_DIR)\napfont\src \
+                         $(NAP_WORKING_DIR)\modules\napimgui\src \
+                         $(NAP_WORKING_DIR)\modules\napinput\src \
+                         $(NAP_WORKING_DIR)\modules\napmath\src \
+                         $(NAP_WORKING_DIR)\modules\napmidi\src \
+                         $(NAP_WORKING_DIR)\modules\naposc\src \
+                         $(NAP_WORKING_DIR)\modules\napparameter\src \
+                         $(NAP_WORKING_DIR)\modules\napparametergui\src \
+                         $(NAP_WORKING_DIR)\modules\nappython\src \
+                         $(NAP_WORKING_DIR)\modules\naprender\src \
+                         $(NAP_WORKING_DIR)\modules\napsandbox\src \
+                         $(NAP_WORKING_DIR)\modules\napscene\src \
+                         $(NAP_WORKING_DIR)\modules\napsdlinput\src \
+                         $(NAP_WORKING_DIR)\modules\napserial\src \
+                         $(NAP_WORKING_DIR)\modules\napsvg\src \
+                         $(NAP_WORKING_DIR)\modules\napvideo\src \
+                         $(NAP_WORKING_DIR)\modules\napwebsocket\src \
+                         $(NAP_WORKING_DIR)\modules\napyoctopuce\src \
+                         $(NAP_WORKING_DIR)\utility\src
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter (but
 # less readable) file names. This can be useful is your file systems doesn't
