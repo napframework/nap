@@ -154,7 +154,7 @@ namespace nap
 		* Construct a EntityInstancePtr from a EntityInstancePtrInitProxy, which can be retrieved through initEntityInstancePtr.
 		*/
 		template<class SourceComponentType>
-		EntityInstancePtr(EntityInstancePtrInitProxy<SourceComponentType>& proxy) :
+		EntityInstancePtr(const EntityInstancePtrInitProxy<SourceComponentType>& proxy) :
 			EntityInstancePtr(proxy.mSourceComponentInstance, proxy.mEntityMemberPointer)
 		{
 		}
