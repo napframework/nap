@@ -19,7 +19,8 @@ namespace napkin
 	static const QString TXT_THEME_NATIVE		= "Native";
 
 	// The file filter used by file dialogs
-	static const QString JSON_FILE_FILTER = "NAP JSON File (*.nap.json, *.json)";
+	static const QString JSON_FILE_EXT = "json";
+	static const QString JSON_FILE_FILTER = QString("NAP JSON File (*.%1)").arg(JSON_FILE_EXT);
 
 	static const QString DEFAULT_SETTINGS_FILE = "resources/settings.ini";
 

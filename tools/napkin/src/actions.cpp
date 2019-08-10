@@ -109,6 +109,9 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
+	if (!filename.endsWith("." + JSON_FILE_EXT))
+		filename = filename + "." + JSON_FILE_EXT;
+
 	ctx.saveDocumentAs(filename);
 }
 
