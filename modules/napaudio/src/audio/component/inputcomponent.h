@@ -15,13 +15,12 @@ namespace nap
     
     namespace audio
     {
-    
+		// Forward Declares
         class AudioInputComponentInstance;
-        
         
         /**
          * Component to receive audio input from the audio interface.
-         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
+         * Can be used as input to an OutpuComponent of LevelMeterComponent.
          */
         class NAPAPI AudioInputComponent : public AudioComponentBase
         {
@@ -41,7 +40,7 @@ namespace nap
         
         /**
          * Instance of component to receive audio input from the audio interface.
-         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
+         * Can be used as input to an OutpuComponent of LevelMeterComponent.
          */
         class NAPAPI AudioInputComponentInstance : public AudioComponentBaseInstance
         {

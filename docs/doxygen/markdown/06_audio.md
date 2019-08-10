@@ -92,7 +92,7 @@ else {
 Audio Input {#audio_input_comp}
 ==========================
 
-In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::InputComponent):
+In many cases we might need to use an audio signal directly from the hardware input of your audio device, such as a microphone input or line in signal. For this case we use [InputComponent](@ref nap::audio::AudioInputComponent):
 
 ~~~
 {
@@ -130,7 +130,7 @@ Writing Custom Audio Components {#audio_custom}
 Nodes {#audio_nodes}
 -----------------------
 
-Behind the audio components described in this chapter runs a very modular open system that is designed to implement all sorts of custom DSP systems for audio purposes. This is the backbone of the NAP audio module. The heart of this system is the [Nodemanager](@ref nap::audio::NodeManager), that lives within the [AudioService](@ref nap::audio::AudioService). The NodeManager processes a collection of [Nodes](@ref nap::audio::Node) that are connected together to form a DSP network. The baseclass of all nodes is [Node](@ref nap::audio::Node). Each node can have a number of [input](@ref nap::audio::InputPin) and [output](@ref nap::audio::OutputPin) pins that can be used to connect nodes. The pins and their connections represent the flow of audio signals within the DSP system. Each Node has a [process()](@ref nap::audio::Node::process) method that defines how the node calculates it's output signals from it's input signals.
+Behind the audio components described in this chapter runs a very modular open system that is designed to implement all sorts of custom DSP systems for audio purposes. This is the backbone of the NAP audio module. The heart of this system is the [Nodemanager](@ref nap::audio::NodeManager), that lives within the [AudioService](@ref nap::audio::AudioService). The NodeManager processes a collection of [Nodes](@ref nap::audio::Node) that are connected together to form a DSP network. The baseclass of all nodes is [Node](@ref nap::audio::Node). Each node can have a number of [input](@ref nap::audio::InputPin) and [output](@ref nap::audio::OutputPin) pins that can be used to connect nodes. The pins and their connections represent the flow of audio signals within the DSP system. Each [Node](@ref nap::audio::Node) has a process() method that defines how the node calculates it's output signals from it's input signals.
 
 There are two special case nodes: the [InputNode](@ref nap::audio::InputNode) and the [OutputNode](@ref nap::audio::OutputNode). The InputNode has one output pin that contains the audio signal from a hardware input channel on the audio device. The OutputNode has one input from which the audio signal will be routed to a hardware output channel.
 

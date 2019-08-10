@@ -37,6 +37,7 @@ namespace nap
 		/**
 		 * Creates a web-socket ticket based on a previously acquired binary string. 
 		 * @param binaryString the binary string representation of a ticket.
+		 * @param result contains the result of the de-serialization step. Ticket is destructed when results are out of scope.
 		 * @param error contains the error if conversion fails.
 		 * @return the web-socket ticket, nullptr if conversion fails
 		 */

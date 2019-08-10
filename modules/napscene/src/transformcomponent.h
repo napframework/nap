@@ -57,17 +57,14 @@ namespace nap
         using ComponentInstance::update;
 
 		/**
-		* Initialize this component from its resource
-		*
-		* @param resource The resource we're being instantiated from
-		* @param entityCreationParams Parameters required to create new entity instances during init
-		* @param errorState The error object
-		*/
+		 * Initializes this component.
+		 * @param errorState The error object
+		 */
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Constructs and returns a local transform
-		 * @return this transform local matrix
+		 * Constructs and returns the local transform.
+		 * @return this transform local transformation matrix
 		 */
 		const glm::mat4x4& getLocalTransform() const;
 
@@ -75,24 +72,25 @@ namespace nap
 		 * Set the local transform based on the given matrix.
 		 * Note that the matrix is decomposed, result is stored in the individual elements:
 		 * Uniform scale is discarded, ie: the result will be 1.
+		 * @param matrix new local transformation matrix. 
 		 */
-		void setLocalTransform(const glm::mat4x4& matrix) ;
+		void setLocalTransform(const glm::mat4x4& matrix);
 
 		/**
-		 * Returns the global transform of this node
-		 * Note that the global transform can be out of sync as it's
-		 * recomputed on update.
+		 * Returns the global transform of this node.
+		 * Note that the global transform can be out of sync as it's recomputed on update.
 		 * point on resolve downwards
 		 */
 		const glm::mat4x4& getGlobalTransform() const;
 
 		/**
-		 * Sets the dirty flag
+		 * When set dirty, the transform component will re-compute 
+		 * the global and local transform matrices when requested.
 		 */
 		void setDirty();
 
 		/**
-		 * @return if the local transform is dirty
+		 * @return if the local transform is dirty.
 		 */
 		bool isDirty() const							{ return mWorldDirty; }
 
@@ -104,16 +102,50 @@ namespace nap
 		 */
 		void update(const glm::mat4& parentTransform);
 
+		/**
+		 * Sets the transformation part of this component.
+		 * @param translate new component translation.
+		 */
 		void setTranslate(const glm::vec3& translate);
+		
+		/**
+		 * @return component translation
+		 */
 		const glm::vec3& getTranslate() const			{ return mTranslate;  }
 
+		/**
+		 * Sets the rotation part of this component.
+		 * @param rotate new component rotation.
+		 */
 		void setRotate(const glm::quat& rotate);
+		
+		/**
+		 * @return component rotation
+		 */
 		const glm::quat& getRotate() const				{ return mRotate; }
 
+		/**
+		 * Sets the scale factor of the x, y and z axis of this component.
+		 * Note that the uniform scale is applied after axis dependent scale factor.
+		 * @param scale the new component scale.
+		 */
 		void setScale(const glm::vec3& scale);
+		
+		/**
+		 * @return component scale
+		 */
 		const glm::vec3& getScale() const				{ return mScale; }
 
+		/**
+		 * Sets the uniform scale factor, applied to all axis.
+		 * Note that the uniform scale is applied after the axis independent scale factor.
+		 * @param scale the new component scale.
+		 */
 		void setUniformScale(float scale);
+		
+		/**
+		 * @return uniform component scale.
+		 */
 		const float getUniformScale() const				{ return mUniformScale; }
 
 	private:

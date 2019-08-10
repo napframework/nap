@@ -78,11 +78,9 @@ namespace nap
 		T* getComponent() const;
 
 		/**
-		 * Initialize this component from its resource
-		 *
-		 * @param resource The resource we're being instantiated from
-		 * @param entityCreationParams Parameters required to create new entity instances during init
-		 * @param errorState The error object
+		 * Initializes this component based on it's resource.
+		 * @param errorState contains the error when initialization fails.
+		 * @return if initialization succeeded.
 		 */
         virtual bool init(utility::ErrorState& errorState);
 

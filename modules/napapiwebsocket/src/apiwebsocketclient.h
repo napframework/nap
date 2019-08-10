@@ -101,7 +101,7 @@ namespace nap
 		 * The message should be the result of a previous query to a NAP server.
 		 * @param message the received web-socket (text) message that contains individual nap::APIMessage objects.
 		 * @param outEvents the result of the extraction process.
-		 * @error contains the error if conversion fails
+		 * @param error contains the error if conversion fails
 		 * @return if conversion succeeded.
 		 */
 		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);

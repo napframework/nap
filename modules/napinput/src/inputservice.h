@@ -70,7 +70,7 @@ namespace nap
 
 		/**
 		 * Adds an input event to the queue, to be processed later.
-		 * @param inputEvent, the event to add, ownership is transfered here
+		 * @param inEvent the event to add, ownership is transfered here
 		 */
 		void addEvent(InputEventPtr inEvent);
 

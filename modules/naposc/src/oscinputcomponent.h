@@ -18,7 +18,7 @@ namespace nap
 	/**
 	 * Receives osc events based on the address filter
 	 * The address filter is a list of strings that represent individual osc addresses
-	 * When the osc service forwards an event it checks if one of the names in the address filter starts with the address of the osc event. 
+	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
 	 * If that's the case the instance of this component receives an osc event. 
 	 * When the address filter is empty all events are forwarded.
 	 */
@@ -31,7 +31,7 @@ namespace nap
 			return RTTI_OF(OSCInputComponentInstance);
 		}
 
-		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded
+		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded.
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,9 @@ namespace nap
 	/**
 	 * Instance of the OSC input component
 	 * This component will forward any received osc messages to listening components
-	 * Register to the @messageReceived event to receive osc events that match the address pattern
+	 * Listen to the messageReceived signal to receive osc events that match the address pattern.
+	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
+	 * When the address filter is empty all events are forwarded.
 	 */
 	class NAPAPI OSCInputComponentInstance : public ComponentInstance
 	{

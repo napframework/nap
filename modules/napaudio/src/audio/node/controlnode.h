@@ -52,7 +52,7 @@ namespace nap
             ControllerValue getRawValue() const { return mCurrentValue; }
 
             /**
-             * Start ramping to @destination over a period of @time, using mode to indicate the type of ramp.
+             * Start ramping to destination over a period of time, using mode to indicate the type of ramp.
              */
             void ramp(ControllerValue destination, TimeValue time, RampMode mode = RampMode::Linear);
             

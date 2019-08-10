@@ -89,7 +89,7 @@ namespace nap
 
 		/**
 		 * Initializes the server endpoint. 
-		 * @param error contains the error when initialization fails
+		 * @param errorState contains the error when initialization fails
 		 * @return if initialization succeeded
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;

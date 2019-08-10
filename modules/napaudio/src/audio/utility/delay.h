@@ -48,7 +48,7 @@ namespace nap
             unsigned int getMaxDelay() { return mBuffer.size(); }
             
             /**
-             * Operator to read from the delay line without interpolation at @index before the write position
+             * Operator to read from the delay line without interpolation at index before the write position
              */
             inline SampleValue operator[](unsigned int index)
             {

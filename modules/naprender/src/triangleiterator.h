@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 
 #include <utility/dllexport.h>
 #include <vertexattribute.h>
@@ -121,8 +121,9 @@ namespace nap
 		IndexArray::const_iterator end()					{ return mIndices.end(); }
 
 		/**
-		 * @param attribute The VertexAttribute to retrieve data from
-		 * @return the TriangleData from @attribute, corresponding to the indices in this triangle
+		 * Returns the triangle vertex data of a specific attribute, for example the triangle position, color or normal.
+		 * @param attribute The vertex attribute to retrieve vertex data for.
+		 * @return the vertex data data of the given attribute, corresponding to the indices in this triangle.
 		 */
 		template<class T>
 		TriangleData<T> getVertexData(const VertexAttribute<T>& attribute) const
@@ -131,6 +132,7 @@ namespace nap
 		}
 
 		/**
+		 * Sets the triangle vertex data of a specific attribute, for example the triangle position, color or normal.
 		 * @param attribute The VertexAttribute to set data to
 		 * @param firstValue The value to set to the first vertex of the triangle
 		 * @param secondValue The value to set to the second vertex of the triangle

@@ -10,9 +10,9 @@
 namespace nap
 {
 	/**
-	 * Main interface for rendering to various Etherdream Dacs
+	 * Main interface for rendering to various Etherdream Dacs.
 	 * The service is responsible for opening / closing the general Etherdream library
-	 * and allows for rendering data to the available dacs
+	 * and allows for pushing data to the available dacs.
 	 */
 	class NAPAPI EtherDreamService : public Service
 	{
@@ -27,7 +27,7 @@ namespace nap
 		/**
 		 * Adds a dac to the system, every dac is associated with a number.
 		 * This number can change but the dac name is unique, this call set the associated laser index 
-		 * on the etherdream dac object
+		 * on the etherdream dac object.
 		 * @return if the dac has been found and added to the system
 		 */
 		bool allocateDAC(EtherDreamDac& dac);
