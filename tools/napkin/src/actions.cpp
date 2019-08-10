@@ -263,7 +263,7 @@ void RemovePathAction::perform()
 
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
 {
-    setText(themeName.isEmpty() ? napkin::TXT_THEME_NATIVE : themeName);
+    setText(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName);
     setCheckable(true);
 }
 
