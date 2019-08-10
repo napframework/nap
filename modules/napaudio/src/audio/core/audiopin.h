@@ -24,7 +24,7 @@ namespace nap
         
         
         /**
-         * Interface for @InputPin and @MultiInputPin classes
+         * Interface for input pin and multi input pin classes
          */
         class NAPAPI InputPinBase
         {
@@ -53,13 +53,13 @@ namespace nap
             virtual bool isConnected() const = 0;
             
             /**
-             * Enqueues a @connect call the be executed on the audio thread.
+             * Enqueues a connect call the be executed on the audio thread.
              * This is the connect() function that is exposed to RTTR and to python.
              */
             void enqueueConnect(OutputPin& pin);
 
             /**
-             * Enqueues a @disconnect call the be executed on the audio thread
+             * Enqueues a disconnect call the be executed on the audio thread
              * This is the disconnect() function that is exposed to RTTR and to python.
              */
             void enqueueDisconnect(OutputPin& pin);
@@ -91,9 +91,9 @@ namespace nap
             SampleBuffer* pull();
             
             /**
-             * Connects another node's @OutputPin to this input.
+             * Connects another node's output pin to this input.
              * If either this ipnut or the connected output is already connected it will be disconnected first.
-             * @param input: The output that this @InputPin will be connected to.
+             * @param input: The output that this input pin will be connected to.
              */
             void connect(OutputPin& input) override;
             
@@ -185,7 +185,7 @@ namespace nap
             RTTI_ENABLE()
         public:
             /**
-             * @param parent: the owner node if this output
+             * @param node: the owner of this output
              */
             OutputPin(Node* node);
             
@@ -202,7 +202,7 @@ namespace nap
             bool isConnected() const { return !mOutputs.empty(); }
             
             /**
-             * Used by @InputPin to poll this output for a new buffer of output samples
+             * Used by the input pin to poll this output for a new buffer of output samples
              */
             SampleBuffer* pull();
             

@@ -59,7 +59,6 @@ namespace nap
 	 * Typed interface for vertex attributes. 
 	 * CPU data can be read by using getValues().
 	 * CPU data can be updated by using the various other functions. Make sure to call MeshInstance::update() after edits are performed.
-	 * 
 	 * Notice that all known vertex attribute types have specializations for GetType and GetNumComponents.
 	 */
 	template<typename ELEMENTTYPE>
@@ -69,7 +68,8 @@ namespace nap
 	public:
 
 		/**
-		 * Reserves an amount of memory to hold @number amount of elements
+		 * Reserves a certain amount of CPU memory to hold the given number of elements
+		 * @param numElements the number of elements to reserve memory for.
 		 */
 		virtual void reserve(size_t numElements) override		{ mData.reserve(numElements); }
 
@@ -79,7 +79,8 @@ namespace nap
 		virtual size_t getCapacity() const override				{ return mData.capacity(); }
 
 		/**
-		 *	Resizes the data container to hold @number amount of elements
+		 * Resizes the data container to hold the given number of elements.
+		 * @param numElements the new number of elements.
 		 */
 		void resize(size_t numElements)							{ mData.resize(numElements); }
 
@@ -99,14 +100,15 @@ namespace nap
 		std::vector<ELEMENTTYPE>& getData()						{ return mData; }
 
 		/**
-		 * Adds a single element to the buffer.
+		 * Adds a single element to the end of the buffer. Data is copied.
+		 * @param element to add.
 		 */
 		void addData(const ELEMENTTYPE& element)				{ mData.emplace_back(element); }
 
 		/**
-		 * Adds data to the existing data in the buffer.
-		 * @param elements Pointer to the elements to copy.
-		 * @param numElements Amount of elements in @elements to copy.
+		 * Adds data to the existing data in the buffer. Data is copied.
+		 * @param elements pointer to the elements to add.
+		 * @param numElements number of elements in buffer to add.
 		 */
 		void addData(const ELEMENTTYPE* elements, int numElements);
 
@@ -118,22 +120,24 @@ namespace nap
 
 		/**
 		 * Sets the entire vertex attribute buffer.
-		 * @param elements Pointer to the elements to copy.
-		 * @param numElements Amount of elements in @elements to copy.
+		 * @param elements pointer to the elements to copy.
+		 * @param numElements amount of elements to copy.
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
 		/**
-		 * @return the opengl type associated with this vertex attribute
+		 * Returns the opengl type associated with this vertex attribute.
 		 * Note that this only works for specialized types such as float, int etc.
 		 * Refer to the type definitions for supported vertex attribute types
+		 * @return the opengl type associated with this vertex attribute
 		 */
 		virtual GLenum getType() const override;
 
 		/**
-		 * @return the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
+		 * Returns the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
 		 * Note that this only works for supported specialized types such as float, int etc.
 		 * Refer to the type definitions for supported vertex attribute types
+		 * @return the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
 		 */
 		virtual int getNumComponents() const override;
 

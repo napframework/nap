@@ -1,14 +1,14 @@
 #include <cmath>
 
 namespace nap
-{
-    
+{   
     namespace audio
     {
         
         /**
-         * Wraps value @inc within the range of @bufferSize.
-         * @bufferSize is required to be a power of 2!
+         * Wraps value given by inc within the range of bufferSize.
+		 * @param inc incremental wrap value
+         * @param bufferSize size of the buffer, required to be a power of 2!
          */
         inline unsigned int wrap(unsigned int inc, unsigned int bufferSize)
         {
@@ -19,6 +19,10 @@ namespace nap
         
         /**
          * Linear interpolation between v0 and v1. v0 is returned when t = 0 and v1 is returned when t = 1.
+		 * TODO: DEPRECATE, use default math::lerp<T>, which is optimized for SSL instruction set.
+		 * @param v0 min value
+		 * @param v1 max value
+		 * @param t lerp value (0-1)
          */
         template <typename T>
         inline T lerp(const T& v0, const T& v1, const T& t)

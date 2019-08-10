@@ -73,7 +73,7 @@ namespace nap
 		virtual bool isPointer() const = 0;
 
 		/**
-		 * Converts and copies the values associated with this color in to @target.
+		 * Converts and copies the values associated with this color in to the target color.
 		 * It's required that the source has an equal or higher amount of color channels compared to target
 		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
 		 * This call asserts if the conversion can't be performed.
@@ -90,7 +90,7 @@ namespace nap
 		void convert(BaseColor& target) const;
 
 		/**
-		* @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
+		* @return a color converter to convert source color in to target color, nullptr if no such converter exists
 		* Use this call when dealing with the same color conversion multiple times in, for example, a loop
 		*/
 		Converter getConverter(const BaseColor& target) const;
@@ -214,10 +214,11 @@ namespace nap
 		bool isPointer() const override;
 
 		/**
-		* @param the channel to get the value for
-		* @return the color value associated with the specified channel
-		* This call asserts when the channel is not available
-		*/
+		 * Returns the color value associated with a given channel.
+		 * This call asserts when the channel is not available
+		 * @param channel the channel to get the value for
+		 * @return the color value associated with the specified channel
+		 */
 		T getValue(EColorChannel channel) const;
 
 		/** 
@@ -381,9 +382,9 @@ namespace nap
 		T getGreen() const														{ return Color<T,3>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to the incoming value
-		* @param blue color value
-		*/
+		 * Sets the blue channel to the given color value
+		 * @param value color value
+		 */
 		void setBlue(T value)													{ Color<T,3>::setValue(EColorChannel::Blue, value); }
 
 		/**
@@ -392,7 +393,7 @@ namespace nap
 		T getBlue() const														{ return Color<T,3>::getValue(EColorChannel::Blue); }
 
 		/**
-		 *	@return the color as a vec3 (float)
+		 * @return the color as a vec3 (float)
 		 */
 		glm::vec3 toVec3() const;
 	};
@@ -424,14 +425,14 @@ namespace nap
 		void setRed(T value)													{ Color<T,4>::setValue(EColorChannel::Red, value); }
 
 		/*
-		* @return the red color value
-		*/
+		 * @return the red color value
+		 */
 		T getRed() const														{ return Color<T,4>::getValue(EColorChannel::Red); }
 
 		/**
-		* Sets the green channel to the incoming value
-		* @param value green color value
-		*/
+		 * Sets the green channel to the given value
+		 * @param value green color value
+		 */
 		void setGreen(T value)													{ Color<T,4>::setValue(EColorChannel::Green, value); }
 
 		/*
@@ -440,14 +441,14 @@ namespace nap
 		T getGreen() const														{ return Color<T,4>::getValue(EColorChannel::Green); }
 
 		/**
-		* Sets the blue channel to the incoming value
-		* @param blue color value
-		*/
+		 * Sets the blue channel to the given value.
+		 * @param value new color value
+		 */
 		void setBlue(T value)													{ Color<T,4>::setValue(EColorChannel::Blue, value); }
 
 		/*
-		* @return the blue color value
-		*/
+		 * @return the blue color value
+		 */
 		T getBlue() const														{ return Color<T,4>::getValue(EColorChannel::Blue); }
 
 		/**

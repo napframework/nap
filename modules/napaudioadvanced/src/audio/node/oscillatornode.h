@@ -11,7 +11,6 @@ namespace nap
 {
     namespace audio
     {
-        
         /**
          * A wavetable that can be used as waveform data for an oscillator.
          * Contains a buffer with one cycle of samples for a periodic waveform.
@@ -41,7 +40,8 @@ namespace nap
             inline SampleValue operator[](long index) const;
             
             /**
-             * Read from the waveform at a certain index between 0 and @getSize()
+             * Read from the waveform at a certain index between 0 and getSize()
+			 * @param index waveform index
              */
             inline SampleValue interpolate(double index) const;
             

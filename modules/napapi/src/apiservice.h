@@ -61,6 +61,7 @@ namespace nap
 		 * @param id method associated with float value.
 		 * @param value the float value to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendFloat(const char* id, float value, utility::ErrorState* error);
 		
@@ -70,6 +71,7 @@ namespace nap
 		 * @param id method associated with string value.
 		 * @param value the string to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendString(const char* id, const char* value, utility::ErrorState* error);
 		
@@ -79,6 +81,7 @@ namespace nap
 		 * @param id method associated with int value.
 		 * @param value the int to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */		
 		bool sendInt(const char* id, int value, utility::ErrorState* error);
 		
@@ -88,6 +91,7 @@ namespace nap
 		 * @param id method associated with byte value.
 		 * @param value the byte to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendByte(const char* id, nap::uint8 value, utility::ErrorState* error);
 
@@ -97,6 +101,7 @@ namespace nap
 		 * @param id method associated with bool value.
 		 * @param value the bool to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendBool(const char* id, bool value, utility::ErrorState* error);
 
@@ -106,6 +111,7 @@ namespace nap
 		 * @param id method associated with long value.
 		 * @param value the long to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendLong(const char* id, int64_t value, utility::ErrorState* error);
 		
@@ -115,6 +121,7 @@ namespace nap
 		 * @param id method associated with char value.
 		 * @param value the char to send.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendChar(const char* id, char value, utility::ErrorState* error);
 		
@@ -123,6 +130,7 @@ namespace nap
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with signal.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool send(const char* id, utility::ErrorState* error);
 		
@@ -131,7 +139,7 @@ namespace nap
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param apiEvent the event to forward to the running application
 		 * @param error contains the error if sending fails
-		 * @return if the message could be send or not
+		 * @return if sending succeeded
 		 */
 		bool sendEvent(APIEventPtr apiEvent, utility::ErrorState* error);
 
@@ -184,6 +192,7 @@ namespace nap
 		 * 
 		 * @param json the json string to parse and extract messages from.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendMessage(const char* json, utility::ErrorState* error);
 
@@ -191,9 +200,10 @@ namespace nap
 		 * Sends an array of ints to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with int array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendIntArray(const char* id, int* array, int length, utility::ErrorState* error);
 		
@@ -201,9 +211,10 @@ namespace nap
 		 * Sends an array of floats to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with float array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendFloatArray(const char* id, float* array, int length, utility::ErrorState* error);
 		
@@ -211,9 +222,10 @@ namespace nap
 		 * Sends an array of bytes to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with byte array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendByteArray(const char* id, uint8_t* array, int length, utility::ErrorState* error);
 		
@@ -221,9 +233,10 @@ namespace nap
 		 * Sends an array of string values to a NAP application, a copy of the data in the array is made.
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 * @param id method associated with string array.
-		 * @param value the array data to send.
+		 * @param array the array data to send.
 		 * @param length the number of elements in the array.
 		 * @param error contains the error if sending fails.
+		 * @return if sending succeeded
 		 */
 		bool sendStringArray(const char* id, const char** array, int length, utility::ErrorState* error);
 

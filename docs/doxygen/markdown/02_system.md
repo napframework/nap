@@ -57,11 +57,11 @@ It is possible that a service wants to use functionality from other services. NA
 Apps {#apps}
 =======================
 
-The main entrypoint for running an application is the [AppRunner](@ref nap::AppRunner). This objects requires two objects: an [application](@ref nap::App) to run and an [event handler](@ref nap::BaseAppEventHandler). The event handler forwards system events to the application. These events include mouse and keyboard input. Every application needs to be derived from [BaseApp](@ref nap::BaseApp) and every event handler needs to be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
+The main entrypoint for running an application is the [AppRunner](@ref nap::AppRunner). This objects requires two objects: an [application](@ref nap::App) to run and an [event handler](@ref nap::AppEventHandler). The event handler forwards system events to the application. These events include mouse and keyboard input. Every application needs to be derived from [BaseApp](@ref nap::BaseApp) and every event handler needs to be derived from [AppEventHandler](@ref nap::AppEventHandler).
 
 The easiest way to set up a new project is to:
 - Derive a new applicaton from [App](@ref nap::App) 
-- Use the default [GuiAppEventHandler](@ref nap::GuiAppEventHandler) to pass input events to your application
+- Use the default [GUIAppEventHandler](@ref nap::GUIAppEventHandler) to pass input events to your application
 - Give both of them to the [AppRunner](@ref nap::AppRunner) and start the loop
 
 ~~~~~~~~~~~~~~~{.cpp}

@@ -61,9 +61,9 @@ namespace nap
 		glm::vec3 worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport);
 
 		/**
-		 * Computes a ray directed outwards from the camera based on a screen space position
-		 * The ray is normalized
-		 * @param screenPos, horizontal and vertical screen coordinates, where 0,0 is the lower left corner
+		 * Computes a ray directed outwards from the camera based on a screen space position.
+		 * The ray is normalized.
+		 * @param screenPos horizontal and vertical screen coordinates: where 0, 0 is the lower left corner
 		 * @param viewport rectangle that defines the viewport
 		 * @return a normalized ray pointing outwards from the camera in to the scene
 		 */
