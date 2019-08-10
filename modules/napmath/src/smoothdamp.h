@@ -11,7 +11,7 @@ namespace nap
 	namespace math
 	{
 		/**
-		 *	Base class of operator that gradually changes a value towards a desired goal over time
+		 * Base class of operator that gradually changes a value towards a desired goal over time
 		 */
 		class BaseSmoothOperator
 		{
@@ -47,8 +47,12 @@ namespace nap
 
 
 		/**
-		 * Smooth Damp utility class
-		 * This object gradually changes value T towards a desired goal over time
+		 * Smooth Damp utility class. Gradually changes a value of type T towards a desired goal over time.
+		 * This operator needs to be updated every frame! 
+		 * Call update() together with the new deltaTime and desired target value on application update. 
+		 * The update call returns the new smoothed value. Alternatively use getValue()
+		 * to get the current smoothed value after update. 
+		 * This operator is a convenience wrapper around nap::math::smoothDamp<T>()
 		 */
 		template<typename T>
 		class SmoothOperator : public BaseSmoothOperator
@@ -91,7 +95,7 @@ namespace nap
 			T& getVelocity()										{ return mVelocity; }
 
 			/**
-			 * Updates the current blend value based on @targetValue
+			 * Updates the current blend value based on the given targetValue
 			 * @param targetValue the value to blend to
 			 * @param deltaTime time in seconds it took to complete the last compute cycle
 			 * @return the current blend value

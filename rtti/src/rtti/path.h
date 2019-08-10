@@ -513,7 +513,7 @@ namespace nap
 			 * Resolve a Path against an Object
 			 *
 			 * @param object The object to resolve against
-			 * @param path The resolved RTTI path
+			 * @param resolvedPath The resolved RTTI path
 			 * @return Whether the resolve succeeded or not
 			 */
 			bool resolve(const rtti::Object* object, ResolvedPath& resolvedPath) const;

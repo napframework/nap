@@ -78,7 +78,7 @@ namespace opengl
 		/**
 		 * Sets the depth texture to use, this call will fail if the target hasn't been initialized yet.
 		 * Note that the target texture needs to have the same size as the current depth texture.
-		 * @param colorTexture texture to use
+		 * @param depthTexture texture to use
 		 * @param error contains the error if the operation fails.
 		 * @return if switching the depth texture succeeded.
 		 */

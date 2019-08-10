@@ -69,20 +69,20 @@ namespace nap
 		std::string readString(std::istream& stream);
 
 		/**
-		 * Converts all upper case characters in @ioString to lower case characters
+		 * Converts all upper case characters in ioString to lower case characters
 		 * @param ioString the input string that is converted to a lower case string
 		 */
 		void toLower(std::string& ioString);
 
 		/**
-		 * Converts all upper case characters in @ioString to lower case characters
+		 * Converts all upper case characters in ioString to lower case characters
 		 * @param string the input string that is converted
-		 * @return the lower case version of @string
+		 * @return the lower case version of the given string
 		 */
 		std::string toLower(const std::string& string);
 
 		/**
-		 * Strips all name space related identifiers from @str
+		 * Strips all name space related identifiers from the given string.
 		 * @param str the string to remove the namespace from
 		 * @return the stripped string
 		 */
@@ -91,6 +91,7 @@ namespace nap
 		/**
 		 * Tokenize str in to tokens
 		 * @param str the string to tokenize
+		 * @param tokens the tokens used to process the string
 		 * @param delims the delimiters used for the the tokenization process
 		 * @param omitTokens if the tokens are discarded from the result
 		 */
@@ -101,7 +102,7 @@ namespace nap
 		 * @param string the string to check
 		 * @param subString the part of the string to check for
 		 * @param caseSensitive if the lookup is case sensitive or not
-		 * @return if @string starts with @subString
+		 * @return if the given string starts with subString
 		 */
 		bool startsWith(const std::string& string, const std::string& subString, bool caseSensitive = true);
 

@@ -19,7 +19,7 @@ namespace nap
 		/**
 		 * Maps a value from min/max to outMin/outMax.
 		 * For example: fit<float>(10.0f, 0.0f, 20.0f, 100.0f, 200.0f) -> returns 150.0f.
-		 * Output is clamped to the requested outMin and outMax values.
+		 * Input is clamped, ensuring output is always in outMin and outMax range.
 		 * @param value the value to map
 		 * @param min the min input value
 		 * @param max the max input value
@@ -130,7 +130,7 @@ namespace nap
 
 		/**
 		 * @return a bell shaped curve based on value T (0-1)
-		 * @param time value in the range 0-1 to get value for
+		 * @param time sample value, from 0-1.
 		 * @param strength exponent of the bell curve
 		 */
 		template<typename T>
@@ -158,7 +158,7 @@ namespace nap
 		 * @param currentValue the current blend value, often the return value
 		 * @param targetValue the value to blend to
 		 * @param currentVelocity the current velocity used to blend to target
-		 * @param time in seconds between cooks
+		 * @param deltaTime time in seconds between cooks
 		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
 		 * @param maxSpeed allows you to clamp the maximum speed
 		 * @return the blended current value
@@ -171,7 +171,7 @@ namespace nap
 		* @param currentValue the current blend value, will be updated after calling
 		* @param targetValue the value to blend to
 		* @param currentVelocity the current velocity used to blend to target
-		* @param time in seconds between cooks
+		* @param deltaTime time in seconds between cooks
 		* @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
 		* @param maxSpeed allows you to clamp the maximum speed
 		* @return the blended current value
@@ -208,7 +208,7 @@ namespace nap
 
 		/**
 		 * Converts an euler rotation in degrees to radians
-		 * @param the euler rotation roll(x), pitch(y), yaw(z) in degrees
+		 * @param eulerDegrees the euler rotation roll(x), pitch(y), yaw(z) in degrees
 		 * @return the euler rotation in radians
 		 */
 		glm::vec3 NAPAPI radians(const glm::vec3& eulerDegrees);

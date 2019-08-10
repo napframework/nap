@@ -40,7 +40,7 @@ namespace opengl
 	/**
 	 * Sets if the window is resizable or not
 	 * @param window the window that should be resizable
-	 * @param resize if the window is resizable
+	 * @param resizable if the window is resizable
 	 */
 	void setWindowResizable(SDL_Window* window, bool resizable);
 
@@ -70,13 +70,14 @@ namespace opengl
 	void swap(SDL_Window* window);
 
 	/**
-	 * Shows a window
+	 * Makes a window visible.
+	 * @param window pointer to the window to make visible.
 	 * @param show if the window is shown or hidden
 	 */
 	void showWindow(SDL_Window* window, bool show);
 
 	/**
-	 * Makes sure the window is on top and received input focus
+	 * Makes sure the window is on top and receives input focus.
 	 * @param window the window to raise
 	 */
 	void raiseWindow(SDL_Window* window);
@@ -98,7 +99,7 @@ namespace opengl
 
 	/**
 	 * Set an OpenGL window attribute before window creation.
-	 * @param window attribute to set
+	 * @param attribute attribute to set
 	 * @param value the value to set the window attribute to
 	 */
 	void setAttribute(SDL_GLattr attribute, int value);
@@ -109,7 +110,7 @@ namespace opengl
 	int getAttribute(SDL_GLattr attribute);
 
 	/**
-	 * Creates an opengl context associated with @window
+	 * Creates an opengl context associated with the given window
 	 * @param window the window associated with the opengl context
 	 * @return the new OpenGL context
 	 */
@@ -150,9 +151,9 @@ namespace opengl
 	glm::ivec2 getWindowPosition(SDL_Window* window);
 
 	/**
-	 * Set the window position
+	 * Set the position of a window on screen.
 	 * @param window the window to set the position for
-	 * @param location the window location in pixels
+	 * @param position the window location in pixels
 	 */
 	void setWindowPosition(SDL_Window* window, const glm::ivec2& position);
 
@@ -173,14 +174,14 @@ namespace opengl
 
 	/**
 	 * Returns an SDL window based on the given ID
-	 * @param id, the window id to query
+	 * @param id the window id to query
 	 * @return handle to the SDL window, nullptr if not found
 	 */
 	SDL_Window* getWindow(uint32_t id);
 
 	/**
 	 * @return the id associated with a specific opengl window
-	 * @param window, the opengl window to get the id for
+	 * @param window the opengl window to get the id for
 	 */
 	uint32_t getWindowId(SDL_Window* window);
 
