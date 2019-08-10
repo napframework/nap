@@ -168,12 +168,15 @@ namespace opengl
 	 * The call doesn't convert the pixel data and only works with RGB color buffers (a window)
 	 * @param x the horizontal pixel coordinate
 	 * @param y the vertical pixel coordinate
-	 * @return color value from active color buffer
+	 * @param color value from active color buffer
 	 */
 	void getColor(int x, int y, std::array<std::uint8_t, 3>& color);
 
 	/**
-	 * Simple string formatter
+	 * Simple string formatter. 
+	 * Required because string utility library is not linked.
+	 * @param format the string to format
+	 * @return formatted string
 	 */
 	template <typename... Args>	
 	std::string formatString(const std::string& format, Args&&... args)

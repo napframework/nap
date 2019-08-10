@@ -42,8 +42,8 @@ namespace opengl
 		
 		/**
 		 * Convenience method to specicy lens aspect ratio, defined as width / height
-		 * @param width, arbitrary width, most often the resolution of the canvas
-		 * @param height, arbitrary height, most often the resolution of the canvas
+		 * @param width arbitrary width, most often the resolution of the canvas
+		 * @param height arbitrary height, most often the resolution of the canvas
 		 */
 		void	setAspectRatio(float width, float height);
 		

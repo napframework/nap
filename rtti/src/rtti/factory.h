@@ -78,7 +78,6 @@ namespace nap
 
 			/**
 			 * Adds association between a type and it's object creator.
-			 * @param typeInfo: the RTTI type to create a mapping for.
 			 * @param objectCreator: the object that can create instances of the type.
 			 */
 			void addObjectCreator(std::unique_ptr<IObjectCreator> objectCreator);
