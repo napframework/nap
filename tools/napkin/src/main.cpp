@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     AppContext::create();
 
 	// nap::Core is declared in AppContext
-	QApplication::setOrganizationName("NaiviSoftware");
+	QApplication::setOrganizationName("napframework");
 	QApplication::setApplicationName("Napkin");
 
 	initializeSettings();
