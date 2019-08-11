@@ -42,8 +42,19 @@ QGroupBox:title {
 QDockWidget {
     color: #CCC;
     border: 1px solid #444;
-
+    titlebar-close-icon:url(:/icons/icon_close.png);
+    titlebar-normal-icon:url(:/icons/icon_restore.png);
     /*padding: 10px;*/
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+    border: none;
+    padding: 1px;
+}
+
+QDockWidget::normal-button, QDockWidget::float-button {
+    border: none;
+    padding: 1px;
 }
 
 QLineEdit {

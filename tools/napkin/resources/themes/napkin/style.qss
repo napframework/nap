@@ -73,9 +73,23 @@ QDockWidget {
     border: 1px solid #444;
     font-size: 12px;
     font-family: "Montserrat";
-
+    titlebar-close-icon:url(:/icons/icon_close.png);
+    titlebar-normal-icon:url(:/icons/icon_restore.png);
     /*padding: 10px;*/
 }
+
+QDockWidget::close-button, QDockWidget::float-button {
+    border: none;
+    icon-size: 32px;
+    padding: 1px;
+}
+
+QDockWidget::normal-button, QDockWidget::float-button {
+    border: none;
+    icon-size: 32px;
+    padding: 1px;
+}
+
 
 QDockWidget::title {
     text-align: left;
