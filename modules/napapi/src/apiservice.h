@@ -156,7 +156,7 @@ namespace nap
 		 * Processing of the generated event is deferred until processEvents() is called.
 		 *
 		 * Example of a simple API Message in JSON:
-		 * 
+		 * ~~~~~
 		 * {
 				"Objects":
 		 *		[
@@ -185,7 +185,7 @@ namespace nap
 		 *			}
 		 *		]
 		 *	}
-		 *
+		 * ~~~~~ 
 		 * Note that the arguments can be of any type as defined in apivalue.h, including arrays.
 		 * Multiple messages can be combined inside the Objects array.
 		 * Every api message in that array is converted into an event and given to the nap application.

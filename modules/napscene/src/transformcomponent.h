@@ -27,7 +27,9 @@ namespace nap
 
 	/**
 	 * Resource part of the transform component.
-	 * Positions an object in a scene
+	 * Describes a local transform that is used to compute
+	 * the global transform of an object. When the transform is created
+	 * You can always query the current local matrix, the global matrix is updated on update().
 	 */
 	class NAPAPI TransformComponent : public Component
 	{

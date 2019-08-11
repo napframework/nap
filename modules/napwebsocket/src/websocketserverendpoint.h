@@ -46,11 +46,12 @@ namespace nap
 	 * For both modes (Ticket and Reserved) you need to acquire a ticket by sending a HTTP 'POST' request 
 	 * to the server. The body of the post should contain a JSON formatted string that contains 2 fields:
 	 * 'user' and 'pass'. Both fields are always required. For example:
-	 *
+	 * ~~~~~
 	 *	{
 	 *		"user": "napuser"		///< Always necessary
 	 *		"pass": "letmein"		///< Always necessary
 	 *	}
+	 * ~~~~~
 	 *
 	 * The server generates a new ticket based on the provided information and sends it back to the client that made the request.
 	 * The received ticket should be specified as the first SUB-PROTOCOL argument when creating the web-socket. The server extracts the ticket 
