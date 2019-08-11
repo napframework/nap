@@ -26,6 +26,10 @@ namespace nap
 
 	/**
 	 * Resource part of the rotate component
+	 * Automatically rotates the entity along a certain axis at a certain speed
+	 * The initial rotation value after initialization is used to rotate along the specified axis
+	 * This component updates (overrides) the rotate value of the transform component
+	 * Entities that use this component must have a transform
 	 */
 	class NAPAPI RotateComponent : public Component
 	{
