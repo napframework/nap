@@ -183,7 +183,9 @@ namespace nap
 	};
 
 	/**
-	 * The Logger invokes log messages through a global system using a singleton isntance.
+	 * The logger is a singleton that can be called to log messages of various degrees of severity. 
+	 * By default logged messages are printed to the console. 
+	 * Invoke logToDirectory() to log messages to file.
 	 */
 	class NAPAPI Logger
 	{
