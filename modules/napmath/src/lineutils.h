@@ -74,7 +74,7 @@ namespace nap
 		 * This function accurately blends a normal based on the position of a vertex on the line
 		 * Note that normals with a length of 0 will result in an invalid normal as we can't rotate along a normal with no value
 		 * @param distanceMap the per vertex line distance map that can be acquired using the getDistancesAlongLine function
-		 * @param vertexData the normal data associated with a line
+		 * @param vertexNormals the normal data associated with a line
 		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
 		 * @param outNormal the interpolated normal
 		 */

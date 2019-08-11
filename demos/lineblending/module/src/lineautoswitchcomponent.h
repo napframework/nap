@@ -37,7 +37,7 @@ namespace nap
 
 
 	/**
-	 * Automatically uipdates the line selection of a lineselectioncomponent,
+	 * Automatically updates the line selection of a lineselectioncomponent,
 	 * based on the blend value of the LineBlendComponent. Switching can occur
 	 * randomly or based on an explicit next line index
 	 */

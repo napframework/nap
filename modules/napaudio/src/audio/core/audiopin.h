@@ -144,12 +144,14 @@ namespace nap
             std::vector<SampleBuffer*> pull();
             
             /**
-             * Connects @input to this pin.
+             * Connects the given input to this pin.
+			 * @param input the input to connect
              */
             void connect(OutputPin& input) override;
             
             /**
-             * If @input is connected to this pin it will be disconnected.
+             * If the given input is connected to this pin it will be disconnected.
+			 * @param input the input to disconnect
              */
             void disconnect(OutputPin& input) override;
             
@@ -172,7 +174,7 @@ namespace nap
         /**
          * An audio output is used by audio node to connect it to other nodes.
          * The output connects one channel (mono) audio.
-         * It outputs a pointer to an owned @SampleBuffer.
+         * It outputs a pointer to an owned SampleBuffer.
          * The PullFunction of this class calls a calculate function on the node it belongs to.
          */
         class NAPAPI OutputPin final

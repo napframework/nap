@@ -64,8 +64,8 @@ namespace opengl
 	SDL_GLContext getCurrentContext();
 
 	/**
-	 * Swap the OpenGL buffers for a window, if double-buffering is supported.
-	 * @param the window to swap the buffers for
+	 * Swap the OpenGL buffers for a window, only works if double-buffering is enabled.
+	 * @param window the window to swap buffers of
 	 */
 	void swap(SDL_Window* window);
 

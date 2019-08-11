@@ -91,7 +91,7 @@ namespace nap
 			Object* create(rtti::TypeInfo typeInfo);
 
 			/**
-			 * @return If the type in @typeInfo is registered into the Factory, returns true. If the type is not 
+			 * @return If the type is registered into the Factory, returns true. If the type is not 
 			 * registered, the RTTI system is queried if it can be created.
 			 */
 			bool canCreate(rtti::TypeInfo typeInfo) const;
