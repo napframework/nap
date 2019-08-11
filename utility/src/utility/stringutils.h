@@ -117,7 +117,7 @@ namespace nap
 
 		/**
 		 * Checks if subString is present in string
-		 * @param string the full string that could contain @substring
+		 * @param string the full string that could contain substring
 		 * @param subString part of the string that could be present in string
 		 * @param caseSensitive if the lookup is case sensitive or not
 		 * @return if string contains subString

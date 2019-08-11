@@ -39,6 +39,7 @@ namespace nap
             
             /**
              * Triggers an envelope.
+			 * @param envelope envelope to trigger.
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
              * the resting time will be divided over the segments with durationRelative = true, using their duration values as denominator.
              */

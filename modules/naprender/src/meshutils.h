@@ -13,8 +13,8 @@ namespace nap
 		using MeshConnectivityMap = std::vector<std::vector<Triangle>>;
 
 		/**
-		* @param mesh the mesh to check
-		* @return if the mesh contains triangles, is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		* @param shape the mesh shape to check.
+		* @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 		*/
 		bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
 
@@ -80,7 +80,7 @@ namespace nap
 		void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
 		/**
-		* Generates a list of sequential indices from @offset op to @vertexCount + @offset.
+		* Generates a list of sequential indices from offset op to vertexCount + offset.
 		* @param shape The shape to generate indices for.
 		* @param vertexCount The number of indices to generate.
 		* @param offset The first index value.
@@ -115,16 +115,15 @@ namespace nap
 		float NAPAPI computeArea(nap::MeshInstance& mesh, const nap::VertexAttribute<glm::vec3>& vertices, std::vector<float>& outList);
 
 		/**
-		* Calculates the intersection of a ray and a triangle in 3 dimensions
-		* Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-		* Back-facing triangles relative to the ray direction are not considered
-		* @param rayOrigin the origin of the ray, often the world space position of a camera
-		* @param rayDirection the direction of the ray from it's origin
-		* @param indices the triangle indices
-		* @param vertices the triangle vertex positions
-		* @param outBaryPosition barycentric coordinates of point of intersection, where z is the scalar factor for the ray.
-		* @return if the ray intersects the triangle
-		*/
+		 * Calculates the intersection of a ray and a triangle in 3 dimensions
+		 * Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+		 * Back-facing triangles relative to the ray direction are not considered
+		 * @param rayOrigin the origin of the ray, often the world space position of a camera
+		 * @param rayDirection the direction of the ray from it's origin
+		 * @param vertices the triangle vertex positions
+		 * @param outCoordinates barycentric coordinates of point of intersection, where z is the scalar factor for the ray.
+		 * @return if the ray intersects the triangle
+		 */
 		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const TriangleData<glm::vec3>& vertices, glm::vec3& outCoordinates);
 
 		/**

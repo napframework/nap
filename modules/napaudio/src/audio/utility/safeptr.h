@@ -40,8 +40,9 @@ namespace nap
             }
             
             /**
-             * This method is used by @SafeOwner to dispose it's data when it goes out of scope.
+             * This method is used by SafeOwner to dispose it's data when it goes out of scope.
              * The disposed data will be kept by the DeletionQueue and will be destructed and freed on the next call of clear().
+			 * @param ownerData the data to dispose of
              */
             template <typename T>
             void enqueue(typename SafeOwner<T>::Data* ownerData)
@@ -355,7 +356,7 @@ namespace nap
             SafePtr() = default;
             
             /**
-             * Constructs a SafePtr pointing to an object owned by a @SafeOwner.
+             * Constructs a SafePtr pointing to an object owned by a SafeOwner.
              */
             SafePtr(SafeOwner<T>& owner)
             {
