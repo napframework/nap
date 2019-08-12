@@ -58,19 +58,12 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	auto font = mTitle.font();
 	font.setPointSize(14);
 	mTitle.setFont(font);
-
 	mSubTitle.setAlignment(Qt::AlignRight);
 
 	mHeaderLayout.addWidget(&mTitle);
 	mHeaderLayout.addWidget(&mSubTitle);
 	mLayout.addLayout(&mHeaderLayout);
-
-	mPathLabel.setText("Path:");
-	mSubHeaderLayout.addWidget(&mPathLabel);
-	mPathField.setReadOnly(true);
-	mSubHeaderLayout.addWidget(&mPathField);
-
-	mLayout.addLayout(&mSubHeaderLayout);
+	mHeaderLayout.setContentsMargins(0, 6, 0, 0);
 
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
@@ -90,6 +83,13 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 
 	connect(&AppContext::get(), &AppContext::documentClosing, 
 		this, &InspectorPanel::onFileClosing);
+
+	mPathLabel.setText("Path:");
+	mSubHeaderLayout.addWidget(&mPathLabel);
+	mPathField.setReadOnly(true);
+	mSubHeaderLayout.addWidget(&mPathField);
+
+	mLayout.addLayout(&mSubHeaderLayout);
 
 }
 

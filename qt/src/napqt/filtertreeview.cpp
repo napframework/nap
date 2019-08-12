@@ -38,7 +38,7 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 
-	mLineEditFilter.setPlaceholderText("filter");
+	mLineEditFilter.setPlaceholderText("filter...");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
