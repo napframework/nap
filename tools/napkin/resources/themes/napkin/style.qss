@@ -20,10 +20,8 @@ QMainWindow
 QWidget
 {
     font-family: "Nunito Sans", sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     color: #000;
-
-
     selection-background-color:#8B8CA0;
     selection-color: #111426;
 
@@ -71,7 +69,6 @@ QGroupBox:title {
 QDockWidget {
     color: #b0b2cb;
     border: 1px solid #444;
-    font-size: 12px;
     font-family: "Montserrat";
     titlebar-close-icon:url(:/icons/icon_close.png);
     titlebar-normal-icon:url(:/icons/icon_restore.png);
