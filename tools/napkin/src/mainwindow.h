@@ -63,6 +63,16 @@ namespace napkin
 		void addDocks();
 
 		/**
+		 * Called when a new dock widget is activated.
+		 */
+		void onDocked(QDockWidget *dockWidget);
+
+		/**
+		 * Removes possible white line under docked widgets
+		 */
+		void fixTabs();
+
+		/**
 		 * Add the menu
 		 */
 		void addMenu();
