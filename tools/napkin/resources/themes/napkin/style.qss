@@ -108,15 +108,11 @@ QLineEdit {
     border-radius: 2px;
     padding-left: 3px;
     padding-right: 10px;
-    background: #1a1b2b;
+    background: #171b33;
+    color: #8B8CA0;
 }
 
 QLineEdit:focus {
-    color: #8B8CA0;
-    background: #111426;
-}
-
-QLineEdit:!focus {
     color: #8B8CA0;
     background: #111426;
 }
