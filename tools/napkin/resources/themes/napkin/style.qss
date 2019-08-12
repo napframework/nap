@@ -21,10 +21,8 @@ QWidget
 {
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
-    color: #000;
     selection-background-color:#8B8CA0;
     selection-color: #111426;
-
     border: none;
 }
 
@@ -147,8 +145,8 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 
 QPushButton, QToolButton {
     font-family: "Nunito Sans ExtraBold";
-    color: #2D2E42;
-    background: #5D5E73;
+    color: #111426;
+    background: #8B8CA0;
     border-radius: 2px;
     margin: 4px;
     border: 0;
@@ -156,7 +154,7 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: #8B8CA0;
+    background: #5D5E73;
 }
 QPushButton:pressed {
     background: #111426;
