@@ -120,6 +120,16 @@ namespace nap
 		return result;
 	}
 
+	/**
+	 * This is a convenience function to get the number of elements in the specified uniform; it internally does the check to see if it's an 
+	 * array of values or array of textures.
+	 *
+	 * Note that this function is also called for non-array Uniforms; the return value can then be used by the client code to test if the uniform was an 
+	 * array or not. Otherwise, the client would have to do the array of values/array of textures check themselves before calling this function,
+	 * which would defeat the point.
+	 *
+	 * @return The number of array elements in the uniform; -1 if the uniform is not an array uniform.
+	 */
 	static int getNumArrayElements(const Uniform& uniform)
 	{
 		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
@@ -133,8 +143,13 @@ namespace nap
 		return -1;
 	}
 
+	/**
+	 * Helper function to verify that the specified uniform matches with the uniform declaration in the shader.
+	 * It verifies that the type of uniform (array/non-array) matches with the shader; if it's an array, it also verifies that the lengths match
+	 */
 	static bool verifyUniform(const Uniform& uniform, const opengl::UniformDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
 	{
+		// If the declaration is an array, verify that the uniform is also an array and that the sizes match
 		if (uniformDeclaration.isArray())
 		{
 			int numElements = getNumArrayElements(uniform);
@@ -145,12 +160,16 @@ namespace nap
 				return false;
 		}
 
+		// Verify the uniform types match
 		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
 			return false;
 
 		return true;
 	}
 
+	/**
+	 * Helper function to verify that the two uniforms match in size. Note that this is also called for non-array uniforms, in which case it always matches.
+	 */
 	static bool verifyArrayUniforms(const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
 	{
 		int source_size = getNumArrayElements(sourceUniform);
@@ -208,9 +227,9 @@ namespace nap
 		const UniformValueBindings& instance_value_bindings = getValueBindings();
 		for (auto& kvp : instance_value_bindings)
 		{
-			nap::Uniform* uniform_val = kvp.second.mUniform.get();
-			assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
-			static_cast<nap::UniformValue*>(uniform_val)->push(*kvp.second.mDeclaration);
+			nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
+			assert(uniform_val != nullptr);
+			uniform_val->push(*kvp.second.mDeclaration);
 			instance_bindings.insert(kvp.first);
 		}
 
@@ -232,9 +251,9 @@ namespace nap
 		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
 			{
-				nap::Uniform* uniform_val = kvp.second.mUniform.get();
-				assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
-				static_cast<nap::UniformValue*>(uniform_val)->push(*kvp.second.mDeclaration);
+				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
+				assert(uniform_val != nullptr);
+				uniform_val->push(*kvp.second.mDeclaration);
 			}
 		}
 
