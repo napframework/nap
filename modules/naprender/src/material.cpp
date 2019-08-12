@@ -608,14 +608,9 @@ namespace nap
 		}
 		else
 		{
-			// The current part represents the actual uniform; if it's a array of primitives, strip off the brackets from the name
-			std::string local_name = part;
-			if (isArray)
-				local_name = part.substr(0, bracketPos);
-
 			// Create a new uniform from the declaration and set its name
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
-			new_uniform->mName = local_name;
+			new_uniform->mName = part;
 
 			// Add the container
 			Uniform* result = new_uniform.get();
