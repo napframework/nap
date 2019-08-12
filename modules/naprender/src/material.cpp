@@ -170,12 +170,12 @@ namespace nap
 	/**
 	 * Helper function to verify that the two uniforms match in size. Note that this is also called for non-array uniforms, in which case it always matches.
 	 */
-	static bool verifyArrayUniforms(const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
+	static bool verifyArrayUniforms(const std::string& fullUniformPath, const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
 	{
 		int source_size = getNumArrayElements(sourceUniform);
 		int dest_size = getNumArrayElements(destUniform);
 
-		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, sourceUniform.mName.c_str(), dest_size, shaderID.c_str()))
+		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, fullUniformPath.c_str(), dest_size, shaderID.c_str()))
 			return false;
 
 		return true;
@@ -630,18 +630,20 @@ namespace nap
 	/**
 	 * Recursively apply uniforms in the source struct onto the destination struct
 	 */
-	bool applyUniformsRecursive(const std::string& shaderID, UniformStruct& sourceStruct, UniformStruct& destStruct, utility::ErrorState& errorState)
+	bool applyUniformsRecursive(const std::string& parentUniformPath, const std::string& shaderID, UniformStruct& sourceStruct, UniformStruct& destStruct, utility::ErrorState& errorState)
 	{
 		for (auto& source_uniform : sourceStruct.mUniforms)
 		{
+			std::string current_uniform_path = utility::stringFormat("%s.%s", parentUniformPath.c_str(), source_uniform->mName.c_str());
+
 			// All uniforms in the source (i.e. defined in the material) should also be present in the destination (i.e. defined in shader)
 			Uniform* dest_uniform = destStruct.findUniform(source_uniform->mName);
-			if (!errorState.check(dest_uniform != nullptr, "Uniform %s could not be matched with an uniform in the shader %s", source_uniform->mName.c_str(), shaderID.c_str()))
+			if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", current_uniform_path.c_str(), shaderID.c_str()))
 				return false;
 
-			// Typed must match
-			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform %s (source type = %s, target type = %s) in shader %s",
-								  source_uniform->mName.c_str(), source_uniform.get_type().get_name().data(), dest_uniform->get_type().get_name().data(), shaderID.c_str()))
+			// Types must match
+			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform '%s' (source type = %s, target type = %s) in shader %s",
+								  current_uniform_path.c_str(), source_uniform.get_type().get_name().data(), dest_uniform->get_type().get_name().data(), shaderID.c_str()))
 			{
 				return false;
 			}
@@ -655,16 +657,18 @@ namespace nap
 				// Size of the source must be <= the size in the dest (shader)
 				size_t source_size = source_struct_array->mStructs.size();
 				size_t dest_size = dest_struct_array->mStructs.size();
-				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, source_struct_array->mName.c_str(), dest_size, shaderID.c_str()))
+				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, current_uniform_path.c_str(), dest_size, shaderID.c_str()))
 					return false;
 
 				// Recurse
 				for (int index = 0; index < std::min(source_size, dest_size); ++index)
 				{
+					std::string array_uniform_path = utility::stringFormat("%s[%d]", current_uniform_path.c_str(), index);
+
 					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_struct_array->mStructs[index].get());
 					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_struct_array->mStructs[index].get());
 
-					if (!applyUniformsRecursive(shaderID, *source_uniform_struct, *dest_uniform_struct, errorState))
+					if (!applyUniformsRecursive(array_uniform_path, shaderID, *source_uniform_struct, *dest_uniform_struct, errorState))
 						return false;
 				}
 			}
@@ -675,13 +679,13 @@ namespace nap
 				if (source_struct != nullptr)
 				{
 					UniformStruct* dest_struct = (UniformStruct*)dest_uniform;
-					if (!applyUniformsRecursive(shaderID, *source_struct, *dest_struct, errorState))
+					if (!applyUniformsRecursive(current_uniform_path, shaderID, *source_struct, *dest_struct, errorState))
 						return false;
 				}
 				else
 				{
 					// Regular uniform; verify array lengths match if it's an array uniform
-					if (!verifyArrayUniforms(*source_uniform, *dest_uniform, shaderID, errorState))
+					if (!verifyArrayUniforms(current_uniform_path, *source_uniform, *dest_uniform, shaderID, errorState))
 						return false;
 
 					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
@@ -761,10 +765,12 @@ namespace nap
 				// Apply recursively
 				for (int index = 0; index < std::min(source_size, dest_size); ++index)
 				{
+					std::string path = utility::stringFormat("%s[%d]", source_uniform_struct_array->mName.c_str(), index);
+
 					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_uniform_struct_array->mStructs[index].get());
 					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_uniform_struct_array->mStructs[index].get());
 
-					if (!applyUniformsRecursive(mID, *source_uniform_struct, *dest_uniform_struct, errorState))
+					if (!applyUniformsRecursive(path, mID, *source_uniform_struct, *dest_uniform_struct, errorState))
 						return false;
 				}
 			}
@@ -781,18 +787,18 @@ namespace nap
 
 					// Recurse
 					UniformStruct* dest_uniform_struct = pos->second.get();
-					if (!applyUniformsRecursive(mID, *source_uniform_struct, *dest_uniform_struct, errorState))
+					if (!applyUniformsRecursive(source_uniform_struct->mName, mID, *source_uniform_struct, *dest_uniform_struct, errorState))
 						return false;
 				}
 				else
 				{
 					// Regular uniform; there must be a matching uniform
 					Uniform* dest_uniform = findUniform(uniform->mName);
-					if (!errorState.check(dest_uniform != nullptr, "Unable to match uniform '%s' with shader", uniform->mName.c_str()))
+					if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", uniform->mName.c_str(), mID.c_str()))
 						return false;
 
 					// If the uniform is an array uniform, verify that the lengths match
-					if (!verifyArrayUniforms(*uniform, *dest_uniform, mID, errorState))
+					if (!verifyArrayUniforms(dest_uniform->mName, *uniform, *dest_uniform, mID, errorState))
 						return false;
 
 					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
