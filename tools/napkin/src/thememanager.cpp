@@ -73,7 +73,7 @@ bool Theme::loadTheme()
 		const auto& levelName = logLevel->name();
 		auto colname = logColors[levelName.c_str()].GetString();
 		QColor col(QString::fromStdString(colname));
-		mLogColors.insert(logLevel, col);
+		mLogColors.insert(logLevel->level(), col);
 	}
 
 	// load custom colors
@@ -97,8 +97,8 @@ bool Theme::loadTheme()
 
 QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 {
-	if (mLogColors.contains(&lvl))
-		return mLogColors[&lvl];
+	if (mLogColors.contains(lvl.level()))
+		return mLogColors[lvl.level()];
 
 	nap::Logger::error("Color for log level not found: %s", lvl.name().c_str());
 	return {};
