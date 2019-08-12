@@ -65,13 +65,6 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mLayout.addLayout(&mHeaderLayout);
 	mHeaderLayout.setContentsMargins(0, 6, 0, 0);
 
-	mPathLabel.setText("Path:");
-	mSubHeaderLayout.addWidget(&mPathLabel);
-	mPathField.setReadOnly(true);
-	mSubHeaderLayout.addWidget(&mPathField);
-
-	mLayout.addLayout(&mSubHeaderLayout);
-
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 250);
@@ -90,6 +83,13 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 
 	connect(&AppContext::get(), &AppContext::documentClosing, 
 		this, &InspectorPanel::onFileClosing);
+
+	mPathLabel.setText("Path:");
+	mSubHeaderLayout.addWidget(&mPathLabel);
+	mPathField.setReadOnly(true);
+	mSubHeaderLayout.addWidget(&mPathField);
+
+	mLayout.addLayout(&mSubHeaderLayout);
 
 }
 
