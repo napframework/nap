@@ -58,12 +58,12 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	auto font = mTitle.font();
 	font.setPointSize(14);
 	mTitle.setFont(font);
-
 	mSubTitle.setAlignment(Qt::AlignRight);
 
 	mHeaderLayout.addWidget(&mTitle);
 	mHeaderLayout.addWidget(&mSubTitle);
 	mLayout.addLayout(&mHeaderLayout);
+	mHeaderLayout.setContentsMargins(0, 6, 0, 0);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
