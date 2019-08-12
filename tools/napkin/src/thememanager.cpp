@@ -100,8 +100,8 @@ QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 	if (mLogColors.contains(lvl.level()))
 		return mLogColors[lvl.level()];
 
-	nap::Logger::error("Color for log level not found: %s", lvl.name().c_str());
-	return {};
+	std::cout << "warning: unable to find color for log level: " << lvl.name().c_str() << std::endl;
+	return QColor(0,0,0);
 }
 
 QColor Theme::getColor(const QString& key) const
