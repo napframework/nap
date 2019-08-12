@@ -41,7 +41,7 @@ namespace napkin
 		QString mStylesheetFilename;
 		const QString mFilename;
 		QString mName;
-		QMap<const nap::LogLevel*, QColor> mLogColors;
+		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
 	};
 
