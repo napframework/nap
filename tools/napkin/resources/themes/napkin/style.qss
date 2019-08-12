@@ -36,8 +36,10 @@ QMenu {
 }
 
 QDialog, QLabel {
-    background-color: #2D2E42;
     color: #8B8CA0;
+    background-color: #3c3d4d;
+    margin-right: 0.2em
+
 }
 
 QAbstractScrollArea {
@@ -104,13 +106,17 @@ QDockWidget::title {
 QLineEdit {
     border: none;
     border-radius: 2px;
-    padding-left: 10px;
+    padding-left: 3px;
     padding-right: 10px;
-    color: #8B8CA0;
     background: #1a1b2b;
 }
 
 QLineEdit:focus {
+    color: #8B8CA0;
+    background: #111426;
+}
+
+QLineEdit:!focus {
     color: #8B8CA0;
     background: #111426;
 }
@@ -144,7 +150,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 
 QPushButton, QToolButton {
-    font-family: "Nunito Sans ExtraBold";
+    font-family: "Nunito Sans SemiBold";
     color: #111426;
     background: #8B8CA0;
     border-radius: 2px;
