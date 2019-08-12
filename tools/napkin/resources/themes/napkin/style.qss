@@ -148,7 +148,7 @@ QPushButton, QToolButton {
     color: #111426;
     background: #8B8CA0;
     border-radius: 2px;
-    margin: 4px;
+    margin: 2px;
     border: 0;
     padding: 3px 10px 3px 10px;
 }
@@ -161,8 +161,8 @@ QPushButton:pressed {
     color: #8B8CA0
 }
 QPushButton:!enabled {
-    background-color: #3c3d4d;
-    color: #5D5E73;
+    background-color: #5D5E73;
+    color: #111426;
 }
 
 QTabBar:tab {
