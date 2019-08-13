@@ -68,9 +68,6 @@ namespace nap
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
-
-		MaterialInstance& part_material = mParticleEntity->getComponent<ParticleEmitterComponentInstance>().getMaterialInstance();
-		UniformTexture2DArray& tex_array = part_material.getOrCreateUniform<UniformTexture2DArray>("input");
 	}
 	
 	
