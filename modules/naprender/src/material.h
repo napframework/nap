@@ -17,8 +17,8 @@ namespace nap
 	class MaterialInstance;
 
 	/**
-	* Blend mode for Materials.
-	*/
+	 * Blend mode for Materials.
+	 */
 	enum class EBlendMode : int
 	{
 		NotSet = 0,				///< Default value for MaterialInstances, means that the Material's blend mode is used instead
@@ -28,9 +28,9 @@ namespace nap
 	};
 
 	/**
-	* Determines how to z-buffer is used for reading and writing.
-	* When inheriting from blend mode
-	*/
+	 * Determines how to z-buffer is used for reading and writing.
+	 * When inheriting from blend mode
+	 */
 	enum class EDepthMode : int
 	{
 		NotSet = 0,				///< Default value for MaterialInstances, means that the Material's blend is used instead
@@ -43,9 +43,9 @@ namespace nap
 
 
 	/**
-	* MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
-	* as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
-	*/
+	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
+	 * as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
+	 */
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
@@ -56,8 +56,10 @@ namespace nap
 	};
 
 	/**
-	 * MaterialInstance holds overloads of Material properties. It is intended to be used as a field in 
-	 * ComponentInstances. It needs to be initialized with a MaterialInstanceResource object to fill it's
+	 * Run time version of a nap::Material. The instance holds overloaded material properties such as
+	 * the uniform shader variables. Use the getOrCreateUniform() functions to create and get access
+	 * to the underlying shader uniforms. The instance is intended to be used as a property in Components. 
+	 * It needs to be initialized based on a MaterialInstanceResource object to fill it's
 	 * runtime data. init() needs to be called from the ComponentInstance's init() function.
 	 */
 	class NAPAPI MaterialInstance : public UniformContainer
@@ -194,12 +196,12 @@ namespace nap
 
 
 	/**
-	* Material can be considered as the interface towards a shader.
-	* It contains default mappings for how mesh vertex attributes are bound to a shader's vertex attributes.
-	* It also holds the uniform values for all the uniforms present in the shader. If a uniform is updated 
-	* on the material, all the objects that use this material will use that value. To change uniform values
-	* per object, set uniform values on MaterialInstances.
-	*/
+	 * A Material is a resource that acts as an interface to a shader.
+	 * It contains default mappings for how mesh vertex attributes are bound to a shader vertex attributes.
+	 * It also holds the uniform values for all the uniforms present in the shader. If a uniform is updated 
+	 * on the material, all the objects that use this material will use that value. To change uniform values
+	 * per object, set uniform values on MaterialInstances.
+	 */
 	class NAPAPI Material : public Resource, public UniformContainer
 	{
 		RTTI_ENABLE(Resource)
