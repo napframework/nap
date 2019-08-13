@@ -97,25 +97,50 @@ namespace nap
 		EDepthMode getDepthMode() const;
 
 		/**
-		* Get a uniform for this material instance. This means that the uniform returned is only applicable
-		* to this instance. In order to change a uniform so that it's value is shared among materials, use
-		* getMaterial().getUniforms().getUniform().
-		* This function will assert if the name of the uniform does not match the type that you are trying to
-		* create.
-		* @param name: the name of the uniform as it is in the shader.
-		* @return reference to the uniform that was found or created.
-		*/
+		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
+		 * to this instance. In order to change a uniform so that it's value is shared among materials, use
+		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform does not 
+		 * match the type that you are trying to create.
+		 * 
+		 * regular uniform get example:
+		 * nap::Uniform* mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
+		 *
+		 * uniform array get example:
+		 * nap::Uniform* textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
+		 *
+		 * uniform member from struct example:
+		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
+		 *
+		 * uniform member from struct array example:
+		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
+		 *
+		 * @param name: the name of the uniform as it is in the shader.
+		 * @return reference to the uniform that was found or created.
+		 */
 		Uniform* getOrCreateUniform(const std::string& name);
 
 		/**
-		* Get a uniform for this material instance. This means that the uniform returned is only applicable
-		* to this instance. In order to change a uniform so that it's value is shared among materials, use
-		* getMaterial().getUniforms().getUniform().
-		* This function will assert if the name of the uniform does not match the type that you are trying to
-		* create.
-		* @param name: the name of the uniform as it is in the shader.
-		* @return reference to the uniform that was found or created.
-		*/
+		 * Get a uniform for this material instance of uniform type T. 
+		 * This means that the uniform returned is only applicable to this instance. 
+		 * In order to change a uniform so that it's value is shared among materials, use
+		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform 
+		 * does not match the type that you are trying to create.
+		 *
+		 * regular uniform get example:
+		 * nap::UniformVec3& mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
+		 *
+		 * uniform array get example: 
+		 * nap::UniformTextureArray& textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
+		 *
+		 * uniform member from struct example:
+		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
+		 *
+		 * uniform member from struct array example:
+		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
+		 *
+		 * @param name: the name of the uniform as it is in the shader.
+		 * @return reference to the uniform that was found or created.
+		 */
 		template<typename T>
 		T& getOrCreateUniform(const std::string& name);
 
@@ -229,7 +254,6 @@ namespace nap
 		*/
 		EDepthMode getDepthMode() const			{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
 
-
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
@@ -241,12 +265,37 @@ namespace nap
 		*/
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
+	private:
+		/**
+		 * Recursively add uniforms for the specified declaration
+		 */
+		Uniform* addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
+
+		/**
+		 * Ensure a UniformStruct with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
+		 * identifier that should only be unique within the container that the uniform is being added to
+		 */
+		UniformStruct& getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created);
+
+		/**
+		 * Ensure a UniformStructArray with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
+		 * identifier that should only be unique within the container that the uniform is being added to
+		 */
+		UniformStructArray& getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created);
+
 	public:
 		std::vector<ResourcePtr<Uniform>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>						mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
 		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
+
+	private:
+		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
+		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
+
+		UniformStructMap						mOwnedStructUniforms;								///< Runtime map of struct uniforms
+		UniformStructArrayMap					mOwnedStructArrayUniforms;							///< Runtime map of struct array uniforms
 	};
 
 	//////////////////////////////////////////////////////////////////////////
