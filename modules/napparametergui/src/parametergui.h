@@ -39,11 +39,13 @@ namespace nap
 		ParameterGUI(ParameterService& parameterService);
 
 		/**
-		 * Main function used to render the parameter GUI. Should be called each frame.
-		 * @param parameterGroup If parameterGroup is nullptr, a GUI is presented to select a group. If it is not nullptr,
-		 * the GUI will display only the contents of this group.
+		 * Main function to render a group of parameter, including nested groups. Should be called each frame.
+		 * When 'newWindow' is set to true (default) a new window will be created.
+		 * When 'newWindow' is disabled the parameters will be added to the currently active GUI window.
+		 * @param parameterGroup the group of parameters to show. 
+		 * @param newWindow if the parameters should be added to a new window.
 		 */
-		void show(const ParameterGroup* parameterGroup);
+		void show(const ParameterGroup* parameterGroup, bool newWindow = true);
 
 		/**
 		 * Register an editor creation function for the given type. The editor creation function is invoked whenever a parameter of the given type 

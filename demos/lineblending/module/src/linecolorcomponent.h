@@ -11,6 +11,7 @@
 #include <smoothdamp.h>
 #include <nap/resourceptr.h>
 #include <color.h>
+#include <parametercolor.h>
 
 namespace nap
 {
@@ -30,12 +31,6 @@ namespace nap
 		// property: link to the component that holds the mesh that we want to color
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
-		// property: first color
-		RGBColorFloat mColorOne =  {1.0f, 1.0f, 1.0f};
-
-		// property: second color
-		RGBColorFloat mColorTwo =  {1.0f, 0.0f, 0.0f };
-
 		// property: intensity of the spline
 		float mIntensity = 1.0f;
 
@@ -47,6 +42,9 @@ namespace nap
 
 		// property: if the colors are linked, so point2 receives the color of point1
 		bool mLink = false;
+
+		ResourcePtr<nap::ParameterRGBColorFloat> mColorOne;		///< First Color
+		ResourcePtr<nap::ParameterRGBColorFloat> mColorTwo;		///< Second Color
 	};
 
 
@@ -69,28 +67,6 @@ namespace nap
 		* Updates the color of all the line vertices
 		*/
 		virtual void update(double deltaTime) override;
-
-		/**
-		 * Sets the first color
-		 * @param color the new color
-		 */
-		void setFirstColor(const RGBColorFloat& color);
-
-		/**
-		 * @return the current start position in uv coordinates
-		 */
-		const RGBColorFloat& getFirstColor() const						{ return mFirstColor; }
-
-		/**
-		 * Sets the seconds color
-		 * @param color the new color
-		 */
-		void setSecondColor(const RGBColorFloat& color);
-
-		/**
-		 *	@return the current end position in uv coordinates
-		 */
-		const RGBColorFloat& getSecondColor() const						{ return mSecondColor; }
 
 		/**
 		 *	Set color smooth speed
@@ -116,12 +92,13 @@ namespace nap
 
 	private:
 		ComponentInstancePtr<LineBlendComponent> mBlendComponent = initComponentInstancePtr(this, &LineColorComponent::mBlendComponent);		// Holds the line we want to color
-		RGBColorFloat mFirstColor  = { 1.0f, 1.0f, 1.0f };		// Start point lookup in uv space
-		RGBColorFloat mSecondColor = { 1.0f, 0.0f, 0.0f };		// End point lookup in uv space
 		float mIntensity = 1.0f;								// Final intensity
 		bool mWrap = false;										// If the color values should be wrapped
 		float mPower = 1.0f;									// Amount of blend power when computing the wrap
 		bool mLink = false;										// If color 2 is linked to color one
+
+		ParameterRGBColorFloat* mColorOne = nullptr;			// First color from parameter
+		ParameterRGBColorFloat* mColorTwo = nullptr;			// Second color from parameter
 
 		// Smooths the first color
 		math::SmoothOperator<glm::vec3> mColorOneSmoother		{ {1.0f, 1.0f, 1.0f},  0.5f };

@@ -10,6 +10,7 @@
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
 #include <nap/signalslot.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -27,7 +28,7 @@ namespace nap
 		float mBlendValue = 0.0f;
 
 		// property: the automatic blend speed
-		float mBlendSpeed = 0.0f;
+		ResourcePtr<ParameterFloat> mBlendSpeed;
 
 		// property: Link to selection component one
 		ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
@@ -85,7 +86,6 @@ namespace nap
 		void setPolyLine(PolyLine& line)							{ mTarget = &line; }
 
 		float mBlendValue = 0.0f;									// Blend value
-		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 
 	private:
 		PolyLine* mTarget = nullptr;								// Line that will hold the blended values
@@ -111,6 +111,7 @@ namespace nap
 		std::vector<glm::vec3>			mUvsLineOne;				// Interpolated Uvs associated with the first line
 		std::vector<glm::vec3>			mUVsLineTwo;				// Interpolated Uvs associated with the seconds line
 
+		ParameterFloat*					mBlendSpeed = nullptr;		// Parameter that controls blend speed
 
 		/**
 		 * Updates the distance map and re-samples the currently selected curve

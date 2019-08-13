@@ -524,19 +524,19 @@ namespace nap
 	}
 
 
-	void ParameterGUI::show(const ParameterGroup* parameterGroup)
+	void ParameterGUI::show(const ParameterGroup* parameterGroup, bool newWindow)
 	{
-		ImGui::Begin("Parameters");
-
+		if(newWindow)
+			ImGui::Begin("Parameters");
 		showPresets(parameterGroup);
-
 		if (hasSelectedGroup())
 		{
-			ImGui::Separator();
+			ImGui::Spacing();
+			ImGui::Spacing();
 			showParameters(*mParameterGroups[mSelectedGroupIndex].mGroup, true);
 		}
-
-		ImGui::End();
+		if(newWindow)
+			ImGui::End();
 	}
 
 

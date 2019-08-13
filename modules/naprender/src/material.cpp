@@ -634,7 +634,10 @@ namespace nap
 			// All uniforms in the source (i.e. defined in the material) should also be present in the destination (i.e. defined in shader)
 			Uniform* dest_uniform = destStruct.findUniform(source_uniform->mName);
 			if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", current_uniform_path.c_str(), shaderID.c_str()))
-				return false;
+			{
+				nap::Logger::warn(errorState.toString());
+				continue;
+			}
 
 			// Types must match
 			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform '%s' (source type = %s, target type = %s) in shader %s",
@@ -790,7 +793,10 @@ namespace nap
 					// Regular uniform; there must be a matching uniform
 					Uniform* dest_uniform = findUniform(uniform->mName);
 					if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", uniform->mName.c_str(), mID.c_str()))
-						return false;
+					{
+						nap::Logger::warn(errorState.toString());
+						continue;
+					}
 
 					// If the uniform is an array uniform, verify that the lengths match
 					if (!verifyArrayUniforms(dest_uniform->mName, *uniform, *dest_uniform, mID, errorState))

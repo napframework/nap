@@ -800,16 +800,6 @@
             "mID": "NormalsMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "color",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    }
-                },
-                {
                     "Type": "nap::UniformFloat",
                     "mID": "UniformFloat_2",
                     "Name": "opacity",
@@ -820,12 +810,6 @@
                     "mID": "UniformTexture2D",
                     "Name": "colorTextureOne",
                     "Texture": "ImageTileable01"
-                },
-                {
-                    "Type": "nap::UniformFloat",
-                    "mID": "UniformFloat_3",
-                    "Name": "colorTexScale",
-                    "Value": 10.0
                 },
                 {
                     "Type": "nap::UniformFloat",
@@ -927,12 +911,6 @@
                     "mID": "ColorTextureUniform",
                     "Name": "colorTextureOne",
                     "Texture": "ImageTileable01"
-                },
-                {
-                    "Type": "nap::UniformFloat",
-                    "mID": "colorTexScale",
-                    "Name": "colorTexScale",
-                    "Value": 0.5
                 },
                 {
                     "Type": "nap::UniformFloat",
