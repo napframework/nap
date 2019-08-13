@@ -243,6 +243,9 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
+	// Get vertical scroll pos so we can restore it later (HACK)
+	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
+
 	//	If the object name changed, the property path in the model is now invalid because it's string-based
 	if (path.getName() == sIDPropertyName)
 	{
@@ -255,18 +258,19 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 			if (embeddedOwner)
 			{
 				// This is an embedded object name, refresh, but make sure to only show the root object
-
 				// Walk up embedded owners until the root object is found
-				while (true) {
+				while (true) 
+				{
 					auto embeddedOwnerParent = doc->getEmbeddedObjectOwner(*embeddedOwner);
 					if (!embeddedOwnerParent)
 						break;
 					embeddedOwner = embeddedOwnerParent;
 				}
 				clear();
-
 				setPath(PropertyPath(*embeddedOwner, *doc));
-			} else {
+			} 
+			else 
+			{
 				setPath(parent);
 			}
 		}
@@ -275,6 +279,9 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	{
 		rebuild(path);
 	}
+
+	// Set scroll pos
+	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
 }
 
 void InspectorPanel::setPath(const PropertyPath& path)
@@ -315,9 +322,6 @@ void InspectorPanel::clear()
 
 void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 {
-	// Get vertical scroll pos so we can restore it later
-	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
-
 	// Rebuild model
 	clear();
 	mModel.populateItems();
@@ -335,9 +339,6 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 
 	if (pathItem != nullptr)
 		mTreeView.selectAndReveal(pathItem);
-
-	// Set scroll pos
-	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
 }
 
 void napkin::InspectorPanel::onFileClosing(const QString& filename)
