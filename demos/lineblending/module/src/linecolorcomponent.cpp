@@ -25,8 +25,9 @@ namespace nap
 	bool LineColorComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Set intensity and color values
-		setFirstColor(getComponent<LineColorComponent>()->mColorOne);
-		setSecondColor(getComponent<LineColorComponent>()->mColorTwo);
+		mColorOne = getComponent<LineColorComponent>()->mColorOne.get();
+		mColorTwo = getComponent<LineColorComponent>()->mColorTwo.get();
+
 		setIntensity(getComponent<LineColorComponent>()->mIntensity);
 
 		mWrap = getComponent<LineColorComponent>()->mWrap;
@@ -34,10 +35,10 @@ namespace nap
 		mLink = getComponent<LineColorComponent>()->mLink;
 
 		// Force first smoother to be the first color
-		mColorOneSmoother.setValue(mFirstColor.toVec3());
+		mColorOneSmoother.setValue(mColorOne->mValue.toVec3());
 
 		// Force second smoother to be the second color
-		mColorTwoSmoother.setValue(mSecondColor.toVec3());
+		mColorTwoSmoother.setValue(mColorTwo->mValue.toVec3());
 
 		// Copy over intensity smooth time
 		mIntensitySmoother.setValue(getComponent<LineColorComponent>()->mIntensity);
@@ -49,10 +50,10 @@ namespace nap
 	void LineColorComponentInstance::update(double deltaTime)
 	{
 		// Update start smoothing operator
-		mColorOneSmoother.update(mFirstColor.toVec3(), deltaTime);
+		mColorOneSmoother.update(mColorOne->mValue.toVec3(), deltaTime);
 
 		// Update end smoothing operator
-		mColorTwoSmoother.update(mSecondColor.toVec3(), deltaTime);
+		mColorTwoSmoother.update(mColorTwo->mValue.toVec3(), deltaTime);
 
 		// Update intensity smooth operator
 		mIntensitySmoother.update(mIntensity, deltaTime);
@@ -91,18 +92,6 @@ namespace nap
 		{
 			nap::Logger::warn("unable to change color: %s", error.toString().c_str());
 		}
-	}
-
-
-	void LineColorComponentInstance::setFirstColor(const RGBColorFloat& color)
-	{
-		mFirstColor = color;
-	}
-
-
-	void LineColorComponentInstance::setSecondColor(const RGBColorFloat& color)
-	{
-		mSecondColor = color;
 	}
 
 
