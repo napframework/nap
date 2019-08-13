@@ -134,6 +134,11 @@ namespace nap
 		mMotorInput = inputs;
 	} 
 
+	void Flex::setSlack(const float value)
+	{
+		mSlack = value;
+	}
+
 
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
@@ -414,7 +419,7 @@ namespace nap
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
 		{
-			ropes.push_back(mElementsLength[i+1]);
+			ropes.push_back(mElementsLength[i+1] + mSlack);
 		}
 
 		return ropes;

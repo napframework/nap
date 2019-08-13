@@ -40,6 +40,8 @@ namespace nap
 			 * 8 floating point values that will be used to create parameter resources during init
 			 */
 			std::vector<float> mMotorInputs = std::vector<float>(8);
+
+			float mSlack = 0.0f;
 		protected:
 			/**
 			 * A vector holder unique pointers to created parameters

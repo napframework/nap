@@ -101,6 +101,12 @@ namespace nap
 		void setMotorInput(int index, float value);
 
 		/**
+		 * Set slack parameter
+		 * @param value slack value, typically between -0.5 and 0.5
+		 */
+		void setSlack(const float value);
+
+		/**
 		 * @return returns object points in local space
 		 */
 		const std::vector<glm::vec3>& getObjectPoints() const { return mObjectPoints; }

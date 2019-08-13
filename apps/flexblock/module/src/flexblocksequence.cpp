@@ -29,6 +29,14 @@ namespace nap
 				mStartParameters.emplace_back(parameterFloatPtr.get());
 			}
 
+			{
+				mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+				mOwnedParameters.back()->setValue(0.0f);
+
+				ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+				mStartParameters.emplace_back(parameterFloatPtr.get());
+			}
+
 			if (!timeline::Sequence::init(errorState))
 				return false;
 

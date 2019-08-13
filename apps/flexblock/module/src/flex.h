@@ -27,6 +27,12 @@ namespace nap
 		void setMotorInput(const std::vector<float>& inputs);
 
 		/**
+		 * Set slack
+		 * @param value slack value, typically between -0.5 and 0.5
+		 */
+		void setSlack(const float value);
+
+		/**
 		 * Starts the flex logic thread
 		 */
 		void start();

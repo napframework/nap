@@ -82,6 +82,11 @@ namespace nap
 		mMotorInputs[index] = value;
 	}
 
+	void FlexBlockComponentInstance::setSlack(const float value)
+	{
+		mFlexLogic->setSlack(value);
+	}
+
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{

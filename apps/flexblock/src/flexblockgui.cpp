@@ -131,7 +131,7 @@ namespace nap
 		//
 		mParameters.clear();
 
-		//
+		// motor parameters
 		mSequencePlayer = &mApp.GetBlockEntity()->getComponent<timeline::SequencePlayerComponentInstance>();
 		mFlexBlock = &mApp.GetBlockEntity()->getComponent<FlexBlockComponentInstance>();
 		for (int i = 0; i < 8; i++)
@@ -148,6 +148,21 @@ namespace nap
 				updateInput(i, newValue);
 			});
 		}
+
+		// slack parameter
+		ObjectPtr<ParameterFloat> parameter = resourceManager->findObject<ParameterFloat>("Slack");
+
+		assert(parameter != nullptr);
+
+		mParameters.emplace_back(parameter.get());
+		parameter->setValue(0.0f);
+
+		const float slackRange = parameter->mMaximum - parameter->mMinimum;
+		const float slackMinimum = parameter->mMinimum;
+		parameter->valueChanged.connect([this, slackRange, slackMinimum](float newValue)
+		{
+			mFlexBlock->setSlack(newValue * slackRange + slackMinimum);
+		});
 	}
 
 
@@ -256,6 +271,10 @@ namespace nap
 
 	void FlexblockGui::drawTimeline(bool& outPopupOpened, std::string& outPopupId)
 	{
+		// we need to redraw the curves again after the first time drawing the timeline
+		// this is because the window gets resized after drawing the timeline for the first time
+		static bool firstTime = true;
+
 		float windowWidth = ImGui::GetWindowWidth();
 		float scrollX = ImGui::GetScrollX();
 
@@ -299,11 +318,11 @@ namespace nap
 				colorBlack, 1.0f);
 
 			// motors backgrounds
-			for (int l = 0; l < 8; l++)
+			for (int l = 0; l < 9; l++)
 			{
 				drawList->AddRect(
-					ImVec2(mProps.mTopLeftPosition.x, math::lerp<float>(mProps.mTopLeftPosition.y, bottomRightPos.y, (float)l / 8.0f)),
-					ImVec2(bottomRightPos.x, math::lerp<float>(mProps.mTopLeftPosition.y, bottomRightPos.y, (float)(l + 1) / 8.0f)),
+					ImVec2(mProps.mTopLeftPosition.x, math::lerp<float>(mProps.mTopLeftPosition.y, bottomRightPos.y, (float)l / 9.0f)),
+					ImVec2(bottomRightPos.x, math::lerp<float>(mProps.mTopLeftPosition.y, bottomRightPos.y, (float)(l + 1) / 9.0f)),
 					colorWhite, 1.0f);
 			}
 
@@ -536,8 +555,8 @@ namespace nap
 							bool draggingMotor = false;
 							// draw motor end positions in element
 							{
-								float motor_height = childSize.y / 8.0f;
-								for (int m = 0; m < 8; m++)
+								float motor_height = childSize.y / 9.0f;
+								for (int m = 0; m < 9; m++)
 								{
 									if ((mProps.mMotorHandlerIndexMask >> m) & 1UL)
 									{
@@ -633,8 +652,8 @@ namespace nap
 								const auto& curves = transition->getCurves();
 
 								// motor height is size of motor timeline in child height
-								float motor_height = childSize.y / 8.0f;
-								for (int m = 0; m < 8; m++)
+								float motor_height = childSize.y / 9.0f;
+								for (int m = 0; m < 9; m++)
 								{
 									if ((mProps.mMotorHandlerIndexMask >> m) & 1UL)
 									{
@@ -894,12 +913,12 @@ namespace nap
 						//
 						mProps.mCachedCurve.clear();
 
-						mProps.mCachedCurve = std::vector<std::vector<ImVec2>>(8);
+						mProps.mCachedCurve = std::vector<std::vector<ImVec2>>(9);
 
 						// create parameters that we evaluate
 						std::vector<std::unique_ptr<ParameterFloat>> parametersPts;
 						std::vector<Parameter*> parameters;
-						for (int p = 0; p < 8; p++)
+						for (int p = 0; p < 9; p++)
 						{
 							parametersPts.emplace_back(std::make_unique<ParameterFloat>());
 							parameters.emplace_back(parametersPts.back().get());
@@ -917,9 +936,9 @@ namespace nap
 							mSequencePlayer->evaluate(((mSequencePlayer->getDuration() * part) / (float)steps) * (float)p + (mSequencePlayer->getDuration() * partStart), parameters);
 
 							//
-							for (int l = 0; l < 8; l++)
+							for (int l = 0; l < 9; l++)
 							{
-								float yPart = childSize.y / 8.0f;
+								float yPart = childSize.y / 9.0f;
 								float yStart = yPart * l;
 
 								mProps.mCachedCurve[l].emplace_back(ImVec2(
@@ -931,9 +950,9 @@ namespace nap
 						mProps.mDirty = false;
 					}
 			
-					if (mProps.mCachedCurve.size() == 8)
+					if (mProps.mCachedCurve.size() == 9)
 					{
-						for (int l = 0; l < 8; l++)
+						for (int l = 0; l < 9; l++)
 						{
 							if (mProps.mCachedCurve[l].size() > 0)
 							{
@@ -953,21 +972,21 @@ namespace nap
 			}
 
 			// draw edit curve toggle
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 9; i++)
 			{
-				float y_pos = (childSize.y / 8) * i + 4;
+				float y_pos = (childSize.y / 9) * i + 4;
 				// draw motor text
 				drawList->AddText(
 					ImVec2(mProps.mTopLeftPosition.x - 25, mProps.mTopLeftPosition.y + y_pos),
 					colorWhite,
-					std::to_string(8 - i).c_str());
+					i == 0 ? "S" : std::to_string(9 - i).c_str());
 
 				//
 				const ImVec2 rectTopLeft(mProps.mTopLeftPosition.x - 15, mProps.mTopLeftPosition.y + y_pos + 5);
 				const ImVec2 rectBotRight(mProps.mTopLeftPosition.x - 5, mProps.mTopLeftPosition.y + y_pos + 15);
 
 				bool filled = false;
-				int motorId = 7 - i;
+				int motorId = 8 - i;
 				if (mProps.mCurrentAction == TimeLineActions::NONE)
 				{
 					if (ImGui::IsMouseHoveringRect(rectTopLeft, rectBotRight))
@@ -1109,6 +1128,13 @@ namespace nap
 
 			ImGui::Spacing();
 			ImGui::Spacing();
+		}
+
+		// make sure the curves get cached again after they are drawn the first time
+		if (firstTime)
+		{
+			firstTime = false;
+			mProps.mDirty = true;
 		}
 	}
 
@@ -1900,7 +1926,7 @@ namespace nap
 
 			if (mProps.mSelectedElement != nullptr && 
 				mProps.mCurrentSelectedMotor > -1 && 
-				mProps.mCurrentSelectedMotor < 8)
+				mProps.mCurrentSelectedMotor < 9)
 			{
 				ParameterFloat* parameterFloat =
 					dynamic_cast<ParameterFloat*>(mProps.mSelectedElement->getEndParameters()[mProps.mCurrentSelectedMotor]);
