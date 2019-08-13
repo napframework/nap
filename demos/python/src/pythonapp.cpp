@@ -45,6 +45,8 @@ namespace nap
             error.fail("PythonEntity not found");
             return false;
         }
+
+		// Store the current python value
         auto pythonComponent = mPythonEntity->findComponent<PythonScriptComponentInstance>();
         if (!pythonComponent->get<float>("getValue", error, mValue)) // Initialize mValue using the getter in the python script.
             return false;
@@ -54,6 +56,8 @@ namespace nap
 
 
 	/**
+	 * Update call of the application. Called every frame. 
+	 * Uses a couple of gui elements to send and receive values from a pythons script.
 	 */
 	void PythonApp::update(double deltaTime)
 	{
@@ -61,21 +65,44 @@ namespace nap
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
         ImGui::Begin("Python demo");
 
-        // The variable mValue is controlled by a slider.
-        // The setter setValue() within the python script is called to set a member variable within python.
-        // The getter getValue() is called to retrieve the python member's value and to display it/
-        auto pythonComponent = mPythonEntity->findComponent<PythonScriptComponentInstance>();
-        ImGui::Text("Call the PythonScriptComponent's setter using the slider:");
-        ImGui::SliderFloat("", &mValue, 0.f, 1.f);
-        utility::ErrorState errorState;
-        if (!pythonComponent->call("setValue", errorState, mValue)) // Call setValue() method within the python script.
-            nap::Logger::warn(errorState.toString());
-        float returnValue = 0;
-        if (!pythonComponent->get<float>("getValue", errorState, returnValue)) // Call getValue() method within the python script.
-            nap::Logger::warn(errorState.toString());
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
-        ImGui::Text(utility::stringFormat("The PythonScriptComponent's getter returns: %f", returnValue).c_str());
+		if (ImGui::CollapsingHeader("Controls"))
+		{
+			// Get the python script component
+			auto pythonComponent = mPythonEntity->findComponent<PythonScriptComponentInstance>();
 
+			// When printing is turned on python prints the received message to console
+			utility::ErrorState errorState;
+			if (ImGui::Checkbox("Python Print", &mPythonPrint))
+			{
+				if (!pythonComponent->call("printToConsole", errorState, mPythonPrint))
+					nap::Logger::warn(errorState.toString());
+			}
+
+			// The variable mValue is controlled by a slider.
+			// The setter setValue() within the python script is called to set a member variable within python.
+			// The getter getValue() is called to retrieve the python member's value and to display it/
+			ImGui::Text("Call the PythonScriptComponent's setter using the slider:");
+			if (ImGui::SliderFloat("New Value", &mValue, 0.f, 1.f))
+			{
+				// Call setValue() method within the python script.
+				if (!pythonComponent->call("setValue", errorState, mValue))
+					nap::Logger::warn(errorState.toString());
+			}
+
+			// Get the value from the python script
+			float returnValue = 0;
+			if (!pythonComponent->get<float>("getValue", errorState, returnValue)) // Call getValue() method within the python script.
+				nap::Logger::warn(errorState.toString());
+
+			ImGui::Text("The PythonScript returns: ");
+			ImGui::SameLine();
+			ImGui::TextColored(clr, utility::stringFormat("%f", returnValue).c_str());
+		}
         ImGui::End();
 
 	}
