@@ -14,21 +14,22 @@ struct PointLight
 };
 
 // uniform inputs
-uniform vec3 		color;
 uniform vec3		cameraLocation;							// World Space location of the camera
-uniform PointLight	lights[1];
+uniform PointLight	lights[2];								// All lights in the scene
+uniform vec3 		meshColor;								// Color or the mesh
 
 // Light Uniforms
-const float			ambientIntensity = 0.4;					// Ambient light intensity
+const float			ambientIntensity = 0.3;					// Ambient light intensity
 const float			shininess = 4.0;						// Specular angle shininess
 const float			specularIntensity = 0.5;				// Amount of added specular
 
 // output
 out vec4 out_Color;
 
-void main() 
+
+vec3 computeLightContribution(int lightIndex, vec3 color)
 {
-	//calculate normal in world coordinates
+		//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
     vec3 normal = normalize(normal_matrix * passNormals);
 	
@@ -36,28 +37,39 @@ void main()
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lights[0].mPosition - frag_position);
+	vec3 surfaceToLight = normalize(lights[lightIndex].mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 cameraPosition = cameraLocation;
 	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
-
-	// Ambient color
-	vec3 ambient = color.rgb * lights[0].mIntensity * ambientIntensity;
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * lights[0].mIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * lights[lightIndex].mIntensity;
     
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
 	float specularCoefficient = 0.0;
     if(diffuseCoefficient > 0.0)
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
-    vec3 specular = specularCoefficient * specularColor * lights[0].mIntensity * specularIntensity;
-    
-	//linear color (color before gamma correction)
-    vec3 linearColor = ambient + specular + diffuse;
+    vec3 specular = specularCoefficient * specularColor * lights[lightIndex].mIntensity * specularIntensity;
 
-    out_Color = vec4(linearColor, 1.0);
+    // return combination
+    return specular + diffuse;
+}
+
+
+void main() 
+{        
+	//linear color (color before gamma correction)
+    vec3 outColor = vec3(0,0,0);
+    for(int i=0; i<lights.length(); i++)
+    {
+    	outColor = outColor + computeLightContribution(i, meshColor);
+    }
+
+    // Add ambient color
+	vec3 ambient = meshColor.rgb * ambientIntensity;
+    outColor = outColor + ambient;
+    out_Color = vec4(outColor, 1.0);
 }

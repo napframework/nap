@@ -175,7 +175,7 @@ namespace opengl
 				unique_name = unique_name.substr(0, bracket_pos);
 
 			// Add
-			printMessage(EGLSLMessageType::Info, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, unique_name, location);
+			printMessage(EGLSLMessageType::Info, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, unique_name.c_str(), location);
 			outUniforms.emplace(std::make_pair(unique_name, std::make_unique<UniformDeclaration>(program, std::string(unique_name), type, location, size)));
 		}
 	}
