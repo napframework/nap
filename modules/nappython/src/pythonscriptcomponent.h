@@ -57,7 +57,7 @@ namespace nap
 
 
     /**
-     * Instance of a @PythonScriptComponent.
+     * Instance of a PythonScriptComponent.
      */
     class NAPAPI PythonScriptComponentInstance : public ComponentInstance
     {
@@ -71,16 +71,23 @@ namespace nap
         bool init(utility::ErrorState& errorState) override;
 
         /**
-         * Tries to call a method that returns a value with name @identifier in the python script with the specified arguments @args.
-         * The return value will be stored in @returnValue.
+         * Tries to call a method that returns a value in the python script with the specified number of input arguments.
+         * The return value will be stored in returnValue, the identifier is the name of the python method to call.
          * If the call fails the error will be logged in errorState.
+		 * @param identifier python method to call.
+		 * @param errorState contains the error if the call fails.
+		 * @param args variable number of input arguments.
          */
         template <typename ReturnType, typename ...Args>
         bool get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args);
 
         /**
-         * Tries to call a method with name @identifier in the python script with the specified arguments @args.
+         * Tries to call a method in the python script with the specified number of input arguments.
+		 * The identifier is the name of the python method to call. 
          * If the call fails the error will be logged in errorState.
+		 * @param identifier python method to call
+		 * @param errorState contains the error if the call fails
+		 * @param ergs variable number of input arguments.
          */
         template <typename ...Args>
         bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
@@ -91,6 +98,10 @@ namespace nap
         bool mInitialized = false;
     };
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
 
     template <typename ReturnType, typename ...Args>
     bool PythonScriptComponentInstance::get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args)
@@ -122,6 +133,4 @@ namespace nap
         }
         return true;
     }
-
-
 }
