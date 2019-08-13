@@ -97,25 +97,50 @@ namespace nap
 		EDepthMode getDepthMode() const;
 
 		/**
-		* Get a uniform for this material instance. This means that the uniform returned is only applicable
-		* to this instance. In order to change a uniform so that it's value is shared among materials, use
-		* getMaterial().getUniforms().getUniform().
-		* This function will assert if the name of the uniform does not match the type that you are trying to
-		* create.
-		* @param name: the name of the uniform as it is in the shader.
-		* @return reference to the uniform that was found or created.
-		*/
+		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
+		 * to this instance. In order to change a uniform so that it's value is shared among materials, use
+		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform does not 
+		 * match the type that you are trying to create.
+		 * 
+		 * regular uniform get example:
+		 * nap::Uniform* mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
+		 *
+		 * uniform array get example:
+		 * nap::Uniform* textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
+		 *
+		 * uniform member from struct example:
+		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
+		 *
+		 * uniform member from struct array example:
+		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
+		 *
+		 * @param name: the name of the uniform as it is in the shader.
+		 * @return reference to the uniform that was found or created.
+		 */
 		Uniform* getOrCreateUniform(const std::string& name);
 
 		/**
-		* Get a uniform for this material instance. This means that the uniform returned is only applicable
-		* to this instance. In order to change a uniform so that it's value is shared among materials, use
-		* getMaterial().getUniforms().getUniform().
-		* This function will assert if the name of the uniform does not match the type that you are trying to
-		* create.
-		* @param name: the name of the uniform as it is in the shader.
-		* @return reference to the uniform that was found or created.
-		*/
+		 * Get a uniform for this material instance of uniform type T. 
+		 * This means that the uniform returned is only applicable to this instance. 
+		 * In order to change a uniform so that it's value is shared among materials, use
+		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform 
+		 * does not match the type that you are trying to create.
+		 *
+		 * regular uniform get example:
+		 * nap::UniformVec3& mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
+		 *
+		 * uniform array get example: 
+		 * nap::UniformTextureArray& textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
+		 *
+		 * uniform member from struct example:
+		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
+		 *
+		 * uniform member from struct array example:
+		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
+		 *
+		 * @param name: the name of the uniform as it is in the shader.
+		 * @return reference to the uniform that was found or created.
+		 */
 		template<typename T>
 		T& getOrCreateUniform(const std::string& name);
 
