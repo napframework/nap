@@ -17,8 +17,8 @@ namespace nap
 
 	/**
 	 * Very simple demo application that demonstrates how to use a PythonScriptComponent and call it's methods from within C++.
-     * A PythonScriptResource is used that references the script 'mycomponent.py'.
-     * In this script a python class is defined that contains an update(), init() and destroy() method.
+     * A PythonScriptResource is used. This resource references the script 'mycomponent.py', which can be found in the data directory.
+     * A python class is defined in this script. This class contains an update(), init() and destroy() method.
      * Additionally it contains a setValue() and getValue() method to access a member.
      * The value of a slider is passed to the setValue() method and the return value of getValue() is displayed in the window.
 	 */
@@ -67,6 +67,8 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							///< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							///< Pointer to the render window
         ObjectPtr<EntityInstance> mPythonEntity = nullptr;              ///< Entity containing the PythonScriptComponent
-        float mValue = 0;   ///< Value controlled directly by the ImGui slider
+        float mValue = 0;												///< Value controlled directly by the ImGui slider
+		bool mPythonPrint = true;										///< If python prints the value to console
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

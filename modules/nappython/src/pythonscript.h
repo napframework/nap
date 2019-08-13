@@ -42,7 +42,7 @@ namespace nap {
          * If the call fails the error will be logged in errorState.
          */
         template <typename ...Args>
-        bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
+        bool call	(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
 
         /**
          * Requests a symbol (in most cases a class or function) from the script and returns its C++ representation.
