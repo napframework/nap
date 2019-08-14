@@ -167,6 +167,11 @@ These Terms of Use constitute an agreement between You and Naivi. These Terms of
 		- sdl2: https://www.libsdl.org/license.php
 		- yoctopuce: https://www.yoctopuce.com/EN/cg.php
 		- moodycamel: https://github.com/cameron314/concurrentqueue
+		- websocketpp: https://github.com/zaphoyd/websocketpp
+		- serial: https://github.com/wjwwood/serial
+		- freetype: https://www.freetype.org/
+		- asio: https://think-async.com/Asio/
+		- sqlite: https://www.sqlite.org/index.html
 
 	- 8.2 Naivi will not be liable for any damages and losses including special, incidental, consequential or exemplary damages, including but not limited to loss of opportunity or lost profits, loss of goodwill and property damage and all damages and losses that result from or are connected to software and/or hardware failure or malfunction, that result from these Third Party Libraries that work with the Software, including the possession, access, use or malfunction of the Third Party Libraries working with the Software.
 
