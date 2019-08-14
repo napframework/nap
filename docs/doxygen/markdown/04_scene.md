@@ -11,7 +11,8 @@ Scene Management {#scene}
 	*	[To Components](@ref component_link)
 			*	[Array of Components] (@ref multiple_component_link)
 	*	[To Entities](@ref entity_link)
-			*	[Array of Entities](@ref multiple_entity_link) 
+			*	[Array of Entities](@ref multiple_entity_link)
+*	[Instance Properties](@ref instance_props_scene)
 
 
 Overview {#scene_overview}
@@ -445,3 +446,40 @@ You can now edit the link in JSON. This works the same as authoring links to com
 
 Instead of linking to a single entity it is possible to link to multiple entities at once. The entities are grouped together in an array. The declaration of this array is the same as declaring an [array of component pointers](@ref multiple_component_link), but uses ['initEntityInstancePtr()'](@ref nap::initEntityInstancePtr) instad of ['initComponentInstancePtr()'](@ref nap::initComponentInstancePtr). To declare an array of entity pointers as a property of a component use a standard C++ vector: ['std::vector<nap::EntityPtr>'](@ref nap::EntityPtr).
 
+Instance Properties {#instance_props_scene}
+=======================
+
+Properties that are associated with a single instance of a component are called [instance properties](@ref nap::InstancePropertyValue). Instance properties are applied on top of the default (shared) properties of a component and override the default value. This is very useful when you want to `spawn` the same entity multiple times with slightly different values, for example: the color of your 3D model. 
+
+Declaring instance properties in JSON is (although possible) rather difficult. Use [Napkin](@ref in_prop_override) instead. The example below applies a unique z scale value to a transform component in the scene. In JSON you need to know the full path to the component, together with the property to edit on that component.
+
+```
+{
+	"Type": "nap::Scene",
+		"mID" : "Scene",
+		"Entities" : [
+	{
+		"Entity": "Plane",
+			"InstanceProperties" : [
+		{
+			"TargetComponent": "./nap::TransformComponent",
+				"TargetAttributes" : [
+			{
+				"Path": "Properties/Scale/z",
+					"Value" : {
+					"Type": "nap::FloatInstancePropertyValue",
+						"mID" : "instanceProp_float_dfdf2093",
+						"Value" : 2.0
+				}
+			}
+				]
+		}
+			]
+	},
+	{
+		"Entity": "Camera",
+		"InstanceProperties" : []
+	}
+		]
+},
+```
