@@ -77,6 +77,7 @@ namespace nap
 		 * @param identifier python method to call.
 		 * @param errorState contains the error if the call fails.
 		 * @param args variable number of input arguments.
+		 * @return if the call succeeded.
          */
         template <typename ReturnType, typename ...Args>
         bool get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args);
