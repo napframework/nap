@@ -1,6 +1,6 @@
 {
-    "title": "OscMidi",
-    "version": "0.2.3",
+    "title": "Python",
+    "version": "0.3.0",
     "modules": [
         "mod_napapp",
         "mod_nappython",
