@@ -19,8 +19,8 @@ namespace nap
         class VideoAudioComponentInstance;
         
         /**
-         * Component that outputs audio from a playing Video.
-		 * Without this component no video-audio is processed.
+		 * Resource part of the VideoAudioComponent, outputs audio from a video stream.
+		 * Without this component no video-audio is processed and therefore outputted.
          */
         class NAPAPI VideoAudioComponent : public AudioComponentBase
         {
@@ -37,8 +37,8 @@ namespace nap
 
         
         /**
-         * Instance of an Audio object that outputs the audio of a Video.
-		 * Without this component no video-audio is processed.
+         * Instance part of the of VideoAudioComponent, outputs audio from a video stream.
+		 * Without this component no video-audio is processed and therefore outputted.
          */
         class NAPAPI VideoAudioComponentInstance : public AudioComponentBaseInstance
         {

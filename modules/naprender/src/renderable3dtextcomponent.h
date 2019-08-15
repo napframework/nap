@@ -11,12 +11,17 @@ namespace nap
 	class Renderable3DTextComponentInstance;
 
 	/**
-	 * Draws flat text in 3D space.
+	 * Resource part of the Renderable3DTextComponentInstance. Draws flat text in 3D space.
 	 * Use this component when you want to render text at a specific location in the world
 	 * Use the normalize toggle to render the text at the origin of the scene with a unit size of 1.
 	 * When rendering in normalized mode the initial text is used to compute the normalization factor.
 	 * This ensures that when changing text at runtime the size of the letters don't change as well.
 	 * Use the Renderable2DTextComponent to draw text in screen (pixel) space with an orthographic camera.
+	 *
+	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
+	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
+	 * The font size directly influences the size of the text unless normalization is turned on.
+	 * When normalization is turned on the text is rendered centered on the origin with -0.5-0,5 bounds.
 	 */
 	class NAPAPI Renderable3DTextComponent : public RenderableTextComponent
 	{
@@ -36,6 +41,7 @@ namespace nap
 	/**
 	 * Runtime version of the Renderable3DTextComponent.
 	 * This component allows you to render a single line of text at a specific location in the world.
+	 *
 	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
 	 * The font size directly influences the size of the text unless normalization is turned on.

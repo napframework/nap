@@ -26,12 +26,12 @@ namespace nap
 
 
     /**
-     * The resource class for the PythonScriptComponent.
+     * The resource part of the PythonScriptComponent. Allows for running a python script inside a NAP application.
      * The python script has to implement a class with the name of the ClassName property.
      * The class should implement:
      * - A constructor that takes the entity instance as an argument
-     * - An update method that takes the total ellapsed time and the delta time as float arguments.
-     * - A destroy method that is called on destruction of the component that doesn not take any arguments.
+     * - An update method that takes the total elapsed time and the delta time as float arguments.
+     * - A destroy method that is called on destruction of the component that does not take any arguments.
      */
     class NAPAPI PythonScriptComponent : public Component
     {
@@ -57,7 +57,12 @@ namespace nap
 
 
     /**
-     * Instance of a PythonScriptComponent.
+     * The instance part of the PythonScriptComponent. Allows for running a python script inside a NAP application.
+	 * The python script has to implement a class with the name of the ClassName property.
+	 * The class should implement:
+	 * - A constructor that takes the entity instance as an argument
+	 * - An update method that takes the total elapsed time and the delta time as float arguments.
+	 * - A destroy method that is called on destruction of the component that does not take any arguments.
      */
     class NAPAPI PythonScriptComponentInstance : public ComponentInstance
     {

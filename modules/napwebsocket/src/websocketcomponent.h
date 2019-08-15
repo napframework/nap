@@ -14,7 +14,7 @@ namespace nap
 	class WebSocketComponentInstance;
 
 	/**
-	 * Receives web-socket client and server events.
+	 * Resource part of the WebSocketComponent, receives web-socket client and server events.
 	 * Listen to the various signals (nap::WebSocketComponentInstance) to receive websocket events in your application.
 	 * The events are received on the main application thread. This object ensures thread-safety.
 	 * Only web-socket events that originated from the given interface (client or server) are accepted.
@@ -29,7 +29,7 @@ namespace nap
 
 
 	/**
-	 * Receives web-socket client and server events.
+	 * Instance part of the WebSocketComponent, receives web-socket client and server events.
 	 * Listen to the various signals to receive web-socket events in your application.
 	 * The events are received on the main application thread. This object ensures thread-safety.
 	 * Only web-socket events that originated from the given interface (client or server) are accepted.

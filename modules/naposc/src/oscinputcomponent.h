@@ -16,8 +16,8 @@ namespace nap
 	class OSCService;
 
 	/**
-	 * Receives osc events based on the address filter
-	 * The address filter is a list of strings that represent individual osc addresses
+	 * Resource part of the OSCInputComponent, receives osc events based on the address filter.
+	 * The address filter is a list of strings that represent individual osc addresses.
 	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
 	 * If that's the case the instance of this component receives an osc event. 
 	 * When the address filter is empty all events are forwarded.
@@ -37,8 +37,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Instance of the OSC input component
-	 * This component will forward any received osc messages to listening components
+	 * Instance part of the OSCInputComponent, receives osc events based on the address filter.
+	 * This component will forward any received osc messages to listening components.
 	 * Listen to the messageReceived signal to receive osc events that match the address pattern.
 	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
 	 * When the address filter is empty all events are forwarded.

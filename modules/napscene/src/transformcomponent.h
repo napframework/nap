@@ -28,8 +28,7 @@ namespace nap
 	/**
 	 * Resource part of the transform component.
 	 * Describes a local transform that is used to compute
-	 * the global transform of an object. When the transform is created
-	 * You can always query the current local matrix, the global matrix is updated on update().
+	 * the global transform of an entity.
 	 */
 	class NAPAPI TransformComponent : public Component
 	{
@@ -42,8 +41,8 @@ namespace nap
 
 
 	/**
-	 * Describes a local transform that is used to compute 
-	 * the global transform of an object. When the transform is created
+	 * Describes the local transform of an entity, used to compute 
+	 * the global transform of an entity at runtime. When the transform is created
 	 * the global and local transform is invalid. You can always query the
 	 * current local matrix, the global matrix is updated on update().
 	 */
