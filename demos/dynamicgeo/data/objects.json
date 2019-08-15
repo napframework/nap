@@ -195,7 +195,7 @@
                 {
                     "Type": "nap::UniformTexture2DArray",
                     "mID": "UniformTexture2DArray_be091041",
-                    "Name": "input",
+                    "Name": "texture_input",
                     "Textures": [
                         "ParticleOne",
                         "ParticleTwo"
