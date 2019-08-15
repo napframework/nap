@@ -22,6 +22,7 @@ namespace nap
 	 * Resource part of the orbit controller.
 	 * The controller is a perspective camera controller that rotates the camera around a target point.
 	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
+	 * Requires a nap::PointerInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI OrbitController : public Component
 	{
@@ -45,6 +46,7 @@ namespace nap
 	 * Instance part of the orbit controller.
 	 * The controller is a perspective camera controller that rotates the camera around a target point.
 	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
+	 * Requires a nap::PointerInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI OrbitControllerInstance : public ComponentInstance
 	{
