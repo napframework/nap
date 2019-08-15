@@ -19,8 +19,8 @@ namespace nap
 	class KeyInputComponent;
 
 	/**
-	 * OrbitController is a camera controller for a perspective camera that rotates around a target point.
-	 * 
+	 * Resource part of the orbit controller.
+	 * The controller is a perspective camera controller that rotates the camera around a target point.
 	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
 	 */
 	class NAPAPI OrbitController : public Component
@@ -42,7 +42,9 @@ namespace nap
 
 
 	/**
-	 * ComponentInstance for the OrbitController.
+	 * Instance part of the orbit controller.
+	 * The controller is a perspective camera controller that rotates the camera around a target point.
+	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
 	 */
 	class NAPAPI OrbitControllerInstance : public ComponentInstance
 	{
