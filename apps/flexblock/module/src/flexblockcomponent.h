@@ -56,6 +56,10 @@ namespace nap
 
 		int mMotorOffset = 7542; ///< Property: 'Motor Offset' value that we need to calculate the zero position of the motor
 
+		float mSlackRange = 1.0f;
+
+		float mSlackMinimum = -0.5f;
+
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
@@ -136,5 +140,9 @@ namespace nap
 		float mMillimeterToMotorsteps;
 
 		int mMotorOffset;
+
+		float mSlackRange;
+
+		float mSlackMinimum;
 	};
 }

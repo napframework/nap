@@ -42,6 +42,8 @@ namespace nap
 			std::vector<float> mMotorInputs = std::vector<float>(8);
 
 			float mSlack = 0.0f;
+			float mSlackMaximum = 0.5f;
+			float mSlackMinimum = -0.5f;
 		protected:
 			/**
 			 * A vector holder unique pointers to created parameters

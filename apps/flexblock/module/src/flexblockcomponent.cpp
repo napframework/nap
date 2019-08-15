@@ -17,6 +17,8 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Millimeter To Motorsteps ", &nap::FlexBlockComponent::mMillimeterToMotorsteps, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor step offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Range", &nap::FlexBlockComponent::mSlackRange, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Minimum", &nap::FlexBlockComponent::mSlackMinimum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -55,6 +57,8 @@ namespace nap
 		mFrameMesh = resource->mFrameMesh.get();
 		mMillimeterToMotorsteps = resource->mMillimeterToMotorsteps;
 		mMotorOffset = resource->mMotorOffset;
+		mSlackMinimum = resource->mSlackMinimum;
+		mSlackRange = resource->mSlackRange;
 
 		// create flex logic
 		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
@@ -84,7 +88,7 @@ namespace nap
 
 	void FlexBlockComponentInstance::setSlack(const float value)
 	{
-		mFlexLogic->setSlack(value);
+		mFlexLogic->setSlack(value * mSlackRange + mSlackMinimum);
 	}
 
 

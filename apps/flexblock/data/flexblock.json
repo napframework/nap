@@ -934,8 +934,8 @@
                     "mID": "Slack",
                     "Name": "",
                     "Value": 0.0,
-                    "Minimum": -0.5,
-                    "Maximum": 0.5
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
             ],
             "Groups": []

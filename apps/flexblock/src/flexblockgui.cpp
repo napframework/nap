@@ -157,11 +157,9 @@ namespace nap
 		mParameters.emplace_back(parameter.get());
 		parameter->setValue(0.0f);
 
-		const float slackRange = parameter->mMaximum - parameter->mMinimum;
-		const float slackMinimum = parameter->mMinimum;
-		parameter->valueChanged.connect([this, slackRange, slackMinimum](float newValue)
+		parameter->valueChanged.connect([this](float newValue)
 		{
-			mFlexBlock->setSlack(newValue * slackRange + slackMinimum);
+			mFlexBlock->setSlack(newValue);
 		});
 	}
 
@@ -610,10 +608,12 @@ namespace nap
 											ImVec2 mousePos = ImGui::GetMousePos();
 
 											float adjust = (mousePos.y - y) / motor_height;
-											float newValue = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue;
+
+											ParameterFloat* parameterFloat = static_cast<ParameterFloat*>(element->getEndParameters()[m]);
+											float newValue = parameterFloat->mValue;
 											newValue -= adjust;
-											newValue = math::clamp(newValue, 0.0f, 1.0f);
-											static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue = newValue;
+											newValue = math::clamp(newValue, parameterFloat->mMinimum, parameterFloat->mMaximum);
+											parameterFloat->mValue = newValue;
 
 											mSequencePlayer->reconstruct();
 										}
@@ -660,11 +660,19 @@ namespace nap
 										//
 										mProps.mDirty = true;
 
+										//
+										ParameterFloat* startParameterFloat = static_cast<ParameterFloat*>(element->getStartParameters()[m]);
+										ParameterFloat* endParameterFloat = static_cast<ParameterFloat*>(element->getEndParameters()[m]);
+
+										//
+										const float startValue = 0.0f;
+										const float endValue = 1.0f;
+
 										// get the range of the difference between start and finish
-										float range = static_cast<ParameterFloat*>(element->getEndParameters()[m])->mValue - static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
+										const float range = endParameterFloat->mValue - startParameterFloat->mValue;
 
 										// get the start position
-										float start_curve = static_cast<ParameterFloat*>(element->getStartParameters()[m])->mValue;
+										float start_curve = startParameterFloat->mValue;
 
 										// is mouse hovering in this element part ?
 										bool mouseInMotor = false;
@@ -713,7 +721,7 @@ namespace nap
 												// create the new point
 												auto newPoint = curves[m]->mPoints[0];
 												newPoint.mPos.mTime = pX;
-												newPoint.mPos.mValue = math::clamp(pY, 0.0f, 1.0f);
+												newPoint.mPos.mValue = math::clamp(pY, startValue, endValue);
 
 												// add the point to the curve
 												curves[m]->mPoints.emplace_back(newPoint);
@@ -780,12 +788,12 @@ namespace nap
 												// translate to curve space
 												float adjust = (mousePos.y - y) / motor_height;
 
-												point.mPos.mValue -= adjust * (range / 1.0f);
-												point.mPos.mValue = math::clamp(point.mPos.mValue, 0.0f, 1.0f);
+												point.mPos.mValue -= adjust * range;
+												point.mPos.mValue = math::clamp(point.mPos.mValue, startValue, endValue);
 
 												adjust = (mousePos.x - x) / elementSizeWidth;
 												point.mPos.mTime += adjust;
-												point.mPos.mTime = math::clamp(point.mPos.mTime, 0.0f, 1.0f);
+												point.mPos.mTime = math::clamp(point.mPos.mTime, startValue, endValue);
 											
 												mProps.mDirty = true;
 											}
@@ -824,7 +832,7 @@ namespace nap
 
 												// translate
 												float adjust = (mousePos.y - y) / motor_height;
-												mProps.mTangentPtr->mValue -= adjust * (range / 1.0f);
+												mProps.mTangentPtr->mValue -= adjust * range;
 
 												adjust = (mousePos.x - x) / elementSizeWidth;
 												mProps.mTangentPtr->mTime += adjust;
@@ -865,7 +873,7 @@ namespace nap
 												ImVec2 mousePos = ImGui::GetMousePos();
 
 												float adjust = (mousePos.y - y) / motor_height;
-												mProps.mTangentPtr->mValue -= adjust * (range / 1.0f);
+												mProps.mTangentPtr->mValue -= adjust * range ;
 
 												adjust = (mousePos.x - x) / elementSizeWidth;
 												mProps.mTangentPtr->mTime += adjust;
