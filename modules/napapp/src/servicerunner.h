@@ -21,7 +21,7 @@ namespace nap
 	 * Call shutdown() on exit to make sure all processes are stopped correctly.
 	 * 
 	 * The APP template argument should be derived from nap::BaseApp. 
-	 * The HANDLER template argument should be of type nap::BaseAppEventHandler()
+	 * The HANDLER template argument should be of type nap::AppEventHandler()
 	 * 
 	 * When creating a ServiceRunner with those two template arguments the app is created
 	 * and invoked at the right time based on core and it's associated services.
