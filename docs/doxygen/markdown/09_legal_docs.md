@@ -57,7 +57,7 @@ How long certain data is stored depends on the nature of the data and the purpos
 -----------------------
 The website uses cookies. Cookies are small text files that the internet browser installs on the visitor’s computer. Via this website, the following types of cookies can be installed: 
 
-A. Cookies for website analysis
+A. Cookies for website analysis.
 The website can use Google Analytics, a web analysis service that is offered by Google Inc. (“Google”). Google Analytics uses cookies to help analyse how visitors use the website. The information that the cookie generates regarding the use of the website (including visitors IP-address) is transferred to and stored by Google on servers in the United States. Google uses this information to keep track of how the website is being used, to prepare reports regarding website activity and to offer other services regarding website activity and Internet use. Google is entitled to supply this information to third parties if Google is required to do so by law, or to the extent that these third parties process the information on Google’s behalf. Google will not combine IP-addresses with other data that Google has.
 
 10.	Blocking cookies
