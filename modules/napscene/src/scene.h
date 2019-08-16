@@ -92,8 +92,19 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntityInstancesByID); }
 
 		/**
+		 * Locate an entity in this scene with the given unique id.
+		 * Note that the given id needs to match the id of an entity resource, not instance.
 		 *
-		 * @return EntityInstance with the specified identifier from this scene.
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * 	// Fetch world and text
+		 *	auto world_entity = scene->findEntity("World");
+		 *	auto laser_entity = scene->findEntity("Laser");
+		 *~~~~~
+		 *
+		 * @param inID the unique id of the entity to find.
+		 * @return EntityInstance with the specified unique identifier from this scene.
 		 */
 		const rtti::ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
