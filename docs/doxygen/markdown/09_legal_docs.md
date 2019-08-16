@@ -149,7 +149,7 @@ These Terms of Use constitute an agreement between You and Naivi. These Terms of
 8. Created Results 
 -----------------------
 
-	- 8.1 The Services may allow You to build Your own application.
+	- 8.1 The Services allow You to build Your own application.
 
 	- 8.2 If Naivi is of the opinion that Your use of the Services may infringe upon any rights of third parties, Naivi may at its sole discretion decide to cease or have ceased Your use of the Software or the Services.
 
