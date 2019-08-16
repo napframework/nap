@@ -83,28 +83,41 @@ namespace nap
 		 * holds pointers to color values in memory, the values that are pointed to in target are overridden.
 		 * This makes it possible (for example) to write colors directly in to a bitmap without having
 		 * to copy them over. 
+		 *
 		 * This is therefore valid (source)RGBAColorData8 -> (target)RGBColor8, the target will have a copy of the values pointed to by it's source
 		 * The following is also valid: (source)RGBColor8 -> (target)RGBColorData8, the target will have the values it points to replaced by the converted color value
+		 *
 		 * @param target the converted color value
 		 */
 		void convert(BaseColor& target) const;
 
 		/**
 		* @return a color converter to convert source color in to target color, nullptr if no such converter exists
-		* Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		* Use this call when dealing with the same color conversion multiple times in, for example, a loop.
 		*/
 		Converter getConverter(const BaseColor& target) const;
 
 		/**
-		* returns a (converted) color of type T
-		* It's required that the color that is returned has a lower amount of color channels
-		* Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
-		* This call asserts if the conversion can't be performed.
-		* When converting to and from float colors, normalized color values are used.
-		* Float values that do not fall within the 0-1 range are clamped
-		* This call won't work with colors that point to values in memory! Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
-		* @return the converted color
-		*/
+		 * returns a (converted) color of type T.
+		 * It's required that the color that is returned has a lower amount of color channels.
+		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
+		 * This call asserts if the conversion can't be performed.
+		 * When converting to and from float colors, normalized color values are used.
+		 * Float values that do not fall within the 0-1 range are clamped
+		 * This call won't work with colors that point to values in memory! Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
+		 * 
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * // Create RGBA 8 bit color
+		 * RGBAColor8 eight_bit_color = { 0xC8, 0x69, 0x69, 0xFF };
+		 *
+		 * // Convert to RGBA float color
+		 * RGBAColorFloat as_float_color = eight_bit_color.convert<RGBAColorFloat>();
+		 *~~~~~
+		 *
+		 * @return the converted color
+		 */
 		template<typename T>
 		T convert() const;
 
