@@ -21,14 +21,14 @@ Let's start reading the graph left to right. Starting from the left we see an ap
 - Receive messages
 - Etc.
 
-Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the getObject that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialization call of your application is the perfect place to load the file and check for content errors.
+[Core](@ref nap::Core) is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the [ResourceManager](@ref nap::ResourceManager). Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the [AppRunner](@ref nap::AppRunner) that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialization call of your application is the perfect place to load the file and check for content errors.
 
 Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes OSC receiving and sending objects, a generic interface to create and extract OSC events and a service that deals with the OSC library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
 
 The diagram has four resources from three different modules:
-- One OSC Receiver from the OSC Module
-- Two Windows from the Render Module
-- One Midi Sender from the Midi Module
+- One [OSCReceiver](@ref nap::OSCReceiver) from the OSC Module
+- Two [Windows](@ref nap::RenderWindow) from the Render Module
+- One [MidiSender](@ref nap::MidiOutputPort) from the Midi Module
 
 After initializing core (and therefore all modules) the building blocks can be created by the ResourceManager. We add the building blocks as individual resources to our JSON file and tell the ResourceManager to load the file and voila: 
 - You now have an OSC receiver that already opened it's port and is listening to messages
