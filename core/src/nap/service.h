@@ -36,9 +36,11 @@ namespace nap
 	 * initialization, runtime state and closing. When designing a module using a service make sure to export the
 	 * service using the 'NAP_SERVICE_MODULE' #define in a source file exactly once, for example:
 	 *
+	 *~~~~~{.cpp}
 	 * NAP_SERVICE_MODULE("mod_naposc", "0.2.0", "nap::OSCService")
+	 *~~~~~
 	 *
-	 * This will ensure that core automatically loads, creates and initializes the service when loading all requested system modules.
+	 * This code snippet ensures that core automatically loads, creates and initializes the service when loading the modules.
 	 **/
 	class NAPAPI Service
 	{

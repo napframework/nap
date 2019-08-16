@@ -18,41 +18,30 @@ namespace nap
 	namespace utility
 	{
 		/*
-		 * Splits a string based on inDelim, populates ioParts
+		 * Splits a string based on the given delimiter. Results are stored in ioParts.
 		 * @param string the sequence to split
-		 * @param delim the delimiter used to split the string
+		 * @param delim the character used to split the string
 		 * @param ioParts list of individual split parts
 		 */
 		void splitString(const std::string& string, const char delim, std::vector<std::string>& ioParts);
 
 		/*
-		 * Splits a string based on inDelim, populates ioParts
-		 * @param string the sequence to split
-		 * @param delim the delimiter used to split the string
-		 * @return vector of split parts
+		 * Splits a string based on the given delimiter.
+		 * @param string the sequence to split.
+		 * @param delim the delimiter used to split the string.
+		 * @return vector of split parts.
 		 */
 		std::vector<std::string> splitString(const std::string& string, const char delim);
 
 		/**
-		 * Join a vector of strings using the specified delimiter.
-		 * eg. joinString({"one", "two", "three"}, ", ");
-		 * becomes: "one, two, three"
+		 * Joins a list of strings together.
+		 * For example: joinString({"one", "two", "three"}, ", ") -> becomes: "one, two, three"
 		 * @param list The list of strings to join
 		 * @param delim The delimiter to inject between the elements
 		 * @return The joined string.
 		 */
 		template<typename T>
-		std::string joinString(const T& list, const std::string& delim)
-		{
-			std::stringstream ss;
-			for (size_t i=0, len=list.size(); i < len; i++)
-			{
-				if (i > 0)
-					ss << delim;
-				ss << list.at(i);
-			}
-			return ss.str();
-		}
+		std::string joinString(const T& list, const std::string& delim);
 
 		/**
 		 * Writes a string to an output stream
@@ -89,7 +78,7 @@ namespace nap
 		std::string stripNamespace(const std::string& str);
 
 		/**
-		 * Tokenize str in to tokens
+		 * Tokenize str into tokens.
 		 * @param str the string to tokenize
 		 * @param tokens the tokens used to process the string
 		 * @param delims the delimiters used for the the tokenization process
@@ -132,18 +121,12 @@ namespace nap
 		std::string trim(const std::string& string);
 
 		/**
-		 * Converts T in to a string
-		 * @param thing the object to convert in to a string
+		 * Converts T in to a string using an std stringstream.
+		 * @param thing the object to convert into a string
 		 * @return the object as a string
 		 */
 		template <typename T>
-		inline std::string addresStr(T thing)
-		{
-			const void* addr = static_cast<const void*>(thing);
-			std::stringstream ss;
-			ss << addr;
-			return ss.str();
-		}
+		std::string addresStr(T thing);
 
 		/**
 		 * Formats a string based on the incoming arguments
@@ -153,16 +136,10 @@ namespace nap
 		 * @return the formatted string
 		 */
 		template <typename... Args>
-		static std::string stringFormat(const std::string& format, Args... args)
-		{
-			size_t size = (size_t)(snprintf(nullptr, 0, format.c_str(), args...) + 1); // Extra space for '\0'
-			std::unique_ptr<char[]> buf(new char[size]);
-			snprintf(buf.get(), size, format.c_str(), args...);
-			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
-		}
+		static std::string stringFormat(const std::string& format, Args... args);
 
 		/**
-		 * Given a templated type name, replace its template parameter with the provided template type
+		 * Given a templated type name, replace its template parameter with the provided template type.
 		 * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"
 		 * @param templateTypeName A replacement type name, eg. "float"
 		 * @return A modified type name such as "nap::MyType<float>"
@@ -178,12 +155,50 @@ namespace nap
 		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace);
 		
 		/**
-		 * Replace all instances of search string with replacement string, in a copy
+		 * Replace all instances of a string with a replacement string. 
 		 * @param inString The input string to search in
-		 * @param find The search string
+		 * @param find The string to replace
 		 * @param replace The replacement string
 		 * @return A copy of the input string with all instances of the search term replaced
 		 */
 		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace);
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Template Definitions
+		//////////////////////////////////////////////////////////////////////////
+
+		template<typename T>
+		std::string joinString(const T& list, const std::string& delim)
+		{
+			std::stringstream ss;
+			for (size_t i = 0, len = list.size(); i < len; i++)
+			{
+				if (i > 0)
+					ss << delim;
+				ss << list.at(i);
+			}
+			return ss.str();
+		}
+
+
+		template <typename... Args>
+		std::string stringFormat(const std::string& format, Args... args)
+		{
+			size_t size = (size_t)(snprintf(nullptr, 0, format.c_str(), args...) + 1); // Extra space for '\0'
+			std::unique_ptr<char[]> buf(new char[size]);
+			snprintf(buf.get(), size, format.c_str(), args...);
+			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+		}
+
+
+		template <typename T>
+		std::string addresStr(T thing)
+		{
+			const void* addr = static_cast<const void*>(thing);
+			std::stringstream ss;
+			ss << addr;
+			return ss.str();
+		}
 	}
 }
