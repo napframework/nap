@@ -50,8 +50,10 @@ namespace nap
 
 
 	/**
-	 * Font Resource
-	 */
+	 * Loads a font from disk using the specified size and properties.
+	 * The resource creates a nap::FontInstance on initialization.
+	 * Use the getFontInstance() call to access all font related functionality.
+ 	 */
 	class NAPAPI Font : public Resource
 	{
 		RTTI_ENABLE(Resource)

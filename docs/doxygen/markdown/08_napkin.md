@@ -156,7 +156,7 @@ Controls:
 - `ALT + MMB` pan the view
 - `ALT + RMB` zoom the view horizontally
 - `SHIFT + RMB` zoom the view vertically
-- `SHIFT + ALT + RMB` zoom the view both vertically and horizontally  
+- `SHIFT + ALT + RMB` zoom the view both vertically and horizontally
 - `F` to frame the selected handles inside the view (if no handles are selected, frame all)
 - `A` to frame the entire curve inside the view
 - Use the buttons in the toolbar or `RMB` in the curve view to change the interpolation of segments.
