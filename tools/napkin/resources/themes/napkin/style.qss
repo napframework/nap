@@ -1,7 +1,3 @@
-/*
-#11426
-
- */
 .color_dark { color: #111426; }
 .color_darkA { color: #171b33; }
 .color_spot { color: #C86969; }
@@ -185,6 +181,6 @@ QStatusBar {
 }
 
 QGraphicsView {
-    background: #555;
+    background: #5D5E73;
 }
 
