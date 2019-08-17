@@ -19,12 +19,16 @@ namespace nap
 	/**
 	 * Manages a list of client-server connections and acts as the main portal for the client to the server.
 	 * Every web-socket client receives connection updates and messages from an endpoint.
-	 * The endpoint is a device that can be started and stopped. When stopped all
-	 * active client-server connections are closed. This occurs when file changes are detected
+	 * The endpoint is a device that can be started and stopped. 
+	 *
+	 * When stopped all active client-server connections are closed. This occurs when file changes are detected
 	 * and the content of the application is hot-reloaded. Typically an application
 	 * has only one endpoint. Multiple clients can reference the same endpoint.
 	 * Every connection update and message is forwarded to the client from a background thread.
 	 * To receive connection updates and messages a client must be dervied from nap::IWebSocketClient.
+	 *
+	 * Note that depending on your operating system you might have to run the application as administrator
+	 * to open a web-socket.
 	 */
 	class NAPAPI WebSocketClientEndPoint : public Device
 	{
