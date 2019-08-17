@@ -30,7 +30,8 @@ namespace nap
 	 * and the content of the application is hot-reloaded. A call to open is non blocking. 
 	 * Messages are forwarded to all clients that implement the nap::IWebSocketClient interface.
 	 * Clients must register themselves to the various signals to receive connection updates and messages.
-	 * Right now SSL encryption is NOT supported. This will change in the future.
+	 * Right now SSL encryption is NOT supported. This will change in the future. Note that depending on your operating 
+	 * system you might have to run the application as administrator to open a web-socket.
 	 *
 	 * By default the server accepts all client connection requests. Change the 'AccessMode' property to 'Ticket'
 	 * or 'Reserved' to add a client identification scheme. When set to 'Ticket' the server accepts
