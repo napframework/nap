@@ -526,6 +526,18 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
                                                     INSTALL_RPATH ${BUILT_RPATH})
 endmacro()
 
+# Linux: Set the RPATH for Python on a of binary object on Linux
+# TARGET_NAME: The target name
+# NAP_ROOT_LOCATION_TO_ORIGIN: The relative path from the object to NAP root
+macro(set_python_installed_rpath_on_linux_object TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
+    # Add our core paths
+    set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
+
+    set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
+                                                    INSTALL_RPATH ${BUILT_RPATH})
+endmacro()
+
 # macOS: Set the packaged RPATH of a binary object for its dependent modules for a single build configuration
 # CONFIG: The build configuration
 # DEPENDENT_NAP_MODULES: The modules to setup as dependencies
