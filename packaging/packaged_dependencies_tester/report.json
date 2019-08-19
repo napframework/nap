@@ -106,15 +106,11 @@
                 "success": true
             },
             "runFromBuildOutput": {
-                "stderr": "[fatal] Unable to deserialize resources: \n Couldn't initialize object 'ParticleShader':\n\tunable to create shader program from vertex shader shaders/dynamicgeometrytest/particle.vert and fragment shader shaders/dynamicgeometrytest/particle.frag\n[fatal] error: unable to initialize application:\n\tCouldn't initialize object 'ParticleShader'\n\tunable to create shader program from vertex shader shaders/dynamicgeometrytest/particle.vert and fragment shader shaders/dynamicgeometrytest/particle.frag\n",
-                "stdout": "[debug] Looking for '/home/coen/dev/nap/NAP-0.3.0-Linux/demos/dynamicgeo/bin/GNU-Release-x86_64/project.json'...\n[debug] Watching directory: /home/coen/dev/nap/NAP-0.3.0-Linux/demos/dynamicgeo/data\n[debug] Loaded module mod_napapp v0.2.0\n[debug] Loaded module mod_napcameracontrol v0.2.0\n[debug] Loaded module mod_napimgui v0.2.0\n[debug] Loaded module mod_napscene v0.2.0\n[debug] Loaded module mod_napmath v0.2.0\n[debug] Loaded module mod_napinput v0.2.0\n[debug] Loaded module mod_napparameter v0.1.0\n[debug] Loaded module mod_naprender v0.2.0\n[debug] Loaded module mod_napsdlinput v0.2.0\n[debug] Loaded module mod_napfont v0.2.0\n[debug] Loaded module mod_dynamicgeo v0.2.0\n[debug] Looking for '/home/coen/dev/nap/NAP-0.3.0-Linux/demos/dynamicgeo/bin/GNU-Release-x86_64/config.json'...\n[info] initializing service: nap::SceneService\n[info] initializing service: nap::InputService\n[info] initializing service: nap::RenderService\nOpenGL INFO: initialized glew successfully\nOpenGL INFO: vendor: Intel Open Source Technology Center\nOpenGL INFO: shading language: 4.50\n[info] initializing service: nap::FontService\n[info] initializing service: nap::IMGuiService\n[info] initializing service: nap::ParameterService\n[info] initializing service: nap::SDLInputService\nOpenGL ERROR: Unable to compile fragment shader (shaders/dynamicgeometrytest/particle.frag): 0:20(27): error: sampler arrays indexed with non-constant expressions are forbidden in GLSL 1.30 and later\n \r\n#version 150 core\n\nin vec4  pass_Color;\nin vec3  pass_Uvs;\nin float pass_PID;\n\nout vec4 out_Color;\n\nuniform sampler2D texture_input[2];\n\nvoid main(void)\n{\n\t// Get uv coordinates\n\tvec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);\n\t\n\t// Check which image to get\n\tint tex_id = int(pass_PID+0.1) % texture_input.length();\n\n\t// Get texture color\n\tvec4 tex_color = texture(texture_input[tex_id], uvs);\n\n\t// Boost colors a bit\n\tfloat r = pow(tex_color.r,0.9);\n\tfloat g = pow(tex_color.g,0.9);\n\tfloat b = pow(tex_color.b,0.9);\n\ttex_color = vec4(r,g,b,tex_color.a);\n\t\n\t// Set output color\n\tout_Color = tex_color * pass_Color;\n}\n\n",
-                "success": false,
+                "success": true,
                 "unexpectedLibraries": []
             },
             "runFromPackagedOutput": {
-                "stderr": "[fatal] Unable to deserialize resources: \n Couldn't initialize object 'ParticleShader':\n\tunable to create shader program from vertex shader shaders/dynamicgeometrytest/particle.vert and fragment shader shaders/dynamicgeometrytest/particle.frag\n[fatal] error: unable to initialize application:\n\tCouldn't initialize object 'ParticleShader'\n\tunable to create shader program from vertex shader shaders/dynamicgeometrytest/particle.vert and fragment shader shaders/dynamicgeometrytest/particle.frag\n",
-                "stdout": "[debug] Looking for '/home/coen/dev/nap/packaging/packaged_dependencies_tester/dynamicgeo-2019.08.15T19.38-no_napkin/project.json'...\n[debug] Watching directory: /home/coen/dev/nap/packaging/packaged_dependencies_tester/dynamicgeo-2019.08.15T19.38-no_napkin/data\n[debug] Loaded module mod_napimgui v0.2.0\n[debug] Loaded module mod_napcameracontrol v0.2.0\n[debug] Loaded module mod_napapp v0.2.0\n[debug] Loaded module mod_napfont v0.2.0\n[debug] Loaded module mod_napscene v0.2.0\n[debug] Loaded module mod_naprender v0.2.0\n[debug] Loaded module mod_dynamicgeo v0.2.0\n[debug] Loaded module mod_napsdlinput v0.2.0\n[debug] Loaded module mod_napinput v0.2.0\n[debug] Loaded module mod_napparameter v0.1.0\n[debug] Loaded module mod_napmath v0.2.0\n[debug] Looking for '/home/coen/dev/nap/packaging/packaged_dependencies_tester/dynamicgeo-2019.08.15T19.38-no_napkin/config.json'...\n[info] initializing service: nap::SceneService\n[info] initializing service: nap::InputService\n[info] initializing service: nap::RenderService\nOpenGL INFO: initialized glew successfully\nOpenGL INFO: vendor: Intel Open Source Technology Center\nOpenGL INFO: shading language: 4.50\n[info] initializing service: nap::FontService\n[info] initializing service: nap::IMGuiService\n[info] initializing service: nap::ParameterService\n[info] initializing service: nap::SDLInputService\nOpenGL ERROR: Unable to compile fragment shader (shaders/dynamicgeometrytest/particle.frag): 0:20(27): error: sampler arrays indexed with non-constant expressions are forbidden in GLSL 1.30 and later\n \r\n#version 150 core\n\nin vec4  pass_Color;\nin vec3  pass_Uvs;\nin float pass_PID;\n\nout vec4 out_Color;\n\nuniform sampler2D texture_input[2];\n\nvoid main(void)\n{\n\t// Get uv coordinates\n\tvec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);\n\t\n\t// Check which image to get\n\tint tex_id = int(pass_PID+0.1) % texture_input.length();\n\n\t// Get texture color\n\tvec4 tex_color = texture(texture_input[tex_id], uvs);\n\n\t// Boost colors a bit\n\tfloat r = pow(tex_color.r,0.9);\n\tfloat g = pow(tex_color.g,0.9);\n\tfloat b = pow(tex_color.b,0.9);\n\ttex_color = vec4(r,g,b,tex_color.a);\n\t\n\t// Set output color\n\tout_Color = tex_color * pass_Color;\n}\n\n",
-                "success": false,
+                "success": true,
                 "unexpectedLibraries": []
             }
         },
@@ -297,36 +293,28 @@
         },
         "runFromBuildOutput": {
             "success": true,
-            "unexpectedLibraries": [
-                "/usr/lib/x86_64-linux-gnu/libxcb-xkb.so.1.0.0",
-                "/usr/lib/x86_64-linux-gnu/libxkbcommon.so.0.0.0",
-                "/usr/lib/x86_64-linux-gnu/libxkbcommon-x11.so.0.0.0"
-            ]
+            "unexpectedLibraries": []
         },
         "runFromPackagedOutput": {
             "success": true,
-            "unexpectedLibraries": [
-                "/usr/lib/x86_64-linux-gnu/libxcb-xkb.so.1.0.0",
-                "/usr/lib/x86_64-linux-gnu/libxkbcommon.so.0.0.0",
-                "/usr/lib/x86_64-linux-gnu/libxkbcommon-x11.so.0.0.0"
-            ]
+            "unexpectedLibraries": []
         }
     },
     "run": {
-        "duration": "10m27s",
+        "duration": "13m09s",
         "frameworkBuildInfo": {
-            "buildNumber": 11,
-            "gitRevision": "47e6e761ac35e098e77a26d31db18703ec2dcfdf",
+            "buildNumber": 107,
+            "gitRevision": "ec443c16eb947f711f0e09637771cc051906f6f4",
             "label": "",
             "majorVersion": 0,
             "minorVersion": 3,
             "patchVersion": 0,
-            "timetamp": "2019.08.15T19.31",
+            "timetamp": "2019.08.19T13.26",
             "version": "0.3.0"
         },
-        "frameworkPath": "/home/coen/dev/nap/NAP-0.3.0-Linux",
-        "startTime": "2019.08.15T19.38",
-        "success": false,
+        "frameworkPath": "c:\\naivi\\nap\\NAP-0.3.0-Win64",
+        "startTime": "2019.08.19T14.53",
+        "success": true,
         "warnings": []
     },
     "templateProject": {
