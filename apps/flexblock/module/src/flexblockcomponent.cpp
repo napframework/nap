@@ -86,6 +86,7 @@ namespace nap
 		mMotorInputs[index] = value;
 	}
 
+
 	void FlexBlockComponentInstance::setSlack(const float value)
 	{
 		mFlexLogic->setSlack(value * mSlackRange + mSlackMinimum);
@@ -137,36 +138,4 @@ namespace nap
 			mFlexBlockSerialComponentInstance->write(data);
 		}
 	}
-
-	/*
-	void FlexBlockComponentInstance::toNapPoints(const std::vector<glm::vec3>& inPoints, std::vector<glm::vec3>& outPoints )
-	{
-		outPoints[0] = inPoints[7];
-		outPoints[1] = inPoints[6];
-		outPoints[2] = inPoints[4];
-		outPoints[3] = inPoints[5];
-
-		outPoints[4] = inPoints[2];
-		outPoints[5] = inPoints[3];
-		outPoints[6] = inPoints[1];
-		outPoints[7] = inPoints[0];
-	}
-
-
-	const int FlexBlockComponentInstance::remapMotorInput(const int index) const
-	{
-		const static std::vector<int> map =
-		{
-			7,
-			6,
-			2,
-			3,
-			4,
-			5,
-			1,
-			0
-		};
-
-		return map[index];
-	}*/
 }
