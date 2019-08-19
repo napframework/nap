@@ -256,7 +256,7 @@ And in the render call of your application you explicitly tell the renderer to r
 void ExampleApp::render()
 {
 	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindow });
+	mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 	
 	// Activate current window for drawing
 	mRenderWindow->makeActive();
@@ -881,7 +881,7 @@ You can add as many windows to your application as you want. Take a look at the 
 void MultiWindowApp::render()
 {
 	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindowOne });
+	mRenderService->destroyGLContextResources({ mRenderWindowOne.get(), mRenderWindowTwo.get() });
 
 	// Render Window One : Sphere
 	{
