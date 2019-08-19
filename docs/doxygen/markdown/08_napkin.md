@@ -113,8 +113,7 @@ Panels {#napkin_panels}
 =======================
 
 Napkin consists of several dockable panels that you can arrange yourself.<br>
-All panels showing lists of items that can be filtered by name, type or value from the textinput at the top.<br>
-Click on the column headers (such as Name and Type) to sort the list below.
+All panels showing lists of items that can be filtered by name, type or value from the textinput at the top.
 
 Resources {#napkin_resources}
 -----------------------
