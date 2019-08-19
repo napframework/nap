@@ -14,6 +14,7 @@
 #include <parametervec.h>
 #include <sequenceplayercomponent.h>
 #include <oscinputcomponent.h>
+#include <oscsender.h>
 #include <maccontroller.h>
 
 #include "flexblockcomponent.h"
@@ -39,6 +40,8 @@ namespace nap
 		 * Initialize the various gui components
 		 */
 		void init();
+
+		void initOscOutput();
 
 		void initOscInputs();
 
@@ -71,6 +74,8 @@ namespace nap
 		nap::ResourcePtr<MACController>		mMotorController;
 		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
+
+		OSCSender*							mOscSender = nullptr;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;

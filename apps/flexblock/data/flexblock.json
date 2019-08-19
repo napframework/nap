@@ -159,7 +159,9 @@
                     "SerialComponent": "./FlexBlockSerialComponent",
                     "FlexBlockShape": "ProtoShapeSize",
                     "Millimeter To Motorsteps ": 12.732390403747559,
-                    "Motor step offset": 7542
+                    "Motor step offset": 7542,
+                    "Slack Range": 1.0,
+                    "Slack Minimum": -0.5
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -860,6 +862,13 @@
             "Port": 7000,
             "EnableDebugOutput": true,
             "AllowPortReuse": false
+        },
+        {
+            "Type": "nap::OSCSender",
+            "mID": "OSCOutput",
+            "IpAddress": "192.168.33.29",
+            "Port": 7000,
+            "BufferScale": 2
         },
         {
             "Type": "nap::ParameterGroup",

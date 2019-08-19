@@ -68,16 +68,33 @@ namespace nap
 		mMotorController = resourceManager->findObject<MACController>("MACController");
 
 		//
+		initOscOutput();
+
+
+		//
 		initParameters();
 
 		//
 		initOscInputs();
 
+
 		mParameterService.fileLoaded.connect(
 			[&]() -> void { 
-			initParameters(); 
+			initOscOutput();
+			initParameters();
 			initOscInputs();
 		});
+	}
+
+
+	void FlexblockGui::initOscOutput()
+	{
+		mOscSender = nullptr;
+		ObjectPtr<nap::rtti::Object> oscOutputObjectPtr = mApp.mResourceManager->findObject("OSCOutput");
+		if (oscOutputObjectPtr != nullptr)
+		{
+			mOscSender = static_cast<OSCSender*>(oscOutputObjectPtr.get());
+		}
 	}
 
 
@@ -101,16 +118,26 @@ namespace nap
 					std::vector<std::string> adressParts;
 					utility::splitString(adress, '/', adressParts);
 
-					if (adressParts.size() == 3)
+					if (adressParts.size() == 4)
 					{
-						if (adressParts[1] == "flexblock")
+						if (adressParts[1] == "flexblock" &&
+							adressParts[2] == "motor")
 						{
-							int parameter = std::stoi(adressParts[2]) - 1;
+							int parameter = std::stoi(adressParts[3]) - 1;
 							if (parameter >= 0 && parameter < 8)
 							{
 								float value = message.getArgument(0)->asFloat();
 								mParameters[parameter]->setValue(value);
 							}
+						}
+					}else if(adressParts.size() == 3)
+					{
+						if (adressParts[1] == "flexblock" &&
+							adressParts[2] == "slack")
+						{
+							int parameter = 8;
+							float value = message.getArgument(0)->asFloat();
+							mParameters[parameter]->setValue(value);
 						}
 					}
 				}
@@ -146,7 +173,21 @@ namespace nap
 			parameter->valueChanged.connect([this, i](float newValue)
 			{
 				updateInput(i, newValue);
+
+				if (mOscSender != nullptr)
+				{
+					OSCEvent oscMessage("/flexblock/motor/" + std::to_string(i+1));
+					oscMessage.addValue<float>(newValue);
+					mOscSender->send(oscMessage);
+				}
 			});
+
+			if (mOscSender != nullptr)
+			{
+				OSCEvent oscMessage("/flexblock/motor/" + std::to_string(i + 1));
+				oscMessage.addValue<float>(0.0f);
+				mOscSender->send(oscMessage);
+			}
 		}
 
 		// slack parameter
@@ -160,7 +201,21 @@ namespace nap
 		parameter->valueChanged.connect([this](float newValue)
 		{
 			mFlexBlock->setSlack(newValue);
+
+			if (mOscSender != nullptr)
+			{
+				OSCEvent oscMessage("/flexblock/slack");
+				oscMessage.addValue<float>(newValue);
+				mOscSender->send(oscMessage);
+			}
 		});
+
+		if (mOscSender != nullptr)
+		{
+			OSCEvent oscMessage("/flexblock/slack");
+			oscMessage.addValue<float>(0.5f);
+			mOscSender->send(oscMessage);
+		}
 	}
 
 
