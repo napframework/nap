@@ -49,7 +49,14 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
     r'ld-[0-9]+\.[0-9]+',
     'libasound',
+    'libasound_module_pcm_jack',
+    'libasound_module_pcm_oss',
     'libasound_module_pcm_pulse',
+    'libasound_module_pcm_upmix',
+    'libasound_module_pcm_usb_stream',
+    'libasound_module_pcm_vdownmix',
+    'libasound_module_rate_samplerate',
+    'libasound_module_rate_speexrate',
     'libasyncns',
     'libbsd',
     r'libc-[0-9]+\.[0-9]+',
@@ -94,6 +101,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libpython[0-9]+\.[0-9]+m',
     r'libresolv-[0-9]+\.[0-9]+',
     r'librt-[0-9]+\.[0-9]+',
+    'libsamplerate',
     'libsndfile',
     'libsensors',
     r'libstdc\+\+',
@@ -1515,6 +1523,18 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         warning = "Not renaming Qt may result in missing dependencies not being detected"
         print("Warning: %s" % warning)
         warnings.append(warning)
+
+    # Warn about Qt not being found for renaming
+    if not is_windows() and rename_qt: 
+        if 'QT_DIR' in os.environ:
+            if not os.path.exists(os.environ['QT_DIR']):
+                warning = "Qt does not exist at path pointed to by QT_DIR env. variable. Not renaming Qt may result in missing dependencies not being detected."
+                print("Warning: %s" % warning)
+                warnings.append(warning)
+        else:
+            warning = "Env. variable QT_DIR not defined. Not renaming Qt may result in missing dependencies not being detected."
+            print("Warning: %s" % warning)
+            warnings.append(warning)
 
     os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
 
