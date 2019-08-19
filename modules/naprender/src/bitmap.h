@@ -162,6 +162,22 @@ namespace nap
 		* outPixel needs to own it's color data and can't point to values in memory.
 		* This call does not convert outPixel if the types don't match. In that case this call will assert.
 		* To convert the fetched data call .convert() on outPixel.
+		*
+		*~~~~~{.cpp}
+		* // Create the pixel that will hold the original color value
+		* auto source_color = mBitmap.makePixel();
+		*
+		* // Create color that will hold the converted color values
+		* RGBColor8 converted_color;
+		*
+		* while(...)
+		* {
+		*		// retrieve pixel value and convert into requested color
+		*		mBitmap.getPixel(x, y, *source_color);
+		*		source_color->convert(converted_color);
+		* }
+		*~~~~~
+		*
 		* @param x the horizontal pixel coordinate
 		* @param y the vertical pixel coordinate
 		* @param outPixel the pixel created using makePixel()
