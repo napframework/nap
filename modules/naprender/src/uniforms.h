@@ -116,9 +116,9 @@ namespace nap
 
 
 	/**
-	* Represents an array of 'value' uniforms.
-	* Derived classes should return the correct amount of elements that are in the array.
-	*/
+	 * Represents an array of 'texture' uniforms.
+	 * Derived classes should return the correct amount of elements that are in the array.
+ 	 */
 	class NAPAPI UniformTextureArray : public UniformTexture
 	{
 		RTTI_ENABLE(UniformTexture)
@@ -133,8 +133,8 @@ namespace nap
 	};
 
 	/**
-	* Stores integer data and is capable of updating the integer uniform in the shader.
-	*/
+	 * Represents a single int value that can be pushed to a shader uniform.
+	 */
 	class NAPAPI UniformInt : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
@@ -161,8 +161,8 @@ namespace nap
 
 
 	/**
-	* Stores integer data and is capable of updating the integer uniform in the shader.
-	*/
+	 * Represents a single float value that can be pushed to a shader uniform.
+	 */
 	class NAPAPI UniformFloat : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
@@ -189,8 +189,8 @@ namespace nap
 
 
 	/**
-	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
-	*/
+	 * Represents a single vec3 value that can be pushed to a shader uniform.
+	 */
 	class NAPAPI UniformVec3 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
@@ -217,8 +217,8 @@ namespace nap
 
 
 	/**
-	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
-	*/
+	 * Represents a single vec4 value that can be pushed to a shader uniform.
+	 */
 	class NAPAPI UniformVec4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
@@ -245,8 +245,8 @@ namespace nap
 
 
 	/**
-	* Stores mat4 data and is capable of updating the mat4 uniform in the shader.
-	*/
+	 * Represents a single 4x4 matrix that can be pushed to a shader uniform.
+	 */
 	class NAPAPI UniformMat4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
@@ -273,7 +273,7 @@ namespace nap
 
 
 	/**
-	 * 2D texture shader uniform.
+	 * Pointer to a single 2D Texture that can be pushed to a shader uniform.
 	 */
 	class NAPAPI UniformTexture2D : public UniformTexture
 	{
@@ -469,7 +469,7 @@ namespace nap
 
 
 	/**
-	 * Stores an array of mat4 data and is capable of updating the mat4 uniform in the shader.
+	 * Stores an array of 4x4 matrix data and is capable of updating the 4x4 matrix uniform in the shader.
 	 * Number of elements must be equal or lower than the number of elements declared in the shader.
 	 */
 	class NAPAPI UniformMat4Array : public UniformValueArray
@@ -510,8 +510,8 @@ namespace nap
 
 
 	/**
-	 * 2D texture uniform array.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
+	 * Stores and array of 2D textures.
+	 * Number of textures must be equal or lower than the number of textures declared in the shader.
 	 */
 	class NAPAPI UniformTexture2DArray : public UniformTextureArray
 	{
