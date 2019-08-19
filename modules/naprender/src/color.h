@@ -74,11 +74,11 @@ namespace nap
 
 		/**
 		 * Converts and copies the values associated with this color in to the target color.
-		 * It's required that the source has an equal or higher amount of color channels compared to target
-		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
-		 * This call asserts if the conversion can't be performed.
+		 * It's required that the source has an equal or higher amount of color channels compared to target.
+		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
+		 * This call asserts if the conversion can't be performed..
 		 * When converting to and from float colors, normalized color values are used.
-		 * Float values that do not fall within the 0-1 range are clamped
+		 * Float values that do not fall within the 0-1 range are clamped.
 		 * When the target does not manage it's own color values, ie:
 		 * holds pointers to color values in memory, the values that are pointed to in target are overridden.
 		 * This makes it possible (for example) to write colors directly in to a bitmap without having
@@ -139,15 +139,15 @@ namespace nap
 		int size() const														{ return mChannels * mValueSize; }
 
 		/**
-		 * Converts the color values in source Color to target Color
-		 * It's required that the from color has an equal or higher amount of color channels
-		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
-		 * The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16
+		 * Converts the color values in source Color to target Color.
+		 * It's required that the from color has an equal or higher amount of color channels.
+		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
+		 * The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16.
 		 * This call asserts if the conversion can't be performed.
 		 * When converting to and from float colors, normalized color values are used.
 		 * Float values that do not fall within the 0-1 range are clamped
 		 * When the target does not manage it's own color values, ie: 
-		 * holds pointers to color values in memory, the values that are pointed to are overridden by the result of the conversion
+		 * holds pointers to color values in memory, the values that are pointed to are overridden by the result of the conversion.
 		 * This makes it possible (for example) to write colors directly in to a bitmap without having
 		 * to copy them over.
 		 * @param source the color to convert
@@ -209,8 +209,8 @@ namespace nap
 		Color() : BaseColor(CHANNELS, sizeof(T))										{ mValues.fill(0); }
 
 		/**
-		 * Constructor that creates a color based on a set number of values
-		 * Note that the number of values needs to match the number of channels
+		 * Constructor that creates a color based on a set number of values.
+		 * Note that the number of values needs to match the number of channels.
 		 * The order is important: RGBA
 		 */
 		Color(const std::array<T, CHANNELS>& colors) : 
@@ -228,7 +228,7 @@ namespace nap
 
 		/**
 		 * Returns the color value associated with a given channel.
-		 * This call asserts when the channel is not available
+		 * This call asserts when the channel is not available.
 		 * @param channel the channel to get the value for
 		 * @return the color value associated with the specified channel
 		 */
@@ -242,8 +242,8 @@ namespace nap
 		T& getValue(EColorChannel channel);
 
 		/**
-		 * Sets the color value for the incoming channel
-		 * This call asserts when the channel is not available
+		 * Sets the color value for the incoming channel.
+		 * This call asserts when the channel is not available.
 		 * @param channel the color channel to set
 		 * @param value the new color value
 		 */
@@ -265,9 +265,9 @@ namespace nap
 		const T* getData() const														{ return mValues.data(); }
 
 		/**
-		 * Set the color data associated with this color
+		 * Set the color data associated with this color.
 		 * This call assumes the data is of the right size and length.
-		 * When this color points to a location in memory, that memory location is copied
+		 * When this color points to a location in memory, that memory location is copied.
 		 * Otherwise the actual values are copied over.
 		 * @param data the color data to copy, behind the scenes a memcopy is performed
 		 */
@@ -282,8 +282,8 @@ namespace nap
 
 		/**
 		 * @return if two color values are similar.
-		 * Performs a value comparison when the color is not a pointer
-		 * Otherwise a pointer comparison
+		 * Performs a value comparison when the color is not a pointer.
+		 * Otherwise a pointer comparison.
 		 */
 		bool operator== (const Color<T, CHANNELS>& rhs) const;
 
