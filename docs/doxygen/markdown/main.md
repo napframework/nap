@@ -26,9 +26,9 @@ Creative fields such as advertisement, film and the performing arts are starting
 
 ## Modules
 
-NAP ships with many useful modules, including support for: 
+NAP ships with many useful modules, including (a): 
 
-- OpenGL 3D Render Engine
+- 3D OpenGL Render Engine
 - FFmpeg Video
 - Audio Playback, Recording and Analysis
 - Audio Synthesis
