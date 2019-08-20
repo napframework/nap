@@ -9,7 +9,7 @@ Privacy Statement {#privacy_statement}
 
 1.	Identity
 -----------------------
-Responsible for this website is Naivi Service B.V., with registered office at Van Bossestraat 108 C, 1051 KD Amsterdam, and hereafter referred to as Naivi. Naivi can be contacted via info@naivi.nl.
+Responsible for this website is Naivi Service B.V., with registered office at Contactweg 47, 1014 AN Amsterdam, and hereafter referred to as Naivi. Naivi can be contacted via info@naivi.nl.
 
 2.	Purpose
 -----------------------
@@ -24,6 +24,9 @@ By visiting the website and supplying personal data to the website you agree to 
 Naivi may collect and record the following data provided by visitors: 
 - e-mail address 
 - IP address
+- invoice information
+- business address
+
 
 5.	Purposes of processing personal data
 -----------------------
