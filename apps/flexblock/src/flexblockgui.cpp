@@ -419,7 +419,8 @@ namespace nap
 				bool sequenceInDisplay =
 					(sequenceStartTime > timeInDisplayStart && sequenceStartTime < timeInDisplayEnd) ||
 					(sequenceEndTime > timeInDisplayStart && sequenceEndTime < timeInDisplayEnd) ||
-					(sequenceStartTime < timeInDisplayStart && sequenceEndTime > timeInDisplayEnd);
+					(sequenceStartTime < timeInDisplayStart && sequenceEndTime > timeInDisplayEnd) ||
+					(timeInDisplayStart >= sequenceStartTime && timeInDisplayEnd <= sequenceEndTime);
 
 				if (sequenceInDisplay)
 				{
@@ -488,7 +489,8 @@ namespace nap
 						bool elementInDisplay =
 							(elementStartTime > timeInDisplayStart && elementStartTime < timeInDisplayEnd) ||
 							(elementEndTime > timeInDisplayStart && elementEndTime < timeInDisplayEnd) ||
-							(elementStartTime < timeInDisplayStart && elementEndTime > timeInDisplayEnd);
+							(elementStartTime < timeInDisplayStart && elementEndTime > timeInDisplayEnd) ||
+							(timeInDisplayStart > elementStartTime && timeInDisplayEnd < elementEndTime);
 
 						if (elementInDisplay)
 						{

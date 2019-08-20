@@ -866,7 +866,7 @@
         {
             "Type": "nap::OSCSender",
             "mID": "OSCOutput",
-            "IpAddress": "192.168.33.29",
+            "IpAddress": "192.168.33.81",
             "Port": 7000,
             "BufferScale": 2
         },
