@@ -40,7 +40,7 @@ NAP depends on various third party libraries. A set of compatible libraries can 
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to the directory that holds the libraries, ie: C:\mycomp\qt\5.12.2\msvc2015_64. You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh. 
+NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to the directory that holds the libraries, ie: C:\mycomp\qt\5.11.3\msvc2015_64. You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh. 
 
 ## Package Desktop
 
