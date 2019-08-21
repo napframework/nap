@@ -30,6 +30,7 @@ Creative fields such as advertisement, film and the performing arts are starting
 To generate a solution and compile the source code you need to have installed: 
 
 - [QT5](http://download.qt.io/official_releases/qt/)
+	- The precompiled package uses QT 5.11.3, although other versions are known to work.
 - Latest version of [CMAKE](https://cmake.org/download/)
 - Latest version of [Git](https://git-scm.com/download/win)
 
