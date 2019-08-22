@@ -133,6 +133,10 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
+		// If the device never started return
+		if (!started())
+			return;
+
 		// Stop error reporting task
 		if (mErrorTask.valid())
 		{
