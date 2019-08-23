@@ -152,7 +152,7 @@ namespace nap
 		}
 
 
-		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
+		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output, int offset) const
 		{
 			int currentSequenceIndex = 0;
 

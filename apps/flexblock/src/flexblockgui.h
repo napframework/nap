@@ -115,12 +115,16 @@ namespace nap
 		*/
 		void handleInsertionPopup();
 
-		void handleEditMotorvaluePopup();
+		void handleEditMotorValuePopup();
+
+		void handleEditSpecialValuePopup();
 
 		/**
 		* Draw timeline
 		*/
 		void drawTimeline(bool & outPopupOpened, std::string & popupId);
+
+		void drawSpecialParametersTimeline(bool & outPopupOpened, std::string & outPopupId);
 
 		/**
 		* Draw controls

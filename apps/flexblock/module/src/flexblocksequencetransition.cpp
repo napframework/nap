@@ -17,7 +17,12 @@ namespace nap
 	{
 		bool FlexblockSequenceTransition::init(utility::ErrorState& errorState)
 		{
-			if (mEndParameterResourcePtrs.size() != mMotorInputs.size() + 1)
+			if (mEndParameterResourcePtrs.size() != 
+				mMotorInputs.size() // motor inputs
+				+ 1 // slack
+				+ mMotorOverrides.size() // motor overrides
+				+ 2 // sinus frequency + sinus amplitude 
+				)
 			{
 				//
 				mEndParameters.clear();
@@ -46,6 +51,39 @@ namespace nap
 					parameterFloatPtr->mID = mID + " GeneratedParameter Slack ";
 					mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
 					endParameterFloatPtrs.emplace_back(parameterFloatPtr);
+				}
+
+				// motor override
+				for (int i = 0; i < mMotorOverrides.size(); i++)
+				{
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(mMotorOverrides[i]);
+
+					ResourcePtr<ParameterFloat> parameterFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					parameterFloatPtr->mID = mID + " GeneratedParameter Override " + std::to_string(i);
+					mEndParameters.emplace_back(static_cast<Parameter*>(parameterFloatPtr.get()));
+					endParameterFloatPtrs.emplace_back(parameterFloatPtr);
+				}
+
+				// sinus frequency + amplitude
+				{
+					// frequency
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(mSinusFrequencey);
+
+					ResourcePtr<ParameterFloat> frequencyFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					frequencyFloatPtr->mID = mID + " GeneratedParameter Sinus Frequency ";
+					mEndParameters.emplace_back(static_cast<Parameter*>(frequencyFloatPtr.get()));
+					endParameterFloatPtrs.emplace_back(frequencyFloatPtr);
+
+					// amplitude
+					mOwnedParameters.emplace_back(std::make_unique<ParameterFloat>());
+					mOwnedParameters.back()->setValue(mSinusAmplitude);
+
+					ResourcePtr<ParameterFloat> amplitudeFloatPtr = ResourcePtr<ParameterFloat>(mOwnedParameters.back().get());
+					amplitudeFloatPtr->mID = mID + " GeneratedParameter Sinus Amplitude ";
+					mEndParameters.emplace_back(static_cast<Parameter*>(amplitudeFloatPtr.get()));
+					endParameterFloatPtrs.emplace_back(amplitudeFloatPtr);
 				}
 
 				mEndParameterResourcePtrs = endParameterFloatPtrs;

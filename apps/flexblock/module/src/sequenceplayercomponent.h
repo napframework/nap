@@ -158,7 +158,7 @@ namespace nap
 			 * Evaluate acts the same as process but doesn't advance the
 			 * current element index or finishes the player
 			 */
-			const void evaluate(double time, std::vector<Parameter*> &output) const;
+			const void evaluate(double time, std::vector<Parameter*> &output, const int offset = 0) const;
 
 			/**
 			 * @return true if paused

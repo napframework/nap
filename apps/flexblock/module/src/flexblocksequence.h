@@ -32,6 +32,8 @@ namespace nap
 			* 8 floating point values that will be used to create parameter resources during init
 			*/
 			std::vector<float> mMotorInputs = std::vector<float>(8);
+
+			std::vector<float> mSpecials = std::vector<float>(11);
 		protected:
 			/**
 			* A vector holder unique pointers to created parameters
