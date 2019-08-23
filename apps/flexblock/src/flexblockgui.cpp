@@ -244,7 +244,7 @@ namespace nap
 		{
 			showPlaylist();
 		}
-
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		showMotorControlWindow();
 	}
 	
@@ -2227,6 +2227,11 @@ namespace nap
 		{
 			utility::ErrorState error;
 			mMotorController->resetPosition(mResetMotorPos, error);
+
+			for (float& meter : mTargetMeters)
+			{
+				meter = 0.0f;
+			}
 		}
 
 		ImGui::Separator();
@@ -2234,22 +2239,56 @@ namespace nap
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
 			{
-				ImGui::Text("Curent Motor Mode: %s", mMotorController->modeToString(mMotorController->getActualMode(i)).c_str());
+				const double counts = 129473.415472573;
+				float current_meters = (float)(((double)mMotorController->getActualPosition(i)) / counts);
+
+				ImGui::Text("Current Motor Mode: %s", mMotorController->modeToString(mMotorController->getActualMode(i)).c_str());
 				ImGui::Text("Current Motor Position: %d", mMotorController->getActualPosition(i));
+				ImGui::Text("Current Motor Meters: %.3f", current_meters);
 				ImGui::Text("Current Motor Velocity: %.1f", mMotorController->getActualVelocity(i));
 				ImGui::Text("Current Motor Torque: %.1f", mMotorController->getActualTorque(i));
+				ImGui::Text("Current Acceleration : %.1f", mMotorController->mAcceleration);
+
+				ImGui::PushID(i);
+
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
-				if (ImGui::SliderInt("Position", &req_pos, -5000000, 5000000))
+				if (ImGui::InputInt("Position", &req_pos, 1, 50))
 				{
 					mMotorController->setPosition(i, req_pos);
 				}
 
 				int req_vel = mMotorController->getVelocity(i);
-				if (ImGui::SliderInt("Velocity", &req_vel, 0, mMotorController->mMaxVelocity))
+				if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
 				{
+					req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
 					mMotorController->setVelocity(i, static_cast<float>(req_vel));
 				}
-				ImGui::Separator();
+
+				int req_tor = mMotorController->mTorque;
+				if (ImGui::InputInt("Torque", &req_tor, 1, 5))
+				{
+					req_tor = math::clamp<int>(req_tor, 0, 300);
+					mMotorController->setTorque(i, static_cast<float>(req_tor));
+				}
+
+				int req_acc = mMotorController->mAcceleration;
+				if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
+				{
+					req_acc = static_cast<int>(math::clamp<float>(static_cast<float>(req_acc), 0.0f, mMotorController->mMaxVelocity));
+					mMotorController->setAcceleration(i, req_acc);
+					mMotorController->mAcceleration = req_acc;
+				}
+
+				// meters
+				//  129473,415472573 = 1 meter
+				float target_meter = mTargetMeters[i];
+				if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
+				{
+					int32 newCounts = (int32) ( (double)target_meter * counts );
+					mMotorController->setPosition(i, newCounts);
+					mTargetMeters[i] = target_meter;
+				}
+
 				bool error = false;
 				if (mMotorController->hasError(i))
 				{
@@ -2269,6 +2308,9 @@ namespace nap
 					ImGui::TextColored(text_color, "Slave Lost!");
 					error = true;
 				}
+				
+				ImGui::Separator();
+				ImGui::PopID();
 				if (!error)
 				{
 					ImGui::Text("No Errors");
@@ -2282,6 +2324,11 @@ namespace nap
 		if (ImGui::Button("!STOP!"))
 		{
 			mMotorController->emergencyStop();
+		}
+		if (ImGui::Button("!START!"))
+		{
+			utility::ErrorState errorState;
+			mMotorController->start(errorState);
 		}
 		ImGui::PopStyleColor();
 

@@ -75,6 +75,8 @@ namespace nap
 		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 
+		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+
 		OSCSender*							mOscSender = nullptr;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
