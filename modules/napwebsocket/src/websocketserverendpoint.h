@@ -174,6 +174,7 @@ namespace nap
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
 		std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
+		std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
 
 	private:
 		std::mutex mListenerMutex;
