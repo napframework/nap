@@ -53,6 +53,7 @@ namespace nap
 		mScanEntity = scene->findEntity("ScanEntity");
 		mVideoEntity = scene->findEntity("VideoPlaneEntity");
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
+		mLineEntity = scene->findEntity("LineEntity");
 
 		// Get yocto sensors
 		mRangeSensor = mResourceManager->findObject("RangeSensor");
@@ -113,13 +114,20 @@ namespace nap
 			mRenderWindow->getBackbuffer().setClearColor(mGui->getBackgroundColor());
 			mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-			// Set draw mode (fill, lines, polygon
+			// Comps to render
+			std::vector<nap::RenderableComponentInstance*> render_comps;
+
+			// Set draw mode (fill, lines, polygon)
 			mRenderService->setPolygonMode(mGui->getRenderMode());
 
-			std::vector<nap::RenderableComponentInstance*> render_comps;
+			// Render Scan
 			mScanEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
-
 			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
+
+			// Render line
+			render_comps.clear();
+			mLineEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
 			// Render gui to window

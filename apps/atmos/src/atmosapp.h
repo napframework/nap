@@ -72,9 +72,10 @@ namespace nap
 		ObjectPtr<RenderTarget>		mVideoTarget  = nullptr;			//< Pointer to the video render target
 
 		// Entities
-		ObjectPtr<EntityInstance>		mCameraEntity		= nullptr;		//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance>		mWorldEntity		= nullptr;		//< Pointer to the world entity
-		ObjectPtr<EntityInstance>		mScanEntity			= nullptr;		//< Pointer to the scan entity (living under the world)
+		ObjectPtr<EntityInstance>		mCameraEntity		= nullptr;		///< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance>		mWorldEntity		= nullptr;		///< Pointer to the world entity
+		ObjectPtr<EntityInstance>		mScanEntity			= nullptr;		///< Pointer to the scan entity (living under the world)
+		ObjectPtr<EntityInstance>		mLineEntity			= nullptr;		///< Pointer to the cam path entity
 		ObjectPtr<EntityInstance>		mVideoEntity		= nullptr;		///< Pointer to the video entity
 		ObjectPtr<EntityInstance>		mVideoCameraEntity	= nullptr;		///< Pointer to the camera that renders the video
 		ObjectPtr<YoctoRangeSensor>		mRangeSensor		= nullptr;		///< Yoctopuce range sensor
