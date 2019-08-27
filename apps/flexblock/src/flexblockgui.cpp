@@ -368,7 +368,7 @@ namespace nap
 
 				// start top left with a little bit of margin
 				mProps.mTopLeftPosition = ImGui::GetCursorScreenPos();
-				mProps.mTopLeftPosition.x += 30;
+				mProps.mTopLeftPosition.x += 50;
 				mProps.mTopLeftPosition.y += 20;
 				ImVec2 bottomRightPos = ImVec2(
 					mProps.mTopLeftPosition.x + childSize.x,
@@ -1047,19 +1047,20 @@ namespace nap
 				// draw edit curve toggle
 				for (int i = 0; i < 8; i++)
 				{
+					int motorId = 7 - i;
 					float y_pos = (childSize.y / 8) * i + 4;
 					// draw motor text
 					drawList->AddText(
-						ImVec2(mProps.mTopLeftPosition.x - 25, mProps.mTopLeftPosition.y + y_pos),
+						ImVec2(mProps.mTopLeftPosition.x - 50, mProps.mTopLeftPosition.y + y_pos),
 						colorWhite,
-						std::to_string(8 - i).c_str());
+						mProps.mParameterMap[static_cast<flexblock::PARAMETER_IDS>(motorId)].c_str());
 
 					//
 					const ImVec2 rectTopLeft(mProps.mTopLeftPosition.x - 15, mProps.mTopLeftPosition.y + y_pos + 5);
 					const ImVec2 rectBotRight(mProps.mTopLeftPosition.x - 5, mProps.mTopLeftPosition.y + y_pos + 15);
 
 					bool filled = false;
-					int motorId = 7 - i;
+					
 					if (mProps.mCurrentAction == TimeLineActions::NONE)
 					{
 						if (ImGui::IsMouseHoveringRect(rectTopLeft, rectBotRight))
@@ -1251,7 +1252,7 @@ namespace nap
 
 				// start top left with a little bit of margin
 				mProps.mTopLeftPosition = ImGui::GetCursorScreenPos();
-				mProps.mTopLeftPosition.x += 30;
+				mProps.mTopLeftPosition.x += 50;
 				mProps.mTopLeftPosition.y += 20;
 				ImVec2 bottomRightPos = ImVec2(
 					mProps.mTopLeftPosition.x + childSize.x,
@@ -1930,19 +1931,20 @@ namespace nap
 				// draw edit curve toggle
 				for (int i = 0; i < 11; i++)
 				{
+					int specialId = 10 - i;
 					float y_pos = (childSize.y / 11) * i + 4;
+
 					// draw motor text
 					drawList->AddText(
-						ImVec2(mProps.mTopLeftPosition.x - 25, mProps.mTopLeftPosition.y + y_pos),
+						ImVec2(mProps.mTopLeftPosition.x - 50, mProps.mTopLeftPosition.y + y_pos),
 						colorWhite,
-						std::to_string(11 - i).c_str());
+						mProps.mParameterMap[static_cast<flexblock::PARAMETER_IDS>(8 + specialId)].c_str());
 
 					//
 					const ImVec2 rectTopLeft(mProps.mTopLeftPosition.x - 15, mProps.mTopLeftPosition.y + y_pos + 5);
 					const ImVec2 rectBotRight(mProps.mTopLeftPosition.x - 5, mProps.mTopLeftPosition.y + y_pos + 15);
 
 					bool filled = false;
-					int specialId = 10 - i;
 					if (mProps.mCurrentAction == TimeLineActions::NONE)
 					{
 						if (ImGui::IsMouseHoveringRect(rectTopLeft, rectBotRight))

@@ -6,6 +6,7 @@
 #include <string>
 #include <mathutils.h>
 #include <fcurve.h>
+#include <flexblocksequence.h>
 
 #include "flexblockgui.h"
 
@@ -67,5 +68,28 @@ namespace nap
 		math::FCurvePoint<float, float> *mCurvePtr = nullptr;
 		math::FComplex<float, float> *mTangentPtr = nullptr;
 		bool mShowPlaylist = false;
+
+		std::map<flexblock::PARAMETER_IDS, std::string> mParameterMap =
+		{
+			{ flexblock::MOTOR_ONE, "m1" },
+			{ flexblock::MOTOR_TWO, "m2" },
+			{ flexblock::MOTOR_THREE, "m3" },
+			{ flexblock::MOTOR_FOUR, "m4" },
+			{ flexblock::MOTOR_FIVE, "m5" },
+			{ flexblock::MOTOR_SIX, "m6" },
+			{ flexblock::MOTOR_SEVEN, "m7" },
+			{ flexblock::MOTOR_EIGHT, "m8" },
+			{ flexblock::SLACK, "SL" },
+			{ flexblock::MOTOR_OVERRIDE_ONE, "o1" },
+			{ flexblock::MOTOR_OVERRIDE_TWO, "o2" },
+			{ flexblock::MOTOR_OVERRIDE_THREE, "o3" },
+			{ flexblock::MOTOR_OVERRIDE_FOUR, "o4" },
+			{ flexblock::MOTOR_OVERRIDE_FIVE, "o5" },
+			{ flexblock::MOTOR_OVERRIDE_SIX, "o6" },
+			{ flexblock::MOTOR_OVERRIDE_SEVEN, "o7" },
+			{ flexblock::MOTOR_OVERRIDE_EIGHT, "o8" },
+			{ flexblock::SINUS_AMPLITUDE, "SA" },
+			{ flexblock::SINUS_FREQUENCY, "SF" },
+		};
 	};
 }
