@@ -125,6 +125,7 @@ namespace nap
 
 		//
         ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
+		
 		// Initialize flexblock unique ptr to null
 		std::unique_ptr<Flex> mFlexLogic = nullptr;
 

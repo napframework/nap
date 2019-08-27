@@ -232,20 +232,62 @@ namespace nap
 		if (mHide)
 			return;
 
-		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
-		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.4f - 20));
-		mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
+		ImGui::BeginMainMenuBar();
 
-		showInfoWindow();
-
-		showTimeLineWindow();
-
-		if (mProps.mShowPlaylist)
+		if (ImGui::BeginMenu("Windows"))
 		{
-			showPlaylist();
+			ImGui::MenuItem("Parameters", (const char*)0, &mProps.mShowParameters);
+			ImGui::MenuItem("TimeLine", (const char*)0, &mProps.mShowTimeLine);
+			ImGui::MenuItem("Motor Control", (const char*)0, &mProps.mShowMotorControl);
+			ImGui::MenuItem("Information", (const char*)0, &mProps.mShowInformation);
+			ImGui::MenuItem("Playlist", (const char*)0, &mProps.mShowPlaylist);
+			ImGui::EndMenu();
 		}
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		showMotorControlWindow();
+
+		bool resetLayout = false;
+		ImGui::MenuItem("Reset Layout", (const char*)0, &resetLayout);
+		ImGui::EndMainMenuBar();
+
+		if (resetLayout)
+		{
+			ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
+			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.4f - 20));
+		}
+		if( mProps.mShowParameters)
+			mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
+
+		if (resetLayout)
+		{
+			ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.9f + 10));
+			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.1f - 20));
+		}
+		if (mProps.mShowInformation)
+			showInfoWindow();
+
+		if (resetLayout)
+		{
+			ImGui::SetNextWindowPos(ImVec2(10, 10));
+			ImGui::SetNextWindowContentSize(
+				ImVec2(mProps.mChildWidth + 100.0f, mProps.mChildHeight + mProps.mChildHeight * (11.0f / 8.0f) + 200.0f));
+		}
+		if( mProps.mShowTimeLine)
+			showTimeLineWindow();
+
+		if (resetLayout)
+		{
+			ImGui::SetNextWindowPos(ImVec2(50, 50));
+			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 50, mWindowSize.y - 100));
+		}
+		if( mProps.mShowPlaylist )
+			showPlaylist();
+
+		if (resetLayout)
+		{
+			ImGui::SetNextWindowPos(ImVec2(100, 100));
+			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f, mWindowSize.y * 0.3f));
+		}
+		if( mProps.mShowMotorControl )
+			showMotorControlWindow();
 	}
 	
 
@@ -263,14 +305,6 @@ namespace nap
 
 	void FlexblockGui::showTimeLineWindow()
 	{
-		//
-		ImGui::SetNextWindowPos(ImVec2(10, 10));
-		//ImGui::SetNextWindowSize(ImVec2(mWindowSize.x - 20, mWindowSize.y * 0.5f - 20));
-
-		// set next window content size to timeline ( child ) width to make scroll bar fit
-		ImGui::SetNextWindowContentSize(
-			ImVec2(mProps.mChildWidth + 100.0f, mProps.mChildHeight + mProps.mChildHeight * ( 11.0f / 8.0f ) + 200.0f ));
-
 		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
 
@@ -340,6 +374,7 @@ namespace nap
 		if (scrollX != mProps.mPrevScrollX)
 		{
 			mProps.mDirty = true;
+			mProps.mSpecialsDirty = true;
 			mProps.mPrevScrollX = scrollX;
 		}
 
@@ -347,6 +382,7 @@ namespace nap
 		{
 			mProps.mPrevScrollY = ImGui::GetScrollY();
 			mProps.mDirty = true;
+			mProps.mSpecialsDirty = true;
 		}
 
 		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 50));
@@ -2744,9 +2780,6 @@ namespace nap
 
 	void FlexblockGui::showInfoWindow()
 	{
-		ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.9f + 10));
-		ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.1f - 20));
-
 		// Color used for highlights
 		mApp.getCore().getFramerate();
 

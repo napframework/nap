@@ -33,8 +33,8 @@ namespace nap
 			*/
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-			std::string						mDefaultShow;
-			ResourcePtr<ParameterGroup>		mParameterGroup;
+			std::string										mDefaultShow;
+			std::vector<ResourcePtr<ParameterGroup>>		mParameterGroups;
 		};
 
 		//////////////////////////////////////////////////////////////////////////

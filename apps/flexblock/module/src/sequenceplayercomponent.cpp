@@ -15,7 +15,7 @@
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
 // Put additional properties here
-RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroups, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("StartShowFile", &nap::timeline::SequencePlayerComponent::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 
 RTTI_END_CLASS
@@ -59,10 +59,13 @@ namespace nap
 			if (!mSequenceContainer->init(errorState))
 				return false;
 
-			const auto& parameterGroup = resource->mParameterGroup;
-			for (const auto& parameter : parameterGroup->mParameters)
+			const auto& parameterGroups = resource->mParameterGroups;
+			for (const auto& parameterGroup : parameterGroups)
 			{
-				mParameters.emplace_back(parameter.get());
+				for (const auto& parameter : parameterGroup->mParameters)
+				{
+					mParameters.emplace_back(parameter.get());
+				}
 			}
 
 			if (!load(resource->mDefaultShow, errorState))

@@ -67,7 +67,7 @@ namespace nap
 		TimeLineActions mCurrentAction = TimeLineActions::NONE;
 		math::FCurvePoint<float, float> *mCurvePtr = nullptr;
 		math::FComplex<float, float> *mTangentPtr = nullptr;
-		bool mShowPlaylist = false;
+		
 
 		std::map<flexblock::PARAMETER_IDS, std::string> mParameterMap =
 		{
@@ -91,5 +91,11 @@ namespace nap
 			{ flexblock::SINUS_AMPLITUDE, "SA" },
 			{ flexblock::SINUS_FREQUENCY, "SF" },
 		};
+
+		bool mShowMotorControl = false;
+		bool mShowInformation = true;
+		bool mShowParameters = true;
+		bool mShowTimeLine = true;
+		bool mShowPlaylist = false;
 	};
 }

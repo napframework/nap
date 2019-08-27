@@ -177,8 +177,11 @@
                 },
                 {
                     "Type": "nap::timeline::SequencePlayerComponent",
-                    "mID": "nap::timeline::SequencePlayerComponent_b9bef377",
-                    "TimelineParameters": "Parameters",
+                    "mID": "Motor Sequence Player",
+                    "TimelineParameters": [
+                        "Motor Inputs",
+                        "Special Parameters"
+                    ],
                     "StartShowFile": "shows/start_template.json"
                 }
             ],
@@ -710,7 +713,7 @@
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{890598F6-F526-427C-BB44-4581208171F6}",
+            "Adapter": "\\Device\\NPF_{9CCC1944-63F4-4A06-8585-73BDAE9D120C}",
             "CycleTime": 1000,
             "ResetPosition": false,
             "DisableErrorHandling": false,
@@ -953,6 +956,86 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "Slack",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 1",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 2",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 3",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 4",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 5",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 6",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 7",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 8",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Sinus Amplitude",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Sinus Frequency",
                             "Name": "",
                             "Value": 0.0,
                             "Minimum": 0.0,
