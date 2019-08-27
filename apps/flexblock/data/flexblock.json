@@ -158,10 +158,14 @@
                     "FlexBlockMesh": "BoxMesh",
                     "SerialComponent": "./FlexBlockSerialComponent",
                     "FlexBlockShape": "ProtoShapeSize",
-                    "Millimeter To Motorsteps ": 12.732390403747559,
-                    "Motor step offset": 7542,
+                    "Motor Steps Per Meter": 129473.41,
+                    "Motor Step Offset": 0,
                     "Slack Range": 1.0,
-                    "Slack Minimum": -0.5
+                    "Slack Minimum": -0.5,
+                    "Sinus Amplitude": 0.5,
+                    "Sinus Frequency": 100.0,
+                    "Override Range": 20.0,
+                    "Override Minimum": 0.0
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -1027,7 +1031,7 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "Sinus Amplitude",
+                            "mID": "Sinus Frequency",
                             "Name": "",
                             "Value": 0.0,
                             "Minimum": 0.0,
@@ -1035,7 +1039,7 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "Sinus Frequency",
+                            "mID": "Sinus Amplitude",
                             "Name": "",
                             "Value": 0.0,
                             "Minimum": 0.0,

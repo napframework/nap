@@ -52,7 +52,7 @@ namespace nap
 		 */
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
-		float mMillimeterToMotorsteps = 12.73239f; ///< Property: 'Millimeter to Motorsteps' value that we need to calculate how much steps we need the motor(s) to make
+		double mMotorStepsPerMeter = 12.73239f; ///< Property: 'Millimeter to Motorsteps' value that we need to calculate how much steps we need the motor(s) to make
 
 		int mMotorOffset = 7542; ///< Property: 'Motor Offset' value that we need to calculate the zero position of the motor
 
@@ -60,13 +60,21 @@ namespace nap
 
 		float mSlackMinimum = -0.5f;
 
+		float mSinusAmplitudeRange = 0.5f;
+
+		float mSinusFrequencyRange = 100.0f;
+
+		float mSinusOffset = -0.0f;
+
+		float mOverrideRange = 24.0f;
+
+		float mOverrideMinimum = 0.0f;
+
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
-		
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -102,13 +110,25 @@ namespace nap
 		* @param index index of motor [0..8]
 		* @param value motor input 0-1
 		*/
-		void setMotorInput(int index, float value);
+		void setMotorInput(const int index, float value);
 
 		/**
 		 * Set slack parameter
 		 * @param value slack value, typically between -0.5 and 0.5
 		 */
 		void setSlack(const float value);
+
+		/**
+		*/
+		void setOverrides(const int index, const float value);
+
+		/**
+		*/
+		void setSinusFrequency(const float value);
+
+		/**
+		*/
+		void setSinusAmplitude(const float value);
 
 		/**
 		 * @return returns object points in local space
@@ -138,12 +158,30 @@ namespace nap
 
 		std::vector<float> mMotorInputs = std::vector<float>(8);
 
-		float mMillimeterToMotorsteps;
+		std::vector<float> mMotorOverrides = std::vector<float>(8);
 
-		int mMotorOffset;
+		double mMotorStepsPerMeter;
+
+		int mMotorStepOffset;
 
 		float mSlackRange;
 
 		float mSlackMinimum;
+
+		float mSinusOffset = -5.0f;
+
+		float mOverrideRange = 1000.0f;
+
+		float mOverrideMinimum = 0.0f;
+
+		float mSinusAmplitudeRange = 1.0f;
+
+		float mSinusFrequencyRange = 100.0f;
+
+		float mSinusAmplitude = 0.0f;
+
+		float mSinusFrequency = 0.0f;
+
+		double mTime = 0.0;
 	};
 }

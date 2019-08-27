@@ -15,10 +15,15 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Millimeter To Motorsteps ", &nap::FlexBlockComponent::mMillimeterToMotorsteps, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Motor step offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor Steps Per Meter", &nap::FlexBlockComponent::mMotorStepsPerMeter, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor Step Offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Range", &nap::FlexBlockComponent::mSlackRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Minimum", &nap::FlexBlockComponent::mSlackMinimum, nap::rtti::EPropertyMetaData::Default)
+
+	RTTI_PROPERTY("Sinus Amplitude", &nap::FlexBlockComponent::mSinusAmplitudeRange, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sinus Frequency", &nap::FlexBlockComponent::mSinusFrequencyRange, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -55,10 +60,16 @@ namespace nap
 		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
-		mMillimeterToMotorsteps = resource->mMillimeterToMotorsteps;
-		mMotorOffset = resource->mMotorOffset;
+		mMotorStepsPerMeter = resource->mMotorStepsPerMeter;
+		mMotorStepOffset = resource->mMotorOffset;
 		mSlackMinimum = resource->mSlackMinimum;
 		mSlackRange = resource->mSlackRange;
+		mMotorStepOffset = resource->mMotorOffset;
+		mSinusAmplitudeRange = resource->mSinusAmplitudeRange;
+		mSinusFrequencyRange = resource->mSinusFrequencyRange;
+		mSlackMinimum = resource->mSlackMinimum;
+		mOverrideMinimum = resource->mOverrideMinimum;
+		mOverrideRange = resource->mOverrideRange;
 
 		// create flex logic
 		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
@@ -80,10 +91,31 @@ namespace nap
 	}
 
 
-	void FlexBlockComponentInstance::setMotorInput(int index, float value)
+	void FlexBlockComponentInstance::setMotorInput(const int index, float value)
 	{
 		// 
 		mMotorInputs[index] = value;
+	}
+
+
+	void FlexBlockComponentInstance::setOverrides(const int index, const float value)
+	{
+		mMotorOverrides[index] = value * mOverrideRange;
+	//	printf("%i : %f\n", index, value);
+	}
+
+
+	void FlexBlockComponentInstance::setSinusAmplitude(const float value)
+	{
+		mSinusAmplitude = value * mSinusAmplitudeRange;
+	//	printf("%f\n", value);
+	}
+
+
+	void FlexBlockComponentInstance::setSinusFrequency(const float value)
+	{
+		mSinusFrequency = value * mSinusFrequencyRange;
+	//	printf("%f\n", value);
 	}
 
 
@@ -108,7 +140,44 @@ namespace nap
 		// update motors of flex algorithm
 		mFlexLogic->setMotorInput(mMotorInputs);
 
+		//
+		const std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
+
+		//
+		std::vector<double> motorSteps(8);
+		for (int i = 0; i < ropeLengths.size(); i++)
+		{
+			motorSteps[i] = ropeLengths[i];
+		}
+		
+		// overrides
+		for (int i = 0; i < mMotorOverrides.size(); i++)
+		{
+			motorSteps[i] += mMotorOverrides[i] + mOverrideMinimum;
+		}
+
+		// sinus
+		mTime += deltaTime;
+		float sinusValue = ((( cos(mTime * mSinusFrequency) * -1.0f ) * 0.5f ) + 0.5f ) * mSinusAmplitude ;
+		//printf("%f\n", sinusValue);
+
+		for (int i = 0; i < motorSteps.size(); i++)
+		{
+			motorSteps[i] += sinusValue;
+		}
+
+		//printf("%f\n", motorSteps[0]);
+
+		for (int i = 0; i < motorSteps.size(); i++)
+		{
+			double a = motorSteps[i]; 
+			a *= mMotorStepsPerMeter; 
+			a -= mMotorStepOffset; 
+			motorSteps[i] = a;
+		}
+
 		// update serial
+		/*
 		mUpdateSerialTime += deltaTime;
 		if (mUpdateSerialTime > (double)mFlexBlockSerialComponentInstance->getUpdateIntervalMs() / 1000.0)
 		{
@@ -137,5 +206,6 @@ namespace nap
 			//printf("%s\n", data.c_str());
 			mFlexBlockSerialComponentInstance->write(data);
 		}
+		*/
 	}
 }

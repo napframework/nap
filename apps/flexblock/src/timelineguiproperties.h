@@ -67,7 +67,6 @@ namespace nap
 		TimeLineActions mCurrentAction = TimeLineActions::NONE;
 		math::FCurvePoint<float, float> *mCurvePtr = nullptr;
 		math::FComplex<float, float> *mTangentPtr = nullptr;
-		
 
 		std::map<flexblock::PARAMETER_IDS, std::string> mParameterMap =
 		{

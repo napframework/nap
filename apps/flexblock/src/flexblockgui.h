@@ -149,6 +149,8 @@ namespace nap
 		void initParameters();
 		void updateInput(int index, float value);
 
+		void updateOverride(int index, float value);
+
 		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState& errorState);
 
 		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState);

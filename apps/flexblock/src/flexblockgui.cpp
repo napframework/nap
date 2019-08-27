@@ -191,14 +191,14 @@ namespace nap
 		}
 
 		// slack parameter
-		ObjectPtr<ParameterFloat> parameter = resourceManager->findObject<ParameterFloat>("Slack");
+		ObjectPtr<ParameterFloat> slackParameter = resourceManager->findObject<ParameterFloat>("Slack");
 
-		assert(parameter != nullptr);
+		assert(slackParameter != nullptr);
 
-		mParameters.emplace_back(parameter.get());
-		parameter->setValue(0.0f);
+		mParameters.emplace_back(slackParameter.get());
+		slackParameter->setValue(0.0f);
 
-		parameter->valueChanged.connect([this](float newValue)
+		slackParameter->valueChanged.connect([this](float newValue)
 		{
 			mFlexBlock->setSlack(newValue);
 
@@ -216,12 +216,103 @@ namespace nap
 			oscMessage.addValue<float>(0.5f);
 			mOscSender->send(oscMessage);
 		}
+
+		// overrides
+		for (int i = 0; i < 8; i++)
+		{
+			std::string id = "Override " + std::to_string(i + 1);
+			ObjectPtr<ParameterFloat> parameter = resourceManager->findObject<ParameterFloat>(id);
+
+			assert(parameter != nullptr);
+
+			mParameters.emplace_back(parameter.get());
+			parameter->setValue(0.0f);
+			parameter->valueChanged.connect([this, i](float newValue)
+			{
+				updateOverride(i, newValue);
+
+				if (mOscSender != nullptr)
+				{
+					OSCEvent oscMessage("/flexblock/override/" + std::to_string(i + 1));
+					oscMessage.addValue<float>(newValue);
+					mOscSender->send(oscMessage);
+				}
+			});
+
+			if (mOscSender != nullptr)
+			{
+				OSCEvent oscMessage("/flexblock/override/" + std::to_string(i + 1));
+				oscMessage.addValue<float>(0.0f);
+				mOscSender->send(oscMessage);
+			}
+		}
+
+		// sinus frequency
+		ObjectPtr<ParameterFloat> sinusFrequencyParameter = resourceManager->findObject<ParameterFloat>("Sinus Frequency");
+
+		assert(sinusFrequencyParameter != nullptr);
+
+		mParameters.emplace_back(sinusFrequencyParameter.get());
+		sinusFrequencyParameter->setValue(0.0f);
+
+		sinusFrequencyParameter->valueChanged.connect([this](float newValue)
+		{
+			mFlexBlock->setSinusFrequency(newValue);
+
+			if (mOscSender != nullptr)
+			{
+				OSCEvent oscMessage("/flexblock/sinus/frequency");
+				oscMessage.addValue<float>(newValue);
+				mOscSender->send(oscMessage);
+			}
+		});
+
+		if (mOscSender != nullptr)
+		{
+			OSCEvent oscMessage("/flexblock/sinus/frequency");
+			oscMessage.addValue<float>(0.5f);
+			mOscSender->send(oscMessage);
+		}
+
+		// sinus amplitude
+		ObjectPtr<ParameterFloat> sinusAmplitudeParameter = resourceManager->findObject<ParameterFloat>("Sinus Amplitude");
+
+		assert(sinusAmplitudeParameter != nullptr);
+
+		mParameters.emplace_back(sinusAmplitudeParameter.get());
+		sinusAmplitudeParameter->setValue(0.0f);
+
+		sinusAmplitudeParameter->valueChanged.connect([this](float newValue)
+		{
+			mFlexBlock->setSinusAmplitude(newValue);
+
+			if (mOscSender != nullptr)
+			{
+				OSCEvent oscMessage("/flexblock/sinus/amplitude");
+				oscMessage.addValue<float>(newValue);
+				mOscSender->send(oscMessage);
+			}
+		});
+
+		if (mOscSender != nullptr)
+		{
+			OSCEvent oscMessage("/flexblock/sinus/amplitude");
+			oscMessage.addValue<float>(0.5f);
+			mOscSender->send(oscMessage);
+		}
 	}
 
 
 	void FlexblockGui::updateInput(int index, float value)
 	{
 		mFlexBlock->setMotorInput(index, value);
+	}
+
+
+	void FlexblockGui::updateOverride(int index, float value)
+	{
+		mFlexBlock->setOverrides(index, value);
+		//mFlexBlock->setMotorInput(index, value);
 	}
 
 
@@ -266,7 +357,7 @@ namespace nap
 
 		if (resetLayout)
 		{
-			ImGui::SetNextWindowPos(ImVec2(10, 10));
+			ImGui::SetNextWindowPos(ImVec2(10, 30));
 			ImGui::SetNextWindowContentSize(
 				ImVec2(mProps.mChildWidth + 100.0f, mProps.mChildHeight + mProps.mChildHeight * (11.0f / 8.0f) + 200.0f));
 		}
@@ -305,8 +396,18 @@ namespace nap
 
 	void FlexblockGui::showTimeLineWindow()
 	{
+		static ImVec2 lastPosition = ImVec2(0, 0);
+
 		// begin the window
 		ImGui::Begin("Timeline", 0, ImGuiWindowFlags_HorizontalScrollbar );
+
+		ImVec2 newPosition = ImGui::GetWindowPos();
+		if (newPosition.x != lastPosition.x || newPosition.y != lastPosition.y)
+		{
+			lastPosition = newPosition;
+			mProps.mDirty = true;
+			mProps.mSpecialsDirty = true;
+		}
 
 		bool needToOpenPopup = false;
 		std::string popupIdToOpen = "";
@@ -341,7 +442,6 @@ namespace nap
 
 		//
 		handleEditMotorValuePopup();
-
 
 		//
 		handleEditSpecialValuePopup();
@@ -1269,10 +1369,9 @@ namespace nap
 			mProps.mSpecialsDirty = true;
 		}
 
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 50));
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY()));
 		if (ImGui::CollapsingHeader("Timeline Specials"))
 		{
-
 			// begin timeline child
 			ImGui::BeginChild("specials", ImVec2(mProps.mChildWidth + 32, mProps.mChildHeight * (11.0f / 8.0f)), false, ImGuiWindowFlags_NoMove);
 			{
