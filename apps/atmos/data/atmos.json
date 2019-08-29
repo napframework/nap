@@ -1752,7 +1752,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "PathUniformScale",
                             "Name": "Path Uniform Scale",
-                            "Value": 1.0,
+                            "Value": 2.0,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
@@ -1768,9 +1768,9 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "PathCamSpeed",
                             "Name": "Follow Speed",
-                            "Value": 0.05000000074505806,
+                            "Value": 0.01,
                             "Minimum": 0.0,
-                            "Maximum": 0.10000000149011612
+                            "Maximum": 0.05
                         },
                         {
                             "Type": "nap::ParameterVec3",

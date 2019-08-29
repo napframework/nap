@@ -96,6 +96,10 @@ namespace nap
 			this->selectControlMethod(newValue);
 		});
 
+		//////////////////////////////////////////////////////////////////////////
+		// Camera On Path Controls
+		//////////////////////////////////////////////////////////////////////////
+
 		// Update camera path follow speed on param change
 		mPathCamSpeed->valueChanged.connect([this](float newValue)
 		{

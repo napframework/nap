@@ -18,7 +18,7 @@ namespace nap
 	class SelectPathComponentInstance;
 
 	/**
-	 *	selectpathcomponent
+	 * Resource Part: Allows for selecting a polyline for the camera to follow
 	 */
 	class NAPAPI SelectPathComponent : public Component
 	{
@@ -39,7 +39,7 @@ namespace nap
 
 
 	/**
-	 * selectpathcomponentInstance	
+	 * Instance part: Allows for selecting a polyline for the camera to follow
 	 */
 	class NAPAPI SelectPathComponentInstance : public ComponentInstance
 	{
@@ -64,7 +64,7 @@ namespace nap
 
 		/**
 		 * Selects a new path
-		 * @param index new mesh index, clamped to mesh range
+		 * @param index new path index, clamped to path range
 		 */
 		void selectPath(int index);
 
@@ -78,9 +78,6 @@ namespace nap
 		RenderableMesh* mCurrentPath = nullptr;
 		TransformComponentInstance* mPathTransForm = nullptr;
 
-		/**
-		 * Computes the new rotation value based on euler angle
-		 */
 		void updateRotation(glm::vec3 eulerAngles);
 		void updatePosition(glm::vec3 position);
 		void updateScale(glm::vec3 scale);
