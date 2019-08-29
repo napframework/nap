@@ -43,8 +43,8 @@ namespace nap
 		ComponentPtr<PerspCameraComponent>		mCameraComponent;							///< Property: "PerspectiveCamera"
 		ResourcePtr<ParameterQuat>				mCameraRotation;							///< Property: "CameraRotation"
 		ResourcePtr<ParameterVec3>				mCameraTranslation;							///< Property: "CameraTranslation"
-		ResourcePtr<ParameterFloat>				mCameraMovSpeed = nullptr;
-		ResourcePtr<ParameterFloat>				mCameraRotSpeed = nullptr;
+		ResourcePtr<ParameterFloat>				mFPSCameraMovSpeed = nullptr;
+		ResourcePtr<ParameterFloat>				mFPSCameraRotSpeed = nullptr;
 		ResourcePtr<ParameterFloat>				mCameraFOV = nullptr;
 		ResourcePtr<ParameterFloat>				mPathCamPosition = nullptr;
 		ResourcePtr<ParameterFloat>				mPathCamSpeed = nullptr;	
@@ -103,8 +103,8 @@ namespace nap
 		// Pointers to parameters
 		ParameterVec3*				mCameraTranslation = nullptr;
 		ParameterQuat*				mCameraRotation = nullptr;
-		ParameterFloat*				mCameraMovSpeed = nullptr;
-		ParameterFloat*				mCameraRotSpeed = nullptr;
+		ParameterFloat*				mFPSCameraMovSpeed = nullptr;
+		ParameterFloat*				mFPSCameraRotSpeed = nullptr;
 		ParameterFloat*				mCameraFOV = nullptr;
 		ParameterControlMethod*		mCameraControlMethod = nullptr;
 		ParameterFloat*				mPathCamPosition = nullptr;

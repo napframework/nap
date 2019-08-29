@@ -94,8 +94,8 @@
                     "CameraTranslation": "Camera Translation",
                     "CameraRotation": "Camera Rotation",
                     "CameraFOV": "Camera FOV",
-                    "CameraMoveSpeed": "Camera Movement Speed",
-                    "CameraRotateSpeed": "Camera Rotation Speed",
+                    "FPSCameraMoveSpeed": "FPSMovementSpeed",
+                    "FPSCameraRotateSpeed": "FPSRotationSpeed",
                     "PathFollowSpeed": "PathCamSpeed",
                     "PathPosition": "PathCamPosition",
                     "PathCamOffset": "PathCamOffset",
@@ -182,8 +182,8 @@
                     "Type": "nap::SelectPathComponent",
                     "mID": "SelecPathComponent",
                     "Paths": [
-                        "LineFromFile",
-                        "CircleLine"
+                        "CircleLine",
+                        "LineFromFile"
                     ],
                     "Index": "Selected Path",
                     "Renderer": "./RenderableLine",
@@ -268,7 +268,18 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietPoints"
+                        "MeteorietPoints",
+                        "SteenPoints",
+                        "OlieSteenPoints",
+                        "PyrietPoints",
+                        "RozeSteenPoints",
+                        "SchorsKoraalPoints",
+                        "SloveniePoints",
+                        "TransparantPoints",
+                        "WitkoraalPoints",
+                        "ZeesterPoints",
+                        "MandrilPoints",
+                        "BoomkoraalPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -1157,8 +1168,74 @@
         },
         {
             "Type": "nap::MeshFromFile",
+            "mID": "BoomkoraalMesh",
+            "Path": "boomkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "MandrilMesh",
+            "Path": "mandril.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
+            "Usage": "Static"
+        },
+                {
+            "Type": "nap::MeshFromFile",
+            "mID": "OlieSteenMesh",
+            "Path": "oliesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "PyrietMesh",
+            "Path": "pyriet.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "RozeSteenMesh",
+            "Path": "rozesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SchorsKoraalMesh",
+            "Path": "schorskoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SlovenieSteen",
+            "Path": "steenslovenie.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SteenMesh",
+            "Path": "heleenhiressteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "TransparantSteen",
+            "Path": "transparantesteen.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "WitkoraalMesh",
+            "Path": "witkoraal.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "ZeesterMesh",
+            "Path": "zeester.mesh",
             "Usage": "Static"
         },
         {
@@ -1224,22 +1301,6 @@
                             "mID": "Camera Mode",
                             "Name": "",
                             "Value": "Orbit"
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "Camera Movement Speed",
-                            "Name": "",
-                            "Value": 0.10000000149011612,
-                            "Minimum": 0.0,
-                            "Maximum": 0.25
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "Camera Rotation Speed",
-                            "Name": "",
-                            "Value": 0.10000000149011612,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -1715,7 +1776,7 @@
                             "Name": "Path Position",
                             "Value": {
                                 "x": 0.0,
-                                "y": -17.0,
+                                "y": -10.0,
                                 "z": 0.0
                             },
                             "Clamp": false,
@@ -1752,7 +1813,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "PathUniformScale",
                             "Name": "Path Uniform Scale",
-                            "Value": 2.0,
+                            "Value": 2.5,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
@@ -1796,6 +1857,29 @@
                             "Clamp": true,
                             "Minimum": -90.0,
                             "Maximum": 90.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "First Person",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FPSMovementSpeed",
+                            "Name": "FPS Movement Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 0.25
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FPSRotationSpeed",
+                            "Name": "FPS Rotation Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []
@@ -1876,9 +1960,75 @@
         },
         {
             "Type": "nap::ScatterPointsMesh",
+            "mID": "BoomkoraalPoints",
+            "ReferenceMesh": "BoomkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "MandrilPoints",
+            "ReferenceMesh": "MandrilMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 2000000
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "OlieSteenPoints",
+            "ReferenceMesh": "OlieSteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "PyrietPoints",
+            "ReferenceMesh": "PyrietMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "RozeSteenPoints",
+            "ReferenceMesh": "RozeSteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SchorsKoraalPoints",
+            "ReferenceMesh": "SchorsKoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SloveniePoints",
+            "ReferenceMesh": "SlovenieSteen",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "SteenPoints",
+            "ReferenceMesh": "SteenMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "TransparantPoints",
+            "ReferenceMesh": "TransparantSteen",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "WitkoraalPoints",
+            "ReferenceMesh": "WitkoraalMesh",
+            "PointCount": 1000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ZeesterPoints",
+            "ReferenceMesh": "ZeesterMesh",
+            "PointCount": 1000000
         },
         {
             "Type": "nap::Scene",

@@ -12,8 +12,8 @@ RTTI_BEGIN_CLASS(nap::ControlSelectComponent)
 	RTTI_PROPERTY("CameraTranslation",		&nap::ControlSelectComponent::mCameraTranslation,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraRotation",			&nap::ControlSelectComponent::mCameraRotation,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraFOV",				&nap::ControlSelectComponent::mCameraFOV,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CameraMoveSpeed",		&nap::ControlSelectComponent::mCameraMovSpeed,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CameraRotateSpeed",		&nap::ControlSelectComponent::mCameraRotSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FPSCameraMoveSpeed",		&nap::ControlSelectComponent::mFPSCameraMovSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FPSCameraRotateSpeed",	&nap::ControlSelectComponent::mFPSCameraRotSpeed,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathFollowSpeed",		&nap::ControlSelectComponent::mPathCamSpeed,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathPosition",			&nap::ControlSelectComponent::mPathCamPosition,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathCamOffset",			&nap::ControlSelectComponent::mPathCamOffset,			nap::rtti::EPropertyMetaData::Required)
@@ -42,8 +42,8 @@ namespace nap
 		// Get pointers to the camera parameters
 		mCameraTranslation		= getComponent<ControlSelectComponent>()->mCameraTranslation.get();
 		mCameraRotation			= getComponent<ControlSelectComponent>()->mCameraRotation.get();
-		mCameraRotSpeed			= getComponent<ControlSelectComponent>()->mCameraRotSpeed.get();
-		mCameraMovSpeed			= getComponent<ControlSelectComponent>()->mCameraMovSpeed.get();
+		mFPSCameraRotSpeed		= getComponent<ControlSelectComponent>()->mFPSCameraRotSpeed.get();
+		mFPSCameraMovSpeed		= getComponent<ControlSelectComponent>()->mFPSCameraMovSpeed.get();
 		mCameraFOV				= getComponent<ControlSelectComponent>()->mCameraFOV.get();
 		mCameraControlMethod	= getComponent<ControlSelectComponent>()->mCameraControlMethod.get();
 		mPathCamPosition		= getComponent<ControlSelectComponent>()->mPathCamPosition.get();
@@ -73,13 +73,13 @@ namespace nap
 		});
 
 		// Update camera movement speed when value changes
-		mCameraMovSpeed->valueChanged.connect([this](float newValue)
+		mFPSCameraMovSpeed->valueChanged.connect([this](float newValue)
 		{
 			mFirstPersonController->setMovementSpeed(mCamMaxMovSpeed * newValue);
 		});
 		
 		// Update camera rotation speed when value changes
-		mCameraRotSpeed->valueChanged.connect([this](float newValue)
+		mFPSCameraRotSpeed->valueChanged.connect([this](float newValue)
 		{
 			mFirstPersonController->setRotationSpeed(mCamMaxRotSpeed * newValue);
 		});
