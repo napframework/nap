@@ -15,12 +15,15 @@
 #include <parameterquat.h>
 #include <parametervec.h>
 
+// Local Includes
+#include "followpathcontroller.h"
+
 namespace nap
 {
 	class ControlSelectComponentInstance;
 
 	/**
-	 *	controlselectcomponent
+	 *	Resource parth. Allows for switching between the various camera control methods.
 	 */
 	class NAPAPI ControlSelectComponent : public Component
 	{
@@ -36,18 +39,23 @@ namespace nap
 
 		ComponentPtr<OrbitController>			mOrbitController;							///< Property: "OrbitController"
 		ComponentPtr<FirstPersonController>		mFirstPersonController;						///< Property: "FirstPersonController"
+		ComponentPtr<FollowPathController>		mPathController;							///< Property: "PathController"
 		ComponentPtr<PerspCameraComponent>		mCameraComponent;							///< Property: "PerspectiveCamera"
 		ResourcePtr<ParameterQuat>				mCameraRotation;							///< Property: "CameraRotation"
 		ResourcePtr<ParameterVec3>				mCameraTranslation;							///< Property: "CameraTranslation"
 		ResourcePtr<ParameterFloat>				mCameraMovSpeed = nullptr;
 		ResourcePtr<ParameterFloat>				mCameraRotSpeed = nullptr;
 		ResourcePtr<ParameterFloat>				mCameraFOV = nullptr;
+		ResourcePtr<ParameterFloat>				mPathCamPosition = nullptr;
+		ResourcePtr<ParameterFloat>				mPathCamSpeed = nullptr;	
+		ResourcePtr<ParameterVec3>				mPathCamOffset = nullptr;
+		ResourcePtr<ParameterVec2>				mPathCamRotation = nullptr;
 		ResourcePtr<ParameterControlMethod>		mCameraControlMethod = nullptr;
 	};
 
 
 	/**
-	 * controlselectcomponentInstance	
+	 *	Resource part. Allows for switching between the various camera control methods.
 	 */
 	class NAPAPI ControlSelectComponentInstance : public ComponentInstance
 	{
@@ -81,9 +89,10 @@ namespace nap
 		EControlMethod getCurrentControlMethod() const { return mControlMethod; }
 
 		// Component links
-		ComponentInstancePtr<OrbitController> mOrbitController =	{ this, &ControlSelectComponent::mOrbitController };
-		ComponentInstancePtr<FirstPersonController>	mFirstPersonController = { this, &ControlSelectComponent::mFirstPersonController };
-		ComponentInstancePtr<PerspCameraComponent>	mCamera = { this, &ControlSelectComponent::mCameraComponent };
+		ComponentInstancePtr<OrbitController> mOrbitController =				{ this, &ControlSelectComponent::mOrbitController };
+		ComponentInstancePtr<FirstPersonController>	mFirstPersonController =	{ this, &ControlSelectComponent::mFirstPersonController };
+		ComponentInstancePtr<FollowPathController> mPathController =			{ this, &ControlSelectComponent::mPathController };
+		ComponentInstancePtr<PerspCameraComponent>	mCamera =					{ this, &ControlSelectComponent::mCameraComponent };
 
 		// Found components
 		TransformComponentInstance* mCameraTransformComponent = nullptr;
@@ -98,6 +107,10 @@ namespace nap
 		ParameterFloat*				mCameraRotSpeed = nullptr;
 		ParameterFloat*				mCameraFOV = nullptr;
 		ParameterControlMethod*		mCameraControlMethod = nullptr;
+		ParameterFloat*				mPathCamPosition = nullptr;
+		ParameterFloat*				mPathCamSpeed = nullptr;
+		ParameterVec3*				mPathCamOffset = nullptr;
+		ParameterVec2*				mPathCamRotation = nullptr;
 
 		float						mCamMaxRotSpeed = 1.0f;
 		float						mCamMaxMovSpeed = 1.0f;

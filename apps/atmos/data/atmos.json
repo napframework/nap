@@ -23,7 +23,7 @@
                     "mID": "PerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 90.0,
-                        "NearClippingPlane": 3.0,
+                        "NearClippingPlane": 1.0,
                         "FarClippingPlane": 3000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -89,21 +89,44 @@
                     "mID": "ControlSelector",
                     "OrbitController": "./nap::OrbitController",
                     "FirstPersonController": "./FirstPersonController",
+                    "FollowPathController": "./FollowPathController",
                     "PerspectiveCamera": "./PerspCameraComponent",
                     "CameraTranslation": "Camera Translation",
                     "CameraRotation": "Camera Rotation",
                     "CameraFOV": "Camera FOV",
                     "CameraMoveSpeed": "Camera Movement Speed",
                     "CameraRotateSpeed": "Camera Rotation Speed",
+                    "PathFollowSpeed": "PathCamSpeed",
+                    "PathPosition": "PathCamPosition",
+                    "PathCamOffset": "PathCamOffset",
+                    "PathCamRotation": "PathCamRotation",
                     "CameraControlMethod": "Camera Mode"
                 },
                 {
-                    "Type": "nap::PathController",
-                    "mID": "nap::PathController_020eb6c6",
-                    "Path": "CircleLine",
+                    "Type": "nap::FollowPathController",
+                    "mID": "FollowPathController",
+                    "Loop": true,
+                    "Move": true,
+                    "CalculateUpVector": true,
+                    "Path": "LineFromFile",
                     "PathTransform": "../WorldEntity/LineEntity/LineTransform",
                     "Position": 0.0,
-                    "MovementSpeed": 0.01
+                    "MovementSpeed": 0.004999999888241291,
+                    "Rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Offset": {
+                        "x": 0.0,
+                        "y": 1.0,
+                        "z": 0.0
+                    },
+                    "UpVector": {
+                        "x": 0.0,
+                        "y": 1.0,
+                        "z": 0.0
+                    }
                 }
             ],
             "Children": []
@@ -115,7 +138,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderableLine",
-                    "Mesh": "CircleLine",
+                    "Mesh": "LineFromFile",
                     "MaterialInstance": {
                         "Material": "LineMaterial",
                         "Uniforms": [],
@@ -139,7 +162,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": -17.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -152,8 +175,23 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 25.0
+                        "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "nap::SelectPathComponent",
+                    "mID": "SelecPathComponent",
+                    "Paths": [
+                        "LineFromFile",
+                        "CircleLine"
+                    ],
+                    "Index": "Selected Path",
+                    "Renderer": "./RenderableLine",
+                    "Controller": "../../CameraEntity/FollowPathController",
+                    "PathPosition": "PathPosition",
+                    "PathRotation": "PathRotation",
+                    "PathScale": "PathScale",
+                    "PathUniformScale": "PathUniformScale"
                 }
             ],
             "Children": []
@@ -858,6 +896,27 @@
             "Compressed": false
         },
         {
+            "Type": "nap::LineFromFile",
+            "mID": "LineFromFile",
+            "Properties": {
+                "Color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0,
+                    "w": 1.0
+                }
+            },
+            "File": "2.svg",
+            "Units": "px",
+            "DPI": 96.0,
+            "Tolerance": 0.10000000149011612,
+            "Normalize": true,
+            "Scale": 1.0,
+            "FlipHorizontal": false,
+            "FlipVertical": false,
+            "LineIndex": 0
+        },
+        {
             "Type": "nap::Material",
             "mID": "LineMaterial",
             "Uniforms": [],
@@ -1145,6 +1204,14 @@
                     "Value": 0.0,
                     "Minimum": -0.10000000149011612,
                     "Maximum": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Path",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1
                 }
             ],
             "Groups": [
@@ -1618,16 +1685,117 @@
                     "mID": "Rendering",
                     "Parameters": [
                         {
-                            "Type": "nap::ParameterPolygonMode",
-                            "mID": "Render Mode",
-                            "Name": "",
-                            "Value": "Fill"
+                            "Type": "nap::ParameterBool",
+                            "mID": "RenderPath",
+                            "Name": "Display Path",
+                            "Value": true
                         },
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "Use Transparency",
                             "Name": "",
                             "Value": false
+                        },
+                        {
+                            "Type": "nap::ParameterPolygonMode",
+                            "mID": "Render Mode",
+                            "Name": "",
+                            "Value": "Fill"
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Path",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathPosition",
+                            "Name": "Path Position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": -17.0,
+                                "z": 0.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathRotation",
+                            "Name": "Path Rotation",
+                            "Value": {
+                                "x": 90.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathScale",
+                            "Name": "Path Scale",
+                            "Value": {
+                                "x": 20.0,
+                                "y": 20.0,
+                                "z": 20.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathUniformScale",
+                            "Name": "Path Uniform Scale",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathCamPosition",
+                            "Name": "Follow Position",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathCamSpeed",
+                            "Name": "Follow Speed",
+                            "Value": 0.05000000074505806,
+                            "Minimum": 0.0,
+                            "Maximum": 0.10000000149011612
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathCamOffset",
+                            "Name": "Camera Path Offset",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 1.0,
+                                "z": 0.0
+                            },
+                            "Clamp": true,
+                            "Minimum": -5.0,
+                            "Maximum": 5.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "PathCamRotation",
+                            "Name": "Camera Path Rotation",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Clamp": true,
+                            "Minimum": -90.0,
+                            "Maximum": 90.0
                         }
                     ],
                     "Groups": []
@@ -1710,7 +1878,7 @@
             "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::Scene",

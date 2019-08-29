@@ -125,10 +125,13 @@ namespace nap
 			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
 
-			// Render line
-			render_comps.clear();
-			mLineEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
+			if (mGui->renderPath())
+			{
+				// Render line
+				render_comps.clear();
+				mLineEntity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+				mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, render_comps);
+			}
 
 			// Render gui to window
 			mGuiService->draw();
