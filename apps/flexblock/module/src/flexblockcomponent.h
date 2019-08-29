@@ -52,23 +52,33 @@ namespace nap
 		 */
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
-		double mMotorStepsPerMeter = 12.73239f; ///< Property: 'Millimeter to Motorsteps' value that we need to calculate how much steps we need the motor(s) to make
+		std::vector<int> mMotorMapping =
+		{
+			5,
+			1,
+			2,
+			6,
+			3,
+			7,
+			0,
+			4
+		};
+
+		double mMotorStepsPerMeter = 12.73239f; ///< Property: 'Counts per meter' value that we need to calculate how much steps we need the motor(s) to make
 
 		int mMotorOffset = 7542; ///< Property: 'Motor Offset' value that we need to calculate the zero position of the motor
 
-		float mSlackRange = 1.0f;
+		float mSlackRange = 1.0f; ///< Property: 'Slack Range' 
 
-		float mSlackMinimum = -0.5f;
+		float mSlackMinimum = -0.5f; ///< Property: 'Slack Minimum' slack minimum 
 
-		float mSinusAmplitudeRange = 0.5f;
+		float mSinusAmplitudeRange = 0.5f; ///< Property: 'Amplitude Range' range of the sinusoide in meters
 
-		float mSinusFrequencyRange = 100.0f;
+		float mSinusFrequencyRange = 100.0f; ///< Property: 'Frequency Range' range of frequency in Hz
 
-		float mSinusOffset = -0.0f;
+		float mOverrideRange = 24.0f; ///< Property: 'Override Range' range of override parameters in meters
 
-		float mOverrideRange = 24.0f;
-
-		float mOverrideMinimum = 0.0f;
+		float mOverrideMinimum = 0.0f; ///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
 
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -139,6 +149,25 @@ namespace nap
 		 * @return returns frame points in local space
 		 */
 		const std::vector<glm::vec3>& getFramePoints() const { return mFramePoints; }
+
+		/**
+		* @return returns const reference of calculated motorsteps
+		*/
+		const std::vector<double>& getMotorSteps() const { return mMotorSteps; }
+
+		const float getSlackRange() const { return mSlackRange; }
+
+		const float getSlackMinimum() const { return mSlackMinimum; }
+
+		const float getMotorOverride(const int index) const { return mMotorOverrides[index]; }
+
+		const float getMotorOverrideMinimum() const { return mOverrideMinimum; }
+
+		const float getMotorOverrideRange() const { return mOverrideRange; }
+
+		const float getSinusAmplitudeRange() const { return mSinusAmplitudeRange; }
+
+		const float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
@@ -160,6 +189,10 @@ namespace nap
 
 		std::vector<float> mMotorOverrides = std::vector<float>(8);
 
+		std::vector<double> mMotorSteps;
+
+		std::vector<int> mMotorMapping;
+
 		double mMotorStepsPerMeter;
 
 		int mMotorStepOffset;
@@ -167,8 +200,6 @@ namespace nap
 		float mSlackRange;
 
 		float mSlackMinimum;
-
-		float mSinusOffset = -5.0f;
 
 		float mOverrideRange = 1000.0f;
 

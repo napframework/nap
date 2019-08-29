@@ -70,13 +70,11 @@ namespace nap
 		//
 		initOscOutput();
 
-
 		//
 		initParameters();
 
 		//
 		initOscInputs();
-
 
 		mParameterService.fileLoaded.connect(
 			[&]() -> void { 
@@ -344,8 +342,71 @@ namespace nap
 			ImGui::SetNextWindowPos(ImVec2(10, mWindowSize.y * 0.5f + 10));
 			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 20, mWindowSize.y * 0.4f - 20));
 		}
-		if( mProps.mShowParameters)
-			mParameterGUI->show(mParameterService.hasRootGroup() ? &mParameterService.getRootGroup() : nullptr);
+		if (mProps.mShowParameters)
+		{
+			//
+			ImGui::Begin("Parameters");
+			for (const auto& group : mParameterService.getParameterGroups())
+			{
+				if (group.mGroup->mParameters.size() > 0)
+				{
+					if (ImGui::CollapsingHeader(group.mGroup->mID.c_str()))
+					{
+						for (const auto& parameterResource : group.mGroup->mParameters)
+						{
+							ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
+
+							std::string name = parameter->getDisplayName();
+
+							float value = parameter->mValue;
+							if (ImGui::SliderFloat(name.c_str(),
+								&value,
+								parameter->mMinimum,
+								parameter->mMaximum))
+							{
+								parameter->setValue(value);
+							}
+
+							if (group.mGroup->mID == "Special Parameters")
+							{
+								// handle special parameters
+								if (name == "Slack")
+								{
+									const float slackMinimum = mFlexBlock->getSlackMinimum();
+									const float slackRange = mFlexBlock->getSlackRange();
+
+									ImGui::SameLine();
+									ImGui::Text("%.3f meter", value * slackRange + slackMinimum);
+								}
+								else if (name.find("Override") != std::string::npos)
+								{
+									const float overrideMinimum = mFlexBlock->getMotorOverrideMinimum();
+									const float overrideRange = mFlexBlock->getMotorOverrideRange();
+
+									ImGui::SameLine();
+									ImGui::Text("%.3f meter", value * overrideRange + overrideMinimum);
+								}
+								else if (name == "Sinus Frequency")
+								{
+									const float sinusFrequency = mFlexBlock->getSinusFrequencyRange();
+
+									ImGui::SameLine();
+									ImGui::Text("%.1f hZ", value * sinusFrequency);
+								}
+								else if (name == "Sinus Amplitude")
+								{
+									const float sinusAmplitude = mFlexBlock->getSinusAmplitudeRange();
+
+									ImGui::SameLine();
+									ImGui::Text("%.3f meter", value * sinusAmplitude);
+								}
+							}
+						}
+					}
+				}
+			}
+			ImGui::End();
+		}
 
 		if (resetLayout)
 		{
@@ -2656,6 +2717,7 @@ namespace nap
 
 					ImGui::CloseCurrentPopup();
 				}
+
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel"))
 				{
@@ -3037,8 +3099,9 @@ namespace nap
 				mProps.mCurrentSelectedSpecial > -1 &&
 				mProps.mCurrentSelectedSpecial < 12)
 			{
+				int specialID = mProps.mCurrentSelectedSpecial + 8;
 				ParameterFloat* parameterFloat =
-					dynamic_cast<ParameterFloat*>(mProps.mSelectedElement->getEndParameters()[mProps.mCurrentSelectedSpecial + 8]);
+					dynamic_cast<ParameterFloat*>(mProps.mSelectedElement->getEndParameters()[specialID]);
 
 				if (parameterFloat != nullptr)
 				{
@@ -3046,6 +3109,50 @@ namespace nap
 					ImGui::InputFloat("", &value, 0.001f, 0.01f, 3);
 					value = math::clamp(value, 0.0f, 1.0f);
 					parameterFloat->setValue(value);
+
+					auto parameterID = static_cast<flexblock::PARAMETER_IDS>(specialID);
+					switch (parameterID)
+					{
+					case nap::flexblock::SLACK:
+					{
+						const float slackRange = mFlexBlock->getSlackRange();
+						const float slackMinimum = mFlexBlock->getSlackMinimum();
+
+						ImGui::SameLine();
+						ImGui::Text("%.3f meter", value * slackRange + slackMinimum);
+					}
+						break;
+					case nap::flexblock::MOTOR_OVERRIDE_ONE:
+					case nap::flexblock::MOTOR_OVERRIDE_TWO:
+					case nap::flexblock::MOTOR_OVERRIDE_THREE:
+					case nap::flexblock::MOTOR_OVERRIDE_FOUR:
+					case nap::flexblock::MOTOR_OVERRIDE_FIVE:
+					case nap::flexblock::MOTOR_OVERRIDE_SIX:
+					case nap::flexblock::MOTOR_OVERRIDE_SEVEN:
+					case nap::flexblock::MOTOR_OVERRIDE_EIGHT:
+					{
+						const float motorOverrideMinimum = mFlexBlock->getMotorOverrideMinimum();
+						const float motorOverrideRange = mFlexBlock->getMotorOverrideRange();
+
+						ImGui::SameLine();
+						ImGui::Text("%.3f meter", value * motorOverrideRange + motorOverrideMinimum);
+					}
+						break;
+					case nap::flexblock::SINUS_FREQUENCY:
+					{
+						ImGui::SameLine();
+						ImGui::Text("%.1f Hz", value * mFlexBlock->getSinusFrequencyRange());
+					}
+						break;
+					case nap::flexblock::SINUS_AMPLITUDE:
+					{
+						ImGui::SameLine();
+						ImGui::Text("%.3f meter", value * mFlexBlock->getSinusAmplitudeRange());
+					}
+						break;
+					default:
+						break;
+					}
 				}
 			}
 
@@ -3228,7 +3335,8 @@ namespace nap
 			float diff = math::abs((float)time - (float)sequence->getStartTime());
 			if (!errorState.check(
 				diff > 0.1f,
-				"New sequence to close to other sequence existing [%s] ", sequence->mName.c_str())) // to close
+				"New sequence to close to other sequence existing [%s] ", 
+				sequence->mName.c_str())) // to close
 			{
 				return false;
 			}

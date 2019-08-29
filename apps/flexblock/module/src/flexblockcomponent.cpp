@@ -70,6 +70,7 @@ namespace nap
 		mSlackMinimum = resource->mSlackMinimum;
 		mOverrideMinimum = resource->mOverrideMinimum;
 		mOverrideRange = resource->mOverrideRange;
+		mMotorMapping = resource->mMotorMapping;
 
 		// create flex logic
 		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
@@ -93,7 +94,6 @@ namespace nap
 
 	void FlexBlockComponentInstance::setMotorInput(const int index, float value)
 	{
-		// 
 		mMotorInputs[index] = value;
 	}
 
@@ -101,21 +101,18 @@ namespace nap
 	void FlexBlockComponentInstance::setOverrides(const int index, const float value)
 	{
 		mMotorOverrides[index] = value * mOverrideRange;
-	//	printf("%i : %f\n", index, value);
 	}
 
 
 	void FlexBlockComponentInstance::setSinusAmplitude(const float value)
 	{
 		mSinusAmplitude = value * mSinusAmplitudeRange;
-	//	printf("%f\n", value);
 	}
 
 
 	void FlexBlockComponentInstance::setSinusFrequency(const float value)
 	{
 		mSinusFrequency = value * mSinusFrequencyRange;
-	//	printf("%f\n", value);
 	}
 
 
@@ -127,7 +124,7 @@ namespace nap
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
-		// convert flex points to nap points
+		// 
 		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
 		mObjectPoints = objectPoints;
 
@@ -140,10 +137,10 @@ namespace nap
 		// update motors of flex algorithm
 		mFlexLogic->setMotorInput(mMotorInputs);
 
-		//
+		// get the ropelengths
 		const std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
 
-		//
+		// copy them to motorsteps
 		std::vector<double> motorSteps(8);
 		for (int i = 0; i < ropeLengths.size(); i++)
 		{
@@ -158,16 +155,14 @@ namespace nap
 
 		// sinus
 		mTime += deltaTime;
-		float sinusValue = ((( cos(mTime * mSinusFrequency) * -1.0f ) * 0.5f ) + 0.5f ) * mSinusAmplitude ;
-		//printf("%f\n", sinusValue);
+		float sinusValue = (((cos(mTime * mSinusFrequency) * -1.0f) * 0.5f) + 0.5f) * mSinusAmplitude;
 
 		for (int i = 0; i < motorSteps.size(); i++)
 		{
 			motorSteps[i] += sinusValue;
 		}
 
-		//printf("%f\n", motorSteps[0]);
-
+		// convert meters to motorsteps
 		for (int i = 0; i < motorSteps.size(); i++)
 		{
 			double a = motorSteps[i]; 
@@ -175,6 +170,15 @@ namespace nap
 			a -= mMotorStepOffset; 
 			motorSteps[i] = a;
 		}
+
+		mMotorSteps = std::vector<double>(8);
+		for (int i = 0; i < motorSteps.size(); i++)
+		{
+			mMotorSteps[mMotorMapping[i]] = motorSteps[i];
+		}
+
+		// update motorsteps
+		mMotorSteps = motorSteps;
 
 		// update serial
 		/*
