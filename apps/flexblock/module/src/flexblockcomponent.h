@@ -168,6 +168,8 @@ namespace nap
 		const float getSinusAmplitudeRange() const { return mSinusAmplitudeRange; }
 
 		const float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
+
+		const double getMotorStepsPerMeter() const { return mMotorStepsPerMeter; }
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;

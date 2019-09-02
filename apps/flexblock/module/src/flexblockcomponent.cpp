@@ -171,45 +171,11 @@ namespace nap
 			motorSteps[i] = a;
 		}
 
+		// remap motorsteps
 		mMotorSteps = std::vector<double>(8);
 		for (int i = 0; i < motorSteps.size(); i++)
 		{
 			mMotorSteps[mMotorMapping[i]] = motorSteps[i];
 		}
-
-		// update motorsteps
-		mMotorSteps = motorSteps;
-
-		// update serial
-		/*
-		mUpdateSerialTime += deltaTime;
-		if (mUpdateSerialTime > (double)mFlexBlockSerialComponentInstance->getUpdateIntervalMs() / 1000.0)
-		{
-			mUpdateSerialTime = 0.0;
-
-			std::vector<float> motorSteps = mFlexLogic->getRopeLengths();
-
-			for (int i = 0; i < motorSteps.size(); i++)
-			{
-				float a = motorSteps[i] * 1000.0f; // convert to millimeters
-				a *= mMillimeterToMotorsteps; //  millimeters to motor steps
-				a -= mMotorOffset; // step offset
-				motorSteps[i] = a;
-			}
-
-			std::string data = "<";
-			for (int i = 0; i < motorSteps.size(); i++)
-			{
-				long c = (long)motorSteps[i];
-				data += std::to_string(c);
-				if (i + 1 < motorSteps.size())
-					data += "|";
-			}
-			data += ">";
-
-			//printf("%s\n", data.c_str());
-			mFlexBlockSerialComponentInstance->write(data);
-		}
-		*/
 	}
 }

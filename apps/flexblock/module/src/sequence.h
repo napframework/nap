@@ -88,6 +88,7 @@ namespace nap
 			 */
 			const std::vector<SequenceElement*>& getElements() const { return mElements; }
 
+			const std::vector<Parameter*>& getStartParameters() const { return mStartParameters; }
 		public:
 			// properties
 			std::vector<ResourcePtr<SequenceElement>> mSequenceElementsResourcePtrs;

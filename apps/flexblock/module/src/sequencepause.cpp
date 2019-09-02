@@ -25,7 +25,14 @@ namespace nap
 
 			for (int i = 0; i < mStartParameters.size(); i++)
 			{
-				outParameters[i]->setValue(*mStartParameters[i]);
+				if (i < outParameters.size())
+				{
+					outParameters[i]->setValue(*mStartParameters[i]);
+				}
+				else
+				{
+					break;
+				}
 			}
 
 			return true;

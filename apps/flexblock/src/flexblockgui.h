@@ -115,16 +115,12 @@ namespace nap
 		*/
 		void handleInsertionPopup();
 
-		void handleEditMotorValuePopup();
-
-		void handleEditSpecialValuePopup();
+		void handleEditValuePopup();
 
 		/**
 		* Draw timeline
 		*/
-		void drawTimeline(bool & outPopupOpened, std::string & popupId);
-
-		void drawSpecialParametersTimeline(bool & outPopupOpened, std::string & outPopupId);
+		void drawTimeline(bool & outPopupOpened, std::string & popupId, std::string timelineId, int size, int offset);
 
 		/**
 		* Draw controls
@@ -159,6 +155,8 @@ namespace nap
 		std::string convertToString(T1 number, int precision);
 
 		std::string getTimeString();
+
+		void showMotorSteps();
 
 		glm::vec2 mWindowSize;
 	};
