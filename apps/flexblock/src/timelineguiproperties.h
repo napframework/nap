@@ -62,6 +62,7 @@ namespace nap
 
 		std::map<std::string, std::vector<std::vector<ImVec2>>> mCachedCurves;
 		std::map<std::string, int> mTimelineHandlerIndex;
+		std::map<std::string, bool> mTimelineHeaderBools;
 		int mSelectedTimelineValue;
 
 		std::map<flexblock::PARAMETER_IDS, std::string> mParameterMap =

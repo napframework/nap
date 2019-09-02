@@ -556,14 +556,22 @@ namespace nap
 		float windowWidth = ImGui::GetWindowWidth();
 		float scrollX = ImGui::GetScrollX();
 
+		// make this timeline dirty when it doesnt exist in the map yet
 		if (mProps.mDirtyFlags.find(timelineId) == mProps.mDirtyFlags.end())
 		{
 			mProps.mDirtyFlags.insert({ timelineId, true });
 		}
 
+		// make the handler index
 		if (mProps.mTimelineHandlerIndex.find(timelineId) == mProps.mTimelineHandlerIndex.end())
 		{
 			mProps.mTimelineHandlerIndex.insert({ timelineId, 0 });
+		}
+
+		// make the bool 
+		if (mProps.mTimelineHeaderBools.find(timelineId) == mProps.mTimelineHeaderBools.end())
+		{
+			mProps.mTimelineHeaderBools.insert({ timelineId, false });
 		}
 
 		if (scrollX != mProps.mPrevScrollX)
@@ -584,7 +592,19 @@ namespace nap
 			}
 		}
 
-		if (ImGui::CollapsingHeader(timelineId.c_str()))
+		// if header is clicked, mark this timeline dirty
+		bool headerOpen = ImGui::CollapsingHeader(timelineId.c_str());
+		if (mProps.mTimelineHeaderBools[timelineId])
+		{
+			if (headerOpen != mProps.mTimelineHeaderBools[timelineId])
+			{
+				mProps.mDirtyFlags[timelineId] = true;
+				mProps.mTimelineHeaderBools[timelineId] = headerOpen;
+			}
+		}
+
+		// draw the timeline
+		if (headerOpen)
 		{
 			// begin timeline child
 			ImGui::BeginChild(timelineId.c_str(), ImVec2(mProps.mChildWidth + 50, mProps.mChildHeight), false, ImGuiWindowFlags_NoMove);
@@ -1216,7 +1236,7 @@ namespace nap
 							}
 						}
 
-						// draw motor inputs 
+						// draw value inputs 
 						if (mProps.mDirtyFlags[timelineId])
 						{
 							//
@@ -1285,6 +1305,7 @@ namespace nap
 				{
 					int motorId = (size-1) - i;
 					float y_pos = (childSize.y / size) * i + 4;
+
 					// draw motor text
 					drawList->AddText(
 						ImVec2(mProps.mTopLeftPosition.x - 50, mProps.mTopLeftPosition.y + y_pos),
@@ -1435,6 +1456,12 @@ namespace nap
 						ImVec2(mProps.mTopLeftPosition.x + mProps.mMouseCursorPositionInTimeline, mProps.mTopLeftPosition.y),
 						ImVec2(mProps.mTopLeftPosition.x + mProps.mMouseCursorPositionInTimeline, bottomRightPos.y),
 						colorRed, 1.5f);
+
+					// time in seconds
+					drawList->AddText(
+						ImVec2(mProps.mTopLeftPosition.x + mProps.mMouseCursorPositionInTimeline + 5, mProps.mTopLeftPosition.y - 20),
+						colorRed,
+						formatTimeString(mProps.mCurrentTimeOfMouseInSequence).c_str());
 				}
 
 				// handle insertion of elements or sequences
@@ -1949,6 +1976,7 @@ namespace nap
 		int hours = time / 3600.0f;
 		int minutes = (int) (time / 60.0f) % 60;
 		int seconds = (int) time % 60;
+		int milliseconds = (int)(time * 100.0f) % 100;
 
 		std::stringstream stringStream;
 
@@ -1959,6 +1987,10 @@ namespace nap
 		stringStream << std::setw(2) << std::setfill('0') << minutes;
 		std::string minutesString = stringStream.str();
 
+		stringStream = std::stringstream();
+		stringStream << std::setw(2) << std::setfill('0') << milliseconds;
+		std::string millisecondsStrings = stringStream.str();
+
 		std::string hoursString = "";
 		if (hours > 0)
 		{
@@ -1967,7 +1999,7 @@ namespace nap
 			hoursString = stringStream.str() + ":";
 		}
 
-		return hoursString + minutesString + ":" + secondsString;
+		return hoursString + minutesString + ":" + secondsString + ":" + millisecondsStrings;
 	}
 
 
