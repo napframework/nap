@@ -54,7 +54,12 @@ namespace nap
 		/**
 		 * @return the current draw mode
 		 */
-		opengl::EPolygonMode getRenderMode() const			{ return mRenderMode->mValue; }
+		opengl::EPolygonMode getRenderMode() const		{ return mRenderMode->mValue; }
+
+		/**
+		 * @return if the path should be rendered
+		 */
+		bool renderPath() const							{ return mRenderPath->mValue; }
 
 	private:
 		AtmosApp&							mApp;				///< The actual atmos application we build the gui for
@@ -72,6 +77,7 @@ namespace nap
 		ResourcePtr<ParameterRGBColorFloat>	mBackgroundColor;
 		ResourcePtr<ParameterRGBColorFloat>	mFogColor;
 		ResourcePtr<ParameterBool>			mUseTransparency;
+		ResourcePtr<ParameterBool>			mRenderPath;
 		ResourcePtr<ParameterPolygonMode>	mRenderMode;
 		ResourcePtr<ImageFromFile>			mLedOn = nullptr;				//< Signals established connection
 		ResourcePtr<ImageFromFile>			mLedOff = nullptr;

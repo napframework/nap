@@ -7,6 +7,7 @@
         "mod_napscene",
         "mod_napcameracontrol",
         "mod_napyoctopuce",
-		"mod_napparameter"
+		"mod_napparameter",
+        "mod_napsvg"
     ]
 }
