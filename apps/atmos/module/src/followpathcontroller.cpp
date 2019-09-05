@@ -40,11 +40,6 @@ namespace nap
 
 	bool FollowPathControllerInstance::init(utility::ErrorState& errorState)
 	{
-		// KeyInputComponent is required to receive input
-		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
-		if (!errorState.check(key_component != nullptr, "%s: missing key input component", mID.c_str()))
-			return false;
-
 		// TransformComponent is required to move the entity
 		mCameraTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mCameraTransform != nullptr, "%s: missing transform component", mID.c_str()))
