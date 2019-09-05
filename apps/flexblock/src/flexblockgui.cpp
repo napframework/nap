@@ -449,11 +449,12 @@ namespace nap
 		if (mProps.mEnableFlexblock)
 		{
 			const auto& motorSteps = mFlexBlock->getMotorSteps();
-			if (motorSteps.size() == mMotorController->getSlaveCount())
+			const auto& motorMapping = mFlexBlock->getMotorMapping();
+			if (motorSteps.size() >= mMotorController->getSlaveCount())
 			{
 				for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 				{
-					mMotorController->setPosition(i, motorSteps[i]);
+					mMotorController->setPosition(i, motorSteps[motorMapping[i]]);
 				}
 			}
 		}
@@ -2599,6 +2600,7 @@ namespace nap
 		ImGui::Begin("MotorSteps");
 
 		const auto& motorSteps = mFlexBlock->getMotorSteps();
+
 		for (int i = 0; i < motorSteps.size(); i++)
 		{
 			ImGui::Text("%i : %.3f meter / %.0f steps", i+1, motorSteps[i] / mFlexBlock->getMotorStepsPerMeter(), motorSteps[i]);
@@ -2610,6 +2612,12 @@ namespace nap
 
 	void FlexblockGui::showMotorControlWindow()
 	{
+		static bool firstTime = true;
+		static float velocity = mMotorController->mVelocity;
+		static float acceleration = mMotorController->mAcceleration;
+		static float torque = mMotorController->mTorque;
+		static float maxVelocity = mMotorController->mMaxVelocity;
+
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::Begin("Motor Controls");
 		ImGui::SliderInt("Reset Value", &mResetMotorPos, -5000000, 5000000);
@@ -2626,60 +2634,150 @@ namespace nap
 		}
 
 		ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock);
+		ImGui::SameLine();
+		ImGui::Checkbox("Advanced", &mProps.mAdvancedMotorInterface);
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Calibration Mode", &mProps.mCalibrationMode))
+		{
+			if (mProps.mCalibrationMode)
+			{
+				mMotorController->mVelocity = mMotorController->mCalibrationVelocity;
+				mMotorController->mAcceleration = mMotorController->mCalibrationAcceleration;
+				mMotorController->mTorque = mMotorController->mCalibrationTorque;
+				mMotorController->mMaxVelocity = mMotorController->mCalibrationMaxVelocity;
+			}
+			else
+			{
+				mMotorController->mVelocity = velocity;
+				mMotorController->mAcceleration = acceleration;
+				mMotorController->mTorque = torque;
+				mMotorController->mMaxVelocity = maxVelocity;
+			}
+		}
 
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
-			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d", i + 1).c_str()))
+			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mFlexBlock->getMotorMapping()[i] + 1).c_str()))
 			{
-				const double counts = 129473.415472573;
+				const double counts = mFlexBlock->getMotorStepsPerMeter();
 				float current_meters = (float)(((double)mMotorController->getActualPosition(i)) / counts);
 
+				if (firstTime)
+				{
+					mTargetMeters[i] = current_meters;
+				}
 				ImGui::Text("Current Motor Mode: %s", mMotorController->modeToString(mMotorController->getActualMode(i)).c_str());
 				ImGui::Text("Current Motor Position: %d", mMotorController->getActualPosition(i));
 				ImGui::Text("Current Motor Meters: %.3f", current_meters);
-				ImGui::Text("Current Motor Velocity: %.1f", mMotorController->getActualVelocity(i));
-				ImGui::Text("Current Motor Torque: %.1f", mMotorController->getActualTorque(i));
-				ImGui::Text("Current Acceleration : %.1f", mMotorController->mAcceleration);
-
+				ImGui::Text("Current Motor Velocity: %.1f / velocity %s / max velocity %s", mMotorController->getActualVelocity(i), std::to_string(mMotorController->mVelocity).c_str(), std::to_string(mMotorController->mMaxVelocity).c_str());
+				ImGui::Text("Current Motor Torque: %.1f / max Torque %s", mMotorController->getActualTorque(i), std::to_string(mMotorController->mTorque).c_str());
+				ImGui::Text("Current Acceleration : %s", std::to_string(mMotorController->mAcceleration).c_str());
+				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
 				ImGui::PushID(i);
 
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
-				if (ImGui::InputInt("Position", &req_pos, 1, 50))
+				if (mProps.mAdvancedMotorInterface)
 				{
-					mMotorController->setPosition(i, req_pos);
+					if (ImGui::InputInt("Position", &req_pos, 1, 50))
+					{
+						mMotorController->setPosition(i, req_pos);
+					}
 				}
 
-				int req_vel = mMotorController->getVelocity(i);
-				if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
+				if (mProps.mAdvancedMotorInterface)
 				{
-					req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
-					mMotorController->setVelocity(i, static_cast<float>(req_vel));
+					int req_vel = mMotorController->getVelocity(i);
+					if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
+					{
+						req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
+						mMotorController->setVelocity(i, static_cast<float>(req_vel));
+					}
 				}
 
-				int req_tor = mMotorController->mTorque;
-				if (ImGui::InputInt("Torque", &req_tor, 1, 5))
+				if (mProps.mAdvancedMotorInterface)
 				{
-					req_tor = math::clamp<int>(req_tor, 0, 300);
-					mMotorController->setTorque(i, static_cast<float>(req_tor));
+					int req_tor = mMotorController->mTorque;
+					if (ImGui::InputInt("Torque", &req_tor, 1, 5))
+					{
+						req_tor = math::clamp<int>(req_tor, 0, 300);
+						mMotorController->setTorque(i, static_cast<float>(req_tor));
+					}
 				}
 
-				int req_acc = mMotorController->mAcceleration;
-				if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
+				if (mProps.mAdvancedMotorInterface)
 				{
-					req_acc = static_cast<int>(math::clamp<float>(static_cast<float>(req_acc), 0.0f, mMotorController->mMaxVelocity));
-					mMotorController->setAcceleration(i, req_acc);
-					mMotorController->mAcceleration = req_acc;
+					int req_acc = mMotorController->mAcceleration;
+					if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
+					{
+						req_acc = static_cast<int>(math::clamp<float>(static_cast<float>(req_acc), 0.0f, mMotorController->mMaxVelocity));
+						mMotorController->setAcceleration(i, req_acc);
+						mMotorController->mAcceleration = req_acc;
+					}
 				}
 
 				// meters
 				//  129473,415472573 = 1 meter
 				float target_meter = mTargetMeters[i];
-				if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
+				if (mProps.mAdvancedMotorInterface)
 				{
-					int32 newCounts = (int32) ( (double)target_meter * counts );
-					mMotorController->setPosition(i, newCounts);
-					mTargetMeters[i] = target_meter;
+					if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
+					{
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+				}
+
+				if (!mProps.mAdvancedMotorInterface)
+				{
+					if (ImGui::Button("Give Meter"))
+					{
+						target_meter = current_meters + 1.0f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Take Meter"))
+					{
+						target_meter = current_meters - 1;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					
+					if (ImGui::Button("Give Centimeter"))
+					{
+						target_meter = current_meters + 0.01f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Take Centimeter"))
+					{
+						target_meter = current_meters - 0.01f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					
+					if (ImGui::Button("Give Millimeter"))
+					{
+						target_meter = current_meters + 0.001f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Take Millimeter"))
+					{
+						target_meter = current_meters - 0.001f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
 				}
 
 				bool error = false;
@@ -2696,12 +2794,13 @@ namespace nap
 					}
 					error = true;
 				}
+
 				if (!mMotorController->isOnline(i))
 				{
 					ImGui::TextColored(text_color, "Slave Lost!");
 					error = true;
 				}
-				
+
 				ImGui::Separator();
 				ImGui::PopID();
 				if (!error)
@@ -2726,5 +2825,8 @@ namespace nap
 		ImGui::PopStyleColor();
 
 		ImGui::End();
+
+		firstTime = false;
+
 	}
 }

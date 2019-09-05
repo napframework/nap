@@ -99,7 +99,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:52 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4880000054836273,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -171,7 +171,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:52 GeneratedParameter Sinus Frequency ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -179,7 +179,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:52 GeneratedParameter Sinus Amplitude ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -312,7 +312,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:16 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4880000054836273,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -392,7 +392,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:16 GeneratedParameter Sinus Amplitude ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -506,7 +506,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:48 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4880000054836273,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -719,7 +719,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:53 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4480000138282776,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -799,7 +799,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:53 GeneratedParameter Sinus Amplitude ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -932,7 +932,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.4480000138282776,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1004,7 +1004,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3 GeneratedParameter Sinus Frequency ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1012,7 +1012,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3 GeneratedParameter Sinus Amplitude ",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -3989,7 +3989,7 @@
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.0
+                        "Value": 0.8730146884918213
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -4014,22 +4014,6 @@
                     "OutTangent": {
                         "Time": 0.10000000149011612,
                         "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.5414649844169617,
-                        "Value": 0.41978931427001955
-                    },
-                    "InTangent": {
-                        "Time": -0.07106734812259674,
-                        "Value": -0.40027517080307009
-                    },
-                    "OutTangent": {
-                        "Time": 0.07106734812259674,
-                        "Value": 0.40027517080307009
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true

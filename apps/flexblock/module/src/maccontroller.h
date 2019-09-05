@@ -259,6 +259,11 @@ namespace nap
 		uint mRecoveryTimeout			= 100;					///< Property: 'RecoveryTimeout' number of milliseconds to wait before recovery attempt (safe operational to operational)
 		bool mDisableErrorHandling		= false;				///< Property: 'DisableErrorHandling' disables error handling when processing real-time data
 
+		//
+		nap::int32  mCalibrationVelocity = 0;					///< Property: 'Velocity' motor velocity in RPM
+		nap::uint32 mCalibrationAcceleration = 360;					///< Property: 'Acceleration' motor acceleration in RPM
+		nap::uint32 mCalibrationTorque = 341;					///< Property: 'Torque' motor torque from 0 to 300%
+		nap::uint32 mCalibrationMaxVelocity = 4300;					///< Property: 'MaxVelocity' max allowed motor velocity
 	protected:
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.

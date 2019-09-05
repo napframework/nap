@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("Sinus Frequency", &nap::FlexBlockComponent::mSinusFrequencyRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor Mapping", &nap::FlexBlockComponent::mMotorMapping, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -175,7 +176,7 @@ namespace nap
 		mMotorSteps = std::vector<double>(8);
 		for (int i = 0; i < motorSteps.size(); i++)
 		{
-			mMotorSteps[mMotorMapping[i]] = motorSteps[i];
+			mMotorSteps[i] = motorSteps[i];
 		}
 	}
 }

@@ -52,6 +52,7 @@ namespace nap
 		 */
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
+		/**/
 		std::vector<int> mMotorMapping =
 		{
 			5,
@@ -170,6 +171,8 @@ namespace nap
 		const float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
 
 		const double getMotorStepsPerMeter() const { return mMotorStepsPerMeter; }
+
+		const std::vector<int> getMotorMapping() { return mMotorMapping; }
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;

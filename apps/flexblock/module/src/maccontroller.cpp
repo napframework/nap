@@ -48,6 +48,11 @@ RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",		&nap::MACController::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
+
+	RTTI_PROPERTY("Calibration Velocity", &nap::MACController::mCalibrationVelocity, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Calibration MaxVelocity", &nap::MACController::mCalibrationMaxVelocity, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Calibration Acceleration", &nap::MACController::mCalibrationAcceleration, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Calibration Torque", &nap::MACController::mCalibrationTorque, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
@@ -358,6 +363,7 @@ namespace nap
 		}
 		mResetPosition = true;
 		mResetPositionValue = newPosition;
+
 		return this->start(error);
 	}
 

@@ -98,5 +98,7 @@ namespace nap
 		bool mShowMotorSteps = false;
 
 		bool mEnableFlexblock = false;
+		bool mAdvancedMotorInterface = false;
+		bool mCalibrationMode = false;
 	};
 }
