@@ -343,6 +343,9 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        if(PACKAGE_PDBS)
+            install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        endif()        
     elseif(APPLE)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(ANDROID)
