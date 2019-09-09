@@ -445,19 +445,6 @@ namespace nap
 
 		if (mProps.mShowMotorSteps)
 			showMotorSteps();
-
-		if (mProps.mEnableFlexblock)
-		{
-			const auto& motorSteps = mFlexBlock->getMotorSteps();
-			const auto& motorMapping = mFlexBlock->getMotorMapping();
-			if (motorSteps.size() >= mMotorController->getSlaveCount())
-			{
-				for (int i = 0; i < mMotorController->getSlaveCount(); i++)
-				{
-					mMotorController->setPosition(i, motorSteps[motorMapping[i]]);
-				}
-			}
-		}
 	}
 	
 
@@ -1041,15 +1028,15 @@ namespace nap
 													}
 
 													// create the new point
-													auto newPoint = curves[m]->mPoints[0];
+													auto newPoint = curves[m+offset]->mPoints[0];
 													newPoint.mPos.mTime = pX;
 													newPoint.mPos.mValue = math::clamp(pY, startValue, endValue);
 
 													// add the point to the curve
-													curves[m]->mPoints.emplace_back(newPoint);
+													curves[m + offset]->mPoints.emplace_back(newPoint);
 
 													// update curve
-													curves[m]->invalidate();
+													curves[m + offset]->invalidate();
 												}
 											}
 
@@ -1057,10 +1044,10 @@ namespace nap
 											std::vector<int> pointsToDelete;
 
 											// iterate trough the points of the curve
-											for (int p = 0; p < curves[m]->mPoints.size(); p++)
+											for (int p = 0; p < curves[m + offset]->mPoints.size(); p++)
 											{
 												// get a reference
-												auto& point = curves[m]->mPoints[p];
+												auto& point = curves[m + offset]->mPoints[p];
 
 												// translate from element space to screen space
 												float x = mProps.mTopLeftPosition.x + startX + width * elementPos + elementSizeWidth * point.mPos.mTime;
@@ -1210,7 +1197,7 @@ namespace nap
 													point.mInTan.mTime = -mProps.mTangentPtr->mTime;
 													point.mInTan.mValue = -mProps.mTangentPtr->mValue;
 
-													curves[m]->invalidate();
+													curves[m + offset]->invalidate();
 													mSequencePlayer->reconstruct();
 												}
 
@@ -1220,7 +1207,7 @@ namespace nap
 													point.mOutTan.mTime = -mProps.mTangentPtr->mTime;
 													point.mOutTan.mValue = -mProps.mTangentPtr->mValue;
 
-													curves[m]->invalidate();
+													curves[m + offset]->invalidate();
 													mSequencePlayer->reconstruct();
 												}
 											}
@@ -1228,8 +1215,8 @@ namespace nap
 											// delete any points
 											for (const int index : pointsToDelete)
 											{
-												curves[m]->mPoints.erase(curves[m]->mPoints.begin() + index);
-												curves[m]->invalidate();
+												curves[m + offset]->mPoints.erase(curves[m + offset]->mPoints.begin() + index);
+												curves[m + offset]->invalidate();
 											}
 										}
 									}
@@ -1242,7 +1229,6 @@ namespace nap
 						{
 							//
 							mProps.mCachedCurves[timelineId].clear();
-
 							mProps.mCachedCurves[timelineId] = std::vector<std::vector<ImVec2>>(size);
 
 							// create parameters that we evaluate
@@ -2613,6 +2599,7 @@ namespace nap
 	void FlexblockGui::showMotorControlWindow()
 	{
 		static bool firstTime = true;
+
 		static float velocity = mMotorController->mVelocity;
 		static float acceleration = mMotorController->mAcceleration;
 		static float torque = mMotorController->mTorque;
@@ -2633,7 +2620,12 @@ namespace nap
 			}
 		}
 
-		ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock);
+		mProps.mEnableFlexblock = mFlexBlock->getEnableMotorController();
+		if (ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock))
+		{
+			mFlexBlock->setEnableMotorController(mProps.mEnableFlexblock);
+		}
+
 		ImGui::SameLine();
 		ImGui::Checkbox("Advanced", &mProps.mAdvancedMotorInterface);
 		ImGui::SameLine();
@@ -2746,6 +2738,22 @@ namespace nap
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
+
+					if (ImGui::Button("Give Decimeter"))
+					{
+						target_meter = current_meters + 0.1f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Take Decimeter"))
+					{
+						target_meter = current_meters - 0.1f;
+						int32 newCounts = (int32)((double)target_meter * counts);
+						mMotorController->setPosition(i, newCounts);
+						mTargetMeters[i] = target_meter;
+					}
 					
 					if (ImGui::Button("Give Centimeter"))
 					{
@@ -2827,6 +2835,5 @@ namespace nap
 		ImGui::End();
 
 		firstTime = false;
-
 	}
 }

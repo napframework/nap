@@ -143,6 +143,7 @@ namespace nap
 		void handleSaveAsPopup();
 
 		void initParameters();
+
 		void updateInput(int index, float value);
 
 		void updateOverride(int index, float value);

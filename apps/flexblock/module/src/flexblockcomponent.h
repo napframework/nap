@@ -15,6 +15,7 @@
 #include <renderable2dtextcomponent.h>
 #include <componentptr.h>
 #include <perspcameracomponent.h>
+#include <maccontroller.h>
 
 namespace nap
 {
@@ -52,18 +53,17 @@ namespace nap
 		 */
 		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
-		/**/
-		std::vector<int> mMotorMapping =
-		{
-			5,
-			1,
-			2,
-			6,
-			3,
-			7,
-			0,
-			4
-		};
+		/**
+		 * Reference to mac controller
+		 */
+		nap::ResourcePtr<MACController>		mMacController;
+
+		bool mEnableMacController = true;
+
+		/**
+		 * Mapping of ethercat motors to flexblock motors
+		 */
+		std::vector<int> mMotorMapping ={ 5, 1, 2, 6, 3, 7, 0, 4 };
 
 		double mMotorStepsPerMeter = 12.73239f; ///< Property: 'Counts per meter' value that we need to calculate how much steps we need the motor(s) to make
 
@@ -80,6 +80,8 @@ namespace nap
 		float mOverrideRange = 24.0f; ///< Property: 'Override Range' range of override parameters in meters
 
 		float mOverrideMinimum = 0.0f; ///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
+
+		bool mEnableSerial = false;///< Property: 'Use Serial' use serial or not
 
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -130,16 +132,29 @@ namespace nap
 		void setSlack(const float value);
 
 		/**
-		*/
+		 * Set override
+		 * @param override range index, motor index will be in flexblock space
+		 * @param value between 0..1 , will be multiplied by override range 
+		 */
 		void setOverrides(const int index, const float value);
 
 		/**
-		*/
+		 * Sets frequency of override
+		 * @param value between 0..1 , will be multiplied with sinus frequency
+		 */
 		void setSinusFrequency(const float value);
 
 		/**
-		*/
+		 * Sets sinus amplitude
+		 * @param value between 0..1 , will be multiplied with amplitude
+		 */
 		void setSinusAmplitude(const float value);
+
+		/**
+		 * Enable/disable mac controller
+		 * @param enable bool true of false
+		 */
+		void setEnableMotorController(const bool enable) { mEnableMacController = enable; }
 
 		/**
 		 * @return returns object points in local space
@@ -152,27 +167,60 @@ namespace nap
 		const std::vector<glm::vec3>& getFramePoints() const { return mFramePoints; }
 
 		/**
-		* @return returns const reference of calculated motorsteps
-		*/
+		 * @return returns const reference of calculated motorsteps
+		 */
 		const std::vector<double>& getMotorSteps() const { return mMotorSteps; }
 
+		/**
+		 * @return returns slack range
+		 */
 		const float getSlackRange() const { return mSlackRange; }
 
+		/**
+		 * @return returns slack minimum
+		 */
 		const float getSlackMinimum() const { return mSlackMinimum; }
 
+		/**
+		 * @param index of motor in flexblock space
+		 * @return returns motor override
+		 */
 		const float getMotorOverride(const int index) const { return mMotorOverrides[index]; }
 
+		/**
+		 * @return returns motor override minimum
+		 */
 		const float getMotorOverrideMinimum() const { return mOverrideMinimum; }
 
+		/**
+		 * @return returns motor override range
+		 */
 		const float getMotorOverrideRange() const { return mOverrideRange; }
 
+		/**
+		 * @return returns motor amplitude range
+		 */
 		const float getSinusAmplitudeRange() const { return mSinusAmplitudeRange; }
 
+		/**
+		 * @return returns motor frequency range
+		 */
 		const float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
 
+		/**
+		 * @return returns motor steps per meter
+		 */
 		const double getMotorStepsPerMeter() const { return mMotorStepsPerMeter; }
 
-		const std::vector<int> getMotorMapping() { return mMotorMapping; }
+		/**
+		 * @return returns reference to motor mapping vector
+		 */
+		const std::vector<int>& getMotorMapping() const { return mMotorMapping; }
+
+		/**
+		 * Returns true if motor is enabled
+		 */
+		const bool getEnableMotorController() const { return mEnableMacController; }
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
@@ -180,6 +228,8 @@ namespace nap
 		//
         ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
 		
+		bool mEnableSerial;
+
 		// Initialize flexblock unique ptr to null
 		std::unique_ptr<Flex> mFlexLogic = nullptr;
 
@@ -219,5 +269,9 @@ namespace nap
 		float mSinusFrequency = 0.0f;
 
 		double mTime = 0.0;
+
+		MACController* mMacController;
+
+		bool mEnableMacController;
 	};
 }
