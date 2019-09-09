@@ -100,6 +100,9 @@ if(APPLE)
                                                     ${THIRDPARTY_DIR}  
                                                     Debug)
 endif()
+if(MSVC AND PACKAGE_PDBS)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/platform/napkin/$<CONFIG>)
+endif()        
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)
