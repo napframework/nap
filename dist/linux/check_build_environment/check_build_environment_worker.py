@@ -112,7 +112,7 @@ def check_build_environment():
     # Check distribution
     distribution_ok = check_distribution()
     if not distribution_ok:
-        print("\nThis version of NAP supports Ubuntu Linux (17.10).  Other distributions may work but are unsupported.")
+        print("\nThis version of NAP supports Ubuntu Linux (%s).  Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
         print("Hint for the adventurous: On Ubuntu we depend on build-essential, CMake >= 3.5, libglu1-mesa-dev and patchelf")
         print("\nNot continuing checks.")
         sys.exit(1)
@@ -155,7 +155,7 @@ def check_build_environment():
 
     # Warn about wrong Ubuntu version
     if not distribution_version_ok:
-        print("\nWarning: This version of NAP is supported on Ubuntu 17.10.  Other Linux configurations may work but are unsupported.")
+        print("\nWarning: This version of NAP is supported on Ubuntu %s.  Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
 
     if not compiler_ok:
         print("\nYour C++ compiler is not currently set to GCC. This release of NAP only currently supports GCC.")
