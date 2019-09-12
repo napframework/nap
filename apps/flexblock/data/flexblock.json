@@ -159,7 +159,7 @@
                     "SerialComponent": "./FlexBlockSerialComponent",
                     "Enable Serial": false,
                     "Mac Controller": "MACController",
-                    "Enable Controller": true,
+                    "Enable Controller": false,
                     "FlexBlockShape": "ProtoShapeSize",
                     "Motor Steps Per Meter": 129473.41,
                     "Motor Step Offset": 0,
@@ -879,20 +879,6 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::OSCReceiver",
-            "mID": "OSCInput",
-            "Port": 7000,
-            "EnableDebugOutput": true,
-            "AllowPortReuse": false
-        },
-        {
-            "Type": "nap::OSCSender",
-            "mID": "OSCOutput",
-            "IpAddress": "192.168.33.81",
-            "Port": 7000,
-            "BufferScale": 2
         },
         {
             "Type": "nap::ParameterGroup",

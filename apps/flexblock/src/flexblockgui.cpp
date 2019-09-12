@@ -2598,6 +2598,19 @@ namespace nap
 
 	void FlexblockGui::showMotorControlWindow()
 	{
+		static auto showTip = [this](const char* tip)
+		{
+			if (mProps.mShowToolTips)
+			{
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text(tip);
+					ImGui::EndTooltip();
+				}
+			}
+		};
+
 		static bool firstTime = true;
 
 		static float velocity = mMotorController->mVelocity;
@@ -2607,27 +2620,22 @@ namespace nap
 
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::Begin("Motor Controls");
-		ImGui::SliderInt("Reset Value", &mResetMotorPos, -5000000, 5000000);
-		ImGui::SameLine();
 		if (ImGui::Button("Reset Position"))
 		{
-			utility::ErrorState error;
-			mMotorController->resetPosition(mResetMotorPos, error);
-
-			for (float& meter : mTargetMeters)
-			{
-				meter = 0.0f;
-			}
+			ImGui::OpenPopup("Reset Position Confirmation");
 		}
+		showTip("Resets all motor positions to their current position.\n This means their current position will be the new 0.0 position.");
 
 		mProps.mEnableFlexblock = mFlexBlock->getEnableMotorController();
 		if (ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock))
 		{
 			mFlexBlock->setEnableMotorController(mProps.mEnableFlexblock);
 		}
+		showTip("Enables the flexblock algorithm to control the motors");
 
 		ImGui::SameLine();
 		ImGui::Checkbox("Advanced", &mProps.mAdvancedMotorInterface);
+		showTip("Opens advanced motor control");
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Calibration Mode", &mProps.mCalibrationMode))
 		{
@@ -2646,6 +2654,7 @@ namespace nap
 				mMotorController->mMaxVelocity = maxVelocity;
 			}
 		}
+		showTip("Calibration mode means that the Torque, Acceleration and Velocity calibration values of the MACController will be used");
 
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
@@ -2825,12 +2834,37 @@ namespace nap
 		{
 			mMotorController->emergencyStop();
 		}
+		showTip("Stops all motors");
 		if (ImGui::Button("!START!"))
 		{
 			utility::ErrorState errorState;
 			mMotorController->start(errorState);
 		}
+		showTip("Starts all motors");
 		ImGui::PopStyleColor();
+
+		if (ImGui::BeginPopup("Reset Position Confirmation"))
+		{
+			ImGui::Text("Are you sure you want to reset the postion of all motors ?");
+			if (ImGui::Button("Reset"))
+			{
+				utility::ErrorState error;
+				mMotorController->resetPosition(0, error);
+
+				for (float& meter : mTargetMeters)
+				{
+					meter = 0.0f;
+				}
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 
 		ImGui::End();
 
