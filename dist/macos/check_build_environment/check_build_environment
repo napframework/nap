@@ -5,7 +5,7 @@ import sys
 import termios
 import tty
 
-REQUIRED_MACOS_VERSION = '10.13'
+REQUIRED_MACOS_VERSION = '10.14'
 CMAKE_MIN_VERSION = (3, 5)
 
 def getch():
@@ -75,7 +75,7 @@ def check_macos():
 
     macos_version = call('sw_vers -productVersion')
     macos_version_ok = macos_version.startswith(REQUIRED_MACOS_VERSION)
-    log_test_success('macOS High Sierra', macos_version_ok)
+    log_test_success('macOS Mojave', macos_version_ok)
     return macos_version_ok    
 
 def check_cmake():
@@ -224,7 +224,7 @@ def check_build_environment():
 
     # Warn about wrong macOS version
     if not macos_version_ok:
-        print("\nWarning: This version of NAP is supported on macOS High Sierra (10.13). Other macOS versions may work but are unsupported.")
+        print("\nWarning: This version of NAP is supported on macOS Mojave (10.14). Other macOS versions may work but are unsupported.")
 
     # If Xcode isn't installed assist in installation
     if not xcode_installed:
