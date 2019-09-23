@@ -212,7 +212,7 @@ namespace nap
 						int mapped = mMotorMapping[i];
 						if (mapped < mMacController->getSlaveCount())
 						{
-							mMacController->setPosition(mapped, mMotorSteps[i]);
+							mMacController->setPosition(i, mMotorSteps[mapped]);
 						}
 					}
 				}
