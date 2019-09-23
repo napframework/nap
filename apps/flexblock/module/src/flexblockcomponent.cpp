@@ -191,14 +191,29 @@ namespace nap
 		//
 		if (mEnableMacController)
 		{
+			bool allSlavesOperational = true;
 			for (int i = 0; i < mMacController->getSlaveCount(); i++)
 			{
-				if (i < mMotorMapping.size())
+				if (mMacController->getSlaveState(i) != EtherCATMaster::ESlaveState::Operational)
 				{
-					int mapped = mMotorMapping[i];
-					if (mapped < mMacController->getSlaveCount())
+					allSlavesOperational = false;
+					printf("Slave %i not operational! Disabling MACController... \n", i);
+					mMacController->stop();
+					break;
+				}
+			}
+
+			if (allSlavesOperational)
+			{
+				for (int i = 0; i < mMacController->getSlaveCount(); i++)
+				{
+					if (i < mMotorMapping.size())
 					{
-						mMacController->setPosition(mapped, mMotorSteps[i]);
+						int mapped = mMotorMapping[i];
+						if (mapped < mMacController->getSlaveCount())
+						{
+							mMacController->setPosition(mapped, mMotorSteps[i]);
+						}
 					}
 				}
 			}
