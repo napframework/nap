@@ -1730,6 +1730,11 @@ namespace nap
 			{
 				if (mSequencePlayer->load(files_in_directory[mProps.mSelectedShowIndex], errorState))
 				{
+					for (auto& pair : mProps.mDirtyFlags)
+					{
+						pair.second = true;
+					}
+
 					ImGui::CloseCurrentPopup();
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
@@ -2464,11 +2469,6 @@ namespace nap
 			{
 				auto* previousElement = element->getPreviousElement();
 
-				for (int i = 0; i < previousElement->mEndParameterResourcePtrs.size(); i++)
-				{
-					previousElement->mEndParameterResourcePtrs[i]->setValue(*mParameters[i]);
-				}
-
 				element->setStartParameters(previousElement->getEndParameters());
 			}
 			else
@@ -2478,6 +2478,8 @@ namespace nap
 
 			// reconstruct the sequence
 			mSequencePlayer->reconstruct();
+
+
 		}
 
 		return true;
@@ -2797,6 +2799,12 @@ namespace nap
 					}
 				}
 
+				if (mProps.mCalibrationMode)
+				{
+					if (mTargetMeters[i] < 0.0f)
+						mTargetMeters[i] = 0.0f;
+				}
+
 				bool error = false;
 				if (mMotorController->hasError(i))
 				{
@@ -2842,6 +2850,33 @@ namespace nap
 		}
 		showTip("Starts all motors");
 		ImGui::PopStyleColor();
+
+		ImGui::Separator();
+		ImGui::Text("Errors : ");
+		std::vector<std::string> errorStrings;
+		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
+		{
+			std::vector<MACController::EErrorStat> macErrors;
+			mMotorController->getErrors(i, macErrors);
+			if (macErrors.size() > 0)
+			{
+				for (int j = 0; j < macErrors.size(); j++)
+				{
+					errorStrings.emplace_back("Motor : " + std::to_string(i) + " " +MACController::errorToString(macErrors[j]));
+				}
+			}
+		}
+		if (errorStrings.size() > 0)
+		{
+			for (int i = 0; i < errorStrings.size(); i++)
+			{
+				ImGui::TextColored(text_color, errorStrings[i].c_str());
+			}
+		}
+		else
+		{
+			ImGui::Text("No Errors!");
+		}
 
 		if (ImGui::BeginPopup("Reset Position Confirmation"))
 		{

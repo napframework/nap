@@ -51,12 +51,12 @@ namespace nap
 			/**
 			 *
 			 */
-			float mSinusFrequencey = 1.0f;
+			float mSinusFrequencey = 0.0f;
 
 			/**
 			 *
 			 */
-			float mSinusAmplitude = 1.0f;
+			float mSinusAmplitude = 0.0f;
 
 		protected:
 			/**
