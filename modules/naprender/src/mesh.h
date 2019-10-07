@@ -10,9 +10,13 @@
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <nap/numeric.h>
+#include "rtti/factory.h"
 
 namespace nap
 {
+	class RenderService;
+	class Renderer;
+
 	/**
 	* Known vertex attribute IDs in the system
 	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
@@ -201,7 +205,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		MeshInstance() = default;
+		MeshInstance(Renderer* renderer);
 
 		// destructor
 		virtual ~MeshInstance();
@@ -342,6 +346,7 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
+		Renderer*												mRenderer;
 		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
 		std::unique_ptr<opengl::GPUMesh>						mGPUMesh;			///< GPU mesh
 	};
@@ -374,6 +379,9 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+
+		Mesh();
+		Mesh(RenderService& renderService);
 
 		/**
 		 * Initialized the mesh instance.
@@ -495,5 +503,6 @@ namespace nap
 		assert(attribute != nullptr);
 		return *attribute;
 	}
-} // nap
 
+	using MeshCreator = rtti::ObjectCreator<Mesh, RenderService>;
+} // nap

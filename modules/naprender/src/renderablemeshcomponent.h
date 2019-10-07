@@ -139,7 +139,7 @@ namespace nap
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
 	 	 */
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		TransformComponentInstance*				mTransformComponent;	// Cached pointer to transform

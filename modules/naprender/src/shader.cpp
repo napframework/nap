@@ -5,14 +5,28 @@
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
+#include "renderservice.h"
 
 RTTI_BEGIN_CLASS(nap::Shader)
 	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("mFragShader", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
+	RTTI_PROPERTY("OutputFormat", &nap::Shader::mOutputFormat, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
 {
+	Shader::Shader() :
+		mRenderer(nullptr)
+	{
+
+	}
+
+	Shader::Shader(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+
+	}
+
 	// Store path and create display names
 	bool Shader::init(utility::ErrorState& errorState)
 	{
@@ -28,8 +42,7 @@ namespace nap
 		mShader = std::make_unique<opengl::Shader>();
 
 		// Initialize the shader
-		mShader->init(mVertPath, mFragPath);
-		if (!errorState.check(mShader->isLinked(), "unable to create shader program from vertex shader %s and fragment shader %s", mVertPath.c_str(), mFragPath.c_str()))
+		if (!mShader->init(mRenderer->getDevice(), mVertPath, mFragPath, errorState))
 			return false;
 
 		return true;

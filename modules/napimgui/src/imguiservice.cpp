@@ -525,7 +525,7 @@ namespace nap
 		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.0f, &font_config);
 
 		// Set primary window to be default
-		setGuiWindow(mRenderer->getPrimaryWindow().getNativeWindow());
+//		setGuiWindow(mRenderer->getPrimaryWindow().getNativeWindow());
 
 		return true;
 	}
@@ -541,18 +541,19 @@ namespace nap
 	void IMGuiService::update(double deltaTime)
 	{
 		// Activate correct context
-		GLWindow* current_window = mUserWindow != nullptr ? mUserWindow->getWindow() : &(mRenderer->getPrimaryWindow());
-		current_window->makeCurrent();
-
-		// Create new device objects
-		if (mWindowChanged)
-		{
-			createDeviceObjects();
-			mWindowChanged = false;
-		}
-
-		// Create new GUI frame
-		newFrame(*current_window);
+//		GLWindow* current_window = mUserWindow != nullptr ? mUserWindow->getWindow() : &(mRenderer->getPrimaryWindow());
+//  		GLWindow* current_window = nullptr;
+//  		current_window->makeCurrent();
+// 
+// 		// Create new device objects
+// 		if (mWindowChanged)
+// 		{
+// 			createDeviceObjects();
+// 			mWindowChanged = false;
+// 		}
+// 
+// 		// Create new GUI frame
+// 		newFrame(*current_window);
 	};
 
 

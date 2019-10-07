@@ -55,7 +55,7 @@ namespace nap
 			return false;
 
 		// There is only 1 shape associated with the scatter mesh
-		mMeshInstance = std::make_unique<MeshInstance>();
+		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
 		mMeshInstance->createShape();
 		return true;
 	}

@@ -6,6 +6,7 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <orthocameracomponent.h>
+#include "rendertarget.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -48,7 +49,7 @@ namespace nap
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
 		// Create settings for depth 2D texture
-		mDepthTexture.mFormat = RenderTexture2D::EFormat::Depth;
+		mDepthTexture.mFormat = ERenderTargetFormat::Depth;
 		mDepthTexture.mWidth  = resource->mOutputTexture->getWidth();
 		mDepthTexture.mHeight = resource->mOutputTexture->getHeight();
 
@@ -128,7 +129,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::draw()
+	void RenderToTextureComponentInstance::draw(VkCommandBuffer commandBuffer)
 	{
 		// Create orthographic projection matrix
 		glm::ivec2 size = mTarget.getTarget().getSize();
@@ -144,7 +145,7 @@ namespace nap
 		mService->pushRenderState();
 
 		// Call on draw
-		onDraw(sIdentityMatrix, proj_matrix);
+		onDraw(commandBuffer, sIdentityMatrix, proj_matrix);
 
 		// Unbind render target
 		mTarget.getTarget().unbind();
@@ -157,7 +158,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderToTextureComponentInstance::onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -203,9 +204,9 @@ namespace nap
 			GLenum draw_mode = getGLMode(shape.getDrawMode());
 			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
+// 			index_buffer.bind();
+// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+// 			index_buffer.unbind();
 		}
 
 		// Unbind all GL resources

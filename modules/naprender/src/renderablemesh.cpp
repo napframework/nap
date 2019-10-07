@@ -3,23 +3,22 @@
 
 namespace nap
 {
-	RenderableMesh::RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle) :
+	RenderableMesh::RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, VkPipelineLayout layout, VkPipeline pipeline) :
 		mMaterialInstance(&materialInstance),
-        mMesh(&mesh),
-        mVAOHandle(vaoHandle) { }
+		mMesh(&mesh),
+		mPipelineLayout(layout),
+		mPipeline(pipeline)
+	{
+	}
 
 
 	void RenderableMesh::bind()
 	{
-		assert(mVAOHandle.isValid());
-		mVAOHandle.get().bind();
 	}
 
 
 	void RenderableMesh::unbind()
 	{
-		assert(mVAOHandle.isValid());
-		mVAOHandle.get().unbind();
 	}
 
 }

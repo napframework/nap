@@ -379,7 +379,7 @@ namespace nap
 		return -1;
 	}
 
-
+	
 	Uniform& MaterialInstance::createUniform(const std::string& name)
 	{
 		const opengl::UniformDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformDeclarations();

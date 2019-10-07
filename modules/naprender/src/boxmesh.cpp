@@ -1,4 +1,5 @@
 #include "boxmesh.h"
+#include "renderservice.h"
 
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS(nap::BoxMesh)
@@ -14,6 +15,15 @@ namespace nap
 	static constexpr int planeVertCount = 4;					//< Number of vertices per plane
 	static constexpr int boxVertCount = planeVertCount * 6;		//< Total number of box vertices
 	static constexpr int triCount = 6 * 2;						//< Total number of box triangles
+
+	BoxMesh::BoxMesh() :
+		mRenderer(nullptr)
+	{
+	}
+	BoxMesh::BoxMesh(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+	}
 
 	BoxMesh::~BoxMesh()			{ }
 
@@ -34,7 +44,7 @@ namespace nap
 	void BoxMesh::setup()
 	{
 		// Create mesh instance
-		mMeshInstance = std::make_unique<MeshInstance>();
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
 
 		// Compute box and construct mesh
 		mBox = math::Box(mSize.x, mSize.y, mSize.z, mPosition);

@@ -85,13 +85,45 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mRenderableMesh.isValid())
 		{
 			assert(false);
 			return;
 		}
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
+
+		// Gather draw info
+		MeshInstance& mesh_instance = getMeshInstance();
+		opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+
+		Material& material = *mRenderableMesh.getMaterialInstance().getMaterial();
+
+		std::vector<VkBuffer> vertexBuffers;
+		std::vector<VkDeviceSize> vertexBufferOffsets;
+
+		for (auto& kvp : material.getShader()->getShader().getAttributes())
+		{
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			assert(material_binding != nullptr);
+
+			opengl::VertexAttributeBuffer& vertex_buffer = mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			vertexBuffers.push_back(vertex_buffer.getBuffer());
+			vertexBufferOffsets.push_back(0);
+		}
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
+		{
+			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
+		}
+
+		/*
 
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
@@ -145,14 +177,14 @@ namespace nap
 			GLenum draw_mode = getGLMode(shape.getDrawMode());
 			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
+// 			index_buffer.bind();
+// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+// 			index_buffer.unbind();
 		}
 
 		mat_instance.unbind();
 		mRenderableMesh.unbind();
-		opengl::enableScissorTest(false);
+		opengl::enableScissorTest(false);*/
 	}
 
 

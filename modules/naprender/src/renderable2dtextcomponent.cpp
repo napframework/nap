@@ -45,7 +45,7 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void Renderable2DTextComponentInstance::onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Compute model matrix
 		glm::mat4x4 model_matrix;

@@ -55,6 +55,7 @@ find_package(assimp REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
+find_package(vulkansdk REQUIRED)
 
 # get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -70,6 +71,7 @@ set(INCLUDES
     ${GLEW_INCLUDE_DIR}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
+    ${VULKANSDK_INCLUDE_DIRS}
     )
 
 set(LIBRARIES

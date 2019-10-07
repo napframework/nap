@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nbackbufferrendertarget.h"
+#include "vulkan/vulkan_core.h"
 #include <rtti/rtti.h>
 
 // External Includes
@@ -70,17 +71,12 @@ namespace nap
 		GLWindow(const GLWindow& other) = delete;
 		GLWindow& operator=(const GLWindow& other) = delete;
 
-		bool init(const RenderWindowSettings& settings, GLWindow* sharedWindow, utility::ErrorState& errorState);
+		bool init(const RenderWindowSettings& settings, VkInstance vulkanInstance, VkPhysicalDevice physicalDevice, VkDevice device, VkCommandPool commandPool, unsigned int graphicsQueueIndex, utility::ErrorState& errorState);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined
 		*/
 		SDL_Window* getNativeWindow() const;
-
-		/**
-		* @return the hardware window context, nullptr if undefined
-		*/
-		SDL_GLContext getContext() const;
 
 		/**
 		 * The back buffer for an OpenGL window isn't an actual frame buffer
@@ -161,10 +157,27 @@ namespace nap
 		 */
 		uint32 getNumber() const;
 
+		VkCommandBuffer	getCommandBuffer();
+
 	private:
 		opengl::BackbufferRenderTarget					mBackbuffer;
+
+		VkDevice										mDevice = nullptr;
+		VkSurfaceKHR									mSurface = nullptr;
+		VkSwapchainKHR									mSwapchain = nullptr;
+		VkRenderPass									mRenderPass = nullptr;
+		VkQueue											mGraphicsQueue = nullptr;
+		VkQueue											mPresentQueue = nullptr;
+		std::vector<VkImageView>						mSwapChainImageViews;
+		std::vector<VkFramebuffer>						mSwapChainFramebuffers;
+		std::vector<VkCommandBuffer>					mCommandBuffers;
+		std::vector<VkSemaphore>						mImageAvailableSemaphores;
+		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
+		std::vector<VkFence>							mInFlightFences;
+		int												mCurrentFrame = 0;
+		uint32_t										mCurrentImageIndex = 0;
+
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
-		SDL_GLContext									mContext = nullptr;		// GL Context
 
 		/**
 		 * Apply the specified window settings. Normally this is done during initialization of new windows,

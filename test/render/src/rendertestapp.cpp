@@ -37,25 +37,27 @@ namespace nap
 		}
 		
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
-		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
+//		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 		
-		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
+//		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
-		mScene						= mResourceManager->findObject<Scene>("Scene");
-		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
-		mPlaneEntity				= mScene->findEntity("PlaneEntity");
-		mWorldEntity				= mScene->findEntity("WorldEntity");
-		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
-		mCameraEntityRight			= mScene->findEntity("CameraEntityRight");
-		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
-		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
+ 		mScene						= mResourceManager->findObject<Scene>("Scene");
+// 		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
+// 		mPlaneEntity				= mScene->findEntity("PlaneEntity");
+// 		mWorldEntity				= mScene->findEntity("WorldEntity");
+ 		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
+// 		mCameraEntityRight			= mScene->findEntity("CameraEntityRight");
+// 		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
+// 		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 		
+		/*
 		// Set render states
 		nap::RenderState render_state;
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
 		mRenderService->setRenderState(render_state);
+		*/
 
 		return true;
 	}
@@ -63,7 +65,7 @@ namespace nap
 	
 	// Called when the window is updating
 	void RenderTestApp::update(double deltaTime)
-	{
+	{/*
 		static double timer = 0.0;
 		timer += deltaTime;
 		if (timer >= 2.5)
@@ -132,30 +134,36 @@ namespace nap
 		{
 			ImGui::ShowTestWindow(&mShow);
 		}
+
+		*/
 	}
 	
 	
 	// Called when the window is going to render
 	void RenderTestApp::render()
-	{
+	{/*
 		mRenderService->destroyGLContextResources({ mRenderWindows[0].get(), mRenderWindows[1].get() });
 		
 		// Render offscreen surface(s)
 		{
-			mRenderService->getPrimaryWindow().makeCurrent();
+			//mRenderService->getPrimaryWindow().makeCurrent();
 			
 			// Render entire scene to texture
 			mRenderService->clearRenderTarget(mTextureRenderTarget->getTarget());
 			mRenderService->renderObjects(mTextureRenderTarget->getTarget(), mCameraEntityLeft->getComponent<PerspCameraComponentInstance>());
 		}
-		
+		*/
 		
 		// Render window 0
 		{
 			RenderWindow* render_window = mRenderWindows[0].get();
-			
 			render_window->makeActive();
-			
+			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();
+
+			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
+			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+
+			/*
 			// Render output texture to plane
 			std::vector<RenderableComponentInstance*> components_to_render;
 			components_to_render.push_back(&mPlaneEntity->getComponent<RenderableMeshComponentInstance>());
@@ -185,10 +193,12 @@ namespace nap
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 
 			getCore().getService<IMGuiService>()->draw();
+			*/
 
 			render_window->swap();
 		}
 	 
+		/*
 		// render window 1
 		{
 			RenderWindow* render_window = mRenderWindows[1].get();
@@ -212,6 +222,7 @@ namespace nap
 
 			render_window->swap(); 
 		}
+		*/
 	}
 	
 

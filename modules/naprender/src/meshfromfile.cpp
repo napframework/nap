@@ -1,6 +1,7 @@
 // Local Includes
 #include "meshfromfile.h"
 #include "fbxconverter.h"
+#include "renderservice.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -12,12 +13,22 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	MeshFromFile::MeshFromFile() :
+		mRenderer(nullptr)
+	{
+	}
+
+	MeshFromFile::MeshFromFile(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+	}
+
 	bool MeshFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load our mesh
 		nap::Logger::info("loading mesh: %s", mPath.c_str());
 
-		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
+		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(*mRenderer, mPath, errorState);
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 

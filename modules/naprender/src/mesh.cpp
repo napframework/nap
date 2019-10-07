@@ -2,6 +2,8 @@
 #include "mesh.h"
 #include <rtti/rttiutilities.h>
 #include "meshutils.h"
+#include "renderservice.h"
+#include "renderer.h"
 
 RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::Static,		"Static"),
@@ -54,6 +56,11 @@ namespace nap
 	
 	//////////////////////////////////////////////////////////////////////////
 
+	MeshInstance::MeshInstance(Renderer* renderer) :
+		mRenderer(renderer)
+	{
+	}
+
 	MeshInstance::~MeshInstance()
 	{
 	}
@@ -69,7 +76,7 @@ namespace nap
 
 	// Creates GPU vertex attributes and updates mesh
 	bool MeshInstance::initGPUData(utility::ErrorState& errorState)
-	{
+	{/*
 		// Convert usage to OpenGL usage. See https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
 		GLenum usage;
 		switch (mProperties.mUsage)
@@ -83,11 +90,11 @@ namespace nap
 		case EMeshDataUsage::DynamicWrite:
 			usage = GL_DYNAMIC_DRAW;
 			break;
-		}
+		}*/
 
 		mGPUMesh = std::make_unique<opengl::GPUMesh>();
 		for (auto& mesh_attribute : mProperties.mAttributes)
-			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), usage);
+			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 
 		return update(errorState);
 	}
@@ -154,13 +161,13 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			vertex_attr_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mProperties.mShapes[shapeIndex].getIndices());
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
 		}
 
 		return true;
@@ -175,12 +182,22 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		gpu_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
 		return true;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
+
+	Mesh::Mesh() :
+		mMeshInstance(nullptr)
+	{
+	}
+
+	Mesh::Mesh(RenderService& renderService) :
+		mMeshInstance(&renderService.getRenderer())
+	{
+	}
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{

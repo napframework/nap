@@ -1,9 +1,9 @@
-#version 150 core
+#version 450 core
 
-in vec4 pass_Color;
-in vec3 pass_Uvs;
+layout(location=0) in vec4 pass_Color;
+layout(location=1) in vec3 pass_Uvs;
 
-out vec4 out_Color;
+layout(location=0) out vec4 out_Color;
 
 void main(void)
 {

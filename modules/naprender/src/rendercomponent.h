@@ -43,7 +43,7 @@ namespace nap
 		 * @param viewMatrix often the camera world space location.
 		 * @param projectionMatrix often the camera projection matrix.
 		 */
-		void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
+		void draw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 
 		/**
 		 * Toggles visibility.
@@ -72,7 +72,7 @@ namespace nap
 		 * @param viewMatrix often the camera world space location
 		 * @param projectionMatrix often the camera projection matrix
 		 */
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
+		virtual void onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 
 	private:
 		bool mVisible = true;			///< If this object should be drawn or not

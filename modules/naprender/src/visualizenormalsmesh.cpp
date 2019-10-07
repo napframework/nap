@@ -150,7 +150,7 @@ namespace nap
 			return false;
 
 		// Create the mesh that will hold the normals
-		mMeshInstance = std::make_unique<MeshInstance>();
+		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();

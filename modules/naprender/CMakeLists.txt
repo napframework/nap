@@ -14,6 +14,8 @@ source_group("sources" FILES ${SOURCES})
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
+find_package(vulkansdk REQUIRED)
+
 # LIBRARY
 
 # compile shared lib as target
@@ -22,11 +24,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${VULKANSDK_INCLUDE_DIRS})
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
+target_link_libraries(${PROJECT_NAME} ${VULKANSDK_LIBS})
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()

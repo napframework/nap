@@ -2,6 +2,7 @@
 
 // External Includes
 #include "texture2d.h"
+#include "rendertarget.h"
 
 namespace nap
 {
@@ -14,14 +15,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
-		enum class EFormat
-		{
-			RGBA8,			///< RGBA8 4 components, 8 bytes per component
-			RGB8,			///< RGB8 3 components, 8 bytes per component
-			R8,				///< R8	1 components, 8 bytes per component
-			Depth			///< Depth Texture used for binding to depth buffer
-		};
-
 		/**
 		 * Creates internal texture resource.
 		 * @param errorState Contains error state if the function fails.
@@ -31,6 +24,6 @@ namespace nap
 
 		int		mWidth  = 0;					///< Property: 'Width' width of the texture in texels
 		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
-		EFormat	mFormat = EFormat::RGB8;		///< Property: 'Format' format of the texture
+		ERenderTargetFormat	mFormat = ERenderTargetFormat::RGB8;		///< Property: 'Format' format of the texture
 	};
 }

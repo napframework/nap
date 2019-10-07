@@ -18,7 +18,7 @@ namespace nap
 {
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		mMeshInstance = std::make_unique<MeshInstance>();
+		mMeshInstance = std::make_unique<MeshInstance>(nullptr); 	// TODO: proper init
 
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec3> normals;

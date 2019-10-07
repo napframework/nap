@@ -39,7 +39,7 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>();
+		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect

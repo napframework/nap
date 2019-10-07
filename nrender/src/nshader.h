@@ -2,6 +2,8 @@
 
 // Local Includes
 #include "nshaderutils.h"
+#include "vulkan/vulkan_core.h"
+#include "utility/errorstate.h"
 
 // External Includes
 #include <string>
@@ -73,9 +75,7 @@ namespace opengl
 		// Default constructor / destructor
 		Shader() = default;
 
-		// Constructor using file
-		Shader(const char *vsFile, const char *fsFile); // Constructor for creating a shader from two shader filenames
-		
+	
 		// Destructor
 		virtual ~Shader();
 
@@ -86,7 +86,7 @@ namespace opengl
 		 * @param vsFile the vertex shader file on disk
 		 * @param fsFile the vertex shader file on disk
 		 */
-		void init(const std::string& vsFile, const std::string& fsFile);
+		bool init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState);
 
 		/**
 		 * Binds the GLSL shader program
@@ -157,7 +157,13 @@ namespace opengl
 		 */
 		const UniformDeclarations& getUniformDeclarations() const			{ return mUniformDeclarations; }
 
+		VkShaderModule getVertexModule() const { return mVertexModule; }
+		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+
 	private:
+		VkShaderModule mVertexModule = nullptr;
+		VkShaderModule mFragmentModule = nullptr;
+
 		unsigned int mShaderId = 0;				// The shader program identifier
 		unsigned int mShaderVp = 0;				// The vertex shader identifier
 		unsigned int mShaderFp = 0;				// The fragment shader identifier

@@ -224,16 +224,16 @@ namespace nap
 			glyph_uniform.push(*glyph_binding.mDeclaration, texture_unit);
 
 			// Bind and draw all the arrays
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
+// 			index_buffer.bind();
+// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
+// 			index_buffer.unbind();
 
 			// Update x
 			x += render_glyph->getHorizontalAdvance();
 		}
 
 		// Unbind
-		index_buffer.unbind();
+//		index_buffer.unbind();
 		mMaterialInstance.unbind();
 		mRenderableMesh.unbind();
 	}

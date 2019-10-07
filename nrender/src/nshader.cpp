@@ -8,32 +8,44 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <assert.h>
+#include "spirv_reflect.h"
 
 using namespace std; // Include the standard namespace
 
-/**
- textFileRead loads in a standard text file from a given filename and
- then returns it as a string.
- */
-static string textFileRead(const std::string& fileName)
+static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffer)
 {
-	string fileString = string(); // A string for storing the file contents
-	string line = string(); // A string for holding the current line
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-	ifstream file(fileName); // Open an input stream with the selected file
-	if (file.is_open())
-	{ // If the file opened successfully
-		while (!file.eof())
-		{ // While we are not at the end of the file
-			getline(file, line); // Get the current line
-			fileString.append(line); // Append the line to our file string
-			fileString.append("\n"); // Appand a new line character
-		}
-		file.close(); // Close the file
-	}
+	if (!file.is_open())
+		return false;
 
-	return fileString; // Return our string
+	size_t fileSize = (size_t)file.tellg();
+	std::vector<char> buffer(fileSize);
+
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+
+	file.close();
+
+	outBuffer = std::move(buffer);
+
+	return true;
 }
+
+VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device) 
+{
+	VkShaderModuleCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	createInfo.codeSize = code.size();
+	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+	VkShaderModule shaderModule;
+	if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+		return nullptr;
+
+	return shaderModule;
+}
+
 
 namespace opengl
 {
@@ -58,21 +70,45 @@ namespace opengl
 
 
 	/**
-	 Constructor for a Shader object which creates a GLSL shader based on a given
-	 vertex and fragment shader file.
-	 */
-	Shader::Shader(const char *vsFile, const char *fsFile) 
-	{
-		init(vsFile, fsFile); // Initialize the shader
-	}
-
-
-	/**
 	 init will take a vertex shader file and fragment shader file, and then attempt to create a valid
 	 shader program from these. It will also check for any shader compilation issues along the way.
 	 */
-	void Shader::init(const std::string& vsFile, const std::string& fsFile) 
+	bool Shader::init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState)
 	{
+		std::vector<char> vertexShaderData;
+		if (!errorState.check(tryReadFile(vsFile, vertexShaderData), "Unable to read vertex shader file %s", vsFile.c_str()))
+			return false;
+
+		mVertexModule = createShaderModule(vertexShaderData, device);
+		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", vsFile.c_str()))
+			return false;
+
+		std::vector<char> fragmentShaderData;
+		if (!errorState.check(tryReadFile(fsFile, fragmentShaderData), "Unable to read fragment shader file %s", fsFile.c_str()))
+			return false;
+
+		mFragmentModule = createShaderModule(fragmentShaderData, device);
+		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", fsFile.c_str()))
+			return false;
+
+		SpvReflectShaderModule vertexShaderReflectModule;
+		if (!errorState.check(spvReflectCreateShaderModule(vertexShaderData.size(), vertexShaderData.data(), &vertexShaderReflectModule) == SPV_REFLECT_RESULT_SUCCESS, "Failed to create shader reflection module"))
+			return false;
+
+		uint32_t count = 0;
+		if (!errorState.check(spvReflectEnumerateInputVariables(&vertexShaderReflectModule, &count, NULL) == SPV_REFLECT_RESULT_SUCCESS, "Failed to enumerate shader input variables"))
+			return false;		
+
+		std::vector<SpvReflectInterfaceVariable*> input_vars(count);
+		if (!errorState.check(spvReflectEnumerateInputVariables(&vertexShaderReflectModule, &count, input_vars.data()) == SPV_REFLECT_RESULT_SUCCESS, "Failed to enumerate shader input variables"))
+			return false;
+		
+		for (const SpvReflectInterfaceVariable* refl_var : input_vars)
+			mShaderAttributes[refl_var->name] = std::make_unique<ShaderInput>(refl_var->name, refl_var->location, refl_var->format);
+
+		spvReflectDestroyShaderModule(&vertexShaderReflectModule);
+
+		/*
 		// Set state
 		mState = State::NotLoaded;
 
@@ -167,13 +203,16 @@ namespace opengl
 		
 		// Successfully loaded shader
 		mState = State::Linked;
+		*/
+
+		return true;
 	}
 
 
 	 // Destructor for the Shader object which cleans up by detaching the shaders, deleting them
 	 // and finally deleting the GLSL program.
 	Shader::~Shader() 
-	{
+	{/*
 		if (!isAllocated())
 			return;
 			
@@ -183,6 +222,7 @@ namespace opengl
 		glDeleteShader(mShaderFp);				// Delete the fragment shader
 		glDeleteShader(mShaderVp);				// Delete the vertex shader
 		glDeleteProgram(mShaderId);				// Delete the shader program
+		*/
 	}
 
 

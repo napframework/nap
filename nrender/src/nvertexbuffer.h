@@ -4,9 +4,10 @@
 #include "ngltypes.h"
 #include "nglutils.h"
 #include "nbuffer.h"
+#include "vulkan/vulkan_core.h"
 
 // External Includes
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include <stdint.h>
 
 namespace opengl
@@ -21,22 +22,9 @@ namespace opengl
 	public:
 		VertexAttributeBuffer() = default;
 
-		VertexAttributeBuffer(GLenum type, unsigned int numComponents, GLenum usage);
+		VertexAttributeBuffer(VkFormat inFormat);
 
-		/**
-		 * @return the buffer OpenGL type, INVALID_ENUM if not specified
-		 */
-		 virtual GLenum getType() const							{ return mType; }
-
-		 /**
-		  * @return the buffer opengl type
-		  */
-		 virtual GLenum getBufferType() const override			{ return GL_ARRAY_BUFFER; }
-
-		/**
-		 * @return the number of components associated with the buffer
-		 */
-		unsigned int getNumComponents() const					{ return mNumComponents; }
+		VkFormat getFormat() const { return mFormat; }
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
@@ -47,13 +35,12 @@ namespace opengl
 		 * @param numVertices number of vertices represented by data
 		 * @param reservedNumVertices used when current capacity is lower than current size. Used to calculate GPU buffer size.
 		 */
-		void setData(void* data, size_t numVertices, size_t reservedNumVertices);
+		void setData(VkPhysicalDevice physicalDevice, VkDevice device, void* data, size_t numVertices, size_t reservedNumVertices);
 
 	private:
-		GLenum			mType				= GL_INVALID_ENUM;	// defines the internal GL type of the buffer
-		unsigned int	mNumComponents		= 0;				// defines the number of components (3 for color, 2 for uv's etc)
-		size_t			mCurCapacity		= 0;				// Amount of memory reserved
-		size_t			mCurSize			= 0;				// defines the number of points in the buffer
-		GLenum			mUsage				= GL_STATIC_DRAW;	// defines the expected usage pattern of the data storage: https://www.opengl.org/sdk/docs/man4/html/glBufferData.xhtml
+		VkFormat		mFormat;
+		int				mVertexSize			= -1;
 	};
+
+	int getVertexSize(VkFormat format);
 }

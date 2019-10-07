@@ -80,7 +80,7 @@ namespace nap
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera);
 
 		/**
 		* Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -89,7 +89,7 @@ namespace nap
 		* @param camera the camera used for rendering all the available components
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -99,7 +99,7 @@ namespace nap
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Renders a specific set of objects to a specific renderTarget.
@@ -109,7 +109,7 @@ namespace nap
 		* @param comps the components to render to renderTarget
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		 * Clears specific parts of the renderTarget using the given flags. 
@@ -197,16 +197,6 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
-		 * Get the primary window (i.e. the window that was used to init OpenGL against)
-		 */
-		GLWindow& getPrimaryWindow();
-
-		/**
-		 * @return the id of the primary window
-		 */
-		const std::string& getPrimaryWindowID() const;
-
-		/**
 		 * Add a window event that is processed later, ownership is transferred here.
 		 * The window number in the event is used to find the right render window to forward the event to.
 		 * @param windowEvent the window event to add.
@@ -224,6 +214,8 @@ namespace nap
 		* @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
 		*/
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
+
+		Renderer& getRenderer() { return *mRenderer; }
 
 	protected:
 		/**
@@ -329,6 +321,11 @@ namespace nap
 		VAOMap mVAOMap;																			//< Map from material-mesh combination to opengl VAO
 		WindowList mWindows;																	//< All available windows
 		SceneService* mSceneService = nullptr;													//< Service that manages all the scenes
+
+		VkRenderPass	mRenderPassRGBA8 = nullptr;
+		VkRenderPass	mRenderPassRGB8 = nullptr;
+		VkRenderPass	mRenderPassR8 = nullptr;
+		VkRenderPass	mRenderPassDepth = nullptr;
 	};
 } // nap
 

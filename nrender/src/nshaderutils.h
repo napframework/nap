@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <functional>
 #include <memory>
+#include "vulkan/vulkan_core.h"
 
 namespace opengl
 {
@@ -53,25 +54,41 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		ShaderInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
+		ShaderInput(const std::string& name, int location, VkFormat format);
 		ShaderInput() = delete;
 
 		std::string		mName;							///< Name of the shader attribute
-		GLenum			mType =	GL_INVALID_ENUM;		///< OpenGL Type of the shader attribute
+		int				mLocation;
+		VkFormat		mFormat;
+
+// 		/**
+// 		 * @return if this shader input is an array or single value
+// 		 */
+// 		bool isArray() const							{ return mSize > 1; }
+	};
+
+	class ShaderUniformInput
+	{
+	public:
+		// Constructor
+		ShaderUniformInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) {}
+		ShaderUniformInput() = delete;
+
+		std::string		mName;							///< Name of the shader attribute
+		GLenum			mType = GL_INVALID_ENUM;		///< OpenGL Type of the shader attribute
 		EGLSLType		mGLSLType = EGLSLType::Unknown;	///< System GLSL type
 		GLint			mLocation = -1;					///< Location of the shader attribute
 		GLuint			mShaderProgram = 0;				///< Shader this uniform is associated with
 		GLint			mSize = 0;						///< Number of elements in array
 
-		/**
-		 * @return if this shader input is an array or single value
-		 */
-		bool isArray() const							{ return mSize > 1; }
+														/**
+														* @return if this shader input is an array or single value
+														*/
+		bool isArray() const { return mSize > 1; }
 	};
 
-
 	// Typedefs
-	using UniformDeclaration = ShaderInput;
+	using UniformDeclaration = ShaderUniformInput;
 	using UniformDeclarations = std::unordered_map<std::string, std::unique_ptr<UniformDeclaration>>;
 
 	using ShaderVertexAttribute = ShaderInput;

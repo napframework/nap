@@ -128,7 +128,7 @@ namespace nap
 	bool nap::PolyLine::init(utility::ErrorState& errorState)
 	{
 		// Create the mesh	
-		mMeshInstance = std::make_unique<nap::MeshInstance>();
+		mMeshInstance = std::make_unique<nap::MeshInstance>(nullptr);	// TODO: proper init
 
 		// Create attributes
 		createVertexAttributes(*mMeshInstance);

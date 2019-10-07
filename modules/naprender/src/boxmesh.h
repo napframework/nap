@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class Renderer;
+
 	/**
 	 * Predefined box mesh. Contains per face UV coordinates, color information and normals.
 	 * The UV coordinates are always 0-1. The box consists of 6 planes.
@@ -17,6 +19,9 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		BoxMesh();
+		BoxMesh(RenderService& renderService);
+
 		virtual ~BoxMesh();
 
 		/**
@@ -61,7 +66,10 @@ namespace nap
 		void constructBox(const math::Box& box, nap::MeshInstance& mesh);
 
 	private:
+		Renderer* mRenderer;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};
+
+	using BoxMeshCreator = rtti::ObjectCreator<BoxMesh, RenderService>;
 }

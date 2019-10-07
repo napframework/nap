@@ -3,9 +3,9 @@
 
 namespace opengl
 {
-	void GPUMesh::addVertexAttribute(const std::string& id, GLenum type, unsigned int numComponents, GLenum usage)
+	void GPUMesh::addVertexAttribute(const std::string& id, VkFormat format)
 	{
-		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(type, numComponents, usage)));
+		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(format)));
 	}
 
 

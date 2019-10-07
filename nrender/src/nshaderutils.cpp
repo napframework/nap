@@ -40,14 +40,11 @@ namespace opengl
 
 
 	// Constructor
-	ShaderInput::ShaderInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) :
+	ShaderInput::ShaderInput(const std::string& name, int location, VkFormat format) :
 		mName(name),
-		mType(type),
 		mLocation(location),
-		mShaderProgram(shaderProgram),
-		mSize(size)
+		mFormat(format)
 	{
-		mGLSLType = getGLSLType(mType);
 	}
 
 
@@ -160,7 +157,7 @@ namespace opengl
 			//
 			// In this case, we need to ensure we only strip off the trailing array specifier; the array specifier after the 'structs' name is important information about which 
 			// array element is being indexed.
-			
+			/*
 			std::string unique_name = name;
 
 			// Determine where we should start searching for the array specifier: if this is a path with multiple elements, we start at the start of the last element.
@@ -177,6 +174,7 @@ namespace opengl
 			// Add
 			printMessage(EGLSLMessageType::Info, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, unique_name.c_str(), location);
 			outUniforms.emplace(std::make_pair(unique_name, std::make_unique<UniformDeclaration>(program, std::string(unique_name), type, location, size)));
+			*/
 		}
 	}
 
@@ -208,8 +206,10 @@ namespace opengl
 			}
 
 			// Add
+			/*
 			printMessage(EGLSLMessageType::Info, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
 			outAttributes.emplace(name, std::make_unique<ShaderVertexAttribute>(program, std::string(name), type, location, size));
+			*/
 		}
 	}
 

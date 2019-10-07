@@ -2,6 +2,14 @@
 #include "rendertarget.h"
 #include "ntexturerendertarget2d.h"
 
+RTTI_BEGIN_ENUM(nap::ERenderTargetFormat)
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGBA8,	"RGBA8"),
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGB8,		"RGB8"),
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::R8,		"R8"),	
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Depth,	"Depth")
+RTTI_END_ENUM
+
+
 RTTI_BEGIN_CLASS(nap::RenderTarget)
 	RTTI_PROPERTY("mColorTexture",	&nap::RenderTarget::mColorTexture, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("mDepthTexture",	&nap::RenderTarget::mDepthTexture, nap::rtti::EPropertyMetaData::Required)

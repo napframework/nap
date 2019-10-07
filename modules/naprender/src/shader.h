@@ -4,9 +4,14 @@
 #include <nshader.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
+#include "rtti/factory.h"
+#include "rendertarget.h"
 
 namespace nap
 {
+	class Renderer;
+	class RenderService;
+
 	/**
 	 * Resource that loads and compiles a shader from disk using the provided vertex and fragment shader paths.
 	 * A material and material instance link to a shader. The shader is compiled on initialization.
@@ -16,6 +21,8 @@ namespace nap
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE(Resource)
 	public:
+		Shader();
+		Shader(RenderService& renderService);
 
 		/**
 		 * Creates and inits opengl shader.
@@ -27,16 +34,17 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		std::string							mVertPath;			///< Property: 'mVertShader' path to the vertex shader on disk
-		std::string							mFragPath;			///< Property: 'mFragShader' path to the fragment shader on disk
+		std::string							mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
+		std::string							mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk
+		ERenderTargetFormat					mOutputFormat = ERenderTargetFormat::RGB8;	///< Property: 'OutputFormat' format of the output
 
 	private:
-		// Path to shader on disk
-		std::string							mDisplayName;
-
-		// Shader that is managed by this resource
-		std::unique_ptr<opengl::Shader>		mShader;
+		Renderer*							mRenderer;
+		std::string							mDisplayName;								///< Path to shader on disk
+		std::unique_ptr<opengl::Shader>		mShader;									///< Shader that is managed by this resource
 	};
 
+
+	using ShaderCreator = rtti::ObjectCreator<Shader, RenderService>;
 }
 

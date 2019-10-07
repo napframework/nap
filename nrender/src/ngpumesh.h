@@ -3,6 +3,7 @@
 // Local Includes
 #include "nvertexarrayobject.h"
 #include "nglutils.h"
+#include "vulkan/vulkan_core.h"
 
 // External Includes
 #include <memory>
@@ -30,7 +31,7 @@ namespace opengl
 		 * @param numComponents number of component per element (for instance, 3 for vector with 3 floats)
 		 * @param usage attribute usage definition, for example: GL_STATIC_DRAW
 		 */
-		void addVertexAttribute(const std::string& id, GLenum type, unsigned int numComponents, GLenum usage);
+		void addVertexAttribute(const std::string& id, VkFormat format);
 
 		/**
 		 * @param id name of the vertex attribute

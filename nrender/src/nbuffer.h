@@ -1,10 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "nglutils.h"
-
-// External Includes
-#include <GL/glew.h>
+#include "vulkan/vulkan_core.h"
 
 namespace opengl
 {
@@ -17,45 +14,26 @@ namespace opengl
 	class Buffer
 	{
 	public:
-		/**
-		 * Default constructor
-		 */
-		Buffer();
-
+		Buffer() = default;
 		/**
 		 * Default destructor
 		 */
-		virtual ~Buffer();
+		virtual ~Buffer() {}
 
 		// Don't allow copy, TODO: implement copy
 		Buffer(const Buffer& other) = delete;
 		Buffer& operator=(const Buffer& other) = delete;
 
-		/**
-		 * Override this method in a derived class to specify the buffer type
-		 * for example: GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER etc
-		 * @return this buffer's OpenGL type
-		 */
-		virtual GLenum getBufferType() const = 0;
+		VkBuffer getBuffer() const { return mBuffer; }
 
-		/**
-		* @return the id associated with this buffer on the GPU
-		*/
-		GLuint getId() const							{ return mId; }
-
-		/**
-		* binds this vertex buffer on the GPU for subsequent GPU calls
-		*/
-		void bind() const;
-
-		/**
-		* unbinds this vertex buffer on the GPU for subsequent GPU calls
-		*/
-		void unbind() const;
+	protected:
+		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
 
 	private:
-		// Buffer GPU ID
-		GLuint					mId = 0;
+		size_t			mCurCapacity = 0;				// Amount of memory reserved
+		size_t			mCurSize = 0;				// defines the number of points in the buffer
+		VkBuffer		mBuffer = nullptr;
+		VkDeviceMemory	mMemory = nullptr;
 	};
 
 } // opengl

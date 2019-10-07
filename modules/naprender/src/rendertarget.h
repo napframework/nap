@@ -16,6 +16,15 @@ namespace opengl
 
 namespace nap
 {
+	enum class ERenderTargetFormat
+	{
+//		Backbuffer,		///< The current native format of the color backbuffer
+		RGBA8,			///< RGBA8 4 components, 8 bytes per component
+		RGB8,			///< RGB8 3 components, 8 bytes per component
+		R8,				///< R8	1 components, 8 bytes per component
+		Depth			///< Depth Texture used for binding to depth buffer
+	};
+
 	/**
 	 * A resource that is used to render objects to an off screen surface (set of textures).
 	 * This objects requires a link to a color and depth texture and internally manages an opengl render target.

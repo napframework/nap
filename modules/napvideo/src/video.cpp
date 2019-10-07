@@ -130,6 +130,7 @@ extern "C"
 	#include <libavformat/avformat.h>
 	#include <libavutil/pixfmt.h>
 	#include "libswresample/swresample.h"
+#include "rendertarget.h"
 }
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
@@ -1072,7 +1073,7 @@ namespace nap
 		mYTexture = std::make_unique<RenderTexture2D>();
 		mYTexture->mWidth = yWidth;
 		mYTexture->mHeight = yHeight;
-		mYTexture->mFormat = RenderTexture2D::EFormat::R8;
+		mYTexture->mFormat = ERenderTargetFormat::R8;
 		mYTexture->mParameters = parameters;
 		if (!mYTexture->init(errorState))
 			return false;
@@ -1080,7 +1081,7 @@ namespace nap
 		mUTexture = std::make_unique<RenderTexture2D>();
 		mUTexture->mWidth = uvWidth;
 		mUTexture->mHeight = uvHeight;
-		mUTexture->mFormat = RenderTexture2D::EFormat::R8;
+		mUTexture->mFormat = ERenderTargetFormat::R8;
 		mUTexture->mParameters = parameters;
 		if (!mUTexture->init(errorState))
 			return false;
@@ -1088,7 +1089,7 @@ namespace nap
 		mVTexture = std::make_unique<RenderTexture2D>();
 		mVTexture->mWidth = uvWidth;
 		mVTexture->mHeight = uvHeight;
-		mVTexture->mFormat = RenderTexture2D::EFormat::R8;
+		mVTexture->mFormat = ERenderTargetFormat::R8;
 		mVTexture->mParameters = parameters;
 		if (!mVTexture->init(errorState))
 			return false;

@@ -25,7 +25,7 @@ namespace opengl
 
 
 	void VertexArrayObject::bind()
-	{
+	{/*
 		void* context = opengl::getCurrentContext();
 
 		ContextSpecificStateMap::const_iterator state = mContextSpecificState.find(context);
@@ -72,6 +72,7 @@ namespace opengl
 		{
 			glBindVertexArray(state->second);
 		}
+		*/
 	}
 
 

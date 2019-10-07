@@ -30,7 +30,7 @@ namespace nap
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
 		* of a mesh match the vertex attributes of a shader.
 		*/
-		bool isValid() const													{ return mVAOHandle.isValid(); }
+		bool isValid() const													{ return mPipeline != nullptr; }
 
 		/**
 		 * @return The mesh object used to create this object.
@@ -66,6 +66,8 @@ namespace nap
 		 */
 		void unbind();
 
+		VkPipeline getPipeline() { return mPipeline; }
+
 	protected:
 		/**
 		 * Constructor
@@ -73,12 +75,13 @@ namespace nap
 		 * @param materialInstance the material the mesh is rendered with
 		 * @param vaoHandle issued by the render service based on mesh / material combination
 		 */
-		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle);
+		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, VkPipelineLayout layout, VkPipeline pipeline);
 
 	private:
 		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance
 		IMesh*				mMesh = nullptr;				///< Mesh
-		VAOHandle			mVAOHandle;						///< Vertex Array Object handle, acquired from the RenderService
+		VkPipelineLayout	mPipelineLayout = nullptr;
+		VkPipeline			mPipeline = nullptr;
 	};
 
 }

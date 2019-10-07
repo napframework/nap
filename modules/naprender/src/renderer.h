@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "glwindow.h"
+#include "vulkan_fwd.h"
 
 // External Includes
 #include <rtti/rtti.h>
@@ -63,25 +64,17 @@ namespace nap
 		 */
 		void shutdown();
 
-		/**
-		 * Get the primary window (i.e. the window that was used to init against)
-		 */
-		GLWindow& getPrimaryWindow()						{ return *mPrimaryWindow; }
-
-		/**
-		 *	@return the id (name) of the primary window
-		 */
-		const std::string& getPrimaryWindowID()	const		{ return mPrimaryWindowID; }
+		VkPhysicalDevice getPhysicalDevice() { return mPhysicalDevice; }
+		VkDevice getDevice() { return mDevice; }
+		VkCommandPool getCommandPool() { return mCommandPool; }
 
 	private:
-		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.
-		std::string					mPrimaryWindowID;		///< When a RenderWindow is bound to the primary window, this contains the ID of the RenderWindow
-		RendererSettings			mSettings;				///< If high dpi render mode is enabled
-
-		/**
-		 * Creates the primary render window which is always available
-		 * By default this window is hidden and not synchronized to the display refresh rate
-		 */
-		bool createPrimaryWindow(utility::ErrorState& error);
+		RendererSettings				mSettings;				///< If high dpi render mode is enabled
+		VkInstance						mInstance = nullptr;
+		VkDebugReportCallbackEXT		mDebugCallback = nullptr;
+		VkPhysicalDevice				mPhysicalDevice = nullptr;
+		VkDevice						mDevice = nullptr;
+		VkCommandPool					mCommandPool = nullptr;
+		unsigned int					mGraphicsQueueIndex = -1;
 	};
 }
