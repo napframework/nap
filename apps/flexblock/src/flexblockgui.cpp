@@ -2682,6 +2682,15 @@ namespace nap
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
 				if (mProps.mAdvancedMotorInterface)
 				{
+					bool dig_pin = mMotorController->getDigitalPin(i);
+					if (ImGui::Checkbox("Digital Pin", &dig_pin))
+					{
+						mMotorController->setDigitalPin(i, dig_pin);
+					}
+				}
+
+				if (mProps.mAdvancedMotorInterface)
+				{
 					if (ImGui::InputInt("Position", &req_pos, 1, 50))
 					{
 						mMotorController->setPosition(i, req_pos);

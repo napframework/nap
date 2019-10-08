@@ -79,6 +79,7 @@ typedef struct PACKED
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
+	uint32_t	mHardwareSetup;
 	uint32_t	mProgramCommands;
 } MAC_400_OUTPUTS;
 
@@ -86,7 +87,7 @@ typedef struct PACKED
 /**
  * IO Data received from slave, acts as a memory lookup into PDO map
  * Needs to match the Cyclic Data Read setup in MacTalk!
- */
+ */		
 typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
@@ -129,8 +130,8 @@ namespace nap
 			sdoWrite(index, 0x2012, 0x04, false, sizeof(mResetPositionValue), &mResetPositionValue);
 
 			// Force motor to requested position.
-			control_bits |= 1UL << 6;
-			control_bits |= 0x0 << 8;
+			control_bits |= 1UL << 6;				//< Set 6th bit
+			control_bits &= ~(1UL << 8);			//< Clear 8th bit
 		}
 
 		// Write control bits
@@ -184,6 +185,7 @@ namespace nap
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
+			mac_outputs->mHardwareSetup = motor_output->mHardwareMode;
 
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
@@ -355,6 +357,20 @@ namespace nap
 	}
 
 
+	void MACController::setDigitalPin(int index, bool value)
+	{
+		assert(index < getSlaveCount());
+		mOutputs[index]->setDigitalPin(value);
+	}
+
+
+	bool MACController::getDigitalPin(int index) const
+	{
+		assert(index < getSlaveCount());
+		return mOutputs[index]->getDigitalPin();
+	}
+
+
 	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
 		if (started())
@@ -459,6 +475,20 @@ namespace nap
 	{
 		uint32 cmode = mRunMode;
 		return static_cast<MACController::EMotorMode>(cmode);
+	}
+
+
+	void MacOutputs::setDigitalPin(bool value)
+	{
+		// Toggle 8th bit of hardware setup based on given value
+		value ? mHardwareMode |= 1UL << 8 : mHardwareMode &= ~(1UL << 8);
+	}
+
+
+	bool MacOutputs::getDigitalPin() const
+	{
+		// Read 8th bit of hardware setup
+		return ((mHardwareMode >> 8) & 1U) > 0;
 	}
 
 
