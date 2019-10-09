@@ -2682,10 +2682,10 @@ namespace nap
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
 				if (mProps.mAdvancedMotorInterface)
 				{
-					bool dig_pin = mMotorController->getDigitalPin(i);
+					bool dig_pin = mMotorController->getDigitalPin(i,0);
 					if (ImGui::Checkbox("Digital Pin", &dig_pin))
 					{
-						mMotorController->setDigitalPin(i, dig_pin);
+						mMotorController->setDigitalPin(i, 0, dig_pin);
 					}
 				}
 

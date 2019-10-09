@@ -79,7 +79,7 @@ typedef struct PACKED
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
-	uint32_t	mHardwareSetup;
+	uint32_t	mModuleOutputs;
 	uint32_t	mProgramCommands;
 } MAC_400_OUTPUTS;
 
@@ -185,7 +185,7 @@ namespace nap
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
-			mac_outputs->mHardwareSetup = motor_output->mHardwareMode;
+			mac_outputs->mModuleOutputs = motor_output->mModuleOutputs;
 
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
@@ -357,17 +357,17 @@ namespace nap
 	}
 
 
-	void MACController::setDigitalPin(int index, bool value)
+	void MACController::setDigitalPin(int index, int pinIndex, bool value)
 	{
 		assert(index < getSlaveCount());
-		mOutputs[index]->setDigitalPin(value);
+		mOutputs[index]->setDigitalPin(pinIndex, value);
 	}
 
 
-	bool MACController::getDigitalPin(int index) const
+	bool MACController::getDigitalPin(int index, int pinIndex) const
 	{
 		assert(index < getSlaveCount());
-		return mOutputs[index]->getDigitalPin();
+		return mOutputs[index]->getDigitalPin(pinIndex);
 	}
 
 
@@ -478,17 +478,17 @@ namespace nap
 	}
 
 
-	void MacOutputs::setDigitalPin(bool value)
+	void MacOutputs::setDigitalPin(int pinIndex, bool value)
 	{
-		// Toggle 8th bit of hardware setup based on given value
-		value ? mHardwareMode |= 1UL << 8 : mHardwareMode &= ~(1UL << 8);
+		assert(pinIndex < 2);
+		value ? mModuleOutputs |= 1UL << pinIndex : mModuleOutputs &= ~(1UL << pinIndex);
 	}
 
 
-	bool MacOutputs::getDigitalPin() const
+	bool MacOutputs::getDigitalPin(int pinIndex) const
 	{
-		// Read 8th bit of hardware setup
-		return ((mHardwareMode >> 8) & 1U) > 0;
+		assert(pinIndex < 2);
+		return ((mModuleOutputs >> pinIndex) & 1U) > 0;
 	}
 
 
@@ -544,3 +544,4 @@ namespace nap
 		return (static_cast<float>(mActualTorque) / sTorqueNom) * 100.0f;
 	}
 }
+	
