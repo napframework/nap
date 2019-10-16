@@ -13,8 +13,9 @@ namespace nap
 	using OSCArgumentList = std::vector<std::unique_ptr<OSCArgument>>;
 
 	/**
-	 * A generic OSC event. An OSC event has an address and a set of arguments (values) associated with it.
+	 * Represents a generic OSC event. An OSC event has an address and a set of arguments (values) associated with it.
 	 * This event can be constructed by a client to be send over or evaluated when received.
+	 * When constructing this event, the given address must start with a '/' character!
 	 * Use the array [] overload to access the individual osc arguments.
 	 */
 	class NAPAPI OSCEvent : public Event
