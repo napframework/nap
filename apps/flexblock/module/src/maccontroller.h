@@ -200,6 +200,26 @@ namespace nap
 		void clearErrors(int index);
 
 		/**
+		 * Sets the digital output pin to the requested value.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
+		 * This call asserts if the pin index exceeds 1.
+		 * @param index motor index, 0 = first slave
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @param new value of output pin
+		 */
+		void setDigitalPin(int index, int pinIndex, bool value);
+
+		/**
+		 * Returns the value currently associated with a digital output pin.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins. 
+		 * This call asserts if the pin index exceeds 1.
+		 * @param index motor index, 0 = first slave
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @return if the digital pin is active
+		 */
+		bool getDigitalPin(int index, int pinIndex) const;
+
+		/**
 		 * Resets the position of all motors to the given value.
 		 * This call needs to restart the device in order to update motor state.
 		 * Do not call this function every frame!
@@ -391,11 +411,28 @@ namespace nap
 		 */
 		MACController::EMotorMode getTargetMode(MACController::EMotorMode mode) const;
 
+		/**
+		 * Sets the digital output pin to the requested value.
+		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @param new value of output pin
+		 */
+		void setDigitalPin(int pinIndex, bool value);
+
+		/**
+		 * Return if a digital pin on the module is activated. 
+		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @return if the digital pin is active
+		 */
+		bool getDigitalPin(int pinIndex) const;
+
 	private:
 		std::atomic<nap::int32>		mTargetPosition = { 0 };	///< New requested motor position
 		std::atomic<nap::int32>		mVelocityCNT = { 0 };		///< Motor velocity
 		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
 		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
+		std::atomic<nap::uint32>	mModuleOutputs = { 0 };		///< Module digital output
 		std::atomic<nap::uint32>	mRunMode = { 0 };
 
 		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping

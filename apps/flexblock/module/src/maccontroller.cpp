@@ -79,6 +79,7 @@ typedef struct PACKED
 	uint32_t	mAcceleration;
 	uint32_t	mTorque;
 	uint32_t	mAnalogueInput;
+	uint32_t	mModuleOutputs;
 	uint32_t	mProgramCommands;
 } MAC_400_OUTPUTS;
 
@@ -86,7 +87,7 @@ typedef struct PACKED
 /**
  * IO Data received from slave, acts as a memory lookup into PDO map
  * Needs to match the Cyclic Data Read setup in MacTalk!
- */
+ */		
 typedef struct PACKED
 {
 	uint32_t	mOperatingMode;
@@ -129,8 +130,8 @@ namespace nap
 			sdoWrite(index, 0x2012, 0x04, false, sizeof(mResetPositionValue), &mResetPositionValue);
 
 			// Force motor to requested position.
-			control_bits |= 1UL << 6;
-			control_bits |= 0x0 << 8;
+			control_bits |= 1UL << 6;				//< Set 6th bit
+			control_bits &= ~(1UL << 8);			//< Clear 8th bit
 		}
 
 		// Write control bits
@@ -184,6 +185,7 @@ namespace nap
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
+			mac_outputs->mModuleOutputs = motor_output->mModuleOutputs;
 
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
@@ -355,6 +357,20 @@ namespace nap
 	}
 
 
+	void MACController::setDigitalPin(int index, int pinIndex, bool value)
+	{
+		assert(index < getSlaveCount());
+		mOutputs[index]->setDigitalPin(pinIndex, value);
+	}
+
+
+	bool MACController::getDigitalPin(int index, int pinIndex) const
+	{
+		assert(index < getSlaveCount());
+		return mOutputs[index]->getDigitalPin(pinIndex);
+	}
+
+
 	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
 		if (started())
@@ -462,6 +478,20 @@ namespace nap
 	}
 
 
+	void MacOutputs::setDigitalPin(int pinIndex, bool value)
+	{
+		assert(pinIndex < 2);
+		value ? mModuleOutputs |= 1UL << pinIndex : mModuleOutputs &= ~(1UL << pinIndex);
+	}
+
+
+	bool MacOutputs::getDigitalPin(int pinIndex) const
+	{
+		assert(pinIndex < 2);
+		return ((mModuleOutputs >> pinIndex) & 1U) > 0;
+	}
+
+
 	nap::MACController::EMotorMode MacInputs::getActualMode() const
 	{
 		uint32 mode = mActualMode;
@@ -514,3 +544,4 @@ namespace nap
 		return (static_cast<float>(mActualTorque) / sTorqueNom) * 100.0f;
 	}
 }
+	
