@@ -63,7 +63,7 @@ namespace nap
 		/**
 		 * Mapping of ethercat motors to flexblock motors
 		 */
-		std::vector<int> mMotorMapping ={ 5, 1, 2, 6, 3, 7, 0, 4 };
+		std::vector<int> mMotorMapping = { 5, 1, 2, 6, 3, 7, 0, 4 };
 
 		double mMotorStepsPerMeter = 12.73239f; ///< Property: 'Counts per meter' value that we need to calculate how much steps we need the motor(s) to make
 
@@ -82,6 +82,8 @@ namespace nap
 		float mOverrideMinimum = 0.0f; ///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
 
 		bool mEnableSerial = false;///< Property: 'Use Serial' use serial or not
+
+		int mFlexFrequency = 1000;
 
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -267,6 +269,8 @@ namespace nap
 		float mSinusAmplitude = 0.0f;
 
 		float mSinusFrequency = 0.0f;
+
+		int mFlexFrequency = 1000;
 
 		double mTime = 0.0;
 

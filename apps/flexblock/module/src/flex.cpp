@@ -9,14 +9,37 @@
 
 namespace nap
 {
-	Flex::Flex(FlexBlockShape* flexblockShape)
+	Flex::Flex(
+		FlexBlockShape* flexblockShape,
+		int frequency,
+		float overrideMinimum,
+		float slackRange,
+		float overrideRange,
+		float sinusAmplitude,
+		float sinusFrequency,
+		float motorStepsPerMeter,
+		float motorStepOffset,
+		bool enableMacController,
+		MACController* macController,
+		std::vector<int> motorMapping)
 	{
 		mObjShape = flexblockShape;
-		mMotorInput = std::vector<float>(8);
 
 		// 
-		mFrequency = 200;
+		mFrequency = frequency;
 		mObjShape = flexblockShape;
+		mOverrideMinimum = overrideMinimum;
+		mOverrideRange = overrideRange;
+		mSlackRange = slackRange;
+		mSinusAmplitude = sinusAmplitude;
+		mSinusFrequency = sinusFrequency;
+		mMotorStepsPerMeter = motorStepsPerMeter;
+		mMotorStepOffset = motorStepOffset;
+		mEnableMacController = enableMacController;
+		mMacController = macController;
+		mMotorMapping = motorMapping;
+
+		//
 		mCountInputs = mObjShape->mMotorCount;
 
 		//
@@ -79,7 +102,6 @@ namespace nap
 		mElementIndices = std::vector<int>(2);
 		mElementIndices[0] = mElementsObject.size();
 		mElementIndices[1] = mElementsObject.size() + mElementsObject2Frame.size();
-		mOverride = std::vector<float>(4); 
 
 		// concat points
 		concatPoints();
@@ -129,10 +151,21 @@ namespace nap
 
 	void Flex::setMotorInput(const std::vector<float>& inputs)
 	{
-		std::lock_guard<std::mutex> l(mMotorInputMutex);
-
-		mMotorInput = inputs;
+		assert(inputs.size() == mMotorInput.size());
+		for (int i = 0; i < inputs.size(); i++)
+		{
+			mMotorInput[i] = inputs[i];
+		}
 	} 
+
+	void Flex::setMotorOverrides(const std::vector<float>& overrides)
+	{
+		assert(overrides.size() == mMotorOverrides.size());
+		for (int i = 0; i < overrides.size(); i++)
+		{
+			mMotorOverrides[i] = overrides[i];
+		}
+	}
 
 	void Flex::setSlack(const float value)
 	{
@@ -142,14 +175,19 @@ namespace nap
 
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
-		std::lock_guard<std::mutex> l(mMotorInputMutex);
-
-		outputs = mMotorInput;
+		for (int i = 0; i < mMotorInput.size(); i++)
+		{
+			outputs[i] = mMotorInput[i];
+		}
 	}
 
 
 	void Flex::update()
 	{
+		auto sleepTime = std::chrono::milliseconds(1000 / mFrequency);
+		auto prevTime = std::chrono::steady_clock::now();
+		double time = 0.0;
+
 		while (mIsRunning)
 		{
 			std::vector<float> inputs(8);
@@ -239,15 +277,81 @@ namespace nap
 			concatPoints();
 			calcElements();
 
-			/*
-			float error = 0.0f;
-			for (int i = 0; i < mCountInputs - 1; i++)
-			{
-				error += mElementsLengthDelta[i] * 1000.0f;
-			}
-			*/
+			// now handle motors
+			// get copy of the ropelengths
+			const std::vector<float> ropeLengths = getRopeLengths();
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / mFrequency));
+			// copy them to motorsteps
+			std::vector<double> motorSteps(8);
+			for (int i = 0; i < ropeLengths.size(); i++)
+			{
+				motorSteps[i] = ropeLengths[i];
+			}
+
+			// overrides
+			for (int i = 0; i < mMotorOverrides.size(); i++)
+			{
+				motorSteps[i] += mMotorOverrides[i] + mOverrideMinimum;
+			}
+
+			// sinus
+			auto timeNow = std::chrono::steady_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(timeNow - prevTime).count();
+			prevTime = timeNow;
+			time += (double) ((double)elapsed / 100000.0);
+			float sinusValue = (((cos(time * mSinusFrequency) * -1.0f) * 0.5f) + 0.5f) * mSinusAmplitude;
+
+			//printf("%f\n", time);
+
+			for (int i = 0; i < motorSteps.size(); i++)
+			{
+				motorSteps[i] += sinusValue;
+			}
+
+			// convert meters to motorsteps
+			for (int i = 0; i < motorSteps.size(); i++)
+			{
+				double a = motorSteps[i];
+				a *= mMotorStepsPerMeter;
+				a -= mMotorStepOffset;
+				motorSteps[i] = a;
+			}
+
+			//
+			if (mEnableMacController)
+			{
+				if (mMacController->isRunning())
+				{
+					bool allSlavesOperational = true;
+					for (int i = 0; i < mMacController->getSlaveCount(); i++)
+					{
+						if (mMacController->getSlaveState(i) != EtherCATMaster::ESlaveState::Operational)
+						{
+							allSlavesOperational = false;
+							printf("Slave %i not operational! Stopping MACController... \n", i);
+							mMacController->stop();
+							break;
+						}
+					}
+
+					if (allSlavesOperational)
+					{
+						for (int i = 0; i < mMacController->getSlaveCount(); i++)
+						{
+							if (i < mMotorMapping.size())
+							{
+								int mapped = mMotorMapping[i];
+								if (mapped < mMacController->getSlaveCount())
+								{
+									mMacController->setPosition(i, motorSteps[mapped]);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			std::this_thread::sleep_for(sleepTime);
 		}
 	}
 

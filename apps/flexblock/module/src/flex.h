@@ -8,6 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <atomic>
+#include <maccontroller.h>
 
 #include "flexblockdata.h"
 
@@ -16,7 +17,19 @@ namespace nap
 	class Flex
 	{
 	public:
-		Flex(FlexBlockShape* flexblockShape);
+		Flex(FlexBlockShape* flexblockShape,
+			int frequency,
+			float overrideMinimum,
+			float slackRange,
+			float overrideRange,
+			float sinusAmplitude,
+			float sinusFrequency,
+			float motorStepsPerMeter,
+			float motorStepOffset,
+			bool enableMacController,
+			MACController* macController,
+			std::vector<int> motorMapping);
+
 		~Flex();
 
 		/**
@@ -31,6 +44,12 @@ namespace nap
 		 * @param value slack value, typically between -0.5 and 0.5
 		 */
 		void setSlack(const float value);
+
+		/**
+		 * 
+		 * 
+		 */
+		void setMotorOverrides(const std::vector<float>& inputs);
 
 		/**
 		 * Starts the flex logic thread
@@ -140,7 +159,6 @@ namespace nap
 
         std::atomic_bool mIsRunning = { false };
 		std::thread mUpdateThread;
-		std::mutex mMotorInputMutex;
 
 		float mForceObject			= 10.0f;
 		float mForceObjectSpring	= 0.02f;
@@ -176,13 +194,27 @@ namespace nap
 		glm::vec3 mPointForceCorr;
 		std::vector<int> mElementIndices;
 
-		std::vector<float> mOverride;
-		float mSlack = 0.0f;
-
 		float mMotorSpd = 0.0f;
 		float mMotorAcc = 0.0f;
 
 		std::vector<float> mElementsLengthDelta;
-		std::vector<float> mMotorInput;
+
+		// atomics
+		std::atomic<float> mSlack = 0.0f;
+		std::vector<std::atomic<float>> mMotorInput = std::vector<std::atomic<float>>(8);
+		std::vector<std::atomic<float>> mMotorOverrides = std::vector<std::atomic<float>>(8);
+
+		//
+		float mOverrideMinimum;
+		float mSlackRange;
+		float mOverrideRange;
+		float mSinusAmplitude;
+		float mSinusFrequency;
+
+		float mMotorStepsPerMeter;
+		float mMotorStepOffset;
+		bool mEnableMacController = false;
+		MACController* mMacController = nullptr;
+		std::vector<int> mMotorMapping;
 	};
 }

@@ -81,9 +81,22 @@ namespace nap
 		mOverrideRange = resource->mOverrideRange;
 		mMotorMapping = resource->mMotorMapping;
 		mEnableSerial = resource->mEnableSerial;
+		mFlexFrequency = resource->mFlexFrequency;
 		
 		// create flex logic
-		mFlexLogic = std::make_unique<Flex>( resource->mFlexBlockShape.get() );
+		mFlexLogic = std::make_unique<Flex>( 
+			resource->mFlexBlockShape.get(), 
+			mFlexFrequency,
+			mOverrideMinimum,
+			mSlackRange, 
+			mOverrideRange,
+			mSinusAmplitude,
+			mSinusFrequency,
+			mMotorStepsPerMeter,
+			mMotorStepOffset,
+			mEnableMacController,
+			mMacController,
+			mMotorMapping);
 		
 		// start flex logic thread
 		mFlexLogic->start();
@@ -146,77 +159,5 @@ namespace nap
 
 		// update motors of flex algorithm
 		mFlexLogic->setMotorInput(mMotorInputs);
-
-		// get the ropelengths
-		const std::vector<float> ropeLengths = mFlexLogic->getRopeLengths();
-
-		// copy them to motorsteps
-		std::vector<double> motorSteps(8);
-		for (int i = 0; i < ropeLengths.size(); i++)
-		{
-			motorSteps[i] = ropeLengths[i];
-		}
-		
-		// overrides
-		for (int i = 0; i < mMotorOverrides.size(); i++)
-		{
-			motorSteps[i] += mMotorOverrides[i] + mOverrideMinimum;
-		}
-
-		// sinus
-		mTime += deltaTime;
-		float sinusValue = (((cos(mTime * mSinusFrequency) * -1.0f) * 0.5f) + 0.5f) * mSinusAmplitude;
-
-		for (int i = 0; i < motorSteps.size(); i++)
-		{
-			motorSteps[i] += sinusValue;
-		}
-
-		// convert meters to motorsteps
-		for (int i = 0; i < motorSteps.size(); i++)
-		{
-			double a = motorSteps[i]; 
-			a *= mMotorStepsPerMeter; 
-			a -= mMotorStepOffset; 
-			motorSteps[i] = a;
-		}
-
-		// remap motorsteps
-		mMotorSteps = std::vector<double>(8);
-		for (int i = 0; i < motorSteps.size(); i++)
-		{
-			mMotorSteps[i] = motorSteps[i];
-		}
-
-		//
-		if (mEnableMacController)
-		{
-			bool allSlavesOperational = true;
-			for (int i = 0; i < mMacController->getSlaveCount(); i++)
-			{
-				if (mMacController->getSlaveState(i) != EtherCATMaster::ESlaveState::Operational)
-				{
-					allSlavesOperational = false;
-					printf("Slave %i not operational! Disabling MACController... \n", i);
-					mMacController->stop();
-					break;
-				}
-			}
-
-			if (allSlavesOperational)
-			{
-				for (int i = 0; i < mMacController->getSlaveCount(); i++)
-				{
-					if (i < mMotorMapping.size())
-					{
-						int mapped = mMotorMapping[i];
-						if (mapped < mMacController->getSlaveCount())
-						{
-							mMacController->setPosition(i, mMotorSteps[mapped]);
-						}
-					}
-				}
-			}
-		}
 	}
 }
