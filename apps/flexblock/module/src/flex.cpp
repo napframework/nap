@@ -21,7 +21,8 @@ namespace nap
 		float motorStepOffset,
 		bool enableMacController,
 		MACController* macController,
-		std::vector<int> motorMapping)
+		std::vector<int> motorMapping,
+		bool enableDigitalPin)
 	{
 		mObjShape = flexblockShape;
 
@@ -38,6 +39,7 @@ namespace nap
 		mEnableMacController = enableMacController;
 		mMacController = macController;
 		mMotorMapping = motorMapping;
+		mEnableDigitalPin = enableDigitalPin;
 
 		//
 		mCountInputs = mObjShape->mMotorCount;
@@ -344,6 +346,11 @@ namespace nap
 								if (mapped < mMacController->getSlaveCount())
 								{
 									mMacController->setPosition(i, motorSteps[mapped]);
+
+									if (mEnableDigitalPin)
+									{
+										mMacController->setDigitalPin(i, 0, mMacController->getActualPosition(i) < mMacController->getPosition(i));
+									}
 								}
 							}
 						}

@@ -31,6 +31,9 @@ RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rt
 	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor Mapping", &nap::FlexBlockComponent::mMotorMapping, nap::rtti::EPropertyMetaData::Default)
+
+	RTTI_PROPERTY("Flex Thread Frequency", &nap::FlexBlockComponent::mFlexFrequency, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Enable Digital Pin", &nap::FlexBlockComponent::mEnableDigitalPin, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -82,7 +85,8 @@ namespace nap
 		mMotorMapping = resource->mMotorMapping;
 		mEnableSerial = resource->mEnableSerial;
 		mFlexFrequency = resource->mFlexFrequency;
-		
+		mEnableDigitalPin = resource->mEnableDigitalPin;
+
 		// create flex logic
 		mFlexLogic = std::make_unique<Flex>( 
 			resource->mFlexBlockShape.get(), 
@@ -96,7 +100,8 @@ namespace nap
 			mMotorStepOffset,
 			mEnableMacController,
 			mMacController,
-			mMotorMapping);
+			mMotorMapping,
+			mEnableDigitalPin);
 		
 		// start flex logic thread
 		mFlexLogic->start();

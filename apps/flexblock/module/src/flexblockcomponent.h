@@ -85,6 +85,8 @@ namespace nap
 
 		int mFlexFrequency = 1000;
 
+		bool mEnableDigitalPin = false;
+
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
@@ -277,5 +279,7 @@ namespace nap
 		MACController* mMacController;
 
 		bool mEnableMacController;
+
+		bool mEnableDigitalPin;
 	};
 }

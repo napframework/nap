@@ -28,7 +28,8 @@ namespace nap
 			float motorStepOffset,
 			bool enableMacController,
 			MACController* macController,
-			std::vector<int> motorMapping);
+			std::vector<int> motorMapping,
+			bool enableDigitalPin);
 
 		~Flex();
 
@@ -214,6 +215,7 @@ namespace nap
 		float mMotorStepsPerMeter;
 		float mMotorStepOffset;
 		bool mEnableMacController = false;
+		bool mEnableDigitalPin = false;
 		MACController* mMacController = nullptr;
 		std::vector<int> mMotorMapping;
 	};
