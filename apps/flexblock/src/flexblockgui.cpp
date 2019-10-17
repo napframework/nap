@@ -2658,6 +2658,17 @@ namespace nap
 		}
 		showTip("Calibration mode means that the Torque, Acceleration and Velocity calibration values of the MACController will be used");
 
+		ImGui::SameLine();
+		if (mProps.mCalibrationMode)
+		{
+			if (ImGui::Checkbox("Clamp Meters", &mProps.mClampMetersInCalibrationMode))
+			{
+
+			}
+			showTip("When clamped, meters cannot go lower then zero");
+		}
+		
+
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
@@ -2679,6 +2690,7 @@ namespace nap
 				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
 				ImGui::PushID(i);
 
+
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
 				if (mProps.mAdvancedMotorInterface)
 				{
@@ -2687,38 +2699,26 @@ namespace nap
 					{
 						mMotorController->setDigitalPin(i, 0, dig_pin);
 					}
-				}
 
-				if (mProps.mAdvancedMotorInterface)
-				{
 					if (ImGui::InputInt("Position", &req_pos, 1, 50))
 					{
 						mMotorController->setPosition(i, req_pos);
 					}
-				}
 
-				if (mProps.mAdvancedMotorInterface)
-				{
 					int req_vel = mMotorController->getVelocity(i);
 					if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
 					{
 						req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
 						mMotorController->setVelocity(i, static_cast<float>(req_vel));
 					}
-				}
 
-				if (mProps.mAdvancedMotorInterface)
-				{
 					int req_tor = mMotorController->mTorque;
 					if (ImGui::InputInt("Torque", &req_tor, 1, 5))
 					{
 						req_tor = math::clamp<int>(req_tor, 0, 300);
 						mMotorController->setTorque(i, static_cast<float>(req_tor));
 					}
-				}
-
-				if (mProps.mAdvancedMotorInterface)
-				{
+				
 					int req_acc = mMotorController->mAcceleration;
 					if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
 					{
@@ -2726,23 +2726,19 @@ namespace nap
 						mMotorController->setAcceleration(i, req_acc);
 						mMotorController->mAcceleration = req_acc;
 					}
-				}
 
-				// meters
-				//  129473,415472573 = 1 meter
-				float target_meter = mTargetMeters[i];
-				if (mProps.mAdvancedMotorInterface)
-				{
+					// meters
+					//  129473,415472573 = 1 meter
+					float target_meter = mTargetMeters[i];
 					if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
 					{
 						int32 newCounts = (int32)((double)target_meter * counts);
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
-				}
-
-				if (!mProps.mAdvancedMotorInterface)
+				}else if (!mProps.mAdvancedMotorInterface)
 				{
+					float target_meter = mTargetMeters[i];
 					if (ImGui::Button("Give Meter"))
 					{
 						target_meter = current_meters + 1.0f;
@@ -2808,7 +2804,8 @@ namespace nap
 					}
 				}
 
-				if (mProps.mCalibrationMode)
+				// clamp targetmeters
+				if (mProps.mCalibrationMode && mProps.mClampMetersInCalibrationMode)
 				{
 					if (mTargetMeters[i] < 0.0f)
 						mTargetMeters[i] = 0.0f;
