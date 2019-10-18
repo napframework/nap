@@ -2671,7 +2671,7 @@ namespace nap
 
 		ImGui::Separator();
 		std::vector<MacPosition> position_data;
-		mMotorController->getPositionData(position_data);
+		mMotorController->copyPositionData(position_data);
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mFlexBlock->getMotorMapping()[i] + 1).c_str()))
