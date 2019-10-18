@@ -95,9 +95,16 @@ namespace nap
 		// Destructor
 		virtual ~MACController();
 
+		/**
+		 * Set the position data for all the motors at once
+		 * @param newData new position motor data. Needs
+		 */
 		void setPositionData(const std::vector<MacPosition>& newData);
 
-		void getPositionData(std::vector<MacPosition>& outData);
+		/**
+		 * @param outData the current motor data stored in outData
+		 */
+		void copyPositionData(std::vector<MacPosition>& outData);
 
 		/**
 		 * Returns the actual position of a single motor. Does not perform an out of bounds check

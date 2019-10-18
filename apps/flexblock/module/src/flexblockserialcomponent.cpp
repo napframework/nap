@@ -86,9 +86,7 @@ namespace nap
 	void FlexBlockSerialComponentInstance::write(std::string data)
 	{
 		std::lock_guard<std::mutex> l(mWriteBufferMutex);
-
 		mWriteBuffer.emplace_back(data);
-
 		if (mWriteBuffer.size() > mMaxWriteBufferSize)
 		{
 			mWriteBuffer.erase(mWriteBuffer.begin()+ mMaxWriteBufferSize, mWriteBuffer.end());

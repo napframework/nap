@@ -339,7 +339,7 @@ namespace nap
 					if (allSlavesOperational)
 					{
 						std::vector<MacPosition> position_data;
-						mMacController->getPositionData(position_data);
+						mMacController->copyPositionData(position_data);
 
 						for (int i = 0; i < mMacController->getSlaveCount(); i++)
 						{
