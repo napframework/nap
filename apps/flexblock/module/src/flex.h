@@ -222,7 +222,7 @@ namespace nap
 		std::vector<float> mElementsLengthDelta;
 
 		// atomics
-		std::atomic<float> mSlack = 0.0f;
+		std::atomic<float> mSlack;
 		std::vector<std::atomic<float>> mMotorInput = std::vector<std::atomic<float>>(8);
 		std::vector<std::atomic<float>> mMotorOverrides = std::vector<std::atomic<float>>(8);
 		std::vector<std::atomic<float>> mMotorSteps = std::vector<std::atomic<float>>(8);
