@@ -158,7 +158,7 @@ namespace nap
 		{
 			mMotorInput[i] = inputs[i];
 		}
-	} 
+	}
 
 	void Flex::setMotorOverrides(const std::vector<float>& overrides)
 	{
@@ -174,6 +174,15 @@ namespace nap
 		mSlack = value;
 	}
 
+	void Flex::setSinusAmplitude(const float value)
+	{
+		mSinusAmplitude = value;
+	}
+
+	void Flex::setSinusFrequency(const float value)
+	{
+		mSinusFrequency = value;
+	}
 
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
@@ -251,10 +260,10 @@ namespace nap
 				for (int j = 0; j < objectElementIds1.size(); j++)
 				{
 					glm::vec3 force;
-					
+
 					getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds1[j], 0, force);
 					mPointForce += force;
-					
+
 					getObjectElementForceOfElement(objectElementIds1[j], -1, force);
 					mPointForceCorr += force;
 				}
@@ -273,7 +282,7 @@ namespace nap
 			// update position
 			for (int j = 0; j < mPointsObject.size(); j++)
 			{
-				mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f ;
+				mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f;
 			}
 
 			concatPoints();
@@ -300,7 +309,7 @@ namespace nap
 			auto timeNow = std::chrono::steady_clock::now();
 			auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(timeNow - prevTime).count();
 			prevTime = timeNow;
-			time += (double) ((double)elapsed / 100000.0);
+			time += (double)((double)elapsed / 100000.0);
 			float sinusValue = (((cos(time * mSinusFrequency) * -1.0f) * 0.5f) + 0.5f) * mSinusAmplitude;
 
 			//printf("%f\n", time);
@@ -319,11 +328,19 @@ namespace nap
 				motorSteps[i] = a;
 			}
 
-			//
-			if (true)
+			for (int i = 0; i < motorSteps.size(); i++)
 			{
+				mMotorSteps[i] = motorSteps[i];
+			}
+
+			//
+			if (mEnableMacController)
+			{
+				// are we running ?
 				if (mMacController->isRunning())
 				{
+					// check for all slaves to be operational and without errors
+					// if not, stop immediatly
 					bool allSlavesOperational = true;
 					for (int i = 0; i < mMacController->getSlaveCount(); i++)
 					{
@@ -336,23 +353,39 @@ namespace nap
 						}
 					}
 
+					// we are ok, continue
 					if (allSlavesOperational)
 					{
+						// Create the new position data array
 						std::vector<MacPosition> position_data;
 						mMacController->copyPositionData(position_data);
 
+						// check if we have as much slaves as motors
 						for (int i = 0; i < mMacController->getSlaveCount(); i++)
 						{
 							if (i < mMotorMapping.size())
 							{
+								// get the mapped motor index
 								int mapped = mMotorMapping[i];
 								if (mapped < mMacController->getSlaveCount())
 								{
+									// Update target position
 									position_data[i].setTargetPosition(motorSteps[mapped]);
-									
-									// TODO: This is potentially dangerous, use torque or comparison between actual position in frames with delta
-									// TODO: Doesn't this apply for the motor in general, so not only in the flexblock algorithm?
-									position_data[i].setDigitalPin(0, mMacController->getActualPosition(i) < position_data[i].mTargetPosition);
+
+									// when digital pin enable, only enable it when we are giving meters
+									// this occurs when targetmeters is higher then the motors curent position
+									if (mEnableDigitalPin)
+									{
+										double targetMeters = (double)position_data[i].mTargetPosition / mMotorStepsPerMeter;
+										double currentMeters = (double)mMacController->getActualPosition(i) / mMotorStepsPerMeter;
+
+										bool activateDigitalPin = targetMeters - currentMeters > 0.02;
+										if (activateDigitalPin != position_data[i].getDigitalPin(0))
+										{
+											position_data[i].setDigitalPin(0, activateDigitalPin);
+											//printf("%s\n", activateDigitalPin ? "on" : "off");
+										}
+									}
 								}
 							}
 						}
@@ -390,7 +423,7 @@ namespace nap
 	{
 		// Predicted force due to force on other point
 		int oppositePoint = mElementsObject[objectElementId][oppositeColumn];
-		
+
 		std::vector<int> suspensionElementIds;
 		getIdsOfSuspensionElementsOnPoint(oppositePoint, suspensionElementIds);
 
@@ -533,7 +566,7 @@ namespace nap
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
 		{
-			ropes.push_back(mElementsLength[i+1] + mSlack);
+			ropes.push_back(mElementsLength[i + 1] + mSlack);
 		}
 
 		return ropes;

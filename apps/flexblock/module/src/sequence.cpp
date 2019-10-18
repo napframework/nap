@@ -107,6 +107,7 @@ namespace nap
 			mDuration = time - mStartTime;
 		}
 
+
 		int Sequence::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if(time < mStartTime )

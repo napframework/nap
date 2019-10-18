@@ -131,6 +131,22 @@ namespace nap
 	}
 
 
+	void MACController::setPosition(int index, nap::int32 position)
+	{
+		assert(index < getSlaveCount());
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		mPositions[index].setTargetPosition(position);
+	}
+
+
+	int32 MACController::getPosition(int index) const
+	{
+		assert(index < getSlaveCount());
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		return mPositions[index].mTargetPosition;
+	}
+
+
 	void MACController::onPreOperational(void* slave, int index)
 	{
 		// Control bits, very important on startup
@@ -375,6 +391,21 @@ namespace nap
 	}
 
 
+	void MACController::setDigitalPin(int index, int pinIndex, bool value)
+	{
+		assert(index < getSlaveCount());
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		mPositions[index].setDigitalPin(pinIndex, value);
+	}
+
+
+	bool MACController::getDigitalPin(int index, int pinIndex) const
+	{
+		assert(index < getSlaveCount());
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		return mPositions[index].getDigitalPin(pinIndex);
+	}
+
 	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
 		if (started())
@@ -530,7 +561,7 @@ namespace nap
 	}
 
 
-	bool MacPosition::getDigitalPin(int pinIndex)
+	bool MacPosition::getDigitalPin(int pinIndex) const
 	{
 		assert(pinIndex < 2);
 		return ((mModuleOutputs >> pinIndex) & 1U) > 0;

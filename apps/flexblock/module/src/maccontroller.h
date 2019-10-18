@@ -96,15 +96,33 @@ namespace nap
 		virtual ~MACController();
 
 		/**
-		 * Set the position data for all the motors at once
+		 * Set the position data including digital pin information for all the motors at once.
+		 * This is the most efficient way to update motor position data.
 		 * @param newData new position motor data. Needs
 		 */
 		void setPositionData(const std::vector<MacPosition>& newData);
 
 		/**
-		 * @param outData the current motor data stored in outData
+		 * Copies all the motor position data into outData
+		 * @param outData the current motor data
 		 */
 		void copyPositionData(std::vector<MacPosition>& outData);
+
+		/**
+		 * Set the position of a single motor. Does not perform an out of bounds check.
+		 * Do not use this function if you want to update all the positions at once.
+		 * @param index motor index, 0 = first slave
+		 * @param position the new motor target position
+		 */
+		void setPosition(int index, nap::int32 position);
+
+		/**
+		 * Returns the requested motor position for the given slave.
+		 * Do not use this function if you want to get all the positions at once.
+		 * @param index motor index, 0 = first slave
+		 * @return the requested motor position
+		 */
+		int32 getPosition(int index) const;
 
 		/**
 		 * Returns the actual position of a single motor. Does not perform an out of bounds check
@@ -196,6 +214,26 @@ namespace nap
 		 * @param index the motor index to clear the errors for, 0 = first slave
 		 */
 		void clearErrors(int index);
+
+		/**
+		 * Sets the digital output pin to the requested value.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
+		 * This call asserts if the pin index exceeds 1.
+		 * @param index motor index, 0 = first slave
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @param new value of output pin
+		 */
+		void setDigitalPin(int index, int pinIndex, bool value);
+
+		/**
+		 * Returns the value currently associated with a digital output pin.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
+		 * This call asserts if the pin index exceeds 1.
+		 * @param index motor index, 0 = first slave
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @return if the digital pin is active
+		 */
+		bool getDigitalPin(int index, int pinIndex) const;
 
 		/**
 		 * Resets the position of all motors to the given value.
@@ -312,7 +350,7 @@ namespace nap
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;					///< List of all current motor positions
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;					///< List of all current motor positions
 		std::vector<MacPosition>					mPositions;
-		std::mutex									mPositionMutex;				///< Allows for synchronized setting of motor position
+		mutable std::mutex							mPositionMutex;				///< Allows for synchronized setting of motor position
 	};
 
 
@@ -396,7 +434,6 @@ namespace nap
 	struct NAPAPI MacPosition
 	{
 		MacPosition() = default;
-
 		MacPosition(nap::int32 position) { setTargetPosition(position); }
 
 		/**
@@ -413,10 +450,17 @@ namespace nap
 		 */
 		void setDigitalPin(int pinIndex, bool value);
 
-		bool getDigitalPin(int pinIndex);
+		/**
+		 * Returns the value currently associated with a digital output pin.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
+		 * This call asserts if the pin index exceeds 1.
+		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
+		 * @return if the digital pin is active
+		 */
+		bool getDigitalPin(int pinIndex) const;
 
-		nap::int32 mTargetPosition = 0;
-		nap::int32 mModuleOutputs  = 0;
+		nap::int32 mTargetPosition = 0;			///< Requested motor position
+		nap::int32 mModuleOutputs  = 0;			///< Requested module outputs (digital pin value)
 	};
 
 

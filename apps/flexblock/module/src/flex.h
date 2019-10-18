@@ -34,136 +34,157 @@ namespace nap
 		~Flex();
 
 		/**
-		 * Update motor speed [0..8]
-		 * @param index index of motor [0..8]
-		 * @param value motor input 0-1
-		 */
+		* Update motor speed [0..8]
+		* @param index index of motor [0..8]
+		* @param value motor input 0-1
+		*/
 		void setMotorInput(const std::vector<float>& inputs);
 
 		/**
-		 * Set slack
-		 * @param value slack value, typically between -0.5 and 0.5
-		 */
+		* Set slack
+		* @param value slack value, typically between -0.5 and 0.5
+		*/
 		void setSlack(const float value);
 
 		/**
-		 * 
-		 * 
-		 */
+		*/
+		void setSinusAmplitude(const float value);
+
+		/**
+		*/
+		void setSinusFrequency(const float value);
+
+		/**
+		*
+		*
+		*/
 		void setMotorOverrides(const std::vector<float>& inputs);
 
 		/**
-		 * Starts the flex logic thread
-		 */
+		* Starts the flex logic thread
+		*/
 		void start();
 
 		/**
-		 * Stops the flex logic thread
-		 */
+		* Stops the flex logic thread
+		*/
 		void stop();
 
 		/**
-		 * @return true if logic thread is running
-		 */
-		const bool getIsRunning() const  { return mIsRunning; }
+		* @return true if logic thread is running
+		*/
+		const bool getIsRunning() const { return mIsRunning; }
 
 		/**
-		 * @return a vector containing calculated rope lengths
-		 */
+		* @return a vector containing calculated rope lengths
+		*/
 		const std::vector<float> getRopeLengths() const;
 
 		/**
-		 * @return reference to to latest calculate object points
-		 */
+		* @return reference to to latest calculate object points
+		*/
 		const std::vector<glm::vec3>& getObjectPoints() const { return mPoints; }
 
 		/**
-		 * @return reference to of frame points
-		 */
+		* @return reference to of frame points
+		*/
 		const std::vector<glm::vec3>& getFramePoints() const { return mPointsFrame; }
+
+		/**
+		*
+		*/
+		const std::vector<double> getMotorSteps() const
+		{
+			std::vector<double> motorSteps(8);
+			for (int i = 0; i < motorSteps.size(); i++)
+			{
+				motorSteps[i] = mMotorSteps[i];
+			}
+			return motorSteps;
+		}
 	protected:
 		/**
-		 * Calculates vector of force applied to element
-		 * @param elidx element index
-		 * @param direction direction of force ( -1 or 1 )
-		 * @param outVec the calculated vector
-		 */
+		* Calculates vector of force applied to element
+		* @param elidx element index
+		* @param direction direction of force ( -1 or 1 )
+		* @param outVec the calculated vector
+		*/
 		void getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec);
-		
+
 		/**
-		 * Calculates force on opposite point of element
-		 * @param object_element_id element id
-		 * @param opposite_column the column opposite of the object_element_id
-		 * @param outVec the calculated suspension force
-		 */
+		* Calculates force on opposite point of element
+		* @param object_element_id element id
+		* @param opposite_column the column opposite of the object_element_id
+		* @param outVec the calculated suspension force
+		*/
 		void getProjectedSuspensionForcesOnOppositePointOfElement(int object_element_id, int opposite_column, glm::vec3& outVec);
-		
+
 		/**
-		 * Calculates force on opposite point of element
-		 * @param object_element_id element id
-		 * @param suspension_element_id suspension element id
-		 * @param opposite_point the opposite point id of object_element_id
-		 * @param outVec the calculated suspension force
-		 */
+		* Calculates force on opposite point of element
+		* @param object_element_id element id
+		* @param suspension_element_id suspension element id
+		* @param opposite_point the opposite point id of object_element_id
+		* @param outVec the calculated suspension force
+		*/
 		void getProjectedSuspensionForceOnOppositePointOfElement(int object_element_id, int suspension_element_id, int opposite_point, glm::vec3& outVec);
 
 		/**
-		 * Calculates force on opposite point of element
-		 * @param elidx element id
-		 * @param point point id
-		 * @param outVec the calculated suspension force
-		 */
+		* Calculates force on opposite point of element
+		* @param elidx element id
+		* @param point point id
+		* @param outVec the calculated suspension force
+		*/
 		void getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec);
 
 		/**
-		 * Collects the ids of elements connected to a point
-		 * @param id point id
-		 * @param outIDs a vector containing the element ids
-		 */
+		* Collects the ids of elements connected to a point
+		* @param id point id
+		* @param outIDs a vector containing the element ids
+		*/
 		void getIdsOfSuspensionElementsOnPoint(int id, std::vector<int> &outIDs);
 
 		/**
-		 * Calculates the change of the element lengths in reference to start position
-		 */
+		* Calculates the change of the element lengths in reference to start position
+		*/
 		void calcDeltaLengths();
 
 		/**
-		 * Calculates the new forces on the elements
-		 */
+		* Calculates the new forces on the elements
+		*/
 		void calcElements();
 
 		/**
-		 * Makes a single list of all values of mElementsObject, mElementsObject2Frame and mElementsFrame
-		 */
+		* Makes a single list of all values of mElementsObject, mElementsObject2Frame and mElementsFrame
+		*/
 		void concatElements();
 
 		/**
-		 * Makes a single list of all values of mPointsObject and mPointsFrame
-		 */
+		* Makes a single list of all values of mPointsObject and mPointsFrame
+		*/
 		void concatPoints();
 
 		/**
-		 * Applies motor input/force to elements 
-		 */
+		* Applies motor input/force to elements
+		*/
 		void setMotorInputInternal(std::vector<float>& inputs);
 
 		/**
-		 * Update thread
-		 */
+		* Update thread
+		*/
 		void update();
 
 		/**
-		 * Copies motor input from another thread to given reference
-		 */
+		* Copies motor input from another thread to given reference
+		*/
 		void copyMotorInput(std::vector<float>& outputs);
 	protected:
 
-        std::atomic_bool mIsRunning = { false };
+		std::atomic_bool mIsRunning = { false };
 		std::thread mUpdateThread;
 
-		float mForceObject			= 10.0f;
-		float mForceObjectSpring	= 0.02f;
-		float mForceObject2Frame	= 2.0f;
+		float mForceObject = 10.0f;
+		float mForceObjectSpring = 0.02f;
+		float mForceObject2Frame = 2.0f;
 
 		float mLengthError = 0;
 
@@ -201,16 +222,17 @@ namespace nap
 		std::vector<float> mElementsLengthDelta;
 
 		// atomics
-		std::atomic<float> mSlack = 0.0f;
+		std::atomic<float> mSlack;
 		std::vector<std::atomic<float>> mMotorInput = std::vector<std::atomic<float>>(8);
 		std::vector<std::atomic<float>> mMotorOverrides = std::vector<std::atomic<float>>(8);
+		std::vector<std::atomic<float>> mMotorSteps = std::vector<std::atomic<float>>(8);
+		std::atomic<float> mSinusAmplitude;
+		std::atomic<float> mSinusFrequency;
 
 		//
 		float mOverrideMinimum;
 		float mSlackRange;
 		float mOverrideRange;
-		float mSinusAmplitude;
-		float mSinusFrequency;
 
 		float mMotorStepsPerMeter;
 		float mMotorStepOffset;

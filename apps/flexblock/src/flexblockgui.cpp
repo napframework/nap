@@ -1706,6 +1706,7 @@ namespace nap
 			utility::listDir(showDir.c_str(), files_in_directory);
 
 			std::vector<std::string> shows;
+			std::vector<std::string> showFiles;
 			for (const auto& filename : files_in_directory)
 			{
 				// Ignore directories
@@ -1714,7 +1715,8 @@ namespace nap
 
 				if (utility::getFileExtension(filename) == "json")
 				{
-					shows.push_back(utility::getFileName(filename));
+					shows.emplace_back(utility::getFileName(filename));
+					showFiles.emplace_back(filename);
 				}
 			}
 
@@ -1728,8 +1730,9 @@ namespace nap
 			utility::ErrorState errorState;
 			if (ImGui::Button("Load"))
 			{
-				if (mSequencePlayer->load(files_in_directory[mProps.mSelectedShowIndex], errorState))
+				if (mSequencePlayer->load(showFiles[mProps.mSelectedShowIndex], errorState))
 				{
+					// mark all timelines dirty
 					for (auto& pair : mProps.mDirtyFlags)
 					{
 						pair.second = true;
@@ -2670,8 +2673,6 @@ namespace nap
 		
 
 		ImGui::Separator();
-		std::vector<MacPosition> position_data;
-		mMotorController->copyPositionData(position_data);
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mFlexBlock->getMotorMapping()[i] + 1).c_str()))
@@ -2690,21 +2691,23 @@ namespace nap
 				ImGui::Text("Current Motor Torque: %.1f / max Torque %s", mMotorController->getActualTorque(i), std::to_string(mMotorController->mTorque).c_str());
 				ImGui::Text("Current Acceleration : %s", std::to_string(mMotorController->mAcceleration).c_str());
 				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
+				bool digitalPinState = mMotorController->getDigitalPin(i, 0);
+				ImGui::RadioButton("Digital Pin State", digitalPinState);
 				ImGui::PushID(i);
 
-				int req_pos = static_cast<int>(position_data[i].mTargetPosition);
+				int req_pos = static_cast<int>(mMotorController->getPosition(i));
+
 				if (mProps.mAdvancedMotorInterface)
 				{
-					bool dig_pin = position_data[i].getDigitalPin(0);
+					bool dig_pin = mMotorController->getDigitalPin(i,0);
 					if (ImGui::Checkbox("Digital Pin", &dig_pin))
 					{
-						position_data[i].setDigitalPin(0, dig_pin);
+						mMotorController->setDigitalPin(i, 0, dig_pin);
 					}
 
 					if (ImGui::InputInt("Position", &req_pos, 1, 50))
 					{
-						position_data[i].setTargetPosition(req_pos);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, req_pos);
 					}
 
 					int req_vel = mMotorController->getVelocity(i);
@@ -2735,21 +2738,31 @@ namespace nap
 					if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
 					{
 						int32 newCounts = (int32)((double)target_meter * counts);
-
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
-				}else if (!mProps.mAdvancedMotorInterface)
+					
+				}
+				else if (!mProps.mAdvancedMotorInterface)
 				{
+					// temp
+					ImGui::Checkbox("Set Digital Pin By Speed", &mProps.mSetDigitalPinBySpeed);
+					if (!mProps.mSetDigitalPinBySpeed)
+					{
+						bool value = mProps.mUseDigitalPin[i];
+						if (ImGui::Checkbox("Digital Pin On/Off", &value))
+						{
+							mProps.mUseDigitalPin[i] = value;
+						}
+					}
+
+					//
 					float target_meter = mTargetMeters[i];
 					if (ImGui::Button("Give Meter"))
 					{
 						target_meter = current_meters + 1.0f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2757,8 +2770,7 @@ namespace nap
 					{
 						target_meter = current_meters - 1;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 
@@ -2766,8 +2778,7 @@ namespace nap
 					{
 						target_meter = current_meters + 0.1f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2775,8 +2786,7 @@ namespace nap
 					{
 						target_meter = current_meters - 0.1f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					
@@ -2784,8 +2794,7 @@ namespace nap
 					{
 						target_meter = current_meters + 0.01f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2793,8 +2802,7 @@ namespace nap
 					{
 						target_meter = current_meters - 0.01f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					
@@ -2802,8 +2810,7 @@ namespace nap
 					{
 						target_meter = current_meters + 0.001f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2811,10 +2818,26 @@ namespace nap
 					{
 						target_meter = current_meters - 0.001f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						position_data[i].setTargetPosition(newCounts);
-						mMotorController->setPositionData(position_data);
+						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
+
+					// 
+					if (mProps.mSetDigitalPinBySpeed)
+					{
+						bool activateDigitalPin = target_meter - current_meters > 0.02;
+						if (activateDigitalPin != digitalPinState)
+						{
+							mMotorController->setDigitalPin(i, 0, activateDigitalPin);
+							//printf("%s\n", activateDigitalPin ? "on" : "off");
+						}
+					}else if (mProps.mUseDigitalPin[i] != digitalPinState)
+					{
+						mMotorController->setDigitalPin(i, 0, mProps.mUseDigitalPin[i]);
+						//printf("%s\n", activateDigitalPin ? "on" : "off");
+					}
+
+					
 				}
 
 				// clamp targetmeters

@@ -101,5 +101,7 @@ namespace nap
 		bool mAdvancedMotorInterface = false;
 		bool mCalibrationMode = false;
 		bool mClampMetersInCalibrationMode = true;
+		std::vector<bool> mUseDigitalPin = std::vector<bool>(8);
+		bool mSetDigitalPinBySpeed = true;
 	};
 }
