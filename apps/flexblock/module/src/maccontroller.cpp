@@ -111,6 +111,23 @@ namespace nap
 	{
 		mOutputs.clear();
 		mInputs.clear();
+		mPositions.clear();
+	}
+
+
+	void MACController::setPositionData(const std::vector<MacPosition>& newData)
+	{
+		// Copy current motor positions
+		assert(newData.size() == getSlaveCount());
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		mPositions = newData;
+	}
+
+
+	void MACController::getPositionData(std::vector<MacPosition>& outData)
+	{
+		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		outData = mPositions;
 	}
 
 
@@ -136,6 +153,7 @@ namespace nap
 
 		// Write control bits
 		sdoWrite(index, 0x2012, 0x24, false, sizeof(control_bits), &control_bits);
+
 	}
 
 
@@ -145,7 +163,7 @@ namespace nap
 		ec_slavet* cslave = reinterpret_cast<ec_slavet*>(slave);
 		MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)cslave->inputs;
 		assert(index <= getSlaveCount());
-		mOutputs[index - 1]->setTargetPosition(inputs->mActualPosition);
+		mPositions[index - 1].setTargetPosition(inputs->mActualPosition);
 
 		// Motor controller has issues with synchronization when coming back-up from power failure.
 		// Giving it some slack helps it getting into the right state.
@@ -155,9 +173,15 @@ namespace nap
 
 	void MACController::onProcess()
 	{
+		// Copy current motor positions
+		std::vector<MacPosition> current_position_data;
+		getPositionData(current_position_data);
+
+		// Get number of slaves and ensure size of data matches
 		int slave_count = getSlaveCount();
 		assert(mOutputs.size() == slave_count);
 		assert(mInputs.size()  == slave_count);
+		assert(current_position_data.size() == slave_count);
 
 		for (int i = 1; i <= slave_count; i++)
 		{
@@ -166,6 +190,9 @@ namespace nap
 
 			// Get associated motor output parameters
 			std::unique_ptr<MacInputs>& motor_input = mInputs[i - 1];
+
+			// Get associated motor position data
+			MacPosition& motor_position = mPositions[i - 1];
 
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
@@ -181,11 +208,11 @@ namespace nap
 
 			// Write info
 			mac_outputs->mOperatingMode = motor_output->mRunMode;
-			mac_outputs->mRequestedPosition = motor_output->mTargetPosition;
+			mac_outputs->mRequestedPosition = motor_position.mTargetPosition;
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
-			mac_outputs->mModuleOutputs = motor_output->mModuleOutputs;
+			mac_outputs->mModuleOutputs = motor_position.mModuleOutputs;
 
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
@@ -209,6 +236,8 @@ namespace nap
 	{
 		mOutputs.clear();
 		mInputs.clear();
+		mPositions.clear();
+
 		for (int i = 0; i < getSlaveCount(); i++)
 		{
 			// Create unique output
@@ -218,6 +247,9 @@ namespace nap
 			new_output->setTargetTorque(static_cast<float>(mTorque));
 			new_output->setTargetMode(mMode);
 			mOutputs.emplace_back(std::move(new_output));
+
+			// Create position outputs
+			mPositions.emplace_back(MacPosition());
 
 			// Create unique input
 			mInputs.emplace_back(std::make_unique<MacInputs>());
@@ -240,20 +272,6 @@ namespace nap
 		// Set motor to passive mode
 		for (int i = 1; i <= getSlaveCount(); i++)
 			setModeSDO(i, EMotorMode::Passive);
-	}
-
-
-	void MACController::setPosition(int index, nap::int32 position)
-	{
-		assert(index < getSlaveCount());
-		mOutputs[index]->setTargetPosition(position);
-	}
-
-
-	int32 MACController::getPosition(int index) const
-	{
-		assert(index < getSlaveCount());
-		return mOutputs[index]->getTargetPosition();
 	}
 
 	nap::int32 MACController::getActualPosition(int index) const
@@ -357,20 +375,6 @@ namespace nap
 	}
 
 
-	void MACController::setDigitalPin(int index, int pinIndex, bool value)
-	{
-		assert(index < getSlaveCount());
-		mOutputs[index]->setDigitalPin(pinIndex, value);
-	}
-
-
-	bool MACController::getDigitalPin(int index, int pinIndex) const
-	{
-		assert(index < getSlaveCount());
-		return mOutputs[index]->getDigitalPin(pinIndex);
-	}
-
-
 	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
 		if (started())
@@ -420,18 +424,6 @@ namespace nap
 	}
 
 
-	void MacOutputs::setTargetPosition(nap::int32 position)
-	{
-		mTargetPosition = position;
-	}
-
-
-	int32 MacOutputs::getTargetPosition() const
-	{
-		return mTargetPosition;
-	}
-
-
 	void MacOutputs::setTargetVelocity(float velocity)
 	{
 		mVelocityRPM = math::clamp<float>(velocity, mMaxVelocityRPM*-1.0f, mMaxVelocityRPM);
@@ -475,20 +467,6 @@ namespace nap
 	{
 		uint32 cmode = mRunMode;
 		return static_cast<MACController::EMotorMode>(cmode);
-	}
-
-
-	void MacOutputs::setDigitalPin(int pinIndex, bool value)
-	{
-		assert(pinIndex < 2);
-		value ? mModuleOutputs |= 1UL << pinIndex : mModuleOutputs &= ~(1UL << pinIndex);
-	}
-
-
-	bool MacOutputs::getDigitalPin(int pinIndex) const
-	{
-		assert(pinIndex < 2);
-		return ((mModuleOutputs >> pinIndex) & 1U) > 0;
 	}
 
 
@@ -543,5 +521,19 @@ namespace nap
 	{
 		return (static_cast<float>(mActualTorque) / sTorqueNom) * 100.0f;
 	}
+
+
+	void MacPosition::setDigitalPin(int pinIndex, bool value)
+	{
+		assert(pinIndex < 2);
+		value ? mModuleOutputs |= 1UL << pinIndex : mModuleOutputs &= ~(1UL << pinIndex);
+	}
+
+
+	bool MacPosition::getDigitalPin(int pinIndex)
+	{
+		assert(pinIndex < 2);
+		return ((mModuleOutputs >> pinIndex) & 1U) > 0;
+	}
+
 }
-	

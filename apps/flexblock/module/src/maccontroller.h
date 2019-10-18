@@ -14,6 +14,7 @@ namespace nap
 
 	class MacOutputs;
 	class MacInputs;
+	struct MacPosition;
 
 	/**
 	 * JVL CAM motor EthetCAT controller
@@ -94,19 +95,9 @@ namespace nap
 		// Destructor
 		virtual ~MACController();
 
-		/**
-		 * Set the position of a single motor. Does not perform an out of bounds check
-		 * @param index motor index, 0 = first slave
-		 * @param position the new motor target position
-		 */
-		void setPosition(int index, nap::int32 position);
+		void setPositionData(const std::vector<MacPosition>& newData);
 
-		/**
-		 * Returns the requested motor position for the given slave.
-		 * @param index motor index, 0 = first slave
-		 * @return the requested motor position
-		 */
-		int32 getPosition(int index) const;
+		void getPositionData(std::vector<MacPosition>& outData);
 
 		/**
 		 * Returns the actual position of a single motor. Does not perform an out of bounds check
@@ -198,26 +189,6 @@ namespace nap
 		 * @param index the motor index to clear the errors for, 0 = first slave
 		 */
 		void clearErrors(int index);
-
-		/**
-		 * Sets the digital output pin to the requested value.
-		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
-		 * This call asserts if the pin index exceeds 1.
-		 * @param index motor index, 0 = first slave
-		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
-		 * @param new value of output pin
-		 */
-		void setDigitalPin(int index, int pinIndex, bool value);
-
-		/**
-		 * Returns the value currently associated with a digital output pin.
-		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins. 
-		 * This call asserts if the pin index exceeds 1.
-		 * @param index motor index, 0 = first slave
-		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
-		 * @return if the digital pin is active
-		 */
-		bool getDigitalPin(int index, int pinIndex) const;
 
 		/**
 		 * Resets the position of all motors to the given value.
@@ -333,6 +304,8 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;					///< List of all current motor positions
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;					///< List of all current motor positions
+		std::vector<MacPosition>					mPositions;
+		std::mutex									mPositionMutex;				///< Allows for synchronized setting of motor position
 	};
 
 
@@ -357,17 +330,6 @@ namespace nap
 		MacOutputs(float maxVelocity, float velRatio) :
 			mMaxVelocityRPM(maxVelocity),
 			mRatio(velRatio)	{ }
-
-		/**
-		 * Set motor target position
-		 * @param position new motor target position
-		 */
-		void setTargetPosition(nap::int32 position);
-
-		/**
-		 * @return motor target position
-		 */
-		int32 getTargetPosition() const;
 
 		/**
 		 * Set motor velocity in RPM
@@ -411,6 +373,31 @@ namespace nap
 		 */
 		MACController::EMotorMode getTargetMode(MACController::EMotorMode mode) const;
 
+	private:
+		nap::int32					mVelocityCNT = 0;		///< Motor velocity
+		nap::uint32				 	mTorqueCNT = 0;			///< Motor torque
+		nap::uint32					mAccelerationCNT = 0;	///< Motor acceleration
+		nap::uint32					mRunMode = 0;
+
+		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
+		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
+		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
+		float						mTorquePCT = 0.0f;			///< Torque in percentage
+	};
+
+
+	struct NAPAPI MacPosition
+	{
+		MacPosition() = default;
+
+		MacPosition(nap::int32 position) { setTargetPosition(position); }
+
+		/**
+		 * Set motor target position
+		 * @param position new motor target position
+		 */
+		void setTargetPosition(nap::int32 newPosition) { mTargetPosition = newPosition; }
+
 		/**
 		 * Sets the digital output pin to the requested value.
 		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
@@ -419,26 +406,10 @@ namespace nap
 		 */
 		void setDigitalPin(int pinIndex, bool value);
 
-		/**
-		 * Return if a digital pin on the module is activated. 
-		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
-		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
-		 * @return if the digital pin is active
-		 */
-		bool getDigitalPin(int pinIndex) const;
+		bool getDigitalPin(int pinIndex);
 
-	private:
-		std::atomic<nap::int32>		mTargetPosition = { 0 };	///< New requested motor position
-		std::atomic<nap::int32>		mVelocityCNT = { 0 };		///< Motor velocity
-		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
-		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
-		std::atomic<nap::uint32>	mModuleOutputs = { 0 };		///< Module digital output
-		std::atomic<nap::uint32>	mRunMode = { 0 };
-
-		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
-		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
-		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
-		float						mTorquePCT = 0.0f;			///< Torque in percentage
+		nap::int32 mTargetPosition = 0;
+		nap::int32 mModuleOutputs  = 0;
 	};
 
 
@@ -495,12 +466,12 @@ namespace nap
 		void clearErrors();
 
 	private:
-		std::atomic<nap::int32>	 mActualPosition	= { 0 };	///< Current motor position
-		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
-		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
-		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
-		std::atomic<nap::uint32> mActualMode		= { 0 };	///< Current Motor Mode
-		std::atomic<bool>		 mClearErrors		= { true };	///< If the errors should be cleared
+		nap::int32				 mActualPosition	= 0;		///< Current motor position
+		nap::int32				 mActualVelocity	= 0;		///< Current motor velocity
+		nap::uint32				 mErrorStatus		= 0;		///< Current error status
+		nap::int32				 mActualTorque		= 0 ;		///< Current motor torque
+		nap::uint32				 mActualMode		= 0 ;		///< Current Motor Mode
+		bool					 mClearErrors		= true ;	///< If the errors should be cleared
 
 		/**
 		 * If the current set of processed data contains the given error

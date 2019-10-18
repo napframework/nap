@@ -320,7 +320,7 @@ namespace nap
 			}
 
 			//
-			if (mEnableMacController)
+			if (true)
 			{
 				if (mMacController->isRunning())
 				{
@@ -338,6 +338,9 @@ namespace nap
 
 					if (allSlavesOperational)
 					{
+						std::vector<MacPosition> position_data;
+						mMacController->getPositionData(position_data);
+
 						for (int i = 0; i < mMacController->getSlaveCount(); i++)
 						{
 							if (i < mMotorMapping.size())
@@ -345,15 +348,15 @@ namespace nap
 								int mapped = mMotorMapping[i];
 								if (mapped < mMacController->getSlaveCount())
 								{
-									mMacController->setPosition(i, motorSteps[mapped]);
-
-									if (mEnableDigitalPin)
-									{
-										mMacController->setDigitalPin(i, 0, mMacController->getActualPosition(i) < mMacController->getPosition(i));
-									}
+									position_data[i].setTargetPosition(motorSteps[mapped]);
+									
+									// TODO: This is potentially dangerous, use torque or comparison between actual position in frames with delta
+									// TODO: Doesn't this apply for the motor in general, so not only in the flexblock algorithm?
+									position_data[i].setDigitalPin(0, mMacController->getActualPosition(i) < position_data[i].mTargetPosition);
 								}
 							}
 						}
+						mMacController->setPositionData(position_data);
 					}
 				}
 			}

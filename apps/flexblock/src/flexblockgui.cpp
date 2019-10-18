@@ -2670,6 +2670,8 @@ namespace nap
 		
 
 		ImGui::Separator();
+		std::vector<MacPosition> position_data;
+		mMotorController->getPositionData(position_data);
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
 			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mFlexBlock->getMotorMapping()[i] + 1).c_str()))
@@ -2690,19 +2692,19 @@ namespace nap
 				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
 				ImGui::PushID(i);
 
-
-				int req_pos = static_cast<int>(mMotorController->getPosition(i));
+				int req_pos = static_cast<int>(position_data[i].mTargetPosition);
 				if (mProps.mAdvancedMotorInterface)
 				{
-					bool dig_pin = mMotorController->getDigitalPin(i,0);
+					bool dig_pin = position_data[i].getDigitalPin(0);
 					if (ImGui::Checkbox("Digital Pin", &dig_pin))
 					{
-						mMotorController->setDigitalPin(i, 0, dig_pin);
+						position_data[i].setDigitalPin(0, dig_pin);
 					}
 
 					if (ImGui::InputInt("Position", &req_pos, 1, 50))
 					{
-						mMotorController->setPosition(i, req_pos);
+						position_data[i].setTargetPosition(req_pos);
+						mMotorController->setPositionData(position_data);
 					}
 
 					int req_vel = mMotorController->getVelocity(i);
@@ -2733,7 +2735,9 @@ namespace nap
 					if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
 					{
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 				}else if (!mProps.mAdvancedMotorInterface)
@@ -2743,7 +2747,9 @@ namespace nap
 					{
 						target_meter = current_meters + 1.0f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2751,7 +2757,8 @@ namespace nap
 					{
 						target_meter = current_meters - 1;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 
@@ -2759,7 +2766,8 @@ namespace nap
 					{
 						target_meter = current_meters + 0.1f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2767,7 +2775,8 @@ namespace nap
 					{
 						target_meter = current_meters - 0.1f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					
@@ -2775,7 +2784,8 @@ namespace nap
 					{
 						target_meter = current_meters + 0.01f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2783,7 +2793,8 @@ namespace nap
 					{
 						target_meter = current_meters - 0.01f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					
@@ -2791,7 +2802,8 @@ namespace nap
 					{
 						target_meter = current_meters + 0.001f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 					ImGui::SameLine();
@@ -2799,7 +2811,8 @@ namespace nap
 					{
 						target_meter = current_meters - 0.001f;
 						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
+						position_data[i].setTargetPosition(newCounts);
+						mMotorController->setPositionData(position_data);
 						mTargetMeters[i] = target_meter;
 					}
 				}

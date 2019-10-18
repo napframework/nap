@@ -730,7 +730,7 @@
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{F190953B-4D12-4536-A961-79F0B526BE86}",
+            "Adapter": "\\Device\\NPF_{7675A1FF-D22A-46AF-A867-0D8B6808C036}",
             "CycleTime": 1000,
             "ResetPosition": false,
             "DisableErrorHandling": false,
