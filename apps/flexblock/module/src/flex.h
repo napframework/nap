@@ -47,6 +47,14 @@ namespace nap
 		void setSlack(const float value);
 
 		/**
+		 */
+		void setSinusAmplitude(const float value);
+
+		/**
+		 */
+		void setSinusFrequency(const float value);
+
+		/**
 		 * 
 		 * 
 		 */
@@ -81,6 +89,19 @@ namespace nap
 		 * @return reference to of frame points
 		 */
 		const std::vector<glm::vec3>& getFramePoints() const { return mPointsFrame; }
+
+		/**
+		 * 
+		 */
+		const std::vector<double> getMotorSteps() const 
+		{ 
+			std::vector<double> motorSteps(8);
+			for (int i = 0; i < motorSteps.size(); i++)
+			{
+				motorSteps[i] = mMotorSteps[i];
+			}
+			return motorSteps;
+		}
 	protected:
 		/**
 		 * Calculates vector of force applied to element
@@ -204,13 +225,14 @@ namespace nap
 		std::atomic<float> mSlack = 0.0f;
 		std::vector<std::atomic<float>> mMotorInput = std::vector<std::atomic<float>>(8);
 		std::vector<std::atomic<float>> mMotorOverrides = std::vector<std::atomic<float>>(8);
+		std::vector<std::atomic<float>> mMotorSteps = std::vector<std::atomic<float>>(8);
+		std::atomic<float> mSinusAmplitude;
+		std::atomic<float> mSinusFrequency;
 
 		//
 		float mOverrideMinimum;
 		float mSlackRange;
 		float mOverrideRange;
-		float mSinusAmplitude;
-		float mSinusFrequency;
 
 		float mMotorStepsPerMeter;
 		float mMotorStepOffset;

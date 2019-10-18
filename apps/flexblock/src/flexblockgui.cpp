@@ -1706,6 +1706,7 @@ namespace nap
 			utility::listDir(showDir.c_str(), files_in_directory);
 
 			std::vector<std::string> shows;
+			std::vector<std::string> showFiles;
 			for (const auto& filename : files_in_directory)
 			{
 				// Ignore directories
@@ -1714,7 +1715,8 @@ namespace nap
 
 				if (utility::getFileExtension(filename) == "json")
 				{
-					shows.push_back(utility::getFileName(filename));
+					shows.emplace_back(utility::getFileName(filename));
+					showFiles.emplace_back(filename);
 				}
 			}
 
@@ -1728,8 +1730,9 @@ namespace nap
 			utility::ErrorState errorState;
 			if (ImGui::Button("Load"))
 			{
-				if (mSequencePlayer->load(files_in_directory[mProps.mSelectedShowIndex], errorState))
+				if (mSequencePlayer->load(showFiles[mProps.mSelectedShowIndex], errorState))
 				{
+					// mark all timelines dirty
 					for (auto& pair : mProps.mDirtyFlags)
 					{
 						pair.second = true;
@@ -2736,8 +2739,18 @@ namespace nap
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
-				}else if (!mProps.mAdvancedMotorInterface)
+				}
+				else if (!mProps.mAdvancedMotorInterface)
 				{
+					// temp
+					bool useDigitalPin = true;
+					if (ImGui::Checkbox("Use Digital Pin", &useDigitalPin))
+					{
+						//
+					}
+
+
+					//
 					float target_meter = mTargetMeters[i];
 					if (ImGui::Button("Give Meter"))
 					{
@@ -2801,6 +2814,17 @@ namespace nap
 						int32 newCounts = (int32)((double)target_meter * counts);
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
+					}
+
+					// 
+					if (useDigitalPin)
+					{
+						bool activateDigitalPin = target_meter - current_meters > 0.02;
+						if (activateDigitalPin != mMotorController->getDigitalPin(i, 0))
+						{
+							mMotorController->setDigitalPin(i, 0, activateDigitalPin);
+							//printf("%s\n", activateDigitalPin ? "on" : "off");
+						}
 					}
 				}
 

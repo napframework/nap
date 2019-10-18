@@ -178,7 +178,9 @@
                         7,
                         0,
                         4
-                    ]
+                    ],
+                    "Flex Thread Frequency": 1000,
+                    "Enable Digital Pin": false
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -730,15 +732,15 @@
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{F190953B-4D12-4536-A961-79F0B526BE86}",
+            "Adapter": "\\Device\\NPF_{9CCC1944-63F4-4A06-8585-73BDAE9D120C}",
             "CycleTime": 1000,
             "ResetPosition": false,
             "DisableErrorHandling": false,
             "ResetPositionValue": 1000000,
             "Mode": "Position",
-            "Velocity": 1000,
+            "Velocity": 3000,
             "MaxVelocity": 3000,
-            "Acceleration": 1000,
+            "Acceleration": 1500,
             "Torque": 100,
             "VelocityGetRatio": 0.1340000033378601,
             "VelocitySetRatio": 2.18435001373291,

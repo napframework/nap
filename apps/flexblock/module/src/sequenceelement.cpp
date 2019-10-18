@@ -13,6 +13,7 @@
 RTTI_BEGIN_CLASS(nap::timeline::SequenceElement)
 // Put additional properties here
 RTTI_PROPERTY("Name", &nap::timeline::SequenceElement::mName, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Start Time", &nap::timeline::SequenceElement::mStartTime, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

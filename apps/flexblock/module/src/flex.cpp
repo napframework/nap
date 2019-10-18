@@ -174,6 +174,15 @@ namespace nap
 		mSlack = value;
 	}
 
+	void Flex::setSinusAmplitude(const float value)
+	{
+		mSinusAmplitude = value;
+	}
+
+	void Flex::setSinusFrequency(const float value)
+	{
+		mSinusFrequency = value;
+	}
 
 	void Flex::copyMotorInput(std::vector<float>& outputs)
 	{
@@ -319,11 +328,19 @@ namespace nap
 				motorSteps[i] = a;
 			}
 
+			for (int i = 0; i < motorSteps.size(); i++)
+			{
+				mMotorSteps[i] = motorSteps[i];
+			}
+
 			//
 			if (mEnableMacController)
 			{
+				// are we running ?
 				if (mMacController->isRunning())
 				{
+					// check for all slaves to be operational and without errors
+					// if not, stop immediatly
 					bool allSlavesOperational = true;
 					for (int i = 0; i < mMacController->getSlaveCount(); i++)
 					{
@@ -336,20 +353,33 @@ namespace nap
 						}
 					}
 
+					// we are ok, continue
 					if (allSlavesOperational)
 					{
+						// check if we have as much slaves as motors
 						for (int i = 0; i < mMacController->getSlaveCount(); i++)
 						{
 							if (i < mMotorMapping.size())
 							{
+								// get the mapped motor index
 								int mapped = mMotorMapping[i];
 								if (mapped < mMacController->getSlaveCount())
 								{
 									mMacController->setPosition(i, motorSteps[mapped]);
 
+									// when digital pin enable, only enable it when we are giving meters
+									// this occurs when targetmeters is higher then the motors curent position
 									if (mEnableDigitalPin)
 									{
-										mMacController->setDigitalPin(i, 0, mMacController->getActualPosition(i) < mMacController->getPosition(i));
+										double targetMeters = (double) mMacController->getPosition(i) / mMotorStepsPerMeter;
+										double currentMeters = (double) mMacController->getActualPosition(i) / mMotorStepsPerMeter;
+
+										bool activateDigitalPin = targetMeters - currentMeters > 0.02;
+										if (activateDigitalPin != mMacController->getDigitalPin(i, 0))
+										{
+											mMacController->setDigitalPin(i, 0, activateDigitalPin);
+											//printf("%s\n", activateDigitalPin ? "on" : "off");
+										}
 									}
 								}
 							}

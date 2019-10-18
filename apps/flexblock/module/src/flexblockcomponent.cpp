@@ -124,7 +124,7 @@ namespace nap
 	{
 		mMotorInputs[index] = value;
 	}
-
+	
 
 	void FlexBlockComponentInstance::setOverrides(const int index, const float value)
 	{
@@ -135,12 +135,14 @@ namespace nap
 	void FlexBlockComponentInstance::setSinusAmplitude(const float value)
 	{
 		mSinusAmplitude = value * mSinusAmplitudeRange;
+		mFlexLogic->setSinusAmplitude(mSinusAmplitude);
 	}
 
 
 	void FlexBlockComponentInstance::setSinusFrequency(const float value)
 	{
 		mSinusFrequency = value * mSinusFrequencyRange;
+		mFlexLogic->setSinusFrequency(mSinusFrequency);
 	}
 
 
@@ -148,7 +150,6 @@ namespace nap
 	{
 		mFlexLogic->setSlack(value * mSlackRange + mSlackMinimum);
 	}
-
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
@@ -164,5 +165,11 @@ namespace nap
 
 		// update motors of flex algorithm
 		mFlexLogic->setMotorInput(mMotorInputs);
+
+		// update overrides
+		mFlexLogic->setMotorOverrides(mMotorOverrides);
+
+		//
+		mMotorSteps = mFlexLogic->getMotorSteps();
 	}
 }

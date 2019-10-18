@@ -244,7 +244,7 @@ namespace nap
 		bool SequencePlayerComponentInstance::save(std::string showName, utility::ErrorState& errorState)
 		{
 			//
-			// Ensure the presets directory exists
+			// Ensure the shows directory exists
 			const std::string dir = "shows";
 			utility::makeDirs(utility::getAbsolutePath(dir));
 
@@ -258,6 +258,7 @@ namespace nap
 				sequenceList.emplace_back(sequence);
 			}
 
+			// serialize the list
 			if (!rtti::serializeObjects(sequenceList, writer, errorState))
 				return false;
 
