@@ -2691,10 +2691,12 @@ namespace nap
 				ImGui::Text("Current Motor Torque: %.1f / max Torque %s", mMotorController->getActualTorque(i), std::to_string(mMotorController->mTorque).c_str());
 				ImGui::Text("Current Acceleration : %s", std::to_string(mMotorController->mAcceleration).c_str());
 				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
+				bool digitalPinState = mMotorController->getDigitalPin(i, 0);
+				ImGui::RadioButton("Digital Pin State", digitalPinState);
 				ImGui::PushID(i);
 
-
 				int req_pos = static_cast<int>(mMotorController->getPosition(i));
+
 				if (mProps.mAdvancedMotorInterface)
 				{
 					bool dig_pin = mMotorController->getDigitalPin(i,0);
@@ -2739,16 +2741,20 @@ namespace nap
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
 					}
+					
 				}
 				else if (!mProps.mAdvancedMotorInterface)
 				{
 					// temp
-					bool useDigitalPin = true;
-					if (ImGui::Checkbox("Use Digital Pin", &useDigitalPin))
+					ImGui::Checkbox("Set Digital Pin By Speed", &mProps.mSetDigitalPinBySpeed);
+					if (!mProps.mSetDigitalPinBySpeed)
 					{
-						//
+						bool value = mProps.mUseDigitalPin[i];
+						if (ImGui::Checkbox("Digital Pin On/Off", &value))
+						{
+							mProps.mUseDigitalPin[i] = value;
+						}
 					}
-
 
 					//
 					float target_meter = mTargetMeters[i];
@@ -2817,15 +2823,21 @@ namespace nap
 					}
 
 					// 
-					if (useDigitalPin)
+					if (mProps.mSetDigitalPinBySpeed)
 					{
 						bool activateDigitalPin = target_meter - current_meters > 0.02;
-						if (activateDigitalPin != mMotorController->getDigitalPin(i, 0))
+						if (activateDigitalPin != digitalPinState)
 						{
 							mMotorController->setDigitalPin(i, 0, activateDigitalPin);
 							//printf("%s\n", activateDigitalPin ? "on" : "off");
 						}
+					}else if (mProps.mUseDigitalPin[i] != digitalPinState)
+					{
+						mMotorController->setDigitalPin(i, 0, mProps.mUseDigitalPin[i]);
+						//printf("%s\n", activateDigitalPin ? "on" : "off");
 					}
+
+					
 				}
 
 				// clamp targetmeters

@@ -740,7 +740,7 @@
             "Mode": "Position",
             "Velocity": 3000,
             "MaxVelocity": 3000,
-            "Acceleration": 1500,
+            "Acceleration": 1200,
             "Torque": 100,
             "VelocityGetRatio": 0.1340000033378601,
             "VelocitySetRatio": 2.18435001373291,
