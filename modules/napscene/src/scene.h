@@ -24,16 +24,16 @@ namespace nap
 	{
 	public:
 		rtti::ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
-		std::vector<ComponentInstanceProperties>		mInstanceProperties;	//< The instance properties for this entity (and all of its children)
+		std::vector<ComponentInstanceProperties>		mInstanceProperties;	///< The instance properties for this entity (and all of its children)
 	};
 
 	/**
-	 * Container for entities. The Scene is responsible for instantiating all of the entities.
+	 * Container for entities. 
+	 * The Scene is responsible for instantiation and management of all contained entities.
 	 */
 	class NAPAPI Scene : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
@@ -48,7 +48,7 @@ namespace nap
 		/**
 		 * Initialize the scene. Will spawn all entities contained in this scene.
 		 * As soon as this is called, EntityInstances will become available
-		 * and are accessible through #getRootEntity() and #getEntities()
+		 * and are accessible through getRootEntity() and getEntities()
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -59,26 +59,30 @@ namespace nap
 
 		/**
 		 * Update all entities contained in this scene
+		 * @param deltaTime time in seconds between calls.
 		 */
 		void update(double deltaTime);
 
 		/**
 		 * Spawns an entity hierarchy.
-		 * @param entity Root Entity to spawn.
-		 * @param errorState Contains error information if the returned object is nullptr.
-		 * @return On succes, the EntityInstance that was spawned. The Entity can be destroyed 
-		 *         by calling destroy with the value returned from this function.
+		 * The Entity (hierarchy) can be destroyed by calling destroy with the value returned from this function.
+		 * @param entity entity resource to spawn.
+		 * @param errorState contains error information if the returned object is nullptr.
+		 * @return The EntityInstance that was spawned on success, nullptr otherwise. 
 		 */		
 		SpawnedEntityInstance spawn(const Entity& entity, utility::ErrorState& errorState);
 
 		/**
-		 * Destroys a spawned Entity.
-		 * @param entity The Entity to destroy. This is the Entity as created using the spawn function.
+		 * Destroys a spawned Entity hierarchy.
+		 * The entity must have been obtained by the spawn() function.
+		 * @param entity the Entity to destroy. 
 		 */		
 		void destroy(SpawnedEntityInstance& entity);
 
 		/**
-		 * Update the transform hierarchy of the entities contained in this scene. For any TransformComponent the world transform is updated.
+		 * Update the transform hierarchy of the entities contained in this scene. 
+		 * For any TransformComponent the world transform is updated.
+		 * @param deltaTime time in seconds in between calls.
 		 */
 		void updateTransforms(double deltaTime);
 
@@ -88,8 +92,19 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntityInstancesByID); }
 
 		/**
+		 * Locate an entity in this scene with the given unique id.
+		 * Note that the given id needs to match the id of an entity resource, not instance.
 		 *
-		 * @return EntityInstance with the specified identifier from this scene.
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * 	// Fetch world and text
+		 *	auto world_entity = scene->findEntity("World");
+		 *	auto laser_entity = scene->findEntity("Laser");
+		 *~~~~~
+		 *
+		 * @param inID the unique id of the entity to find.
+		 * @return EntityInstance with the specified unique identifier from this scene.
 		 */
 		const rtti::ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 

@@ -28,7 +28,7 @@ namespace nap
 
 		/**
 		 * Creates and prepares the mesh but doesn't initialize it.
-		 * Call this when you want to prepare a box without creating the GPU representatino
+		 * Call this when you want to prepare a box without creating the GPU representation.
 		 * You have to manually call init() on the mesh instance afterwards.
 		 */
 		void setup();

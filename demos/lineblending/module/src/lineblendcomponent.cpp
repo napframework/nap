@@ -25,7 +25,7 @@ namespace nap
 
 		// Set blend value
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;
-		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed;
+		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed.get();
 
 		// Copy line
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
@@ -41,7 +41,7 @@ namespace nap
 	void LineBlendComponentInstance::update(double deltaTime)
 	{
 		// Calculate current blend based on speed
-		mCurrentTime += (deltaTime * mBlendSpeed);
+		mCurrentTime += (deltaTime * mBlendSpeed->mValue);
 
 		// Prep value for sin
 		mCurrentBlendValue = (mBlendValue*M_PI) + mCurrentTime;

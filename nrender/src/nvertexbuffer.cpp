@@ -22,7 +22,6 @@ namespace opengl
 	void VertexAttributeBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices)
 	{
 		assert(reservedNumVertices >= numVertices);
-
 		bind();
 
 		mCurSize = getGLTypeSize(mType) * mNumComponents * numVertices;
@@ -34,7 +33,6 @@ namespace opengl
 
 		glBufferSubData(getBufferType(), 0, mCurSize, data);
 		glAssert();
-
 		unbind();
 	}
 

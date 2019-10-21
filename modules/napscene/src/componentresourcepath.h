@@ -47,11 +47,11 @@ namespace nap
 
 		/**
 		 * Creates an EntityResourcePath from a root entity and a string. 
-		 * @param root The root entity that is used by @path.
-		 * @param path The string containing the path from @root to the component. This path includes the name of the component.
+		 * @param root The root entity that is used by path.
+		 * @param path The string containing the path from root to the component. This path includes the name of the component.
 		 * @param resolvedPath If the function returns true, this parameter contains the created EntityResourcePath.
-		 * @param errorState. If the function return false, contains error information.
-		 * @return True on success, false on failure. If the function return false, check @errorState for information.
+		 * @param errorState contains error information on failure.
+		 * @return true on success, false on failure. If the function return false, check errorState for information.
 		 */
 		static bool fromString(const Entity& root, const std::string& path, ComponentResourcePath& resolvedPath, utility::ErrorState& errorState);
 

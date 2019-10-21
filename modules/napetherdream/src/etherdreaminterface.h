@@ -24,18 +24,20 @@ namespace nap
 	};
 
 	/**
-	 * Cross Platform Etherdream hardware interface
-	 * Acts as the main entry point to the Etherdream interface for all
-	 * supported platforms
+	 * Cross Platform Etherdream DAC hardware interface.
+	 * Acts as the main entry point to the Etherdream interface for all supported platforms
 	 */
 	class NAPAPI EtherDreamInterface final
 	{
 	public:
+		/**
+		 * Etherdream DAC status
+		 */
 		enum class EStatus : int
 		{
-			ERROR	= -1,
-			BUSY	= 0,
-			READY	= 1,
+			ERROR	= -1,				///< DAC is in an erroneous state.
+			BUSY	= 0,				///< DAC is busy writing data.
+			READY	= 1					///< DAC accepts new data.
 		};
 
 	public:
@@ -70,7 +72,7 @@ namespace nap
 		std::string	getName(int number) const;
 
 		/**
-		 * Open a connection to the dac at number
+		 * Open a connection to the DAC at number
 		 * @return if the connection has been established
 		 * @param number: the number to connect to
 		 */
@@ -101,7 +103,7 @@ namespace nap
 
 		/**
 		 * Write a laser frame that consists out of n number of points
-		 * @param number: the dac to send the points to
+		 * @param number: the DAC to send the points to
 		 * @param data: the points to send over, consisting out of npoints
 		 * @param npoints: the number of points to send over
 		 * @param pps: the laser display rate or: points per second. 30000 is a common value
@@ -110,12 +112,12 @@ namespace nap
 		bool		writeFrame(int number, const EtherDreamPoint* data, uint npoints, uint pps, uint repeatCount);
 
 		/**
-		 *	@return etherdream dac min value
+		 *	@return etherdream DAC min value
 		 */
 		static constexpr int16_t etherMin()		{ return  std::numeric_limits<int16_t>::min(); }
 
 		/**
-		 *	@return etherdream dac max value
+		 *	@return etherdream DAC max value
 		 */
 		static constexpr int16_t etherMax()		{ return  std::numeric_limits<int16_t>::max(); }
 

@@ -51,7 +51,8 @@ namespace nap
             
             /**
              * Triggers the envelope to start playing from the start segment.
-             * If @totalDuration does not equal zero the relative durations in the segments will be scaled in order to get the total duration of the envelope to match this parameter.
+             * If totalDuration does not equal zero the relative durations in the segments will be scaled in order to get the total duration of the envelope to match this parameter.
+			 * @param totalDuration how to scale the segments to get the total duration
              */
             void trigger(TimeValue totalDuration = 0)
             {
@@ -59,7 +60,7 @@ namespace nap
             }
             
             /**
-             * Stops playing the envelope by fading to zero within @rampTime.
+             * Stops playing the envelope by fading to zero within the given rampTime.
              */
             void stop(TimeValue rampTime) { mEnvelopeGenerator->stop(rampTime); }
             

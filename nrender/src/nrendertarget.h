@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 
 // External Includes
 #include <glm/glm.hpp>
@@ -20,6 +20,7 @@ namespace opengl
 	{
 		return static_cast<EClearFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 	}
+
 	inline EClearFlags operator|(EClearFlags a, EClearFlags b)
 	{
 		return static_cast<EClearFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));

@@ -21,6 +21,7 @@ RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("IPAddress",				&nap::WebSocketServerEndPoint::mIPAddress,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPoint::mMode,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ConnectionLimit",		&nap::WebSocketServerEndPoint::mConnectionLimit,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPoint::mLibraryLogLevel,			nap::rtti::EPropertyMetaData::Default)
@@ -40,9 +41,18 @@ namespace nap
 		// Run until stopped
 		assert(!mRunning);
 
-		// Listen to messages on this specific port
+		// Listen to messages on this specific port and ip address (if given)
 		std::error_code stdec;
-		mEndPoint.listen(static_cast<uint16>(mPort), stdec);
+		if (mIPAddress.empty())
+		{
+			mEndPoint.listen(static_cast<uint16>(mPort), stdec);
+		}
+		else
+		{
+			mEndPoint.listen(mIPAddress, utility::stringFormat("%d", static_cast<uint16>(mPort)), stdec);
+		}
+
+		// Contains the error when opening port fails.
 		if (stdec)
 		{
 			error.fail(stdec.message());

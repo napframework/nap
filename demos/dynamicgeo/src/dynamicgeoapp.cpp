@@ -7,6 +7,7 @@
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <nap/datetime.h>
+#include <particleemittercomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -37,6 +38,7 @@ namespace nap
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
+		mParticleEntity				= scene->findEntity("ParticleEmitterEntity");
 		return true;
 	}
 	

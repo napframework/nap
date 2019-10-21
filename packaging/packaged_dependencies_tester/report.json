@@ -209,6 +209,25 @@
                 "unexpectedLibraries": []
             }
         },
+        "python": {
+            "build": {
+                "success": true
+            },
+            "generate": {
+                "success": true
+            },
+            "package": {
+                "success": true
+            },
+            "runFromBuildOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            },
+            "runFromPackagedOutput": {
+                "success": true,
+                "unexpectedLibraries": []
+            }
+        },
         "videomodulation": {
             "build": {
                 "success": true
@@ -282,19 +301,19 @@
         }
     },
     "run": {
-        "duration": "11m12s",
+        "duration": "13m09s",
         "frameworkBuildInfo": {
-            "buildNumber": 66,
-            "gitRevision": "6f6ff79af4da734c2ac2cb19847ece9a360f2f89",
+            "buildNumber": 107,
+            "gitRevision": "ec443c16eb947f711f0e09637771cc051906f6f4",
             "label": "",
             "majorVersion": 0,
-            "minorVersion": 2,
-            "patchVersion": 3,
-            "timetamp": "2019.06.14T16.30",
-            "version": "0.2.3"
+            "minorVersion": 3,
+            "patchVersion": 0,
+            "timetamp": "2019.08.19T13.26",
+            "version": "0.3.0"
         },
-        "frameworkPath": "c:\\naivi\\nap\\NAP-0.2.3-Win64-2019.06.14T16.30",
-        "startTime": "2019.06.14T16.33",
+        "frameworkPath": "c:\\naivi\\nap\\NAP-0.3.0-Win64",
+        "startTime": "2019.08.19T14.53",
         "success": true,
         "warnings": []
     },

@@ -40,11 +40,11 @@ namespace nap
 		Renderer() = default;
 
 		/**
-		 * Called to create a window
-		 * Create a window with associated render context
+		 * Create a new render window.
 		 * @return the new render window or nullptr if unsuccessful
 		 * @param settings the window settings used to create the window
 		 * @param windowID the ID of the window to create
+		 * @param errorState contains the error when creation fails.
 		 */
 		std::shared_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, const std::string& windowID, utility::ErrorState& errorState);
 
@@ -52,6 +52,7 @@ namespace nap
 		 * Initialize the renderer.
 		 * This call sets up the render attributes, create the first window and
 		 * initializes the opengl engine. After initialization the primary window is active.
+		 * @param rendererSettings settings used to initialize the renderer
 		 * @param errorState contains the error when the renderer can't be initialized
 		 * @return if the renderer initialized successfully
 		 */

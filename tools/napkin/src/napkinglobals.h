@@ -16,12 +16,13 @@ namespace napkin
 	static const QString TXT_LABEL_RESOURCES	= "Resources";
 	static const QString TXT_LABEL_ENTITIES		= "Entities";
 	static const QString TXT_UNTITLED_DOCUMENT	= "Untitled Document";
-	static const QString TXT_THEME_NATIVE		= "Native";
+	static const QString TXT_THEME_DEFAULT		= "Napkin";
 
 	// The file filter used by file dialogs
-	static const QString JSON_FILE_FILTER = "NAP JSON File (*.nap.json, *.json)";
+	static const QString JSON_FILE_EXT = "json";
+	static const QString JSON_FILE_FILTER = QString("NAP JSON File (*.%1)").arg(JSON_FILE_EXT);
 
-	static const QString DEFAULT_SETTINGS_FILE = "resources/settings.ini";
+	static const QString DEFAULT_SETTINGS_FILE = "resources/defaultsettings.ini";
 
 	static const int MAX_RECENT_FILES = 10;
 

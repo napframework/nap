@@ -99,15 +99,15 @@ namespace opengl
 	/**
 	 * Extracts all shader uniforms, note that the program must be loaded
 	 * @param program: The shader program to extract uniform inputs from
-	 * @param uniforms: The populated list of uniforms
+	 * @param outUniforms: The populated list of uniforms
 	 */
 	void extractShaderUniforms(GLuint program, UniformDeclarations& outUniforms);
 
 
 	/**
 	 * Extracts all shader attributes, note that the program must be loaded
-	 * @param program: The shader program to extract attribute inputs from
-	 * @param attributes: The populated list of shader attributes
+	 * @param program The shader program to extract attribute inputs from
+	 * @param outAttributes The populated list of shader attributes
 	 */
 	void extractShaderAttributes(GLuint program, ShaderVertexAttributes& outAttributes);
 }

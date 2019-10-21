@@ -13,7 +13,9 @@ namespace nap
 
 	/**
 	 * Resource part of the render-able component.
-	 * The instance of this component can be used to render something to screen or any other type of target. 
+	 * Represents an object that can be rendered to screen or any other type of render target.
+	 * This is the base class for all render-able types.
+	 * Override the draw call to implement custom draw behavior.
 	 */
 	class NAPAPI RenderableComponent : public Component
 	{
@@ -23,7 +25,7 @@ namespace nap
 
 
 	/**
-	 * Represents an object that can be rendered to screen or any other type of target. 
+	 * Represents an object that can be rendered to screen or any other type of render target. 
 	 * This is the base class for all render-able types.
 	 * Override the draw call to implement custom draw behavior.
 	 */

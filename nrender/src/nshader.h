@@ -118,10 +118,9 @@ namespace opengl
 		/**
 		 * Sets a uniform variable based on the given type, note that
 		 * you need to bind the shader before calling this function
-		 * @param type:  the uniform type
-		 * @param name:  name of the uniform variable
-		 * @param data:  pointer to data in memory
-		 * @param count: number of elements to set
+		 * @param type the uniform type
+		 * @param name name of the uniform variable
+		 * @param data pointer to data in memory to set.
 		 */
 		void setUniform(EGLSLType type, const std::string& name, const void* data);
 
@@ -129,14 +128,15 @@ namespace opengl
 		 * Sets a uniform variable based on it's name, note that you need
 		 * to bind the shader before calling this function. The type
 		 * is automatically retrieved from the associated uniform
-		 * 
+		 * @param name name of the uniform variable.
+		 * @param data pointer to the data in memory to set.
 		 */
 		void setUniform(const std::string& name, const void* data);
 
 		/**
+		 * @param name Name of the uniform attribute to get
 		 * @return shader uniform input attribute with associated name, 
 		 * nullptr if the uniform is not found
-		 * @param name: Name of the uniform attribute to get
 		 */
 		const UniformDeclaration* getUniform(const std::string& name) const;
 

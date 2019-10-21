@@ -26,7 +26,7 @@ namespace nap
             RTTI_ENABLE(Node)
         public:
             /**
-             * @param nodeManager: The @NodeManager this node provides output to.
+             * @param nodeManager: The manager this node provides output to.
              * @param active: true if the node is active and being processed from the moment of creation.
              */
             PullNode(NodeManager& nodeManager, bool active = true);

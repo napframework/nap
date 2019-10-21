@@ -24,8 +24,9 @@ namespace nap
         
         
         /**
-         * Straightforward component to playback audio from an @AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the @start() method, and is stopped using the @stop() method or by specifying the "Duration" property.
-         * The component has to be used in combination with an @OutputComponent to send the playback to DAC.
+		 * Resource part of the PlaybackComponent.
+         * Plays back audio from an AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the start() method, and is stopped using the stop() method or by specifying the "Duration" property.
+         * The component has to be used in combination with an OutputComponent to send the playback to DAC.
          */
         class NAPAPI PlaybackComponent : public AudioComponentBase
         {
@@ -57,7 +58,9 @@ namespace nap
 
         
         /**
-         * Instance of @PlaybackComponent
+         * Instance part of the PlaybackComponent
+		 * Plays back audio from an AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the start() method, and is stopped using the stop() method or by specifying the "Duration" property.
+		 * The component has to be used in combination with an OutputComponent to send the playback to DAC.
          */
         class NAPAPI PlaybackComponentInstance : public AudioComponentBaseInstance
         {

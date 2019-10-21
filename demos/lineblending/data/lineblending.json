@@ -228,7 +228,7 @@
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "Target": "DisplayLine",
                     "BlendValue": 0.5,
-                    "BlendSpeed": 1.0
+                    "BlendSpeed": "line_blendspeed"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -276,20 +276,8 @@
                     "Type": "nap::LineColorComponent",
                     "mID": "nap::LineColorComponent",
                     "BlendComponent": "./LineBlender",
-                    "FirstColor": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "SecondColor": {
-                        "Values": [
-                            0.7839999794960022,
-                            0.41100001335144045,
-                            0.41100001335144045
-                        ]
-                    },
+                    "FirstColor": "line_colorone",
+                    "SecondColor": "line_colortwo",
                     "Intensity": 1.0,
                     "Wrap": true,
                     "WrapPower": 1.0,
@@ -312,13 +300,13 @@
                     "Type": "nap::LineNoiseComponent",
                     "mID": "nap::LineNoiseComponent",
                     "Properties": {
-                        "Frequency": 2.25,
+                        "Frequency": "line_noisefreq",
                         "FrequencySmoothTime": 1.5,
-                        "Speed": 0.32499998807907107,
+                        "Speed": "line_noisespeed",
                         "SpeedSmoothTime": 0.10000000149011612,
-                        "Offset": 0.0,
+                        "Offset": "line_noiseoffset",
                         "OffsetSmoothTime": 0.10000000149011612,
-                        "Amplitude": 0.0,
+                        "Amplitude": "line_noiseamp",
                         "AmplitudeSmoothTime": 0.10000000149011612
                     },
                     "BlendComponent": "./LineBlender"
@@ -532,6 +520,118 @@
             ],
             "BlendMode": "AlphaBlend",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [],
+            "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Line Settings",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "line_colortwo",
+                            "Name": "Color Two",
+                            "Value": {
+                                "Values": [
+                                    0.7839999794960022,
+                                    0.41100001335144045,
+                                    0.41100001335144045
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "line_colorone",
+                            "Name": "Color One",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_size",
+                            "Name": "Size",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "line_position",
+                            "Name": "Position",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 0.5
+                            },
+                            "Clamp": true,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Blending",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_blendspeed",
+                            "Name": "Blend Speed",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Noise",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noiseamp",
+                            "Name": "Amplitude",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 0.20000000298023225
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noisespeed",
+                            "Name": "Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noiseoffset",
+                            "Name": "Offset",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noisefreq",
+                            "Name": "Frequency",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        }
+                    ],
+                    "Groups": []
+                }
+            ]
         },
         {
             "Type": "nap::PlaneMesh",

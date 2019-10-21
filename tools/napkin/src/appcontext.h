@@ -12,6 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <entity.h>
+#include <QtCore/QSettings>
 
 #include "thememanager.h"
 #include "document.h"
