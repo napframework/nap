@@ -107,7 +107,7 @@ namespace nap
 			// Get direction normal based on last and first vertex position values
 			// This is used to auto calculate an up vector for the camera view matrix
 			glm::vec3 dir_vector = upper_pos_value - lower_pos_value;
-			assert(!glm::isnan(dir_vector));
+			// assert(!glm::isnan(dir_vector));
 			dir_vector = glm::normalize(trans_matrix * dir_vector);
 			up_vec = glm::cross(dir_vector, line_normal);
 		}
