@@ -302,7 +302,7 @@ namespace nap
 		 * @return if the color value higher than another color
 		 * Won't work when the color is a pointer
 		 */
-		bool operator>(const Color<T, CHANNELS>& rhs) const								{ rhs < *this; }
+		bool operator>(const Color<T, CHANNELS>& rhs) const								{ return rhs < *this; }
 
 		/**
 		 * @return if the color value is less or equal to another color
