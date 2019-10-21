@@ -7,15 +7,22 @@ in vec3 passVert;						//< vertex world space coordinate
 in mat4 passModelMatrix;				//< Used model matrix
 in vec4 passColor;						//< Vertex color
 
+// Point light structure
+struct PointLight
+{
+	vec3		mPosition;
+	float 		mIntensity;
+};
+
 // uniform inputs
 uniform sampler2D	videoTexture;
 uniform vec3		cameraPosition;		//< world space camera position
+uniform PointLight	light;
 
 // output
 out vec4 out_Color;
 
-const vec3  lightPostition = vec3(0.0,3.0,5.0);
-const float lightIntensity = 1.0;
+// constants
 const float specularIntensity = 0.5;
 const vec3  haloColor = vec3(0.545, 0.549, 0.627);
 const vec3  specularColor = vec3(0.545, 0.549, 0.627);
@@ -29,7 +36,7 @@ const vec3	colorFor = vec3(0.176, 0.180, 0.2588);
 void main() 
 {
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lightPostition - passVert);
+	vec3 surfaceToLight = normalize(light.mPosition - passVert);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 surfaceToCamera = normalize(cameraPosition - passVert);
@@ -59,14 +66,14 @@ void main()
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * tex_color.rgb * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * tex_color.rgb * light.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = min(specularIntensity + (pow(ver_greyscale,2) / 2.0),1.0);
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * lightIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * specularColor * light.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     vec3 linearColor = diffuse + specular + ambient;

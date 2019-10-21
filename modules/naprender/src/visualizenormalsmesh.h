@@ -41,7 +41,8 @@ namespace nap
 
 		/**
 		* Updates the normals based on the data in the reference mesh
-		* @param push if the new positions should be pushed on to the GPU
+		* @param error contains the error when normals could not be pushed to the GPU.
+		* @param push if the new positions should be pushed on to the GPU.
 		*/
 		bool calculateNormals(utility::ErrorState& error, bool push = true);
 

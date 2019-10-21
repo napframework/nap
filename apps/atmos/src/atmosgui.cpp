@@ -44,6 +44,7 @@ namespace nap
 		mFogColor				= resourceManager->findObject<ParameterRGBColorFloat>("Fog Color");
 		mBackgroundColor		= resourceManager->findObject<ParameterRGBColorFloat>("Background Color");
 		mUseTransparency		= resourceManager->findObject<ParameterBool>("Use Transparency");
+		mRenderPath				= resourceManager->findObject<ParameterBool>("RenderPath");
 		mRenderMode				= resourceManager->findObject<ParameterPolygonMode>("Render Mode");
 
 		mLinkFogToBackground->valueChanged.connect([this](bool)				{ UpdateFogColor(); });

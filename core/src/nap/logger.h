@@ -124,14 +124,14 @@ namespace nap
 	/**
 	 * Minimal log message formatter, containing only the level and the message
 	 * @param msg the LogMessage to format
-	 * @param result string into which to write the formatted message
+	 * @return string into which to write the formatted message
 	 */
 	std::string basicLogMessageFormatter(const LogMessage& msg);
 
 	/**
 	 * LogMessage string formatter that includes a timestamp in ISO format
 	 * @param msg the LogMessage to format
-	 * @param result string into which to write the formatted message
+	 * @return string into which to write the formatted message
 	 */
 	std::string timestampLogMessageFormatter(const LogMessage& msg);
 
@@ -183,7 +183,9 @@ namespace nap
 	};
 
 	/**
-	 * The Logger invokes log messages through a global system using a singleton isntance.
+	 * The logger is a singleton that can be called to log messages of various degrees of severity. 
+	 * By default logged messages are printed to the console. 
+	 * Invoke logToDirectory() to log messages to file.
 	 */
 	class NAPAPI Logger
 	{
@@ -250,13 +252,15 @@ namespace nap
 		/**
 		 * Convenience function to start logging to a file.
 		 * @param filename The filename to write log entries to.
-		 * @param level The minimum level the handler should process
 		 */
 		static void addFileHandler(const std::string& filename);
 
 		/**
-		 * Start logging to a file in the specified directory, will write into a file with the timestamp in the name.
-		 * @param directory
+		 * Start logging to a file in the specified directory.
+		 * Writes all log information into a file with the current date/time in the name.
+		 * Final log filename: {directory}/{prefix}_{timestamp}.log
+		 * @param directory the directory to log to. 
+		 * @param prefix name of the log_file.
 		 */
 		static void logToDirectory(const std::string& directory, const std::string& prefix = "log");
 

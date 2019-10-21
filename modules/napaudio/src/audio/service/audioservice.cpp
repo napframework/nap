@@ -129,7 +129,9 @@ namespace nap
                 inputDeviceIndex = Pa_GetDefaultInputDevice();
             else
                 inputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mInputDevice);
-            if (inputDeviceIndex < 0)
+            
+			// Ensure the input index is valid
+			if (inputDeviceIndex < 0)
             {
                 errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
                 return false;
@@ -140,12 +142,15 @@ namespace nap
                 outputDeviceIndex = Pa_GetDefaultOutputDevice();
             else
                 outputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mOutputDevice);
-            if (outputDeviceIndex < 0)
+            
+			// Ensure the output index is valid
+			if (outputDeviceIndex < 0)
             {
                 errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
                 return false;
             }
 
+			// Ensure requested number of input and output channels is available
             if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, errorState))
                 return false;
             
@@ -163,13 +168,23 @@ namespace nap
 			outputParameters.suggestedLatency = 0;
 			outputParameters.hostApiSpecificStreamInfo = nullptr;
             
+			// Setup input parameters
             PaStreamParameters* inputParamsPtr = nullptr;
-            if (inputDeviceIndex >= 0)
-                inputParamsPtr = &inputParameters;
+			if (mInputChannelCount > 0)
+			{
+				assert(inputDeviceIndex >= 0);
+				inputParamsPtr = &inputParameters;
+			}
+
+			// Setup output parameters
             PaStreamParameters* outputParamsPtr = nullptr;
-            if (outputDeviceIndex >= 0)
-                outputParamsPtr = &outputParameters;
+			if (mOutputChannelCount > 0)
+			{
+				assert(outputDeviceIndex >= 0);
+				outputParamsPtr = &outputParameters;
+			}
             
+			// Open stream
 			error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, configuration->mSampleRate, configuration->mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
@@ -401,6 +416,12 @@ namespace nap
                     mOutputChannelCount = configuration->mOutputChannelCount;
             }
             
+			// One input channel must be specified
+			if (mOutputChannelCount == 0 && mInputChannelCount == 0)
+			{
+				errorState.fail("AudioService: No input or output channel selected");
+				return false;
+			}
 
             return true;
         }

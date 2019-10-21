@@ -8,6 +8,9 @@
 
 namespace nap
 {
+	/**
+	 * Python script services. Manages the python module and environment.
+	 */
 	class NAPAPI PythonScriptService : public Service
 	{
 		RTTI_ENABLE(Service)
@@ -15,8 +18,21 @@ namespace nap
 	public:
 		PythonScriptService(ServiceConfiguration* configuration);
 
-		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
+		/**
+		 * Called by core. Registers all object creation methods for python specific NAP objects.
+		 * @param factory the factory to register the creation functions with.
+		 */
+        void registerObjectCreators(rtti::Factory& factory) override;
 
+		/**
+		 * Tries to load a python module into the NAP environment.
+		 * @param modulePath path to the python module to load
+		 * @param module the loaded module
+		 * @param errorState contains the error when loading failed.
+		 * @return if loading the module succeeded or not
+		 */
+		bool TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState);
+        
 	private:
 		using ModuleMap = std::unordered_map<std::string, pybind11::module>;
 		using SystemPathSet = std::unordered_set<std::string>;

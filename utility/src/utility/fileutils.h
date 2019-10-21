@@ -37,14 +37,14 @@ namespace nap
 		std::string getFileExtension(const std::string& filename);
 
 		/**
-		 * @Return the name of the given file with extension, empty string if file has no extension
 		 * @param file the file to extract the name frame
+		 * @return the name of the given file with extension, empty string if file has no extension
 		 */
 		std::string getFileName(const std::string& file);
 
 		/**
-		 * @Return the directory of the given file
-		 * @param file the file to extract the name frame
+		 * @param file the filename
+		 * @return the directory of the given file
 		 */
 		std::string getFileDir(const std::string& file);
 
@@ -122,9 +122,9 @@ namespace nap
 		const std::string toComparableFilename(const std::string& filename);
 
 		/**
+		 * @param filenameA filename to compare against filenameB.
+		 * @param filenameB filename to comapre against filenameA.
 		 * @return return true when file are logically equal (uses toComparableFilename).
-		 * @param fileNameA: filename to compare against filenameB.
-		 * @param filenameB: filename to comapre against filenameA.
 		 */
 		bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
 
@@ -138,12 +138,12 @@ namespace nap
 		bool getFileModificationTime(const std::string& path, uint64_t& modTime);
 
 		/**
-		 * @param outPath the full path to the executable including the application name
+		 * @return the full path to the executable including the application name
 		 */
 		std::string getExecutablePath();
 
 		/**
-		 * @param outDir the full path to the executable directory
+		 * @return the full path to the executable directory.
 		 */
 		std::string getExecutableDir();
 

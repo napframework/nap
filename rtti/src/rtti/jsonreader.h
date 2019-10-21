@@ -26,24 +26,28 @@ namespace nap
 		/**
 		 * Deserialize a set of objects and their data from the specified JSON string
 		 *
-		 * @param json The JSON to deserialize from
-		 * @param propertyValidationMode Whether missing required properties should be treated as errors
-		 * @param result The result of deserialization
-		 * @param errorState The error state of deserialization
+		 * @param json The JSON to deserialize
+		 * @param propertyValidationMode whether missing required properties should be treated as errors
+		 * @param pointerPropertyMode controls ownership of the created objects. Use 'NoRawPointers' in process and 'OnlyRawPointers' out of process.
+		 * @param factory RTTI object factory. 
+		 * @param result the result of the deserialization operation
+		 * @param errorState contains the error when de-serialization fails.
 		 *
-		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
+		 * @return true if deserialization succeeded, false if not. In case of failure the errorState contains detailed error info.
 		 */
 		bool NAPAPI deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Read and deserialize a set of objects and their data from the specified JSON file
 		 *
-		 * @param json The JSON file to deserialize from
+		 * @param path The JSON file to deserialize
 		 * @param propertyValidationMode Whether missing required properties should be treated as errors
-		 * @param result The result of deserialization
-		 * @param errorState The error state of deserialization
+		 * @param pointerPropertyMode controls ownership of the created objects. Use 'NoRawPointers' in process and 'OnlyRawPointers' out of process.
+		 * @param factory RTTI object factory.
+		 * @param result The result of the deserialization operation
+		 * @param errorState contains the error when deserialization fails.
 		 *
-		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
+		 * @return true if deserialization succeeded, false if not. In case of failure the errorState contains detailed error info.
 		 */
 		bool NAPAPI readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 

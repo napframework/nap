@@ -78,7 +78,6 @@ namespace nap
 
 			/**
 			 * Adds association between a type and it's object creator.
-			 * @param typeInfo: the RTTI type to create a mapping for.
 			 * @param objectCreator: the object that can create instances of the type.
 			 */
 			void addObjectCreator(std::unique_ptr<IObjectCreator> objectCreator);
@@ -92,7 +91,7 @@ namespace nap
 			Object* create(rtti::TypeInfo typeInfo);
 
 			/**
-			 * @return If the type in @typeInfo is registered into the Factory, returns true. If the type is not 
+			 * @return If the type is registered into the Factory, returns true. If the type is not 
 			 * registered, the RTTI system is queried if it can be created.
 			 */
 			bool canCreate(rtti::TypeInfo typeInfo) const;

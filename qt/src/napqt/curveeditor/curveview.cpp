@@ -1606,10 +1606,6 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 //		action->setEnabled(true);
 	}
 
-
-	auto btFrameAction = new QToolButton();
-
-
 	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
 	connect(&mTimeSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onTimeChanged);
 	connect(&mValueSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onValueChanged);

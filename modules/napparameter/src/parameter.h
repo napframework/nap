@@ -44,9 +44,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 
-	private:
-		friend class ParameterService;
-
 		/**
 		 * Find a parameter in the current group by id
 		 *
@@ -62,6 +59,9 @@ namespace nap
 		 * @return The group if found. Null otherwise.
 		 */
 		ResourcePtr<ParameterGroup> findChild(const std::string& id) const;
+
+	private:
+		friend class ParameterService;
 
 	public:
 		std::vector<ResourcePtr<Parameter>>			mParameters;	///< Property: 'Parameters' the parameters defined in this group

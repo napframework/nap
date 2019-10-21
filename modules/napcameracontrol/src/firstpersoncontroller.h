@@ -19,7 +19,10 @@ namespace nap
 	class KeyInputComponent;
 
 	/**
-	 * Resource for the FirstPersonController
+	 * Resource part of the first person controller.
+	 * The controller applies first-person movement to the entity it is attached to.
+	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
+	 * Requires a nap::KeyInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI FirstPersonController : public Component
 	{
@@ -39,10 +42,10 @@ namespace nap
 
 
 	/**
-	 * The FirstPersonController is a component that implements first-person movement for the entity it is attached to.
-	 * It uses the TransformComponent to move the entity and the InputComponent to receive input
-	 *
+	 * Instance part of the first person controller.
+	 * The controller applies first-person movement to the entity it is attached to.
 	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
+	 * Requires a nap::KeyInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI FirstPersonControllerInstance : public ComponentInstance
 	{

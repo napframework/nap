@@ -73,12 +73,9 @@ namespace nap
 		OrthoCameraComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		* Initialize this component from its resource
-		*
-		* @param resource The resource we're being instantiated from
-		* @param entityCreationParams Parameters required to create new entity instances during init
-		* @param errorState The error object
-		*/
+		 * Initialize this component from its resource
+		 * @param errorState contains the error if initialization fails.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**

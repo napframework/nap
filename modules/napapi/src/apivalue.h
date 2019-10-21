@@ -21,7 +21,7 @@ namespace nap
 	public:
 		/**
 		 * Required constructor
-		 * @param contained type id, for example: RTTI_OF(float) etc.
+		 * @param type the type of the managed value, for example: RTTI_OF(float) etc.
 		 * @param name the name of this api value
 		 */
 		APIBaseValue(const rtti::TypeInfo& type, const std::string& name) :
@@ -56,35 +56,41 @@ namespace nap
 		APIValue();
 
 		/**
-		* Move Constructor
-		*/
+		 * Move Constructor
+		 * @param other value to move
+		 */
 		APIValue(APIValue&& other);
 
 		/**
-		* Copy constructor
-		*/
+		 * Copy constructor
+		 * @param other value to copy
+		 */
 		APIValue(const APIValue& other);
 
 		/**
-		* Move construct a value of type T
-		* @param value the value given to this object
-		*/
+		 * Move construct a value of type T
+		 * @param name the name of the value
+		 * @param value the value given to this object
+		 */
 		APIValue(const std::string& name, T&& value);
 
 		/**
-		* Constructs a value of type T, a copy is made
-		* @param value the value this object is constructed with
-		*/
+		 * Constructs a value of type T, a copy is made
+		 * @param name the name of the value
+		 * @param value the value this object is constructed with
+		 */
 		APIValue(const std::string& name, const T& value);
 
 		/**
-		* Move assignment operator
-		*/
+		 * Move assignment operator
+		 * @param other api value to move
+		 */
 		APIValue<T>& operator=(APIValue<T>&& other);
 
 		/**
-		* Copy assignment operator
-		*/
+		 * Copy assignment operator
+		 * @param other api value to copy
+		 */
 		APIValue<T>& operator=(const APIValue<T>& other);
 
 		T mValue;				///< managed value

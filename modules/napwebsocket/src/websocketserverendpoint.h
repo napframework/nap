@@ -30,7 +30,8 @@ namespace nap
 	 * and the content of the application is hot-reloaded. A call to open is non blocking. 
 	 * Messages are forwarded to all clients that implement the nap::IWebSocketClient interface.
 	 * Clients must register themselves to the various signals to receive connection updates and messages.
-	 * Right now SSL encryption is NOT supported. This will change in the future.
+	 * Right now SSL encryption is NOT supported. This will change in the future. Note that depending on your operating 
+	 * system you might have to run the application as administrator to open a web-socket.
 	 *
 	 * By default the server accepts all client connection requests. Change the 'AccessMode' property to 'Ticket'
 	 * or 'Reserved' to add a client identification scheme. When set to 'Ticket' the server accepts
@@ -46,11 +47,12 @@ namespace nap
 	 * For both modes (Ticket and Reserved) you need to acquire a ticket by sending a HTTP 'POST' request 
 	 * to the server. The body of the post should contain a JSON formatted string that contains 2 fields:
 	 * 'user' and 'pass'. Both fields are always required. For example:
-	 *
+	 * ~~~~~
 	 *	{
 	 *		"user": "napuser"		///< Always necessary
 	 *		"pass": "letmein"		///< Always necessary
 	 *	}
+	 * ~~~~~
 	 *
 	 * The server generates a new ticket based on the provided information and sends it back to the client that made the request.
 	 * The received ticket should be specified as the first SUB-PROTOCOL argument when creating the web-socket. The server extracts the ticket 
@@ -89,7 +91,7 @@ namespace nap
 
 		/**
 		 * Initializes the server endpoint. 
-		 * @param error contains the error when initialization fails
+		 * @param errorState contains the error when initialization fails
 		 * @return if initialization succeeded
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
@@ -172,6 +174,7 @@ namespace nap
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
 		std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
+		std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
 
 	private:
 		std::mutex mListenerMutex;

@@ -45,6 +45,7 @@ namespace nap
 		 *   initialization will fail
 		 * - If no module list is provided all encountered modules will be loaded
 		 * @param moduleNames The list of modules to load
+		 * @param error Contains the error when loading modules fails.
 		 * @return Whether we were successfully able load our requested modules
 		 */
 		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);

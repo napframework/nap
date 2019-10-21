@@ -11,6 +11,10 @@
 #include <imguiservice.h>
 #include <app.h>
 #include <spheremesh.h>
+#include <parametergui.h>
+#include <parameterservice.h>
+#include <parameternumeric.h>
+#include <parametervec.h>
 
 namespace nap
 {
@@ -37,6 +41,13 @@ namespace nap
 	 * components that live under the line entity. The 'source' lines are individual resources that the line blend component
 	 * interpolates in between. The result of that operation is stored in the display line.
 	 * The display line also has normals which are visualized and used to add a displacement effect.
+	 *
+	 * All the parameters in the GUI can be saved and read from disk as a preset.
+	 * The demo uses multiple parameter groups (nap::ParameterGroup) to group parameters together in logical sections.
+	 * Every parameter group contains one or multiple parameters of a specific type. The nap::ParameterGUI
+	 * renders the group and all of it's children to screen. * Parameters and parameter groups are declared in JSON and are regular resource. 
+	 * You can link to parameters directly from other components and resources. 
+	 * Refer to the LineNoiseComponent and LineBlendComponent of this application to see how to access and use them.
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
@@ -86,17 +97,15 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
-		ObjectPtr<EntityInstance> mLaserEntity = nullptr;				//< Pointer to the entity that represents the laser canvas
+		ParameterService* mParameterService = nullptr;					//< Manages all parameters in the application
+		ResourcePtr<RenderWindow> mRenderWindow;						//< Pointer to the render window		
+		ResourcePtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
+		ResourcePtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
+		ResourcePtr<EntityInstance> mLaserEntity = nullptr;				//< Pointer to the entity that represents the laser canvas
+		ResourcePtr<ParameterGroup> mParameters = nullptr;				//< Pointer to the root parameter group
+		ResourcePtr<ParameterFloat> mLineSizeParam = nullptr;			//< Parameter that controls line size
+		ResourcePtr<ParameterVec2> mLinePositionParam = nullptr;		//< Parameter that controls the line position
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-
-		// Colors
-		RGBColorFloat mColorTwo = { 0.784f, 0.411f, 0.411f };			//< Line first color	
-		RGBColorFloat mColorOne = { 1.0f, 1.0f, 1.0f };					//< Line second color
-		float mBlendSpeed = 1.0f;										//< Line blend speed
-		float mLineSize = 0.5f;											//< Size of the line (normalized)
-		glm::vec2 mLinePosition = { 0.5f, 0.5f };						//< Position of the line relative to canvas
+		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			//< Renders the parameters
 	};
 }

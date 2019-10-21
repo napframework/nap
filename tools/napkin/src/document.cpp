@@ -97,8 +97,13 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	auto oldName = object.mID;
 	object.mID = newName;
 
+	// Ensure all relevant property paths point to the new object name
 	for (auto& p : mPropertyPaths)
 		p->updateObjectName(oldName, newName);
+
+	// Update pointers to this object
+	for (auto propPath : getPointersTo(object, false, false, false))
+		propPath.setPointee(&object);
 
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());

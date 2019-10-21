@@ -82,7 +82,7 @@ But let's begin by defining some of the resources in JSON:
 },
 
 {
-	"Type" : "nap::Image",	
+	"Type" : "nap::ImageFromFile ",	
 	"mID" : "WorldTexture",
 	"ImagePath" : "world_texture.png"
 },
@@ -256,7 +256,7 @@ And in the render call of your application you explicitly tell the renderer to r
 void ExampleApp::render()
 {
 	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindow });
+	mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 	
 	// Activate current window for drawing
 	mRenderWindow->makeActive();
@@ -484,7 +484,7 @@ There are currently two components that can draw text to screen: [Renderable2DTe
 
 The [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) has a draw call that can be used to draw text directly at a specific location. The provided coordinates are in screen space (pixels), where 0,0 is the bottom left corner of your screen or back-buffer. Alternatively you can use the [render service](@ref nap::RenderService) to render your 2D text. This is similar to rendering meshes. 3D text is always rendered using the render-service.
 
-The component that renders text expects to find a texture uniform on the material called 'glyph'. If that uniform is not available your application will not start because the component can not bind the requested [glyph](@ref nap::Glyph) (character) to the material. It is also important to set the blend mode of the material to [AlphaBlend](@ref nap::BlendMode). This ensures that text is rendered as a transparent object. 
+The component that renders text expects to find a texture uniform on the material called 'glyph'. If that uniform is not available your application will not start because the component can not bind the requested [glyph](@ref nap::Glyph) (character) to the material. It is also important to set the blend mode of the material to [AlphaBlend](@ref nap::EBlendMode). This ensures that text is rendered as a transparent object. 
 
 The HelloWorld demo shows you how to set this up.
 
@@ -747,7 +747,7 @@ You can also use a more low-level interface to upload data directly into your te
 
 ###GPU Textures {#gpu_textures}###
 
-The [RenderTexture](@ref nap::RenderTexture) can be used to declare a texture on the GPU in JSON. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in JSON. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
+The [RenderTexture](@ref nap::RenderTexture2D) can be used to declare a texture on the GPU in JSON. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in JSON. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
 
 ```
 {
@@ -881,7 +881,7 @@ You can add as many windows to your application as you want. Take a look at the 
 void MultiWindowApp::render()
 {
 	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindowOne });
+	mRenderService->destroyGLContextResources({ mRenderWindowOne.get(), mRenderWindowTwo.get() });
 
 	// Render Window One : Sphere
 	{
@@ -990,6 +990,8 @@ render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentI
 // Render
 mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
 ~~~~~~~~~~~~~~~
+
+Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used  apply a 'post process' render step.
 
 Cameras {#cameras}
 =======================
