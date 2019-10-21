@@ -47,11 +47,6 @@ namespace nap
 		 * Resource pointer to the shape definition
 		 */
 		ResourcePtr<FlexBlockShape> mFlexBlockShape; ///< Property: 'FlexBlockShape' Reference to the shape definition of the block 
-		
-		/**
-		 * Reference to the component of the FlexBlockSerialComponent
-		 */
-		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
 	
 		/**
 		 * Reference to mac controller
@@ -228,9 +223,6 @@ namespace nap
 	protected:
 		FrameMesh* mFrameMesh = nullptr;
 		FlexBlockMesh* mFlexBlockMesh = nullptr;
-
-		//
-        ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
 		
 		bool mEnableSerial;
 

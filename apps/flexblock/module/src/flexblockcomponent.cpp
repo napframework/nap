@@ -13,8 +13,6 @@
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
-
-	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Enable Serial", &nap::FlexBlockComponent::mEnableSerial, nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("Mac Controller", &nap::FlexBlockComponent::mMacController, nap::rtti::EPropertyMetaData::Required)
@@ -112,9 +110,6 @@ namespace nap
 
 		// set points
 		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
-
-		// start serial
-		mFlexBlockSerialComponentInstance->start(errorState);
 
 		return true;
 	}
