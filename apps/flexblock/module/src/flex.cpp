@@ -512,51 +512,24 @@ namespace nap
 	void Flex::concatElements()
 	{
 		// elements
-		std::vector<std::vector<int>> newElements;
-		for (int i = 0; i < mElementsObject.size(); i++)
-		{
-			newElements.push_back(mElementsObject[i]);
-		}
-
-		for (int i = 0; i < mElementsObject2Frame.size(); i++)
-		{
-			newElements.push_back(mElementsObject2Frame[i]);
-		}
-		mElements = newElements;
+		mElements = mElementsObject;
+		mElements.reserve(mElementsObject.size() + mElementsObject2Frame.size());
+		mElements.insert(mElements.end(), mElementsObject2Frame.begin(), mElementsObject2Frame.end());
 
 		// elements_all
-		std::vector<std::vector<int>> newElementsAll;
-		for (int i = 0; i < mElementsObject.size(); i++)
-		{
-			newElementsAll.push_back(mElementsObject[i]);
-		}
-
-		for (int i = 0; i < mElementsObject2Frame.size(); i++)
-		{
-			newElementsAll.push_back(mElementsObject2Frame[i]);
-		}
-
-		for (int i = 0; i < mElementsFrame.size(); i++)
-		{
-			newElementsAll.push_back(mElementsFrame[i]);
-		}
-		mElementsAll = newElementsAll;
+		mElementsAll = mElementsObject;
+		mElementsAll.reserve(mElementsObject.size() + mElementsObject2Frame.size() + mElementsFrame.size());
+		mElementsAll.insert(mElementsAll.end(), mElementsObject2Frame.begin(), mElementsObject2Frame.end());
+		mElementsAll.insert(mElementsAll.end(), mElementsFrame.begin(), mElementsFrame.end());
 	}
 
 
 	void Flex::concatPoints()
 	{
-		std::vector<glm::vec3> newPoints;
-		for (int i = 0; i < mPointsObject.size(); i++)
-		{
-			newPoints.push_back(mPointsObject[i]);
-		}
+		std::vector<glm::vec3> newPoints = mPointsObject;
+		newPoints.insert(newPoints.end(), mPointsFrame.begin(), mPointsFrame.end());
 
-		for (int i = 0; i < mPointsFrame.size(); i++)
-		{
-			newPoints.push_back(mPointsFrame[i]);
-		}
-
+		// TODO: Apply copy mutex!
 		mPoints = newPoints;
 	}
 

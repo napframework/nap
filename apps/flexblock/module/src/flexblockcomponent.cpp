@@ -148,12 +148,11 @@ namespace nap
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
-		// 
-		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		mObjectPoints = objectPoints;
+		// get points of objects
+		mObjectPoints = mFlexLogic->getObjectPoints();
 
 		// update ropes of frame
-		mFrameMesh->setControlPoints(objectPoints);
+		mFrameMesh->setControlPoints(mObjectPoints);
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
