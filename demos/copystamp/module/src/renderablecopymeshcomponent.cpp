@@ -55,7 +55,7 @@ namespace nap
 			return false;
 
 		// Initialize our material instance based on values in the resource
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call

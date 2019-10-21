@@ -41,7 +41,7 @@ namespace nap
 	{
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
@@ -85,13 +85,37 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(VkCommandBuffer commandBuffer, int frameIndex, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mRenderableMesh.isValid())
 		{
 			assert(false);
 			return;
 		}
+
+		// Get global transform
+		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
+
+		// Bind material
+		MaterialInstance& mat_instance = getMaterialInstance();
+
+		// Set projection uniform in shader
+		Material* comp_mat = mat_instance.getMaterial();
+		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
+		if (projectionUniform != nullptr)
+			projectionUniform->setValue(projectionMatrix);
+
+		// Set view uniform in shader
+		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
+		if (viewUniform != nullptr)
+			viewUniform->setValue(viewMatrix);
+
+		// Set model matrix uniform in shader
+		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+		if (modelUniform != nullptr)
+			modelUniform->setValue(model_matrix);
+
+		mat_instance.pushUniforms(frameIndex);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
 
@@ -100,6 +124,9 @@ namespace nap
 		opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		Material& material = *mRenderableMesh.getMaterialInstance().getMaterial();
+
+		VkDescriptorSet descriptor_set = mRenderableMesh.getMaterialInstance().getDescriptorSet(frameIndex);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
 
 		std::vector<VkBuffer> vertexBuffers;
 		std::vector<VkDeviceSize> vertexBufferOffsets;
@@ -115,6 +142,8 @@ namespace nap
 		}
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+
 
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{

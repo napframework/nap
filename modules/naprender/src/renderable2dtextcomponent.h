@@ -132,7 +132,7 @@ namespace nap
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
-		virtual void onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 
 	private:

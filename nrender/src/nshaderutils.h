@@ -71,25 +71,42 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		ShaderUniformInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) {}
+		ShaderUniformInput(const std::string& name, int offset, int size, EGLSLType type);
 		ShaderUniformInput() = delete;
 
 		std::string		mName;							///< Name of the shader attribute
-		GLenum			mType = GL_INVALID_ENUM;		///< OpenGL Type of the shader attribute
-		EGLSLType		mGLSLType = EGLSLType::Unknown;	///< System GLSL type
-		GLint			mLocation = -1;					///< Location of the shader attribute
-		GLuint			mShaderProgram = 0;				///< Shader this uniform is associated with
-		GLint			mSize = 0;						///< Number of elements in array
+		int				mOffset;
+		int				mSize;
+		EGLSLType		mType;
 
-														/**
-														* @return if this shader input is an array or single value
-														*/
-		bool isArray() const { return mSize > 1; }
+		/**
+		* @return if this shader input is an array or single value
+		*/
+		bool isArray() const { return false; }
+	};
+
+	using UniformDeclaration = ShaderUniformInput;
+
+	class UniformBufferObjectDeclaration
+	{
+	public:
+		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size) :
+			mName(name),
+			mBinding(binding),
+			mStage(inStage),
+			mSize(size)
+		{
+		}
+
+		std::string											mName;
+		int													mBinding;
+		VkShaderStageFlagBits								mStage;
+		int													mSize;
+		std::vector<std::unique_ptr<UniformDeclaration>>	mDeclarations;		
 	};
 
 	// Typedefs
-	using UniformDeclaration = ShaderUniformInput;
-	using UniformDeclarations = std::unordered_map<std::string, std::unique_ptr<UniformDeclaration>>;
+	using UniformDeclarations = std::unordered_map<std::string, UniformDeclaration*>;
 
 	using ShaderVertexAttribute = ShaderInput;
 	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;

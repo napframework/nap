@@ -66,6 +66,8 @@ namespace nap
 		 */
 		void unbind();
 
+		VkPipelineLayout getPipelineLayout() const { return mPipelineLayout; }
+
 		VkPipeline getPipeline() { return mPipeline; }
 
 	protected:

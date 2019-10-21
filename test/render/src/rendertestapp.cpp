@@ -48,7 +48,7 @@ namespace nap
  		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
 // 		mCameraEntityRight			= mScene->findEntity("CameraEntityRight");
 // 		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
-// 		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
+ 		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 		
 		/*
 		// Set render states
@@ -81,7 +81,7 @@ namespace nap
 				mScene->destroy(mPigEntity);
 			}
 			timer = 0.0;
-		}
+		}*/
 
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
@@ -92,50 +92,48 @@ namespace nap
 			Window* window = mRenderWindows[0].get();
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
-		
-		{
-			// Update input for second window
-			std::vector<nap::EntityInstance*> entities;
-			entities.push_back(mCameraEntityRight.get());
-			
-			Window* window = mRenderWindows[1].get();
-			mInputService->processWindowEvents(*window, input_router, entities);
-		}
+// 		
+// 		{
+// 			// Update input for second window
+// 			std::vector<nap::EntityInstance*> entities;
+// 			entities.push_back(mCameraEntityRight.get());
+// 			
+// 			Window* window = mRenderWindows[1].get();
+// 			mInputService->processWindowEvents(*window, input_router, entities);
+// 		}
 		
 		// Retrieve source (resource) mesh data
-		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
-		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
-		assert(rtti_mesh != nullptr);
-		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
-		
-		// Retrieve destination (instance) mesh data
-		MeshInstance& mesh_instance = mesh.getMeshInstance();
-		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
-		
-		// Sine wave over our quad
-		for (int index = 0; index != src_positions.size() - 1; ++index)
-		{
-			float s = sin(mRenderService->getCore().getElapsedTime() + (float)index * 0.2f);
-			dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
-		}
-		
-		dst_positions.back() = *dst_positions.begin();
-		
-		utility::ErrorState errorState;
-		if (!mesh_instance.update(errorState))
-		{
-			Logger::fatal(errorState.toString());
-		}
+// 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
+// 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
+// 		assert(rtti_mesh != nullptr);
+// 		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+// 		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
+// 		
+// 		// Retrieve destination (instance) mesh data
+// 		MeshInstance& mesh_instance = mesh.getMeshInstance();
+// 		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+// 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
+// 		
+// 		// Sine wave over our quad
+// 		for (int index = 0; index != src_positions.size() - 1; ++index)
+// 		{
+// 			float s = sin(mRenderService->getCore().getElapsedTime() + (float)index * 0.2f);
+// 			dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
+// 		}
+// 		
+// 		dst_positions.back() = *dst_positions.begin();
+// 		
+// 		utility::ErrorState errorState;
+// 		if (!mesh_instance.update(errorState))
+// 		{
+// 			Logger::fatal(errorState.toString());
+// 		}
 
 		// 1. Show a simple window.
 		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
-		{
-			ImGui::ShowTestWindow(&mShow);
-		}
-
-		*/
+// 		{
+// 			ImGui::ShowTestWindow(&mShow);
+// 		}
 	}
 	
 	
@@ -159,9 +157,10 @@ namespace nap
 			RenderWindow* render_window = mRenderWindows[0].get();
 			render_window->makeActive();
 			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();
+			int frame_index = render_window->getWindow()->getCurrentFrameIndex() % 2;
 
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
-			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
 			/*
 			// Render output texture to plane

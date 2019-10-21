@@ -80,7 +80,7 @@ namespace nap
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera);
 
 		/**
 		* Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -89,7 +89,7 @@ namespace nap
 		* @param camera the camera used for rendering all the available components
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -99,7 +99,7 @@ namespace nap
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Renders a specific set of objects to a specific renderTarget.
@@ -109,7 +109,7 @@ namespace nap
 		* @param comps the components to render to renderTarget
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		 * Clears specific parts of the renderTarget using the given flags. 

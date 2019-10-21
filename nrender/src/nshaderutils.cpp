@@ -47,6 +47,14 @@ namespace opengl
 	{
 	}
 
+	ShaderUniformInput::ShaderUniformInput(const std::string& name, int offset, int size, EGLSLType type) :
+		mName(name),
+		mOffset(offset),
+		mSize(size),
+		mType(type)
+	{
+	}
+
 
 	// Validates part of the shader
 	EShaderValidationResult validateShader(GLuint shader, std::string& validationMessage)

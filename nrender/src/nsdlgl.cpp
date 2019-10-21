@@ -6,6 +6,7 @@
 #include <iostream>
 #include <assert.h>
 #include <GL/glew.h>
+#include "SDL_vulkan.h"
 
 namespace opengl
 {
@@ -257,7 +258,7 @@ namespace opengl
     glm::ivec2 getDrawableWindowSize(SDL_Window* window)
     {
         int x, y;
-        SDL_GL_GetDrawableSize(window, &x, &y);
+		SDL_Vulkan_GetDrawableSize(window, &x, &y);
         return { x, y };
     }
 

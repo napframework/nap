@@ -21,6 +21,7 @@
 #include "meshfromfile.h"
 #include "trianglemesh.h"
 #include "shader.h"
+#include "material.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
@@ -47,6 +48,7 @@ namespace nap
 		factory.addObjectCreator(std::make_unique<TriangleMeshCreator>(*this));
 		factory.addObjectCreator(std::make_unique<MeshFromFileCreator>(*this));
 		factory.addObjectCreator(std::make_unique<ShaderCreator>(*this));
+		factory.addObjectCreator(std::make_unique<MaterialCreator>(*this));
 	}
 
 
@@ -168,6 +170,30 @@ namespace nap
 			throw std::runtime_error("failed to create render pass!");
 		}
 	}
+
+	VkPrimitiveTopology getTopology(const IMesh& inMesh)
+	{
+		switch (inMesh.getMeshInstance().getShape(0).getDrawMode())
+		{
+		    case opengl::EDrawMode::POINTS:
+				return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			case opengl::EDrawMode::LINES:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			case opengl::EDrawMode::LINE_STRIP:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+			case opengl::EDrawMode::TRIANGLES:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			case opengl::EDrawMode::TRIANGLE_STRIP:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+			case opengl::EDrawMode::TRIANGLE_FAN:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+			default:
+			{
+				assert(false);
+				return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+			}
+		}
+	}
 	
 	bool createGraphicsPipeline(VkDevice device, Material& material, const IMesh& mesh, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
@@ -226,7 +252,7 @@ namespace nap
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		inputAssembly.topology = getTopology(mesh);
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport = {};
@@ -278,10 +304,13 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
+		VkDescriptorSetLayout set_layout = material.getDescriptorSetLayout();
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
+		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount			= 1;
+		pipelineLayoutInfo.pSetLayouts				= &set_layout;
+		pipelineLayoutInfo.pushConstantRangeCount	= 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
 			return false;
@@ -372,14 +401,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera)
 	{
-		renderObjects(renderTarget, commandBuffer, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, frameIndex, commandBuffer, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -400,7 +429,7 @@ namespace nap
 		}
 
 		// Render these objects
-		renderObjects(renderTarget, commandBuffer, camera, render_comps, sortFunction);
+		renderObjects(renderTarget, frameIndex, commandBuffer, camera, render_comps, sortFunction);
 	}
 
 
@@ -463,13 +492,13 @@ namespace nap
 
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
-		renderObjects(renderTarget, commandBuffer, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, frameIndex, commandBuffer, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
 		// Sort objects to render
 		std::vector<RenderableComponentInstance*> components_to_render = comps;
@@ -479,7 +508,7 @@ namespace nap
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
-		//camera.setRenderTargetSize(renderTarget.getSize());
+		camera.setRenderTargetSize(renderTarget.getSize());
 
 		// Make sure we update our render state associated with the current context
 		//updateRenderState();
@@ -499,7 +528,7 @@ namespace nap
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
-			comp->draw(commandBuffer, view_matrix, projection_matrix);
+			comp->draw(commandBuffer, frameIndex, view_matrix, projection_matrix);
 		}
 
 		//renderTarget.unbind();

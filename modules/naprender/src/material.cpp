@@ -7,6 +7,7 @@
 #include <nap/logger.h>
 #include <GL/glew.h>
 #include "rtti/rttiutilities.h"
+#include "renderservice.h"
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
@@ -58,7 +59,7 @@ namespace nap
 	{
 		std::unique_ptr<Uniform> result;
 
-		switch (declaration.mGLSLType)
+		switch (declaration.mType)
 		{
 		case opengl::EGLSLType::Int:
 			{
@@ -161,7 +162,7 @@ namespace nap
 		}
 
 		// Verify the uniform types match
-		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
+		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
 			return false;
 
 		return true;
@@ -195,69 +196,78 @@ namespace nap
 	}
 
 
-	void MaterialInstance::bind()
+	void MaterialInstance::pushUniforms(int frameIndex)
 	{
-		getMaterial()->bind();
-	}
+		VkDevice device = getMaterial()->getRenderer().getDevice();
 
-
-	void MaterialInstance::unbind()
-	{
-		getMaterial()->unbind();
-	}
-
-
-	void MaterialInstance::pushUniforms()
-	{
-		// Keep track of which uniforms were set (i.e. overridden) by the material instance
-		std::unordered_set<std::string> instance_bindings;
-		int texture_unit = 0;
-
-		// Push all texture uniforms that are set (i.e. overridden) in the instance
-		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
-		for (auto& kvp : instance_texture_bindings)
+		for (UniformBufferObject& ubo : mUniformBufferObjects)
 		{
-			nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
-			assert(uniform_tex != nullptr);
-			texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
-			instance_bindings.insert(kvp.first);
-		}
-
-		// Push all value uniforms that are set (i.e. overridden) in the instance
-		const UniformValueBindings& instance_value_bindings = getValueBindings();
-		for (auto& kvp : instance_value_bindings)
-		{
-			nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
-			assert(uniform_val != nullptr);
-			uniform_val->push(*kvp.second.mDeclaration);
-			instance_bindings.insert(kvp.first);
-		}
-
-		// Push all uniform textures in the material that weren't overridden by the instance
-		// Note that the material contains mappings for all the possible uniforms in the shader
-		Material* material = getMaterial();
-		for (auto& kvp : material->getTextureBindings())
-		{
-			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+			void* mapped_memory;
+			vkMapMemory(device, ubo.mBuffersMemory[frameIndex], 0, ubo.mDeclaration->mSize, 0, &mapped_memory);
+			
+			for (auto& kvp : ubo.mUniforms)
 			{
-				nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
-				assert(uniform_tex != nullptr);
-				texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
+				Uniform* uniform = kvp.second->mUniform.get();
+				
+				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(uniform);
+				if (uniform_val != nullptr)
+				{
+					uniform_val->push((uint8_t*)mapped_memory, *kvp.second->mDeclaration);
+				}
 			}
+
+			vkUnmapMemory(device, ubo.mBuffersMemory[frameIndex]);
 		}
 
-		// Push all uniform values in the material that weren't overridden by the instance
-		for (auto& kvp : material->getValueBindings())
-		{
-			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-			{
-				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
-				assert(uniform_val != nullptr);
-				uniform_val->push(*kvp.second.mDeclaration);
-			}
-		}
-
-		glActiveTexture(GL_TEXTURE0);
+// 		// Keep track of which uniforms were set (i.e. overridden) by the material instance
+// 		std::unordered_set<std::string> instance_bindings;
+// 		int texture_unit = 0;
+// 
+// 		// Push all texture uniforms that are set (i.e. overridden) in the instance
+// 		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
+// 		for (auto& kvp : instance_texture_bindings)
+// 		{
+// 			nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
+// 			assert(uniform_tex != nullptr);
+// 			texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
+// 			instance_bindings.insert(kvp.first);
+// 		}
+// 
+// 		// Push all value uniforms that are set (i.e. overridden) in the instance
+// 		const UniformValueBindings& instance_value_bindings = getValueBindings();
+// 		for (auto& kvp : instance_value_bindings)
+// 		{
+// 			nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
+// 			assert(uniform_val != nullptr);
+// 			uniform_val->push(*kvp.second.mDeclaration);
+// 			instance_bindings.insert(kvp.first);
+// 		}
+// 
+// 		// Push all uniform textures in the material that weren't overridden by the instance
+// 		// Note that the material contains mappings for all the possible uniforms in the shader
+// 		Material* material = getMaterial();
+// 		for (auto& kvp : material->getTextureBindings())
+// 		{
+// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+// 			{
+// 				nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
+// 				assert(uniform_tex != nullptr);
+// 				texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
+// 			}
+// 		}
+// 
+// 		// Push all uniform values in the material that weren't overridden by the instance
+// 		for (auto& kvp : material->getValueBindings())
+// 		{
+// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+// 			{
+// 				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
+// 				assert(uniform_val != nullptr);
+// 				uniform_val->push(*kvp.second.mDeclaration);
+// 			}
+// 		}
+// 
+// 		glActiveTexture(GL_TEXTURE0);
 	}
 
 
@@ -387,16 +397,61 @@ namespace nap
 		opengl::UniformDeclarations::const_iterator pos = uniform_declarations.find(name);
 		assert(pos != uniform_declarations.end());
 
-		const opengl::UniformDeclaration* declaration = pos->second.get();
+		const opengl::UniformDeclaration* declaration = pos->second;
 		std::unique_ptr<Uniform> uniform = createUniformFromDeclaration(*declaration);
 		return addUniform(std::move(uniform), *declaration);
 	}
 
+	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
-	bool MaterialInstance::init(MaterialInstanceResource& resource, utility::ErrorState& errorState)
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState) 
+	{
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = usage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
+			return false;
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+
+		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
+			return false;
+
+		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Coult not bind buffer memory"))
+			return false;
+
+		return true;
+	}
+
+	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		const opengl::UniformDeclarations& uniform_declarations = resource.mMaterial->getShader()->getShader().getUniformDeclarations();
+
+		Material& material = *resource.mMaterial;
+		const opengl::Shader& shader = material.getShader()->getShader();
+
+		const opengl::UniformDeclarations& uniform_declarations = shader.getUniformDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
 		for (ResourcePtr<Uniform>& uniform : resource.mUniforms)
@@ -405,7 +460,7 @@ namespace nap
 			if (declaration == uniform_declarations.end())
 				continue;
 
-			if (!verifyUniform(*uniform, *declaration->second, resource.mMaterial->getShader()->mID, errorState))
+			if (!verifyUniform(*uniform, *declaration->second, material.getShader()->mID, errorState))
 				return false;
 
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
@@ -413,6 +468,96 @@ namespace nap
 
 			addUniform(std::move(new_uniform), *declaration->second);
 		}
+
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUniformBufferObjectDeclarations();
+
+		for (int index = 0; index < ubo_declarations.size(); ++index)
+		{
+			const opengl::UniformBufferObjectDeclaration& ubo_declaration = ubo_declarations[index];
+			
+			UniformBufferObject ubo(ubo_declaration);
+			for (auto& uniform_declaration : ubo_declaration.mDeclarations)
+			{
+				const UniformBinding* uniform = findUniformBinding(uniform_declaration->mName);
+				if (uniform == nullptr)
+					uniform = material.findUniformBinding(uniform_declaration->mName);
+
+				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
+					return false;
+
+				ubo.mUniforms.insert(std::make_pair(uniform_declaration->mName, uniform));
+			}
+
+			mUniformBufferObjects.emplace_back(std::move(ubo));
+		}
+
+		int num_frames = 2;
+
+		VkDescriptorPoolSize poolSize = {};
+		poolSize.type				= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSize.descriptorCount	= num_frames * ubo_declarations.size();
+
+		VkDescriptorPoolCreateInfo poolInfo = {};
+		poolInfo.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount	= 1;
+		poolInfo.pPoolSizes		= &poolSize;
+		poolInfo.maxSets		= num_frames;
+
+		if (!errorState.check(vkCreateDescriptorPool(renderer.getDevice(), &poolInfo, nullptr, &mDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool"))
+			return false;
+
+		std::vector<VkDescriptorSetLayout> layouts(num_frames, getMaterial()->getDescriptorSetLayout());
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool		= mDescriptorPool;
+		allocInfo.descriptorSetCount	= num_frames;
+		allocInfo.pSetLayouts			= layouts.data();
+
+		mDescriptorSets.resize(num_frames);
+		if (!errorState.check(vkAllocateDescriptorSets(renderer.getDevice(), &allocInfo, mDescriptorSets.data()) == VK_SUCCESS, "Failed to create descriptor set"))
+			return false;
+
+		int num_descriptors = num_frames * ubo_declarations.size();
+		std::vector<VkWriteDescriptorSet> descriptor_writes;
+		descriptor_writes.resize(num_descriptors);
+
+		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
+		descriptor_buffers.resize(num_descriptors);
+
+		int descriptor_index = 0;
+		for (size_t frame_index = 0; frame_index < num_frames; frame_index++)
+		{
+			for (int buffer_index = 0; buffer_index != ubo_declarations.size(); ++buffer_index)
+			{
+				VkBuffer vkBuffer;
+				VkDeviceMemory vkBufferMemory;
+
+				if (!createBuffer(renderer.getDevice(), renderer.getPhysicalDevice(), ubo_declarations[buffer_index].mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkBufferMemory, errorState))
+					return false;
+
+				UniformBufferObject& ubo = mUniformBufferObjects[buffer_index];
+				ubo.mBuffers.push_back(vkBuffer);
+				ubo.mBuffersMemory.push_back(vkBufferMemory);
+
+				VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[descriptor_index];
+				bufferInfo.buffer = ubo.mBuffers.back();
+				bufferInfo.offset = 0;
+				bufferInfo.range = VK_WHOLE_SIZE;
+
+				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
+				write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write_descriptor_set.dstSet = mDescriptorSets[frame_index];
+				write_descriptor_set.dstBinding = ubo_declarations[buffer_index].mBinding;
+				write_descriptor_set.dstArrayElement = 0;
+				write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				write_descriptor_set.descriptorCount = 1;
+				write_descriptor_set.pBufferInfo = &bufferInfo;
+
+				descriptor_index++;
+			}
+		}
+
+		vkUpdateDescriptorSets(renderer.getDevice(), descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 
 		return true;
 	}
@@ -457,6 +602,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Material
 	//////////////////////////////////////////////////////////////////////////
+
+	Material::Material(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+	}
 
 	UniformStruct& Material::getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created)
 	{
@@ -808,6 +958,32 @@ namespace nap
 			}
 		}
 
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = mShader->getShader().getUniformBufferObjectDeclarations();
+
+		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
+		for (int index = 0; index < ubo_declarations.size(); ++index)
+		{
+			const opengl::UniformBufferObjectDeclaration& uniform_buffer_object = ubo_declarations[index];
+
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding			= uniform_buffer_object.mBinding;
+			uboLayoutBinding.descriptorCount	= 1;
+			uboLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags			= uniform_buffer_object.mStage;
+
+			descriptor_set_layouts.push_back(uboLayoutBinding);
+		}
+
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType		= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount	= (int)descriptor_set_layouts.size();
+		layoutInfo.pBindings	= descriptor_set_layouts.data();
+
+		if (!errorState.check(vkCreateDescriptorSetLayout(mRenderer->getDevice(), &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout"))
+			return false;
+
 		return true;
 	}
 
@@ -830,20 +1006,6 @@ namespace nap
 			}
 		}
 		return bindings;
-	}
-
-
-	// Unbind shader associated with resource
-	void Material::bind()
-	{	
-		mShader->getShader().bind();
-	}
-
-
-	// Unbind shader associated with resource
-	void Material::unbind()
-	{
-		mShader->getShader().unbind();
 	}
 
 	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const std::string& shaderAttributeID) const

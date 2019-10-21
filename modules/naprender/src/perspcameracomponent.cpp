@@ -217,7 +217,7 @@ namespace nap
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
 			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
-			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, bottom, top);
 
 			mDirty = false;
 		}

@@ -8,17 +8,18 @@
 			"Height" : 256,
 			"Title" : "Window 1"
 		},
-        {
-            "Type" : "nap::TriangleMesh",
-            "mID": "PigMesh"
-        },
-        {
-            "Type" : "nap::Shader",
-            "mID": "GeneralShader",
-            "mVertShader": "shaders/simpleshader_vert.spv",
-            "mFragShader": "shaders/simpleshader_frag.spv",
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "PigMesh",
+			"Path": "pig_head_alpha_rotated.mesh"
+		},
+		{
+			"Type" : "nap::Shader",
+			"mID": "GeneralShader",
+			"mVertShader": "shaders/shader_vert.spv",
+			"mFragShader": "shaders/shader_frag.spv",
             "OutputFormat": "RGBA8"
-        },
+		},        
 		{
 			"Type" : "nap::Scene",
 			"mID": "Scene",		
@@ -29,9 +30,22 @@
 				},
 				{
 					"Entity" : "CameraEntityLeft"
-				}
+				},
+				{
+					"Entity" : "DefaultInputRouterEntity"
+				}				
 			]
 		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "DefaultInputRouterEntity",		
+			"Components" : 
+			[
+				{
+					"Type" : "nap::DefaultInputRouterComponent"
+				}
+			]
+		},		
 		{
 			"Type" : "nap::Entity",
 			"mID": "PigEntity",
@@ -52,9 +66,9 @@
 					"Type" : "nap::TransformComponent",
 					"Properties": {
 						"Translate": {
-							"x": 0.1,
+							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
+							"z": 0.0 
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -68,6 +82,18 @@
 						},
 						"UniformScale": 1.0
 					}
+				},
+				{
+					"Type" : "nap::RotateComponent",
+					"Properties" : {
+						"Axis" : {
+							"x": 0.0,
+							"y": 1.0,
+							"z": 0.0 
+						},
+						"Speed": 0.1
+					}
+					
 				}
 			]
 		},
@@ -81,12 +107,31 @@
 					"ShaderAttributeID": "in_Position"
 				},
 				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
 					"MeshAttributeID": "Color0",
 					"ShaderAttributeID": "in_Color0"
+				},
+				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID": "in_Normals"
 				}
 			],
 			"Uniforms" : 
 			[
+				{
+					"Type" : "nap::UniformVec4",
+					"Name" : "pig.mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 0.0,
+						"z" : 0.0,
+						"w" : 1.0						
+					}
+				}
 			]			
 		},
 		{

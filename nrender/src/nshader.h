@@ -9,6 +9,8 @@
 #include <string>
 #include <sstream>
 
+struct SpvReflectShaderModule;
+
 namespace opengl
 {
 	/**
@@ -57,21 +59,6 @@ namespace opengl
 		};
 
 
-
-		/**
-		 * Shader state, everything above 0 is an error
-		 * By default the shader is not loaded
-		 */
-		enum class State : int8_t
-		{
-			NotLoaded		= -1,
-			Linked			= 0,
-			FileError		= 1,
-			VertexError		= 2,
-			FragmentError	= 3,
-			LinkError		= 4
-		};
-
 		// Default constructor / destructor
 		Shader() = default;
 
@@ -87,51 +74,6 @@ namespace opengl
 		 * @param fsFile the vertex shader file on disk
 		 */
 		bool init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState);
-
-		/**
-		 * Binds the GLSL shader program
-		 */
-		bool bind();
-
-		/**
-		 * Unbinds the GLSL shader program
-		 */
-		bool unbind();
-
-		/**
-		 * @return the shader program identifier 
-		 */
-		unsigned int getId() const;
-
-		/**
-		 * @return if the shader program has been allocated
-		 */
-		bool isAllocated() const							{ return mShaderId != 0; }
-
-		/**
-		 * @return if the shader program is successfully linked
-		 * When the program is linked the shaders got loaded successfully
-		 * and linked correctly in to the shader program this object manages
-		 */
-		bool isLinked() const								{ return mState == State::Linked; }
-
-		/**
-		 * Sets a uniform variable based on the given type, note that
-		 * you need to bind the shader before calling this function
-		 * @param type the uniform type
-		 * @param name name of the uniform variable
-		 * @param data pointer to data in memory to set.
-		 */
-		void setUniform(EGLSLType type, const std::string& name, const void* data);
-
-		/**
-		 * Sets a uniform variable based on it's name, note that you need
-		 * to bind the shader before calling this function. The type
-		 * is automatically retrieved from the associated uniform
-		 * @param name name of the uniform variable.
-		 * @param data pointer to the data in memory to set.
-		 */
-		void setUniform(const std::string& name, const void* data);
 
 		/**
 		 * @param name Name of the uniform attribute to get
@@ -157,19 +99,20 @@ namespace opengl
 		 */
 		const UniformDeclarations& getUniformDeclarations() const			{ return mUniformDeclarations; }
 
+		const std::vector<UniformBufferObjectDeclaration>& getUniformBufferObjectDeclarations() const { return mUniformBufferObjectDeclarations; }
+
 		VkShaderModule getVertexModule() const { return mVertexModule; }
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+
+	private:
+		bool parseUniforms(const SpvReflectShaderModule& inShaderModule, nap::utility::ErrorState& errorState);
 
 	private:
 		VkShaderModule mVertexModule = nullptr;
 		VkShaderModule mFragmentModule = nullptr;
 
-		unsigned int mShaderId = 0;				// The shader program identifier
-		unsigned int mShaderVp = 0;				// The vertex shader identifier
-		unsigned int mShaderFp = 0;				// The fragment shader identifier
-
+		std::vector<UniformBufferObjectDeclaration> mUniformBufferObjectDeclarations;
 		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
 		ShaderVertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
-		State mState = State::NotLoaded;		// Holds current state of shader program
 	};
 }	// opengl

@@ -10,12 +10,13 @@
 #include "imagefromfile.h"
 #include "ngpumesh.h"
 #include "uniformbinding.h"
+#include "rtti/factory.h"
 
 namespace nap
 {
 	class Material;
 	class MaterialInstance;
-
+	class Renderer;
 	/**
 	 * Blend mode for Materials.
 	 */
@@ -55,6 +56,22 @@ namespace nap
 		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
 
+	class UniformBufferObject
+	{
+	public:
+		using UniformMap = std::unordered_map<std::string, const UniformBinding*>;
+
+		UniformBufferObject(const opengl::UniformBufferObjectDeclaration& declaration) :
+			mDeclaration(&declaration)
+		{
+		}
+
+		const opengl::UniformBufferObjectDeclaration*	mDeclaration;
+		std::vector<VkBuffer>							mBuffers;
+		std::vector<VkDeviceMemory>						mBuffersMemory;
+		UniformMap										mUniforms;
+	};
+
 	/**
 	 * Run time version of a nap::Material. The instance holds overloaded material properties such as
 	 * the uniform shader variables. Use the getOrCreateUniform() functions to create and get access
@@ -69,7 +86,7 @@ namespace nap
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
 		 */
-		bool init(MaterialInstanceResource& resource, utility::ErrorState& errorState);
+		bool init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		/**
 		* @return material that this instance is overriding.
@@ -147,23 +164,11 @@ namespace nap
 		T& getOrCreateUniform(const std::string& name);
 
 		/**
-		 * Binds the shader program so it can be used by subsequent calls such as pushUniforms() etc.
-		 * This call is forwarded to bind() of the parent material.
-		 */
-		void bind();
-
-		/**
-		 * Unbinds the shader program.
-		 * This call is forwarded to unbind() of the parent material.
-		 */
-		void unbind();
-
-		/**
 		 * Uploads all uniforms stored in this material to the GPU. Call this after binding!
 		 * Only call this after binding the material otherwise the outcome of this call is uncertain.
 		 * This applies to the uniforms in the instance that are overridden as for the uniforms in the underlying material.
 		 */
-		void pushUniforms();
+		void pushUniforms(int frameIndex);
 
 		/**
 		 * Updates the blend mode on the GPU based on the blend settings associated with this material.
@@ -184,6 +189,8 @@ namespace nap
 		 */
 		int getTextureUnit(nap::UniformTexture& uniform);
 
+		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
+
 	private:
 		/**
 		 * Creates a new uniform with the given name
@@ -192,6 +199,10 @@ namespace nap
 
 		//. Resource this instance is associated with
 		MaterialInstanceResource* mResource;
+
+		std::vector<UniformBufferObject>	mUniformBufferObjects;
+		VkDescriptorPool					mDescriptorPool;
+		std::vector<VkDescriptorSet>		mDescriptorSets;
 	};
 
 
@@ -206,6 +217,8 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		Material() = default;
+		Material(RenderService& renderService);
 
 		/**
 		 * Binding between mesh vertex attr and shader vertex attr
@@ -222,23 +235,10 @@ namespace nap
 			std::string mShaderAttributeID;
 		};
 
-		// Default constructor
-		Material() = default;
-
 		/**
 		* Creates mappings for uniform and vertex attrs.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		* Binds the GLSL shader resource program
-		*/
-		void bind();
-
-		/**
-		* Unbinds the GLSL shader resource program
-		*/
-		void unbind();
 
 		/**
 		 * Utility for getting the shader resource
@@ -266,6 +266,10 @@ namespace nap
 		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
 		*/
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
+
+		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+
+		Renderer& getRenderer() { return *mRenderer; }
 
 	private:
 		/**
@@ -296,8 +300,10 @@ namespace nap
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
-		UniformStructMap						mOwnedStructUniforms;								///< Runtime map of struct uniforms
-		UniformStructArrayMap					mOwnedStructArrayUniforms;							///< Runtime map of struct array uniforms
+		Renderer*									mRenderer = nullptr;
+		UniformStructMap							mOwnedStructUniforms;								///< Runtime map of struct uniforms
+		UniformStructArrayMap						mOwnedStructArrayUniforms;							///< Runtime map of struct array uniforms
+		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -320,4 +326,6 @@ namespace nap
 		assert(cast_uniform != nullptr);
 		return *cast_uniform;
 	}
+
+	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;
 }

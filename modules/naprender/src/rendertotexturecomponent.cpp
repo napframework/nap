@@ -7,6 +7,7 @@
 #include <nap/core.h>
 #include <orthocameracomponent.h>
 #include "rendertarget.h"
+#include "renderservice.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -78,8 +79,10 @@ namespace nap
 		if (!mPlane.init(errorState))
 			return false;
 
+		RenderService* render_service = getEntityInstance()->getCore()->getService<RenderService>();
+
 		// Create material instance
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(render_service->getRenderer(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Ensure the matrices are present on the material
@@ -129,7 +132,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::draw(VkCommandBuffer commandBuffer)
+	void RenderToTextureComponentInstance::draw(VkCommandBuffer commandBuffer, int frameIndex)
 	{
 		// Create orthographic projection matrix
 		glm::ivec2 size = mTarget.getTarget().getSize();
@@ -145,7 +148,7 @@ namespace nap
 		mService->pushRenderState();
 
 		// Call on draw
-		onDraw(commandBuffer, sIdentityMatrix, proj_matrix);
+		onDraw(commandBuffer, frameIndex, sIdentityMatrix, proj_matrix);
 
 		// Unbind render target
 		mTarget.getTarget().unbind();
@@ -158,7 +161,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::onDraw(VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderToTextureComponentInstance::onDraw(VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -168,7 +171,7 @@ namespace nap
 		}
 
 		// Bind material
-		mMaterialInstance.bind();
+		//mMaterialInstance.bind();
 
 		// Get the parent material
 		Material* comp_mat = mMaterialInstance.getMaterial();
@@ -185,7 +188,7 @@ namespace nap
 		mMaterialInstance.pushBlendMode();
 
 		// Push all uniforms now
-		mMaterialInstance.pushUniforms();
+		//mMaterialInstance.pushUniforms();
 
 		// Bind vertex array object
 		// The VAO handle works for all the registered render contexts
@@ -211,7 +214,7 @@ namespace nap
 
 		// Unbind all GL resources
 		mRenderableMesh.unbind();
-		mMaterialInstance.unbind();
+		//mMaterialInstance.unbind();
 	}
 
 

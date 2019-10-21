@@ -42,7 +42,7 @@ namespace nap
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 
 		// Create material instance
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
 			return false;
 		
 		// Ensure the uniform to set the glyph is available on the source material
@@ -143,9 +143,6 @@ namespace nap
 			return;
 		}
 
-		// Bind
-		mMaterialInstance.bind();
-
 		// Get the parent material and set uniform values if present
 		Material* comp_mat = mMaterialInstance.getMaterial();
 		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
@@ -193,7 +190,7 @@ namespace nap
 		assert(texture_unit > -1);
 
 		// Push all uniforms now
-		mMaterialInstance.pushUniforms();
+		mMaterialInstance.pushUniforms(0);		// TODO: correct frame index
 
 		// Location of active letter
 		float x = 0.0f;
@@ -221,7 +218,7 @@ namespace nap
 
 			// Set texture and push uniforms
 			glyph_uniform.setTexture(render_glyph->getTexture());
-			glyph_uniform.push(*glyph_binding.mDeclaration, texture_unit);
+			glyph_uniform.push(nullptr, *glyph_binding.mDeclaration, texture_unit); // TODO: UBO
 
 			// Bind and draw all the arrays
 // 			index_buffer.bind();
@@ -234,7 +231,6 @@ namespace nap
 
 		// Unbind
 //		index_buffer.unbind();
-		mMaterialInstance.unbind();
 		mRenderableMesh.unbind();
 	}
 

@@ -74,7 +74,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(const opengl::UniformDeclaration& declaration) const = 0;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const = 0;
 	};
 
 	/**
@@ -111,7 +111,7 @@ namespace nap
 		*
 		* @return The number of texture units used by this uniform
 		*/
-		virtual int push(const opengl::UniformDeclaration& declaration, int textureUnit) const = 0;
+		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const = 0;
 	};
 
 
@@ -149,7 +149,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		* @return integer GLSL type.
@@ -177,7 +177,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return integer GLSL type.
@@ -205,7 +205,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -233,7 +233,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -261,7 +261,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		* @return mat4 GLSL type.
@@ -292,7 +292,7 @@ namespace nap
 		*
 		* @return The number of texture units used by this uniform
 		*/
-		virtual int push(const opengl::UniformDeclaration& declaration, int textureUnit) const override;
+		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const override;
 
 		/**
 		* @return texture GLSL type.
@@ -327,7 +327,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * Retrieve the number of elements in this array
@@ -368,7 +368,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return integer GLSL type.
@@ -409,7 +409,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -450,7 +450,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -491,7 +491,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
 
 		/**
 		* @return mat4 GLSL type.
@@ -535,7 +535,7 @@ namespace nap
 		*
 		* @return The number of texture units used by this uniform
 		*/
-		virtual int push(const opengl::UniformDeclaration& declaration, int textureUnit) const override;
+		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const override;
 
 		/**
 		* @return texture GLSL type.
