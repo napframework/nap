@@ -709,6 +709,17 @@
             }
         },
         {
+            "Type": "nap::FlexDevice",
+            "mID": "Flex",
+            "FlexBlockShape": "ShapeSize",
+            "Frequency": 1000,
+            "Slack Minimum": 0.0,
+            "Sinus Amplitude": 0.0,
+            "Sinus Frequency": 0.0,
+            "Override Minimum": 0.0,
+            "Adapters": []
+        },
+        {
             "Type": "nap::Font",
             "mID": "Montserrat Font",
             "Properties": {
@@ -726,6 +737,24 @@
                 "z": 2.0
             },
             "ReferenceMesh": "BoxMesh"
+        },
+        {
+            "Type": "nap::MACAdapter",
+            "mID": "MACAdapter",
+            "Set Digital Pin": false,
+            "Motor Steps Per Meter": 129473.40625,
+            "Motor Step Offset": 0,
+            "Motor Mapping": [
+                5,
+                1,
+                2,
+                6,
+                3,
+                7,
+                0,
+                4
+            ],
+            "Controller": "MACController"
         },
         {
             "Type": "nap::MACController",

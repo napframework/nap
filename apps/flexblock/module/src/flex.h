@@ -34,10 +34,10 @@ namespace nap
 		~Flex();
 
 		/**
-		* Update motor speed [0..8]
-		* @param index index of motor [0..8]
-		* @param value motor input 0-1
-		*/
+		 * Update motor speed [0..8]
+		 * @param index index of motor [0..8]
+		 * @param value motor input 0-1
+		 */
 		void setMotorInput(const std::vector<float>& inputs);
 
 		/**
@@ -232,7 +232,6 @@ namespace nap
 		//
 		float mOverrideMinimum;
 		float mSlackRange;
-		float mOverrideRange;
 
 		float mMotorStepsPerMeter;
 		float mMotorStepOffset;

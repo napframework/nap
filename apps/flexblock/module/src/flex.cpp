@@ -30,7 +30,6 @@ namespace nap
 		mFrequency = frequency;
 		mObjShape = flexblockShape;
 		mOverrideMinimum = overrideMinimum;
-		mOverrideRange = overrideRange;
 		mSlackRange = slackRange;
 		mSinusAmplitude = sinusAmplitude;
 		mSinusFrequency = sinusFrequency;
@@ -233,7 +232,7 @@ namespace nap
 				{
 					if (mElementsObject[j][0] == i)
 					{
-						objectElementIds0.push_back(j);
+						objectElementIds0.emplace_back(j);
 					}
 				}
 
@@ -242,7 +241,7 @@ namespace nap
 				{
 					if (mElementsObject[j][1] == i)
 					{
-						objectElementIds1.push_back(j);
+						objectElementIds1.emplace_back(j);
 					}
 				}
 
@@ -459,7 +458,7 @@ namespace nap
 		{
 			if (mElementsObject2Frame[i][0] == pointId)
 			{
-				outIDs.push_back(i + mElementsObject.size());
+				outIDs.emplace_back(i + mElementsObject.size());
 			}
 		}
 	}
@@ -538,10 +537,7 @@ namespace nap
 	{
 		std::vector<float> ropes;
 		for (int i = 12; i < 20; i++)
-		{
-			ropes.push_back(mElementsLength[i + 1] + mSlack);
-		}
-
+			ropes.emplace_back(mElementsLength[i + 1] + mSlack);
 		return ropes;
 	}
 }
