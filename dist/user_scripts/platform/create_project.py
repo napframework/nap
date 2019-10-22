@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json
+from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json, get_cmake_path
 
 # Default modules if none are specified
 DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio,mod_napimgui"
@@ -34,7 +34,8 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
 
     # Create project from template
     input_module_list = module_list.lower().replace(',', ';')
-    cmd = ['cmake', '-DPROJECT_NAME_PASCALCASE=%s' % project_name, '-DMODULE_LIST=%s' % input_module_list, '-P', 'project_creator.cmake']
+    cmake = get_cmake_path()
+    cmd = [cmake, '-DPROJECT_NAME_PASCALCASE=%s' % project_name, '-DMODULE_LIST=%s' % input_module_list, '-P', 'project_creator.cmake']
     if call(cmd, cwd=cmake_template_dir) != 0:
         print("Project creation failed")
         return ERROR_CMAKE_CREATION_FAILURE
@@ -43,7 +44,7 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
     if with_module:
         # Create module from template
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/module_creator'))
-        cmd = ['cmake', 
+        cmd = [cmake, 
                '-DMODULE_NAME_PASCALCASE=%s' % project_name, 
                '-DPROJECT_MODULE=1', 
                '-DPROJECT_MODULE_PROJECT_PATH=%s' % project_path,

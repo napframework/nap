@@ -204,7 +204,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
 
     for build_type in BUILD_TYPES:
         build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
-        call(WORKING_DIR, ['cmake', 
+        call(WORKING_DIR, [get_cmake_path(), 
                            '-H.', 
                            '-B%s' % build_dir_for_type, 
                            '-DNAP_PACKAGED_BUILD=1',
@@ -238,7 +238,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     """Package NAP platform release for macOS"""
 
     # Generate project
-    call(WORKING_DIR, ['cmake', 
+    call(WORKING_DIR, [get_cmake_path(), 
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Xcode',
@@ -281,7 +281,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
         os.makedirs(BUILD_DIR)
 
     # Generate project
-    call(WORKING_DIR, ['cmake', 
+    call(WORKING_DIR, [get_cmake_path(), 
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Visual Studio 14 2015 Win64',
@@ -297,7 +297,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
 
     # Build & install to packaging dir
     for build_type in BUILD_TYPES:
-        call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
+        call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
     # Remove all Naivi apps but the requested one
     if include_apps and not single_app_to_include is None:
@@ -340,7 +340,7 @@ def package_for_android(package_basename, timestamp, git_revision, build_label, 
 
             # Build CMake command with varying platform options
             # TODO test and support Linux?
-            cmake_command = ['cmake', 
+            cmake_command = [get_cmake_path(), 
                              '-H.', 
                              '-B%s' % build_dir_for_type, 
                              '-DCMAKE_TOOLCHAIN_FILE=%s' % toolchain_file,
@@ -368,7 +368,7 @@ def package_for_android(package_basename, timestamp, git_revision, build_label, 
             call(WORKING_DIR, cmake_command)
 
             # Build
-            build_command = ['cmake', '--build', build_dir_for_type, '--target', 'install']
+            build_command = [get_cmake_path(), '--build', build_dir_for_type, '--target', 'install']
             # TODO ANDROID ensure all cores are being utilised on Win64/Ninja
             if not platform.startswith('win'):
                 build_command.extend(['-j', str(cpu_count())])
@@ -518,7 +518,7 @@ def build_package_basename(timestamp, label, cross_compile_target):
         platform_name = 'Win64'
 
     # Fetch version from version.cmake
-    (version_unparsed, _) = call(WORKING_DIR, ['cmake', '-P', 'cmake/version.cmake'], True)
+    (version_unparsed, _) = call(WORKING_DIR, [get_cmake_path(), '-P', 'cmake/version.cmake'], True)
     chunks = version_unparsed.split(':')
     if len(chunks) < 2:
         print("Error passing invalid output from version.cmake: %s" % version_unparsed)
@@ -645,7 +645,7 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     strip_client_apps_for_source_archive(staging_dir)
 
     # Populate source_archive.json
-    call(WORKING_DIR, ['cmake', 
+    call(WORKING_DIR, [get_cmake_path(), 
                        '-DOUT_PATH=%s' % staging_dir,
                        '-DNAP_ROOT=.',
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
@@ -665,6 +665,19 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
         archive_source_archive_directory(source_archive_basename)
     else:
         print("Source archived to %s" % os.path.abspath(source_archive_basename))
+
+def get_cmake_path():
+    """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
+
+    cmake_thirdparty_root = os.path.join(os.pardir, 'thirdparty', 'cmake')
+    if platform.startswith('linux'):
+        return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+    elif platform == 'darwin':
+        return 'cmake'
+        # return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+    else:
+        return 'cmake'
+        # return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
