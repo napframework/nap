@@ -128,38 +128,38 @@ namespace nap
 		* @param index index of motor [0..8]
 		* @param value motor input 0-1
 		*/
-		void setMotorInput(const int index, float value);
+		void setInput(int index, float value);
 
 		/**
 		 * Set slack parameter
 		 * @param value slack value, typically between -0.5 and 0.5
 		 */
-		void setSlack(const float value);
+		void setSlack(float value);
 
 		/**
 		 * Set override
 		 * @param override range index, motor index will be in flexblock space
 		 * @param value between 0..1 , will be multiplied by override range 
 		 */
-		void setOverrides(const int index, const float value);
+		void setOverride(int index, float value);
 
 		/**
 		 * Sets frequency of override
 		 * @param value between 0..1 , will be multiplied with sinus frequency
 		 */
-		void setSinusFrequency(const float value);
+		void setSinusFrequency(float value);
 
 		/**
 		 * Sets sinus amplitude
 		 * @param value between 0..1 , will be multiplied with amplitude
 		 */
-		void setSinusAmplitude(const float value);
+		void setSinusAmplitude(float value);
 
 		/**
 		 * Enable/disable mac controller
 		 * @param enable bool true of false
 		 */
-		void setEnableMotorController(const bool enable) { mEnableMacController = enable; }
+		void setEnableMotorController(bool enable) { mEnableMacController = enable; }
 
 		/**
 		 * @return returns object points in local space
@@ -179,43 +179,43 @@ namespace nap
 		/**
 		 * @return returns slack range
 		 */
-		const float getSlackRange() const { return mSlackRange; }
+		float getSlackRange() const { return mSlackRange; }
 
 		/**
 		 * @return returns slack minimum
 		 */
-		const float getSlackMinimum() const { return mSlackMinimum; }
+		float getSlackMinimum() const { return mSlackMinimum; }
 
 		/**
 		 * @param index of motor in flexblock space
 		 * @return returns motor override
 		 */
-		const float getMotorOverride(const int index) const { return mMotorOverrides[index]; }
+		float getMotorOverride(const int index) const;
 
 		/**
 		 * @return returns motor override minimum
 		 */
-		const float getMotorOverrideMinimum() const { return mOverrideMinimum; }
+		float getMotorOverrideMinimum() const { return mOverrideMinimum; }
 
 		/**
 		 * @return returns motor override range
 		 */
-		const float getMotorOverrideRange() const { return mOverrideRange; }
+		float getMotorOverrideRange() const { return mOverrideRange; }
 
 		/**
 		 * @return returns motor amplitude range
 		 */
-		const float getSinusAmplitudeRange() const { return mSinusAmplitudeRange; }
+		float getSinusAmplitudeRange() const { return mSinusAmplitudeRange; }
 
 		/**
 		 * @return returns motor frequency range
 		 */
-		const float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
+		float getSinusFrequencyRange() const { return mSinusFrequencyRange; }
 
 		/**
 		 * @return returns motor steps per meter
 		 */
-		const double getMotorStepsPerMeter() const { return mMotorStepsPerMeter; }
+		double getMotorStepsPerMeter() const { return mMotorStepsPerMeter; }
 
 		/**
 		 * @return returns reference to motor mapping vector
@@ -225,7 +225,7 @@ namespace nap
 		/**
 		 * Returns true if motor is enabled
 		 */
-		const bool getEnableMotorController() const { return mEnableMacController; }
+		bool getEnableMotorController() const { return mEnableMacController; }
 	protected:
 
 		// Resources / Devices
@@ -235,9 +235,6 @@ namespace nap
 
 		bool mEnableSerial;
 
-		// Initialize flexblock unique ptr to null
-		std::unique_ptr<Flex> mFlexLogic = nullptr;
-
 		//
 		double mUpdateSerialTime = 0.0;
 		
@@ -245,9 +242,7 @@ namespace nap
 
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
 
-		std::vector<float> mMotorInputs = std::vector<float>(8);
-
-		std::vector<float> mMotorOverrides = std::vector<float>(8);
+		FlexInput mFlexInput;
 
 		std::vector<double> mMotorSteps;
 
@@ -268,10 +263,6 @@ namespace nap
 		float mSinusAmplitudeRange = 1.0f;
 
 		float mSinusFrequencyRange = 100.0f;
-
-		float mSinusAmplitude = 0.0f;
-
-		float mSinusFrequency = 0.0f;
 
 		int mFlexFrequency = 1000;
 

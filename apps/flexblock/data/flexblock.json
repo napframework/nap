@@ -715,8 +715,6 @@
             "FlexBlockShape": "ShapeSize",
             "Frequency": 1000,
             "Slack" : 0.0,
-            "Slack Minimum": 0.1,
-            "Slack Scale" : 1.0,
             "Adapters": [
                 "MACAdapter"
             ]

@@ -305,13 +305,13 @@ namespace nap
 
 	void FlexblockGui::updateInput(int index, float value)
 	{
-		mFlexBlock->setMotorInput(index, value);
+		mFlexBlock->setInput(index, value);
 	}
 
 
 	void FlexblockGui::updateOverride(int index, float value)
 	{
-		mFlexBlock->setOverrides(index, value);
+		mFlexBlock->setOverride(index, value);
 	}
 
 

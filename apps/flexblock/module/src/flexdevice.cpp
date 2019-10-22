@@ -12,8 +12,6 @@ RTTI_BEGIN_CLASS(nap::FlexDevice)
 	RTTI_PROPERTY("FlexBlockShape",		&nap::FlexDevice::mFlexBlockShape,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Frequency",			&nap::FlexDevice::mUpdateFrequency,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack",				&nap::FlexDevice::mSlack,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Slack Minimum",		&nap::FlexDevice::mSlackMin,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Slack Scale",		&nap::FlexDevice::mSlackScale,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",			&nap::FlexDevice::mAdapters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -81,7 +79,7 @@ namespace nap
 		mPointChangeCorr = std::vector<glm::vec3>(mPointsObject.size());
 
 		// Update slack
-		setSlack(mSlack);
+		mInput.mSlack = mSlack;
 
 		// concat points
 		concatPoints();
@@ -140,25 +138,18 @@ namespace nap
 	}
 
 
-	void FlexDevice::setMotorInput(const std::vector<float>& inputs)
+	void FlexDevice::setInput(const FlexInput& input)
 	{
 		// Copy motor input thread-safe
 		std::lock_guard<std::mutex> lock(mInputMutex);
-		assert(inputs.size() == mMotorInput.size());
-		mMotorInput = inputs;
+		mInput = input;
 	}
 
 
-	void FlexDevice::getMotorInput(std::vector<float>& outInputs) const
+	void FlexDevice::getInput(FlexInput& outInput) const
 	{
 		std::lock_guard<std::mutex> lock(mInputMutex);
-		outInputs = mMotorInput;
-	}
-
-
-	void FlexDevice::setSlack(float value)
-	{
-		mCurrentSlack = math::max<float>(mSlack * mSlackScale, mSlackMin);
+		outInput = mInput;
 	}
 
 
@@ -169,7 +160,7 @@ namespace nap
 		long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
 
 		// Some variables that get updated regularly.
-		std::vector<float> inputs(8);
+		FlexInput input;
 		std::vector<int> suspensionElementIds;
 		glm::vec3 force;
 		std::vector<int> objectElementIds0;
@@ -179,8 +170,11 @@ namespace nap
 		// Compute loop
 		while (!mStopCompute)
 		{
+			// Get current input arguments
+			getInput(input);
+
 			// Update motor input internal algorithm state
-			setMotorInputInternal(inputs);
+			setMotorInputInternal(input.mInputs);
 
 			// Calculate delta length
 			calcDeltaLengths();
@@ -253,7 +247,7 @@ namespace nap
 			calcElements();
 
 			// Calculate final algorithm output
-			calcRopeLengths(rope_lengths);
+			calcRopeLengths(input.mSlack, rope_lengths);
 
 			// Now call adapters!
 			for (auto& adapter: mAdapters)
@@ -320,9 +314,6 @@ namespace nap
 
 	void FlexDevice::setMotorInputInternal(std::vector<float>& inputs)
 	{
-		// Get current input
-		getMotorInput(inputs);
-
 		// Convert
 		for (int i = 0; i < inputs.size(); i++)
 			mElementsInput[i] = (inputs[i] + 0.2f) * sForceObject2Frame;
@@ -378,11 +369,11 @@ namespace nap
 	}
 
 
-	void FlexDevice::calcRopeLengths(std::vector<float>& outLengths)
+	void FlexDevice::calcRopeLengths(float slack, std::vector<float>& outLengths)
 	{
 		outLengths.clear();
 		for (int i = 12; i < 20; i++)
-			outLengths.emplace_back(mElementsLength[i + 1] + mCurrentSlack);
+			outLengths.emplace_back(mElementsLength[i + 1] + slack);
 		
 		// Copy lengths as output value
 		std::lock_guard<std::mutex> lock(mRopesMutes);
@@ -400,4 +391,19 @@ namespace nap
 		std::lock_guard<std::mutex> lock(mPointMutex);
 		mPoints = newPoints;
 	}
+
+
+	void FlexInput::setInput(int index, float value)
+	{
+		assert(index < mInputs.size());
+		mInputs[index] = value;
+	}
+
+
+	void FlexInput::setOverride(int index, float value)
+	{
+		assert(index < mOverrides.size());
+		mOverrides[index] = value;
+	}
+
 }

@@ -13,7 +13,41 @@
 namespace nap
 {
 	/**
-	 * The flexblock algorithm.
+	 * Simple struct that defines the inputs for the flexblock algorithm.
+	 * This struct can be copied and is used to update input data thread safe.
+	 */
+	struct FlexInput
+	{
+		/**
+		 * Default Constructor
+		 */
+		FlexInput() = default;
+
+		/**
+		 * Sets the input for the flexblock algorithm at the given index
+		 * @param index index of parameter to set (0-8)
+		 * @param value the new input value
+		 */
+		void setInput(int index, float value);
+
+		/**
+		 * Sets the input override for the flexblock algorithm at the given index
+		 * @param index index of override to set (0-8)
+		 * @param value the new input value
+		 */
+		void setOverride(int index, float value);
+
+		// Member Variables
+		std::vector<float> mInputs		= std::vector<float>(8);	///< Flexblock Inputs
+		std::vector<float> mOverrides	= std::vector<float>(8);	///< Flexblock Overrides
+		float mSlack					= 0.0f;						///< Flexblock Slack
+		float mSinusAmplitude			= 0.0f;						///< Flexblock Sinus Amplitude
+		float mSinusFrequency			= 0.0f;						///< Flexblock Sinus Frequency
+	};
+
+
+	/**
+	 * The flexblock algorithm. Can be started and stopped.
 	 */
 	class NAPAPI FlexDevice : public Device
 	{
@@ -63,13 +97,13 @@ namespace nap
 		 * This call asserts if the input size doesn't match internally required length.
 		 * @param inputs new motor inputs
 		 */
-		void setMotorInput(const std::vector<float>& inputs);
+		void setInput(const FlexInput& input);
 
 		/**
 		 * Get currently used motor input values [0-8]. Thread safe.
 		 * @param outInputs the currently used motor input values.
 		 */
-		void getMotorInput(std::vector<float>& outInputs) const;
+		void getInput(FlexInput& input) const;
 
 		/**
 		 * Set the current slack value. 
@@ -115,7 +149,7 @@ namespace nap
 
 		// Number of inputs
 		int mCountInputs;
-		std::vector<float> mMotorInput = std::vector<float>(8);
+		FlexInput mInput;
 
 		// Elements
 		std::vector<std::vector<int>> mElementsObject;
@@ -139,7 +173,6 @@ namespace nap
 		float mMotorAcc = 0.0f;
 		glm::vec3 mPointForce = {0,0,0};
 		glm::vec3 mPointForceCorr = {0,0,0};
-		std::atomic<float> mCurrentSlack = { 0.0f };
 
 		//////////////////////////////////////////////////////////////////////////
 		// Flex-block logic
@@ -214,6 +247,6 @@ namespace nap
 		 * Computes rope output length including slack
 		 * @param outLengths the rope output length including slacks
 		 */
-		void calcRopeLengths(std::vector<float>& outLengths);
+		void calcRopeLengths(float slack, std::vector<float>& outLengths);
 	};
 }
