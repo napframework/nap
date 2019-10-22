@@ -21,7 +21,8 @@ namespace nap
 
 	void FlexAdapter::compute(const FlexDevice& device)
 	{
-		if(mEnabled)
-			onCompute(device);
+		if (!mEnabled)
+			return;
+		onCompute(device);
 	}
 }

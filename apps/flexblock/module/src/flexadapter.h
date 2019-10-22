@@ -10,13 +10,12 @@
 namespace nap
 {
 	/**
-	 * Allows for linking the flexblock device (algorithm) to a specific output.
-	 * Base class for all other type of adapters.
+	 * Allows for linking the flexblock device (algorithm) to a specific output. 
+	 * Base class for all other type of flexblock adapters.
 	 */
 	class NAPAPI FlexAdapter : public Resource
 	{
 		friend class FlexDevice;
-
 		RTTI_ENABLE(Resource)
 	public:
 		virtual ~FlexAdapter();

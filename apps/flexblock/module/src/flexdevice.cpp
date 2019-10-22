@@ -11,7 +11,9 @@
 RTTI_BEGIN_CLASS(nap::FlexDevice)
 	RTTI_PROPERTY("FlexBlockShape",		&nap::FlexDevice::mFlexBlockShape,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Frequency",			&nap::FlexDevice::mUpdateFrequency,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Slack Minimum",		&nap::FlexDevice::mSlack,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack",				&nap::FlexDevice::mSlack,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Minimum",		&nap::FlexDevice::mSlackMin,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Scale",		&nap::FlexDevice::mSlackScale,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sinus Amplitude",	&nap::FlexDevice::mSinusAmplitude,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sinus Frequency",	&nap::FlexDevice::mSinusFrequency,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Minimum",	&nap::FlexDevice::mOverrideMinimum,		nap::rtti::EPropertyMetaData::Default)
@@ -83,6 +85,9 @@ namespace nap
 		mPointChange = std::vector<glm::vec3>(mPointsObject.size());
 		mPointChangeCorr = std::vector<glm::vec3>(mPointsObject.size());
 
+		// Update slack
+		setSlack(mSlack);
+
 		// concat points
 		concatPoints();
 
@@ -147,6 +152,12 @@ namespace nap
 	{
 		std::lock_guard<std::mutex> lock(mMotorMutex);
 		outInputs = mMotorInput;
+	}
+
+
+	void FlexDevice::setSlack(float value)
+	{
+		mCurrentSlack = math::max<float>(mSlack * mSlackScale, mSlackMin);
 	}
 
 
@@ -248,6 +259,8 @@ namespace nap
 				adapter->compute(*this);
 
 			// Wait update time
+			// TODO: Do we need to consider the actual compute time of the algorithm here?
+			// TODO: If so we need to subtract computation time from update frequency.
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
@@ -368,7 +381,7 @@ namespace nap
 	{
 		outLengths.clear();
 		for (int i = 12; i < 20; i++)
-			outLengths.emplace_back(mElementsLength[i + 1] + mSlack);
+			outLengths.emplace_back(mElementsLength[i + 1] + mCurrentSlack);
 		
 		// Copy lengths as output value
 		std::lock_guard<std::mutex> lock(mRopesMutes);

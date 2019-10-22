@@ -68,13 +68,23 @@ namespace nap
 		 */
 		void getMotorInput(std::vector<float>& outInputs) const;
 
+		/**
+		 * Set the current slack value. 
+		 * The final value is computed using the scale factor and minimum requested value.
+		 * @param value new slack value
+		 */
+		void setSlack(float value);
+
 		ResourcePtr<FlexBlockShape>				mFlexBlockShape;				///< Property: 'FlexBlockShape' Reference to the shape definition of the block.
 		std::vector<ResourcePtr<FlexAdapter>>	mAdapters;						///< Property: 'Adapters' All flexblock adapters.
 
 		// Properties
 		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
 		float				mOverrideMinimum = 0.0f;		///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
-		float				mSlack = 0.0f;					///< Property: 'Slack Range' 
+		float				mSlack = 0.0f;					///< Property: 'Slack' slack value 
+		float				mSlackScale = 1.0f;				///< Property: 'Slack Scale' slack multiplier
+		float				mSlackMin = 0.0f;				///< Property: 'Slack Minimum' Min required slack value
+
 		float				mSinusAmplitude = 0.0f;			///< Property: 'Sinus Amplitude'			
 		float				mSinusFrequency = 0.0f;			///< Property: 'Sinus Frequency
 
@@ -130,6 +140,7 @@ namespace nap
 		float mMotorAcc = 0.0f;
 		glm::vec3 mPointForce = {0,0,0};
 		glm::vec3 mPointForceCorr = {0,0,0};
+		std::atomic<float> mCurrentSlack = { 0.0f };
 
 		//////////////////////////////////////////////////////////////////////////
 		// Flex-block logic
