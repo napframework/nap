@@ -156,6 +156,7 @@
                     "mID": "FlexBlockComponent",
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
+                    "FlexBlockDevice" : "Flex",
                     "Enable Serial": false,
                     "Mac Controller": "MACController",
                     "Enable Controller": false,

@@ -1,4 +1,5 @@
 #include "macadapter.h"
+#include "flexdevice.h"
 
 // nap::macadapter run time class definition 
 RTTI_BEGIN_CLASS(nap::MACAdapter)

@@ -1,4 +1,6 @@
+// Local Includes
 #include "flexadapter.h"
+#include "flexdevice.h"
 
 // nap::flexadapter run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlexAdapter)

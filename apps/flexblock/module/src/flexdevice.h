@@ -3,6 +3,7 @@
 // Local Includes
 #include "maccontroller.h"
 #include "flexblockdata.h"
+#include "flexadapter.h"
 
 // External Includes
 #include <nap/device.h>
@@ -11,9 +12,6 @@
 
 namespace nap
 {
-	// Forward Declares
-	class FlexAdapter;
-
 	/**
 	 * The flexblock algorithm.
 	 */
@@ -48,6 +46,11 @@ namespace nap
 		 * @param outPoints copy of the most recent calculated object points
 		 */
 		void getObjectPoints(std::vector<glm::vec3>& outPoints) const;
+
+		/**
+		 * @param outPoints reference to all the frame points, this call is thread safe.
+		 */
+		void getFramePoints(std::vector<glm::vec3>& outPoints) const;
 
 		/**
 		 * Returns the computed rope lengths, this call is thread safe

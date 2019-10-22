@@ -1,14 +1,14 @@
 #pragma once
 
-// Local Includes
-#include "flexdevice.h"
-
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 
 namespace nap
 {
+	// Forward Declares
+	class FlexDevice;
+
 	/**
 	 * Allows for linking the flexblock device (algorithm) to a specific output. 
 	 * Base class for all other type of flexblock adapters.

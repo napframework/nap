@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "flexadapter.h"
+#include "maccontroller.h"
 
 // External Includes
 #include <nap/resource.h>

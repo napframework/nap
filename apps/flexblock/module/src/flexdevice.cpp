@@ -38,16 +38,13 @@ namespace nap
 		// Number of inputs
 		mCountInputs = mFlexBlockShape->mMotorCount;
 
-		// points
-		mPointsObject = mFlexBlockShape->mPoints->mObject;
-		mPointsFrame  = mFlexBlockShape->mPoints->mFrame;
-
 		// elements
 		mElementsObject = mFlexBlockShape->mElements->mObject;
 		mElementsObject2Frame = mFlexBlockShape->mElements->mObject2Frame;
 		mElementsFrame = mFlexBlockShape->mElements->mFrame;
 
 		// convert zero indexed elements
+		mPointsObject = mFlexBlockShape->mPoints->mObject;
 		for (auto i = 0; i < mElementsObject2Frame.size(); i++)
 			mElementsObject2Frame[i][1] += mPointsObject.size();
 
@@ -65,11 +62,12 @@ namespace nap
 			mPointsObject[i].z *= mFlexBlockShape->mSize->mValues->mObject.z * 0.5f;
 		}
 
-		for (auto i = 0; i < mPointsFrame.size(); i++)
+		mPointsFrame = mFlexBlockShape->mPoints->mFrame;
+		for (auto& point : mPointsFrame)
 		{
-			mPointsFrame[i].x *= mFlexBlockShape->mSize->mValues->mFrame.x * 0.5f;
-			mPointsFrame[i].y *= mFlexBlockShape->mSize->mValues->mFrame.y * 0.5f;
-			mPointsFrame[i].z *= mFlexBlockShape->mSize->mValues->mFrame.z * 0.5f;
+			point.x *= mFlexBlockShape->mSize->mValues->mFrame.x * 0.5f;
+			point.y *= mFlexBlockShape->mSize->mValues->mFrame.y * 0.5f;
+			point.z *= mFlexBlockShape->mSize->mValues->mFrame.z * 0.5f;
 		}
 
 		// init elements
@@ -129,6 +127,12 @@ namespace nap
 		// Copy points thread-safe
 		std::lock_guard<std::mutex> lock(mPointMutex);
 		outPoints = mPoints;
+	}
+
+
+	void FlexDevice::getFramePoints(std::vector<glm::vec3>& outPoints) const
+	{
+		outPoints = mPointsFrame;
 	}
 
 
