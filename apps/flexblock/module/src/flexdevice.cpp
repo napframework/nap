@@ -14,9 +14,6 @@ RTTI_BEGIN_CLASS(nap::FlexDevice)
 	RTTI_PROPERTY("Slack",				&nap::FlexDevice::mSlack,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Minimum",		&nap::FlexDevice::mSlackMin,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Scale",		&nap::FlexDevice::mSlackScale,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sinus Amplitude",	&nap::FlexDevice::mSinusAmplitude,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sinus Frequency",	&nap::FlexDevice::mSinusFrequency,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Override Minimum",	&nap::FlexDevice::mOverrideMinimum,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",			&nap::FlexDevice::mAdapters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -146,7 +143,7 @@ namespace nap
 	void FlexDevice::setMotorInput(const std::vector<float>& inputs)
 	{
 		// Copy motor input thread-safe
-		std::lock_guard<std::mutex> lock(mMotorMutex);
+		std::lock_guard<std::mutex> lock(mInputMutex);
 		assert(inputs.size() == mMotorInput.size());
 		mMotorInput = inputs;
 	}
@@ -154,7 +151,7 @@ namespace nap
 
 	void FlexDevice::getMotorInput(std::vector<float>& outInputs) const
 	{
-		std::lock_guard<std::mutex> lock(mMotorMutex);
+		std::lock_guard<std::mutex> lock(mInputMutex);
 		outInputs = mMotorInput;
 	}
 

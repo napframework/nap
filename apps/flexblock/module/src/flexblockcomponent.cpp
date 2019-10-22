@@ -11,11 +11,12 @@
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
-RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Serial", &nap::FlexBlockComponent::mEnableSerial, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameMesh",		&nap::FlexBlockComponent::mFrameMesh,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FlexBlockMesh",	&nap::FlexBlockComponent::mFlexBlockMesh,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FlexBlockDevice",&nap::FlexBlockComponent::mFlexBlockDevice, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Enable Serial",	&nap::FlexBlockComponent::mEnableSerial,	nap::rtti::EPropertyMetaData::Default)
 
-	RTTI_PROPERTY("Mac Controller", &nap::FlexBlockComponent::mMacController, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mac Controller", &nap::FlexBlockComponent::mMacController,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Enable Controller", &nap::FlexBlockComponent::mEnableMacController, nap::rtti::EPropertyMetaData::Required)
 
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
@@ -68,7 +69,9 @@ namespace nap
 		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
+		mFlexblockDevice = resource->mFlexBlockDevice.get();
 		mMacController = resource->mMacController.get();
+
 		mEnableMacController = resource->mEnableMacController;
 		mMotorStepsPerMeter = resource->mMotorStepsPerMeter;
 		mMotorStepOffset = resource->mMotorOffset;
@@ -105,11 +108,10 @@ namespace nap
 		mFlexLogic->start();
 
 		// calculate new frame
-		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
-		mFramePoints = framePoints;
+		mFlexblockDevice->getFramePoints(mFramePoints);
 
 		// set points
-		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
+		mFrameMesh->setFramePoints(mFramePoints, mObjectPoints);
 
 		return true;
 	}
@@ -149,7 +151,7 @@ namespace nap
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
 		// get points of objects
-		mObjectPoints = mFlexLogic->getObjectPoints();
+		mFlexblockDevice->getObjectPoints(mObjectPoints);
 
 		// update ropes of frame
 		mFrameMesh->setControlPoints(mObjectPoints);
@@ -158,12 +160,12 @@ namespace nap
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
 
 		// update motors of flex algorithm
-		mFlexLogic->setMotorInput(mMotorInputs);
+		mFlexblockDevice->setMotorInput(mMotorInputs);
 
 		// update overrides
-		mFlexLogic->setMotorOverrides(mMotorOverrides);
+		// mFlexblockDevice->setMotorOverrides(mMotorOverrides);
 
 		// set motor steps
-		mMotorSteps = mFlexLogic->getMotorSteps();
+		// mMotorSteps = mFlexLogic->getMotorSteps();
 	}
 }

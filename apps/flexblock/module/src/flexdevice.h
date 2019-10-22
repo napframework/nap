@@ -83,19 +83,15 @@ namespace nap
 
 		// Properties
 		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
-		float				mOverrideMinimum = 0.0f;		///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
 		float				mSlack = 0.0f;					///< Property: 'Slack' slack value 
 		float				mSlackScale = 1.0f;				///< Property: 'Slack Scale' slack multiplier
 		float				mSlackMin = 0.0f;				///< Property: 'Slack Minimum' Min required slack value
-
-		float				mSinusAmplitude = 0.0f;			///< Property: 'Sinus Amplitude'			
-		float				mSinusFrequency = 0.0f;			///< Property: 'Sinus Frequency
 
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped
 		std::future<void> mComputeTask;						///< Compute background thread
 		mutable std::mutex mPointMutex;						///< Mutex invoked when getting / setting points
-		mutable std::mutex mMotorMutex;						///< Mutex invoked when getting / setting motor input
+		mutable std::mutex mInputMutex;						///< Mutex invoked when getting / setting motor input
 		mutable std::mutex mRopesMutes;						///< Mutex invoked when getting / setting final rope length
 
 		/**

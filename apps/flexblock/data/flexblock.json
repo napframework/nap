@@ -717,9 +717,6 @@
             "Slack" : 0.0,
             "Slack Minimum": 0.1,
             "Slack Scale" : 1.0,
-            "Sinus Amplitude": 0.0,
-            "Sinus Frequency": 0.0,
-            "Override Minimum": 0.0,
             "Adapters": [
                 "MACAdapter"
             ]
@@ -750,6 +747,9 @@
             "Set Digital Pin": false,
             "Motor Steps Per Meter": 129473.40625,
             "Motor Step Offset": 0,
+            "Sinus Amplitude": 0.0,
+            "Sinus Frequency": 0.0,
+            "Override Minimum": 0.0,
             "Motor Mapping": [
                 5,
                 1,

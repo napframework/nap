@@ -7,6 +7,7 @@
 #include "flex.h"
 #include "visualizenormalsmesh.h"
 #include "flexblockserialcomponent.h"
+#include "flexdevice.h"
 
 // external includes
 #include <component.h>
@@ -51,7 +52,12 @@ namespace nap
 		/**
 		 * Reference to mac controller
 		 */
-		nap::ResourcePtr<MACController>		mMacController;
+		nap::ResourcePtr<MACController>	mMacController;
+
+		/**
+		 * Reference to the flexblock algorithm
+		 */
+		nap::ResourcePtr<FlexDevice> mFlexBlockDevice;	///< Property: 'FlexBlockDevice' Reference to the flexblock device 
 
 		bool mEnableMacController = true;
 
@@ -221,9 +227,12 @@ namespace nap
 		 */
 		const bool getEnableMotorController() const { return mEnableMacController; }
 	protected:
-		FrameMesh* mFrameMesh = nullptr;
-		FlexBlockMesh* mFlexBlockMesh = nullptr;
-		
+
+		// Resources / Devices
+		FrameMesh*		mFrameMesh		 = nullptr;
+		FlexBlockMesh*	mFlexBlockMesh	 = nullptr;
+		FlexDevice*		mFlexblockDevice = nullptr;
+
 		bool mEnableSerial;
 
 		// Initialize flexblock unique ptr to null
