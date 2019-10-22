@@ -1,2 +1,2 @@
 #!/bin/sh
-cmake -H. -Bxcode -G Xcode
+../thirdparty/cmake/osx/install/bin/cmake -H. -Bxcode -G Xcode

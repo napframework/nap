@@ -673,8 +673,7 @@ def get_cmake_path():
     if platform.startswith('linux'):
         return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
     elif platform == 'darwin':
-        return 'cmake'
-        # return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+        return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
     else:
         return 'cmake'
         # return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')

@@ -276,7 +276,11 @@ endmacro()
 
 macro(package_cmake)
     if(APPLE)
-    
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/osx/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                USE_SOURCE_PERMISSIONS
+                )    
     elseif(UNIX)
         install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/install/
                 DESTINATION thirdparty/cmake
