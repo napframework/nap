@@ -3,7 +3,6 @@ import json
 import os
 from subprocess import Popen
 import sys
-from sys import platform
 
 PROJECT_INFO_FILENAME = 'project.json'
 
@@ -145,11 +144,8 @@ def get_nap_root_from_project_dir():
 def get_cmake_path():
     nap_root = get_nap_root_from_project_dir()
     cmake_thirdparty_root = os.path.join(nap_root, 'thirdparty', 'cmake')
-    if platform.startswith('linux'):
-        return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')
-    elif platform == 'darwin':
-        return 'cmake'
-        # return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')
-    else:
+    if sys.platform == 'win32':
         return 'cmake'
         # return os.path.join(cmake_thirdparty_root, 'bin', 'cmake.exe')
+    else:
+        return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')

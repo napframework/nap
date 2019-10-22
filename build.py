@@ -36,10 +36,11 @@ def main(targets):
         shutil.rmtree(BUILD_DIR)
 
     # generate solutions
+    cmake = get_cmake_path()
     if platform.startswith('linux'):    
-        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % LINUX_BUILD_TYPE])
+        call(WORKING_DIR, [cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % LINUX_BUILD_TYPE])
     elif platform == 'darwin':
-        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
+        call(WORKING_DIR, [cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
         # create dir if it doesn't exist
         if not os.path.exists(BUILD_DIR):
@@ -47,7 +48,7 @@ def main(targets):
 
         # generate prject
         call(WORKING_DIR,
-             ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+             [cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     for t in targets:
 
@@ -64,7 +65,7 @@ def main(targets):
         else:
             # Windows
             d = WORKING_DIR
-            call(d, ['cmake', '--build', BUILD_DIR, '--target', t])
+            call(d, [cmake, '--build', BUILD_DIR, '--target', t])
 
 
 def parseCmdArgs():
@@ -94,6 +95,17 @@ def parseCmdArgs():
         targets.append(result[1])
     return targets
 
+def get_cmake_path():
+    """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
+
+    cmake_thirdparty_root = os.path.join(os.pardir, 'thirdparty', 'cmake')
+    if platform.startswith('linux'):
+        return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+    elif platform == 'darwin':
+        return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+    else:
+        return 'cmake'
+        # return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
 
 # main run
 if __name__ == '__main__':
