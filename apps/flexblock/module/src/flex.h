@@ -81,8 +81,8 @@ namespace nap
 		const std::vector<float> getRopeLengths() const;
 
 		/**
-		* @return reference to to latest calculate object points
-		*/
+		 * @return reference to to latest calculate object points
+		 */
 		const std::vector<glm::vec3>& getObjectPoints() const { return mPoints; }
 
 		/**
@@ -166,7 +166,7 @@ namespace nap
 		/**
 		* Applies motor input/force to elements
 		*/
-		void setMotorInputInternal(std::vector<float>& inputs);
+		void setMotorInputInternal(const std::vector<float>& inputs);
 
 		/**
 		* Update thread
@@ -186,12 +186,9 @@ namespace nap
 		float mForceObjectSpring = 0.02f;
 		float mForceObject2Frame = 2.0f;
 
-		float mLengthError = 0;
-
 		long mFrequency;
 
 		FlexBlockShape* mObjShape;
-		int mInputs;
 		int mCountInputs;
 
 		std::vector<glm::vec3> mPointsObject;
@@ -204,7 +201,6 @@ namespace nap
 		float mEndTime = 0.0f;
 		std::vector<glm::vec3> mPoints;
 		std::vector<std::vector<int>> mElements;
-		std::vector<std::vector<int>> mElementsAll;
 		std::vector<glm::vec3> mElementsVector;
 		std::vector<float> mElementsLength;
 		std::vector<float> mElementsLengthRef;

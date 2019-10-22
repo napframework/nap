@@ -48,8 +48,6 @@ namespace nap
 		mForceObjectSpring = 0.02;
 		mForceObject2Frame = 2;
 
-		mLengthError = 0;
-
 		// points
 		mPointsObject = mObjShape->mPoints->mObject;
 		mPointsFrame = mObjShape->mPoints->mFrame;
@@ -92,17 +90,12 @@ namespace nap
 			mElements[i] = std::vector<int>(2);
 		}
 
-		mElementsAll = std::vector<std::vector<int>>(mElementsObject.size() + mElementsObject2Frame.size() + mElementsFrame.size());
 		mElementsVector = std::vector<glm::vec3>(mElements.size());
 		mElementsLength = std::vector<float>(mElements.size());
 		mElementsLengthRef = std::vector<float>(mElements.size());
-		mElementsObjectLength = std::vector<float>(mElements.size());
 		mElementsInput = std::vector<float>(mCountInputs);
 		mPointChange = std::vector<glm::vec3>(mPointsObject.size());
 		mPointChangeCorr = std::vector<glm::vec3>(mPointsObject.size());
-		mElementIndices = std::vector<int>(2);
-		mElementIndices[0] = mElementsObject.size();
-		mElementIndices[1] = mElementsObject.size() + mElementsObject2Frame.size();
 
 		// concat points
 		concatPoints();
@@ -112,12 +105,7 @@ namespace nap
 
 		// calc elements
 		calcElements();
-
-		mElementsLengthRef = std::vector<float>(mElementsLength.size());
-		for (int i = 0; i < mElementsLength.size(); i++)
-		{
-			mElementsLengthRef[i] = mElementsLength[i];
-		}
+		mElementsLengthRef = mElementsLength;
 
 		// calc input
 		calcDeltaLengths();
@@ -398,16 +386,11 @@ namespace nap
 	}
 
 
-	void Flex::setMotorInputInternal(std::vector<float>& inputs)
+	void Flex::setMotorInputInternal(const std::vector<float>& inputs)
 	{
 		for (int i = 0; i < inputs.size(); i++)
 		{
-			inputs[i] += 0.2f; // why ??
-		}
-
-		for (int i = 0; i < inputs.size(); i++)
-		{
-			mElementsInput[i] = inputs[i] * mForceObject2Frame;
+			mElementsInput[i] = (inputs[i] + 0.2f) * mForceObject2Frame;
 		}
 	}
 
@@ -484,27 +467,22 @@ namespace nap
 
 		std::vector<float> elementsLength(mElementsLength.size());
 		for (int i = 0; i < mElementsVector.size(); i++)
-		{
 			elementsLength[i] = glm::length(mElementsVector[i]);
-		}
 
 		float motorSpd = 0.0f;
 		float a = 0.0f;
 		for (int i = 12; i < 19; i++)
 		{
 			float new_a = math::abs(mElementsLength[i] - elementsLength[i]);
-			if (new_a > a)
-				a = new_a;
+			a = new_a > a ? new_a : a;
 		}
-		motorSpd = a * mFrequency;
 
+		motorSpd = a * mFrequency;
 		mMotorAcc = (mMotorSpd - motorSpd) * mFrequency;
 
 		mElementsLength = elementsLength;
 		for (int i = 0; i < mElementsVector.size(); i++)
-		{
 			mElementsVector[i] /= mElementsLength[i];
-		}
 	}
 
 
@@ -514,12 +492,6 @@ namespace nap
 		mElements = mElementsObject;
 		mElements.reserve(mElementsObject.size() + mElementsObject2Frame.size());
 		mElements.insert(mElements.end(), mElementsObject2Frame.begin(), mElementsObject2Frame.end());
-
-		// elements_all
-		mElementsAll = mElementsObject;
-		mElementsAll.reserve(mElementsObject.size() + mElementsObject2Frame.size() + mElementsFrame.size());
-		mElementsAll.insert(mElementsAll.end(), mElementsObject2Frame.begin(), mElementsObject2Frame.end());
-		mElementsAll.insert(mElementsAll.end(), mElementsFrame.begin(), mElementsFrame.end());
 	}
 
 

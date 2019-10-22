@@ -163,7 +163,7 @@ namespace nap
 		// update overrides
 		mFlexLogic->setMotorOverrides(mMotorOverrides);
 
-		//
+		// set motor steps
 		mMotorSteps = mFlexLogic->getMotorSteps();
 	}
 }

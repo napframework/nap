@@ -7,6 +7,7 @@
 // External Includes
 #include <nap/device.h>
 #include <nap/resourceptr.h>
+#include <mutex>
 
 namespace nap
 {
@@ -42,14 +43,120 @@ namespace nap
 		 */
 		virtual void stop() override;
 
+		/**
+		 * Returns the most recent calculated object points, this call is thread safe
+		 * @param outPoints reference to the most recent calculated object points
+		 */
+		void getObjectPoints(std::vector<glm::vec3>& outPoints);
+
+		/**
+		 * Update individual motor inputs [0-8]. Thread safe.
+		 * This call asserts if the input size doesn't match internally required length.
+		 * @param inputs new motor inputs
+		 */
+		void setMotorInput(const std::vector<float>& inputs);
+
+		/**
+		 * Get currently used motor input values [0-8]. Thread safe.
+		 * @param outInputs the currently used motor input values.
+		 */
+		void getMotorInput(std::vector<float>& outInputs);
+
 		ResourcePtr<FlexBlockShape>				mFlexBlockShape;				///< Property: 'FlexBlockShape' Reference to the shape definition of the block.
 		std::vector<ResourcePtr<FlexAdapter>>	mAdapters;						///< Property: 'Adapters' All flexblock adapters.
 
 		// Properties
-		int					mUpdateFrequency = 1000;							///< Property: 'Frequency' device operation frequency in hz.
-		float				mOverrideMinimum = 0.0f;							///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
-		float				mSlack = 0.0f;										///< Property: 'Slack Range' 
-		float				mSinusAmplitude = 0.0f;								///< Property: 'Sinus Amplitude'			
-		float				mSinusFrequency = 0.0f;								///< Property: 'Sinus Frequency
+		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
+		float				mOverrideMinimum = 0.0f;		///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
+		float				mSlack = 0.0f;					///< Property: 'Slack Range' 
+		float				mSinusAmplitude = 0.0f;			///< Property: 'Sinus Amplitude'			
+		float				mSinusFrequency = 0.0f;			///< Property: 'Sinus Frequency
+
+	private:
+		bool mStopCompute = false;							///< If the compute task should be stopped
+		std::future<void> mComputeTask;						///< Compute background thread
+		std::mutex mPointMutex;								///< Mutex invoked when getting / setting points
+		std::mutex mMotorMutex;								///< Mutex invoked when getting / setting motor input
+
+		/**
+		 * Computes / Cooks the flexblock algorithm
+		 * Runs on a separate thread and is managed by the mComputeTask future
+		 */
+		void compute();
+
+		//////////////////////////////////////////////////////////////////////////
+		// Flex-block compute specific variables
+		//////////////////////////////////////////////////////////////////////////
+
+		// statics
+		static const float sForceObject;
+		static const float sForceObject2Frame;
+		static const float sForceObjectSpring;
+
+		// Points
+		std::vector<glm::vec3> mPointsObject;
+		std::vector<glm::vec3> mPointsFrame;
+
+		// Number of inputs
+		int mCountInputs;
+		std::vector<float> mMotorInput = std::vector<float>(8);
+
+		// Elements
+		std::vector<std::vector<int>> mElementsObject;
+		std::vector<std::vector<int>> mElementsObject2Frame;
+		std::vector<std::vector<int>> mElementsFrame;
+
+		// What is computed
+		mutable std::vector<glm::vec3> mPoints;
+		std::vector<std::vector<int>> mElements;
+
+		// Intermediate storage results
+		std::vector<glm::vec3>	mElementsVector;
+		std::vector<float> mElementsLength;
+		std::vector<float> mElementsLengthRef;
+		std::vector<float> mElementsLengthDelta;
+		std::vector<float> mElementsInput;
+		std::vector<glm::vec3> mPointChange;
+		std::vector<glm::vec3> mPointChangeCorr;
+		float mMotorSpd = 0.0f;
+		float mMotorAcc = 0.0f;
+		glm::vec3 mPointForce = {0,0,0};
+		glm::vec3 mPointForceCorr = {0,0,0};
+
+		//////////////////////////////////////////////////////////////////////////
+		// Flex-block logic
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Calculates the change of the element lengths in reference to start position
+		 */
+		void calcDeltaLengths();
+
+		/**
+		 * Calculates the new forces on the elements
+		 */
+		void calcElements();
+
+		/**
+		 * Makes a single list of all values of mElementsObject, mElementsObject2Frame and mElementsFrame
+		 */
+		void concatElements();
+
+		/**
+		 * Makes a single list of all values of mPointsObject and mPointsFrame
+		 */
+		void concatPoints();
+
+		/**
+		 * Applies motor input/force to elements
+		 */
+		void setMotorInputInternal(std::vector<float>& inputs);
+
+		/**
+		 * Collects the ids of elements connected to a point
+		 * @param id point id
+		 * @param outIDs a vector containing the element ids
+		 */
+		void getIdsOfSuspensionElementsOnPoint(int id, std::vector<int> &outIDs);
 	};
 }
