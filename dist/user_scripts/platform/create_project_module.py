@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_project, get_camelcase_project_name, add_module_to_project_json
+from nap_shared import find_project, get_camelcase_project_name, add_module_to_project_json, get_cmake_path
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -48,7 +48,8 @@ def create_project_module(project_name, update_project_json, generate_solution, 
     print("Creating project module mod_%s for project %s in %s" % (module_name.lower(), module_name, module_path))
 
     # Create module from template
-    cmd = ['cmake', 
+    cmake = get_cmake_path()
+    cmd = [cmake, 
            '-DMODULE_NAME_PASCALCASE=%s' % module_name, 
            '-DPROJECT_MODULE=1', 
            '-DPROJECT_MODULE_PROJECT_PATH=%s' % project_path,

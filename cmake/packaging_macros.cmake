@@ -80,6 +80,9 @@ macro(package_nap)
         elseif(APPLE)
             install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
         endif()
+        
+        # Package CMake
+        package_cmake()
 
         # Package Windows redistributable help
         if(WIN32)
@@ -270,6 +273,21 @@ macro(package_qt)
         endforeach()
     endif()
 endmacro()
+
+macro(package_cmake)
+    if(APPLE)
+    
+    elseif(UNIX)
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                USE_SOURCE_PERMISSIONS
+                )    
+    else()
+    
+    endif()
+endmacro()
+
 
 # Package project directory package & regenerate shortcuts
 # DESTINATION: Directory to package into
