@@ -4,7 +4,6 @@ import subprocess
 import sys
 
 REQUIRED_UBUNTU_VERSION = '18.04'
-CMAKE_MIN_VERSION = (3, 5)
 
 
 def call(cmd):
@@ -52,25 +51,6 @@ def apt_package_installed(package_name):
     list_output = call('dpkg -l %s | grep %s' % (package_name, package_name))
     return list_output.startswith('ii')
 
-def check_cmake_installed():
-    """Check if cmake package is installed"""
-
-    installed = apt_package_installed('cmake')
-    log_test_success('for cmake package', installed)
-    return installed
-
-def check_cmake():
-    """Check if the CMake version is >= 3.5"""
-
-    # Check version >= 3.5
-    cmake_version = call('cmake --version | grep version')
-    chunks = cmake_version.strip().split()
-    (major, minor, patch) = chunks[2].split('.')
-    cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
-
-    log_test_success('CMake >= 3.5', cmake_ok)
-    return cmake_ok
-
 def check_compiler():
     """Check that c++ is setup for GCC"""
     
@@ -113,7 +93,7 @@ def check_build_environment():
     distribution_ok = check_distribution()
     if not distribution_ok:
         print("\nThis version of NAP supports Ubuntu Linux (%s).  Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
-        print("Hint for the adventurous: On Ubuntu we depend on build-essential, CMake >= 3.5, libglu1-mesa-dev and patchelf")
+        print("Hint for the adventurous: On Ubuntu we depend on build-essential, libglu1-mesa-dev and patchelf")
         print("\nNot continuing checks.")
         sys.exit(1)
 
@@ -135,19 +115,10 @@ def check_build_environment():
     glut_intalled = apt_package_installed('libglu1-mesa-dev')
     log_test_success('for libglu1-mesa-dev package', glut_intalled)
 
-    # Check cmake
-    cmake_ok = False
-    cmake_installed = apt_package_installed('cmake')
-    log_test_success('for cmake package', cmake_installed)
-
-    # Check version >= 3.5
-    if cmake_installed:
-        cmake_ok = check_cmake()
-
     print("")
 
     # If everything looks good log and exit
-    if distribution_version_ok and build_essential_installed and patchelf_installed and cmake_ok and compiler_ok:
+    if distribution_version_ok and build_essential_installed and patchelf_installed and compiler_ok:
         print("Your build environment appears to be ready for NAP!")
         return False
 
@@ -167,8 +138,6 @@ def check_build_environment():
         packages_to_install.append('build-essential')
     if not patchelf_installed:
         packages_to_install.append('patchelf')
-    if not cmake_installed:
-        packages_to_install.append('cmake')
     if not glut_intalled:
         packages_to_install.append('libglu1-mesa-dev')
         
@@ -181,11 +150,6 @@ def check_build_environment():
             return True
         else:
             print("Re-run checkBuildEnvironment once you have installed the requirements.")
-            return False
-    else:
-        # If cmake is installed but the version is too low, let them know.  This will only occur on pre 16.04 Ubuntu distros.
-        if not cmake_ok:
-            print("\nYour installed cmake version is less than the minimum 3.5 required")
             return False
 
 if __name__ == '__main__':
