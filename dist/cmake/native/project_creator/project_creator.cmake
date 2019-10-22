@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
 
 # Verify we have a project name
 if (NOT DEFINED PROJECT_NAME_PASCALCASE)
