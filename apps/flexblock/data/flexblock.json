@@ -717,7 +717,9 @@
             "Sinus Amplitude": 0.0,
             "Sinus Frequency": 0.0,
             "Override Minimum": 0.0,
-            "Adapters": []
+            "Adapters": [
+                "MACAdapter"
+            ]
         },
         {
             "Type": "nap::Font",
@@ -741,6 +743,8 @@
         {
             "Type": "nap::MACAdapter",
             "mID": "MACAdapter",
+            "Enabled": true,
+            "FlexDevice": "",
             "Set Digital Pin": false,
             "Motor Steps Per Meter": 129473.40625,
             "Motor Step Offset": 0,

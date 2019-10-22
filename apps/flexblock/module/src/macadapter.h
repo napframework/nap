@@ -13,7 +13,7 @@ namespace nap
 	 */
 	class NAPAPI MACAdapter : public FlexAdapter
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(FlexAdapter)
 	public:
 		virtual ~MACAdapter();
 

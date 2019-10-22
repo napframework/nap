@@ -25,7 +25,7 @@ namespace nap
 
 	void MACAdapter::onCompute(const FlexDevice& device)
 	{
-
+		std::vector<float> lengths;
+		device.getRopeLengths(lengths);
 	}
-
 }

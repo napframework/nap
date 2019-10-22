@@ -45,9 +45,15 @@ namespace nap
 
 		/**
 		 * Returns the most recent calculated object points, this call is thread safe
-		 * @param outPoints reference to the most recent calculated object points
+		 * @param outPoints copy of the most recent calculated object points
 		 */
-		void getObjectPoints(std::vector<glm::vec3>& outPoints);
+		void getObjectPoints(std::vector<glm::vec3>& outPoints) const;
+
+		/**
+		 * Returns the computed rope lengths, this call is thread safe
+		 * @param outLengths copy of the most recent calculated rope lengths
+		 */
+		void getRopeLengths(std::vector<float>& outLengths) const;
 
 		/**
 		 * Update individual motor inputs [0-8]. Thread safe.
@@ -60,7 +66,7 @@ namespace nap
 		 * Get currently used motor input values [0-8]. Thread safe.
 		 * @param outInputs the currently used motor input values.
 		 */
-		void getMotorInput(std::vector<float>& outInputs);
+		void getMotorInput(std::vector<float>& outInputs) const;
 
 		ResourcePtr<FlexBlockShape>				mFlexBlockShape;				///< Property: 'FlexBlockShape' Reference to the shape definition of the block.
 		std::vector<ResourcePtr<FlexAdapter>>	mAdapters;						///< Property: 'Adapters' All flexblock adapters.
@@ -75,8 +81,9 @@ namespace nap
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped
 		std::future<void> mComputeTask;						///< Compute background thread
-		std::mutex mPointMutex;								///< Mutex invoked when getting / setting points
-		std::mutex mMotorMutex;								///< Mutex invoked when getting / setting motor input
+		mutable std::mutex mPointMutex;						///< Mutex invoked when getting / setting points
+		mutable std::mutex mMotorMutex;						///< Mutex invoked when getting / setting motor input
+		mutable std::mutex mRopesMutes;						///< Mutex invoked when getting / setting final rope length
 
 		/**
 		 * Computes / Cooks the flexblock algorithm
@@ -107,7 +114,8 @@ namespace nap
 		std::vector<std::vector<int>> mElementsFrame;
 
 		// What is computed
-		mutable std::vector<glm::vec3> mPoints;
+		std::vector<glm::vec3> mPoints;
+		std::vector<float> mRopes;
 		std::vector<std::vector<int>> mElements;
 
 		// Intermediate storage results
@@ -158,5 +166,44 @@ namespace nap
 		 * @param outIDs a vector containing the element ids
 		 */
 		void getIdsOfSuspensionElementsOnPoint(int id, std::vector<int> &outIDs);
+
+		/**
+		 * Calculates force on opposite point of element
+		 * @param elidx element id
+		 * @param point point id
+		 * @param outVec the calculated suspension force
+		 */
+		void getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec);
+
+		/**
+		 * Calculates force on opposite point of element
+		 * @param object_element_id element id
+		 * @param opposite_column the column opposite of the object_element_id
+		 * @param outVec the calculated suspension force
+		 */
+		void getProjectedSuspensionForcesOnOppositePointOfElement(int object_element_id, int opposite_column, glm::vec3& outVec);
+
+		/**
+		 * Calculates force on opposite point of element
+		 * @param object_element_id element id
+		 * @param suspension_element_id suspension element id
+		 * @param opposite_point the opposite point id of object_element_id
+		 * @param outVec the calculated suspension force
+		 */
+		void getProjectedSuspensionForceOnOppositePointOfElement(int object_element_id, int suspension_element_id, int opposite_point, glm::vec3& outVec);
+
+		/**
+		 * Calculates vector of force applied to element
+		 * @param elidx element index
+		 * @param direction direction of force ( -1 or 1 )
+		 * @param outVec the calculated vector
+		 */
+		void getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec);
+
+		/**
+		 * Computes rope output length including slack
+		 * @param outLengths the rope output length including slacks
+		 */
+		void calcRopeLengths(std::vector<float>& outLengths);
 	};
 }

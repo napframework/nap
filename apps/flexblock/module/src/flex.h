@@ -76,11 +76,6 @@ namespace nap
 		const bool getIsRunning() const { return mIsRunning; }
 
 		/**
-		* @return a vector containing calculated rope lengths
-		*/
-		const std::vector<float> getRopeLengths() const;
-
-		/**
 		 * @return reference to to latest calculate object points
 		 */
 		const std::vector<glm::vec3>& getObjectPoints() const { return mPoints; }
@@ -177,6 +172,12 @@ namespace nap
 		* Copies motor input from another thread to given reference
 		*/
 		void copyMotorInput(std::vector<float>& outputs);
+
+		/**
+		 * @return a vector containing calculated rope lengths
+		 */
+		void getRopeLengths(std::vector <float> & outLengths) const;
+
 	protected:
 
 		std::atomic_bool mIsRunning = { false };

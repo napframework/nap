@@ -185,6 +185,7 @@ namespace nap
 		auto sleepTime = std::chrono::milliseconds(1000 / mFrequency);
 		auto prevTime = std::chrono::steady_clock::now();
 		double time = 0.0;
+		std::vector<float> rope_lengths(8);
 
 		while (mIsRunning)
 		{
@@ -261,10 +262,8 @@ namespace nap
 			}
 
 			// add damping
-			for (int j = 0; j < mPointChangeCorr.size(); j++)
-			{
-				mPointChangeCorr[j] *= 0.95f;
-			}
+			for (auto&j : mPointChangeCorr)
+				j *= 0.95f;
 
 			// update position
 			for (int j = 0; j < mPointsObject.size(); j++)
@@ -275,21 +274,14 @@ namespace nap
 			concatPoints();
 			calcElements();
 
-			// now handle motors
-			// get copy of the ropelengths
-			const std::vector<float> ropeLengths = getRopeLengths();
-
-			// copy them to motorsteps
-			std::vector<double> motorSteps(8);
-			for (int i = 0; i < ropeLengths.size(); i++)
-			{
-				motorSteps[i] = ropeLengths[i];
-			}
+			// now handle adapters
+			// get copy of the rope-lengths
+			getRopeLengths(rope_lengths);
 
 			// overrides
 			for (int i = 0; i < mMotorOverrides.size(); i++)
 			{
-				motorSteps[i] += mMotorOverrides[i] + mOverrideMinimum;
+				rope_lengths[i] += mMotorOverrides[i] + mOverrideMinimum;
 			}
 
 			// sinus
@@ -301,23 +293,23 @@ namespace nap
 
 			//printf("%f\n", time);
 
-			for (int i = 0; i < motorSteps.size(); i++)
+			for (int i = 0; i < rope_lengths.size(); i++)
 			{
-				motorSteps[i] += sinusValue;
+				rope_lengths[i] += sinusValue;
 			}
 
 			// convert meters to motorsteps
-			for (int i = 0; i < motorSteps.size(); i++)
+			for (int i = 0; i < rope_lengths.size(); i++)
 			{
-				double a = motorSteps[i];
+				double a = rope_lengths[i];
 				a *= mMotorStepsPerMeter;
 				a -= mMotorStepOffset;
-				motorSteps[i] = a;
+				rope_lengths[i] = a;
 			}
 
-			for (int i = 0; i < motorSteps.size(); i++)
+			for (int i = 0; i < rope_lengths.size(); i++)
 			{
-				mMotorSteps[i] = motorSteps[i];
+				mMotorSteps[i] = rope_lengths[i];
 			}
 
 			//
@@ -357,7 +349,7 @@ namespace nap
 								if (mapped < mMacController->getSlaveCount())
 								{
 									// Update target position
-									position_data[i].setTargetPosition(motorSteps[mapped]);
+									position_data[i].setTargetPosition(rope_lengths[mapped]);
 
 									// when digital pin enable, only enable it when we are giving meters
 									// this occurs when targetmeters is higher then the motors curent position
@@ -505,11 +497,12 @@ namespace nap
 	}
 
 
-	const std::vector<float> Flex::getRopeLengths() const
+	void Flex::getRopeLengths(std::vector<float>& outLengths) const
 	{
-		std::vector<float> ropes;
+		outLengths.clear();
 		for (int i = 12; i < 20; i++)
-			ropes.emplace_back(mElementsLength[i + 1] + mSlack);
-		return ropes;
+		{
+			outLengths.emplace_back(mElementsLength[i + 1] + mSlack);
+		}
 	}
 }

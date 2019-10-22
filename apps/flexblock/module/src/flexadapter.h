@@ -35,7 +35,6 @@ namespace nap
 		void setEnabled(bool value)								{ mEnabled = value; }
 
 		bool mEnabled = false;									///< Property: 'Enabled' if the the adapter is enabled and forward events
-		nap::ResourcePtr<FlexDevice> mFlexDevice = nullptr;		///< Property 'FlexDevice' The flexblock algorithm
 
 	protected:
 		/**
@@ -50,6 +49,6 @@ namespace nap
 		/**
 		 * Called by the flex device when a compute cycle completed
 		 */
-		void compute();
+		void compute(const FlexDevice& device);
 	};
 }

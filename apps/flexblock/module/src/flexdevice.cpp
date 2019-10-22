@@ -119,11 +119,18 @@ namespace nap
 	}
 
 
-	void FlexDevice::getObjectPoints(std::vector<glm::vec3>& outPoints)
+	void FlexDevice::getObjectPoints(std::vector<glm::vec3>& outPoints) const
 	{
 		// Copy points thread-safe
 		std::lock_guard<std::mutex> lock(mPointMutex);
 		outPoints = mPoints;
+	}
+
+
+	void FlexDevice::getRopeLengths(std::vector<float>& outLengths) const
+	{
+		std::lock_guard<std::mutex> lock(mRopesMutes);
+		outLengths = mRopes;
 	}
 
 
@@ -136,7 +143,7 @@ namespace nap
 	}
 
 
-	void FlexDevice::getMotorInput(std::vector<float>& outInputs)
+	void FlexDevice::getMotorInput(std::vector<float>& outInputs) const
 	{
 		std::lock_guard<std::mutex> lock(mMotorMutex);
 		outInputs = mMotorInput;
@@ -152,6 +159,10 @@ namespace nap
 		// Some variables that get updated regularly.
 		std::vector<float> inputs(8);
 		std::vector<int> suspensionElementIds;
+		glm::vec3 force;
+		std::vector<int> objectElementIds0;
+		std::vector<int> objectElementIds1;
+		std::vector<float> rope_lengths(8);
 
 		// Compute loop
 		while (!mStopCompute)
@@ -171,9 +182,72 @@ namespace nap
 
 				// external forces
 				getIdsOfSuspensionElementsOnPoint(i, suspensionElementIds);
+				for (int j = 0; j < suspensionElementIds.size(); j++)
+				{
+					getSuspensionForceOnPointOfElement(suspensionElementIds[j], i, force);
+					mPointForce += force;
+				}
 
+				// Internal forces + suspension forces on the other side of connected elements
+				// Get the connected elements(both directions)
+				objectElementIds0.clear();
+				for (int j = 0; j < mElementsObject.size(); j++)
+				{
+					if (mElementsObject[j][0] == i)
+						objectElementIds0.emplace_back(j);
+				}
+
+				objectElementIds1.clear();
+				for (int j = 0; j < mElementsObject.size(); j++)
+				{
+					if (mElementsObject[j][1] == i)
+						objectElementIds1.emplace_back(j);
+				}
+
+				// Forces due to external force on other points
+				for (int j = 0; j < objectElementIds0.size(); j++)
+				{
+					getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds0[j], 1, force);
+					mPointForce += force;
+
+					getObjectElementForceOfElement(objectElementIds0[j], 1, force);
+					mPointForceCorr += force;
+				}
+
+				for (int j = 0; j < objectElementIds1.size(); j++)
+				{
+					getProjectedSuspensionForcesOnOppositePointOfElement(objectElementIds1[j], 0, force);
+					mPointForce += force;
+
+					getObjectElementForceOfElement(objectElementIds1[j], -1, force);
+					mPointForceCorr += force;
+				}
+
+				// add change to change
+				mPointChange[i] = mPointForce;
+				mPointChangeCorr[i] = mPointChangeCorr[i] + mPointForceCorr * 0.2f;
 			}
 
+			// add damping
+			for (auto& j : mPointChangeCorr)
+				j *= 0.95f;
+
+			// update position
+			for (int j = 0; j < mPointsObject.size(); j++)
+				mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f;
+
+			// Concatenate points and calculate length of elements
+			concatPoints();
+			calcElements();
+
+			// Calculate final algorithm output
+			calcRopeLengths(rope_lengths);
+
+			// Now call adapters!
+			for (auto& adapter: mAdapters)
+				adapter->compute(*this);
+
+			// Wait update time
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
@@ -243,15 +317,62 @@ namespace nap
 
 	void FlexDevice::getIdsOfSuspensionElementsOnPoint(int id, std::vector<int> &outIDs)
 	{
-		outIDs.clear();
-
 		// Find the INDEX of the point_id in the array of elements_object2frame
 		// Add the length of the elements_object array(because the arrays are concatenated)
+		outIDs.clear();
 		for (int i = 0; i < mElementsObject2Frame.size(); i++)
 		{
 			if (mElementsObject2Frame[i][0] == id)
 				outIDs.emplace_back(i + mElementsObject.size());
 		}
+	}
+
+
+	void FlexDevice::getSuspensionForceOnPointOfElement(int elidx, int point, glm::vec3& outVec)
+	{
+		outVec = mElementsLength[elidx] * mElementsVector[elidx] * mElementsInput[point];
+	}
+
+
+	void FlexDevice::getProjectedSuspensionForcesOnOppositePointOfElement(int objectElementId, int oppositeColumn, glm::vec3& outVec)
+	{
+		// Predicted force due to force on other point
+		int oppositePoint = mElementsObject[objectElementId][oppositeColumn];
+
+		std::vector<int> suspensionElementIds;
+		getIdsOfSuspensionElementsOnPoint(oppositePoint, suspensionElementIds);
+
+		int suspensionElementId = suspensionElementIds[0];
+		getProjectedSuspensionForceOnOppositePointOfElement(objectElementId, suspensionElementId, oppositePoint, outVec);
+	}
+
+
+	void FlexDevice::getProjectedSuspensionForceOnOppositePointOfElement(int objectElementId, int suspensionElementId, int opposite_point, glm::vec3& outVec)
+	{
+		glm::vec3 v1 = mElementsVector[objectElementId];
+		glm::vec3 v2;
+		getSuspensionForceOnPointOfElement(suspensionElementId, opposite_point, v2);
+
+		float d = glm::dot(v1, v2);
+		outVec = d * mElementsVector[objectElementId];
+	}
+	
+
+	void FlexDevice::getObjectElementForceOfElement(int elidx, int direction, glm::vec3& outVec)
+	{
+		outVec = mElementsLengthDelta[elidx] * sForceObject * (float)direction * mElementsVector[elidx];
+	}
+
+
+	void FlexDevice::calcRopeLengths(std::vector<float>& outLengths)
+	{
+		outLengths.clear();
+		for (int i = 12; i < 20; i++)
+			outLengths.emplace_back(mElementsLength[i + 1] + mSlack);
+		
+		// Copy lengths as output value
+		std::lock_guard<std::mutex> lock(mRopesMutes);
+		mRopes = outLengths;
 	}
 
 
