@@ -66,8 +66,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIR}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
     )
@@ -78,7 +76,6 @@ set(LIBRARIES
     )
 
 list(APPEND LIBRARIES
-     ${GLEW_LIBRARIES}
      ${FREEIMAGE_LIBRARIES}
      )
 
@@ -96,7 +93,7 @@ endif()
 # add to include path and expose to depending projects
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti GLEW::glew)
 
 if(MSVC)
     include(GenerateExportheader)
