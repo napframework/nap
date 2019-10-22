@@ -20,11 +20,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
+# Add the runtime paths for RTTR & GLEW on macOS
 if(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()    
+    add_macos_rttr_rpath()
+    add_macos_glew_rpath()
 endif()
-
 
 # ======================= UNIT TESTS
 enable_testing()

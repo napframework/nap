@@ -319,12 +319,21 @@ macro(module_json_to_cmake)
     include(cached_module_json.cmake)
 endmacro()
 
-# Add the runtime path for RTTR.  
-# TODO As a lower priority this should get pulled in automatically, need to cleanup.  Jira NAP-108.
+# macOS: Add the runtime path for RTTR
+# TODO As a lower priority this should get pulled in automatically, need to cleanup. Jira NAP-108.
 macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       )    
+endmacro()
+
+# macOS: Add the runtime path for GLEW  
+# TODO As a lower priority this should get pulled in automatically, need to cleanup. Jira NAP-108.
+macro(add_macos_glew_rpath)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/glew/osx/install/lib $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
                        )    
 endmacro()
 
@@ -419,9 +428,10 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
         return()
     endif()
 
-    # Add the runtime path for RTTR on macOS
+    # Add the runtime paths for RTTR & GLEW on macOS
     if(APPLE)
         add_macos_rttr_rpath()
+        add_macos_glew_rpath()
     endif()
 
     # Run FBX converter

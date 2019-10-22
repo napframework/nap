@@ -69,9 +69,10 @@ target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
 
 nap_qt_post(${PROJECT_NAME})
 
+# Add the runtime paths for RTTR & GLEW on macOS
 if(APPLE)
-    # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()
+    add_macos_glew_rpath()
 endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
