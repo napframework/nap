@@ -9,7 +9,6 @@ REQUIRED_WINDOWS_VERSION = '10.0'
 VS_2015_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\VisualStudio.DTE.14.0'
 VS_2015_VERSION_REG_QUERY = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevDiv\\vs\\Servicing\\14.0\\devenv /v UpdateVersion'
 REQUIRED_VS_2015_PATCH_VERSION = 25420
-CMAKE_MIN_VERSION = (3, 5)
 
 def call(cmd, provide_exit_code=False):
     """Execute command and return stdout"""
@@ -93,36 +92,6 @@ def handle_missing_vs2015_update3(have_earlier_vs_2015):
         # Provide more specific instruction if they aren't downloading now
         print("\nPlease re-run checkBuildEnvironment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
 
-def check_cmake():
-    """Check if the CMake >= 3.5 is installed"""
-
-    # Check if installed
-    cmake_ok = False
-    return_code = call('cmake', True)
-    cmake_installed = return_code == 0
-
-    # Check version >= 3.5
-    if cmake_installed:
-        cmake_version = call('cmake --version')
-        chunks = cmake_version.split("\n")[0].strip().split()
-        (major, minor, patch) = chunks[2].split('.')
-        cmake_ok = int(major) == CMAKE_MIN_VERSION[0] and int(minor) >= CMAKE_MIN_VERSION[1]
-
-    log_test_success('CMake >= 3.5', cmake_ok)
-    return cmake_ok
-
-def handle_missing_cmake():
-    """Assist with CMake installation"""
-
-    print("\nCMake version 3.5 or higher is required and can be downloaded from https://cmake.org/download/.  It needs to be available in the PATH environment variable.")
-    open_cmake_download = read_yes_no("Open download page?")
-    if open_cmake_download:
-        webbrowser.open('https://cmake.org/download/')
-
-    # We'll need to run in a new shell with updated environment variables for CMake to be available on the command line,
-    # so there's no point in attempting to loop through the tests again.
-    print("\nRe-run checkBuildEnvironment once CMake is installed and added to the PATH.")
-
 def check_build_environment():
     """Check whether Windows build environment appears ready for NAP"""
 
@@ -135,13 +104,10 @@ def check_build_environment():
     # Check if Visual Studio 2015 Update 3 is installed
     have_vs_2015_update3 = have_vs_2015 and check_visual_studio_2015_is_update3()
 
-    # Check CMake
-    cmake_ok = check_cmake()
-
     print("")
 
     # If everything looks good log and exit
-    if windows_version_ok and have_vs_2015_update3 and cmake_ok:
+    if windows_version_ok and have_vs_2015_update3:
         print("Your build environment appears to be ready for NAP!")
         return
 
@@ -155,10 +121,6 @@ def check_build_environment():
     if not have_vs_2015_update3:
         handle_missing_vs2015_update3(have_vs_2015)
         return
-
-    # If we don't CMake >= 3.5 provide help for installing it
-    if not cmake_ok:
-        handle_missing_cmake()
 
 if __name__ == '__main__':
     check_build_environment()

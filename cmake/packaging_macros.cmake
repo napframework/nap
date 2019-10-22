@@ -274,6 +274,7 @@ macro(package_qt)
     endif()
 endmacro()
 
+# Package CMake into release
 macro(package_cmake)
     if(APPLE)
         install(DIRECTORY ${THIRDPARTY_DIR}/cmake/osx/install/
@@ -288,10 +289,12 @@ macro(package_cmake)
                 USE_SOURCE_PERMISSIONS
                 )    
     else()
-    
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                )    
     endif()
 endmacro()
-
 
 # Package project directory package & regenerate shortcuts
 # DESTINATION: Directory to package into

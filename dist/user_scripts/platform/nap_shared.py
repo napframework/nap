@@ -143,9 +143,4 @@ def get_nap_root_from_project_dir():
 # Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty
 def get_cmake_path():
     nap_root = get_nap_root_from_project_dir()
-    cmake_thirdparty_root = os.path.join(nap_root, 'thirdparty', 'cmake')
-    if sys.platform == 'win32':
-        return 'cmake'
-        # return os.path.join(cmake_thirdparty_root, 'bin', 'cmake.exe')
-    else:
-        return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')
+    return os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')

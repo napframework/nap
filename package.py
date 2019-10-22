@@ -675,8 +675,7 @@ def get_cmake_path():
     elif platform == 'darwin':
         return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
     else:
-        return 'cmake'
-        # return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
+        return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
