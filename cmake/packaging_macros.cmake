@@ -308,19 +308,23 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
             )
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
+    install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
-    # Package any projectmodule cmake files
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt DESTINATION ${DEST_DIR}/module)
-    endif()
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
-    endif()   
-
-    # Package any project extra cmake
+    # Package any project extra CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake DESTINATION ${DEST_DIR})
+    endif()
+
+    # Package any projectmodule CMake
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
+        set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
+        configure_file(${NAP_ROOT}/dist/cmake/native/module_creator/template/CMakeLists.txt 
+                       ${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt 
+                       @ONLY
+                       )
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
+        endif()
     endif()
 
     # Package our regenerate & package shortcuts into the project directory
