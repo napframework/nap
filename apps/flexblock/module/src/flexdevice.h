@@ -105,13 +105,6 @@ namespace nap
 		 */
 		void getInput(FlexInput& input) const;
 
-		/**
-		 * Set the current slack value. 
-		 * The final value is computed using the scale factor and minimum requested value.
-		 * @param value new slack value
-		 */
-		void setSlack(float value);
-
 		ResourcePtr<FlexBlockShape>				mFlexBlockShape;				///< Property: 'FlexBlockShape' Reference to the shape definition of the block.
 		std::vector<ResourcePtr<FlexAdapter>>	mAdapters;						///< Property: 'Adapters' All flexblock adapters.
 
