@@ -157,7 +157,6 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "FlexBlockDevice" : "Flex",
-                    "Enable Serial": false,
                     "FlexBlockShape": "ShapeSize",
                     "Slack Range": 1.0,
                     "Slack Minimum": 0.0,
@@ -725,8 +724,8 @@
         {
             "Type": "nap::MACAdapter",
             "mID": "MACAdapter",
-            "Enabled": true,
-            "Set Digital Pin": true,
+            "Enabled": false,
+            "Set Digital Pin": false,
             "Motor Steps Per Meter": 129473.41,
             "Motor Step Offset": 0,
             "Motor Mapping": [

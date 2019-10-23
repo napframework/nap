@@ -11,7 +11,6 @@
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
-	RTTI_PROPERTY("Enable Serial", &nap::FlexBlockComponent::mEnableSerial, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrameMesh",		&nap::FlexBlockComponent::mFrameMesh,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh",	&nap::FlexBlockComponent::mFlexBlockMesh,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
@@ -56,7 +55,6 @@ namespace nap
 		mSinusFrequencyRange = resource->mSinusFrequencyRange;
 		mOverrideMinimum = resource->mOverrideMinimum;
 		mOverrideRange = resource->mOverrideRange;
-		mEnableSerial = resource->mEnableSerial;
 
 		// calculate new frame
 		mFlexblockDevice->getFramePoints(mFramePoints);

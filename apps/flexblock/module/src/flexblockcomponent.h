@@ -6,7 +6,6 @@
 #include "flexblockdata.h"
 #include "flex.h"
 #include "visualizenormalsmesh.h"
-#include "flexblockserialcomponent.h"
 #include "flexdevice.h"
 
 // external includes
@@ -24,8 +23,7 @@ namespace nap
 	class FlexBlockComponentInstance;
 
 	/**
-	 * FlexBlockComponent controls a flexblock mesh, frame mesh and optionally writes
-	 * data to serial motors. 
+	 * FlexBlockComponent controls a flexblock mesh, frame mesh and provides input to the flexblock algorithm.
 	 * FlexBlockComponent needs a flexblock shape definition. See FlexBlockShape and flexblockdata.h
 	 */
 	class NAPAPI FlexBlockComponent : public Component
@@ -45,7 +43,6 @@ namespace nap
 		float mSinusFrequencyRange		= 100.0f;			///< Property: 'Frequency Range' range of frequency in Hz
 		float mOverrideRange			= 24.0f;			///< Property: 'Override Range' range of override parameters in meters
 		float mOverrideMinimum			= 0.0f;				///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
-		bool mEnableSerial				= false;			///< Property: 'Use Serial' use serial or not
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -171,10 +168,6 @@ namespace nap
 
 		// Flexblock algorithm input
 		FlexInput mFlexInput;
-
-		// Serial
-		bool mEnableSerial;
-		double mUpdateSerialTime = 0.0;
 	
 		// Properties
 		float mSlackRange			= 1.0f;
