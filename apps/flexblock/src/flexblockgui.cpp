@@ -60,22 +60,21 @@ namespace nap
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
 
-		//
+		// Sequence player
 		mSequencePlayer = mApp.GetBlockEntity()->findComponent<timeline::SequencePlayerComponentInstance>();
 		
-		//
+		// Flexblock component
 		mFlexBlock = mApp.GetBlockEntity()->findComponent<FlexBlockComponentInstance>();
 
 		// Controller
 		mMotorController = resourceManager->findObject<MACController>("MACController");
 
-		//
+		// Motor Adapter
+		mMotorAdapter = resourceManager->findObject<MACAdapter>("MACAdapter");
+
+		// Init
 		initOscOutput();
-
-		//
 		initParameters();
-
-		//
 		initOscInputs();
 
 		mParameterService.fileLoaded.connect(
@@ -2590,13 +2589,14 @@ namespace nap
 	{
 		ImGui::Begin("MotorSteps");
 
-		const auto& motorSteps = mFlexBlock->getMotorSteps();
-
-		for (int i = 0; i < motorSteps.size(); i++)
+		std::vector<float> motor_steps;
+		mMotorAdapter->getMotorSteps(motor_steps);
+		for (int i = 0; i < motor_steps.size(); i++)
 		{
-			ImGui::Text("%i : %.3f meter / %.0f steps", i+1, motorSteps[i] / mFlexBlock->getMotorStepsPerMeter(), motorSteps[i]);
+			ImGui::Text("%i : %.3f meter / %.0f steps", i+1, 
+				motor_steps[i] / mMotorAdapter->mMotorStepsPerMeter, 
+				motor_steps[i]);
 		}
-
 		ImGui::End();
 	}
 
@@ -2631,10 +2631,10 @@ namespace nap
 		}
 		showTip("Resets all motor positions to their current position.\n This means their current position will be the new 0.0 position.");
 
-		mProps.mEnableFlexblock = mFlexBlock->getEnableMotorController();
+		mProps.mEnableFlexblock = mMotorAdapter->getEnabled();
 		if (ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock))
 		{
-			mFlexBlock->setEnableMotorController(mProps.mEnableFlexblock);
+			mMotorAdapter->setEnabled(mProps.mEnableFlexblock);
 		}
 		showTip("Enables the flexblock algorithm to control the motors");
 
@@ -2675,9 +2675,9 @@ namespace nap
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{
-			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mFlexBlock->getMotorMapping()[i] + 1).c_str()))
+			if (ImGui::CollapsingHeader(utility::stringFormat("motor: %d mapping %d", i + 1, mMotorAdapter->mMotorMapping[i] + 1).c_str()))
 			{
-				const double counts = mFlexBlock->getMotorStepsPerMeter();
+				double counts = mMotorAdapter->mMotorStepsPerMeter;
 				float current_meters = (float)(((double)mMotorController->getActualPosition(i)) / counts);
 
 				if (firstTime)

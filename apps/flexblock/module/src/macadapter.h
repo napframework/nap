@@ -25,6 +25,12 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Returns the number of motor steps given to the mac-controller
+		 * @param outSteps current motor steps, thread safe.
+		 */
+		void getMotorSteps(std::vector<float>& outSteps);
+
 		nap::ResourcePtr<MACController> mController = nullptr;		///< Property: 'Controller' the MAC controller that manages all the motor
 
 		bool	mSetDigitalPin	= false;							///< Property: 'Set Digital Pin' if the digital pin is controlled by this adapter
@@ -37,7 +43,11 @@ namespace nap
 
 	private:
 		// Member variables
-		std::vector<float> mRopeLengths		= std::vector<float>(8);
+		std::vector<float> mMotorSteps		= std::vector<float>(8);
+		std::vector<float> mMotorStepsInt	= std::vector<float>(8);
 		std::vector<MacPosition> mMotorData = std::vector<MacPosition>(8);
+		std::mutex mMotorMutex;
+
+		void storeMotorSteps(const std::vector<float>& motorSteps);
 	};
 }

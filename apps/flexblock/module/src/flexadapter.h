@@ -33,6 +33,11 @@ namespace nap
 		 */
 		void setEnabled(bool value)								{ mEnabled = value; }
 
+		/**
+		 * @return if the adapter is enabled
+		 */
+		bool getEnabled() const									{ return mEnabled; }
+
 		bool mEnabled = false;									///< Property: 'Enabled' if the the adapter is enabled and forward events
 
 	protected:

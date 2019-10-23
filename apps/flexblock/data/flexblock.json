@@ -158,29 +158,13 @@
                     "FlexBlockMesh": "BoxMesh",
                     "FlexBlockDevice" : "Flex",
                     "Enable Serial": false,
-                    "Mac Controller": "MACController",
-                    "Enable Controller": false,
                     "FlexBlockShape": "ShapeSize",
-                    "Motor Steps Per Meter": 129473.41,
-                    "Motor Step Offset": 0,
                     "Slack Range": 1.0,
                     "Slack Minimum": 0.0,
                     "Sinus Amplitude": 1.0,
                     "Sinus Frequency": 100.0,
                     "Override Range": 20.0,
-                    "Override Minimum": 0.0,
-                    "Motor Mapping": [
-                        5,
-                        1,
-                        2,
-                        6,
-                        3,
-                        7,
-                        0,
-                        4
-                    ],
-                    "Flex Thread Frequency": 1000,
-                    "Enable Digital Pin": false
+                    "Override Minimum": 0.0
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -746,13 +730,13 @@
             "Motor Steps Per Meter": 129473.41,
             "Motor Step Offset": 0,
             "Motor Mapping": [
-                5,
+                0,
                 1,
                 2,
                 6,
                 3,
                 7,
-                0,
+                5,
                 4
             ],
             "Controller": "MACController"

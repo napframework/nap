@@ -32,10 +32,10 @@ namespace nap
 			return;
 
 		// Extract rope lengths
-		device.getRopeLengths(mRopeLengths);
+		device.getRopeLengths(mMotorStepsInt);
 
 		// convert meters to motorsteps
-		for (auto& length : mRopeLengths)
+		for (auto& length : mMotorStepsInt)
 		{
 			length *= mMotorStepsPerMeter;
 			length -= mMotorStepsPerMeter;
@@ -73,7 +73,7 @@ namespace nap
 				continue;
 
 			// Update target position
-			mMotorData[i].setTargetPosition(mRopeLengths[mapped_idx]);
+			mMotorData[i].setTargetPosition(mMotorStepsInt[mapped_idx]);
 
 			// Continue if we don't have to process digital pin
 			if (!mSetDigitalPin)
@@ -89,5 +89,22 @@ namespace nap
 
 		// Update position data
 		mController->setPositionData(mMotorData);
+
+		// Store motor steps
+		storeMotorSteps(mMotorStepsInt);
+	}
+
+
+	void MACAdapter::storeMotorSteps(const std::vector<float>& motorSteps)
+	{
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		mMotorSteps = motorSteps;
+	}
+
+
+	void MACAdapter::getMotorSteps(std::vector<float>& outSteps)
+	{
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		outSteps = mMotorSteps;
 	}
 }

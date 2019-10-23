@@ -11,28 +11,17 @@
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
+	RTTI_PROPERTY("Enable Serial", &nap::FlexBlockComponent::mEnableSerial, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrameMesh",		&nap::FlexBlockComponent::mFrameMesh,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockMesh",	&nap::FlexBlockComponent::mFlexBlockMesh,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FlexBlockDevice",&nap::FlexBlockComponent::mFlexBlockDevice, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Serial",	&nap::FlexBlockComponent::mEnableSerial,	nap::rtti::EPropertyMetaData::Default)
-
-	RTTI_PROPERTY("Mac Controller", &nap::FlexBlockComponent::mMacController,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Controller", &nap::FlexBlockComponent::mEnableMacController, nap::rtti::EPropertyMetaData::Required)
-
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Motor Steps Per Meter", &nap::FlexBlockComponent::mMotorStepsPerMeter, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Motor Step Offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlexBlockDevice",&nap::FlexBlockComponent::mFlexBlockDevice, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Slack Range", &nap::FlexBlockComponent::mSlackRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Minimum", &nap::FlexBlockComponent::mSlackMinimum, nap::rtti::EPropertyMetaData::Default)
-
 	RTTI_PROPERTY("Sinus Amplitude", &nap::FlexBlockComponent::mSinusAmplitudeRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sinus Frequency", &nap::FlexBlockComponent::mSinusFrequencyRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Motor Mapping", &nap::FlexBlockComponent::mMotorMapping, nap::rtti::EPropertyMetaData::Default)
-
-	RTTI_PROPERTY("Flex Thread Frequency", &nap::FlexBlockComponent::mFlexFrequency, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Enable Digital Pin", &nap::FlexBlockComponent::mEnableDigitalPin, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -46,11 +35,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void FlexBlockComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-	}
-
-
 	FlexBlockComponentInstance::~FlexBlockComponentInstance()
 	{
 
@@ -65,23 +49,14 @@ namespace nap
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
 		mFlexblockDevice = resource->mFlexBlockDevice.get();
-		mMacController = resource->mMacController.get();
 
-		mEnableMacController = resource->mEnableMacController;
-		mMotorStepsPerMeter = resource->mMotorStepsPerMeter;
-		mMotorStepOffset = resource->mMotorOffset;
 		mSlackMinimum = resource->mSlackMinimum;
-		mSlackRange = resource->mSlackRange;
-		mMotorStepOffset = resource->mMotorOffset;
+		mSlackRange = resource->mSlackRange;;
 		mSinusAmplitudeRange = resource->mSinusAmplitudeRange;
 		mSinusFrequencyRange = resource->mSinusFrequencyRange;
-		mSlackMinimum = resource->mSlackMinimum;
 		mOverrideMinimum = resource->mOverrideMinimum;
 		mOverrideRange = resource->mOverrideRange;
-		mMotorMapping = resource->mMotorMapping;
 		mEnableSerial = resource->mEnableSerial;
-		mFlexFrequency = resource->mFlexFrequency;
-		mEnableDigitalPin = resource->mEnableDigitalPin;
 
 		// calculate new frame
 		mFlexblockDevice->getFramePoints(mFramePoints);
@@ -129,6 +104,12 @@ namespace nap
 		mFlexInput.mSlack = value * mSlackRange + mSlackMinimum;
 	}
 	
+
+	float FlexBlockComponentInstance::getSlack() const
+	{
+		return mFlexInput.mSlack;
+	}
+
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{

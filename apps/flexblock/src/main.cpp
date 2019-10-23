@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
 
 	// Create app runner using default event handler
 	nap::AppRunner<nap::FlexblockApp, nap::GUIAppEventHandler> app_runner(core);
-	//app_runner.setFramerate(10);
 
 	// Start
 	nap::utility::ErrorState error;
