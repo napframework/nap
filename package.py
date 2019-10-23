@@ -25,6 +25,7 @@ APPS_SOURCE_DIR = 'apps'
 APPS_DEST_DIR = 'projects'
 BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
+APPLY_PERMISSIONS_BATCHFILE = 'apply_executable_permissions.cmd'
 
 DEFAULT_ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
 ANDROID_PLATFORM = 'android-19'
@@ -637,6 +638,10 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     # Misc. cleanup       
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
+    # Create executable bit retaining script if on Windows
+    if sys.platform == 'win32':
+        create_source_archive_executable_bit_applicator(staging_dir)
+
     # Populate example project
     os.mkdir(os.path.join(staging_dir, 'projects'))
     os.rename(os.path.join(staging_dir, 'apps', 'example'), os.path.join(staging_dir, 'projects', 'example'))
@@ -665,6 +670,23 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
         archive_source_archive_directory(source_archive_basename)
     else:
         print("Source archived to %s" % os.path.abspath(source_archive_basename))
+
+def create_source_archive_executable_bit_applicator(staging_dir):
+    """Create a batch file for retaining source archive file executable bits on Windows"""
+
+    lines = subprocess.check_output('git ls-files --stage', shell=True)
+    if type(lines) is bytes:
+        lines = lines.decode('ascii', 'ignore')
+
+    batch_filename = os.path.join(staging_dir, APPLY_PERMISSIONS_BATCHFILE)
+    with open(batch_filename, 'w') as writer:
+        writer.write('@echo off\n')
+        for line in lines.split('\n'):
+            chunks = line.split()
+            if len(chunks) < 4:
+                continue
+            if chunks[0] == '100755':
+                writer.write('git update-index --chmod=+x %s\n' % chunks[3])
 
 def get_cmake_path():
     """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
