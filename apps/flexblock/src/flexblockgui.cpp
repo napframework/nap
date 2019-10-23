@@ -2666,11 +2666,17 @@ namespace nap
 		{
 			if (ImGui::Checkbox("Clamp Meters", &mProps.mClampMetersInCalibrationMode))
 			{
-
+				// ????
 			}
 			showTip("When clamped, meters cannot go lower then zero");
 		}
-		
+
+		ImGui::SameLine();
+		bool compute_digital_pin = mMotorController->getComputeDigitalPin();
+		if (ImGui::Checkbox("Compute Digital Pin", &compute_digital_pin))
+		{
+			mMotorController->setComputeDigitalPin(compute_digital_pin);
+		}
 
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
@@ -2691,6 +2697,7 @@ namespace nap
 				ImGui::Text("Current Motor Torque: %.1f / max Torque %s", mMotorController->getActualTorque(i), std::to_string(mMotorController->mTorque).c_str());
 				ImGui::Text("Current Acceleration : %s", std::to_string(mMotorController->mAcceleration).c_str());
 				ImGui::Text("Target Meters: %.3f", mTargetMeters[i]);
+				
 				bool digitalPinState = mMotorController->getDigitalPin(i, 0);
 				ImGui::RadioButton("Digital Pin State", digitalPinState);
 				ImGui::PushID(i);
@@ -2699,10 +2706,12 @@ namespace nap
 
 				if (mProps.mAdvancedMotorInterface)
 				{
-					bool dig_pin = mMotorController->getDigitalPin(i,0);
-					if (ImGui::Checkbox("Digital Pin", &dig_pin))
+					if (!compute_digital_pin)
 					{
-						mMotorController->setDigitalPin(i, 0, dig_pin);
+						if (ImGui::Checkbox("Digital Pin On/Off", &digitalPinState))
+						{
+							mMotorController->setDigitalPin(i, 0, digitalPinState);
+						}
 					}
 
 					if (ImGui::InputInt("Position", &req_pos, 1, 50))
@@ -2745,18 +2754,14 @@ namespace nap
 				}
 				else if (!mProps.mAdvancedMotorInterface)
 				{
-					// temp
-					ImGui::Checkbox("Set Digital Pin By Speed", &mProps.mSetDigitalPinBySpeed);
-					if (!mProps.mSetDigitalPinBySpeed)
+					if (!compute_digital_pin)
 					{
-						bool value = mProps.mUseDigitalPin[i];
-						if (ImGui::Checkbox("Digital Pin On/Off", &value))
+						if (ImGui::Checkbox("Digital Pin On/Off", &digitalPinState))
 						{
-							mProps.mUseDigitalPin[i] = value;
+							mMotorController->setDigitalPin(i, 0, digitalPinState);
 						}
 					}
 
-					//
 					float target_meter = mTargetMeters[i];
 					if (ImGui::Button("Give Meter"))
 					{
@@ -2820,24 +2825,7 @@ namespace nap
 						int32 newCounts = (int32)((double)target_meter * counts);
 						mMotorController->setPosition(i, newCounts);
 						mTargetMeters[i] = target_meter;
-					}
-
-					// 
-					if (mProps.mSetDigitalPinBySpeed)
-					{
-						bool activateDigitalPin = target_meter - current_meters > 0.02;
-						if (activateDigitalPin != digitalPinState)
-						{
-							mMotorController->setDigitalPin(i, 0, activateDigitalPin);
-							//printf("%s\n", activateDigitalPin ? "on" : "off");
-						}
-					}else if (mProps.mUseDigitalPin[i] != digitalPinState)
-					{
-						mMotorController->setDigitalPin(i, 0, mProps.mUseDigitalPin[i]);
-						//printf("%s\n", activateDigitalPin ? "on" : "off");
-					}
-
-					
+					}					
 				}
 
 				// clamp targetmeters
@@ -2885,10 +2873,14 @@ namespace nap
 			mMotorController->emergencyStop();
 		}
 		showTip("Stops all motors");
+		ImGui::SameLine();
 		if (ImGui::Button("!START!"))
 		{
-			utility::ErrorState errorState;
-			mMotorController->start(errorState);
+			if (!mMotorController->isRunning())
+			{
+				utility::ErrorState errorState;
+				mMotorController->start(errorState);
+			}
 		}
 		showTip("Starts all motors");
 		ImGui::PopStyleColor();

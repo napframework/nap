@@ -4,7 +4,6 @@
 #include "framemesh.h"
 #include "flexblockmesh.h"
 #include "flexblockdata.h"
-#include "flex.h"
 #include "visualizenormalsmesh.h"
 #include "flexdevice.h"
 

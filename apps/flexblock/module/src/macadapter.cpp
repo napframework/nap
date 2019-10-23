@@ -5,7 +5,6 @@
 
 // nap::macadapter run time class definition 
 RTTI_BEGIN_CLASS(nap::MACAdapter)
-	RTTI_PROPERTY("Set Digital Pin",		&nap::MACAdapter::mSetDigitalPin,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor Steps Per Meter",	&nap::MACAdapter::mMotorStepsPerMeter,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor Step Offset",		&nap::MACAdapter::mMotorStepOffset,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor Mapping",			&nap::MACAdapter::mMotorMapping,		nap::rtti::EPropertyMetaData::Required)
@@ -75,16 +74,14 @@ namespace nap
 			// Update target position
 			mMotorData[i].setTargetPosition(mMotorStepsInt[mapped_idx]);
 
-			// Continue if we don't have to process digital pin
-			if (!mSetDigitalPin)
-				continue;
-
+			/*
 			double target_meters = static_cast<double>(mMotorData[i].mTargetPosition) / static_cast<double>(mMotorStepsPerMeter);
 			double curren_meters = static_cast<double>(mController->getActualPosition(i)) / static_cast<double>(mMotorStepsPerMeter);
 
 			// Check if the pin needs to be activated and do so
 			bool activateDigitalPin = target_meters - curren_meters > 0.02;
 			mMotorData[i].setDigitalPin(0, activateDigitalPin);
+			*/
 		}
 
 		// Update position data

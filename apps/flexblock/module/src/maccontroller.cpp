@@ -48,6 +48,9 @@ RTTI_BEGIN_CLASS(nap::MACController)
 	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",		&nap::MACController::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DigitalPinThreshold",	&nap::MACController::mDigitalPinThreshold,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InvertDigitalPin",		&nap::MACController::mInvertDigitalPin,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ComputeDigitalPin",		&nap::MACController::mComputeDigitalPin,		nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("Calibration Velocity", &nap::MACController::mCalibrationVelocity, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Calibration MaxVelocity", &nap::MACController::mCalibrationMaxVelocity, nap::rtti::EPropertyMetaData::Default)
@@ -112,6 +115,13 @@ namespace nap
 		mOutputs.clear();
 		mInputs.clear();
 		mPositions.clear();
+	}
+
+
+	bool MACController::init(utility::ErrorState& errorState)
+	{
+		mComputePin = mComputeDigitalPin;
+		return true;
 	}
 
 
@@ -207,9 +217,6 @@ namespace nap
 			// Get associated motor output parameters
 			std::unique_ptr<MacInputs>& motor_input = mInputs[i - 1];
 
-			// Get associated motor position data
-			MacPosition& motor_position = mPositions[i - 1];
-
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
 			motor_input->mActualPosition = mac_inputs->mActualPosition;
@@ -222,13 +229,33 @@ namespace nap
 			std::unique_ptr<MacOutputs>& motor_output = mOutputs[i - 1];
 			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
 
+			// Get associated motor position data
+			MacPosition& motor_position = mPositions[i - 1];
+
 			// Write info
 			mac_outputs->mOperatingMode = motor_output->mRunMode;
 			mac_outputs->mRequestedPosition = motor_position.mTargetPosition;
 			mac_outputs->mVelocity = motor_output->mVelocityCNT;
 			mac_outputs->mAcceleration = motor_output->mAccelerationCNT;
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
-			mac_outputs->mModuleOutputs = motor_position.mModuleOutputs;
+			
+			//////////////////////////////////////////////////////////////////////////
+
+			// Calculate digital pin if requested
+			if (mComputePin)
+			{
+				// Calculate if the pin should be set
+				nap::int32 pos_delta = motor_position.mTargetPosition - motor_input->mActualPosition;
+				bool set_pin = mInvertDigitalPin ? 
+					pos_delta < (0 - mDigitalPinThreshold) :
+					pos_delta > mDigitalPinThreshold;
+				motor_output->setDigitalPin(0, set_pin);
+			}
+
+			// Store digital pin value
+			mac_outputs->mModuleOutputs = motor_output->mModuleOutputs;
+
+			//////////////////////////////////////////////////////////////////////////
 
 			// Clear errors if requested
 			if (motor_input->mClearErrors)
@@ -394,17 +421,28 @@ namespace nap
 	void MACController::setDigitalPin(int index, int pinIndex, bool value)
 	{
 		assert(index < getSlaveCount());
-		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
-		mPositions[index].setDigitalPin(pinIndex, value);
+		mOutputs[index]->setDigitalPin(pinIndex, value);
 	}
 
 
 	bool MACController::getDigitalPin(int index, int pinIndex) const
 	{
 		assert(index < getSlaveCount());
-		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
-		return mPositions[index].getDigitalPin(pinIndex);
+		return mOutputs[index]->getDigitalPin(pinIndex);
 	}
+
+
+	void MACController::setComputeDigitalPin(bool value)
+	{
+		mComputePin = value;
+	}
+
+
+	bool MACController::getComputeDigitalPin() const
+	{
+		return mComputePin;
+	}
+
 
 	bool MACController::resetPosition(nap::int32 newPosition, utility::ErrorState& error)
 	{
@@ -554,17 +592,16 @@ namespace nap
 	}
 
 
-	void MacPosition::setDigitalPin(int pinIndex, bool value)
+	void MacOutputs::setDigitalPin(int pinIndex, bool value)
 	{
 		assert(pinIndex < 2);
 		value ? mModuleOutputs |= 1UL << pinIndex : mModuleOutputs &= ~(1UL << pinIndex);
 	}
 
 
-	bool MacPosition::getDigitalPin(int pinIndex) const
+	bool MacOutputs::getDigitalPin(int pinIndex) const
 	{
 		assert(pinIndex < 2);
 		return ((mModuleOutputs >> pinIndex) & 1U) > 0;
 	}
-
 }

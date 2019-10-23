@@ -725,7 +725,6 @@
             "Type": "nap::MACAdapter",
             "mID": "MACAdapter",
             "Enabled": false,
-            "Set Digital Pin": false,
             "Motor Steps Per Meter": 129473.41,
             "Motor Step Offset": 0,
             "Motor Mapping": [
@@ -757,6 +756,9 @@
             "VelocityGetRatio": 0.1340000033378601,
             "VelocitySetRatio": 2.18435001373291,
             "RecoveryTimeout": 100,
+            "DigitalPinThreshold" : 2,
+            "InvertDigitalPin" : false,
+            "ComputeDigitalPin" : true,
             "Calibration Velocity": 300,
             "Calibration MaxVelocity": 3000,
             "Calibration Acceleration": 1000,
