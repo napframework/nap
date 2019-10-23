@@ -106,7 +106,7 @@ namespace nap
 		 * Copies all the motor position data into outData
 		 * @param outData the current motor data
 		 */
-		void copyPositionData(std::vector<MacPosition>& outData);
+		void getPositionData(std::vector<MacPosition>& outData);
 
 		/**
 		 * Set the position of a single motor. Does not perform an out of bounds check.

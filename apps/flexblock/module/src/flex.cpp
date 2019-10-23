@@ -337,7 +337,7 @@ namespace nap
 					{
 						// Create the new position data array
 						std::vector<MacPosition> position_data;
-						mMacController->copyPositionData(position_data);
+						mMacController->getPositionData(position_data);
 
 						// check if we have as much slaves as motors
 						for (int i = 0; i < mMacController->getSlaveCount(); i++)

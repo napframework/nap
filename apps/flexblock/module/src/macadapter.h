@@ -30,31 +30,14 @@ namespace nap
 		bool	mSetDigitalPin	= false;							///< Property: 'Set Digital Pin' if the digital pin is controlled by this adapter
 		float	mMotorStepsPerMeter = 129473.41f;					///< Property: 'Motor Steps Per Meter' number of motor steps associated with a single meter
 		int		mMotorStepOffset = 0;								///< Property: 'Motor Step Offset'
-		float	mSinusAmplitude = 0.0f;								///< Property: 'Sinus Amplitude'			
-		float	mSinusFrequency = 0.0f;								///< Property: 'Sinus Frequency
-		float	mOverrideMinimum = 0.0f;							///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
 		std::vector<int> mMotorMapping;								///< Property: 'Motor Mapping' flex to individual motor mapping
-
-		/**
-		 * Applies individual motor override settings (0-8). This call is thread safe.
-		 * @param inputs new motor override values
-		 */
-		void setMotorOverrides(const std::vector<float>& inputs);
-
-		/**
-		 * Returns the individual motor overrides (0-8). This call is thread safe.
-		 * @param outOverrides current override values
-		 */
-		void getMotorOverrides(std::vector<float>& outOverrides) const;
 
 	protected:
 		virtual void onCompute(const FlexDevice& device) override;
 
 	private:
-		mutable std::mutex mOverrideMutex;						///< Mutex used to get / set motor override values
-
 		// Member variables
 		std::vector<float> mRopeLengths		= std::vector<float>(8);
-		std::vector<float> mMotorOverrides	= std::vector<float>(8);
+		std::vector<MacPosition> mMotorData = std::vector<MacPosition>(8);
 	};
 }

@@ -118,13 +118,13 @@ namespace nap
 	void MACController::setPositionData(const std::vector<MacPosition>& newData)
 	{
 		// Copy current motor positions
-		assert(newData.size() == getSlaveCount());
 		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
+		assert(newData.size() == getSlaveCount());
 		mPositions = newData;
 	}
 
 
-	void MACController::copyPositionData(std::vector<MacPosition>& outData)
+	void MACController::getPositionData(std::vector<MacPosition>& outData)
 	{
 		std::lock_guard<std::mutex> lock_guard(mPositionMutex);
 		outData = mPositions;
@@ -191,7 +191,7 @@ namespace nap
 	{
 		// Copy current motor positions
 		std::vector<MacPosition> current_position_data;
-		this->copyPositionData(current_position_data);
+		this->getPositionData(current_position_data);
 
 		// Get number of slaves and ensure size of data matches
 		int slave_count = getSlaveCount();
