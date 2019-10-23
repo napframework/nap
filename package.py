@@ -638,16 +638,16 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     # Misc. cleanup       
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
-    # Create executable bit retaining script if on Windows
-    if sys.platform == 'win32':
-        create_source_archive_executable_bit_applicator(staging_dir)
-
     # Populate example project
     os.mkdir(os.path.join(staging_dir, 'projects'))
     os.rename(os.path.join(staging_dir, 'apps', 'example'), os.path.join(staging_dir, 'projects', 'example'))
 
     # Remove client projects
     strip_client_apps_for_source_archive(staging_dir)
+
+    # Create executable bit retaining script if on Windows
+    if sys.platform == 'win32':
+        create_source_archive_executable_bit_applicator(staging_dir)
 
     # Populate source_archive.json
     call(WORKING_DIR, [get_cmake_path(), 
@@ -685,8 +685,12 @@ def create_source_archive_executable_bit_applicator(staging_dir):
             chunks = line.split()
             if len(chunks) < 4:
                 continue
-            if chunks[0] == '100755':
-                writer.write('git update-index --chmod=+x %s\n' % chunks[3])
+            exe_bit_filepath = chunks[3]
+            file_in_staging = os.path.join(staging_dir, *exe_bit_filepath.split('/'))
+            if chunks[0] == '100755' and os.path.exists(file_in_staging):
+                writer.write('if exist %s (\n' % exe_bit_filepath)
+                writer.write('\tgit update-index --chmod=+x %s\n' % exe_bit_filepath)
+                writer.write(')\n')
 
 def get_cmake_path():
     """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
