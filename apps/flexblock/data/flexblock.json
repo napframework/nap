@@ -728,13 +728,13 @@
             "Motor Steps Per Meter": 129473.41,
             "Motor Step Offset": 0,
             "Motor Mapping": [
-                0,
+                5,
                 1,
                 2,
                 6,
                 3,
                 7,
-                5,
+                0,
                 4
             ],
             "Controller": "MACController"
