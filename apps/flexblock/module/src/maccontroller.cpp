@@ -191,6 +191,10 @@ namespace nap
 		assert(index <= getSlaveCount());
 		mPositions[index - 1].setTargetPosition(inputs->mActualPosition);
 
+		// Store current position in input for calculation later on
+		std::unique_ptr<MacInputs>& motor_input = mInputs[index - 1];
+		motor_input->mActualPosition = inputs->mActualPosition;
+
 		// Motor controller has issues with synchronization when coming back-up from power failure.
 		// Giving it some slack helps it getting into the right state.
 		std::this_thread::sleep_for(std::chrono::milliseconds(mRecoveryTimeout));
@@ -216,6 +220,9 @@ namespace nap
 
 			// Get associated motor output parameters
 			std::unique_ptr<MacInputs>& motor_input = mInputs[i - 1];
+
+			// Copy actual position to previous position
+			nap::int32 prev_actual_pos = motor_input->mActualPosition;
 
 			// Get inputs (data from slave)
 			MAC_400_INPUTS* mac_inputs = (MAC_400_INPUTS*)slave->inputs;
@@ -245,7 +252,7 @@ namespace nap
 			if (mComputePin)
 			{
 				// Calculate if the pin should be set
-				nap::int32 pos_delta = motor_position.mTargetPosition - motor_input->mActualPosition;
+				nap::int32 pos_delta = motor_input->mActualPosition - prev_actual_pos;
 				bool set_pin = mInvertDigitalPin ? 
 					pos_delta < (0 - mDigitalPinThreshold) :
 					pos_delta > mDigitalPinThreshold;
