@@ -94,7 +94,6 @@ namespace nap
 
 		/**
 		 * Update individual motor inputs [0-8]. Thread safe.
-		 * This call asserts if the input size doesn't match internally required length.
 		 * @param inputs new motor inputs
 		 */
 		void setInput(const FlexInput& input);
@@ -117,9 +116,8 @@ namespace nap
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped
 		std::future<void> mComputeTask;						///< Compute background thread
-		mutable std::mutex mPointMutex;						///< Mutex invoked when getting / setting points
-		mutable std::mutex mInputMutex;						///< Mutex invoked when getting / setting motor input
-		mutable std::mutex mRopesMutes;						///< Mutex invoked when getting / setting final rope length
+		mutable std::mutex mOutputMutex;					///< Mutex invoked when getting / setting calculate data
+		mutable std::mutex mInputMutex;						///< Mutex invoked when getting / setting input data
 
 		/**
 		 * Computes / Cooks the flexblock algorithm
@@ -179,7 +177,7 @@ namespace nap
 		/**
 		 * Calculates the new forces on the elements
 		 */
-		void calcElements();
+		void calcElements(const std::vector<glm::vec3>& points);
 
 		/**
 		 * Makes a single list of all values of mElementsObject, mElementsObject2Frame and mElementsFrame
@@ -189,7 +187,7 @@ namespace nap
 		/**
 		 * Makes a single list of all values of mPointsObject and mPointsFrame
 		 */
-		void concatPoints();
+		void concatPoints(std::vector<glm::vec3>& outPoints);
 
 		/**
 		 * Applies motor input/force to elements
@@ -238,8 +236,17 @@ namespace nap
 
 		/**
 		 * Computes rope output length including slack
-		 * @param outLengths the rope output length including slacks
+		 * @param time current compute time in seconds
+		 * @param input input to apply when calculting rope length
+		 * @param outLengths the rope output length including slack, override and sin functionality
 		 */
-		void calcRopeLengths(float slack, std::vector<float>& outLengths);
+		void calcRopeLengths(double time, const FlexInput& input, std::vector<float>& outLengths);
+
+		/**
+		 * Updates the points and rope lengths in one call, thread safe.
+		 * @param points the newly computed points
+		 * @param lengths the newly computed rope lengths
+		 */
+		void setData(const std::vector<glm::vec3>& points, const std::vector<float> lengths);
 	};
 }

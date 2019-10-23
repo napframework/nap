@@ -5,6 +5,8 @@
 // External Includes
 #include <thread>
 #include <nap/logger.h>
+#include <nap/timer.h>
+#include <nap/datetime.h>
 #include <mathutils.h>
 
 // nap::flexdevice run time class definition 
@@ -82,13 +84,13 @@ namespace nap
 		mInput.mSlack = mSlack;
 
 		// concat points
-		concatPoints();
+		concatPoints(mPoints);
 
 		// concat elements
 		concatElements();
 
 		// calc elements
-		calcElements();
+		calcElements(mPoints);
 		mElementsLengthRef = mElementsLength;
 
 		// calc input
@@ -120,7 +122,7 @@ namespace nap
 	void FlexDevice::getObjectPoints(std::vector<glm::vec3>& outPoints) const
 	{
 		// Copy points thread-safe
-		std::lock_guard<std::mutex> lock(mPointMutex);
+		std::lock_guard<std::mutex> lock(mOutputMutex);
 		outPoints = mPoints;
 	}
 
@@ -133,7 +135,7 @@ namespace nap
 
 	void FlexDevice::getRopeLengths(std::vector<float>& outLengths) const
 	{
-		std::lock_guard<std::mutex> lock(mRopesMutes);
+		std::lock_guard<std::mutex> lock(mOutputMutex);
 		outLengths = mRopes;
 	}
 
@@ -165,7 +167,12 @@ namespace nap
 		glm::vec3 force;
 		std::vector<int> objectElementIds0;
 		std::vector<int> objectElementIds1;
-		std::vector<float> rope_lengths(8);
+		std::vector<float> calc_ropes(8);
+		std::vector<glm::vec3> calc_points(8);
+
+		// Timer used for calculating sin-value
+		nap::SystemTimer timer;
+		timer.reset();
 
 		// Compute loop
 		while (!mStopCompute)
@@ -243,11 +250,14 @@ namespace nap
 				mPointsObject[j] += mPointChange[j] * 0.01f + mPointChangeCorr[j] * 0.2f;
 
 			// Concatenate points and calculate length of elements
-			concatPoints();
-			calcElements();
+			concatPoints(calc_points);
+			calcElements(calc_points);
 
 			// Calculate final algorithm output
-			calcRopeLengths(input.mSlack, rope_lengths);
+			calcRopeLengths(timer.getElapsedTime(), input, calc_ropes);
+
+			// Update internal data, which can be used by external processes
+			setData(calc_points, calc_ropes);
 
 			// Now call adapters!
 			for (auto& adapter: mAdapters)
@@ -275,11 +285,11 @@ namespace nap
 	}
 
 
-	void FlexDevice::calcElements()
+	void FlexDevice::calcElements(const std::vector<glm::vec3>& points)
 	{
 		for (int i = 0; i < mElements.size(); i++)
 		{
-			glm::vec3 p = mPoints[mElements[i][1]] - mPoints[mElements[i][0]];
+			glm::vec3 p = points[mElements[i][1]] - points[mElements[i][0]];
 			mElementsVector[i] = p;
 		}
 
@@ -369,27 +379,41 @@ namespace nap
 	}
 
 
-	void FlexDevice::calcRopeLengths(float slack, std::vector<float>& outLengths)
+	void FlexDevice::calcRopeLengths(double time, const FlexInput& input, std::vector<float>& outLengths)
 	{
 		outLengths.clear();
 		for (int i = 12; i < 20; i++)
-			outLengths.emplace_back(mElementsLength[i + 1] + slack);
-		
-		// Copy lengths as output value
-		std::lock_guard<std::mutex> lock(mRopesMutes);
-		mRopes = outLengths;
+			outLengths.emplace_back(mElementsLength[i + 1] + input.mSlack);
+
+		// Apply overrides
+		for (auto i = 0; i < input.mOverrides.size(); i++)
+			outLengths[i] += input.mOverrides[i];
+
+		// Apply sine wave using elapsed time in seconds
+		float sin_value = static_cast<float>((((cos(time * (double)(input.mSinusFrequency)) * -1.0f) 
+			* 0.5f) 
+			+ 0.5f) 
+			* (double)(input.mSinusAmplitude));
+
+		for (auto& length : outLengths)
+			length += sin_value;
 	}
 
 
-	void nap::FlexDevice::concatPoints()
+	void FlexDevice::setData(const std::vector<glm::vec3>& points, const std::vector<float> lengths)
+	{
+		std::lock_guard<std::mutex> lock(mOutputMutex);
+		mPoints = points;
+		mRopes  = lengths;
+	}
+
+
+	void nap::FlexDevice::concatPoints(std::vector<glm::vec3>& outPoints)
 	{
 		// Create new points
-		std::vector<glm::vec3> newPoints = mPointsObject;
-		newPoints.insert(newPoints.end(), mPointsFrame.begin(), mPointsFrame.end());
-
-		// Copy points thread-safe
-		std::lock_guard<std::mutex> lock(mPointMutex);
-		mPoints = newPoints;
+		outPoints.clear();
+		outPoints.insert(outPoints.end(), mPointsObject.begin(), mPointsObject.end());
+		outPoints.insert(outPoints.end(), mPointsFrame.begin(), mPointsFrame.end());
 	}
 
 

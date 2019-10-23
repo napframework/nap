@@ -101,7 +101,7 @@ namespace nap
 
 	void FlexBlockComponentInstance::setOverride(int index, const float value)
 	{
-		mFlexInput.setOverride(index, value * mOverrideRange);
+		mFlexInput.setOverride(index, (value * mOverrideRange) + mOverrideMinimum);
 	}
 
 
