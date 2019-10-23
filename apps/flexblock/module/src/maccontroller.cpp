@@ -37,20 +37,21 @@ RTTI_END_ENUM
 
 // nap::maccontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::MACController)
-	RTTI_PROPERTY("ResetPosition",			&nap::MACController::mResetPosition,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("DisableErrorHandling",	&nap::MACController::mDisableErrorHandling,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ResetPositionValue",		&nap::MACController::mResetPositionValue,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Mode",					&nap::MACController::mMode,						nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Velocity",				&nap::MACController::mVelocity,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaxVelocity",			&nap::MACController::mMaxVelocity,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Acceleration",			&nap::MACController::mAcceleration,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Torque",					&nap::MACController::mTorque,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VelocityGetRatio",		&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VelocitySetRatio",		&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RecoveryTimeout",		&nap::MACController::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DigitalPinThreshold",	&nap::MACController::mDigitalPinThreshold,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InvertDigitalPin",		&nap::MACController::mInvertDigitalPin,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ComputeDigitalPin",		&nap::MACController::mComputeDigitalPin,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ResetPosition",				&nap::MACController::mResetPosition,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DisableErrorHandling",		&nap::MACController::mDisableErrorHandling,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ResetPositionValue",			&nap::MACController::mResetPositionValue,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mode",						&nap::MACController::mMode,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Velocity",					&nap::MACController::mVelocity,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxVelocity",				&nap::MACController::mMaxVelocity,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Acceleration",				&nap::MACController::mAcceleration,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Torque",						&nap::MACController::mTorque,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VelocityGetRatio",			&nap::MACController::mVelocityGetRatio,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VelocitySetRatio",			&nap::MACController::mVelocitySetRatio,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RecoveryTimeout",			&nap::MACController::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DigitalPinValueThreshold",	&nap::MACController::mDigitalPinPosThreshold,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DigitalPinTimeThreshold",	&nap::MACController::mDigitalPinTimeThreshold,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InvertDigitalPin",			&nap::MACController::mInvertDigitalPin,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ComputeDigitalPin",			&nap::MACController::mComputeDigitalPin,		nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("Calibration Velocity", &nap::MACController::mCalibrationVelocity, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Calibration MaxVelocity", &nap::MACController::mCalibrationMaxVelocity, nap::rtti::EPropertyMetaData::Default)
@@ -191,9 +192,10 @@ namespace nap
 		assert(index <= getSlaveCount());
 		mPositions[index - 1].setTargetPosition(inputs->mActualPosition);
 
-		// Store current position in input for calculation later on
+		// Store current position in input for pin calculation later on
 		std::unique_ptr<MacInputs>& motor_input = mInputs[index - 1];
 		motor_input->mActualPosition = inputs->mActualPosition;
+		motor_input->mPrevPosition = inputs->mActualPosition;
 
 		// Motor controller has issues with synchronization when coming back-up from power failure.
 		// Giving it some slack helps it getting into the right state.
@@ -247,21 +249,35 @@ namespace nap
 			mac_outputs->mTorque = motor_output->mTorqueCNT;
 			
 			//////////////////////////////////////////////////////////////////////////
-
-			// Calculate digital pin if requested
-			if (mComputePin)
+			// Calculate Digital Pin
+			//////////////////////////////////////////////////////////////////////////
+			
+			if (mPinTimer.getElapsedTime() > mDigitalPinTimeThreshold)
 			{
-				// Calculate if the pin should be set
-				nap::int32 pos_delta = motor_input->mActualPosition - prev_actual_pos;
-				bool set_pin = mInvertDigitalPin ? 
-					pos_delta < (0 - mDigitalPinThreshold) :
-					pos_delta > mDigitalPinThreshold;
-				motor_output->setDigitalPin(0, set_pin);
+				// Update pin if necessary, we do that by comparing a previous position
+				// with the current position based on a fixed interval. If the delta
+				// exceeds the threshold we turn the digital pin on. Using a fixed interval
+				// ensures that small changes are not picked up, only larger changes over a
+				// relatively small period of time.
+				if (mComputePin)
+				{
+					nap::int32 pos_delta = motor_input->mActualPosition - motor_input->mPrevPosition;
+					bool set_pin = mInvertDigitalPin ?
+						pos_delta < (0 - mDigitalPinPosThreshold) :
+						pos_delta > mDigitalPinPosThreshold;
+					motor_output->setDigitalPin(0, set_pin);
+				}
+
+				// Store current position to work with later on
+				motor_input->mPrevPosition = motor_input->mActualPosition;
+				mPinTimer.reset();
 			}
 
 			// Store digital pin value
 			mac_outputs->mModuleOutputs = motor_output->mModuleOutputs;
 
+			//////////////////////////////////////////////////////////////////////////
+			// Clear Errors
 			//////////////////////////////////////////////////////////////////////////
 
 			// Clear errors if requested
@@ -304,6 +320,9 @@ namespace nap
 			// Create unique input
 			mInputs.emplace_back(std::make_unique<MacInputs>());
 		}
+
+		// Start our pin timer
+		mPinTimer.start();
 		nap::Logger::info("%s: found %d slave(s)", this->mID.c_str(), this->getSlaveCount());
 	}
 

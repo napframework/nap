@@ -5,6 +5,7 @@
 #include <ethercatmaster.h>
 #include <unordered_set>
 #include <mutex>
+#include <nap/timer.h>
 
 namespace nap
 {
@@ -310,7 +311,8 @@ namespace nap
 		float mVelocitySetRatio			= 2.18435f;				///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
 		uint mRecoveryTimeout			= 100;					///< Property: 'RecoveryTimeout' number of milliseconds to wait before recovery attempt (safe operational to operational)
 		bool mDisableErrorHandling		= false;				///< Property: 'DisableErrorHandling' disables error handling when processing real-time data
-		int32 mDigitalPinThreshold		= 50;					///< Property: 'DigitalPinThreshold' threshold value used for digital i/o calculation
+		int32 mDigitalPinPosThreshold	= 50;					///< Property: 'DigitalPinValueThreshold' threshold value used for digital i/o calculation
+		float mDigitalPinTimeThreshold  = 0.1f;					///< Property: 'DigitalPinTimeThreshold' time (in seconds) between comparing motor position data for digital pin calculation.
 		bool mInvertDigitalPin			= false;				///< Property: 'InvertDigitalPin' if the digital pin compute direction should be inverted
 		bool mComputeDigitalPin			= false;				///< Property: 'ComputeDigitalPin' if the digital pin is controlled automatically
 
@@ -370,8 +372,8 @@ namespace nap
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;					///< List of all current motor positions
 		std::vector<MacPosition>					mPositions;					///< List of current motor target positions
 		mutable std::mutex							mPositionMutex;				///< Allows for synchronized setting of motor position
-		std::atomic<bool>							mComputePin = { false };
-
+		std::atomic<bool>							mComputePin = { false };	///< If the pin should be auto-computed
+		nap::SystemTimer							mPinTimer;					///< Used to track pin changes over time
 	};
 
 
@@ -545,6 +547,7 @@ namespace nap
 		std::atomic<nap::int32>		mActualTorque	= { 0 };		///< Current motor torque
 		std::atomic<nap::uint32>	mActualMode		= { 0 };		///< Current Motor Mode
 		std::atomic<bool>			mClearErrors	= { true };		///< If the errors should be cleared
+		nap::int32					mPrevPosition	= 0;			///< Used for keeping track of digital pin changes
 
 		/**
 		 * If the current set of processed data contains the given error
