@@ -9,7 +9,9 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CycleTime",			&nap::EtherCATMaster::mCycleTime,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ProcessCycleTime",	&nap::EtherCATMaster::mProcessCycleTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -252,7 +254,7 @@ namespace nap
 		{
 			if (!mOperational)
 			{
-				osal_usleep(mCycleTime);
+				osal_usleep(mProcessCycleTime);
 				continue;
 			}
 
@@ -264,7 +266,7 @@ namespace nap
 			mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
 		
 			// Sleep xUS
-			osal_usleep(mCycleTime);
+			osal_usleep(mProcessCycleTime);
 		}
 	}
 
@@ -277,7 +279,7 @@ namespace nap
 			// Operational stage not yet reached
 			if (!mOperational)
 			{
-				osal_usleep(10000);
+				osal_usleep(mErrorCycleTime);
 				continue;
 			}
 
@@ -288,13 +290,13 @@ namespace nap
 			if (mActualWCK == mExpectedWKC && 
 				!ec_group[currentgroup].docheckstate)
 			{
-				osal_usleep(40000);
+				osal_usleep(mErrorCycleTime);
 				continue;
 			}
 			
 			// One or more slaves are not responding
 			processErrors(0);
-			osal_usleep(40000);
+			osal_usleep(mErrorCycleTime);
 		}
 	}
 
@@ -343,7 +345,7 @@ namespace nap
 				// Slave in between none and safe operational
 				else if (ec_slave[slave].state > static_cast<uint16>(EtherCATMaster::ESlaveState::None))
 				{
-					if (ec_reconfig_slave(slave, 500))
+					if (ec_reconfig_slave(slave, mRecoveryTimeout))
 					{
 						ec_slave[slave].islost = false;
 						nap::Logger::info("%s: slave %d reconfigured", this->mID.c_str(), slave);
@@ -368,7 +370,7 @@ namespace nap
 			{
 				if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 				{
-					if (ec_recover_slave(slave, 500))
+					if (ec_recover_slave(slave, mRecoveryTimeout))
 					{
 						ec_slave[slave].islost = false;
 						nap::Logger::info("%s: slave %d recovered", this->mID.c_str(), slave);
