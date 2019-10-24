@@ -219,10 +219,7 @@ void AppContext::restoreUI()
 	getThemeManager().watchThemeDir();
 
 	// Restore theme
-	QString recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_THEME_NATIVE).toString();
-	if (recentTheme.isEmpty())
-		recentTheme = napkin::TXT_THEME_NATIVE;
-
+	QString recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_THEME_DEFAULT).toString();
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core

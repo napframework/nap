@@ -119,6 +119,8 @@ elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+elseif(UNIX)
+    set_python_installed_rpath_on_linux_object(${PROJECT_NAME} "../..")
 endif()
 
 # Package headers
@@ -128,7 +130,7 @@ install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         PATTERN "osx" EXCLUDE
         PATTERN "win32" EXCLUDE
         PATTERN "android" EXCLUDE
-)
+        )
 if(ANDROID)
     install(DIRECTORY "src/nap/android/" DESTINATION "include/nap/android/"
             FILES_MATCHING PATTERN "*.h"

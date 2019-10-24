@@ -8,7 +8,8 @@ namespace nap
 	enum class EControlMethod : uint8_t
 	{
 		Orbit = 0,
-		FirstPerson = 1
+		FirstPerson = 1,
+		Path = 2
 	};
 
 	using ParameterControlMethod = ParameterEnum<EControlMethod>;

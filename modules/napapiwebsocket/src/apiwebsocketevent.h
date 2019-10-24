@@ -23,6 +23,7 @@ namespace nap
 		 * A unique id is generated for this event.
 		 * @param name the name of this call
 		 * @param connection the web-socket endpoint connection.
+		 * @param wsInterface interface this event originated from (client or server)
 		 */
 		APIWebSocketEvent(const std::string& name, const WebSocketConnection& connection, 
 			WebSocketInterface& wsInterface);
@@ -32,6 +33,7 @@ namespace nap
 		 * A unique id is generated for this event.
 		 * @param name the name of this call
 		 * @param connection the web-socket endpoint connection.
+		 * @param wsInterface interface this event originated from (client or server)
 		 */
 		APIWebSocketEvent(std::string&& name, const WebSocketConnection& connection, 
 			WebSocketInterface& wsInterface);
@@ -43,6 +45,7 @@ namespace nap
 		 * @param name the name of this call
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
+		 * @param wsInterface interface this event originated from (client or server)
 		 */
 		APIWebSocketEvent(const std::string& name, const std::string& id, const WebSocketConnection& connection, 
 			WebSocketInterface& wsInterface);
@@ -54,6 +57,7 @@ namespace nap
 		 * @param name the name of this call
 		 * @param id unique identifier of this call
 		 * @param connection the web-socket endpoint connection.
+		 * @param wsInterface interface this event originated from (client or server)
 		 */
 		APIWebSocketEvent(std::string&& name, std::string&& id, const WebSocketConnection& connection, 
 			WebSocketInterface& wsInterface);

@@ -9,8 +9,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * OSC Midi Demo
+ * refer to oscmidi.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
 {

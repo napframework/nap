@@ -30,12 +30,17 @@ namespace nap
 	};
 
 	/**
-	 A Service is a process within core that cooperates with certain components in the system, this is the base
-	 class for all services. Often services are used to load a driver, set up a connection or manage global module
-	 specific state. All services are automatically loaded and managed by Core. This ensures the right order of
-	 app initialization, runtime state and closing. When designing a module using a service make sure to export the
-	 service using the NAP_SERVICE_MODULE #define in a source file exactly once. This will ensure that core automatically loads,
-	 creates and initializes the service when loading the available system modules
+	 * A Service is a process within core that cooperates with certain components in the system, this is the base
+	 * class for all services. Often services are used to load a driver, set up a connection or manage global module
+	 * specific state. All services are automatically loaded and managed by Core. This ensures the right service order of
+	 * initialization, runtime state and closing. When designing a module using a service make sure to export the
+	 * service using the 'NAP_SERVICE_MODULE' #define in a source file exactly once, for example:
+	 *
+	 *~~~~~{.cpp}
+	 * NAP_SERVICE_MODULE("mod_naposc", "0.2.0", "nap::OSCService")
+	 *~~~~~
+	 *
+	 * This code snippet ensures that core automatically loads, creates and initializes the service when loading the modules.
 	 **/
 	class NAPAPI Service
 	{

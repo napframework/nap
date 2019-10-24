@@ -70,13 +70,13 @@ namespace nap
 		/**
 		 * Checks if a physical controller with the given number is connected.
 		 * The number is always associated with a physical joystick or game control device
-		 * @param number the number of the controller
+		 * @param controllerNumber the number of the controller
 		 * @return if the controller is online
 		 */
 		bool isConnected(int controllerNumber) const;
 
 		/**
-		 * This call can be used to ensure a controller is known to the system using a unique controller id
+		 * This call can be used to ensure a controller is known to the system using a unique controller id.
 		 * The unique controller id is part of SDL controller and joystick events.
 		 * @return if a controller with the given unique id exists
 		 */

@@ -21,7 +21,8 @@ namespace nap
 
 		/**
 		 * Creates a new item that is used to build the graph
-		 * @param service: the service to create the item for
+		 * @param service the service to create the item for
+		 * @param services all available services
 		 */
 		static const ServiceObjectGraphItem create(Service* service, std::vector<Service*>* services);
 

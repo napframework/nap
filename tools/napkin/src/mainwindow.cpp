@@ -17,6 +17,7 @@ void MainWindow::bindSignals()
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
 
@@ -44,6 +45,7 @@ void MainWindow::showEvent(QShowEvent* event)
 		rebuildRecentMenu();
 		mFirstShowEvent = false;
 	}
+	fixTabs();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -110,8 +112,8 @@ void MainWindow::addMenu()
 			auto filename = QFileDialog::getSaveFileName(this, "Save Settings", QString(), "Settings file (*.ini)");
 			if (filename.isEmpty())
 				return;
-			QSettings s(filename, QSettings::IniFormat);
-
+			if (!QFile::copy(QSettings().fileName(), filename))
+				nap::Logger::error("Failed to save settings to file: %s", filename.toStdString().c_str());
 		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
@@ -254,4 +256,19 @@ void MainWindow::rebuildRecentMenu()
 	mRecentFilesMenu->setEnabled(!mRecentFilesMenu->isEmpty());
 }
 
+
+void MainWindow::onDocked(QDockWidget *dockWidget)
+{
+	fixTabs();
+}
+
+
+void MainWindow::fixTabs()
+{
+	// Removes the rendering of white lines bottom of tabs
+	// see: https://stackoverflow.com/questions/42746408/how-to-get-rid-of-strange-white-line-under-qtabbar-while-customzing-tabified-qdo
+	QList<QTabBar*> tabBars = findChildren<QTabBar*>("", Qt::FindChildrenRecursively);
+	for (auto& bar : tabBars)
+		bar->setDrawBase(false);
+}
 

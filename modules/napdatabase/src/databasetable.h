@@ -100,7 +100,7 @@ namespace nap
 
 		/**
 		 * Query the table for objects. The query will deserialize the objects through the factory that was passed onto the 
-		 * constructor and fill it with the values from the database. The @whereClause is a condition that can be filled in 
+		 * constructor and fill it with the values from the database. The whereClause is a condition that can be filled in 
 		 * to select the rows from the table that you want to deserialize. The text represents what comes after the WHERE
 		 * statement in SQL. If it is empty, all objects are retrieved. Because the column names in the table are generated
 		 * you should use the DatabasePropertyPath::toString function to retrieve the correct column name. Example:
@@ -108,8 +108,8 @@ namespace nap
 		 *		query(utility::stringFormat("%s >= 0.2 AND %s > 0.5", property.toString()), object, errorState);
 		 *
 		 * @param whereClause: The part of the SQL query that comes after the WHERE statement. Keep empty to deserialize all.
-		 * @param object: The deserialized objects
-		 * @param errorState: if the function returns false, contains error information.
+		 * @param objects The deserialized objects
+		 * @param errorState if the function returns false, contains error information.
 		 */
 		bool query(const std::string& whereClause, std::vector<std::unique_ptr<rtti::Object>>& objects, utility::ErrorState& errorState);
 

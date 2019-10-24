@@ -32,7 +32,7 @@ set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_nap
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES})
+set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES} mod_napinput mod_napparameter)
 
 add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 
@@ -124,7 +124,7 @@ if(APPLE)
 
     foreach(MODULECONFIG Release Debug)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
-                                                                                "${NAP_MODULES_LINK_DEPENDENCIES}" 
+                                                                                "${NAP_MODULES_USAGE_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/${MODULECONFIG}/napkin
                                                                                 "../../../.."
                                                                                 "${EXTRA_RPATH}")
@@ -140,5 +140,5 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH lib)
 
-    set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_LINK_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
+    set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
 endif()

@@ -109,6 +109,9 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
+	if (!filename.endsWith("." + JSON_FILE_EXT))
+		filename = filename + "." + JSON_FILE_EXT;
+
 	ctx.saveDocumentAs(filename);
 }
 
@@ -263,7 +266,7 @@ void RemovePathAction::perform()
 
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
 {
-    setText(themeName.isEmpty() ? napkin::TXT_THEME_NATIVE : themeName);
+    setText(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName);
     setCheckable(true);
 }
 

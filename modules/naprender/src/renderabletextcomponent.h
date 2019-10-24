@@ -19,6 +19,9 @@ namespace nap
 	/**
 	 * Render-able Text Component Resource.
 	 * Creates a RenderableTextComponentInstance that can draw text using a font and material.
+	 * Text rendering works best when the blend mode of the Material is set to: AlphaBlend and the Depth mode to NoReadWrite.
+	 * This ensures the text is rendered on top of the rest and remains visible.
+	 * Use the Renderable2DTextComponent to render text in screen space and the Renderable3DTextComopnent to render text in 3D space.
 	 */
 	class NAPAPI RenderableTextComponent : public RenderableComponent
 	{

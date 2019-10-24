@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "timelineguiproperties.h"
+
 // External Includes
 #include <nap/datetime.h>
 #include <color.h>
@@ -17,9 +20,9 @@
 #include <oscsender.h>
 #include <maccontroller.h>
 
-#include "flexblockcomponent.h"
-#include "sequenceplayercomponent.h"
-#include "timelineguiproperties.h"
+#include <flexblockcomponent.h>
+#include <sequenceplayercomponent.h>
+#include <macadapter.h>
 
 namespace nap
 {
@@ -40,9 +43,7 @@ namespace nap
 		 * Initialize the various gui components
 		 */
 		void init();
-
 		void initOscOutput();
-
 		void initOscInputs();
 
 		/**
@@ -65,26 +66,23 @@ namespace nap
 		 */
 		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
 	private:
-		FlexblockApp&						mApp;				///< The actual flexblock application we build the gui for
+		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
 		DateTime							mDateTime;
 		double								mTime = 0.0f;
 		nap::ResourcePtr<MACController>		mMotorController;
+		nap::ResourcePtr<MACAdapter>		mMotorAdapter;
 		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
-
 		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-
 		OSCSender*							mOscSender = nullptr;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
-
 		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
-
 		TimelineGuiProperties mProps;
 
 		/**

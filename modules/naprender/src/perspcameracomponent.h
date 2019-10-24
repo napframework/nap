@@ -72,10 +72,11 @@ namespace nap
 		virtual const glm::mat4 getViewMatrix() const override;
 
 		/**
-		* Use this function to split the projection into a grid of squares. This can be used to render to multiple screens 
-		* with a single camera. Use setGridLocation to set the horizontal and vertical index into this grid.
-		* @param splitDimensions: the number of cells in the horizontal and vertical direction.
-		*/
+		 * Use this function to split the projection into a grid of squares. This can be used to render to multiple screens 
+		 * with a single camera. Use setGridLocation to set the horizontal and vertical index into this grid.
+		 * @param numRows the number of cells in the horizontal
+		 * @param numColumns the number of cells in the vertical direction.
+		 */
 		void setGridDimensions(int numRows, int numColumns);
 
 		/**

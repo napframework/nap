@@ -98,7 +98,7 @@ namespace nap
 		* Adds a list of indices to the index CPU buffer.
 		* Call either before init() or call update() to reflect the changes in the GPU buffer.
 		* @param indices: array of indices to add.
-		* @param numIndices: number of indices in @indices.
+		* @param numIndices: size of the array.
 		*/
 		void setIndices(uint32_t* indices, int numIndices)
 		{
@@ -217,8 +217,6 @@ namespace nap
 		 * Clones the RTTI based data but does not build a GPU mesh from it. Call init to upload
 		 * the cloned data to the GPU. The cloned data is owned by MeshInstance
 		 * @param meshProperties The RTTI mesh properties to clone into the mesh instance.
-		 * @param errorState Contains error information if an error occurred.
-		 * @return True if succeeded, false on error.
 		 */
 		void copyMeshProperties(RTTIMeshProperties& meshProperties);
 
@@ -268,8 +266,9 @@ namespace nap
 		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
-	 	 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
-		 * @param numIndices Amount of indices to reserve.
+	 	 * Reserves CPU memory for the given amount of vertices. All associated vertex attributes are affected.
+		 * GPU memory is reserved after update() is called.
+		 * @param numVertices amount of vertices to reserve memory for.
 		 */
 		void reserveVertices(size_t numVertices);
 

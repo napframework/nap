@@ -7,12 +7,17 @@
 RTTI_BEGIN_CLASS(nap::ControlSelectComponent)
 	RTTI_PROPERTY("OrbitController",		&nap::ControlSelectComponent::mOrbitController,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FirstPersonController",	&nap::ControlSelectComponent::mFirstPersonController,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FollowPathController",	&nap::ControlSelectComponent::mPathController,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PerspectiveCamera",		&nap::ControlSelectComponent::mCameraComponent,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraTranslation",		&nap::ControlSelectComponent::mCameraTranslation,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraRotation",			&nap::ControlSelectComponent::mCameraRotation,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraFOV",				&nap::ControlSelectComponent::mCameraFOV,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CameraMoveSpeed",		&nap::ControlSelectComponent::mCameraMovSpeed,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CameraRotateSpeed",		&nap::ControlSelectComponent::mCameraRotSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FPSCameraMoveSpeed",		&nap::ControlSelectComponent::mFPSCameraMovSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FPSCameraRotateSpeed",	&nap::ControlSelectComponent::mFPSCameraRotSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathFollowSpeed",		&nap::ControlSelectComponent::mPathCamSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathPosition",			&nap::ControlSelectComponent::mPathCamPosition,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathCamOffset",			&nap::ControlSelectComponent::mPathCamOffset,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathCamRotation",		&nap::ControlSelectComponent::mPathCamRotation,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraControlMethod",	&nap::ControlSelectComponent::mCameraControlMethod,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -37,10 +42,14 @@ namespace nap
 		// Get pointers to the camera parameters
 		mCameraTranslation		= getComponent<ControlSelectComponent>()->mCameraTranslation.get();
 		mCameraRotation			= getComponent<ControlSelectComponent>()->mCameraRotation.get();
-		mCameraRotSpeed			= getComponent<ControlSelectComponent>()->mCameraRotSpeed.get();
-		mCameraMovSpeed			= getComponent<ControlSelectComponent>()->mCameraMovSpeed.get();
+		mFPSCameraRotSpeed		= getComponent<ControlSelectComponent>()->mFPSCameraRotSpeed.get();
+		mFPSCameraMovSpeed		= getComponent<ControlSelectComponent>()->mFPSCameraMovSpeed.get();
 		mCameraFOV				= getComponent<ControlSelectComponent>()->mCameraFOV.get();
 		mCameraControlMethod	= getComponent<ControlSelectComponent>()->mCameraControlMethod.get();
+		mPathCamPosition		= getComponent<ControlSelectComponent>()->mPathCamPosition.get();
+		mPathCamSpeed			= getComponent<ControlSelectComponent>()->mPathCamSpeed.get();
+		mPathCamRotation		= getComponent<ControlSelectComponent>()->mPathCamRotation.get();
+		mPathCamOffset			= getComponent<ControlSelectComponent>()->mPathCamOffset.get();
 
 		// Store current min / max camera movement speed values
 		mCamMaxMovSpeed = mFirstPersonController->getMovementSpeed();
@@ -64,13 +73,13 @@ namespace nap
 		});
 
 		// Update camera movement speed when value changes
-		mCameraMovSpeed->valueChanged.connect([this](float newValue)
+		mFPSCameraMovSpeed->valueChanged.connect([this](float newValue)
 		{
 			mFirstPersonController->setMovementSpeed(mCamMaxMovSpeed * newValue);
 		});
 		
 		// Update camera rotation speed when value changes
-		mCameraRotSpeed->valueChanged.connect([this](float newValue)
+		mFPSCameraRotSpeed->valueChanged.connect([this](float newValue)
 		{
 			mFirstPersonController->setRotationSpeed(mCamMaxRotSpeed * newValue);
 		});
@@ -86,6 +95,38 @@ namespace nap
 		{
 			this->selectControlMethod(newValue);
 		});
+
+		//////////////////////////////////////////////////////////////////////////
+		// Camera On Path Controls
+		//////////////////////////////////////////////////////////////////////////
+
+		// Update camera path follow speed on param change
+		mPathCamSpeed->valueChanged.connect([this](float newValue)
+		{
+			mPathController->setSpeed(newValue);
+		});
+		mPathController->setSpeed(mPathCamSpeed->mValue);
+
+		// Update camera path location on param change
+		mPathCamPosition->valueChanged.connect([this](float newValue)
+		{
+			mPathController->setPosition(newValue);
+		});
+		mPathController->setPosition(mPathCamPosition->mValue);
+
+		// Update camera offset from path on param change
+		mPathCamOffset->valueChanged.connect([this](glm::vec3 newValue)
+		{
+			mPathController->setOffset(newValue);
+		});
+		mPathController->setOffset(mPathCamOffset->mValue);
+
+		// Update camera rotation from path on param change
+		mPathCamRotation->valueChanged.connect([this](glm::vec2 newValue)
+		{
+			mPathController->setRotation(glm::vec3(newValue, 0.0f));
+		});
+		mPathController->setRotation(glm::vec3(mPathCamRotation->mValue, 0.0f));
 
 		// Force control mode now
 		selectControlMethod((EControlMethod)mCameraControlMethod->getValue());
@@ -105,13 +146,25 @@ namespace nap
 		switch (method)
 		{
 		case EControlMethod::FirstPerson:
+		{
 			mFirstPersonController->enable();
 			mOrbitController->disable();
+			mPathController->disable();
 			break;
+		}
 		case EControlMethod::Orbit:
+		{
 			mFirstPersonController->disable();
 			mOrbitController->enable(mOrbitController->getLookAtPos());
+			mPathController->disable();
 			break;
+		}
+		case EControlMethod::Path:
+		{
+			mFirstPersonController->disable();
+			mOrbitController->disable();
+			mPathController->enable();
+		}
 		default:
 			assert(false);
 		}

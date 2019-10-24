@@ -14,9 +14,19 @@ namespace nap
 	class RenderableMeshComponentInstance;
 	
 	/**
-	 * Resource part of the component used for managing and rendering a mesh.
+	 * Resource part of the renderable mesh component. Renders a mesh to screen or any other render target.
 	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary
 	 * The material is required. 
+	 *
+	 * A mesh becomes 'renderable' when it is used in combination with a material. Such a mesh-material combination
+	 * forms a 'RenderableMesh'. It is validated that a mesh-material combination form a legal combination: vertex attributes
+	 * in shader and mesh should match. Otherwise, the RenderableMesh is invalid. The RenderableMesh is an object that is created
+	 * internally based on the mesh and the material that are set in the RenderableMeshComponent.
+	 *
+	 * It is, however, also possible to switch the mesh and/or material from the RenderableMeshComponent to some other mesh and/or
+	 * material. To do so, other components should create their own RenderableMesh by calling createRenderableMesh, and pass the returned
+	 * object to setMesh. The object calling createRenderableMesh should own any custom mesh and/or material and it should validate in it's
+	 * init() that the creation of the renderable mesh succeeded.
 	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
@@ -41,11 +51,14 @@ namespace nap
 
 
 	/**
-	 * Represents a renderable mesh that can be used as a component in an entity hierarchy.
+	 * Instance part of the renderable mesh component.
+	 * The mesh can be rendered to screen or any other render-target.
+	 *
 	 * A mesh becomes 'renderable' when it is used in combination with a material. Such a mesh-material combination
 	 * forms a 'RenderableMesh'. It is validated that a mesh-material combination form a legal combination: vertex attributes
 	 * in shader and mesh should match. Otherwise, the RenderableMesh is invalid. The RenderableMesh is an object that is created
 	 * internally based on the mesh and the material that are set in the RenderableMeshComponent.
+	 *
 	 * It is, however, also possible to switch the mesh and/or material from the RenderableMeshComponent to some other mesh and/or 
 	 * material. To do so, other components should create their own RenderableMesh by calling createRenderableMesh, and pass the returned
 	 * object to setMesh. The object calling createRenderableMesh should own any custom mesh and/or material and it should validate in it's

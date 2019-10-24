@@ -38,7 +38,7 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 ## macOS {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports macOS Mojave. Although NAP is known to work on other macOS releases, Mojave is the current supported version.
+NAP $(NAP_VERSION_FULL) supports macOS Mojave with XCode 10.3. Although NAP is known to work on other macOS releases, Mojave is the current supported platform. Other versions of XCode are not supported at this moment.
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
@@ -63,16 +63,16 @@ export PATH="/Applications/CMake.app/Contents/bin:$PATH"
 
 ## Linux {#setup_build_env_linux}
 
-NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 18.04 on x86-64 machines using GCC.  Although NAP is known to work on other Ubuntu releases, 18.04 is the current supported version.
+NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 18.04 on x86-64 machines using GCC. Although NAP is known to work on other Ubuntu releases, 18.04 is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release:
 ```
-tar jxvf NAP-0.2.3-Linux.tar.bz2
+tar jxvf NAP-0.3.0-Linux.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```
-cd NAP-0.2.3-Linux
+cd NAP-0.3.0-Linux
 ./tools/check_build_environment
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
@@ -111,7 +111,7 @@ All demonstration projects can be found within the demos folder within the relea
 
 1. Navigate to the helloworld demo
 ```
-cd NAP-0.2.3-macOS/demos/helloworld
+cd NAP-0.3.0-Linux/demos/helloworld
 ```
 2. Generate the Unix makefiles
 ```

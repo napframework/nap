@@ -14,7 +14,6 @@ namespace nap
 	class ComponentPtrBase
 	{
 		RTTI_ENABLE();
-
 	public:
         virtual ~ComponentPtrBase() = default;
 
@@ -72,7 +71,7 @@ namespace nap
 	 * Pointing directly to one of these TransformComponents using a component path is not possible,
 	 * because it would be ambiguous.
 	 * To disambiguate which specific child entity is meant,
-	 * the user can append a ':<child_index>' to the ChildEntityID on the path.
+	 * the user can append a ':[child_index]' to the ChildEntityID on the path.
 	 *
 	 * In this case, to point to the TransformComponent of the second wheel,
 	 * the user would use the following path: './WheelEntity:1/TransformComponent'
@@ -282,7 +281,7 @@ namespace nap
 		* Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
 		*/
 		template<class SourceComponentType>
-		ComponentInstancePtr(ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
+		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
 			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
 		{
 		}
@@ -403,10 +402,7 @@ namespace nap
 	 * @return A ComponentInstancePtrInitProxy which can be passed to the ComponentInstancePtr constructor
 	 */
 	template<typename TargetComponentType, typename SourceComponentType>
-	ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
-	{
-		return{ sourceComponentInstance, componentMemberPointer };
-	}
+	ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer));
 
 	/**
 	 * Init a std::vector of ComponentInstancePtrs. Returns a std::vector which is then used to initialize the target std::vector of ComponentInstancePtrs
@@ -417,24 +413,13 @@ namespace nap
 	 * @return std::vector of initialized ComponentInstancePtrs
 	 */
 	template<typename TargetComponentType, typename SourceComponentType>
-	std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer))
-	{
-		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
-		std::vector<ComponentPtr<TargetComponentType>>& target_component_resource = resource->*componentMemberPointer;
-
-		std::vector<ComponentInstancePtr<TargetComponentType>> result;
-		result.resize(target_component_resource.size());
-
-		for (int i = 0; i != result.size(); ++i)
-			sourceComponentInstance->addToComponentLinkMap(target_component_resource[i].get(), target_component_resource[i].getInstancePath(), (ComponentInstance**)&result[i].mInstance);
-
-		return result;
-	}
+	std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer));
 }
 
-/**
- * The following construct is required to support ComponentPtr in RTTR as a regular pointer.
- */
+
+//////////////////////////////////////////////////////////////////////////
+// The following construct is required to support ComponentPtr in RTTR as a regular pointer.
+//////////////////////////////////////////////////////////////////////////
 namespace rttr
 {
 	template<typename T>
@@ -453,4 +438,36 @@ namespace rttr
 			return nap::ComponentPtr<T>(value);
 		}
 	};
+}
+
+
+namespace nap
+{
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename TargetComponentType, typename SourceComponentType>
+	nap::ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>
+		initComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
+	{
+		return{ sourceComponentInstance, componentMemberPointer };
+	}
+
+
+	template<typename TargetComponentType, typename SourceComponentType>
+	std::vector<nap::ComponentInstancePtr<TargetComponentType>>
+		initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer))
+	{
+		SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+		std::vector<ComponentPtr<TargetComponentType>>& target_component_resource = resource->*componentMemberPointer;
+
+		std::vector<ComponentInstancePtr<TargetComponentType>> result;
+		result.resize(target_component_resource.size());
+
+		for (int i = 0; i != result.size(); ++i)
+			sourceComponentInstance->addToComponentLinkMap(target_component_resource[i].get(), target_component_resource[i].getInstancePath(), (ComponentInstance**)&result[i].mInstance);
+
+		return result;
+	}
 }

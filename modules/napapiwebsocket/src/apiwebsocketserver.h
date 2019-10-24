@@ -27,32 +27,32 @@ namespace nap
 	 * for more information.
 	 * 
 	 * The message sent by the client must contain at least one JSON formatted nap::APIMessage object, for example:
-	 *
-	 *	{
-	 *		"Objects":
-	 *		[
-	 *			{
-	 *				"Type": "nap::APIMessage",
-	 *				"mID": "01",
-	 *				"Name": "getMotorSpeed",
-	 *				"Arguments":
-	 *				[
-	 *					{
-	 *						"Type": "nap::APIInt",
-	 *						"Name": "number",
-	 *						"mID": "02",
-	 *						"Value": 1
-	 *					}
-	 *				]
-	 *			}
-	 *		]
-	 *	}
-	 *
+	 * ~~~~~
+	 *		{
+	 *			"Objects":
+	 *			[
+	 *				{
+	 *					"Type": "nap::APIMessage",
+	 *					"mID": "01",
+	 *					"Name": "getMotorSpeed",
+	 *					"Arguments":
+	 *					[
+	 *						{
+	 *							"Type": "nap::APIInt",
+	 *							"Name": "number",
+	 *							"mID": "02",
+	 *							"Value": 1
+	 *						}
+	 *					]
+	 *				}
+	 *			]
+	 *		}
+	 * ~~~~~
 	 * You can combine multiple nap::APIMessage objects into a single message. Every nap::APIMessage object is converted
 	 * into a separate nap api event, before handed over to the running application.
 	 * 
 	 * Example of a server reply in response to the client request:
-	 * 
+	 * ~~~~~{.cpp}
 	 *		// Create response, copy over client query uuid.
 	 *		APIWebSocketEventPtr reply = std::make_unique<APIEvent>("motorSpeed", client_request->getID());
 	 *
@@ -64,7 +64,7 @@ namespace nap
 	 *		{
 	 *			nap::Logger::error(error.toString());
 	 *		}
-	 *
+	 * ~~~~~
 	 * When replying to a nap api message it is advised to copy the unique id of the request. This allows the client to match the request to a server reply.
 	 * The client can manually parse the json formatted text or, when making use of a nap::APIWebSocketClient, automatically parse the reply without inspection.
 	 * See nap::APIWebSocketConnection for more information.

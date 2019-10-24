@@ -11,29 +11,16 @@
 
 // nap::FlexBlockComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
-RTTI_PROPERTY("FrameMesh", &nap::FlexBlockComponent::mFrameMesh, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("FlexBlockMesh", &nap::FlexBlockComponent::mFlexBlockMesh, nap::rtti::EPropertyMetaData::Required)
-
-	RTTI_PROPERTY("SerialComponent", &nap::FlexBlockComponent::mFlexBlockSerialComponent, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Serial", &nap::FlexBlockComponent::mEnableSerial, nap::rtti::EPropertyMetaData::Default)
-
-	RTTI_PROPERTY("Mac Controller", &nap::FlexBlockComponent::mMacController, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Controller", &nap::FlexBlockComponent::mEnableMacController, nap::rtti::EPropertyMetaData::Required)
-
+	RTTI_PROPERTY("FrameMesh",		&nap::FlexBlockComponent::mFrameMesh,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FlexBlockMesh",	&nap::FlexBlockComponent::mFlexBlockMesh,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Motor Steps Per Meter", &nap::FlexBlockComponent::mMotorStepsPerMeter, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Motor Step Offset", &nap::FlexBlockComponent::mMotorOffset, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlexBlockDevice",&nap::FlexBlockComponent::mFlexBlockDevice, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Slack Range", &nap::FlexBlockComponent::mSlackRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Slack Minimum", &nap::FlexBlockComponent::mSlackMinimum, nap::rtti::EPropertyMetaData::Default)
-
 	RTTI_PROPERTY("Sinus Amplitude", &nap::FlexBlockComponent::mSinusAmplitudeRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sinus Frequency", &nap::FlexBlockComponent::mSinusFrequencyRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Motor Mapping", &nap::FlexBlockComponent::mMotorMapping, nap::rtti::EPropertyMetaData::Default)
-
-	RTTI_PROPERTY("Flex Thread Frequency", &nap::FlexBlockComponent::mFlexFrequency, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Enable Digital Pin", &nap::FlexBlockComponent::mEnableDigitalPin, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -47,19 +34,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void FlexBlockComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-	}
-
-
 	FlexBlockComponentInstance::~FlexBlockComponentInstance()
 	{
-		//assert(mFlexLogic != nullptr);
-		if (mFlexLogic != nullptr)
-		{
-			mFlexLogic->stop();
-			mFlexLogic.reset(nullptr);
-		}
+
 	}
 
 
@@ -70,106 +47,80 @@ namespace nap
 		// assign resources
 		mFlexBlockMesh = resource->mFlexBlockMesh.get();
 		mFrameMesh = resource->mFrameMesh.get();
-		mMacController = resource->mMacController.get();
-		mEnableMacController = resource->mEnableMacController;
-		mMotorStepsPerMeter = resource->mMotorStepsPerMeter;
-		mMotorStepOffset = resource->mMotorOffset;
+		mFlexblockDevice = resource->mFlexBlockDevice.get();
+
 		mSlackMinimum = resource->mSlackMinimum;
-		mSlackRange = resource->mSlackRange;
-		mMotorStepOffset = resource->mMotorOffset;
+		mSlackRange = resource->mSlackRange;;
 		mSinusAmplitudeRange = resource->mSinusAmplitudeRange;
 		mSinusFrequencyRange = resource->mSinusFrequencyRange;
-		mSlackMinimum = resource->mSlackMinimum;
 		mOverrideMinimum = resource->mOverrideMinimum;
 		mOverrideRange = resource->mOverrideRange;
-		mMotorMapping = resource->mMotorMapping;
-		mEnableSerial = resource->mEnableSerial;
-		mFlexFrequency = resource->mFlexFrequency;
-		mEnableDigitalPin = resource->mEnableDigitalPin;
-
-		// create flex logic
-		mFlexLogic = std::make_unique<Flex>( 
-			resource->mFlexBlockShape.get(), 
-			mFlexFrequency,
-			mOverrideMinimum,
-			mSlackRange, 
-			mOverrideRange,
-			mSinusAmplitude,
-			mSinusFrequency,
-			mMotorStepsPerMeter,
-			mMotorStepOffset,
-			mEnableMacController,
-			mMacController,
-			mMotorMapping,
-			mEnableDigitalPin);
-		
-		// start flex logic thread
-		mFlexLogic->start();
 
 		// calculate new frame
-		const std::vector<glm::vec3>& framePoints = mFlexLogic->getFramePoints();
-		mFramePoints = framePoints;
+		mFlexblockDevice->getFramePoints(mFramePoints);
 
 		// set points
-		mFrameMesh->setFramePoints(framePoints, mObjectPoints);
-
-		// start serial
-		mFlexBlockSerialComponentInstance->start(errorState);
+		mFrameMesh->setFramePoints(mFramePoints, mObjectPoints);
 
 		return true;
 	}
 
 
-	void FlexBlockComponentInstance::setMotorInput(const int index, float value)
+	void FlexBlockComponentInstance::setInput(int index, float value)
 	{
-		mMotorInputs[index] = value;
+		mFlexInput.setInput(index, value);
 	}
 	
 
-	void FlexBlockComponentInstance::setOverrides(const int index, const float value)
+	void FlexBlockComponentInstance::setOverride(int index, const float value)
 	{
-		mMotorOverrides[index] = value * mOverrideRange;
+		mFlexInput.setOverride(index, (value * mOverrideRange) + mOverrideMinimum);
 	}
 
 
-	void FlexBlockComponentInstance::setSinusAmplitude(const float value)
+	void FlexBlockComponentInstance::setSinusAmplitude(float value)
 	{
-		mSinusAmplitude = value * mSinusAmplitudeRange;
-		mFlexLogic->setSinusAmplitude(mSinusAmplitude);
+		mFlexInput.mSinusAmplitude = value * mSinusAmplitudeRange;
 	}
 
 
-	void FlexBlockComponentInstance::setSinusFrequency(const float value)
+	float FlexBlockComponentInstance::getMotorOverride(int index) const
 	{
-		mSinusFrequency = value * mSinusFrequencyRange;
-		mFlexLogic->setSinusFrequency(mSinusFrequency);
+		assert(index < mFlexInput.mOverrides.size());
+		return mFlexInput.mOverrides[index];
 	}
 
 
-	void FlexBlockComponentInstance::setSlack(const float value)
+	void FlexBlockComponentInstance::setSinusFrequency(float value)
 	{
-		mFlexLogic->setSlack(value * mSlackRange + mSlackMinimum);
+		mFlexInput.mSinusFrequency = value * mSinusFrequencyRange;
 	}
+
+
+	void FlexBlockComponentInstance::setSlack(float value)
+	{
+		mFlexInput.mSlack = value * mSlackRange + mSlackMinimum;
+	}
+	
+
+	float FlexBlockComponentInstance::getSlack() const
+	{
+		return mFlexInput.mSlack;
+	}
+
 
 	void FlexBlockComponentInstance::update(double deltaTime)
 	{
-		// 
-		const std::vector<glm::vec3>& objectPoints = mFlexLogic->getObjectPoints();
-		mObjectPoints = objectPoints;
+		// get points of objects
+		mFlexblockDevice->getObjectPoints(mObjectPoints);
 
 		// update ropes of frame
-		mFrameMesh->setControlPoints(objectPoints);
+		mFrameMesh->setControlPoints(mObjectPoints);
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
 
-		// update motors of flex algorithm
-		mFlexLogic->setMotorInput(mMotorInputs);
-
-		// update overrides
-		mFlexLogic->setMotorOverrides(mMotorOverrides);
-
-		//
-		mMotorSteps = mFlexLogic->getMotorSteps();
+		// update input of flex algorithm
+		mFlexblockDevice->setInput(mFlexInput);
 	}
 }

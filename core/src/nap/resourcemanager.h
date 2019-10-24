@@ -25,7 +25,28 @@ namespace nap
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
 	/**
-	 * Manager, owner of all objects, capable of loading and real-time updating of content.
+	 * The resource manager is responsible for loading a JSON file that contains all the resources that are necessary for an application to run. 
+	 *
+	 * When loading a JSON file all the objects declared inside that file are created and initialized by the resource manager. 
+	 * These objects are called 'resources'. Every loaded resource is owned by the resource manager. 
+	 * This means that the lifetime of a resource is fully managed by the resource manager and not by the client.
+	 * The resource manager also updates the content in real-time when a change to the loaded JSON file is detected.
+	 * 
+	 * Every resource has a unique identifier, as declared by the 'mID' property. The name of the object is required to be unique.
+	 * De-serialization will fail when a duplicate object ID is discovered. 
+	 *
+	 * The most important task of a resource is to tell the resource manager if initialization succeeded. 
+	 * If initialization of a resource fails the resource manager will halt execution, return an error message and 
+	 * as a result stop further execution of a program.
+	 *
+	 * File load example:
+	 * 
+	 *~~~~~{.cpp}
+	 *	// Get resource manager and load application JSON
+	 *	mResourceManager = getCore().getResourceManager();
+	 *	if (!mResourceManager->loadFile("helloworld.json", error))
+	 *		return false;
+	 *~~~~~
 	 */
 	class NAPAPI ResourceManager final
 	{
@@ -37,10 +58,18 @@ namespace nap
 		~ResourceManager();
 
 		/**
-		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
-		*/
+		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
+		 * @param fileName JSON resource file to load.
+		 * @param errorState contains the error when the load operation fails.
+		 * @return if the file loaded successfully.
+		 */
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
+		/**
+		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
+		 * @param fileName JSON resource file to load.
+		 * @return if the file loaded successfully.
+		 */
         bool loadFile(const std::string& filename);
 
 		/*
@@ -60,37 +89,54 @@ namespace nap
 		* Before objects are destructed, onDestroy is called. onDestroy is called in the reverse initialization order. This way, it is still safe to use any 
 		* pointers to perform cleanup of internal data. 
 		*
-		* @param filename: json file containing objects.
-		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
-		* @param errorState: if the function returns false, contains error information.
+		* @param filename json file containing all objects.
+		* @param externalChangedFile externally changed file that caused load of this file (like texture, shader etc)
+		* @param errorState if the function returns false, contains error information.
+		* @return if the file loaded successfully.
 		*/
 		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
-		* Find an object by object ID. Returns null if not found.
-		*/
+		 * Find an object by object ID. Returns null if not found.
+		 * @param id unique id of the object to find.
+		 * @return the object, nullptr if not found.
+		 */
 		const rtti::ObjectPtr<rtti::Object> findObject(const std::string& id);
 
 		/**
-		* Find an object by object ID. Returns null if not found.
-		*/
+		 * Find an object of type T. Returns null if not found.
+		 *
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * mResourceManager = getCore().getResourceManager();
+		 * auto window = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		 *~~~~~
+		 *
+		 * @param id the unique id of the object to find.
+		 * @return the object of type T, nullptr if not found.
+		 */
 		template<class T>
 		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
-		 * Get all objects of a particular type
+		 * Get all objects of a particular type.
+		 * @return all objects of the requested type.
 		 */
 		template<class T>
 		std::vector<rtti::ObjectPtr<T>> getObjects() const;
 
 		/**
-		* Creates an object and adds it to the manager.
-		*/
+		 * Creates an object and adds it to the manager.
+		 * @param type object type to create.
+		 * @return newly created object.
+		 */
 		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
 
 		/**
-		* Creates an object and adds it to the manager.
-		*/
+		 * Creates an object of type T and adds it to the manager.
+		 * @return the newly created object.
+		 */
 		template<typename T>
 		const rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
@@ -101,8 +147,8 @@ namespace nap
 		void checkForFileChanges();
 
 		/**
-		* @return object capable of creating objects with custom construction parameters.
-		*/
+		 * @return object capable of creating objects with custom construction parameters.
+		 */
 		rtti::Factory& getFactory();
 
 	private:

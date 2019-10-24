@@ -22,38 +22,38 @@ namespace nap
 			virtual rtti::TypeInfo getServiceType() { return RTTI_OF(AudioService); }
 
             /**
-             * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
+             * Name of the host API (or driver type) used for this audio stream. Use the AudioService to poll for available host APIs
              * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
              * If left empty the default host API will be used.
              */
             std::string mHostApi = "";
             
             /**
-             * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+             * Name of the input device being used. Use the AudioService to poll for available devices for a certain host API.
              * If left empty, the default input device will be used.
              */
             std::string mInputDevice = "";
 
             /** 
-             * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+             * Name of the output device being used. Use the AudioService to poll for available devices for a certain host API.
              * If left empty the default output device will be used.
              */
             std::string mOutputDevice = "";
             
             /** 
              * The number of input channels in the stream. 
-             * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
+             * If the chosen input device does not support this amount of channels the stream will not start.
              */
             int mInputChannelCount = 1;
 
             /** 
              * The number of output channels in the stream. 
-             * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
+             * If the chosen output device does not support this amount of channels the stream will not start.
              */
             int mOutputChannelCount = 2;
             
             /**
-             * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
+             * If this is set to true, the audio stream will start even if the number of channels specified in mInputChannelCount and mOutputChannelCount is not supported.
              * In this case a zero signal will be used to emulate the input from an unsupported input channel.
              */
             bool mAllowChannelCountFailure = true;
@@ -180,7 +180,7 @@ namespace nap
             
 			/**
              * This function is typically called by a hardware callback from the device to perform all the audio processing.
-             * It performs memory management and processes a lockfree event queue before it invokes the @NodeManager::process() to process audio.
+             * It performs memory management and processes a lockfree event queue before it invokes the NodeManager::process() to process audio.
              * @param inputBuffer: an array of float arrays, representing one sample buffer for every channel
              * @param outputBuffer: an array of float arrays, representing one sample buffer for every channel
              * @param framesPerBuffer: the number of samples that has to be processed per channel
@@ -193,8 +193,8 @@ namespace nap
             void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
             
             /**
-             * Constructs an object managed by a @SafeOwner that will dispose the object in the AudioService's @DeletionQueue when it is no longer used.
-             */
+              * Constructs an object managed by a SafeOwner that will dispose the object in the AudioService's DeletionQueue when it is no longer used.
+              */
             template <typename T, typename... Args>
             SafeOwner<T> makeSafe(Args&&... args)
             {
@@ -215,9 +215,9 @@ namespace nap
             
 		private:
             NodeManager mNodeManager; // The node manager that performs the audio processing.
-			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
-            int mInputChannelCount = 1; // The actual input channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
-            int mOutputChannelCount = 2; // The actual output channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
+			PaStream* mStream			= nullptr; // Pointer to the stream managed by portaudio.
+            int mInputChannelCount		= 1; // The actual input channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
+            int mOutputChannelCount		= 2; // The actual output channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
             
             // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
             // Clearing is performed by the NodeManager on the audio callback to make sure the node can not be destructed while it is being processed.

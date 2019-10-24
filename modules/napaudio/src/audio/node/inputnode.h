@@ -15,7 +15,7 @@ namespace nap
         
         /**
          * This node outputs the audio input that is received from the node system's external input, typically an audio interface.
-         * Input from channel @inputChannel can be pulled from @audioOutput plug.
+         * Input from the input channel can be pulled from the audio output plug.
          */
         class NAPAPI InputNode final : public Node
         {

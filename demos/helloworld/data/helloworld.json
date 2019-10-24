@@ -360,20 +360,6 @@
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
-        },
-        {
-            "Type": "nap::SerialPort",
-            "mID": "SerialPort",
-            "PortName": "Com1",
-            "BaudRate": 9600,
-            "ByteSize": "Eight",
-            "Parity": "None",
-            "StopBits": "One",
-            "FlowControl": "None",
-            "ReadTimeout": 0,
-            "WriteTimeout": 0,
-            "InterByteTimeout": 0,
-            "AllowFailure": true
         }
     ]
 }

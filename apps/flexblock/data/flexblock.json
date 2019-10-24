@@ -156,31 +156,14 @@
                     "mID": "FlexBlockComponent",
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
-                    "SerialComponent": "./FlexBlockSerialComponent",
-                    "Enable Serial": false,
-                    "Mac Controller": "MACController",
-                    "Enable Controller": false,
                     "FlexBlockShape": "ShapeSize",
-                    "Motor Steps Per Meter": 129473.41,
-                    "Motor Step Offset": 0,
+                    "FlexBlockDevice": "Flex",
                     "Slack Range": 1.0,
                     "Slack Minimum": 0.0,
                     "Sinus Amplitude": 1.0,
                     "Sinus Frequency": 100.0,
                     "Override Range": 20.0,
-                    "Override Minimum": 0.0,
-                    "Motor Mapping": [
-                        5,
-                        1,
-                        2,
-                        6,
-                        3,
-                        7,
-                        0,
-                        4
-                    ],
-                    "Flex Thread Frequency": 1000,
-                    "Enable Digital Pin": false
+                    "Override Minimum": 0.0
                 },
                 {
                     "Type": "nap::FlexBlockSerialComponent",
@@ -710,6 +693,16 @@
             }
         },
         {
+            "Type": "nap::FlexDevice",
+            "mID": "Flex",
+            "FlexBlockShape": "ShapeSize",
+            "Frequency": 1000,
+            "Slack": 0.0,
+            "Adapters": [
+                "MACAdapter"
+            ]
+        },
+        {
             "Type": "nap::Font",
             "mID": "Montserrat Font",
             "Properties": {
@@ -729,6 +722,24 @@
             "ReferenceMesh": "BoxMesh"
         },
         {
+            "Type": "nap::MACAdapter",
+            "mID": "MACAdapter",
+            "Enabled": false,
+            "Motor Steps Per Meter": 129473.40625,
+            "Motor Step Offset": 0,
+            "Motor Mapping": [
+                5,
+                1,
+                2,
+                6,
+                3,
+                7,
+                0,
+                4
+            ],
+            "Controller": "MACController"
+        },
+        {
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
@@ -745,6 +756,10 @@
             "VelocityGetRatio": 0.1340000033378601,
             "VelocitySetRatio": 2.18435001373291,
             "RecoveryTimeout": 100,
+            "DigitalPinValueThreshold": 30,
+            "DigitalPinTimeThreshold": 0.10000000149011612,
+            "InvertDigitalPin": false,
+            "ComputeDigitalPin": true,
             "Calibration Velocity": 300,
             "Calibration MaxVelocity": 3000,
             "Calibration Acceleration": 1000,

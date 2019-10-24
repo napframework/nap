@@ -5,6 +5,7 @@
 #include <ethercatmaster.h>
 #include <unordered_set>
 #include <mutex>
+#include <nap/timer.h>
 
 namespace nap
 {
@@ -14,6 +15,7 @@ namespace nap
 
 	class MacOutputs;
 	class MacInputs;
+	struct MacPosition;
 
 	/**
 	 * JVL CAM motor EthetCAT controller
@@ -95,7 +97,26 @@ namespace nap
 		virtual ~MACController();
 
 		/**
-		 * Set the position of a single motor. Does not perform an out of bounds check
+		 * Init this device
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Set the position data including digital pin information for all the motors at once.
+		 * This is the most efficient way to update motor position data.
+		 * @param newData new position motor data. Needs
+		 */
+		void setPositionData(const std::vector<MacPosition>& newData);
+
+		/**
+		 * Copies all the motor position data into outData
+		 * @param outData the current motor data
+		 */
+		void getPositionData(std::vector<MacPosition>& outData);
+
+		/**
+		 * Set the position of a single motor. Does not perform an out of bounds check.
+		 * Do not use this function if you want to update all the positions at once.
 		 * @param index motor index, 0 = first slave
 		 * @param position the new motor target position
 		 */
@@ -103,6 +124,7 @@ namespace nap
 
 		/**
 		 * Returns the requested motor position for the given slave.
+		 * Do not use this function if you want to get all the positions at once.
 		 * @param index motor index, 0 = first slave
 		 * @return the requested motor position
 		 */
@@ -211,13 +233,24 @@ namespace nap
 
 		/**
 		 * Returns the value currently associated with a digital output pin.
-		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins. 
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
 		 * This call asserts if the pin index exceeds 1.
 		 * @param index motor index, 0 = first slave
 		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
 		 * @return if the digital pin is active
 		 */
 		bool getDigitalPin(int index, int pinIndex) const;
+
+		/**
+		 * Enables or disables the automatic computation of the digital output pin (index 0)
+		 * @param value when true the pin is controlled automatically, otherwise it is controlled manually
+		 */
+		void setComputeDigitalPin(bool value);
+
+		/**
+		 * @return if the digital pin is computed automatically
+		 */
+		bool getComputeDigitalPin() const;
 
 		/**
 		 * Resets the position of all motors to the given value.
@@ -278,12 +311,16 @@ namespace nap
 		float mVelocitySetRatio			= 2.18435f;				///< Property: 'VelocitySetRatio' Velocity counts / sample to RPM set ratio
 		uint mRecoveryTimeout			= 100;					///< Property: 'RecoveryTimeout' number of milliseconds to wait before recovery attempt (safe operational to operational)
 		bool mDisableErrorHandling		= false;				///< Property: 'DisableErrorHandling' disables error handling when processing real-time data
+		int32 mDigitalPinPosThreshold	= 50;					///< Property: 'DigitalPinValueThreshold' threshold value used for digital i/o calculation
+		float mDigitalPinTimeThreshold  = 0.1f;					///< Property: 'DigitalPinTimeThreshold' time (in seconds) between comparing motor position data for digital pin calculation.
+		bool mInvertDigitalPin			= false;				///< Property: 'InvertDigitalPin' if the digital pin compute direction should be inverted
+		bool mComputeDigitalPin			= false;				///< Property: 'ComputeDigitalPin' if the digital pin is controlled automatically
 
-		//
+		// Calibration settings
 		nap::int32  mCalibrationVelocity = 0;					///< Property: 'Velocity' motor velocity in RPM
-		nap::uint32 mCalibrationAcceleration = 360;					///< Property: 'Acceleration' motor acceleration in RPM
+		nap::uint32 mCalibrationAcceleration = 360;				///< Property: 'Acceleration' motor acceleration in RPM
 		nap::uint32 mCalibrationTorque = 341;					///< Property: 'Torque' motor torque from 0 to 300%
-		nap::uint32 mCalibrationMaxVelocity = 4300;					///< Property: 'MaxVelocity' max allowed motor velocity
+		nap::uint32 mCalibrationMaxVelocity = 4300;				///< Property: 'MaxVelocity' max allowed motor velocity
 	protected:
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
@@ -333,6 +370,10 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<MacOutputs>>	mOutputs;					///< List of all current motor positions
 		std::vector<std::unique_ptr<MacInputs>>		mInputs;					///< List of all current motor positions
+		std::vector<MacPosition>					mPositions;					///< List of current motor target positions
+		mutable std::mutex							mPositionMutex;				///< Allows for synchronized setting of motor position
+		std::atomic<bool>							mComputePin = { false };	///< If the pin should be auto-computed
+		nap::SystemTimer							mPinTimer;					///< Used to track pin changes over time
 	};
 
 
@@ -357,17 +398,6 @@ namespace nap
 		MacOutputs(float maxVelocity, float velRatio) :
 			mMaxVelocityRPM(maxVelocity),
 			mRatio(velRatio)	{ }
-
-		/**
-		 * Set motor target position
-		 * @param position new motor target position
-		 */
-		void setTargetPosition(nap::int32 position);
-
-		/**
-		 * @return motor target position
-		 */
-		int32 getTargetPosition() const;
 
 		/**
 		 * Set motor velocity in RPM
@@ -413,6 +443,7 @@ namespace nap
 
 		/**
 		 * Sets the digital output pin to the requested value.
+		 * Note that this call has no effect when the digital pin is calculated automatically
 		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
 		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
 		 * @param new value of output pin
@@ -420,25 +451,40 @@ namespace nap
 		void setDigitalPin(int pinIndex, bool value);
 
 		/**
-		 * Return if a digital pin on the module is activated. 
-		 * This call asserts if the pin index exceeds 1, which is the maximum number of available pins.
+		 * Returns the value currently associated with a digital output pin.
+		 * The module either has 1 (MAC00-EC4) or 2 (MAC00-EC41) pins.
+		 * This call asserts if the pin index exceeds 1.
 		 * @param pinIndex index of the digital output pin on the module, 0 = first available digital pin
 		 * @return if the digital pin is active
 		 */
 		bool getDigitalPin(int pinIndex) const;
 
 	private:
-		std::atomic<nap::int32>		mTargetPosition = { 0 };	///< New requested motor position
-		std::atomic<nap::int32>		mVelocityCNT = { 0 };		///< Motor velocity
-		std::atomic<nap::uint32>	mTorqueCNT = { 0 };			///< Motor torque
-		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };	///< Motor acceleration
-		std::atomic<nap::uint32>	mModuleOutputs = { 0 };		///< Module digital output
-		std::atomic<nap::uint32>	mRunMode = { 0 };
+		std::atomic<nap::int32>		mVelocityCNT = { 0 };			///< Motor velocity
+		std::atomic<nap::uint32>	mTorqueCNT = { 0 };				///< Motor torque
+		std::atomic<nap::uint32>	mAccelerationCNT = { 0 };		///< Motor acceleration
+		std::atomic<nap::uint32>	mRunMode = { 0 };				///< Operation Mode
+		std::atomic<nap::int32>		mModuleOutputs = { 0 };			///< Requested module outputs (digital pin value)
 
 		float						mRatio = 0.0f;				///< cnts / sample to RPM mapping
 		float						mMaxVelocityRPM = 1000.0f;	///< Maximum allowed velocity in RPM
 		float						mVelocityRPM = 0.0f;		///< Velocity in RPM
 		float						mTorquePCT = 0.0f;			///< Torque in percentage
+	};
+
+
+	struct NAPAPI MacPosition
+	{
+		MacPosition() = default;
+		MacPosition(nap::int32 position) { setTargetPosition(position); }
+
+		/**
+		 * Set motor target position
+		 * @param position new motor target position
+		 */
+		void setTargetPosition(nap::int32 newPosition) { mTargetPosition = newPosition; }
+
+		nap::int32 mTargetPosition = 0;			///< Requested motor position
 	};
 
 
@@ -495,12 +541,13 @@ namespace nap
 		void clearErrors();
 
 	private:
-		std::atomic<nap::int32>	 mActualPosition	= { 0 };	///< Current motor position
-		std::atomic<nap::int32>  mActualVelocity	= { 0 };	///< Current motor velocity
-		std::atomic<nap::uint32> mErrorStatus		= { 0 };	///< Current error status
-		std::atomic<nap::int32>	 mActualTorque		= { 0 };	///< Current motor torque
-		std::atomic<nap::uint32> mActualMode		= { 0 };	///< Current Motor Mode
-		std::atomic<bool>		 mClearErrors		= { true };	///< If the errors should be cleared
+		std::atomic<nap::int32>		mActualPosition = { 0 };		///< Current motor position
+		std::atomic<nap::int32>		mActualVelocity = { 0 };		///< Current motor velocity
+		std::atomic<nap::uint32>	mErrorStatus	= { 0 };		///< Current error status
+		std::atomic<nap::int32>		mActualTorque	= { 0 };		///< Current motor torque
+		std::atomic<nap::uint32>	mActualMode		= { 0 };		///< Current Motor Mode
+		std::atomic<bool>			mClearErrors	= { true };		///< If the errors should be cleared
+		nap::int32					mPrevPosition	= 0;			///< Used for keeping track of digital pin changes
 
 		/**
 		 * If the current set of processed data contains the given error

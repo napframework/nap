@@ -20,7 +20,7 @@ namespace nap
 
 		/**
 		 * Constructor
-		 * @param network location to listen to for messages
+		 * @param localEndpoint network location to listen for messages
 		 * @param allowReuse enables or disables multiple listeners for a single port on the same network interface
 		 */
 		OSCReceivingSocket(const IpEndpointName& localEndpoint, bool allowReuse);

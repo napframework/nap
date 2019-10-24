@@ -107,7 +107,7 @@ namespace nap
 		* @param declaration: the shader uniform declaration to bind the uniform to.
 		* @return reference to the newly added uniform.
 		*/
-		Uniform& AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration);
+		Uniform& addUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration);
 
 	private:
 		UniformTextureBindings		mUniformTextureBindings;	///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).

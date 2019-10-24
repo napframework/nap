@@ -151,6 +151,7 @@ namespace nap
 		 * The buffer is automatically resized to hold the requested number of bytes.
 		 * @param buffer the buffer that will hold the read values.
 		 * @param count number of bytes to read. Buffer is resized to fit this number of bytes.
+		 * @param error contains the error if the operation fails.
 		 * @return the total number of bytes read.
 		 */
 		uint32 read(std::vector<uint8>& buffer, uint32 count, SerialPort::Error& error);
@@ -162,6 +163,7 @@ namespace nap
 		 * An error is generated when an exception is thrown.
 		 * The size of the buffer is used to determine the number of bytes to read.
 		 * @param buffer the buffer that will hold the read values.
+		 * @param error contains the error if the operation fails.
 		 * @return the total number of bytes read.
 		 */
 		uint32 read(std::vector<uint8>& buffer, SerialPort::Error& error);
@@ -173,6 +175,7 @@ namespace nap
 		 * An error is generated when an exception is thrown.
 		 * @param buffer the buffer that will hold the read values, must be of size count.
 		 * @param count number of bytes to read.
+		 * @param error contains the error if the operation fails.
 		 * @return the total number of bytes read.
 		 */
 		uint32 read(uint8* buffer, uint32 count, SerialPort::Error& error);
@@ -182,8 +185,9 @@ namespace nap
 		 * The read function will return when the number of requested bytes was read or when a timeout occurs.
 		 * A timeout occurs when the inter-byte timeout or when the read timeout has expired.
 		 * An error is generated when an exception is thrown.
-		 * @param empty string to hold the read values.
+		 * @param buffer empty string to hold the read values.
 		 * @param count number of bytes to read.
+		 * @param error contains the error if the operation fails.
 		 * @return the total number of bytes read.
 		 */
 		uint32 read(std:: string& buffer, uint32 count, SerialPort::Error& error);
@@ -191,6 +195,7 @@ namespace nap
 		/**
 		 * Read a given amount of bytes from the serial port and return a string containing the data.
 		 * @param count the total number of bytes to read.
+		 * @param error contains the error if the operation fails.
 		 * @return a string that contains the data read from the port.
 		 */
 		std::string read(uint32 count, SerialPort::Error& error);
@@ -200,6 +205,7 @@ namespace nap
 		 * @param buffer empty string that will contain the read data.
 		 * @param length maximum character length of the line
 		 * @param eol end of line delimiter.
+		 * @param error contains the error if the operation fails.
 		 * @return number of bytes read.
 		 */
 		uint32 readLine(std::string& buffer, uint32 length, const std::string& eol, SerialPort::Error& error);
@@ -208,6 +214,7 @@ namespace nap
 		 * Reads in a line or until a given delimiter has been processed.
 		 * @param length maximum character length of the line.
 		 * @param eol end of line delimiter.
+		 * @param error contains the error if the operation fails.
 		 * @return string that contains the line.
 		 */
 		std::string readLine(uint32 length, const std::string& eol, SerialPort::Error& error);
@@ -217,6 +224,7 @@ namespace nap
 		 * This requires a timeout > 0 before it can be run. It will read until a timeout occurs and return a list of strings.
 		 * @param length maximum character length of all lines combined.
 		 * @param eol end of line delimiter that is used to separate individual strings.
+		 * @param error contains the error if the operation fails.
 		 * @return list of strings.
 		 */
 		std::vector<std::string> readLines(uint32 length, const std::string& eol, SerialPort::Error& error);
@@ -225,20 +233,23 @@ namespace nap
 		 * Write a buffer to the serial port.
 		 * @param data pointer to the data that is written, must be of size count.
 		 * @param count number of bytes to write
+		 * @param error contains the error if the operation fails.
 		 * @return number of bytes actually written
 		 */
 		uint32 write(const uint8* data, uint32 count, SerialPort::Error& error);
 
 		/**
 		 * Write a buffer to the serial port.
-		 * @param buffer data that is written
+		 * @param data data that is written
+		 * @param error contains the error if the operation fails.
 		 * @return number of bytes actually written
 		 */
 		uint32 write(const std::vector<uint8>& data, SerialPort::Error& error);
 
 		/**
 		 * Write a string to the serial port.
-		 * @param string string that is written
+		 * @param data string that is written
+		 * @param error contains the error if the operation fails.
 		 * @return number of bytes actually written
 		 */
 		uint32 write(const std::string& data, SerialPort::Error& error);

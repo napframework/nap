@@ -18,7 +18,8 @@ namespace nap
         
         
         /**
-         * Component that routs output from another audio component to the audio interface.
+		 * Resource part of the OutputComponent.
+         * Routs output defined by the 'Input' parameter to the audio interface.
          */
         class NAPAPI OutputComponent : public Component
         {
@@ -40,7 +41,8 @@ namespace nap
 
         
         /**
-         * Instance of component that routs output from another audio component to the audio interface
+         * Instance part of the OutputComponent.
+		 * Routs output from another audio component to the audio interface.
          */
         class NAPAPI OutputComponentInstance : public ComponentInstance
         {
