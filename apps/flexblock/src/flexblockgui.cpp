@@ -2695,157 +2695,162 @@ namespace nap
 				ImGui::RadioButton("Digital Pin State", digitalPinState);
 				ImGui::PushID(i);
 
-				int req_pos = static_cast<int>(mMotorController->getPosition(i));
-
-				if (mProps.mAdvancedMotorInterface)
+				if (!mProps.mEnableFlexblock)
 				{
-					bool dig_pin = mMotorController->getDigitalPin(i,0);
-					if (ImGui::Checkbox("Digital Pin", &dig_pin))
-					{
-						mMotorController->setDigitalPin(i, 0, dig_pin);
-					}
+					int req_pos = static_cast<int>(mMotorController->getPosition(i));
 
-					if (ImGui::InputInt("Position", &req_pos, 1, 50))
+					if (mProps.mAdvancedMotorInterface)
 					{
-						mMotorController->setPosition(i, req_pos);
-					}
-
-					int req_vel = mMotorController->getVelocity(i);
-					if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
-					{
-						req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
-						mMotorController->setVelocity(i, static_cast<float>(req_vel));
-					}
-
-					int req_tor = mMotorController->mTorque;
-					if (ImGui::InputInt("Torque", &req_tor, 1, 5))
-					{
-						req_tor = math::clamp<int>(req_tor, 0, 300);
-						mMotorController->setTorque(i, static_cast<float>(req_tor));
-					}
-				
-					int req_acc = mMotorController->mAcceleration;
-					if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
-					{
-						req_acc = static_cast<int>(math::clamp<float>(static_cast<float>(req_acc), 0.0f, mMotorController->mMaxVelocity));
-						mMotorController->setAcceleration(i, req_acc);
-						mMotorController->mAcceleration = req_acc;
-					}
-
-					// meters
-					//  129473,415472573 = 1 meter
-					float target_meter = mTargetMeters[i];
-					if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
-					{
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					
-				}
-				else if (!mProps.mAdvancedMotorInterface)
-				{
-					// temp
-					ImGui::Checkbox("Set Digital Pin By Speed", &mProps.mSetDigitalPinBySpeed);
-					if (!mProps.mSetDigitalPinBySpeed)
-					{
-						bool value = mProps.mUseDigitalPin[i];
-						if (ImGui::Checkbox("Digital Pin On/Off", &value))
+						bool dig_pin = mMotorController->getDigitalPin(i, 0);
+						if (ImGui::Checkbox("Digital Pin", &dig_pin))
 						{
-							mProps.mUseDigitalPin[i] = value;
+							mMotorController->setDigitalPin(i, 0, dig_pin);
 						}
-					}
 
-					//
-					float target_meter = mTargetMeters[i];
-					if (ImGui::Button("Give Meter"))
-					{
-						target_meter = current_meters + 1.0f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Take Meter"))
-					{
-						target_meter = current_meters - 1;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-
-					if (ImGui::Button("Give Decimeter"))
-					{
-						target_meter = current_meters + 0.1f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Take Decimeter"))
-					{
-						target_meter = current_meters - 0.1f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					
-					if (ImGui::Button("Give Centimeter"))
-					{
-						target_meter = current_meters + 0.01f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Take Centimeter"))
-					{
-						target_meter = current_meters - 0.01f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					
-					if (ImGui::Button("Give Millimeter"))
-					{
-						target_meter = current_meters + 0.001f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Take Millimeter"))
-					{
-						target_meter = current_meters - 0.001f;
-						int32 newCounts = (int32)((double)target_meter * counts);
-						mMotorController->setPosition(i, newCounts);
-						mTargetMeters[i] = target_meter;
-					}
-
-					// 
-					if (mProps.mSetDigitalPinBySpeed)
-					{
-						bool activateDigitalPin = target_meter - current_meters > 0.02;
-						if (activateDigitalPin != digitalPinState)
+						if (ImGui::InputInt("Position", &req_pos, 1, 50))
 						{
-							mMotorController->setDigitalPin(i, 0, activateDigitalPin);
+							mMotorController->setPosition(i, req_pos);
+						}
+
+						int req_vel = mMotorController->getVelocity(i);
+						if (ImGui::InputInt("Velocity", &req_vel, 1, 10))
+						{
+							req_vel = static_cast<int>(math::clamp<float>(static_cast<float>(req_vel), 0.0f, mMotorController->mMaxVelocity));
+							mMotorController->setVelocity(i, static_cast<float>(req_vel));
+						}
+
+						int req_tor = mMotorController->mTorque;
+						if (ImGui::InputInt("Torque", &req_tor, 1, 5))
+						{
+							req_tor = math::clamp<int>(req_tor, 0, 300);
+							mMotorController->setTorque(i, static_cast<float>(req_tor));
+						}
+
+						int req_acc = mMotorController->mAcceleration;
+						if (ImGui::InputInt("Acceleration", &req_acc, 1, 10))
+						{
+							req_acc = static_cast<int>(math::clamp<float>(static_cast<float>(req_acc), 0.0f, mMotorController->mMaxVelocity));
+							mMotorController->setAcceleration(i, req_acc);
+							mMotorController->mAcceleration = req_acc;
+						}
+
+						// meters
+						//  129473,415472573 = 1 meter
+						float target_meter = mTargetMeters[i];
+						if (ImGui::InputFloat("Target meters", &target_meter, 0.001f, 0.001f, 3))
+						{
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+
+					}
+					else if (!mProps.mAdvancedMotorInterface)
+					{
+						// temp
+						ImGui::Checkbox("Set Digital Pin By Movement", &mProps.mSetDigitalPinBySpeed);
+						if (!mProps.mSetDigitalPinBySpeed)
+						{
+							bool value = mProps.mUseDigitalPin[i];
+							if (ImGui::Checkbox("Digital Pin On/Off", &value))
+							{
+								mProps.mUseDigitalPin[i] = value;
+							}
+						}
+
+						//
+						float target_meter = mTargetMeters[i];
+						if (ImGui::Button("Give Meter"))
+						{
+							target_meter = current_meters + 1.0f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Take Meter"))
+						{
+							target_meter = current_meters - 1;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+
+						if (ImGui::Button("Give Decimeter"))
+						{
+							target_meter = current_meters + 0.1f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Take Decimeter"))
+						{
+							target_meter = current_meters - 0.1f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+
+						if (ImGui::Button("Give Centimeter"))
+						{
+							target_meter = current_meters + 0.01f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Take Centimeter"))
+						{
+							target_meter = current_meters - 0.01f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+
+						if (ImGui::Button("Give Millimeter"))
+						{
+							target_meter = current_meters + 0.001f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Take Millimeter"))
+						{
+							target_meter = current_meters - 0.001f;
+							int32 newCounts = (int32)((double)target_meter * counts);
+							mMotorController->setPosition(i, newCounts);
+							mTargetMeters[i] = target_meter;
+						}
+
+						// 
+						if (mProps.mSetDigitalPinBySpeed)
+						{
+							bool activateDigitalPin = target_meter - current_meters > 0.02;
+							if (activateDigitalPin != digitalPinState)
+							{
+								mMotorController->setDigitalPin(i, 0, activateDigitalPin);
+								//printf("%s\n", activateDigitalPin ? "on" : "off");
+							}
+						}
+						else if (mProps.mUseDigitalPin[i] != digitalPinState)
+						{
+							mMotorController->setDigitalPin(i, 0, mProps.mUseDigitalPin[i]);
 							//printf("%s\n", activateDigitalPin ? "on" : "off");
 						}
-					}else if (mProps.mUseDigitalPin[i] != digitalPinState)
-					{
-						mMotorController->setDigitalPin(i, 0, mProps.mUseDigitalPin[i]);
-						//printf("%s\n", activateDigitalPin ? "on" : "off");
+
+
 					}
 
-					
+					// clamp targetmeters
+					if (mProps.mCalibrationMode && mProps.mClampMetersInCalibrationMode)
+					{
+						if (mTargetMeters[i] < 0.0f)
+							mTargetMeters[i] = 0.0f;
+					}
 				}
-
-				// clamp targetmeters
-				if (mProps.mCalibrationMode && mProps.mClampMetersInCalibrationMode)
-				{
-					if (mTargetMeters[i] < 0.0f)
-						mTargetMeters[i] = 0.0f;
-				}
+				
 
 				bool error = false;
 				if (mMotorController->hasError(i))
