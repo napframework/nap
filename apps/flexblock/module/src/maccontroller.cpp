@@ -215,6 +215,14 @@ namespace nap
 		assert(mInputs.size()  == slave_count);
 		assert(current_position_data.size() == slave_count);
 
+		// Verify if we need to check digital pin
+		bool check_pin = false;
+		if (mPinTimer.getElapsedTime() > mDigitalPinTimeThreshold)
+		{
+			check_pin = true;
+			mPinTimer.reset();
+		}
+
 		for (int i = 1; i <= slave_count; i++)
 		{
 			// Get slave to address
@@ -252,7 +260,7 @@ namespace nap
 			// Calculate Digital Pin
 			//////////////////////////////////////////////////////////////////////////
 			
-			if (mPinTimer.getElapsedTime() > mDigitalPinTimeThreshold)
+			if (check_pin)
 			{
 				// Update pin if necessary, we do that by comparing a previous position
 				// with the current position based on a fixed interval. If the delta
@@ -270,7 +278,6 @@ namespace nap
 
 				// Store current position to work with later on
 				motor_input->mPrevPosition = motor_input->mActualPosition;
-				mPinTimer.reset();
 			}
 
 			// Store digital pin value
