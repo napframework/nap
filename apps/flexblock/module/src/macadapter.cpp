@@ -73,15 +73,6 @@ namespace nap
 
 			// Update target position
 			mMotorData[i].setTargetPosition(mMotorStepsInt[mapped_idx]);
-
-			/*
-			double target_meters = static_cast<double>(mMotorData[i].mTargetPosition) / static_cast<double>(mMotorStepsPerMeter);
-			double curren_meters = static_cast<double>(mController->getActualPosition(i)) / static_cast<double>(mMotorStepsPerMeter);
-
-			// Check if the pin needs to be activated and do so
-			bool activateDigitalPin = target_meters - curren_meters > 0.02;
-			mMotorData[i].setDigitalPin(0, activateDigitalPin);
-			*/
 		}
 
 		// Update position data
