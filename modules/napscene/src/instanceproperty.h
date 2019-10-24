@@ -126,7 +126,7 @@ namespace nap
 	{
 	public:
 		/**
-		 * Applies the stored override value @mValue on target @target and attribute path @mPath.
+		 * Applies the stored override value on the target and attribute path.
 		 * @param target The object that holds the attribute.
 		 * @param errorState If function returns false, contains error information if an error occurs.
 		 * @return True on success, otherwise false.

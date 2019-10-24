@@ -75,7 +75,7 @@ namespace opengl
 		void unbind();
 
 		/**
-		 * @Return current GPU texture location
+		 * @return current GPU texture location
 		 */
 		GLuint getTextureId() const { return mTextureId; }
 

@@ -9,8 +9,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * Audio Analysis Demo
+ * refer to audioanalysisapp.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
 {

@@ -108,7 +108,6 @@ namespace nap
 	{
 		assert(oscEvent.getAddress().size() != 0);
 		assert(oscEvent.getAddress()[0] == '/');
-		assert(oscEvent.getCount() > 0);
 		
 		// Add start of message
 		outPacket << osc::BeginMessage(oscEvent.getAddress().c_str());

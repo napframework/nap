@@ -97,7 +97,7 @@ namespace nap
 	}
 
 
-	Uniform& UniformContainer::AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)
+	Uniform& UniformContainer::addUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)
 	{
 		// Create association between uniform and declaration. At the same time, split between textures and values
 		// as texture have a slightly different interface.

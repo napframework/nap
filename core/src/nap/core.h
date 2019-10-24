@@ -70,12 +70,12 @@ namespace nap
 		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
 		
 		/**
-		* Initializes all registered services
-		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		* Service A is initialized before service B etc.
-		* @param error contains the error message when initialization fails
-		* @return if initialization failed or succeeded
-		*/
+		 * Initializes all registered services
+		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		 * Service A is initialized before service B etc.
+		 * @param errorState contains the error message when initialization fails
+		 * @return if initialization failed or succeeded
+		 */
 		bool initializeServices(utility::ErrorState& errorState);
 
 		/**

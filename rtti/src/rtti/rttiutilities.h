@@ -37,14 +37,15 @@ namespace nap
 
 		/**
 		 * Creates a new object with the same attributes as it's source.
-		 * @param object: the object to copy rtti attributes from.
+		 * @param object the object to copy rtti attributes from.
+		 * @param factory RTTI object factory.
+		 * @return the cloned object
 		 */
 		template<typename T>
 		std::unique_ptr<T> cloneObject(const T& object, rtti::Factory& factory)
 		{
 			T* copy = static_cast<T*>(factory.create(object.get_type()));
 			copyObject(object, *copy);
-
 			return std::unique_ptr<T>(copy);
 		}
 
@@ -82,7 +83,7 @@ namespace nap
 		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const Object* object, const rtti::Path& path);
 
 		/**
-		 * Recursively traverses pointers of @object and puts them in @pointees. Basically traverses the object graph beneath @object.
+		 * Recursively traverses pointers of the given object and puts them in pointees. Basically traverses the object graph beneath object.
 		 * @param object The root object to start traversing pointers from.
 		 * @param pointees The resulting array of objects.
 		 */

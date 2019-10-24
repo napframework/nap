@@ -25,29 +25,72 @@ Central to NAP are a couple of key philosophies:
 
 Creative fields such as advertisement, film and the performing arts are starting to overlap. Projects are growing in scope to meet demand. Therefore the need for stable and performant interactive software is increasing. Software needs to run for years without having to string together multiple applications or environments. To meet expectations NAP offers you a set of handles to tackle the most demanding creative problems.
 
-## Compilation
+## Dependencies
 
 To generate a solution and compile the source code you need to have installed: 
 
 - [QT5](http://download.qt.io/official_releases/qt/)
-- Latest version of [CMAKE](https://cmake.org/download/)
+	- The precompiled package uses QT 5.11.3, although other versions are known to work.
+	- Use the QT Online Installer and select the **Archive** package category to access older versions
+- [CMAKE](https://cmake.org/download/)
+	- The precompiled package uses 3.12.2, although other versions are known to work
 - Latest version of [Git](https://git-scm.com/download/win)
 
-NAP depends on various third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
+NAP depends on various other third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
 - ~/dev
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable QT_DIR points to the directory that holds the libraries, ie: C:\mycomp\qt\5.12.2\msvc2015_64. You can generate a Visual Studio solution by running generateVSSolution.bat and an Xcode project by running generateXCodeProject.sh. 
+NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`.
 
-## Package Desktop
+You can generate a Visual Studio solution by running `generateVSSolution.bat` and an Xcode project by running `generateXCodeProject.sh`. 
 
-To package NAP for release run: package.bat or package.sh. The various options for packaging can be queried by adding the --help flag as an input argument to the script. Errors should be self-explanatory.
+---
 
-After packaging a new zip or folder is created called: NAP-'X'-'Platform'-'Timestamp'. This package can be distributed and includes all demos, projects (if selected for packaging), modules and core components.
+## OPTION #1: Compile your project against NAP source
+### Motivation
+Compiling your own project allows you to debug your project and step into the NAP framework source code as well, when necessary.
 
-## Package Android
+### Process
+* To see how you set up an app in source, look at the demos in the `demos` folder.
+* Add your project to the main `CMakeLists.txt` file
+
+ Running `./generateXCodeProject.sh` will create the xcode project for the entire NAP source. You can see the code for napkin, the demos, modules, etc.
+
+---
+
+## OPTION #2: Build your own NAP distribution package
+A packaged version of NAP will include all of the following:
+* core components
+* standard modules
+* demos
+* your own project(s) - only if specified
+
+After packaging a new zip or folder is created, with the naming convention `NAP`-*Version*-*Platform*-*Timestamp* (Timestamp may be optionally ommitted).
+
+**Only the headers and debug symbols are included; the source code will be excluded.**
+**On Windows .pdb files are generated but not included.**
+
+## Package for Desktop OS
+
+To package NAP for release run: `package.bat` (Windows) or `package.sh` (MacOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
+```
+QT_DIR=/home/myusername/Qt/5.11.3/gcc_64 ./package.sh
+```
+
+This will compile a package including all demos but without your own projects (defined in source). Alternatively, you can use the `-sna` flag to build a package including your own project (plus demos), e.g.:
+```
+sh ./package.sh -sna MyProject
+```
+
+Some other useful flags:
+* `-nt`: remove the timestamp
+* `-nz`: do not create a zip file from the release
+
+More options for packaging can be queried by adding the falg `--help` when running the script.
+
+## Package for Android
 
 To package NAP for android you need to have installed:
 
@@ -57,8 +100,4 @@ To package NAP for android you need to have installed:
 - [Git](https://git-scm.com/download)
 	- Added to system path
 
-To package NAP for Android run: package.bat or package.sh together with the --android flag. To use the package in production combine the android flag with -nt (no timestamp) and -nz (no zip). You must point the ANDROID_NDK_ROOT environment variable to the install location of the Android NDK.   
-
-## Want to know more?
-
-Take a look at our high level [documentation](https://www.napframework.com/doxygen/index.html) or [download](https://www.napframework.com) the latest version of NAP right now!	
+To package NAP for Android run: `package.bat` or `package.sh` together with the `--android` flag. To use the package in production combine the android flag with `-nt` (no timestamp) and `-nz` (no zip). You must point the `ANDROID_NDK_ROOT` environment variable to the install location of the Android NDK.

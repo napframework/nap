@@ -39,14 +39,15 @@ namespace nap
             
             /**
              * Triggers an envelope.
+			 * @param envelope envelope to trigger.
              * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
-                 the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
+             * the resting time will be divided over the segments with durationRelative = true, using their duration values as denominator.
              */
             void trigger(SafePtr<Envelope> envelope, TimeValue totalDuration = 0);
             
             /**
              * Triggers a section of an envelope.
-             * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
+             * @param envelope: envelope to trigger
              * @param startSegment: the start segment of the envelope section to be played
              * @param endSegment: the end segment of the envelope section to be played
              * @param startValue: the startValue of the line when the section is triggered.
@@ -56,7 +57,8 @@ namespace nap
             void trigger(SafePtr<Envelope> envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
             
             /**
-             * Stops playback of the envelope generator by fading the signal out to zero in @rampTime milliseconds.
+             * Stops playback of the envelope generator by fading the signal out to zero in milliseconds based on the given rampTime.
+			 * @param rampTime time in milliseconds
              */
             void stop(TimeValue rampTime = 5);
             

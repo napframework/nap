@@ -80,6 +80,7 @@ namespace nap
 		/**
 		 * Called on initialization. Derived classes should populate these.
 		 * @param outParameters the parameters that are used to create the GPU texture.
+		 * @param charSize size of a single character
 		 */
 		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
 
@@ -104,6 +105,10 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableGlyph)
 	protected:
+		/**
+		 * @param outParameters the populated texture parameters 
+		 * @param charSize the size of a single character
+		 */
 		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 
@@ -121,6 +126,10 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableGlyph)
 	protected:
+		/**
+		 * @param outParameters the populated texture parameters
+		 * @param charSize the size of a single character, used to determine the lod-level for that given character.
+		 */
 		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 }

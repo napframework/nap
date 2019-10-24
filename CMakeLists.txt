@@ -149,6 +149,7 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
+add_subdirectory(demos/python)
 add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 

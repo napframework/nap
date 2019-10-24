@@ -19,11 +19,33 @@ Central to NAP are a few key philosophies:
 - NAP wants you to be safe and validates data for you
 - NAP is responsive: hot-load content changes directly in to the running app
 - NAP is completely cross-platform and supports all modern desktop environments
-- NAP ships with many useful modules including: an OpenGL Renderer, OSC, Midi, Artnet, Gui, Audio etc.
 
 ## Why
 
 Creative fields such as advertisement, film and the performing arts are starting to overlap. Projects are growing in scope to meet demand. Therefore the need for stable and performant interactive software is increasing. Software needs to run for years without having to string together multiple applications or environments. To meet expectations NAP offers you a set of handles to tackle the most demanding creative problems.
+
+## Modules
+
+NAP ships with many useful modules, including (a): 
+
+- 3D OpenGL Render Engine
+- FFmpeg Video
+- Audio Playback, Recording and Analysis
+- Audio Synthesis
+- Font Rendering
+- Websockets
+- OSC
+- Midi
+- Artnet
+- IMGui
+- Parameters and Presets
+- Serial
+- Python
+- SVG
+- Etherdream
+- Yoctopuce
+- Application API Design
+- SQLite Database
 
 ## Want to know more?
 

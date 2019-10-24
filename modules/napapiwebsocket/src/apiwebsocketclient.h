@@ -24,7 +24,7 @@ namespace nap
 	 * for more information.
 	 *
 	 * For example, to send a message in the form of an api request to a server:
-	 *
+	 *~~~~~{.cpp}
 	 *		// Create request
 	 *		nap::APIEventPtr server_request = std::make_unique<nap::APIEvent>("getMotorSpeed");
 	 *
@@ -37,7 +37,7 @@ namespace nap
 	 *		{
 	 *			nap::Logger::error(error.toString());
 	 *		}
-	 *
+	 *~~~~~
 	 * You can control what the client does when it a receives a connection update or message from the server.
 	 * By default messages are NOT converted into api events, only into web-socket events. 
 	 * By changing the 'Mode' to 'APIEvent' or 'Both' the client will try to convert every message from the server into an API event. 
@@ -76,7 +76,7 @@ namespace nap
 		 * Sends a message in the form of an API event to the server.
 		 * 
 		 * For example:
-		 *
+		 *~~~~~{.cpp}
 		 *		// Create request
 		 *		nap::APIEventPtr server_request = std::make_unique<nap::APIEvent>("getMotorSpeed");
 		 *
@@ -89,7 +89,7 @@ namespace nap
 		 *		{
 		 *			nap::Logger::error(error.toString());
 		 *		}
-		 *
+		 *~~~~~
 		 * @param apiEvent event that contains the message to send.
 		 * @param error contains the error if sending fails
 		 * @return if message was sent successfully
@@ -101,7 +101,7 @@ namespace nap
 		 * The message should be the result of a previous query to a NAP server.
 		 * @param message the received web-socket (text) message that contains individual nap::APIMessage objects.
 		 * @param outEvents the result of the extraction process.
-		 * @error contains the error if conversion fails
+		 * @param error contains the error if conversion fails
 		 * @return if conversion succeeded.
 		 */
 		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
