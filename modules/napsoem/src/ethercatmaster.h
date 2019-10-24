@@ -115,7 +115,9 @@ namespace nap
 
 		bool mForceOperational = false;	///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
 		std::string mAdapter;			///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
-		int  mCycleTime = 1000;			///< Property: 'CycleTime' process cycle time in us. 
+		int mProcessCycleTime = 1000;	///< Property: 'ProcessCycleTime' process cycle time in us. 1000us = 1ms
+		int mErrorCycleTime = 40000;	///< Property: 'ErrorCycleTime' error checking cycle time in us. 1000us = 1ms
+		int mRecoveryTimeout = 500;		///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 1ms
 
 	protected:
 		/**
