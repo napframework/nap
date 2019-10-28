@@ -164,9 +164,6 @@ namespace nap
 		// Meshes
 		std::vector<glm::vec3> mObjectPoints = std::vector<glm::vec3>(8);
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
-
-		// Flexblock algorithm input
-		FlexInput mFlexInput;
 	
 		// Properties
 		float mSlackRange			= 1.0f;

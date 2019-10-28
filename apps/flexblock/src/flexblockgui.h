@@ -65,6 +65,11 @@ namespace nap
 		 * Sets the window size, use for calculating positions of imgui windows
 		 */
 		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
+
+		/**
+		 * 
+		 */
+		void shutDown();
 	private:
 		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;

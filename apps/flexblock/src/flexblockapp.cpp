@@ -183,6 +183,7 @@ namespace nap
 
 	int FlexblockApp::shutdown()
 	{
+		mGui->shutDown();
 		mGui.reset();
 		return 0;
 	}
