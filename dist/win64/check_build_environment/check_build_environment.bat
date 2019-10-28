@@ -16,4 +16,23 @@ if %OS%==32BIT (
 
 set PYTHONPATH=
 set PYTHONHOME=
-%~dp0\..\thirdparty\python\python %~dp0\platform\check_build_environment_continued.py
+if "%~1" == "--source" (
+    set NAP_ROOT=%~dp0\..\..\..
+    set THIRDPARTY_DIR=%NAP_ROOT%\..\thirdparty
+    if exist %THIRDPARTY_DIR% (
+        echo Checking for third party repository: PASS
+    ) else (
+        echo Checking for third party repository: FAIL
+        echo.
+        echo The third party repository ^('thirdparty'^) needs to be cloned alongside the main repository.
+        echo.
+        echo Not continuing checks. Re-run this script after cloning.
+        echo.
+        echo Press key to close...
+        pause
+        exit /B        
+    )
+    %THIRDPARTY_DIR%\python\msvc\python-embed-amd64\python %~dp0\check_build_environment_continued.py --source
+) else (
+    %~dp0\..\thirdparty\python\python %~dp0\platform\check_build_environment_continued.py
+)
