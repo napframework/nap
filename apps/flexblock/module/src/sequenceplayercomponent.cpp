@@ -104,6 +104,7 @@ namespace nap
 					// copy paramters
 					{
 						std::lock_guard<std::mutex> l(mThreadInputMutex);
+
 						input.mCurrentSequenceIndex = mCurrentSequenceIndex;
 						input.mIsFinished = mIsFinished;
 						input.mIsLooping = mIsLooping;
@@ -246,7 +247,7 @@ namespace nap
 
 			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 			{
-				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->process(time, output);
+				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->evaluate(time, output);
 
 				if (result != 0)
 				{

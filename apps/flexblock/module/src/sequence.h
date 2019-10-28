@@ -36,6 +36,8 @@ namespace nap
 			 */
 			virtual int process(double time, std::vector<Parameter*>& outParameters);
 
+			 int evaluate(double time, std::vector<Parameter*>& outParameters);
+
 			/**
 			 * Insert sequence element, sequence will own this element
 			 * @param element sequence element unique_ptr 

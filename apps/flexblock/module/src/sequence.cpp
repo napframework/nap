@@ -133,6 +133,33 @@ namespace nap
 		}
 
 
+		int Sequence::evaluate(double time, std::vector<Parameter*>& outParameters)
+		{
+			int currentElementIndex = 0;
+
+			if (time < mStartTime)
+				return -1;
+
+			if (time >= mStartTime + mDuration)
+				return 1;
+
+			for (int i = 0; i < mElements.size(); i++)
+			{
+				if (mElements[currentElementIndex]->process(time, outParameters))
+				{
+					break;
+				}
+				else
+				{
+					currentElementIndex++;
+					currentElementIndex %= mElements.size();
+				}
+			}
+
+			return 0;
+		}
+
+
 		SequenceElement* Sequence::getElementAtTime(const double time) const
 		{
 			for (int i = 0; i < mElements.size(); i++)
