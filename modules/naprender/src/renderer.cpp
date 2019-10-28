@@ -418,6 +418,25 @@ namespace nap
 		return vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS;
 	}
 
+	static bool findDepthFormat(VkPhysicalDevice physicalDevice, VkFormat& outFormat)
+	{
+		std::vector<VkFormat> candidates = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+
+		for (VkFormat format : candidates)
+		{
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+
+			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			{
+				outFormat = format;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -468,6 +487,9 @@ namespace nap
 		if (!createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool))
 			return false;
 
+		if (!findDepthFormat(mPhysicalDevice, mDepthFormat))
+			return false;
+
 		return true;
 	}
 
@@ -496,7 +518,7 @@ namespace nap
 
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
-		if (!new_window->init(window_settings, mInstance, mPhysicalDevice, mDevice, mCommandPool, mGraphicsQueueIndex, errorState))
+		if (!new_window->init(window_settings, mInstance, mPhysicalDevice, mDevice, mDepthFormat, mCommandPool, mGraphicsQueueIndex, errorState))
 			return nullptr;
 
 		return new_window;

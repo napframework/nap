@@ -15,7 +15,7 @@ layout(binding=2) uniform UniformBufferObject
 
 void main(void)
 {
-	//out_Color = vec4(pass_Uvs.x, pass_Uvs.y, 0.0, 1.0);
+	out_Color = vec4(pass_Uvs.x, pass_Uvs.y, 0.0, 1.0);
 /*
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
 
@@ -32,5 +32,5 @@ void main(void)
 	*/
 
 	// Set output color
-	out_Color = pig.mColor;
+	//out_Color = pig.mColor;
 }

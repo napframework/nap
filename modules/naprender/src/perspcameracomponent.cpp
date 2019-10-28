@@ -2,6 +2,7 @@
 #include "perspcameracomponent.h"
 
 // External Includes
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/gtc/matrix_transform.hpp> 
 #include <entity.h>
 #include "transformcomponent.h"
@@ -217,7 +218,8 @@ namespace nap
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
 			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
-			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, bottom, top);
+			//mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, bottom, top);
+			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
 
 			mDirty = false;
 		}

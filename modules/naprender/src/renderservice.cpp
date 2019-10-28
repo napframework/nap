@@ -128,26 +128,41 @@ namespace nap
 		window->addEvent(std::move(windowEvent));
 	}
 
-	void createRenderPass(VkDevice device, VkFormat inColorFormat, VkRenderPass& renderPass) 
+	void createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass) 
 	{
-		VkAttachmentDescription attachment = {};
-		attachment.format = inColorFormat;
-		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		VkAttachmentDescription colorAttachment = {};
+		colorAttachment.format = colorFormat;
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentDescription depthAttachment = {};
+		depthAttachment.format = depthFormat;
+		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorAttachmentRef = {};
 		colorAttachmentRef.attachment = 0;
 		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+		VkAttachmentReference depthAttachmentRef = {};
+		depthAttachmentRef.attachment = 1;
+		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
+		subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -157,10 +172,11 @@ namespace nap
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &attachment;
+		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		renderPassInfo.pAttachments = attachments.data();
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 1;
@@ -289,6 +305,14 @@ namespace nap
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+		VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.stencilTestEnable = VK_FALSE;
+
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;
@@ -325,6 +349,7 @@ namespace nap
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
 		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDepthStencilState = &depthStencil;
 		pipelineInfo.layout = pipelineLayout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
@@ -344,7 +369,7 @@ namespace nap
 		case ERenderTargetFormat::RGBA8:
 			{
 				if (mRenderPassRGBA8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8A8_SRGB, mRenderPassRGBA8);
+					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8A8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGBA8);
 
 				render_pass = &mRenderPassRGBA8;
 			}
@@ -352,7 +377,7 @@ namespace nap
 		case ERenderTargetFormat::RGB8:
 			{
 				if (mRenderPassRGB8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8_SRGB, mRenderPassRGB8);
+					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGB8);
 
 				render_pass = &mRenderPassRGB8;
 			}
@@ -360,7 +385,7 @@ namespace nap
 		case ERenderTargetFormat::R8:
 			{
 				if (mRenderPassR8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_R8_SRGB, mRenderPassR8);
+					createRenderPass(mRenderer->getDevice(), VK_FORMAT_R8_SRGB, mRenderer->getDepthFormat(), mRenderPassR8);
 
 				render_pass = &mRenderPassR8;
 			}
@@ -368,7 +393,7 @@ namespace nap
 		case ERenderTargetFormat::Depth:
 			{
 				if (mRenderPassDepth == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_D24_UNORM_S8_UINT, mRenderPassDepth);
+					createRenderPass(mRenderer->getDevice(), VK_FORMAT_D24_UNORM_S8_UINT, mRenderer->getDepthFormat(), mRenderPassDepth);
 
 				render_pass = &mRenderPassDepth;
 			}

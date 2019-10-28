@@ -71,7 +71,7 @@ namespace nap
 		GLWindow(const GLWindow& other) = delete;
 		GLWindow& operator=(const GLWindow& other) = delete;
 
-		bool init(const RenderWindowSettings& settings, VkInstance vulkanInstance, VkPhysicalDevice physicalDevice, VkDevice device, VkCommandPool commandPool, unsigned int graphicsQueueIndex, utility::ErrorState& errorState);
+		bool init(const RenderWindowSettings& settings, VkInstance vulkanInstance, VkPhysicalDevice physicalDevice, VkDevice device, VkFormat depthFormat, VkCommandPool commandPool, unsigned int graphicsQueueIndex, utility::ErrorState& errorState);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined
@@ -176,6 +176,9 @@ namespace nap
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
 		std::vector<VkFence>							mInFlightFences;
+		VkImage											mDepthImage = nullptr;
+		VkDeviceMemory									mDepthImageMemory = nullptr;
+		VkImageView										mDepthImageView = nullptr;
 		int												mCurrentFrame = 0;
 		uint32_t										mCurrentImageIndex = 0;
 

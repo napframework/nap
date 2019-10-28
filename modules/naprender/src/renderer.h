@@ -67,6 +67,7 @@ namespace nap
 		VkPhysicalDevice getPhysicalDevice() { return mPhysicalDevice; }
 		VkDevice getDevice() { return mDevice; }
 		VkCommandPool getCommandPool() { return mCommandPool; }
+		VkFormat getDepthFormat() const { return mDepthFormat; }
 
 	private:
 		RendererSettings				mSettings;				///< If high dpi render mode is enabled
@@ -75,6 +76,7 @@ namespace nap
 		VkPhysicalDevice				mPhysicalDevice = nullptr;
 		VkDevice						mDevice = nullptr;
 		VkCommandPool					mCommandPool = nullptr;
+		VkFormat						mDepthFormat;
 		unsigned int					mGraphicsQueueIndex = -1;
 	};
 }
