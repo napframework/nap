@@ -8,7 +8,6 @@ import sys
 REQUIRED_UBUNTU_VERSION = '18.04'
 REQUIRED_QT_VERSION = '5.11.3'
 
-
 def call(cmd):
     """Execute command and return stdout"""
 
@@ -20,7 +19,6 @@ def call(cmd):
 def call_with_returncode(cmd):
     """Execute command and return stdout and returncode"""
 
-    # print("Command: %s" % cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, _) = proc.communicate()
     return (out.strip().decode('utf-8'), proc.returncode)
@@ -238,6 +236,10 @@ def check_build_environment(against_source):
       and compiler_ok \
       and extra_source_requirements_ok:
         print("Your build environment appears to be ready for NAP!")
+
+        if against_source:
+            check_and_warn_for_potential_system_qt()
+
         return False
 
     print("Some issues were encountered:")
@@ -277,7 +279,10 @@ def check_build_environment(against_source):
             
         if qt_env_var_ok:
             check_and_warn_for_potential_system_qt()
-        
+
+        if (not qt_env_var_ok or not qt_version_ok):
+            print("Re-run check_build_environment once you have made the required changes.")
+            return False
 
 if __name__ == '__main__':
     against_source = len(sys.argv) > 1 and sys.argv[1] == '--source'
