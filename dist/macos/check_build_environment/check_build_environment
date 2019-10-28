@@ -195,7 +195,7 @@ def check_qt_version():
         shutil.rmtree(temp_build_dir)
     
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
     cmake = os.path.join(thirdparty_dir, 'cmake', 'osx', 'install', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
+from distutils.version import LooseVersion
 import os
-from packaging import version
 import subprocess
 import shutil
 import sys
@@ -98,7 +98,7 @@ def check_qt_version():
         shutil.rmtree(temp_build_dir)
     
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
     cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'install', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -112,7 +112,7 @@ def check_qt_version():
     
     # OK is version matching required version
     if not qt_found_version is None:
-        qt_version_ok = version.parse(qt_found_version) == version.parse(REQUIRED_QT_VERSION)
+        qt_version_ok = LooseVersion(qt_found_version) == LooseVersion(REQUIRED_QT_VERSION)
     
     # Cleanup
     if os.path.exists(temp_build_dir):
@@ -161,7 +161,7 @@ def check_and_warn_for_potential_system_qt():
     if running_apt_distro:
         (_, returncode) = call_with_returncode("dpkg -l qtdeclarative5-dev")
         if returncode == 0:
-            print("\nWarning: You appear to have Qt development packages installed via your system packaging system. This may cause issues, espcially with packaging.")
+            print("\nWarning: You appear to have Qt development packages installed via your system packaging system. This may cause issues, especially with packaging.")
     
     qt_dir = os.environ['QT_DIR']
     qt_dir = os.path.abspath(qt_dir)
@@ -281,7 +281,7 @@ def check_build_environment(against_source):
             check_and_warn_for_potential_system_qt()
 
         if (not qt_env_var_ok or not qt_version_ok):
-            print("Re-run check_build_environment once you have made the required changes.")
+            print("\nRe-run check_build_environment once you have made the required changes.")
             return False
 
 if __name__ == '__main__':
