@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+from distutils.version import LooseVersion
 from msvcrt import getch
 import os
+import shutil
 import subprocess
 import sys
 import webbrowser
@@ -9,6 +11,7 @@ REQUIRED_WINDOWS_VERSION = '10.0'
 VS_2015_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\VisualStudio.DTE.14.0'
 VS_2015_VERSION_REG_QUERY = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevDiv\\vs\\Servicing\\14.0\\devenv /v UpdateVersion'
 REQUIRED_VS_2015_PATCH_VERSION = 25420
+REQUIRED_QT_VERSION = '5.11.3'
 
 def call(cmd, provide_exit_code=False):
     """Execute command and return stdout"""
@@ -20,6 +23,13 @@ def call(cmd, provide_exit_code=False):
         return proc.returncode
     else:
         return str(out.strip())
+
+def call_with_returncode(cmd):
+    """Execute command and return stdout and returncode"""
+
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    (out, _) = proc.communicate()
+    return (out.strip().decode('utf-8'), proc.returncode)
 
 def log_test_success(test_item, success):
     """Log a test success"""
@@ -87,12 +97,69 @@ def handle_missing_vs2015_update3(have_earlier_vs_2015):
     open_vs_download = read_yes_no("Open download page?")
     if open_vs_download:
         webbrowser.open('https://www.visualstudio.com/vs/older-downloads/')
-        print("\nPlease re-run checkBuildEnvironment after update has completed and you have rebooted.")
+        print("\nPlease re-run check_build_environment after update has completed and you have rebooted.")
     else:
         # Provide more specific instruction if they aren't downloading now
-        print("\nPlease re-run checkBuildEnvironment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
+        print("\nPlease re-run check_build_environment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
 
-def check_build_environment():
+def check_qt_env_var():
+    """Check Qt env. var. for source user"""
+
+    qt_env_var_ok = 'QT_DIR' in os.environ
+    log_test_success('Qt environment variable', qt_env_var_ok)        
+    return qt_env_var_ok
+    
+def check_qt_version():
+    """Check Qt version for source user"""
+
+    qt_found_version = None
+    qt_version_ok = False
+    
+    # Remove temporary directory for CMake project files to go into if it exists 
+    nap_root = get_nap_root()
+    qt_checker_path = os.path.join(nap_root, 'dist', 'cmake', 'qt_checker')
+    temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
+    if os.path.exists(temp_build_dir):
+        shutil.rmtree(temp_build_dir)
+    
+    # Run Qt version checking logic, parsing output
+    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    cmake = os.path.join(thirdparty_dir, 'cmake', 'msvc', 'install', 'bin', 'cmake')
+    (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
+    if returncode == 0:
+        lines = out.split('\n')
+        for line in lines:
+            if 'Found Qt' in line:
+                chunks = line.strip().split('Found Qt')
+                if len(chunks) > 1:
+                    qt_found_version = chunks[-1].strip()
+                break
+    
+    # OK is version matching required version
+    if not qt_found_version is None:
+        qt_version_ok = LooseVersion(qt_found_version) == LooseVersion(REQUIRED_QT_VERSION)
+    
+    # Cleanup
+    if os.path.exists(temp_build_dir):
+        shutil.rmtree(temp_build_dir)
+    
+    log_test_success('Qt version v%s' % REQUIRED_QT_VERSION, qt_version_ok)        
+    return (qt_version_ok, qt_found_version)
+
+def log_qt_help(qt_env_var_ok, qt_found_version):
+    """Log help for source user Qt problems"""
+
+    if not qt_env_var_ok:
+        print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
+    else:
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
+    
+def get_nap_root():
+    """Get framework root directory"""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))        
+
+def check_build_environment(against_source):
     """Check whether Windows build environment appears ready for NAP"""
 
     # Check Windows version
@@ -104,10 +171,26 @@ def check_build_environment():
     # Check if Visual Studio 2015 Update 3 is installed
     have_vs_2015_update3 = have_vs_2015 and check_visual_studio_2015_is_update3()
 
+    if against_source:
+        # Check for Qt
+        qt_env_var_ok = check_qt_env_var()
+        
+        # Check Qt version
+        if qt_env_var_ok:
+            (qt_version_ok, qt_found_version) = check_qt_version()
+        else:
+            qt_version_ok = False
+            qt_found_version = None
+
     print("")
 
+    # If we're running for source users check source requirements are met
+    extra_source_requirements_ok = True
+    if against_source and (not qt_env_var_ok or not qt_version_ok):
+        extra_source_requirements_ok = False 
+
     # If everything looks good log and exit
-    if windows_version_ok and have_vs_2015_update3:
+    if windows_version_ok and have_vs_2015_update3 and extra_source_requirements_ok:
         print("Your build environment appears to be ready for NAP!")
         return
 
@@ -123,6 +206,7 @@ def check_build_environment():
         return
 
 if __name__ == '__main__':
-    check_build_environment()
+    against_source = len(sys.argv) > 1 and sys.argv[1] == '--source'
+    check_build_environment(against_source)
     print("\nPress key to close...")
     getch()
