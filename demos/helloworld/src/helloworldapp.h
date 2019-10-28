@@ -12,6 +12,10 @@
 #include <app.h>
 #include <spheremesh.h>
 #include <font.h>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 
 namespace nap
 {
@@ -86,5 +90,13 @@ namespace nap
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		
+		// CV
+		cv::Mat mMat;
+		cv::VideoCapture mCapture;
+		cv::CascadeClassifier face_cascade;
+		cv::CascadeClassifier eyes_cascade;
+
+		void detectAndDisplay(const cv::Mat& frame);
 	};
 }
