@@ -80,3 +80,4 @@ local.properties
 *.db-shm
 *.db-wal
 apply_executable_permissions.cmd
+dist/cmake/qt_checker/proj_temp
