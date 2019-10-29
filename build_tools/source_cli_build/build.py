@@ -12,8 +12,8 @@ MSVC_BUILD_DIR = 'msvc64'
 THIRDPARTY = 'thirdparty'
 
 def call(cwd, cmd, shell=False):
-    print('dir: %s' % cwd)
-    print('cmd: %s' % ' '.join(cmd))
+    print('Dir: %s' % cwd)
+    print('Command: %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd, shell=shell)
     proc.communicate()
     if proc.returncode != 0:
@@ -68,6 +68,9 @@ def parse_command_arguments():
         print("Adding build target: %s" % parts[1])
         targets.append(parts[1])
         
+    if len(targets) == 0:
+        print("Warning: No targets specified, building default targets. Use generate_solution if you don't want to build any targets.")
+
     return (targets, clean_build, linux_build_type)
 
 def main(targets, clean_build, linux_build_type):
@@ -94,17 +97,29 @@ def main(targets, clean_build, linux_build_type):
         rc = call(nap_root, ['generate_solution.bat', '--build-path=%s' % build_dir])        
         
     # Build
-    for t in targets:
+    if len(targets) > 0:
+        for t in targets:
+            if platform.startswith('linux'):
+                # Linux
+                call(build_dir, ['make', t, '-j%s' % cpu_count()])
+            elif platform == 'darwin':
+                # macOS
+                call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', t, '-configuration', 'Debug'])
+            else:
+                # Windows
+                cmake = get_cmake_path()
+                call(nap_root, [cmake, '--build', build_dir, '--target', t])
+    else:
         if platform.startswith('linux'):
             # Linux
-            call(build_dir, ['make', t, '-j%s' % cpu_count()])
+            call(build_dir, ['make', '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', t, '-configuration', 'Debug'])
+            call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', 'Debug'])
         else:
             # Windows
             cmake = get_cmake_path()
-            call(nap_root, [cmake, '--build', build_dir, '--target', t])
+            call(nap_root, [cmake, '--build', build_dir])
 
 if __name__ == '__main__':
     # Extract command line targets
