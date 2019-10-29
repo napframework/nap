@@ -18,7 +18,7 @@ def generate(forced_path, linux_build_type, use_codeblocks):
     if use_codeblocks:
         build_dir = forced_path if forced_path else os.path.join(nap_root, CODEBLOCKS_BUILD_DIR)
         call(['%s -H%s -B%s -G "CodeBlocks - Unix Makefiles"' % (cmake, nap_root, build_dir)], shell=True)
-        print("Warning: NAP support for Code::Blocks is experimental")
+        print("Warning: NAP support for Code::Blocks is experimental and unsupported")
     elif platform.startswith('linux'):
         build_dir = forced_path if forced_path else os.path.join(nap_root, LINUX_BUILD_DIR)
         build_type = linux_build_type.lower().capitalize()
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                         action='store',
                         help="Force custom build path")
     parser.add_argument('--codeblocks', action="store_true",
-                        help="Experimental: Generate Code::Blocks solution")
+                        help="Experimental & unsupported: Generate Code::Blocks solution")
     if platform.startswith('linux'):
         parser.add_argument('-t', '--linux-build-type', type=str,
                             default=DEFAULT_LINUX_BUILD_TYPE,
