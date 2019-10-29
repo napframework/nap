@@ -6,7 +6,7 @@ import sys
 
 def check_environment():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir))
+    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
     if platform.startswith('linux'):
         script_path = os.path.join(nap_root, 'dist/linux/check_build_environment/check_build_environment_worker.py')
         call('%s %s %s' % (sys.executable, script_path, '--source'), shell=True)
