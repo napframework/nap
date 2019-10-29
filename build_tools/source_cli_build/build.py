@@ -122,6 +122,17 @@ def main(targets, clean_build, linux_build_type):
             call(nap_root, [cmake, '--build', build_dir])
 
 if __name__ == '__main__':
+    if '--help' in sys.argv or '/?' in sys.argv:
+        print("usage: build [clean] [target:first_target] [target:another_target]")
+        print("")
+        print("optional arguments:")
+        print("  clean:                 Clean the build")
+        print("  target:targetname:     Name of target to build, can be specified any number of times")
+        if platform.startswith('linux'):
+            print("  linuxreleasebuild:     Perform release build on Linux")
+        
+        sys.exit(0)
+
     # Extract command line targets
     (targets, clean_build, linux_build_type) = parse_command_arguments()
 
