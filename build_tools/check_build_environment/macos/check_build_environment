@@ -222,7 +222,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     """Log help for source user Qt problems"""
 
     if not qt_env_var_ok:
-        print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
+        print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Packaging system versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/Users/username/Qt%s/%s/clang_64/\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
         print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
 
@@ -344,7 +344,7 @@ def check_build_environment(against_source):
         return handle_xcode_license_approval()
 
     # Show Qt help
-    if against_source :
+    if against_source:
         if (not qt_env_var_ok or not qt_version_ok):
             log_qt_help(qt_env_var_ok, qt_found_version)
             
@@ -352,7 +352,7 @@ def check_build_environment(against_source):
             check_and_warn_for_potential_packaged_qt()
 
         if (not qt_env_var_ok or not qt_version_ok):
-            print("\nRe-run check_build_environment once you have installed the requirements.")
+            print("\nRe-run check_build_environment once you have made the required changes.")
             return False
 
     # We might fall through here if the only issue they have is their macOS version

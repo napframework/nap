@@ -150,7 +150,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     """Log help for source user Qt problems"""
 
     if not qt_env_var_ok:
-        print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
+        print("\nThis version of NAP requires Qt v%s. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"C:\\Qt%s\\%s\\msvc2015_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
         print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
     
@@ -203,8 +203,13 @@ def check_build_environment(against_source):
     # If we don't have Visual Studio 2015 Update 3 help install it
     if not have_vs_2015_update3:
         handle_missing_vs2015_update3(have_vs_2015)
-        return
 
+    # Show Qt help
+    if against_source:
+        if (not qt_env_var_ok or not qt_version_ok):
+            log_qt_help(qt_env_var_ok, qt_found_version)
+            print("\nRe-run check_build_environment once you have made the required changes.")
+            
 if __name__ == '__main__':
     against_source = len(sys.argv) > 1 and sys.argv[1] == '--source'
     check_build_environment(against_source)
