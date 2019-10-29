@@ -68,44 +68,63 @@ namespace nap
 
 	void FlexBlockComponentInstance::setInput(int index, float value)
 	{
-		mFlexInput.setInput(index, value);
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		flexInput.setInput(index, value);
+		mFlexblockDevice->setInput(flexInput);
 	}
 	
 
 	void FlexBlockComponentInstance::setOverride(int index, const float value)
 	{
-		mFlexInput.setOverride(index, (value * mOverrideRange) + mOverrideMinimum);
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		flexInput.setOverride(index, (value * mOverrideRange) + mOverrideMinimum);
+		mFlexblockDevice->setInput(flexInput);
 	}
 
 
 	void FlexBlockComponentInstance::setSinusAmplitude(float value)
 	{
-		mFlexInput.mSinusAmplitude = value * mSinusAmplitudeRange;
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		flexInput.mSinusAmplitude = value * mSinusAmplitudeRange;
+		mFlexblockDevice->setInput(flexInput);
 	}
 
 
 	float FlexBlockComponentInstance::getMotorOverride(int index) const
 	{
-		assert(index < mFlexInput.mOverrides.size());
-		return mFlexInput.mOverrides[index];
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		assert(index < flexInput.mOverrides.size());
+		return flexInput.mOverrides[index];
 	}
 
 
 	void FlexBlockComponentInstance::setSinusFrequency(float value)
 	{
-		mFlexInput.mSinusFrequency = value * mSinusFrequencyRange;
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		flexInput.mSinusFrequency = value * mSinusFrequencyRange;
+		mFlexblockDevice->setInput(flexInput);
 	}
 
 
 	void FlexBlockComponentInstance::setSlack(float value)
 	{
-		mFlexInput.mSlack = value * mSlackRange + mSlackMinimum;
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		flexInput.mSlack = value * mSlackRange + mSlackMinimum;
+		mFlexblockDevice->setInput(flexInput);
 	}
 	
 
 	float FlexBlockComponentInstance::getSlack() const
 	{
-		return mFlexInput.mSlack;
+		FlexInput flexInput;
+		mFlexblockDevice->getInput(flexInput);
+		return flexInput.mSlack;
 	}
 
 
@@ -119,8 +138,5 @@ namespace nap
 		
 		// update the box
 		mFlexBlockMesh->setControlPoints(mObjectPoints);
-
-		// update input of flex algorithm
-		mFlexblockDevice->setInput(mFlexInput);
 	}
 }

@@ -49,7 +49,7 @@ namespace nap
 		float mCurrentTimeOfMouseInSequence = 0.0f;
 		std::string mErrorString;
 		timeline::Sequence* mSelectedSequence = nullptr;
-		bool mShowToolTips = true;
+		bool mShowToolTips = false;
 		ImVec2 mTopLeftPosition;
 		bool mDrawMouseCursorInTimeline = false;
 		float mMouseCursorPositionInTimeline = 0.0f;
