@@ -4,4 +4,4 @@ if [ -x "$(command -v python3)" ]; then
 else
     PYTHON="python"
 fi
-${PYTHON} $(dirname $0)/check_build_environment.py
+${PYTHON} $(dirname $0)/build_tools/check_build_environment/source_user_onboarding.py
