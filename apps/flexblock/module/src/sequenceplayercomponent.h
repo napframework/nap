@@ -260,7 +260,7 @@ namespace nap
 
 			// used to calculate delta time in update
 			std::chrono::high_resolution_clock mTimer;
-			std::chrono::time_point<std::chrono::steady_clock> mBefore;
+			std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
 
 			//
 			double mTime					= 0.0;
