@@ -117,8 +117,8 @@ namespace nap
 
 					// calc delta time
 					auto now = std::chrono::steady_clock::now();
-					auto elapsed = now - mBefore;
-					float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
+					std::chrono::duration<double> elapsed_seconds = now - mBefore;
+					float deltaTime = elapsed_seconds.count();
 					mBefore = now;
 
 					// are we not paused ? then advance time
