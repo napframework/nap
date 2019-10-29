@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
-working_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-python build.py "$@"
+unset PYTHONHOME
+unset PYTHONPATH
+nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+if [ "$(uname)" == "Darwin" ]; then
+    python="$nap_root/../thirdparty/python/osx/install/bin/python3"
+else
+    python="$nap_root/../thirdparty/python/linux/install/bin/python3"
+fi
+$python $nap_root/build_tools/source_cli_build/build.py "$@"
