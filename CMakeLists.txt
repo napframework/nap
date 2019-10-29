@@ -83,7 +83,7 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
-include(configure.cmake)
+include(cmake/configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
