@@ -7,4 +7,4 @@ if [ "$(uname)" == "Darwin" ]; then
 else
     python="$nap_root/../thirdparty/python/linux/install/bin/python3"
 fi
-$python $nap_root/package.py "$@"
+$python $nap_root/build_tools/package/package.py "$@"
