@@ -74,7 +74,8 @@ def package(zip_release,
             android_enable_python):
     """Package a NAP platform release - main entry point"""
 
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    nap_root = get_nap_root()
+    os.chdir(nap_root)
     build_label_out = build_label if not build_label is None else ''
 
     # Define cross compilation target, if relevant 
@@ -692,10 +693,15 @@ def create_source_archive_executable_bit_applicator(staging_dir):
                 writer.write('\tgit update-index --chmod=+x %s\n' % exe_bit_filepath)
                 writer.write(')\n')
 
-def get_cmake_path():
-    """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
+def get_nap_root():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
 
-    cmake_thirdparty_root = os.path.join(os.pardir, 'thirdparty', 'cmake')
+def get_cmake_path():
+    """Fetch the path to the CMake binary"""
+
+    nap_root = get_nap_root()
+    cmake_thirdparty_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
     if platform.startswith('linux'):
         return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
     elif platform == 'darwin':
