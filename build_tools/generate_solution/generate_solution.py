@@ -16,20 +16,20 @@ def generate(forced_path, linux_build_type, use_codeblocks):
     cmake = get_cmake_path()
         
     if use_codeblocks:
-        build_dir = forced_path if forced_path else CODEBLOCKS_BUILD_DIR
+        build_dir = forced_path if forced_path else os.path.join(nap_root, CODEBLOCKS_BUILD_DIR)
         call(['%s -H%s -B%s -G "CodeBlocks - Unix Makefiles"' % (cmake, nap_root, build_dir)], shell=True)
         print("Warning: NAP support for Code::Blocks is experimental")
     elif platform.startswith('linux'):
-        build_dir = forced_path if forced_path else LINUX_BUILD_DIR
+        build_dir = forced_path if forced_path else os.path.join(nap_root, LINUX_BUILD_DIR)
         build_type = linux_build_type.lower().capitalize()
         call(['%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s' % (cmake, nap_root, build_dir, build_type)], shell=True)
     elif platform == 'darwin':
-        build_dir = forced_path if forced_path else MACOS_BUILD_DIR
+        build_dir = forced_path if forced_path else os.path.join(nap_root, MACOS_BUILD_DIR)
         call(['%s -H%s -B%s -G Xcode' % (cmake, nap_root, build_dir)], shell=True)
     else:
-        #mkdir msvc64
-        build_dir = forced_path if forced_path else MSVC_BUILD_DIR
-        call(['%s -H%s -B%s -G "Visual Studio 14 2015 Win64" -DPYBIND11_PYTHON_VERSION=3.5' % (cmake, nap_root, build_dir)], shell=True)
+        build_dir = forced_path if forced_path else os.path.join(nap_root, MSVC_BUILD_DIR)
+        cmd = '%s -H%s -B%s -G "Visual Studio 14 2015 Win64" -DPYBIND11_PYTHON_VERSION=3.5' % (cmake, nap_root, build_dir)
+        call(cmd, shell=True)
     
 def get_cmake_path():
     """Fetch the path to the CMake binary"""
