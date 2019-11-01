@@ -37,7 +37,6 @@ namespace nap
 		for (auto& length : mMotorStepsInt)
 		{
 			length *= mMotorStepsPerMeter;
-			length -= mMotorStepsPerMeter;
 		}
 
 		// check for all slaves to be operational and without errors

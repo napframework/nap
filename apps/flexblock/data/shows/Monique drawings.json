@@ -8,6 +8,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement01-07-201909:49:52",
                     "Name": "Transition",
+                    "Start Time": 21.480000495910646,
                     "Duration": 1.3499994277954102,
                     "Curves": [
                         "GeneratedElement01-07-201909:49:52Generated_Curve0",
@@ -99,7 +100,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:52 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -202,6 +203,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:47:50",
                     "Name": "GeneratedElement07-10-201911:47:50",
+                    "Start Time": 22.829999923706056,
                     "Duration": 1.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:47:50Generated_Curve0",
@@ -293,7 +295,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:47:50 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -396,6 +398,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:49:10",
                     "Name": "Rocket movment",
+                    "Start Time": 23.829999923706056,
                     "Duration": 7.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:49:10Generated_Curve0",
@@ -487,7 +490,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:49:10 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -590,12 +593,14 @@
                     "Type": "nap::timeline::SequencePause",
                     "mID": "GeneratedElement07-10-201911:50:24",
                     "Name": "GeneratedElement07-10-201911:50:24",
+                    "Start Time": 30.829999923706056,
                     "Duration": 5.0
                 },
                 {
                     "Type": "nap::timeline::SequencePause",
                     "mID": "GeneratedElement07-10-201912:27:46",
                     "Name": "GeneratedElement07-10-201912:27:46",
+                    "Start Time": 35.829999923706058,
                     "Duration": 5.0
                 }
             ],
@@ -621,6 +626,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:51:38",
                     "Name": "1",
+                    "Start Time": 48.815640926361087,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:51:38Generated_Curve0",
@@ -712,7 +718,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:51:38 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -815,6 +821,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:53:54",
                     "Name": "2",
+                    "Start Time": 50.815640926361087,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:53:54Generated_Curve0",
@@ -906,7 +913,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:53:54 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1009,6 +1016,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:54:18",
                     "Name": "3",
+                    "Start Time": 52.815640926361087,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:54:18Generated_Curve0",
@@ -1100,7 +1108,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:54:18 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1203,6 +1211,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:55:08",
                     "Name": "4",
+                    "Start Time": 54.815640926361087,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:55:08Generated_Curve0",
@@ -1294,7 +1303,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:55:08 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1397,6 +1406,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:55:36",
                     "Name": "5",
+                    "Start Time": 56.815640926361087,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:55:36Generated_Curve0",
@@ -1488,7 +1498,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:55:36 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1591,6 +1601,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:56:22",
                     "Name": "6",
+                    "Start Time": 58.815640926361087,
                     "Duration": 1.56436026096344,
                     "Curves": [
                         "GeneratedElement07-10-201911:56:22Generated_Curve0",
@@ -1682,7 +1693,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:56:22 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1785,6 +1796,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:56:40",
                     "Name": "7",
+                    "Start Time": 60.380001187324527,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:56:40Generated_Curve0",
@@ -1876,7 +1888,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:56:40 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1979,6 +1991,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:57:01",
                     "Name": "8",
+                    "Start Time": 62.380001187324527,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:57:01Generated_Curve0",
@@ -2070,7 +2083,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:57:01 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -2173,6 +2186,7 @@
                     "Type": "nap::timeline::SequencePause",
                     "mID": "GeneratedElement07-10-201911:59:19",
                     "Name": "HOME",
+                    "Start Time": 64.38000118732453,
                     "Duration": 5.0
                 }
             ],
@@ -2198,6 +2212,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:57:47",
                     "Name": "GeneratedElement07-10-201911:57:47",
+                    "Start Time": 69.38000118732453,
                     "Duration": 2.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:57:47Generated_Curve0",
@@ -2289,7 +2304,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:57:47 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.20000000298023225,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -2392,6 +2407,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:00:47",
                     "Name": "GeneratedElement07-10-201912:00:47",
+                    "Start Time": 71.38000118732453,
                     "Duration": 2.0800018310546877,
                     "Curves": [
                         "GeneratedElement07-10-201912:00:47Generated_Curve0",
@@ -2483,7 +2499,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:00:47 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -2586,6 +2602,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:05:25",
                     "Name": "GeneratedElement07-10-201912:05:25",
+                    "Start Time": 73.46000301837921,
                     "Duration": 4.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:05:25Generated_Curve0",
@@ -2677,7 +2694,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:05:25 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -2799,6 +2816,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:01:17",
                     "Name": "GeneratedElement07-10-201912:01:17",
+                    "Start Time": 77.46000301837921,
                     "Duration": 10.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:01:17Generated_Curve0",
@@ -2890,7 +2908,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:01:17 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -2993,6 +3011,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:06:53",
                     "Name": "GeneratedElement07-10-201912:06:53",
+                    "Start Time": 87.46000301837921,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:06:53Generated_Curve0",
@@ -3084,7 +3103,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:06:53 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -3206,6 +3225,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:08:36",
                     "Name": "GeneratedElement07-10-201912:08:36",
+                    "Start Time": 92.46000301837921,
                     "Duration": 3.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:08:36Generated_Curve0",
@@ -3297,7 +3317,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:08:36 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -3419,6 +3439,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:08:53",
                     "Name": "GeneratedElement07-10-201912:08:53",
+                    "Start Time": 95.46000301837921,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:08:53Generated_Curve0",
@@ -3510,7 +3531,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:08:53 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -3632,6 +3653,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:11:29",
                     "Name": "GeneratedElement07-10-201912:11:29",
+                    "Start Time": 100.46000301837921,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:11:29Generated_Curve0",
@@ -3723,7 +3745,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:11:29 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -3845,6 +3867,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:13:59",
                     "Name": "GeneratedElement07-10-201912:13:59",
+                    "Start Time": 105.46000301837921,
                     "Duration": 7.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:13:59Generated_Curve0",
@@ -3936,7 +3959,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:13:59 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -4039,6 +4062,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:18:32",
                     "Name": "up",
+                    "Start Time": 112.46000301837921,
                     "Duration": 6.135644435882568,
                     "Curves": [
                         "GeneratedElement07-10-201912:18:32Generated_Curve0",
@@ -4130,7 +4154,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:18:32 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -4252,6 +4276,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201912:26:46",
                     "Name": "GeneratedElement07-10-201912:26:46",
+                    "Start Time": 118.59564745426178,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement07-10-201912:26:46Generated_Curve0",
@@ -4343,7 +4368,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201912:26:46 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -4465,6 +4490,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement18-06-201914:39:16",
                     "Name": "Pause",
+                    "Start Time": 40.829999923706058,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement18-06-201914:39:16Generated_Curve0",
@@ -4556,7 +4582,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:16 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -4659,6 +4685,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement01-07-201909:49:48",
                     "Name": "Final Transition",
+                    "Start Time": 45.829999923706058,
                     "Duration": 2.9856410026550295,
                     "Curves": [
                         "GeneratedElement01-07-201909:49:48Generated_Curve0",
@@ -4750,7 +4777,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement01-07-201909:49:48 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -4872,6 +4899,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement18-06-201914:39:53",
                     "Name": "Transition",
+                    "Start Time": 8.480000495910645,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement18-06-201914:39:53Generated_Curve0",
@@ -4963,7 +4991,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement18-06-201914:39:53 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -5066,12 +5094,14 @@
                     "Type": "nap::timeline::SequencePause",
                     "mID": "GeneratedElement07-10-201911:46:50",
                     "Name": "GeneratedElement07-10-201911:46:50",
+                    "Start Time": 13.480000495910645,
                     "Duration": 3.0
                 },
                 {
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:47:07",
                     "Name": "GeneratedElement07-10-201911:47:07",
+                    "Start Time": 16.480000495910646,
                     "Duration": 5.0,
                     "Curves": [
                         "GeneratedElement07-10-201911:47:07Generated_Curve0",
@@ -5163,7 +5193,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:47:07 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -5285,6 +5315,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "Transition 3",
                     "Name": "Transition",
+                    "Start Time": 0.0,
                     "Duration": 5.0,
                     "Curves": [
                         "Transition 3Generated_Curve0",
@@ -5376,7 +5407,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Transition 3 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.20000000298023225,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -5479,6 +5510,7 @@
                     "Type": "nap::flexblock::FlexblockSequenceTransition",
                     "mID": "GeneratedElement07-10-201911:44:01",
                     "Name": "0",
+                    "Start Time": 5.0,
                     "Duration": 3.4800004959106447,
                     "Curves": [
                         "GeneratedElement07-10-201911:44:01Generated_Curve0",
@@ -5570,7 +5602,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "GeneratedElement07-10-201911:44:01 GeneratedParameter Slack ",
                             "Name": "",
-                            "Value": 0.10000000149011612,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
