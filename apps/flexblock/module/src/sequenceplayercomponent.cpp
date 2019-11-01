@@ -91,39 +91,42 @@ namespace nap
 		void SequencePlayerComponentInstance::onUpdate()
 		{
 			// Compute sleep time in microseconds 
-			float sleep_time_microf = 1000.0f / static_cast<float>(mFrequency);
+			float sleep_time_microf = 000.0f / static_cast<float>(mFrequency);
 			long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
-
-			// declare input struct to copy parameters during computation
-			SequencePlayerThreadInput input;
 
 			while (mUpdateThreadRunning)
 			{
+				if (mShouldSetLooping)
+				{
+					mShouldSetLooping = false;
+					mIsLooping = mShouldSetLoopingValue;
+				}
+
+				if (mShouldSetSpeed)
+				{
+					mShouldSetSpeed = false;
+					mSpeed = mShouldSetSpeedValue;
+				}
+
+				if (mShouldSetTime)
+				{
+					mShouldSetTime = false;
+					mTime = mShouldSetTimeValue;
+					mReturnTime = mTime;
+					mCurrentSequenceIndex = 0;
+				}
+
 				if (mIsPlaying)
 				{
-					// copy paramters
-					{
-						std::lock_guard<std::mutex> l(mThreadInputMutex);
-
-						input.mCurrentSequenceIndex = mCurrentSequenceIndex;
-						input.mIsFinished = mIsFinished;
-						input.mIsLooping = mIsLooping;
-						input.mIsPaused = mIsPaused;
-						input.mIsPlaying = mIsPlaying;
-						input.mSpeed = mSpeed;
-						input.mTime = mTime;
-						input.mDuration = mDuration;
-					}
-
 					// calc delta time
 					auto now = mTimer.now();
 					float deltaTime = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - mBefore).count() / 1000.0f;
 					mBefore = now;
 
 					// are we not paused ? then advance time
-					if (!input.mIsPaused)
+					if (!mIsPaused)
 					{
-						input.mTime += deltaTime * input.mSpeed;
+						mTime += deltaTime * mSpeed;
 					}
 
 					// iterate trough sequences
@@ -133,46 +136,46 @@ namespace nap
 						// -1 is we should move backwards ( time is smaller then start time of current sequence )
 						// 1 is we should move forward ( time is bigger then start time + duration of current sequence )
 						// 0 is we are in the right sequence ( time is bigger then start time and smaller then start time + duration of sequence )
-						int result = mSequenceContainer->getSequences()[input.mCurrentSequenceIndex]->process(input.mTime, mParameters);
+						int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
 
 						if (result != 0)
 						{
 							// move backwards or forward in index according to result
-							input.mCurrentSequenceIndex += result;
+							mCurrentSequenceIndex += result;
 
 							size_t size = mSequenceContainer->getSequences().size();
-							if (input.mCurrentSequenceIndex >= size)
+							if (mCurrentSequenceIndex >= size)
 							{
 								// if we have reached the end of the sequence container, 
 								// stop or start again depending on whether loop is true or not
-								if (input.mIsLooping)
+								if (mIsLooping)
 								{
-									input.mCurrentSequenceIndex = 0;
+									mCurrentSequenceIndex = 0;
 									i = 0;
-									input.mTime = deltaTime;
+									mTime = deltaTime;
 								}
 								else
 								{
-									input.mIsFinished = true;
-									input.mIsPlaying = false;
-									input.mCurrentSequenceIndex = 0;
+									mIsFinished = true;
+									mIsPlaying = false;
+									mCurrentSequenceIndex = 0;
 								}
 							}
-							else if (input.mCurrentSequenceIndex < 0)
+							else if (mCurrentSequenceIndex < 0)
 							{
 								// if we have reached the beginning of the sequence container ( time is smaller then zero ), 
 								// stop or start again from the end depending on whether loop is true or not
-								if (input.mIsLooping)
+								if (mIsLooping)
 								{
-									input.mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
+									mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
 									i = 0;
-									input.mTime = input.mDuration - deltaTime;
+									mTime = mDuration - deltaTime;
 								}
 								else
 								{
-									input.mIsFinished = true;
-									input.mIsPlaying = false;
-									input.mCurrentSequenceIndex = 0;
+									mIsFinished = true;
+									mIsPlaying = false;
+									mCurrentSequenceIndex = 0;
 								}
 							}
 						}
@@ -180,19 +183,6 @@ namespace nap
 						{
 							break;
 						}
-					}
-
-					// copy parameters back
-					{
-						std::lock_guard<std::mutex> l(mThreadInputMutex);
-						mCurrentSequenceIndex = input.mCurrentSequenceIndex;
-						mIsFinished = input.mIsFinished;
-						mIsLooping = input.mIsLooping;
-						mIsPaused = input.mIsPaused;
-						mIsPlaying = input.mIsPlaying;
-						mSpeed = input.mSpeed;
-						mTime = input.mTime;
-						mDuration = input.mDuration;
 					}
 
 					// set the return time
@@ -331,11 +321,12 @@ namespace nap
 
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
+			mShouldSetTime = true;
+			mShouldSetTimeValue = math::clamp<double>(time, 0.0, mDuration);
 
-			mTime = math::clamp<double>(time, 0.0, mDuration);
-			mReturnTime = mTime;
-			mCurrentSequenceIndex = 0;
+			/*
+
+			*/
 		}
 
 
@@ -368,8 +359,6 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::save(std::string showName, utility::ErrorState& errorState)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-
 			if (errorState.check(mIsPlaying, "Cannot save when playing!"))
 				return false;
 
@@ -407,8 +396,6 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::load(std::string showPath, utility::ErrorState& errorState)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-
 			if (errorState.check(mIsPlaying, "Cannot load when playing!"))
 				return false;
 
@@ -475,8 +462,6 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::insertSequence(std::unique_ptr<Sequence> sequence, utility::ErrorState& errorState)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-
 			if (errorState.check(mIsPlaying, "Cannot insert sequence when playing!"))
 				return false;
 
@@ -490,9 +475,7 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::removeSequence(const Sequence* sequence, utility::ErrorState& errorState)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-
-			if (errorState.check(!mIsPlaying, "Cannot remove sequence when playing!"))
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
 				return false;
 
 			mSequenceContainer->removeSequence(sequence);
@@ -505,8 +488,6 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::removeSequenceElement(const Sequence* sequence, const SequenceElement* element, utility::ErrorState& errorState)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-
 			if (errorState.check(mIsPlaying, "Cannot remove sequence element when playing!"))
 				return false;
 
@@ -519,15 +500,15 @@ namespace nap
 
 		void SequencePlayerComponentInstance::setSpeed(const float speed)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-			mSpeed = speed;
+			mShouldSetSpeed = true;
+			mShouldSetSpeedValue = speed;
 		}
 
 
 		void SequencePlayerComponentInstance::setIsLooping(const bool isLooping)
 		{
-			std::lock_guard<std::mutex> l(mThreadInputMutex);
-			mIsLooping = isLooping;
+			mShouldSetLooping = true;
+			mShouldSetLoopingValue = isLooping;
 		}
 	}
 }

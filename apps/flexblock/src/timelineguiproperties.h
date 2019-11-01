@@ -102,5 +102,7 @@ namespace nap
 		bool mCalibrationMode = false;
 		bool mClampMetersInCalibrationMode = true;
 		std::vector<bool> mUseDigitalPin = std::vector<bool>(8);
+
+		bool mShowQuitDialog = false;
 	};
 }

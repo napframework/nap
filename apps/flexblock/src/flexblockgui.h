@@ -70,6 +70,11 @@ namespace nap
 		 * 
 		 */
 		void shutDown();
+
+		/**
+		 * 
+		 */
+		void quitDialog();
 	private:
 		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
@@ -112,6 +117,8 @@ namespace nap
 		* show the timeline window
 		*/
 		void showTimeLineWindow();
+
+		void handleQuitPopup();
 
 		/**
 		* Handle insertion popup

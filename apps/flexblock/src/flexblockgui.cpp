@@ -38,8 +38,6 @@ namespace nap
 	// 82, 84, 106
 	ImU32 colorDarkGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(82.0f / 255.0f, 84.0f / 255.0f, 106.0f / 255.0f, 1.0f));
 
-	ImU32 colorGreen = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.5f, 0.0f, 1.0f));
-
 	FlexblockGui::FlexblockGui(FlexblockApp& app) : 
 		mApp(app),
 		mParameterService(*app.getCore().getService<ParameterService>())
@@ -468,6 +466,15 @@ namespace nap
 
 		if (mProps.mShowMotorSteps)
 			showMotorSteps();
+
+		if (mProps.mShowQuitDialog)
+		{
+			mProps.mShowQuitDialog = false;
+
+			ImGui::OpenPopup("Quit");
+		}
+
+		handleQuitPopup();
 	}
 	
 
@@ -711,7 +718,7 @@ namespace nap
 						drawList->AddLine(
 							ImVec2(mProps.mTopLeftPosition.x + startX, mProps.mTopLeftPosition.y),
 							ImVec2(mProps.mTopLeftPosition.x + startX, mProps.mTopLeftPosition.y + childSize.y + 100),
-							colorGreen);
+							colorWhite);
 
 						// draw sequence text
 						drawList->AddText(
@@ -728,7 +735,7 @@ namespace nap
 							drawList->AddRect(
 								sequenceBoxUpperLeft,
 								sequenceBoxLowerRight,
-								colorGreen);
+								colorWhite);
 
 							// rename sequence action
 							if (mProps.mCurrentAction == TimeLineActions::NONE && enableMouse)
@@ -738,7 +745,7 @@ namespace nap
 									drawList->AddRectFilled(
 										sequenceBoxUpperLeft,
 										sequenceBoxLowerRight,
-										colorGreen);
+										colorWhite);
 
 									if (ImGui::IsMouseClicked(1))
 									{
@@ -936,7 +943,7 @@ namespace nap
 														outPopupOpened = true;
 														outPopupId = "Edit Value";
 													}
-													else
+													else if( mProps.mShowToolTips )
 													{
 														ImGui::BeginTooltip();
 														ImGui::Text("Hold left mouse button to drag \nPress right mouse button to edit value");
@@ -1756,7 +1763,7 @@ namespace nap
 		//
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const std::string showDir = "Shows";
+			const std::string showDir = "shows";
 
 			// Find all files in the preset directory
 			std::vector<std::string> files_in_directory;
@@ -1832,6 +1839,8 @@ namespace nap
 
 	void FlexblockGui::handleSequenceActionsPopup()
 	{
+		bool openDeletionPopup = false;
+
 		if (ImGui::BeginPopup("SequenceActions"))
 		{
 			char buffer[256];
@@ -1848,16 +1857,8 @@ namespace nap
 			{
 				if (ImGui::Button("Delete"))
 				{
-					utility::ErrorState errorState;
-					mSequencePlayer->removeSequence(mProps.mSelectedSequence, errorState);
+					openDeletionPopup = true;
 
-					for (auto& pair : mProps.mDirtyFlags)
-					{
-						pair.second = true;
-					}
-
-					mProps.mInPopup = false;
-					mProps.mCurrentAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -1878,6 +1879,41 @@ namespace nap
 				mProps.mCurrentAction = TimeLineActions::NONE;
 				mProps.mInPopup = false;
 			}
+		}
+
+		if (openDeletionPopup)
+		{
+			ImGui::OpenPopup("Delete Sequence Confirmation");
+		}
+
+		if (ImGui::BeginPopupModal("Delete Sequence Confirmation"))
+		{
+			ImGui::Text(("Are you sure you want to delete sequence " + mProps.mSelectedSequence->mName + " ?").c_str());
+			if (ImGui::Button("Delete"))
+			{
+				utility::ErrorState errorState;
+				mSequencePlayer->removeSequence(mProps.mSelectedSequence, errorState);
+				for (auto& pair : mProps.mDirtyFlags)
+				{
+					pair.second = true;
+				}
+
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
 		}
 	}
 
@@ -2062,9 +2098,71 @@ namespace nap
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
 
 		ImGui::Begin("Playlist");
+
+		// play list controlers
+
+		ImGui::Text("Play Controls");
+		// stop button
+		if (ImGui::Button("Stop"))
+		{
+			mSequencePlayer->stop();
+		}
+
+		// draw sequence player controls
+		if (mSequencePlayer->getIsLoaded())
+		{
+			ImGui::SameLine();
+			if (!mSequencePlayer->getIsPaused() &&
+				mSequencePlayer->getIsPlaying())
+			{
+				if (ImGui::Button("Pause"))
+				{
+					mSequencePlayer->pause();
+				}
+			}
+			else
+			{
+				if (mSequencePlayer->getIsFinished())
+				{
+					mSequencePlayer->setTime(0.0);
+				}
+
+				if (ImGui::Button("Play"))
+				{
+					mSequencePlayer->play();
+				}
+			}
+		}
+
+		//
+		ImGui::Text("Play Speed");
+		if (ImGui::Button("   -   "))
+		{
+			mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() - 0.05f);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("   +   "))
+		{
+			mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() + 0.05f);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+		{
+			mSequencePlayer->setSpeed(1);
+		}
+		ImGui::SameLine();
+		
+		float s = mSequencePlayer->getSpeed();
+
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(2) << s;
+		ImGui::Text(ss.str().c_str());
+
 		ImGui::Spacing();
 
 		ImGui::Spacing();
+
+		ImGui::Separator();
 
 		if (ImGui::TreeNode("Playlist"))
 		{
@@ -2116,11 +2214,12 @@ namespace nap
 
 					if (isElementBeingPlayed)
 					{
-						float progress = (mSequencePlayer->getCurrentTime() - element->getStartTime()) / element->mDuration;
+						float timeInElement = mSequencePlayer->getCurrentTime() - element->getStartTime();
+						float progress = timeInElement / element->mDuration;
 						int percentage = int(progress * 100.0f);
 
 						ImGui::SameLine();
-						ImGui::Text("   %i%s", percentage, "%");
+						ImGui::Text("   %s	  %i%s", formatTimeString(timeInElement).c_str() ,percentage, "%");
 					}
 
 					if (isElementBeingPlayed)
@@ -2141,6 +2240,7 @@ namespace nap
 
 	void FlexblockGui::handleElementActionsPopup()
 	{
+		bool openDeletionPopup = false;
 		if (ImGui::BeginPopup("ElementActions"))
 		{
 			char buffer[256];
@@ -2153,16 +2253,33 @@ namespace nap
 				mProps.mSelectedElement->mName = newName;
 			}
 
-			const timeline::Sequence* owningSequence 
+			timeline::Sequence* owningSequence 
 				= mSequencePlayer->getSequenceAtTime(mProps.mSelectedElement->getStartTime());
 
-			if (ImGui::InputFloat("Duration", &mProps.mSelectedElement->mDuration, 0.1f, 0.2f, 2) )
-			{
-				if (mProps.mSelectedElement->mDuration < 0.01f)
-				{
-					mProps.mSelectedElement->mDuration = 0.01f;
-				}
+			bool change = false;
+			int minutes = (int) ( mProps.mSelectedElement->mDuration / 60.0f );
+			float seconds = fmod(mProps.mSelectedElement->mDuration, 60.0f);
 
+			if (ImGui::InputInt("Minutes", &minutes, 1, 1) )
+			{
+				change = true;
+				if (minutes < 0)
+					minutes = 0;
+			}
+
+			if (ImGui::InputFloat("Seconds", &seconds, 0.01f, 0.1f, 2))
+			{
+				change = true;
+				if (seconds < 0)
+					seconds = 0;
+			}
+
+			if (change)
+			{
+				mProps.mSelectedElement->mDuration = minutes * 60.0f + seconds;
+				if (mProps.mSelectedElement->mDuration < 0.01f)
+					mProps.mSelectedElement->mDuration = 0.01f;
+				
 				mSequencePlayer->reconstruct();
 				for (auto& pair : mProps.mDirtyFlags)
 				{
@@ -2170,22 +2287,18 @@ namespace nap
 				}
 			}
 
+			ImGui::Text("Duration : %s", formatTimeString(mProps.mSelectedElement->mDuration).c_str());
+
+			ImGui::Separator();
+
 			// enable delete if sequence has more then one element
 			if (owningSequence != nullptr &&
 				owningSequence->getElements().size() > 1)
 			{
 				if (ImGui::Button("Delete"))
 				{
-					utility::ErrorState errorState;
-					mSequencePlayer->removeSequenceElement(owningSequence, mProps.mSelectedElement, errorState);
-					for (auto& pair : mProps.mDirtyFlags)
-					{
-						pair.second = true;
-					}
-
-					mProps.mInPopup = false;
-					mProps.mCurrentAction = TimeLineActions::NONE;
-					ImGui::CloseCurrentPopup();
+					mProps.mSelectedSequence = owningSequence;
+					openDeletionPopup = true;
 				}
 			}
 
@@ -2206,6 +2319,39 @@ namespace nap
 				mProps.mInPopup = false;
 			}
 		}
+
+		if (openDeletionPopup)
+			ImGui::OpenPopup("Delete Sequence Element Confirmation");
+
+		if (ImGui::BeginPopupModal("Delete Sequence Element Confirmation"))
+		{
+			ImGui::Text(("Are you sure you want to delete sequence element " + mProps.mSelectedElement->mName + " ?").c_str());
+			if (ImGui::Button("Delete"))
+			{
+				utility::ErrorState errorState;
+				mSequencePlayer->removeSequenceElement(mProps.mSelectedSequence, mProps.mSelectedElement, errorState);
+				for (auto& pair : mProps.mDirtyFlags)
+				{
+					pair.second = true;
+				}
+
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 
 
@@ -2222,6 +2368,50 @@ namespace nap
 		ImGui::End();
 	}
 
+
+	void FlexblockGui::quitDialog()
+	{
+		mProps.mShowQuitDialog = true;
+	}
+
+
+	void FlexblockGui::handleQuitPopup()
+	{
+		bool doQuit = false;
+		if (ImGui::BeginPopupModal("Quit"))
+		{
+			ImGui::Text("Are you sure you want to quit ?");
+
+			if (ImGui::Button("Save & Quit"))
+			{
+				std::string currentShowName = mSequencePlayer->getShowName();
+				currentShowName += ".json";
+
+				utility::ErrorState errorState;
+				mSequencePlayer->save(currentShowName, errorState);
+				doQuit = true;
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Quit"))
+			{
+				doQuit = true;
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (doQuit)
+		{
+			mApp.quit();
+		}
+	}
 
 	void FlexblockGui::handleInsertionPopup()
 	{
@@ -2529,6 +2719,9 @@ namespace nap
 		}
 		else
 		{
+			// rename
+			newElement->mName = "Element " + std::to_string(sequence->getElements().size() + 1);
+
 			// insert element in sequence and transfer ownership
 			auto* element = sequence->insertElement(std::move(newElement));
 
@@ -2603,6 +2796,10 @@ namespace nap
 		}
 		else
 		{
+			//
+			newSequence->mName = "Sequence " + std::to_string( mSequencePlayer->getSequences().size() + 1 );
+			newElement->mName = "Element 1";
+
 			// insert and move ownership
 			newSequence->insertElement(std::move(newElement));
 

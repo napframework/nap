@@ -13,29 +13,6 @@ namespace nap
 {
 	namespace timeline
 	{
-		/**
-		* Simple struct that defines the inputs for the flexblock algorithm.
-		* This struct can be copied and is used to update input data thread safe.
-		*/
-		struct SequencePlayerThreadInput
-		{
-			/**
-			* Default Constructor
-			*/
-			SequencePlayerThreadInput() = default;
-
-			// Member Variables
-			bool mIsPlaying					= false;
-			bool mIsPaused					= false;
-			bool mIsFinished				= false;
-			bool mIsLooping					= false;
-			float mSpeed					= 0.0f;
-			double mTime					= 0.0;
-			double mDuration				= 0.0;
-			size_t mCurrentSequenceIndex	= 0;
-		};
-
-
 		//////////////////////////////////////////////////////////////////////////
 
 		class SequencePlayerComponentInstance;
@@ -255,7 +232,6 @@ namespace nap
 			// threading 
 			std::future<void>	mUpdateTask;
 			bool				mUpdateThreadRunning;
-			std::mutex			mThreadInputMutex;
 			std::atomic<double>	mReturnTime = { 0.0 };
 
 			// used to calculate delta time in update
@@ -272,6 +248,17 @@ namespace nap
 			float mSpeed					= 1.0f;
 			double mDuration				= 0.0;
 
+			//
+			std::atomic_bool				mShouldSetLooping;
+			std::atomic_bool				mShouldSetLoopingValue;
+
+			std::atomic_bool				mShouldSetTime;
+			std::atomic<double>				mShouldSetTimeValue;
+
+			std::atomic_bool				mShouldSetSpeed;
+			std::atomic<float>				mShouldSetSpeedValue;
+
+			//
 			std::string mShowName;
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 			rtti::OwnedObjectList mOwnedObjects;
