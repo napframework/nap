@@ -1763,7 +1763,8 @@ namespace nap
 		//
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			const std::string showDir = "shows";
+			//
+			std::string showDir = "shows/";
 
 			// Find all files in the preset directory
 			std::vector<std::string> files_in_directory;
@@ -2170,6 +2171,8 @@ namespace nap
 
 			for (const auto* sequence : sequences)
 			{
+				ImGui::Spacing();
+				ImGui::Spacing();
 				ImGui::PushID((void*)sequence);
 
 				ImVec4 color = ImGui::ColorConvertU32ToFloat4( colorWhite );
@@ -2181,7 +2184,7 @@ namespace nap
 				}
 
 				ImGui::PushStyleColor(0, color);
-				if(ImGui::Button(sequence->mName.c_str()))
+				if(ImGui::Button(sequence->mName.c_str(), ImVec2(150, 35)))
 				{
 					mSequencePlayer->skipToSequence(sequence);
 				}
@@ -2191,6 +2194,7 @@ namespace nap
 
 				const auto& elements = sequence->getElements();
 
+				ImGui::Indent();
 				ImGui::Indent();
 				for (const auto* element : elements)
 				{
@@ -2204,7 +2208,7 @@ namespace nap
 					if (isElementBeingPlayed)
 						ImGui::PushStyleColor(0, color);
 
-					if (ImGui::SmallButton(element->mName.c_str()))
+					if (ImGui::Button(element->mName.c_str(), ImVec2(150, 25)))
 					{
 						//mSequencePlayer->skipToSequence(sequence);
 						mSequencePlayer->setTime(element->getStartTime());
@@ -2228,10 +2232,17 @@ namespace nap
 					ImGui::PopID();
 				}
 				ImGui::Unindent();
+				ImGui::Unindent();
 				ImGui::PopID();
 
 			}
 			ImGui::TreePop();
+		}
+
+		//create some scroll space
+		for (int i = 0; i < 30; i++)
+		{
+			ImGui::Spacing();
 		}
 
 		ImGui::End();

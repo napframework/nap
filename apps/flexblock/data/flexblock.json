@@ -166,11 +166,6 @@
                     "Override Minimum": 0.0
                 },
                 {
-                    "Type": "nap::FlexBlockSerialComponent",
-                    "mID": "FlexBlockSerialComponent",
-                    "SerialPort": "SerialPort"
-                },
-                {
                     "Type": "nap::OSCInputComponent",
                     "mID": "OSCMotorInputs",
                     "Addresses": [
@@ -745,7 +740,7 @@
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{ED9B2A1A-3496-4FE4-9ACF-1C693E749F50}",
+            "Adapter": "\\Device\\NPF_{9CCC1944-63F4-4A06-8585-73BDAE9D120C}",
             "ProcessCycleTime": 1000,
             "ErrorCycleTime": 10000,
             "RecoveryTimeout": 1000,
