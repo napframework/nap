@@ -111,116 +111,103 @@ namespace nap
 		mStructs[index] = &uniformStruct;
 	}
 
-	void UniformInt::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformInt::push(uint8_t* uniformBuffer) const
 	{
-		assert(sizeof(mValue) == declaration.mSize);
-		memcpy(uniformBuffer + declaration.mOffset, &mValue, sizeof(mValue));
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
 
-	void UniformFloat::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformFloat::push(uint8_t* uniformBuffer) const
 	{
-		assert(sizeof(mValue) == declaration.mSize);
-		memcpy(uniformBuffer + declaration.mOffset, &mValue, sizeof(mValue));
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
 
-	void UniformVec3::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformVec3::push(uint8_t* uniformBuffer) const
 	{
-		assert(sizeof(mValue) == declaration.mSize);
-		memcpy(uniformBuffer + declaration.mOffset, &mValue, sizeof(mValue));
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
 
-	void UniformVec4::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformVec4::push(uint8_t* uniformBuffer) const
 	{
-		assert(sizeof(mValue) == declaration.mSize);
-		memcpy(uniformBuffer + declaration.mOffset, &mValue, sizeof(mValue));
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
 
-	void UniformMat4::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformMat4::push(uint8_t* uniformBuffer) const
 	{
-		assert(sizeof(mValue) == declaration.mSize);
-		memcpy(uniformBuffer + declaration.mOffset, &mValue, sizeof(mValue));
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
-
-	int UniformTexture2D::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const
+	UniformTexture::UniformTexture(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
+		mDeclaration(&declaration)
 	{
-		return 0;
+		VkSamplerCreateInfo samplerInfo = {};
+		samplerInfo.sType					= VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter				= VK_FILTER_LINEAR;
+		samplerInfo.minFilter				= VK_FILTER_LINEAR;
+		samplerInfo.addressModeU			= VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV			= VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW			= VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.anisotropyEnable		= VK_FALSE;
+		samplerInfo.maxAnisotropy			= 16;
+		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable			= VK_FALSE;
+		samplerInfo.compareOp				= VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode				= VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-// 		if (mTexture == nullptr)
-// 			return 0;
-// 
-// 		glActiveTexture(GL_TEXTURE0 + textureUnit);
-// 		mTexture->bind();
-// 		glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&textureUnit));
-// 
-// 		return 1;
+		VkResult result = vkCreateSampler(device, &samplerInfo, nullptr, &mSampler);
+		assert(result == VK_SUCCESS);
 	}
+
+	UniformTexture2D::UniformTexture2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
+		UniformTexture(device, declaration)
+	{
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
-	void UniformIntArray::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformIntArray::push(uint8_t* uniformBuffer) const
 	{
-		assert(declaration.mSize == mValues.size() * sizeof(int));
-		memcpy(uniformBuffer + declaration.mOffset, mValues.data(), mValues.size() * sizeof(int));
+		assert(mDeclaration->mSize == mValues.size() * sizeof(int));
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), mValues.size() * sizeof(int));
 	}
 
 
-	void UniformFloatArray::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformFloatArray::push(uint8_t* uniformBuffer) const
 	{
-		assert(declaration.mSize == mValues.size() * sizeof(float));
-		memcpy(uniformBuffer + declaration.mOffset, mValues.data(), mValues.size() * sizeof(float));
+		assert(mDeclaration->mSize == mValues.size() * sizeof(float));
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), mValues.size() * sizeof(float));
 	}
 
 
-	void UniformVec3Array::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformVec3Array::push(uint8_t* uniformBuffer) const
 	{
-		assert(declaration.mSize == mValues.size() * sizeof(glm::vec3));
-		memcpy(uniformBuffer + declaration.mOffset, mValues.data(), mValues.size() * sizeof(glm::vec3));
+		assert(mDeclaration->mSize == mValues.size() * sizeof(glm::vec3));
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), mValues.size() * sizeof(glm::vec3));
 	}
 
 
-	void UniformVec4Array::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformVec4Array::push(uint8_t* uniformBuffer) const
 	{
-		assert(declaration.mSize == mValues.size() * sizeof(glm::vec4));
-		memcpy(uniformBuffer + declaration.mOffset, mValues.data(), mValues.size() * sizeof(glm::vec4));
+		assert(mDeclaration->mSize == mValues.size() * sizeof(glm::vec4));
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), mValues.size() * sizeof(glm::vec4));
 	}
 
 
-	void UniformMat4Array::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const
+	void UniformMat4Array::push(uint8_t* uniformBuffer) const
 	{
-		assert(declaration.mSize == mValues.size() * sizeof(glm::mat4));
-		memcpy(uniformBuffer + declaration.mOffset, mValues.data(), mValues.size() * sizeof(glm::mat4));
+		assert(mDeclaration->mSize == mValues.size() * sizeof(glm::mat4));
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), mValues.size() * sizeof(glm::mat4));
 	}
-	
 
-	int UniformTexture2DArray::push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const
-	{
-		return 0;
-// 		int num_bound = 0;
-// 		mTextureUnits.clear();
-// 		mTextureUnits.reserve(mTextures.size());
-// 		
-// 		// Iterate over every user declared uniform texture in the array.
-// 		// Bind it to the right texture unit and store list of used units
-// 		// to upload later on.
-// 		for (int index = 0; index < mTextures.size(); ++index)
-// 		{
-// 			if (mTextures[index] == nullptr)
-// 				continue;
-// 
-// 			int unit = textureUnit + num_bound++;
-// 			glActiveTexture(GL_TEXTURE0 + unit);
-// 			mTextures[index]->bind();
-// 			mTextureUnits.emplace_back(unit);
-// 		}
-// 
-// 		// Upload list of used texture units.
-// 		glUniform1iv(declaration.mLocation, mTextureUnits.size(), static_cast<const GLint*>(mTextureUnits.data()));
-// 		return num_bound;
-	}
 
 } // End Namespace NAP

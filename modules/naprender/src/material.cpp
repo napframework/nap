@@ -8,6 +8,7 @@
 #include <GL/glew.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
+#include "nshaderutils.h"
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
@@ -52,12 +53,17 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	std::unique_ptr<UniformTexture> createUniformFromDeclaration(VkDevice device, const opengl::UniformSamplerDeclaration& declaration)
+	{
+		return std::make_unique<UniformTexture2D>(device, declaration);
+	}
+
 	/**
 	* Creates Uniform objects based on a declaration.
 	*/
-	std::unique_ptr<Uniform> createUniformFromDeclaration(const opengl::UniformDeclaration& declaration)
+	std::unique_ptr<UniformValue> createUniformFromDeclaration(const opengl::UniformValueDeclaration& declaration)
 	{
-		std::unique_ptr<Uniform> result;
+		std::unique_ptr<UniformValue> result;
 
 		switch (declaration.mType)
 		{
@@ -97,15 +103,6 @@ namespace nap
 
 				break;
 			}
-		case opengl::EGLSLType::Tex2D:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformTexture2DArray>(declaration.mSize);
-				else
-					result = std::make_unique<UniformTexture2D>();
-
-				break;
-			}
 		case opengl::EGLSLType::Vec3:
 			{
 				if (declaration.isArray())
@@ -118,6 +115,7 @@ namespace nap
 		}
 		assert(result);
 		result->mName = declaration.mName;
+		result->setDeclaration(declaration);
 		return result;
 	}
 
@@ -148,7 +146,7 @@ namespace nap
 	 * Helper function to verify that the specified uniform matches with the uniform declaration in the shader.
 	 * It verifies that the type of uniform (array/non-array) matches with the shader; if it's an array, it also verifies that the lengths match
 	 */
-	static bool verifyUniform(const Uniform& uniform, const opengl::UniformDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
+	static bool verifyUniform(const UniformValue& uniform, const opengl::UniformValueDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
 	{
 		// If the declaration is an array, verify that the uniform is also an array and that the sizes match
 		if (uniformDeclaration.isArray())
@@ -207,12 +205,12 @@ namespace nap
 			
 			for (auto& kvp : ubo.mUniforms)
 			{
-				Uniform* uniform = kvp.second->mUniform.get();
+				const Uniform* uniform = kvp.second;
 				
-				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(uniform);
+				const nap::UniformValue* uniform_val = rtti_cast<const nap::UniformValue>(uniform);
 				if (uniform_val != nullptr)
 				{
-					uniform_val->push((uint8_t*)mapped_memory, *kvp.second->mDeclaration);
+					uniform_val->push((uint8_t*)mapped_memory);
 				}
 			}
 
@@ -354,36 +352,36 @@ namespace nap
 
 	int MaterialInstance::getTextureUnit(nap::UniformTexture& uniform)
 	{
-		int texture_unit = 0;
-		std::unordered_set<std::string> instance_bindings;
-
-		// Iterate over all material instance texture bindings
-		// If the texture uniform matches the requested uniform it is considered to be at that location
-		// If not the location is incremented until a match is found
-		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
-		for (auto& kvp : instance_texture_bindings)
-		{
-			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
-			if (uniform_tex == &uniform)
-				return texture_unit;
-			texture_unit++;
-			instance_bindings.insert(kvp.first);
-		}
-
-		// Iterate over all source material bindings
-		// If the texture uniform matches the requested uniform it is considered to be at that location
-		// If not, there is no valid texture binding associated with the given uniform
-		Material* material = getMaterial();
-		for (auto& kvp : material->getTextureBindings())
-		{
-			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-			{
-				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
-				if (uniform_tex == &uniform)
-					return texture_unit;
-				texture_unit++;
-			}
-		}
+// 		int texture_unit = 0;
+// 		std::unordered_set<std::string> instance_bindings;
+// 
+// 		// Iterate over all material instance texture bindings
+// 		// If the texture uniform matches the requested uniform it is considered to be at that location
+// 		// If not the location is incremented until a match is found
+// 		const UniformSamplers& instance_texture_bindings = getUniformSamplers();
+// 		for (auto& kvp : instance_texture_bindings)
+// 		{
+// 			nap::Uniform* uniform_tex = kvp.second.get();
+// 			if (uniform_tex == &uniform)
+// 				return texture_unit;
+// 			texture_unit++;
+// 			instance_bindings.insert(kvp.first);
+// 		}
+// 
+// 		// Iterate over all source material bindings
+// 		// If the texture uniform matches the requested uniform it is considered to be at that location
+// 		// If not, there is no valid texture binding associated with the given uniform
+// 		Material* material = getMaterial();
+// 		for (auto& kvp : material->getTextureBindings())
+// 		{
+// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+// 			{
+// 				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+// 				if (uniform_tex == &uniform)
+// 					return texture_unit;
+// 				texture_unit++;
+// 			}
+// 		}
 
 		// No texture binding associated with the given uniform
 		return -1;
@@ -392,14 +390,25 @@ namespace nap
 	
 	Uniform& MaterialInstance::createUniform(const std::string& name)
 	{
-		const opengl::UniformDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformDeclarations();
+		const opengl::UniformValueDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformValueDeclarations();
+		const opengl::UniformSamplerDeclarations& sampler_declarations = mResource->mMaterial->getShader()->getShader().getUniformSamplerDeclarations();
 
-		opengl::UniformDeclarations::const_iterator pos = uniform_declarations.find(name);
-		assert(pos != uniform_declarations.end());
+		opengl::UniformValueDeclarations::const_iterator value_pos = uniform_declarations.find(name);
+		if (value_pos != uniform_declarations.end())
+		{
+			const opengl::UniformValueDeclaration* declaration = value_pos->second;
+			std::unique_ptr<UniformValue> uniform = createUniformFromDeclaration(*declaration);
+			return addUniformValue(std::move(uniform));
+		}
+		else
+		{
+			opengl::UniformSamplerDeclarations::const_iterator sampler_pos = sampler_declarations.find(name);
+			assert(sampler_pos != sampler_declarations.end());
 
-		const opengl::UniformDeclaration* declaration = pos->second;
-		std::unique_ptr<Uniform> uniform = createUniformFromDeclaration(*declaration);
-		return addUniform(std::move(uniform), *declaration);
+			const opengl::UniformSamplerDeclaration& declaration = sampler_pos->second;
+			std::unique_ptr<UniformTexture> uniform = createUniformFromDeclaration(mDevice, declaration);
+			return addUniformSampler(std::move(uniform));
+		}
 	}
 
 	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -438,7 +447,7 @@ namespace nap
 		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
 			return false;
 
-		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Coult not bind buffer memory"))
+		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
 			return false;
 
 		return true;
@@ -447,26 +456,42 @@ namespace nap
 	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
+		mDevice = renderer.getDevice();
 
 		Material& material = *resource.mMaterial;
 		const opengl::Shader& shader = material.getShader()->getShader();
 
-		const opengl::UniformDeclarations& uniform_declarations = shader.getUniformDeclarations();
+		const opengl::UniformValueDeclarations& uniform_values = shader.getUniformValueDeclarations();
+		const opengl::UniformSamplerDeclarations& uniform_samplers = shader.getUniformSamplerDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
 		for (ResourcePtr<Uniform>& uniform : resource.mUniforms)
 		{
-			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (declaration == uniform_declarations.end())
-				continue;
+			if (uniform->get_type().is_derived_from<UniformValue>())
+			{
+				opengl::UniformValueDeclarations::const_iterator declaration = uniform_values.find(uniform->mName);
+				if (declaration == uniform_values.end())
+					continue;
 
-			if (!verifyUniform(*uniform, *declaration->second, material.getShader()->mID, errorState))
-				return false;
+				if (!verifyUniform(*rtti_cast<UniformValue>(uniform.get()), *declaration->second, material.getShader()->mID, errorState))
+					return false;
 
-			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
-			nap::rtti::copyObject(*uniform, *new_uniform.get());
+				std::unique_ptr<UniformValue> new_uniform = createUniformFromDeclaration(*declaration->second);
+				nap::rtti::copyObject(*uniform, *new_uniform.get());
 
-			addUniform(std::move(new_uniform), *declaration->second);
+				addUniformValue(std::move(new_uniform));
+			}
+			else if (uniform->get_type().is_derived_from<UniformTexture>())
+			{
+				opengl::UniformSamplerDeclarations::const_iterator declaration = uniform_samplers.find(uniform->mName);
+				if (declaration == uniform_samplers.end())
+					continue;
+
+				std::unique_ptr<UniformTexture> new_uniform = createUniformFromDeclaration(renderer.getDevice(), declaration->second);
+				nap::rtti::copyObject(*uniform, *new_uniform.get());
+
+				addUniformSampler(std::move(new_uniform));
+			}
 		}
 
 		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUniformBufferObjectDeclarations();
@@ -478,9 +503,9 @@ namespace nap
 			UniformBufferObject ubo(ubo_declaration);
 			for (auto& uniform_declaration : ubo_declaration.mDeclarations)
 			{
-				const UniformBinding* uniform = findUniformBinding(uniform_declaration->mName);
+				const Uniform* uniform = findUniform(uniform_declaration->mName);
 				if (uniform == nullptr)
-					uniform = material.findUniformBinding(uniform_declaration->mName);
+					uniform = material.findUniform(uniform_declaration->mName);
 
 				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
 					return false;
@@ -493,14 +518,16 @@ namespace nap
 
 		int num_frames = 2;
 
-		VkDescriptorPoolSize poolSize = {};
-		poolSize.type				= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize.descriptorCount	= num_frames * ubo_declarations.size();
+		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[0].descriptorCount = num_frames * ubo_declarations.size();
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].descriptorCount = num_frames * uniform_samplers.size() ;
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount	= 1;
-		poolInfo.pPoolSizes		= &poolSize;
+		poolInfo.poolSizeCount	= poolSizes.size();
+		poolInfo.pPoolSizes		= poolSizes.data();
 		poolInfo.maxSets		= num_frames;
 
 		if (!errorState.check(vkCreateDescriptorPool(renderer.getDevice(), &poolInfo, nullptr, &mDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool"))
@@ -517,7 +544,7 @@ namespace nap
 		if (!errorState.check(vkAllocateDescriptorSets(renderer.getDevice(), &allocInfo, mDescriptorSets.data()) == VK_SUCCESS, "Failed to create descriptor set"))
 			return false;
 
-		int num_descriptors = num_frames * ubo_declarations.size();
+		int num_descriptors = (num_frames * ubo_declarations.size()) + (num_frames * uniform_samplers.size());
 		std::vector<VkWriteDescriptorSet> descriptor_writes;
 		descriptor_writes.resize(num_descriptors);
 
@@ -552,6 +579,35 @@ namespace nap
 				write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				write_descriptor_set.descriptorCount = 1;
 				write_descriptor_set.pBufferInfo = &bufferInfo;
+
+				descriptor_index++;
+			}
+
+			for (auto& sampler_declaration : uniform_samplers)
+			{
+				const UniformTexture2D* uniform = findUniform<UniformTexture2D>(sampler_declaration.second.mName);
+				if (uniform == nullptr)
+					uniform = material.findUniform<UniformTexture2D>(sampler_declaration.second.mName);
+
+				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
+					return false;
+
+				if (!errorState.check(uniform->mTexture != nullptr, "No texture set for uniform"))
+					return false;
+
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout	= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView		= uniform->mTexture->getImageView();
+				imageInfo.sampler		= uniform->getSampler();
+
+				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
+				write_descriptor_set.sType	= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write_descriptor_set.dstSet = mDescriptorSets[frame_index];
+				write_descriptor_set.dstBinding = sampler_declaration.second.mBinding;
+				write_descriptor_set.dstArrayElement = 0;
+				write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				write_descriptor_set.descriptorCount = 1;
+				write_descriptor_set.pImageInfo = &imageInfo;
 
 				descriptor_index++;
 			}
@@ -680,7 +736,7 @@ namespace nap
 	 * This naming scheme was chosen to ensure that the user doesn't need to specify the full path when declaring these uniforms in the material; the full path can always 
 	 * be deduced (during the 'apply') phase as we recursively go through the uniforms.
 	 */
-	Uniform* Material::addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform)
+	Uniform* Material::addUniformRecursive(const opengl::UniformValueDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform)
 	{
 		assert(partIndex < parts.size());
 
@@ -759,12 +815,12 @@ namespace nap
 		else
 		{
 			// Create a new uniform from the declaration and set its name
-			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
+			std::unique_ptr<UniformValue> new_uniform = createUniformFromDeclaration(declaration);
 			new_uniform->mName = part;
 
 			// Add the container
 			Uniform* result = new_uniform.get();
-			addUniform(std::move(new_uniform), declaration);
+			addUniformValue(std::move(new_uniform));
 
 			didCreateUniform = true;
 			return result;
@@ -876,15 +932,28 @@ namespace nap
 			return false;
 
 		// First pass: recursively create uniforms for all declarations present in the shader.
-		const opengl::UniformDeclarations& uniform_declarations = mShader->getShader().getUniformDeclarations();
+		const opengl::UniformValueDeclarations& uniform_declarations = mShader->getShader().getUniformValueDeclarations();
 		for (auto& kvp : uniform_declarations)
 		{
-			const opengl::UniformDeclaration& declaration = *kvp.second;
+			const opengl::UniformValueDeclaration& declaration = *kvp.second;
 
 			std::vector<std::string> parts = utility::splitString(declaration.mName, '.');
 
 			bool did_create_uniform = false;
 			addUniformRecursive(declaration, "", parts, 0, did_create_uniform);
+		}
+
+		const opengl::UniformSamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
+		for (auto& kvp : sampler_declarations)
+		{
+			const opengl::UniformSamplerDeclaration& declaration = kvp.second;
+
+			// Create a new uniform from the declaration and set its name
+			std::unique_ptr<UniformTexture> new_uniform = createUniformFromDeclaration(mRenderer->getDevice(), declaration);
+
+			// Add the container
+			Uniform* result = new_uniform.get();
+			addUniformSampler(std::move(new_uniform));
 		}
 
 		// Second pass: recursively apply uniforms present in the material on top of the uniforms we created in the first pass
@@ -975,6 +1044,19 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
+		for (auto& kvp : sampler_declarations)
+		{
+			const opengl::UniformSamplerDeclaration& declaration = kvp.second;
+			
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding			= declaration.mBinding;
+			samplerLayoutBinding.descriptorCount	= 1;
+			samplerLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags			= declaration.mStage;
+
+			descriptor_set_layouts.push_back(samplerLayoutBinding);
+		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType		= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

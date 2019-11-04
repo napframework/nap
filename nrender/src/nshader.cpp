@@ -83,72 +83,76 @@ namespace opengl
 
 		for (const SpvReflectDescriptorBinding* binding : bindings)
 		{
-			if (binding->type_description->op != SpvOpTypeStruct)
-				continue;
-
-			UniformBufferObjectDeclaration uniform_buffer_object(binding->name, binding->binding, inShaderModule.vulkan_shader_stage, binding->block.size);
-
-			for (int member_index = 0; member_index < binding->block.member_count; ++member_index)
+			if (binding->type_description->op == SpvOpTypeSampledImage)
 			{
-				SpvReflectBlockVariable& member = binding->block.members[member_index];
-
-				EGLSLType type;
-				if (member.type_description->op == SpvOpTypeInt)
-				{
-					if (member.type_description->traits.numeric.scalar.signedness == 1)
-						type = EGLSLType::Int;
-					else
-						type = EGLSLType::UInt;
-				}
-				else if (member.type_description->op == SpvOpTypeFloat)
-				{
-					type = EGLSLType::Float;
-				}
-				else if (member.type_description->op == SpvOpTypeVector)
-				{
-					int component_count = member.type_description->traits.numeric.vector.component_count;
-
-					if (!errorState.check(component_count >= 2 && component_count <= 4, "Encountered vector uniform with unsupported number of component"))
-						return false;
-
-					if (component_count == 2)
-						type = EGLSLType::Vec2;
-					else if (component_count == 3)
-						type = EGLSLType::Vec3;
-					else
-						type = EGLSLType::Vec4;
-				}
-				else if (member.type_description->op == SpvOpTypeMatrix)
-				{
-					int rows = member.type_description->traits.numeric.matrix.row_count;
-					int columns = member.type_description->traits.numeric.matrix.column_count;
-					if (!errorState.check(rows == columns, "Non-square matrix uniforms are not supported"))
-						return false;
-
-					if ((!errorState.check(rows >= 2 && rows <= 4, "Encountered matrix uniform with unsupported dimensions")))
-						return false;
-
-					if (rows == 2)
-						type = EGLSLType::Mat2;
-					else if (rows == 3)
-						type = EGLSLType::Mat3;
-					else
-						type = EGLSLType::Mat4;
-				}
-				else
-				{
-					errorState.fail("Encountered unknown uniform type");
-					return false;
-				}
-
-				std::string name = nap::utility::stringFormat("%s.%s", binding->name, member.name);
-
-				std::unique_ptr<UniformDeclaration> uniform_declaration = std::make_unique<UniformDeclaration>(name, member.offset, member.size, type);
-				mUniformDeclarations[name] = uniform_declaration.get();
-				uniform_buffer_object.mDeclarations.emplace_back(std::move(uniform_declaration));
+				mSamplerDeclarations[binding->name] = UniformSamplerDeclaration(binding->name, binding->binding, inShaderModule.vulkan_shader_stage);
 			}
+			else if (binding->type_description->op == SpvOpTypeStruct)
+			{
+				UniformBufferObjectDeclaration uniform_buffer_object(binding->name, binding->binding, inShaderModule.vulkan_shader_stage, binding->block.size);
 
-			mUniformBufferObjectDeclarations.emplace_back(std::move(uniform_buffer_object));
+				for (int member_index = 0; member_index < binding->block.member_count; ++member_index)
+				{
+					SpvReflectBlockVariable& member = binding->block.members[member_index];
+
+					EGLSLType type;
+					if (member.type_description->op == SpvOpTypeInt)
+					{
+						if (member.type_description->traits.numeric.scalar.signedness == 1)
+							type = EGLSLType::Int;
+						else
+							type = EGLSLType::UInt;
+					}
+					else if (member.type_description->op == SpvOpTypeFloat)
+					{
+						type = EGLSLType::Float;
+					}
+					else if (member.type_description->op == SpvOpTypeVector)
+					{
+						int component_count = member.type_description->traits.numeric.vector.component_count;
+
+						if (!errorState.check(component_count >= 2 && component_count <= 4, "Encountered vector uniform with unsupported number of component"))
+							return false;
+
+						if (component_count == 2)
+							type = EGLSLType::Vec2;
+						else if (component_count == 3)
+							type = EGLSLType::Vec3;
+						else
+							type = EGLSLType::Vec4;
+					}
+					else if (member.type_description->op == SpvOpTypeMatrix)
+					{
+						int rows = member.type_description->traits.numeric.matrix.row_count;
+						int columns = member.type_description->traits.numeric.matrix.column_count;
+						if (!errorState.check(rows == columns, "Non-square matrix uniforms are not supported"))
+							return false;
+
+						if ((!errorState.check(rows >= 2 && rows <= 4, "Encountered matrix uniform with unsupported dimensions")))
+							return false;
+
+						if (rows == 2)
+							type = EGLSLType::Mat2;
+						else if (rows == 3)
+							type = EGLSLType::Mat3;
+						else
+							type = EGLSLType::Mat4;
+					}
+					else
+					{
+						errorState.fail("Encountered unknown uniform type");
+						return false;
+					}
+
+					std::string name = nap::utility::stringFormat("%s.%s", binding->name, member.name);
+
+					std::unique_ptr<UniformValueDeclaration> uniform_declaration = std::make_unique<UniformValueDeclaration>(name, member.offset, member.size, type);
+					mValueDeclarations[name] = uniform_declaration.get();
+					uniform_buffer_object.mDeclarations.emplace_back(std::move(uniform_declaration));
+				}
+
+				mUniformBufferObjectDeclarations.emplace_back(std::move(uniform_buffer_object));
+			}
 		}
 
 		return true;
@@ -218,11 +222,11 @@ namespace opengl
 
 
 	// Returns a uniform shader input with name
-	const UniformDeclaration* Shader::getUniform(const std::string& name) const
+	const UniformValueDeclaration* Shader::getUniform(const std::string& name) const
 	{
 		// Find uniform with name
-		auto it = mUniformDeclarations.find(name);
-		if (it == mUniformDeclarations.end())
+		auto it = mValueDeclarations.find(name);
+		if (it == mValueDeclarations.end())
 		{
 			printMessage(EGLSLMessageType::Warning, "shader has no active uniform with name: %s", name.c_str());
 			return nullptr;

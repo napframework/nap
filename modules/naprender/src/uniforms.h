@@ -20,11 +20,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		* @return the type that this uniform can handle. This should map to the shader's type.
-		*/
-		virtual opengl::EGLSLType getGLSLType() const = 0;
-
 		std::string mName;		///< Name of uniform as in shader
 	};
 
@@ -39,8 +34,6 @@ namespace nap
 		void addUniform(Uniform& uniform);
 		Uniform* findUniform(const std::string& name);
 
-		virtual opengl::EGLSLType getGLSLType() const { return opengl::EGLSLType::Int; }
-
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
 	};
@@ -53,8 +46,6 @@ namespace nap
 		RTTI_ENABLE(Uniform)
 	public:
 		void insertStruct(int index, UniformStruct& uniformStruct);
-
-		virtual opengl::EGLSLType getGLSLType() const { return opengl::EGLSLType::Int; }
 
 	public:
 		std::vector<rtti::ObjectPtr<UniformStruct>> mStructs;
@@ -69,12 +60,23 @@ namespace nap
 	{
 		RTTI_ENABLE(Uniform)
 	public:
+		void setDeclaration(const opengl::UniformValueDeclaration& declaration) { mDeclaration = &declaration; }
+		const opengl::UniformValueDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
+
+		/**
+		* @return the type that this uniform can handle. This should map to the shader's type.
+		*/
+		virtual opengl::EGLSLType getGLSLType() const = 0;
+
 
 		/**
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const = 0;
+		virtual void push(uint8_t* uniformBuffer) const = 0;
+
+	protected:
+		const opengl::UniformValueDeclaration*	mDeclaration = nullptr;
 	};
 
 	/**
@@ -102,16 +104,17 @@ namespace nap
 	class NAPAPI UniformTexture : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
-	public:
 
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		* @param textureUnit: the texture unit to activate for this texture.
-		*
-		* @return The number of texture units used by this uniform
-		*/
-		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const = 0;
+	public:
+		UniformTexture() = default;
+		UniformTexture(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
+
+		const opengl::UniformSamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
+		VkSampler getSampler() const { return mSampler; }
+
+	private:
+		const opengl::UniformSamplerDeclaration*	mDeclaration = nullptr;
+		VkSampler mSampler = nullptr;
 	};
 
 
@@ -149,7 +152,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		* @return integer GLSL type.
@@ -177,7 +180,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return integer GLSL type.
@@ -205,7 +208,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -233,7 +236,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -261,7 +264,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		* @return mat4 GLSL type.
@@ -279,25 +282,13 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformTexture)
 	public:
+		UniformTexture2D() = default;
+		UniformTexture2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
 		*/
 		void setTexture(Texture2D& texture) { mTexture = &texture; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		* @param textureUnit: the texture unit to activate for this texture.
-		*
-		* @return The number of texture units used by this uniform
-		*/
-		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const override;
-
-		/**
-		* @return texture GLSL type.
-		*/
-		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Tex2D; }
 
 		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
@@ -327,7 +318,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * Retrieve the number of elements in this array
@@ -368,7 +359,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return integer GLSL type.
@@ -409,7 +400,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -450,7 +441,7 @@ namespace nap
 		 * Updates the uniform in the shader.
 		 * @param declaration: the uniform declaration from the shader that is used to set the value.
 		 */
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		 * @return vec4 GLSL type.
@@ -491,7 +482,7 @@ namespace nap
 		* Updates the uniform in the shader.
 		* @param declaration: the uniform declaration from the shader that is used to set the value.
 		*/
-		virtual void push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration) const override;
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 		/**
 		* @return mat4 GLSL type.
@@ -527,20 +518,6 @@ namespace nap
 			mTextures(inSize)
 		{
 		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		* @param textureUnit: the texture unit to activate for this texture.
-		*
-		* @return The number of texture units used by this uniform
-		*/
-		virtual int push(uint8_t* uniformBuffer, const opengl::UniformDeclaration& declaration, int textureUnit) const override;
-
-		/**
-		* @return texture GLSL type.
-		*/
-		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Tex2D; }
 
 		/**
 		 * Retrieve the number of elements in this array

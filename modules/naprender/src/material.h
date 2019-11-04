@@ -59,7 +59,7 @@ namespace nap
 	class UniformBufferObject
 	{
 	public:
-		using UniformMap = std::unordered_map<std::string, const UniformBinding*>;
+		using UniformMap = std::unordered_map<std::string, const Uniform*>;
 
 		UniformBufferObject(const opengl::UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
@@ -200,6 +200,7 @@ namespace nap
 		//. Resource this instance is associated with
 		MaterialInstanceResource* mResource;
 
+		VkDevice							mDevice = nullptr;
 		std::vector<UniformBufferObject>	mUniformBufferObjects;
 		VkDescriptorPool					mDescriptorPool;
 		std::vector<VkDescriptorSet>		mDescriptorSets;
@@ -275,7 +276,7 @@ namespace nap
 		/**
 		 * Recursively add uniforms for the specified declaration
 		 */
-		Uniform* addUniformRecursive(const opengl::UniformDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
+		Uniform* addUniformRecursive(const opengl::UniformValueDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
 
 		/**
 		 * Ensure a UniformStruct with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an

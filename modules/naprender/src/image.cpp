@@ -4,6 +4,11 @@ RTTI_DEFINE_CLASS(nap::Image)
 
 namespace nap
 {
+	Image::Image(RenderService& renderService) :
+		Texture2D(renderService)
+	{
+	}
+
 	void Image::update()
 	{
 		assert(!mBitmap.empty());

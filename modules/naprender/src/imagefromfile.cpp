@@ -12,9 +12,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	ImageFromFile::ImageFromFile(RenderService& renderService) :
+		Image(renderService)
+	{
+	}
+
 
 	// Constructor
-	ImageFromFile::ImageFromFile(const std::string& imgPath) :
+	ImageFromFile::ImageFromFile(RenderService& renderService, const std::string& imgPath) :
+		Image(renderService),
 		mImagePath(imgPath)
 	{
 	}

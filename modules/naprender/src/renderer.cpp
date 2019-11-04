@@ -490,6 +490,8 @@ namespace nap
 		if (!findDepthFormat(mPhysicalDevice, mDepthFormat))
 			return false;
 
+		vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0, &mGraphicsQueue);
+
 		return true;
 	}
 
@@ -518,7 +520,7 @@ namespace nap
 
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
-		if (!new_window->init(window_settings, mInstance, mPhysicalDevice, mDevice, mDepthFormat, mCommandPool, mGraphicsQueueIndex, errorState))
+		if (!new_window->init(window_settings, *this, errorState))
 			return nullptr;
 
 		return new_window;

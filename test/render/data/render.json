@@ -14,6 +14,11 @@
 			"Path": "pig_head_alpha_rotated.mesh"
 		},
 		{
+			"Type" : "nap::ImageFromFile",
+			"mID" : "PigTexture",
+			"ImagePath" : "pig_head.jpg"
+		},		
+		{
 			"Type" : "nap::Shader",
 			"mID": "GeneralShader",
 			"mVertShader": "shaders/shader_vert.spv",
@@ -59,6 +64,11 @@
 						"BlendMode": "Opaque",
 						"Uniforms" : 
 						[
+							{
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "pigTexture",
+								"Texture" : "PigTexture"
+							}						
 						]
 					}
 				},
@@ -127,8 +137,8 @@
 					"Value" : 
 					{
 						"x" : 1.0,
-						"y" : 0.0,
-						"z" : 0.0,
+						"y" : 1.0,
+						"z" : 1.0,
 						"w" : 1.0						
 					}
 				}

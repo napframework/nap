@@ -9,30 +9,8 @@
 
 namespace nap
 {
-	/**
-	* Binds the Uniform data to the declaration from the shader. Together
-	* they can be used to push the uniform.
-	*/
-	struct NAPAPI UniformBinding
-	{
-		~UniformBinding();
-
-		UniformBinding(std::unique_ptr<Uniform>&& uniform, const opengl::UniformDeclaration& declaration);
-
-		UniformBinding(UniformBinding&& other);
-
-		UniformBinding& operator=(UniformBinding&& other);
-
-		UniformBinding(const UniformBinding& other);
-
-		UniformBinding& operator=(const UniformBinding& other);
-
-		std::unique_ptr<Uniform>			mUniform;		//< Unique ptr to the actual uniform value
-		const opengl::UniformDeclaration*	mDeclaration;	//< OpenGL Uniform declaration
-	};
-
-	using UniformTextureBindings = std::unordered_map<std::string, UniformBinding>;
-	using UniformValueBindings = std::unordered_map<std::string, UniformBinding>;
+	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<UniformTexture>>;
+	using UniformValues = std::unordered_map<std::string, std::unique_ptr<UniformValue>>;
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +27,12 @@ namespace nap
 	public:
 
         UniformContainer() = default;
+		UniformContainer(const UniformContainer&) = delete;
+
         virtual ~UniformContainer() = default;
         
+		UniformContainer& operator=(const UniformContainer&) = delete;
+
 		/**
 		* @return a uniform texture object that can be used to set a texture or value.
 		* If the uniform is not found, returns nullptr.
@@ -72,33 +54,14 @@ namespace nap
 		T& getUniform(const std::string& name);
 
 		/**
-		 * Search for a uniform shader binding with the given name. Use the binding to gain access to the uniform declaration.
-		 * A uniform value binding represents the coupling between a uniform value and GLSL uniform declaration
-		 * The declaration is the interface to the uniform on the shader, where the uniform value is the actual value that is uploaded.
-		 * @param name the name of the uniform to find the binding for.
-		 * @return a uniform value binding with the given name, nullptr if not found.
-		 */
-		const UniformBinding* findUniformBinding(const std::string& name) const;
-
-		/**
-		 * Gets a uniform shader binding with the given name. Use the binding to gain access to the uniform declaration.
-		 * This call asserts if a binding with the given names does not exists.
-		 * A uniform value binding represents the coupling between a uniform value and GLSL uniform declaration
-		 * The declaration is the interface to the uniform on the shader, where the uniform value is the actual value that is uploaded.
-		 * @param name the name of the uniform to find the binding for.
-		 * @return a uniform value binding with the given name.
-		 */
-		const UniformBinding& getUniformBinding(const std::string& name) const;
-
-		/**
 		* @return All texture uniform bindings.
 		*/
-		const UniformTextureBindings& getTextureBindings()	{ return mUniformTextureBindings; }
+		const UniformSamplers& getUniformSamplers()	{ return mUniformSamplers; }
 
 		/**
 		* @return All value uniform bindings.
 		*/
-		const UniformValueBindings& getValueBindings()		{ return mUniformValueBindings; }
+		const UniformValues& getUniformValues()		{ return mUniformValues; }
 
 	protected:
 		/**
@@ -107,11 +70,12 @@ namespace nap
 		* @param declaration: the shader uniform declaration to bind the uniform to.
 		* @return reference to the newly added uniform.
 		*/
-		Uniform& addUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration);
+		Uniform& addUniformValue(std::unique_ptr<UniformValue> uniform);
+		Uniform& addUniformSampler(std::unique_ptr<UniformTexture> uniform);
 
 	private:
-		UniformTextureBindings		mUniformTextureBindings;	///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
-		UniformValueBindings		mUniformValueBindings;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
+		UniformSamplers		mUniformSamplers;	///< Runtime map of sampler uniforms (superset of texture uniforms in mUniforms due to default uniforms).
+		UniformValues		mUniformValues;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
 	};
 
 	//////////////////////////////////////////////////////////////////////////

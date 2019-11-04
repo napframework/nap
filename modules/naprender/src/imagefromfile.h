@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "image.h"
+#include "rtti\factory.h"
 
 namespace nap
 {
@@ -15,7 +16,9 @@ namespace nap
 		RTTI_ENABLE(Image)
 	public:
 		// Constructor
-		ImageFromFile(const std::string& imgPath);
+		ImageFromFile(RenderService& renderService, const std::string& imgPath);
+
+		ImageFromFile(RenderService& renderService);
 
 		// Default Constructor
 		ImageFromFile() = default;
@@ -34,4 +37,5 @@ namespace nap
 		bool					mCompressed = false;					///< Property: 'Compressed' If the image on the GPU is compressed
 	};
 
+	using ImageFromFileCreator = rtti::ObjectCreator<ImageFromFile, RenderService>;
 }

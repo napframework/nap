@@ -185,7 +185,7 @@ namespace nap
 		nap::utility::ErrorState error;
 
 		// Get uniforms to push in loop
-		const nap::UniformBinding& glyph_binding = mMaterialInstance.getUniformBinding(glyph_uniform.mName);
+		const nap::UniformTexture2D& glyph_binding = mMaterialInstance.getUniform<UniformTexture2D>(glyph_uniform.mName);
 		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
 		assert(texture_unit > -1);
 
@@ -218,7 +218,7 @@ namespace nap
 
 			// Set texture and push uniforms
 			glyph_uniform.setTexture(render_glyph->getTexture());
-			glyph_uniform.push(nullptr, *glyph_binding.mDeclaration, texture_unit); // TODO: UBO
+			//glyph_uniform.push(nullptr, glyph_binding.getDeclaration(), texture_unit); // TODO: UBO
 
 			// Bind and draw all the arrays
 // 			index_buffer.bind();

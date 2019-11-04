@@ -22,6 +22,10 @@
 #include "trianglemesh.h"
 #include "shader.h"
 #include "material.h"
+#include "rendertexture2d.h"
+#include "imagefromfile.h"
+#include "image.h"
+#include "texture2d.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
@@ -49,6 +53,11 @@ namespace nap
 		factory.addObjectCreator(std::make_unique<MeshFromFileCreator>(*this));
 		factory.addObjectCreator(std::make_unique<ShaderCreator>(*this));
 		factory.addObjectCreator(std::make_unique<MaterialCreator>(*this));
+
+		factory.addObjectCreator(std::make_unique<Texture2DCreator>(*this));
+		factory.addObjectCreator(std::make_unique<ImageCreator>(*this));
+		factory.addObjectCreator(std::make_unique<ImageFromFileCreator>(*this));
+		factory.addObjectCreator(std::make_unique<RenderTexture2DCreator>(*this));
 	}
 
 

@@ -21,8 +21,7 @@ namespace opengl
 		{ GL_FLOAT_VEC4,	EGLSLType::Vec4	},
 		{ GL_FLOAT_MAT2,	EGLSLType::Mat2	},
 		{ GL_FLOAT_MAT3,	EGLSLType::Mat3	},
-		{ GL_FLOAT_MAT4,	EGLSLType::Mat4	},
-		{ GL_SAMPLER_2D,	EGLSLType::Tex2D	}
+		{ GL_FLOAT_MAT4,	EGLSLType::Mat4	}
 	};
 
 
@@ -110,7 +109,7 @@ namespace opengl
 
 
 	// Extracts all shader uniforms
-	void extractShaderUniforms(GLuint program, UniformDeclarations& outUniforms)
+	void extractShaderUniforms(GLuint program, UniformValueDeclarations& outUniforms)
 	{
 		outUniforms.clear();
 

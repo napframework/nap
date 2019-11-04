@@ -211,6 +211,13 @@ namespace nap
 		
 		// Get color type
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
+		if (fi_bitmap_color_type == FIC_RGB)
+		{
+			FIBITMAP* converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
+			FreeImage_Unload(fi_bitmap);
+			fi_bitmap = converted_bitmap;
+			fi_bitmap_color_type = FIC_RGBALPHA;
+		}
 
 		// If we're dealing with an rgb or rgba map and a bitmap
 		// The endian of the loaded free image map becomes important
@@ -221,9 +228,6 @@ namespace nap
 		{
 		case FIC_MINISBLACK:
 			mChannels = EChannels::R;
-			break;
-		case FIC_RGB:
-			mChannels = swap ? EChannels::BGR : EChannels::RGB;
 			break;
 		case FIC_RGBALPHA:
 			mChannels = swap ? EChannels::BGRA : EChannels::RGBA;

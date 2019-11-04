@@ -15,6 +15,9 @@ namespace nap
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
+		RenderTexture2D() = default;
+		RenderTexture2D(RenderService& renderService);
+
 		/**
 		 * Creates internal texture resource.
 		 * @param errorState Contains error state if the function fails.
@@ -26,4 +29,6 @@ namespace nap
 		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
 		ERenderTargetFormat	mFormat = ERenderTargetFormat::RGB8;		///< Property: 'Format' format of the texture
 	};
+
+	using RenderTexture2DCreator = rtti::ObjectCreator<RenderTexture2D, RenderService>;
 }

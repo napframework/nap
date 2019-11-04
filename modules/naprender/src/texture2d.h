@@ -6,10 +6,14 @@
 #include <ntexture2d.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
+#include "rtti/factory.h"
+#include "vulkan/vulkan_core.h"
 
 namespace nap
 {
 	class Bitmap;
+	class RenderService;
+	class Renderer;
 
 	/**
 	 *	Texture min filter
@@ -58,6 +62,9 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		Texture2D() = default;
+		Texture2D(RenderService& renderService);
+
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
@@ -134,15 +141,7 @@ namespace nap
 		*/
 		void endGetData(Bitmap& bitmap);
 
-		/**
-		 * Activates this texture for rendering.
-		 */
-		void bind();
-
-		/**
-		 * Deactivates this texture for rendering.
-		 */
-		void unbind();
+		VkImageView getImageView() const { return mTextureView; }
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
@@ -161,8 +160,14 @@ namespace nap
 
 	private:
 		friend class RenderTarget;
+		Renderer*					mRenderer = nullptr;
+		VkImage						mTextureImage = nullptr;
+		VkDeviceMemory				mTextureImageMemory = nullptr;
 		opengl::Texture2D			mTexture;			///< Internal opengl texture
+		VkImageView					mTextureView;
 	};
+
+	using Texture2DCreator = rtti::ObjectCreator<Texture2D, RenderService>;
 }
 
 //////////////////////////////////////////////////////////////////////////

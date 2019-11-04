@@ -9,6 +9,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	RenderTexture2D::RenderTexture2D(RenderService& renderService) :
+		Texture2D(renderService)
+	{
+	}
+
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{

@@ -64,10 +64,13 @@ namespace nap
 		 */
 		void shutdown();
 
+		VkInstance getVulkanInstance () const { return mInstance; }
 		VkPhysicalDevice getPhysicalDevice() { return mPhysicalDevice; }
 		VkDevice getDevice() { return mDevice; }
 		VkCommandPool getCommandPool() { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
+		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
+		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
 
 	private:
 		RendererSettings				mSettings;				///< If high dpi render mode is enabled
@@ -78,5 +81,6 @@ namespace nap
 		VkCommandPool					mCommandPool = nullptr;
 		VkFormat						mDepthFormat;
 		unsigned int					mGraphicsQueueIndex = -1;
+		VkQueue							mGraphicsQueue = nullptr;
 	};
 }

@@ -71,7 +71,7 @@ namespace nap
 		GLWindow(const GLWindow& other) = delete;
 		GLWindow& operator=(const GLWindow& other) = delete;
 
-		bool init(const RenderWindowSettings& settings, VkInstance vulkanInstance, VkPhysicalDevice physicalDevice, VkDevice device, VkFormat depthFormat, VkCommandPool commandPool, unsigned int graphicsQueueIndex, utility::ErrorState& errorState);
+		bool init(const RenderWindowSettings& settings, Renderer& renderer, utility::ErrorState& errorState);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined

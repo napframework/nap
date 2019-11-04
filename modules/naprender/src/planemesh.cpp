@@ -11,7 +11,7 @@ RTTI_BEGIN_CLASS(nap::PlaneMesh)
 	RTTI_PROPERTY("Columns",	&nap::PlaneMesh::mColumns,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-
+ 
 namespace nap
 {
 	bool PlaneMesh::init(utility::ErrorState& errorState)

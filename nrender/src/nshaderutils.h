@@ -27,8 +27,7 @@ namespace opengl
 		Vec4	= 6,			///< 4 float vector
 		Mat2    = 7,			///< 2x2 float matrix
 		Mat3    = 8,			///< 3x3 float matrix
-		Mat4    = 9,			///< 4x4 float matrix
-		Tex2D	= 10,			///< 2D Texture
+		Mat4    = 9				///< 4x4 float matrix
 	};
 
 	/**
@@ -85,7 +84,23 @@ namespace opengl
 		bool isArray() const { return false; }
 	};
 
-	using UniformDeclaration = ShaderUniformInput;
+	using UniformValueDeclaration = ShaderUniformInput; 
+
+	class UniformSamplerDeclaration
+	{
+	public:
+		UniformSamplerDeclaration() = default;
+		UniformSamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage) :
+			mName(name),
+			mBinding(binding),
+			mStage(inStage)
+		{
+		}
+
+		std::string											mName;
+		int													mBinding;
+		VkShaderStageFlagBits								mStage;
+	};
 
 	class UniformBufferObjectDeclaration
 	{
@@ -102,11 +117,12 @@ namespace opengl
 		int													mBinding;
 		VkShaderStageFlagBits								mStage;
 		int													mSize;
-		std::vector<std::unique_ptr<UniformDeclaration>>	mDeclarations;		
+		std::vector<std::unique_ptr<UniformValueDeclaration>>	mDeclarations;		
 	};
 
 	// Typedefs
-	using UniformDeclarations = std::unordered_map<std::string, UniformDeclaration*>;
+	using UniformValueDeclarations = std::unordered_map<std::string, UniformValueDeclaration*>;
+	using UniformSamplerDeclarations = std::unordered_map<std::string, UniformSamplerDeclaration>;
 
 	using ShaderVertexAttribute = ShaderInput;
 	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;
@@ -135,7 +151,7 @@ namespace opengl
 	 * @param program: The shader program to extract uniform inputs from
 	 * @param outUniforms: The populated list of uniforms
 	 */
-	void extractShaderUniforms(GLuint program, UniformDeclarations& outUniforms);
+	void extractShaderUniforms(GLuint program, UniformValueDeclarations& outUniforms);
 
 
 	/**

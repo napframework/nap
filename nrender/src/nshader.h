@@ -80,7 +80,7 @@ namespace opengl
 		 * @return shader uniform input attribute with associated name, 
 		 * nullptr if the uniform is not found
 		 */
-		const UniformDeclaration* getUniform(const std::string& name) const;
+		const UniformValueDeclaration* getUniform(const std::string& name) const;
 
 		/**
 		 * @return all vertex shader attributes
@@ -97,7 +97,8 @@ namespace opengl
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const UniformDeclarations& getUniformDeclarations() const			{ return mUniformDeclarations; }
+		const UniformValueDeclarations& getUniformValueDeclarations() const	{ return mValueDeclarations; }
+		const UniformSamplerDeclarations& getUniformSamplerDeclarations() const	{ return mSamplerDeclarations; }
 
 		const std::vector<UniformBufferObjectDeclaration>& getUniformBufferObjectDeclarations() const { return mUniformBufferObjectDeclarations; }
 
@@ -112,7 +113,8 @@ namespace opengl
 		VkShaderModule mFragmentModule = nullptr;
 
 		std::vector<UniformBufferObjectDeclaration> mUniformBufferObjectDeclarations;
-		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
+		UniformValueDeclarations mValueDeclarations;	// Shader program uniform attributes
+		UniformSamplerDeclarations mSamplerDeclarations;
 		ShaderVertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 	};
 }	// opengl

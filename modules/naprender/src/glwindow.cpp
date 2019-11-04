@@ -6,6 +6,7 @@
 // External includes
 #include <utility/errorstate.h>
 #include <nglutils.h>
+#include "renderer.h"
 
 namespace nap
 {
@@ -623,9 +624,10 @@ namespace nap
 
 
 	// Creates a window with an associated OpenGL context
-	bool GLWindow::init(const RenderWindowSettings& settings, VkInstance vulkanInstance, VkPhysicalDevice physicalDevice, VkDevice device, VkFormat depthFormat, VkCommandPool commandPool, unsigned int graphicsQueueIndex, nap::utility::ErrorState& errorState)
+	bool GLWindow::init(const RenderWindowSettings& settings, Renderer& renderer, nap::utility::ErrorState& errorState)
 	{
-		mDevice = device;
+		mDevice = renderer.getDevice();
+		mGraphicsQueue = renderer.getGraphicsQueue();
 
 		// create the window
 		mWindow = createSDLWindow(settings, errorState);
@@ -634,44 +636,45 @@ namespace nap
 
 		setSize(glm::vec2(settings.width, settings.height));
 
-		if (!createSurface(mWindow, vulkanInstance, physicalDevice, graphicsQueueIndex, mSurface))
+		VkPhysicalDevice physicalDevice = renderer.getPhysicalDevice();
+
+		if (!createSurface(mWindow, renderer.getVulkanInstance(), physicalDevice, renderer.getGraphicsQueueIndex(), mSurface))
 			return false;
 
 		VkFormat swapchainFormat;
 		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, physicalDevice, device, mSwapchain, swapchainExtent, swapchainFormat))
+		if (!createSwapChain(getSize(), mSurface, physicalDevice, mDevice, mSwapchain, swapchainExtent, swapchainFormat))
 			return false;
 
 		// Get image handles from swap chain
 		std::vector<VkImage> chain_images;
-		if (!getSwapChainImageHandles(device, mSwapchain, chain_images))
+		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images))
 			return false;
 
-		if (!createRenderPass(device, swapchainFormat, depthFormat, mRenderPass))
+		if (!createRenderPass(mDevice, swapchainFormat, renderer.getDepthFormat(), mRenderPass))
 			return false;
 
-		if (!createImageViews(device, mSwapChainImageViews, chain_images, swapchainFormat))
+		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, swapchainFormat))
 			return false;
 
-		if (!createDepthBuffer(physicalDevice, device, swapchainExtent, depthFormat, mDepthImage, mDepthImageMemory, mDepthImageView))
+		if (!createDepthBuffer(physicalDevice, mDevice, swapchainExtent, renderer.getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView))
 			return false;
 
-		if (!createFramebuffers(device, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent))
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent))
 			return false;
 
 		const int maxFramesInFlight = 2;
-		if (!createCommandBuffers(device, commandPool, mCommandBuffers, maxFramesInFlight))
+		if (!createCommandBuffers(mDevice, renderer.getCommandPool(), mCommandBuffers, maxFramesInFlight))
 			return false;
 
-		if (!createSyncObjects(device, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight))
+		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight))
 			return false;
 
 		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
 		if (presentQueueIndex == -1)
 			return false;
 
-		vkGetDeviceQueue(device, graphicsQueueIndex, 0, &mGraphicsQueue);
-		vkGetDeviceQueue(device, presentQueueIndex, 0, &mPresentQueue);
+		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);
 
 		return true;
 	}
