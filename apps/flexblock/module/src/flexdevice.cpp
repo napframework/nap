@@ -13,8 +13,14 @@
 RTTI_BEGIN_CLASS(nap::FlexDevice)
 	RTTI_PROPERTY("FlexBlockShape",		&nap::FlexDevice::mFlexBlockShape,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Frequency",			&nap::FlexDevice::mUpdateFrequency,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Slack",				&nap::FlexDevice::mSlack,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Scale",		&nap::FlexDevice::mSlackScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Slack Min",			&nap::FlexDevice::mSlackMin,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Override Scale",		&nap::FlexDevice::mOverrideScale,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Override Min",		&nap::FlexDevice::mOverrideMin,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sinus Frequency",	&nap::FlexDevice::mFrequencyRange,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sinus Amplitude",	&nap::FlexDevice::mAmplitudeRange,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",			&nap::FlexDevice::mAdapters,			nap::rtti::EPropertyMetaData::Default)
+
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,9 +85,6 @@ namespace nap
 		mPoints = std::vector<glm::vec3>(mPointsObject.size() + mPointsFrame.size());
 		mPointChange = std::vector<glm::vec3>(mPointsObject.size());
 		mPointChangeCorr = std::vector<glm::vec3>(mPointsObject.size());
-
-		// Update slack
-		mInput.mSlack = mSlack;
 
 		// concat points
 		concatPoints(mPoints);
@@ -255,6 +258,7 @@ namespace nap
 
 			// Calculate final algorithm output
 			calcRopeLengths(timer.getElapsedTime(), input, calc_ropes);
+			timer.reset();
 
 			// Update internal data, which can be used by external processes
 			setData(calc_points, calc_ropes);
@@ -379,24 +383,29 @@ namespace nap
 	}
 
 
-	void FlexDevice::calcRopeLengths(double time, const FlexInput& input, std::vector<float>& outLengths)
+	void FlexDevice::calcRopeLengths(double elapsed, const FlexInput& input, std::vector<float>& outLengths)
 	{
+		mSinTime += elapsed * (double)(input.mSinusFrequency * mFrequencyRange);
+		
+
 		outLengths.clear();
 		for (int i = 12; i < 20; i++)
-			outLengths.emplace_back(mElementsLength[i + 1] + input.mSlack);
+			outLengths.emplace_back(mElementsLength[i + 1] + input.mSlack * mSlackScale + mSlackMin);
 
 		// Apply overrides
 		for (auto i = 0; i < input.mOverrides.size(); i++)
-			outLengths[i] += input.mOverrides[i];
+			outLengths[i] += input.mOverrides[i] * mOverrideScale + mOverrideMin;
 
 		// Apply sine wave using elapsed time in seconds
-		float sin_value = static_cast<float>((((cos(time * (double)(input.mSinusFrequency)) * -1.0f) 
+		float sin_value = static_cast<float>((((cos(mSinTime) * -1.0f)
 			* 0.5f) 
 			+ 0.5f) 
 			* (double)(input.mSinusAmplitude));
 
 		for (auto& length : outLengths)
-			length += sin_value;
+			length += sin_value * mAmplitudeRange;
+
+		//printf("%f		%f		%f		%f\n", mSinTime, outLengths[0], (double)(input.mSinusFrequency * mFrequencyRange), input.mSinusFrequency);
 	}
 
 

@@ -36,12 +36,6 @@ namespace nap
 		ResourcePtr<FlexBlockShape>		mFlexBlockShape;	///< Property: 'FlexBlockShape' Reference to the shape definition of the block 
 		nap::ResourcePtr<FlexDevice>	mFlexBlockDevice;	///< Property: 'FlexBlockDevice' Reference to the flexblock device 
 
-		float mSlackRange				= 1.0f;				///< Property: 'Slack Range' 
-		float mSlackMinimum				= -0.5f;			///< Property: 'Slack Minimum' slack minimum 
-		float mSinusAmplitudeRange		= 0.5f;				///< Property: 'Amplitude Range' range of the sinusoide in meters
-		float mSinusFrequencyRange		= 100.0f;			///< Property: 'Frequency Range' range of frequency in Hz
-		float mOverrideRange			= 24.0f;			///< Property: 'Override Range' range of override parameters in meters
-		float mOverrideMinimum			= 0.0f;				///< Property: 'Override Minimum' minimum of override parameters in meters, we start to count from this value
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -120,15 +114,6 @@ namespace nap
 		 */
 		const std::vector<glm::vec3>& getFramePoints() const		{ return mFramePoints; }
 
-		/**
-		 * @return returns slack range
-		 */
-		float getSlackRange() const									{ return mSlackRange; }
-
-		/**
-		 * @return returns slack minimum
-		 */
-		float getSlackMinimum() const								{ return mSlackMinimum; }
 
 		/**
 		 * @param index of motor in flexblock space
@@ -139,22 +124,28 @@ namespace nap
 		/**
 		 * @return returns motor override minimum
 		 */
-		float getMotorOverrideMinimum() const						{ return mOverrideMinimum; }
+		float getMotorOverrideMinimum() const						{ return mFlexblockDevice->mOverrideScale; }
 
 		/**
 		 * @return returns motor override range
 		 */
-		float getMotorOverrideRange() const							{ return mOverrideRange; }
+		float getMotorOverrideRange() const							{ return mFlexblockDevice->mOverrideScale; }
 
 		/**
 		 * @return returns motor amplitude range
 		 */
-		float getSinusAmplitudeRange() const						{ return mSinusAmplitudeRange; }
+		float getSinusAmplitudeRange() const						{ return mFlexblockDevice->mAmplitudeRange; }
 
 		/**
 		 * @return returns motor frequency range
 		 */
-		float getSinusFrequencyRange() const						{ return mSinusFrequencyRange; }
+		float getSinusFrequencyRange() const						{ return mFlexblockDevice->mFrequencyRange; }
+
+		float getSlackMinimum() const { return mFlexblockDevice->mSlackMin; }
+
+		float getSlackRange() const {
+			return mFlexblockDevice->mSlackScale;
+		}
 
 	protected:
 
@@ -166,13 +157,5 @@ namespace nap
 		// Meshes
 		std::vector<glm::vec3> mObjectPoints = std::vector<glm::vec3>(8);
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
-	
-		// Properties
-		float mSlackRange			= 1.0f;
-		float mSlackMinimum			= 0.0f;
-		float mOverrideRange		= 1000.0f;
-		float mOverrideMinimum		= 0.0f;
-		float mSinusAmplitudeRange	= 1.0f;
-		float mSinusFrequencyRange	= 100.0f;
 	};
 }

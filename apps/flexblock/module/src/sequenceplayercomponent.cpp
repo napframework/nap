@@ -208,8 +208,8 @@ namespace nap
 					}
 
 					// sinus
-					flexInput.mSinusAmplitude = static_cast<ParameterFloat*>(mParameters[17])->mValue;
-					flexInput.mSinusFrequency = static_cast<ParameterFloat*>(mParameters[18])->mValue;
+					flexInput.mSinusAmplitude = static_cast<ParameterFloat*>(mParameters[18])->mValue;
+					flexInput.mSinusFrequency = static_cast<ParameterFloat*>(mParameters[17])->mValue;
 
 					// give input
 					mFlexDevice->setInput(flexInput);

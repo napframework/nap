@@ -110,7 +110,14 @@ namespace nap
 		// Properties
 		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
 		float				mSlack = 0.0f;					///< Property: 'Slack' slack value 
+		float				mSlackScale = 1.0f;
+		float				mSlackMin = 0.0f;
 
+		float				mOverrideScale = 1.0f;
+		float				mOverrideMin = 0.0f;
+
+		float				mFrequencyRange = 100.0f;
+		float				mAmplitudeRange = 1.0f;
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped
 		std::future<void> mComputeTask;						///< Compute background thread
@@ -162,6 +169,9 @@ namespace nap
 		float mMotorAcc = 0.0f;
 		glm::vec3 mPointForce = {0,0,0};
 		glm::vec3 mPointForceCorr = {0,0,0};
+
+		//
+		double mSinTime = 0.0;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Flex-block logic

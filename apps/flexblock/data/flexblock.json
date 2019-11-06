@@ -157,13 +157,7 @@
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
                     "FlexBlockShape": "ShapeSize",
-                    "FlexBlockDevice": "Flex",
-                    "Slack Range": 1.0,
-                    "Slack Minimum": 0.0,
-                    "Sinus Amplitude": 1.0,
-                    "Sinus Frequency": 100.0,
-                    "Override Range": 20.0,
-                    "Override Minimum": 0.0
+                    "FlexBlockDevice": "Flex"
                 },
                 {
                     "Type": "nap::OSCInputComponent",
@@ -694,7 +688,12 @@
             "mID": "Flex",
             "FlexBlockShape": "ShapeSize",
             "Frequency": 1000,
-            "Slack": 0.0,
+            "Slack Scale": 2.0,
+            "Slack Min": -1.0,
+            "Override Scale": 23.0,
+            "Override Min": 0.0,
+            "Sinus Frequency": 20.0,
+            "Sinus Amplitude": 1.0,
             "Adapters": [
                 "MACAdapter"
             ]

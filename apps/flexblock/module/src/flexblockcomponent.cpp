@@ -15,12 +15,7 @@ RTTI_BEGIN_CLASS(nap::FlexBlockComponent)
 	RTTI_PROPERTY("FlexBlockMesh",	&nap::FlexBlockComponent::mFlexBlockMesh,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockShape", &nap::FlexBlockComponent::mFlexBlockShape, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlexBlockDevice",&nap::FlexBlockComponent::mFlexBlockDevice, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Slack Range", &nap::FlexBlockComponent::mSlackRange, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Slack Minimum", &nap::FlexBlockComponent::mSlackMinimum, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sinus Amplitude", &nap::FlexBlockComponent::mSinusAmplitudeRange, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sinus Frequency", &nap::FlexBlockComponent::mSinusFrequencyRange, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Override Range", &nap::FlexBlockComponent::mOverrideRange, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Override Minimum", &nap::FlexBlockComponent::mOverrideMinimum, nap::rtti::EPropertyMetaData::Default)
+
 RTTI_END_CLASS
 
 // nap::FlexBlockComponentInstance run time class definition 
@@ -49,13 +44,6 @@ namespace nap
 		mFrameMesh = resource->mFrameMesh.get();
 		mFlexblockDevice = resource->mFlexBlockDevice.get();
 
-		mSlackMinimum = resource->mSlackMinimum;
-		mSlackRange = resource->mSlackRange;;
-		mSinusAmplitudeRange = resource->mSinusAmplitudeRange;
-		mSinusFrequencyRange = resource->mSinusFrequencyRange;
-		mOverrideMinimum = resource->mOverrideMinimum;
-		mOverrideRange = resource->mOverrideRange;
-
 		// calculate new frame
 		mFlexblockDevice->getFramePoints(mFramePoints);
 
@@ -79,7 +67,7 @@ namespace nap
 	{
 		FlexInput flexInput;
 		mFlexblockDevice->getInput(flexInput);
-		flexInput.setOverride(index, (value * mOverrideRange) + mOverrideMinimum);
+		flexInput.setOverride(index, value);
 		mFlexblockDevice->setInput(flexInput);
 	}
 
@@ -88,7 +76,7 @@ namespace nap
 	{
 		FlexInput flexInput;
 		mFlexblockDevice->getInput(flexInput);
-		flexInput.mSinusAmplitude = value * mSinusAmplitudeRange;
+		flexInput.mSinusAmplitude = value;
 		mFlexblockDevice->setInput(flexInput);
 	}
 
@@ -106,7 +94,7 @@ namespace nap
 	{
 		FlexInput flexInput;
 		mFlexblockDevice->getInput(flexInput);
-		flexInput.mSinusFrequency = value * mSinusFrequencyRange;
+		flexInput.mSinusFrequency = value;
 		mFlexblockDevice->setInput(flexInput);
 	}
 
@@ -115,7 +103,7 @@ namespace nap
 	{
 		FlexInput flexInput;
 		mFlexblockDevice->getInput(flexInput);
-		flexInput.mSlack = value * mSlackRange + mSlackMinimum;
+		flexInput.mSlack = value;
 		mFlexblockDevice->setInput(flexInput);
 	}
 
