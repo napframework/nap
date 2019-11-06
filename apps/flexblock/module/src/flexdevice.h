@@ -110,8 +110,6 @@ namespace nap
 		// Properties
 		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
 		float				mSlack = 0.0f;					///< Property: 'Slack' slack value 
-		float				mSlackScale = 1.0f;				///< Property: 'Slack Scale' slack multiplier
-		float				mSlackMin = 0.0f;				///< Property: 'Slack Minimum' Min required slack value
 
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped

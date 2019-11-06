@@ -258,7 +258,7 @@ namespace nap
 
 			// Update internal data, which can be used by external processes
 			setData(calc_points, calc_ropes);
-
+			
 			// Now call adapters!
 			for (auto& adapter: mAdapters)
 				adapter->compute(*this);

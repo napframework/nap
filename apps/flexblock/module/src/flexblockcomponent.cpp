@@ -118,6 +118,12 @@ namespace nap
 		flexInput.mSlack = value * mSlackRange + mSlackMinimum;
 		mFlexblockDevice->setInput(flexInput);
 	}
+
+
+	void FlexBlockComponentInstance::getRopeLengths(std::vector<float>& output)
+	{
+		mFlexblockDevice->getRopeLengths(output);
+	}
 	
 
 	float FlexBlockComponentInstance::getSlack() const

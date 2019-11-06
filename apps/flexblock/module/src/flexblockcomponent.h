@@ -108,6 +108,8 @@ namespace nap
 		 */
 		void setSinusAmplitude(float value);
 
+		void getRopeLengths(std::vector<float>& output);
+
 		/**
 		 * @return returns cube mesh points in local space
 		 */

@@ -2864,13 +2864,13 @@ namespace nap
 	{
 		ImGui::Begin("MotorSteps");
 
-		std::vector<float> motor_steps;
-		mMotorAdapter->getMotorSteps(motor_steps);
+		std::vector<float> motor_steps(8);
+		mFlexBlock->getRopeLengths(motor_steps);
 		for (int i = 0; i < motor_steps.size(); i++)
 		{
 			ImGui::Text("%i : %.3f meter / %.0f steps", i+1, 
-				motor_steps[i] / mMotorAdapter->mMotorStepsPerMeter, 
-				motor_steps[i]);
+				motor_steps[i], 
+				motor_steps[i] * mMotorAdapter->mMotorStepsPerMeter);
 		}
 		ImGui::End();
 	}
