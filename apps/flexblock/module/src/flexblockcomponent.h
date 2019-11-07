@@ -124,7 +124,7 @@ namespace nap
 		/**
 		 * @return returns motor override minimum
 		 */
-		float getMotorOverrideMinimum() const						{ return mFlexblockDevice->mOverrideScale; }
+		float getMotorOverrideMinimum() const						{ return mFlexblockDevice->mOverrideMin; }
 
 		/**
 		 * @return returns motor override range
