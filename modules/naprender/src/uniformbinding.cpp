@@ -31,7 +31,7 @@ namespace nap
 		return *inserted.first->second;
 	}
 
-	Uniform& UniformContainer::addUniformSampler(std::unique_ptr<UniformTexture> uniform)
+	Uniform& UniformContainer::addUniformSampler(std::unique_ptr<UniformSampler> uniform)
 	{
 		auto inserted = mUniformSamplers.emplace(std::make_pair(uniform->getDeclaration().mName, std::move(uniform)));
 		return *inserted.first->second;

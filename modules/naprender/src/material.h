@@ -187,7 +187,7 @@ namespace nap
 		 * @param uniform the texture uniform to find the texture unit number for.
 		 * @return the texture unit associated with a specific texture uniform in a material, -1 if not found
 		 */
-		int getTextureUnit(nap::UniformTexture& uniform);
+		int getTextureUnit(nap::UniformSampler& uniform);
 
 		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
 

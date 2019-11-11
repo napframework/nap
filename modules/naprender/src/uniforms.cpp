@@ -13,10 +13,10 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueArray)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformTexture)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformSampler)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformTextureArray)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformSamplerArray)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformStruct)
@@ -52,9 +52,9 @@ RTTI_BEGIN_CLASS(nap::UniformMat4)
 	RTTI_FUNCTION("setValue", &nap::UniformMat4::setValue)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformTexture2D)
-	RTTI_PROPERTY("Texture", &nap::UniformTexture2D::mTexture, nap::rtti::EPropertyMetaData::Required)
-	RTTI_FUNCTION("setTexture", &nap::UniformTexture2D::setTexture)
+RTTI_BEGIN_CLASS(nap::UniformSampler2D)
+	RTTI_PROPERTY("Texture", &nap::UniformSampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setTexture", &nap::UniformSampler2D::setTexture)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,8 +79,8 @@ RTTI_BEGIN_CLASS(nap::UniformMat4Array)
 	RTTI_PROPERTY("Values", &nap::UniformMat4Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformTexture2DArray)
-	RTTI_PROPERTY("Textures", &nap::UniformTexture2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::UniformSampler2DArray)
+	RTTI_PROPERTY("Textures", &nap::UniformSampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -145,7 +145,7 @@ namespace nap
 		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
-	UniformTexture::UniformTexture(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
+	UniformSampler::UniformSampler(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
 		mDeclaration(&declaration)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
@@ -167,8 +167,8 @@ namespace nap
 		assert(result == VK_SUCCESS);
 	}
 
-	UniformTexture2D::UniformTexture2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
-		UniformTexture(device, declaration)
+	UniformSampler2D::UniformSampler2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
+		UniformSampler(device, declaration)
 	{
 	}
 

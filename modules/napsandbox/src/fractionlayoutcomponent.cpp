@@ -87,7 +87,7 @@ namespace nap
 			// Handle aspect ratio's that are derived from textures
 			if (child_layout->mProperties.mSizeBehaviour != FractionLayoutProperties::ESizeBehaviour::Default)
 			{
-				UniformTexture2D* texture_uniform = child_layout->mRenderableMeshComponent->getMaterialInstance().findUniform<UniformTexture2D>("mTexture");
+				UniformSampler2D* texture_uniform = child_layout->mRenderableMeshComponent->getMaterialInstance().findUniform<UniformSampler2D>("mTexture");
 				float aspect_ratio = 1.0f;
 				if (texture_uniform)
 				{

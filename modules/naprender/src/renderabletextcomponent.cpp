@@ -165,7 +165,7 @@ namespace nap
 		mRenderableMesh.bind();
 
 		// Fetch uniform for setting character
-		UniformTexture2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mGlyphUniform);
+		UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
 
 		// Get vertex position data (that we update in the loop
 		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
@@ -185,7 +185,7 @@ namespace nap
 		nap::utility::ErrorState error;
 
 		// Get uniforms to push in loop
-		const nap::UniformTexture2D& glyph_binding = mMaterialInstance.getUniform<UniformTexture2D>(glyph_uniform.mName);
+		const nap::UniformSampler2D& glyph_binding = mMaterialInstance.getUniform<UniformSampler2D>(glyph_uniform.mName);
 		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
 		assert(texture_unit > -1);
 

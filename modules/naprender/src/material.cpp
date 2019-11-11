@@ -53,9 +53,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	std::unique_ptr<UniformTexture> createUniformFromDeclaration(VkDevice device, const opengl::UniformSamplerDeclaration& declaration)
+	std::unique_ptr<UniformSampler> createUniformFromDeclaration(VkDevice device, const opengl::UniformSamplerDeclaration& declaration)
 	{
-		return std::make_unique<UniformTexture2D>(device, declaration);
+		return std::make_unique<UniformSampler2D>(device, declaration);
 	}
 
 	/**
@@ -135,7 +135,7 @@ namespace nap
 		if (value_array != nullptr)
 			return value_array->getCount();
 
-		const UniformTextureArray* texture_array = rtti_cast<const UniformTextureArray>(&uniform);
+		const UniformSamplerArray* texture_array = rtti_cast<const UniformSamplerArray>(&uniform);
 		if (texture_array != nullptr)
 			return texture_array->getNumElements();
 
@@ -350,7 +350,7 @@ namespace nap
 	}
 
 
-	int MaterialInstance::getTextureUnit(nap::UniformTexture& uniform)
+	int MaterialInstance::getTextureUnit(nap::UniformSampler& uniform)
 	{
 // 		int texture_unit = 0;
 // 		std::unordered_set<std::string> instance_bindings;
@@ -406,7 +406,7 @@ namespace nap
 			assert(sampler_pos != sampler_declarations.end());
 
 			const opengl::UniformSamplerDeclaration& declaration = sampler_pos->second;
-			std::unique_ptr<UniformTexture> uniform = createUniformFromDeclaration(mDevice, declaration);
+			std::unique_ptr<UniformSampler> uniform = createUniformFromDeclaration(mDevice, declaration);
 			return addUniformSampler(std::move(uniform));
 		}
 	}
@@ -481,13 +481,13 @@ namespace nap
 
 				addUniformValue(std::move(new_uniform));
 			}
-			else if (uniform->get_type().is_derived_from<UniformTexture>())
+			else if (uniform->get_type().is_derived_from<UniformSampler>())
 			{
 				opengl::UniformSamplerDeclarations::const_iterator declaration = uniform_samplers.find(uniform->mName);
 				if (declaration == uniform_samplers.end())
 					continue;
 
-				std::unique_ptr<UniformTexture> new_uniform = createUniformFromDeclaration(renderer.getDevice(), declaration->second);
+				std::unique_ptr<UniformSampler> new_uniform = createUniformFromDeclaration(renderer.getDevice(), declaration->second);
 				nap::rtti::copyObject(*uniform, *new_uniform.get());
 
 				addUniformSampler(std::move(new_uniform));
@@ -585,9 +585,9 @@ namespace nap
 
 			for (auto& sampler_declaration : uniform_samplers)
 			{
-				const UniformTexture2D* uniform = findUniform<UniformTexture2D>(sampler_declaration.second.mName);
+				const UniformSampler2D* uniform = findUniform<UniformSampler2D>(sampler_declaration.second.mName);
 				if (uniform == nullptr)
-					uniform = material.findUniform<UniformTexture2D>(sampler_declaration.second.mName);
+					uniform = material.findUniform<UniformSampler2D>(sampler_declaration.second.mName);
 
 				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
 					return false;
@@ -949,7 +949,7 @@ namespace nap
 			const opengl::UniformSamplerDeclaration& declaration = kvp.second;
 
 			// Create a new uniform from the declaration and set its name
-			std::unique_ptr<UniformTexture> new_uniform = createUniformFromDeclaration(mRenderer->getDevice(), declaration);
+			std::unique_ptr<UniformSampler> new_uniform = createUniformFromDeclaration(mRenderer->getDevice(), declaration);
 
 			// Add the container
 			Uniform* result = new_uniform.get();

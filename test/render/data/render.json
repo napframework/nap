@@ -65,7 +65,7 @@
 						"Uniforms" : 
 						[
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::UniformSampler2D",
 								"Name" : "pigTexture",
 								"Texture" : "PigTexture"
 							}						

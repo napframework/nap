@@ -9,7 +9,7 @@
 
 namespace nap
 {
-	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<UniformTexture>>;
+	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<UniformSampler>>;
 	using UniformValues = std::unordered_map<std::string, std::unique_ptr<UniformValue>>;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ namespace nap
 		* @return reference to the newly added uniform.
 		*/
 		Uniform& addUniformValue(std::unique_ptr<UniformValue> uniform);
-		Uniform& addUniformSampler(std::unique_ptr<UniformTexture> uniform);
+		Uniform& addUniformSampler(std::unique_ptr<UniformSampler> uniform);
 
 	private:
 		UniformSamplers		mUniformSamplers;	///< Runtime map of sampler uniforms (superset of texture uniforms in mUniforms due to default uniforms).

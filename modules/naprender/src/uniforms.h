@@ -101,13 +101,13 @@ namespace nap
 	* Derived classes should activate the texture unit, bind the appropriate texture
 	* to the unit (whether 1D, 2D or 3D) and update the uniform in the shader.
 	*/
-	class NAPAPI UniformTexture : public Uniform
+	class NAPAPI UniformSampler : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
 
 	public:
-		UniformTexture() = default;
-		UniformTexture(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
+		UniformSampler() = default;
+		UniformSampler(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
 
 		const opengl::UniformSamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
 		VkSampler getSampler() const { return mSampler; }
@@ -122,9 +122,9 @@ namespace nap
 	 * Represents an array of 'texture' uniforms.
 	 * Derived classes should return the correct amount of elements that are in the array.
  	 */
-	class NAPAPI UniformTextureArray : public UniformTexture
+	class NAPAPI UniformSamplerArray : public UniformSampler
 	{
-		RTTI_ENABLE(UniformTexture)
+		RTTI_ENABLE(UniformSampler)
 
 	public:
 		/**
@@ -278,12 +278,12 @@ namespace nap
 	/**
 	 * Pointer to a single 2D Texture that can be pushed to a shader uniform.
 	 */
-	class NAPAPI UniformTexture2D : public UniformTexture
+	class NAPAPI UniformSampler2D : public UniformSampler
 	{
-		RTTI_ENABLE(UniformTexture)
+		RTTI_ENABLE(UniformSampler)
 	public:
-		UniformTexture2D() = default;
-		UniformTexture2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
+		UniformSampler2D() = default;
+		UniformSampler2D(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
@@ -504,17 +504,17 @@ namespace nap
 	 * Stores and array of 2D textures.
 	 * Number of textures must be equal or lower than the number of textures declared in the shader.
 	 */
-	class NAPAPI UniformTexture2DArray : public UniformTextureArray
+	class NAPAPI UniformSampler2DArray : public UniformSamplerArray
 	{
-		RTTI_ENABLE(UniformTextureArray)
+		RTTI_ENABLE(UniformSamplerArray)
 	public:
 
-		UniformTexture2DArray() = default;
+		UniformSampler2DArray() = default;
 
 		/**
 		 * Constructor to ensure the array has the correct size to match the shader
 		 */
-		UniformTexture2DArray(int inSize) :
+		UniformSampler2DArray(int inSize) :
 			mTextures(inSize)
 		{
 		}

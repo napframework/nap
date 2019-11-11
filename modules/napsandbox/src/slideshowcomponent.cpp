@@ -120,7 +120,7 @@ namespace nap
 
 		RenderableMeshComponentInstance& renderable = entity.getComponent<RenderableMeshComponentInstance>();
 		MaterialInstance& material_instance = renderable.getMaterialInstance();
-		material_instance.getOrCreateUniform<nap::UniformTexture2D>("mTexture").setTexture(*resource->mImages[imageIndex]);
+		material_instance.getOrCreateUniform<nap::UniformSampler2D>("mTexture").setTexture(*resource->mImages[imageIndex]);
 	}
 
 
