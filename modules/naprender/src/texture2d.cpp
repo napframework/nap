@@ -241,7 +241,7 @@ namespace nap
 					switch (bitmap.getDataType())
 					{
 					case nap::Bitmap::EDataType::BYTE:
-						return VK_FORMAT_R8_UNORM;
+						return VK_FORMAT_R8_SRGB;
 					case nap::Bitmap::EDataType::FLOAT:
 						return VK_FORMAT_R32_SFLOAT;
 					case nap::Bitmap::EDataType::USHORT:
@@ -254,7 +254,7 @@ namespace nap
 					switch (bitmap.getDataType())
 					{
 					case nap::Bitmap::EDataType::BYTE:
-						return VK_FORMAT_R8G8B8_UNORM;
+						return VK_FORMAT_R8G8B8_SRGB;
 					case nap::Bitmap::EDataType::FLOAT:
 						return VK_FORMAT_R32G32B32_SFLOAT;
 					case nap::Bitmap::EDataType::USHORT:
@@ -267,7 +267,7 @@ namespace nap
 					switch (bitmap.getDataType())
 					{
 					case nap::Bitmap::EDataType::BYTE:
-						return VK_FORMAT_B8G8R8_UNORM;
+						return VK_FORMAT_B8G8R8_SRGB;
 					case nap::Bitmap::EDataType::FLOAT:
 						return VK_FORMAT_UNDEFINED;
 					case nap::Bitmap::EDataType::USHORT:
@@ -280,7 +280,7 @@ namespace nap
 					switch (bitmap.getDataType())
 					{
 					case nap::Bitmap::EDataType::BYTE:
-						return VK_FORMAT_R8G8B8A8_UNORM;
+						return VK_FORMAT_R8G8B8A8_SRGB;
 					case nap::Bitmap::EDataType::FLOAT:
 						return VK_FORMAT_R32G32B32A32_SFLOAT;
 					case nap::Bitmap::EDataType::USHORT:
@@ -293,7 +293,7 @@ namespace nap
 					switch (bitmap.getDataType())
 					{
 					case nap::Bitmap::EDataType::BYTE:
-						return VK_FORMAT_B8G8R8A8_UNORM;
+						return VK_FORMAT_B8G8R8A8_SRGB;
 					case nap::Bitmap::EDataType::FLOAT:
 						return VK_FORMAT_UNDEFINED;
 					case nap::Bitmap::EDataType::USHORT:
