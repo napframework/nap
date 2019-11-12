@@ -43,8 +43,6 @@ namespace nap
 		 * Initialize the various gui components
 		 */
 		void init();
-		void initOscOutput();
-		void initOscInputs();
 
 		/**
 		 *	Update all the various gui components
@@ -87,11 +85,9 @@ namespace nap
 		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-		OSCSender*							mOscSender = nullptr;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
-		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
 		TimelineGuiProperties mProps;
 
