@@ -16,6 +16,7 @@ if %OS%==32BIT (
 
 set PYTHONPATH=
 set PYTHONHOME=
+
 if "%~1" == "--source" (
     set NAP_ROOT=%~dp0\..\..\..
     set THIRDPARTY_DIR=%NAP_ROOT%\..\thirdparty
@@ -32,7 +33,7 @@ if "%~1" == "--source" (
         pause
         exit /B        
     )
-    %THIRDPARTY_DIR%\python\msvc\python-embed-amd64\python %~dp0\check_build_environment_continued.py --source
+    "%THIRDPARTY_DIR%\python\msvc\python-embed-amd64\python" "%~dp0\check_build_environment_continued.py" "--source"
 ) else (
-    %~dp0\..\thirdparty\python\python %~dp0\platform\check_build_environment_continued.py
+    "%~dp0\..\thirdparty\python\python" "%~dp0\platform\check_build_environment_continued.py"
 )
