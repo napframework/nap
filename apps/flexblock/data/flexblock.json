@@ -505,7 +505,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_e0f4d826",
+                    "mID": "nap::TransformComponent_667bf951",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -513,12 +513,12 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
+                            "x": -90.0,
                             "y": 0.0,
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 1.0,
+                            "x": -1.0,
                             "y": 1.0,
                             "z": 1.0
                         },
@@ -526,7 +526,11 @@
                     }
                 }
             ],
-            "Children": []
+            "Children": [
+                "FlexBlockEntity",
+                "CameraEntity",
+                "TextEntity"
+            ]
         },
         {
             "Type": "nap::FlexBlockElements",
@@ -1215,26 +1219,6 @@
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
-                {
-                    "Entity": "CameraEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "TextEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "BlockEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "FlexBlockEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "FrameEntity",
-                    "InstanceProperties": []
-                },
                 {
                     "Entity": "WorldEntity",
                     "InstanceProperties": []
