@@ -109,15 +109,15 @@ namespace nap
 
 		// Properties
 		int					mUpdateFrequency = 1000;		///< Property: 'Frequency' device operation frequency in hz.
-		float				mSlack = 0.0f;					///< Property: 'Slack' slack value 
-		float				mSlackScale = 1.0f;
-		float				mSlackMin = 0.0f;
+		
+		float				mSlackScale = 1.0f;				///< Property: 'Slack Scale' slack scale, range of slack
+		float				mSlackMin = 0.0f;				///< Property: 'Slack Minimum' slack minimum, minimum value of slack
 
-		float				mOverrideScale = 1.0f;
-		float				mOverrideMin = 0.0f;
+		float				mOverrideScale = 1.0f;			///< Property: 'Override Scale' override scale, range of override
+		float				mOverrideMin = 0.0f;			///< Property: 'Override Minimum' override minimum, minimum value of override
 
-		float				mFrequencyRange = 100.0f;
-		float				mAmplitudeRange = 1.0f;
+		float				mFrequencyRange = 100.0f;		///< Property: 'Frequency Range' range of sinus frequency hz
+		float				mAmplitudeRange = 1.0f;			///< Property: 'Amplitude Range' range of sinus Amplitude in meters
 	private:
 		bool mStopCompute = false;							///< If the compute task should be stopped
 		std::future<void> mComputeTask;						///< Compute background thread

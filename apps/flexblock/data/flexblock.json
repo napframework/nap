@@ -46,13 +46,6 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OscInput",
-                    "Addresses": [
-                        "flexblock"
-                    ]
                 }
             ],
             "Children": []
@@ -160,13 +153,6 @@
                     "FlexBlockDevice": "Flex"
                 },
                 {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCMotorInputs",
-                    "Addresses": [
-                        "/flexblock"
-                    ]
-                },
-                {
                     "Type": "nap::timeline::SequencePlayerComponent",
                     "mID": "Motor Sequence Player",
                     "TimelineParameters": [
@@ -176,6 +162,135 @@
                     "StartShowFile": "shows/start_template.json",
                     "Flex Device": "Flex",
                     "Frequency": 1000
+                },
+                {
+                    "Type": "nap::OSCInputComponent",
+                    "mID": "OSCInputComponent",
+                    "Addresses": [
+                        "/flexblock"
+                    ]
+                },
+                {
+                    "Type": "nap::TouchOscComponent",
+                    "mID": "TouchOSCComponent",
+                    "Links": [
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_16839d28",
+                            "Adress": "/flexblock/motor/1",
+                            "Parameter": "Input 1"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_f18646fe",
+                            "Adress": "/flexblock/motor/2",
+                            "Parameter": "Input 2"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_45a0ddab",
+                            "Adress": "/flexblock/motor/3",
+                            "Parameter": "Input 3"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_2deb99de",
+                            "Adress": "/flexblock/motor/4",
+                            "Parameter": "Input 4"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_831fda7b",
+                            "Adress": "/flexblock/motor/5",
+                            "Parameter": "Input 5"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_350f6fde",
+                            "Adress": "/flexblock/motor/6",
+                            "Parameter": "Input 6"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_e5379ff6",
+                            "Adress": "/flexblock/motor/7",
+                            "Parameter": "Input 7"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_01a541b7",
+                            "Adress": "/flexblock/motor/8",
+                            "Parameter": "Input 8"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_fd7e1359",
+                            "Adress": "/flexblock/override/1",
+                            "Parameter": "Override 1"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_4ffa6493",
+                            "Adress": "/flexblock/override/2",
+                            "Parameter": "Override 2"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_231ebf02",
+                            "Adress": "/flexblock/override/3",
+                            "Parameter": "Override 3"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_58db7e19",
+                            "Adress": "/flexblock/override/4",
+                            "Parameter": "Override 4"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_f6a91418",
+                            "Adress": "/flexblock/override/5",
+                            "Parameter": "Override 5"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_eec158eb",
+                            "Adress": "/flexblock/override/6",
+                            "Parameter": "Override 6"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_e990d304",
+                            "Adress": "/flexblock/override/7",
+                            "Parameter": "Override 7"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_017574e9",
+                            "Adress": "/flexblock/override/8",
+                            "Parameter": "Override 8"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_a7055d52",
+                            "Adress": "/flexblock/slack",
+                            "Parameter": "Slack"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_9537c732",
+                            "Adress": "/flexblock/sinus_frequency",
+                            "Parameter": "Sinus Frequency"
+                        },
+                        {
+                            "Type": "nap::TouchOscParameterLink",
+                            "mID": "TouchOscParameterLink_6aaeed40",
+                            "Adress": "/flexblock/sinus_amplitude",
+                            "Parameter": "Sinus Amplitude"
+                        }
+                    ],
+                    "OSCSender": "OSCSender",
+                    "OSCInput": "./OSCInputComponent"
                 }
             ],
             "Children": [
@@ -390,7 +505,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "WorldTransform",
+                    "mID": "nap::TransformComponent_e0f4d826",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -398,12 +513,12 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": -91.0,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": -1.0,
+                            "x": 1.0,
                             "y": 1.0,
                             "z": 1.0
                         },
@@ -411,9 +526,7 @@
                     }
                 }
             ],
-            "Children": [
-                "FlexBlockEntity"
-            ]
+            "Children": []
         },
         {
             "Type": "nap::FlexBlockElements",
@@ -689,7 +802,7 @@
             "FlexBlockShape": "ShapeSize",
             "Frequency": 1000,
             "Slack Scale": 2.0,
-            "Slack Min": -1.0,
+            "Slack Min": -0.30000001192092898,
             "Override Scale": 23.0,
             "Override Min": 0.0,
             "Sinus Frequency": 20.0,
@@ -896,6 +1009,20 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::OSCReceiver",
+            "mID": "OSCReceiver",
+            "Port": 7000,
+            "EnableDebugOutput": true,
+            "AllowPortReuse": false
+        },
+        {
+            "Type": "nap::OSCSender",
+            "mID": "OSCSender",
+            "IpAddress": "192.168.33.237",
+            "Port": 8000,
+            "BufferScale": 2
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [],
@@ -1093,28 +1220,26 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "WorldEntity",
+                    "Entity": "TextEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "TextEntity",
+                    "Entity": "BlockEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "FlexBlockEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "FrameEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "WorldEntity",
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::SerialPort",
-            "mID": "SerialPort",
-            "PortName": "COM19",
-            "BaudRate": 9600,
-            "ByteSize": "Eight",
-            "Parity": "None",
-            "StopBits": "One",
-            "FlowControl": "None",
-            "ReadTimeout": 0,
-            "WriteTimeout": 0,
-            "InterByteTimeout": 0,
-            "AllowFailure": true
         },
         {
             "Type": "nap::Shader",
