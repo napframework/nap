@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
 project(NAP)
 
 #if(WIN32)
@@ -44,12 +44,24 @@ elseif(WIN32)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+        if(DEFINED INCLUDE_DEBUG_SYMBOLS AND INCLUDE_DEBUG_SYMBOLS)
+            set(PACKAGE_PDBS ON)
+        endif()    
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
         #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     endif()
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
+    if(DEFINED INCLUDE_DEBUG_SYMBOLS AND NOT INCLUDE_DEBUG_SYMBOLS)
+        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            # Verified for AppleClang, expected to also potentially work (at a later date) for Clang on Linux
+            string(REPLACE "-g" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+        else()
+            # Verified for GCC on Linux
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+        endif()
+    endif()    
 endif()
 
 if(APPLE)
@@ -71,7 +83,7 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
-include(configure.cmake)
+include(cmake/configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
