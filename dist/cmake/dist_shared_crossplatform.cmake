@@ -105,8 +105,17 @@ macro(find_nap_module MODULE_NAME)
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/                
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                 )
+
+            # Copy PDB post-build, if we have them
+            if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.pdb)
+                add_custom_command(
+                    TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+                    )
+            endif()
         endif()        
     elseif(NOT TARGET ${MODULE_NAME})
         message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    

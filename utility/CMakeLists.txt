@@ -18,6 +18,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${MOODYCAMEL_INCLUDE_DIRS}
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
+    if(PACKAGE_PDBS)
+        install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.dir/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION lib/$<CONFIG>)
+    endif()
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
 elseif(ANDROID)
