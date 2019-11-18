@@ -17,7 +17,6 @@
 #include <mathutils.h>
 #include <renderableglyph.h>
 #include <font.h>
-#include "opencv2/highgui.hpp"
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -233,10 +232,13 @@ namespace nap
 		cv::Mat frame_gray;
 		cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
 		equalizeHist(frame_gray, frame_gray);
+
 		//-- Detect faces
 		std::vector<cv::Rect> faces;
 		face_cascade.detectMultiScale(frame_gray, faces);
 		
+		nap::Logger::info("Detected: %d faces", faces.size());
+
 		for (size_t i = 0; i < faces.size(); i++)
 		{
 			cv::Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
@@ -252,8 +254,5 @@ namespace nap
 				circle(frame, eye_center, radius, cv::Scalar(255, 0, 0), 4);
 			}
 		}
-		//-- Show what you got
-		imshow("Capture - Face detection", frame);
 	}
-
 }

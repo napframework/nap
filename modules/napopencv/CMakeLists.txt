@@ -13,7 +13,9 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/build REQUIRED) 
+if(WIN32)
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
+endif()
 
 # LIBRARY
 
@@ -33,29 +35,30 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${OpenCV_
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
-# Copy over Assimp to build directory
+# Copy over opencv to build directory
 if(WIN32)
-    copy_files_to_bin(${THIRDPARTY_DIR}/opencv/build/x64/vc14/bin/opencv_videoio_ffmpeg411_64.dll)
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
-        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/build/x64/vc14/bin/opencv_world411d.dll)
+    copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg412_64.dll)
+    if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412d.dll)
     else()
-        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/build/x64/vc14/bin/opencv_world411.dll)
+        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412.dll)
     endif()
 endif()
 
 # Package oscpack into platform release
 package_module()
 
-install(FILES ${THIRDPARTY_DIR}/opencv/LICENSE.txt DESTINATION thirdparty/opencv)
-install(FILES ${THIRDPARTY_DIR}/opencv/LICENSE_FFMPEG.txt DESTINATION thirdparty/opencv)
-install(FILES ${THIRDPARTY_DIR}/opencv/README.md.txt DESTINATION thirdparty/opencv)
-install(DIRECTORY ${THIRDPARTY_DIR}/opencv/build/include 
+install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/LICENSE DESTINATION thirdparty/opencv)
+install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/include 
         DESTINATION thirdparty/opencv/include
         PATTERN "*.cpp" EXCLUDE)
 
 if(MSVC)
-    install(FILES ${THIRDPARTY_DIR}/opencv/build/x64/vc14/lib/opencv_world411.lib DESTINATION thirdparty/opencv/lib)
-    install(FILES ${THIRDPARTY_DIR}/opencv/build/x64/vc14/bin/opencv_videoio_ffmpeg411_64.dll DESTINATION thirdparty/opencv/bin)
+    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/lib/opencv_world412.lib DESTINATION thirdparty/opencv/lib)
+    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/lib/opencv_world412d.lib DESTINATION thirdparty/opencv/lib)
+    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412.dll DESTINATION thirdparty/opencv/bin)
+    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412d.dll DESTINATION thirdparty/opencv/bin)
+    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg412_64.dll DESTINATION thirdparty/opencv/bin)
 #elseif(APPLE)
 #    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
 #elseif(ANDROID)
