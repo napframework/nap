@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import validate_pascalcase_name
+from nap_shared import validate_pascalcase_name, get_cmake_path
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -34,7 +34,8 @@ def create_module(module_name, generate_solution):
         sys.exit(ERROR_EXISTING_MODULE)
 
     # Create module from template
-    cmd = ['cmake', '-DMODULE_NAME_PASCALCASE=%s' % module_name, '-P', 'module_creator.cmake']
+    cmake = get_cmake_path()    
+    cmd = [cmake, '-DMODULE_NAME_PASCALCASE=%s' % module_name, '-P', 'module_creator.cmake']
     if call(cmd, cwd=cmake_template_dir) != 0:
         print("Module creation failed")
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
