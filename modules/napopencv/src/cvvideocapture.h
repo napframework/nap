@@ -16,7 +16,7 @@ namespace nap
 	 * Captures a video stream from a web cam or other peripheral video capture device.
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * Otherwise the captured video frame is stored on the CPU.
-	 * This device captures the video stream on a background thread. 
+	 * This device captures the video stream on a background thread, call grab() to grab the last recorded video frame.
 	 */
 	class NAPAPI CVVideoCapture : public Device
 	{
@@ -45,22 +45,22 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * Copies the last read captured frame.
-		 * @param target the 
+		 * Grabs the last captured frame if new, the result is stored in the given target.
+		 * If there is no new capture the target is not updated and the function returns false.
+		 * This call is thread safe and can be called every frame.
+		 * @param target holds the last captured frame if new.
+		 * @return if the target is updated with the contents of a new captured frame.
 		 */
-		void copy(cv::UMat& target);
-
-		/**
-		 * @return if a new frame is available
-		 */
-		bool hasNewFrame();
+		bool grab(cv::UMat& target);
 
 		nap::uint			mDeviceIndex = 0;		///< Property: 'DeviceIndex' Capture device index
+		nap::uint			mFrameWidth = 640;		///< Property: 'FrameWidth' width of the frame in pixels
+		nap::uint			mFrameHeight = 480;		///< Property: 'FrameHeight' height of the frame in pixels
 
 	private:
 		cv::VideoCapture	mCaptureDevice;			///< The open-cv video capture device
 		cv::UMat			mCaptureMat;			///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>	mNewFrame = { false };	///< If a new frame is captured
+		bool				mNewFrame =  false ;	///< If a new frame is captured
 
 		std::future<void>	mCaptureTask;			///< The thread that monitor the read thread
 		std::mutex			mCaptureMutex;			///< The mutex that safe guards the capture thread

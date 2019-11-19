@@ -3,7 +3,9 @@
         {
             "Type": "nap::CVVideoCapture",
             "mID": "CaptureDevice",
-            "DeviceIndex": 0
+            "DeviceIndex": 0,
+            "FrameWidth": 1280,
+            "FrameHeight": 720
         },
         {
             "Type": "nap::Entity",
@@ -308,6 +310,21 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CaptureTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 10
+            },
+            "Usage": "Static",
+            "Width": 1280,
+            "Height": 720,
+            "Format": "RGB8"
         },
         {
             "Type": "nap::RenderWindow",

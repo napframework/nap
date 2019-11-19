@@ -17,6 +17,7 @@
 #include <mathutils.h>
 #include <renderableglyph.h>
 #include <font.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -45,6 +46,7 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CaptureDevice");
+		mCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CaptureTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -107,6 +109,13 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Webcam Feed"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mCaptureTexture->getWidth()) / static_cast<float>(mCaptureTexture->getHeight());
+			ImGui::Image(*mCaptureTexture, { col_width, col_width / ratio_video });
+		}
+
 		ImGui::End();
 	}
 
@@ -224,17 +233,21 @@ namespace nap
 
 	void HelloWorldApp::detectFaces()
 	{
-		if (!mCaptureDevice->hasNewFrame())
+		// processing loop
+		bool grabbed = mCaptureDevice->grab(mMatRGB);
+		if (!grabbed)
 			return;
 
-		// processing loop
-		mCaptureDevice->copy(mMat);
+		cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
+		mCaptureTexture->update(cpu_mat.data);
 
+		/*
 		cvtColor(mMat, mMatGS, cv::COLOR_BGR2GRAY);
 		equalizeHist(mMatGS, mMatGS);
 
 		std::vector<cv::Rect> faces;
 		face_cascade.detectMultiScale(mMatGS, faces);
 		nap::Logger::info("Detected: %d face(s)", faces.size());
+		*/
 	}
 }
