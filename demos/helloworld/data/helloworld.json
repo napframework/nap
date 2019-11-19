@@ -4,8 +4,8 @@
             "Type": "nap::CVVideoCapture",
             "mID": "CaptureDevice",
             "DeviceIndex": 0,
-            "FrameWidth": 1280,
-            "FrameHeight": 720
+            "FrameWidth": 640,
+            "FrameHeight": 480
         },
         {
             "Type": "nap::Entity",
@@ -322,8 +322,8 @@
                 "MaxLodLevel": 10
             },
             "Usage": "Static",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 640,
+            "Height": 480,
             "Format": "RGB8"
         },
         {

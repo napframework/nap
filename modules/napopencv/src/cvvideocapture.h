@@ -46,8 +46,9 @@ namespace nap
 
 		/**
 		 * Grabs the last captured frame if new, the result is stored in the given target.
+		 * Internally the frame is removed from the queue.
 		 * If there is no new capture the target is not updated and the function returns false.
-		 * This call is thread safe and can be called every frame.
+		 * This call is thread safe and can be called every frame. 
 		 * @param target holds the last captured frame if new.
 		 * @return if the target is updated with the contents of a new captured frame.
 		 */
