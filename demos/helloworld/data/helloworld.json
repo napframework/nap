@@ -1,6 +1,11 @@
 {
     "Objects": [
         {
+            "Type": "nap::CVVideoCapture",
+            "mID": "CaptureDevice",
+            "DeviceIndex": 0
+        },
+        {
             "Type": "nap::Entity",
             "mID": "OrthographicCamera",
             "Components": [

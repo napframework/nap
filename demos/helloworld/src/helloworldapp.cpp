@@ -44,6 +44,7 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CaptureDevice");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -68,13 +69,10 @@ namespace nap
 			return false;
 		};
 
-		//-- 2. Open the video stream
-		mCapture.open(0);
-		if (!mCapture.isOpened())
-		{
-			std::cout << "--(!)Error opening video capture\n";
-			return false;
-		}
+		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
+		nap::Logger::info("%s", cv::getBuildInformation().c_str());
+
 		return true;
 	}
 	
@@ -93,6 +91,8 @@ namespace nap
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
+		detectFaces();
+
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -176,11 +176,6 @@ namespace nap
 		// Swap screen buffers
 		mRenderWindow->swap();
 
-
-		mCapture.read(mMat);
-		if(!mMat.empty())
-			detectAndDisplay(mMat);
-
 		//cv::imshow("Capture - Face detection", mMat);
 	}
 	
@@ -227,32 +222,19 @@ namespace nap
 	}
 
 
-	void HelloWorldApp::detectAndDisplay(const cv::Mat& frame)
+	void HelloWorldApp::detectFaces()
 	{
-		cv::Mat frame_gray;
-		cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
-		equalizeHist(frame_gray, frame_gray);
+		if (!mCaptureDevice->hasNewFrame())
+			return;
 
-		//-- Detect faces
+		// processing loop
+		mCaptureDevice->copy(mMat);
+
+		cvtColor(mMat, mMatGS, cv::COLOR_BGR2GRAY);
+		equalizeHist(mMatGS, mMatGS);
+
 		std::vector<cv::Rect> faces;
-		face_cascade.detectMultiScale(frame_gray, faces);
-		
-		nap::Logger::info("Detected: %d faces", faces.size());
-
-		for (size_t i = 0; i < faces.size(); i++)
-		{
-			cv::Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
-			cv::ellipse(frame, center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
-			cv::Mat faceROI = frame_gray(faces[i]);
-			//-- In each face, detect eyes
-			std::vector<cv::Rect> eyes;
-			eyes_cascade.detectMultiScale(faceROI, eyes);
-			for (size_t j = 0; j < eyes.size(); j++)
-			{
-				cv::Point eye_center(faces[i].x + eyes[j].x + eyes[j].width / 2, faces[i].y + eyes[j].y + eyes[j].height / 2);
-				int radius = cvRound((eyes[j].width + eyes[j].height)*0.25);
-				circle(frame, eye_center, radius, cv::Scalar(255, 0, 0), 4);
-			}
-		}
+		face_cascade.detectMultiScale(mMatGS, faces);
+		nap::Logger::info("Detected: %d face(s)", faces.size());
 	}
 }
