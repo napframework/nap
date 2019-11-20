@@ -72,7 +72,7 @@ namespace nap
 		const CVCameraParameters& getParameters()	const			{ return mCameraParameters; }
 
 		/**
-		 * Synchronizes the camera parameters. The parameters will match the current used hardware settings.
+		 * Synchronizes the camera parameters to match the current used hardware settings.
 		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
 		 */
 		void syncParameters();
