@@ -107,7 +107,7 @@ namespace nap
 	}
 
 
-	void CVCamera::updateParameters()
+	void CVCamera::syncParameters()
 	{
 		mCameraParameters.mAutoExposure = static_cast<bool>(getProperty(cv::CAP_PROP_AUTO_EXPOSURE));
 		mCameraParameters.mBrightness	= getProperty(cv::CAP_PROP_BRIGHTNESS);
@@ -141,7 +141,7 @@ namespace nap
 			nap::Logger::warn("%s: %s", mID.c_str(), paramError.toString().c_str());
 
 		// Update parameters based on current config and print
-		updateParameters();
+		syncParameters();
 		rtti::TypeInfo type_info = RTTI_OF(nap::CVCameraParameters);
 		nap::Logger::info("%s: %s", mID.c_str(), mCameraParameters.toString().c_str());
 

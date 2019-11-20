@@ -65,18 +65,17 @@ namespace nap
 		bool setParameters(const nap::CVCameraParameters& parameters, utility::ErrorState& error);
 
 		/**
-		 * Returns the current camera parameters.
-		 * To ensure the parameters are up to date call updateParameters() first.
+		 * Returns the currently used camera parameters.
+		 * To ensure the parameters are up to date call syncParameters() first.
 		 * @return the currently used camera parameters
 		 */
 		const CVCameraParameters& getParameters()	const			{ return mCameraParameters; }
 
 		/**
-		 * Sets the camera parameter values to the settings currently in use by the hardware.
-		 * Note that the updated parameters might not be accurate.
+		 * Synchronizes the camera parameters. The parameters will match the current used hardware settings.
 		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
 		 */
-		void updateParameters();
+		void syncParameters();
 
 		/**
 		 * Shows the device video capture dialog, only supported by DSHOW backend currently.
