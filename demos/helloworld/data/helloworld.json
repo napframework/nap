@@ -1,11 +1,23 @@
 {
     "Objects": [
         {
-            "Type": "nap::CVVideoCapture",
+            "Type": "nap::CVCamera",
             "mID": "CaptureDevice",
+            "ConvertRGB": true,
+            "FlipHorizontal": false,
+            "FlipVertical": true,
             "DeviceIndex": 0,
             "FrameWidth": 640,
-            "FrameHeight": 480
+            "FrameHeight": 480,
+            "API": 700,
+            "Parameters": {
+                "AutoExposure": false,
+                "Brightness": 1.0,
+                "Contrast": 1.0,
+                "Saturation": 1.0,
+                "Gain": 1.0,
+                "Exposure": 1.0
+            }
         },
         {
             "Type": "nap::Entity",

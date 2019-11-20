@@ -45,7 +45,7 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CaptureDevice");
+		mCaptureDevice = mResourceManager->findObject<nap::CVCamera>("CaptureDevice");
 		mCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CaptureTexture");
 
 		// Get the resource that manages all the entities
@@ -73,7 +73,7 @@ namespace nap
 
 		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
 		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
-		nap::Logger::info("%s", cv::getBuildInformation().c_str());
+		//nap::Logger::info("%s", cv::getBuildInformation().c_str());
 
 		return true;
 	}
