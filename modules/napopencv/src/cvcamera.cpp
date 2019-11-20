@@ -19,8 +19,6 @@ RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ApplyParameters",	&nap::CVCamera::mApplyParameters,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrameWidth",			&nap::CVCamera::mFrameWidth,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrameHeight",		&nap::CVCamera::mFrameHeight,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("API",				&nap::CVCamera::mAPIPreference,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Parameters",			&nap::CVCamera::mCameraParameters,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -47,62 +45,6 @@ namespace nap
 
 	CVCamera::~CVCamera()			{ }
 
-	bool CVCamera::init(utility::ErrorState& errorState)
-	{
-		return true;
-	}
-
-
-	bool CVCamera::start(utility::ErrorState& errorState)
-	{
-		assert(!mCaptureDevice.isOpened());
-		if (!errorState.check(mCaptureDevice.open(static_cast<int>(mDeviceIndex), static_cast<int>(mAPIPreference)),
-			"unable to open video capture device: %d", mDeviceIndex))
-			return false;
-
-		if (!mCaptureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
-		{
-			errorState.fail("unable to set video capture frame width: %d", mFrameWidth);
-			return false;
-		}
-
-		if (!mCaptureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
-		{
-			errorState.fail("unable to set video capture frame width: %d", mFrameWidth);
-			return false;
-		}
-
-		// Apply parameters if requested, otherwise try to update parameter values based on hardware config.
-		if (mApplyParameters)
-		{
-			if (!applyParameters(errorState))
-				return false;
-		}
-
-		// Update parameters based on current config and print
-		updateParameters();
-		rtti::TypeInfo type_info = RTTI_OF(nap::CVCameraParameters);
-		nap::Logger::info("%s: %s", mID.c_str(), mCameraParameters.toString().c_str());
-
-		mStopCapturing = false;
-		mCaptureTask = std::async(std::launch::async, std::bind(&CVCamera::capture, this));
-
-		return true;
-	}
-
-
-	void CVCamera::stop()
-	{
-		// Stop capturing thread
-		mStopCapturing = true;
-		if (mCaptureTask.valid())
-			mCaptureTask.wait();
-
-		// Close device
-		assert(mCaptureDevice.isOpened());
-		mCaptureDevice.release();
-	}
-
 
 	bool CVCamera::grab(cv::UMat& target)
 	{
@@ -116,52 +58,40 @@ namespace nap
 	}
 
 
-	bool CVCamera::setProperty(cv::VideoCaptureProperties propID, double value)
-	{
-		return mCaptureDevice.set(propID, value);
-	}
-
-
-	double CVCamera::getProperty(cv::VideoCaptureProperties propID) const
-	{
-		return mCaptureDevice.get(propID);
-	}
-
-
 	bool CVCamera::applyParameters(utility::ErrorState& error)
 	{
 		bool return_v = true;
-		if (!mCaptureDevice.set(cv::CAP_PROP_BRIGHTNESS, (double)mCameraParameters.mBrightness))
+		if (!setProperty(cv::CAP_PROP_BRIGHTNESS, (double)mCameraParameters.mBrightness))
 		{
 			return_v = false;
 			error.fail("unable to set brightness");
 		}
 
-		if (!mCaptureDevice.set(cv::CAP_PROP_CONTRAST, (double)mCameraParameters.mContrast))
+		if (!setProperty(cv::CAP_PROP_CONTRAST, (double)mCameraParameters.mContrast))
 		{
 			return_v = false;
 			error.fail("unable to set contrast");
 		}
 
-		if (!mCaptureDevice.set(cv::CAP_PROP_SATURATION, (double)mCameraParameters.mSaturation))
+		if (!setProperty(cv::CAP_PROP_SATURATION, (double)mCameraParameters.mSaturation))
 		{
 			return_v = false;
 			error.fail("unable to set saturation");
 		}
 		
-		if (!mCaptureDevice.set(cv::CAP_PROP_GAIN, (double)mCameraParameters.mGain))
+		if (!setProperty(cv::CAP_PROP_GAIN, (double)mCameraParameters.mGain))
 		{
 			return_v = false;
 			error.fail("unable to set gain");
 		}
 
-		if (!mCaptureDevice.set(cv::CAP_PROP_EXPOSURE, (double)mCameraParameters.mExposure))
+		if (!setProperty(cv::CAP_PROP_EXPOSURE, (double)mCameraParameters.mExposure))
 		{
 			return_v = false;
 			error.fail("unable to set exposure");
 		}
 
-		if (!mCaptureDevice.set(cv::CAP_PROP_AUTO_EXPOSURE, (double)mCameraParameters.mAutoExposure))
+		if (!setProperty(cv::CAP_PROP_AUTO_EXPOSURE, (double)mCameraParameters.mAutoExposure))
 		{
 			return_v = false;
 			error.fail("unable to set auto-exposure");
@@ -189,9 +119,46 @@ namespace nap
 	}
 
 
-	bool CVCamera::showSetttingsDialog()
+	bool CVCamera::displaySetttingsDialog()
 	{
-		return mCaptureDevice.set(cv::CAP_PROP_SETTINGS, 0.0);
+		return setProperty(cv::CAP_PROP_SETTINGS, 0.0);
+	}
+
+
+	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error)
+	{
+		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), static_cast<int>(mAPIPreference)),
+			"unable to open video capture device: %d", mDeviceIndex))
+			return false;
+		return true;
+	}
+
+
+	bool CVCamera::onStart(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error)
+	{
+		// Apply parameters if requested
+		utility::ErrorState paramError;
+		if (mApplyParameters && !applyParameters(paramError))
+			nap::Logger::warn("%s: %s", mID.c_str(), paramError.toString().c_str());
+
+		// Update parameters based on current config and print
+		updateParameters();
+		rtti::TypeInfo type_info = RTTI_OF(nap::CVCameraParameters);
+		nap::Logger::info("%s: %s", mID.c_str(), mCameraParameters.toString().c_str());
+
+		mStopCapturing = false;
+		mCaptureTask = std::async(std::launch::async, std::bind(&CVCamera::capture, this));
+
+		return true;
+	}
+
+
+	void CVCamera::onStop()
+	{
+		// Stop capturing thread
+		mStopCapturing = true;
+		if (mCaptureTask.valid())
+			mCaptureTask.wait();
 	}
 
 
@@ -201,7 +168,7 @@ namespace nap
 		while (!mStopCapturing)
 		{
 			// Fetch frame
-			mCaptureDevice >> cap_frame;
+			getCaptureDevice() >> cap_frame;
 			if(cap_frame.empty())
 				continue;
 
