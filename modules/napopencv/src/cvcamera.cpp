@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ApplyParameters",	&nap::CVCamera::mApplyParameters,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("API",				&nap::CVCamera::mAPIPreference,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Parameters",			&nap::CVCamera::mCameraParameters,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -119,15 +118,15 @@ namespace nap
 	}
 
 
-	bool CVCamera::displaySetttingsDialog()
+	bool CVCamera::showSettings()
 	{
 		return setProperty(cv::CAP_PROP_SETTINGS, 0.0);
 	}
 
 
-	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error)
+	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
-		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), static_cast<int>(mAPIPreference)),
+		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
 			"unable to open video capture device: %d", mDeviceIndex))
 			return false;
 		return true;

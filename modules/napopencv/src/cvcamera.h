@@ -82,21 +82,20 @@ namespace nap
 		 * Shows the device video capture dialog, only supported by DSHOW backend currently.
 		 * @return if call succeeded.
 		 */
-		bool displaySetttingsDialog();
+		bool showSettings();
 
 		bool				mConvertRGB = true;			///< Property: 'ConvertRGB' if the frame is converted into RGB
 		bool				mFlipHorizontal = false;	///< Property: 'FlipHorizontal' flips the frame on the x-axis
 		bool				mFlipVertical = false;		///< Property: 'FlipVertical' flips the frame on the y-axis
 		bool				mApplyParameters = false;	///< Property: 'ApplyParameters' If the camera parameters are applied on startup
 		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' Capture device index
-		nap::uint			mAPIPreference = 0;			///< Property: 'API' the capture api preference, 0 = default. See cv::VideoCaptureAPIs for a full list of options.
 		CVCameraParameters	mCameraParameters;			///< Property: 'Parameters' all configurable camera parameters
 
 	protected:
 		/**
 		 * Called by the capture device when the camera needs to be opened.
 		 */
-		virtual bool onOpen(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error) override;
+		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) override;
 		
 		/**
 		 * Called by the capture device on start, when the camera is open.

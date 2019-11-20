@@ -2,8 +2,9 @@
 
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVVideoCapture)
-	RTTI_PROPERTY("FrameWidth",		&nap::CVVideoCapture::mFrameWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrameHeight",	&nap::CVVideoCapture::mFrameHeight,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Backend",		&nap::CVVideoCapture::mAPIPreference,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameWidth",		&nap::CVVideoCapture::mFrameWidth,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameHeight",	&nap::CVVideoCapture::mFrameHeight,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -17,7 +18,7 @@ namespace nap
 	bool CVVideoCapture::start(utility::ErrorState& errorState)
 	{
 		assert(!mCaptureDevice.isOpened());
-		if (!onOpen(mCaptureDevice, errorState))
+		if (!onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState))
 			return false;
 		
 		// Set capture dimensions

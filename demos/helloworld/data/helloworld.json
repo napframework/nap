@@ -3,13 +3,14 @@
         {
             "Type": "nap::CVCamera",
             "mID": "CaptureDevice",
+            "Backend": "DirectShow",
+            "FrameWidth": 640,
+            "FrameHeight": 480,
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": true,
+            "ApplyParameters": false,
             "DeviceIndex": 0,
-            "FrameWidth": 640,
-            "FrameHeight": 480,
-            "API": 700,
             "Parameters": {
                 "AutoExposure": false,
                 "Brightness": 1.0,
