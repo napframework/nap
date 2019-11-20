@@ -50,6 +50,30 @@ namespace nap
 	}
 
 
+	int CVVideoCapture::getWidth() const
+	{
+		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_WIDTH));
+	}
+
+
+	int CVVideoCapture::getHeight() const
+	{
+		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_HEIGHT));
+	}
+
+
+	bool CVVideoCapture::setWidth(int width)
+	{
+		return setProperty(cv::CAP_PROP_FRAME_WIDTH, static_cast<double>(width));
+	}
+
+
+	bool CVVideoCapture::setHeight(int height)
+	{
+		return setProperty(cv::CAP_PROP_FRAME_HEIGHT, static_cast<double>(height));
+	}
+
+
 	void CVVideoCapture::stop()
 	{
 		onStop();

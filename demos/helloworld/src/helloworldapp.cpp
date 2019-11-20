@@ -59,13 +59,15 @@ namespace nap
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
+		//cv::samples::addSamplesDataSearchPath(utility::)
+
 		//-- 1. Load the cascades
-		if (!face_cascade.load("C:/naivi/nap/demos/helloworld/data/haarcascades/haarcascade_frontalface_alt.xml"))
+		if (!face_cascade.load("haarcascades/haarcascade_frontalface_alt.xml"))
 		{
 			std::cout << "--(!)Error loading face cascade\n";
 			return false;
 		};
-		if (!eyes_cascade.load("C:/naivi/nap/demos/helloworld/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml"))
+		if (!eyes_cascade.load("haarcascades/haarcascade_eye_tree_eyeglasses.xml"))
 		{
 			std::cout << "--(!)Error loading eyes cascade\n";
 			return false;
@@ -236,15 +238,14 @@ namespace nap
 	void HelloWorldApp::detectFaces()
 	{
 		// processing loop
-		bool grabbed = mCaptureDevice->grab(mMatRGB);
-		if (!grabbed)
+		if (!mCaptureDevice->grab(mMatRGB))
 			return;
 
 		cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
 		mCaptureTexture->update(cpu_mat.data);
 
 		/*
-		cvtColor(mMat, mMatGS, cv::COLOR_BGR2GRAY);
+		cvtColor(mMatRGB, mMatGS, cv::COLOR_BGR2GRAY);
 		equalizeHist(mMatGS, mMatGS);
 
 		std::vector<cv::Rect> faces;
