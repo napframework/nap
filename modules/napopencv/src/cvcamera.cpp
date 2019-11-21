@@ -47,63 +47,6 @@ namespace nap
 	CVCamera::~CVCamera()			{ }
 
 
-	bool CVCamera::grab(cv::UMat& target)
-	{
-		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		if (!mNewFrame)
-			return false;
-
-		// Copy captured frame, note that is a light copy, only the 
-		// Dimensions are adjusted based on the captured frame, data is shared.
-		target = mCaptureMat;
-		mNewFrame = false;
-		return true;
-	}
-
-
-	bool CVCamera::applySettings(utility::ErrorState& error)
-	{
-		bool return_v = true;
-		if (!setProperty(cv::CAP_PROP_BRIGHTNESS, (double)mCameraSettings.mBrightness))
-		{
-			return_v = false;
-			error.fail("unable to set brightness");
-		}
-
-		if (!setProperty(cv::CAP_PROP_CONTRAST, (double)mCameraSettings.mContrast))
-		{
-			return_v = false;
-			error.fail("unable to set contrast");
-		}
-
-		if (!setProperty(cv::CAP_PROP_SATURATION, (double)mCameraSettings.mSaturation))
-		{
-			return_v = false;
-			error.fail("unable to set saturation");
-		}
-		
-		if (!setProperty(cv::CAP_PROP_GAIN, (double)mCameraSettings.mGain))
-		{
-			return_v = false;
-			error.fail("unable to set gain");
-		}
-
-		if (!setProperty(cv::CAP_PROP_EXPOSURE, (double)mCameraSettings.mExposure))
-		{
-			return_v = false;
-			error.fail("unable to set exposure");
-		}
-
-		if (!setProperty(cv::CAP_PROP_AUTO_EXPOSURE, (double)mCameraSettings.mAutoExposure))
-		{
-			return_v = false;
-			error.fail("unable to set auto-exposure");
-		}
-
-		return return_v;
-	}
-
-
 	bool CVCamera::setSettings(const nap::CVCameraSettings& settings, utility::ErrorState& error)
 	{
 		mCameraSettings = settings;
@@ -178,15 +121,38 @@ namespace nap
 	}
 
 
+	bool CVCamera::grab(cv::UMat& target)
+	{
+		// Check if a new frame is available
+		if (!mFrameAvailable)
+			return false;
+
+		// Copy last captured frame using a deep copy.
+		// Again, the deep copy is necessary because a weak copy allows
+		// for the data to be updated by the capture loop whilst still processing on another thread.
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
+		mCaptureMat.copyTo(target);
+		mFrameAvailable = false;
+		return true;
+	}
+
+
 	void CVCamera::capture()
 	{
+		// Start the processing loop until stop capturing is called 
+		// or capturing new frames fails (when the camera faults or is disconnected).
+		// Create the capture frame before starting the loop to ensure no storage on the GPU or CPU
+		// is allocated every time we capture a frame. 
 		cv::UMat cap_frame;
 		while (!mStopCapturing)
 		{
 			// Fetch frame
 			getCaptureDevice() >> cap_frame;
-			if(cap_frame.empty())
-				continue;
+			if (cap_frame.empty())
+			{
+				nap::Logger::error("failed to capture frame, aborting: %s", mID.c_str());
+				break;
+			}
 
 			// Flip vertically
 			if(mFlipVertical)
@@ -200,13 +166,62 @@ namespace nap
 			if(mConvertRGB)
 				cv::cvtColor(cap_frame, cap_frame, cv::COLOR_BGR2RGB);
 			
-			// Deep-Copy the captured frame into our shared captured material
-			// This ensures the capture thread takes the copy load, not the consumer
+			// Deep copy the captured frame to our storage matrix.
+			// This updates the data of our storage container and ensures the same dimensionality.
+			// We need to perform a deep-copy because if we choose to use a shallow copy, 
+			// by the time the frame is grabbed the data 'mCaptureMat' points to could have changed, 
+			// as it references the same data as in 'cap_frame'. And the 'cap_frame' process loop already started.
+			// Performing a deep_copy ensures that when the data is grabbed it will contain the latest full processed frame.
+			//
+			// Alternatively, we could make the 'cap_frame' variable local to this loop, but that creates
+			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				cap_frame.copyTo(mCaptureMat);
-				mNewFrame = true;
 			}
+			mFrameAvailable = true;
 		}
+	}
+
+
+	bool CVCamera::applySettings(utility::ErrorState& error)
+	{
+		bool return_v = true;
+		if (!setProperty(cv::CAP_PROP_BRIGHTNESS, (double)mCameraSettings.mBrightness))
+		{
+			return_v = false;
+			error.fail("unable to set brightness");
+		}
+
+		if (!setProperty(cv::CAP_PROP_CONTRAST, (double)mCameraSettings.mContrast))
+		{
+			return_v = false;
+			error.fail("unable to set contrast");
+		}
+
+		if (!setProperty(cv::CAP_PROP_SATURATION, (double)mCameraSettings.mSaturation))
+		{
+			return_v = false;
+			error.fail("unable to set saturation");
+		}
+
+		if (!setProperty(cv::CAP_PROP_GAIN, (double)mCameraSettings.mGain))
+		{
+			return_v = false;
+			error.fail("unable to set gain");
+		}
+
+		if (!setProperty(cv::CAP_PROP_EXPOSURE, (double)mCameraSettings.mExposure))
+		{
+			return_v = false;
+			error.fail("unable to set exposure");
+		}
+
+		if (!setProperty(cv::CAP_PROP_AUTO_EXPOSURE, (double)mCameraSettings.mAutoExposure))
+		{
+			return_v = false;
+			error.fail("unable to set auto-exposure");
+		}
+		return return_v;
 	}
 }

@@ -49,9 +49,9 @@ namespace nap
 		 * Grabs the last captured frame if new. The result is stored in the given target.
 		 * Internally the frame is removed from the queue. 
 		 * If there is no new capture the target is not updated and the function returns false.
-		 * This operation hands over ownership of the captured frame, data is not copied.
-		 * This call is thread safe and can be called every frame. 
-		 * @param target holds the last captured frame if new.
+		 * This operation hands over ownership of the captured frame.
+		 * This call is thread safe and can be called every frame in to check for a new frame.
+		 * @param target updated to hold the last captured frame data if a new frame is available.
 		 * @return if the target is updated with the contents of a new captured frame.
 		 */
 		bool grab(cv::UMat& target);
@@ -111,12 +111,12 @@ namespace nap
 		virtual void onStop() override;
 
 	private:
-		cv::UMat			mCaptureMat;			///< The GPU / CPU matrix that holds the most recent captured video frame
-		bool				mNewFrame = false ;		///< If a new frame is captured
+		cv::UMat			mCaptureMat;				///< The GPU / CPU matrix that holds the most recent captured video frame
+		std::atomic<bool>	mFrameAvailable = false;	///< If a new frame is captured
 
-		std::future<void>	mCaptureTask;			///< The thread that monitor the read thread
-		std::mutex			mCaptureMutex;			///< The mutex that safe guards the capture thread
-		bool				mStopCapturing = false;	///< Signals the capture thread to stop capturing video
+		std::future<void>	mCaptureTask;				///< The thread that monitor the read thread
+		std::mutex			mCaptureMutex;				///< The mutex that safe guards the capture thread
+		bool				mStopCapturing = false;		///< Signals the capture thread to stop capturing video
 
 		/**
 		 * Captures new frames.
