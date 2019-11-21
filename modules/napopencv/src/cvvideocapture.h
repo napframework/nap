@@ -51,14 +51,14 @@ namespace nap
 		double getProperty(cv::VideoCaptureProperties propID) const;
 
 		/**
-		 * Returns the actual width of the frame in pixels.
-		 * @return actual width of the frame in pixels
+		 * Returns the OpenCV capture device frame width.
+		 * @return the OpenCV capture device frame width in pixels.
 		 */
 		int getWidth() const;
 
 		/**
-		 * Returns the actual height of the frame in pixels.
-		 * @return actual height of the frame in pixels
+		 * Returns the OpenCV capture device frame height.
+		 * @return the OpenCV capture device frame height in pixels.
 		 */
 		int getHeight() const;
 
