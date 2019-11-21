@@ -7,9 +7,9 @@
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": true,
-            "ApplyParameters": false,
+            "ApplySettings": false,
             "DeviceIndex": 0,
-            "Parameters": {
+            "Settings": {
                 "AutoExposure": false,
                 "Brightness": 1.0,
                 "Contrast": 1.0,

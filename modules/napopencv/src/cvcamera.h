@@ -11,9 +11,9 @@
 namespace nap
 {
 	/**
-	 * Configurable camera capture parameters.
+	 * Configurable OpenCV camera settings.
 	 */
-	struct NAPAPI CVCameraParameters
+	struct NAPAPI CVCameraSettings
 	{
 		bool	mAutoExposure	= true;		///< Property: 'AutoExposure' if auto exposure is turned on or off
 		float	mBrightness		= 1.0f;		///< Property: 'Brightness' camera brightness
@@ -23,7 +23,7 @@ namespace nap
 		float	mExposure		= 1.0f;		///< Property: 'Exposure' camera exposure
 
 		/**
-		 * @return the parameter properties as a human readable string.
+		 * @return the settings as a human readable string.
 		 */
 		std::string toString() const;
 	};
@@ -34,8 +34,8 @@ namespace nap
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * Otherwise the captured video frame is stored on the CPU.
 	 * This device captures the video stream on a background thread, call grab() to grab the last recorded video frame.
-	 * Camera settings can be provided on startup by enabling 'ApplyParameters'.
-	 * After startup the camera parameters reflect the current state of the hardware.
+	 * Camera settings can be provided on startup by enabling 'ApplySettings'.
+	 * After startup the camera settings reflect the current state of the hardware.
 	 */
 	class NAPAPI CVCamera : public CVVideoCapture
 	{
@@ -57,41 +57,41 @@ namespace nap
 		bool grab(cv::UMat& target);
 
 		/**
-		 * Sets and immediately applies new camera parameters.
-		 * @param parameters the parameters to set and apply
+		 * Sets and immediately applies new camera settings.
+		 * @param settings the camera settings to set and apply
 		 * @param error contains the error message if the operation fails
 		 * @return if the operation succeeded
 		 */
-		bool setParameters(const nap::CVCameraParameters& parameters, utility::ErrorState& error);
+		bool setSettings(const nap::CVCameraSettings& settings, utility::ErrorState& error);
 
 		/**
-		 * Returns the currently used camera parameters.
-		 * To ensure the parameters are up to date call syncParameters() first.
-		 * @return the currently used camera parameters
+		 * Returns the camera settings.
+		 * To ensure the settings are up to date call syncSettings() first.
+		 * @return the current camera settings.
 		 */
-		const CVCameraParameters& getParameters()	const			{ return mCameraParameters; }
+		const CVCameraSettings& getSettings()	const			{ return mCameraSettings; }
 
 		/**
-		 * Synchronizes the camera parameters.
-		 * Ensures the camera parameters reflect the current state of the hardware.
+		 * Synchronizes the camera settings.
+		 * This call ensures the camera settings reflect the current state of the hardware.
 		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
 		 */
-		void syncParameters();
+		void syncSettings();
 
 		/**
-		 * Displays the video capture settings dialog, only supported by DSHOW backend currently.
+		 * Displays the video capture settings dialog, only supported by direct show backend currently.
 		 * @return if call succeeded.
 		 */
-		bool showSettings();
+		bool showSettingsDialog();
 
 		bool				mConvertRGB = true;			///< Property: 'ConvertRGB' if the frame is converted into RGB
 		bool				mFlipHorizontal = false;	///< Property: 'FlipHorizontal' flips the frame on the x-axis
 		bool				mFlipVertical = false;		///< Property: 'FlipVertical' flips the frame on the y-axis
-		bool				mApplyParameters = false;	///< Property: 'ApplyParameters' If the camera parameters are applied on startup
+		bool				mApplySettings = false;		///< Property: 'ApplySettings' If the camera settings are applied on startup
 		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' Capture device index
 		nap::uint			mFrameWidth = 640;			///< Property: 'FrameWidth' width of the frame in pixels
 		nap::uint			mFrameHeight = 480;			///< Property: 'FrameHeight' height of the frame in pixels
-		CVCameraParameters	mCameraParameters;			///< Property: 'Parameters' all configurable camera parameters
+		CVCameraSettings	mCameraSettings;			///< Property: 'Settings' all configurable camera settings
 
 	protected:
 		/**
@@ -124,10 +124,10 @@ namespace nap
 		void capture();
 
 		/**
-		 * Applies all currently stored camera parameters.
+		 * Tries to apply current camera settings.
 		 * @param error contains the error if operation fails.
 		 * @return if the operation succeeded
 		 */
-		bool applyParameters(utility::ErrorState& error);
+		bool applySettings(utility::ErrorState& error);
 	};
 }

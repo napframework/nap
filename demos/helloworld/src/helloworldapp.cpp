@@ -73,7 +73,7 @@ namespace nap
 			return false;
 		};
 
-		mCaptureDevice->showSettings();
+		mCaptureDevice->showSettingsDialog();
 
 		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
 		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
