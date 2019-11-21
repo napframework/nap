@@ -53,6 +53,8 @@ namespace nap
 		if (!mNewFrame)
 			return false;
 
+		// Copy captured frame, note that is a light copy, only the 
+		// Dimensions are adjusted based on the captured frame, data is shared.
 		target = mCaptureMat;
 		mNewFrame = false;
 		return true;
@@ -199,9 +201,12 @@ namespace nap
 				cv::cvtColor(cap_frame, cap_frame, cv::COLOR_BGR2RGB);
 			
 			// Deep-Copy the captured frame into our shared captured material
-			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			cap_frame.copyTo(mCaptureMat);
-			mNewFrame = true;
+			// This ensures the capture thread takes the copy load, not the consumer
+			{
+				std::lock_guard<std::mutex> lock(mCaptureMutex);
+				cap_frame.copyTo(mCaptureMat);
+				mNewFrame = true;
+			}
 		}
 	}
 }

@@ -112,7 +112,7 @@ namespace nap
 
 	private:
 		cv::UMat			mCaptureMat;			///< The GPU / CPU matrix that holds the most recent captured video frame
-		bool				mNewFrame =  false ;	///< If a new frame is captured
+		bool				mNewFrame = false ;		///< If a new frame is captured
 
 		std::future<void>	mCaptureTask;			///< The thread that monitor the read thread
 		std::mutex			mCaptureMutex;			///< The mutex that safe guards the capture thread
