@@ -14,12 +14,14 @@ RTTI_END_STRUCT
 
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS(nap::CVCamera)
-	RTTI_PROPERTY("ConvertRGB",			&nap::CVCamera::mConvertRGB,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCamera::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ApplyParameters",	&nap::CVCamera::mApplyParameters,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Parameters",			&nap::CVCamera::mCameraParameters,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ConvertRGB",			&nap::CVCamera::mConvertRGB,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCamera::mFlipHorizontal,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ApplyParameters",	&nap::CVCamera::mApplyParameters,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Parameters",			&nap::CVCamera::mCameraParameters,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameWidth",			&nap::CVCamera::mFrameWidth,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameHeight",		&nap::CVCamera::mFrameHeight,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -135,6 +137,19 @@ namespace nap
 
 	bool CVCamera::onStart(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error)
 	{
+		// Set capture dimensions
+		if (!getCaptureDevice().set(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
+		{
+			error.fail("unable to set video capture frame width to: %d", mFrameWidth);
+			return false;
+		}
+
+		if (!getCaptureDevice().set(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
+		{
+			error.fail("unable to set video capture frame height to: %d", mFrameHeight);
+			return false;
+		}
+
 		// Apply parameters if requested
 		utility::ErrorState paramError;
 		if (mApplyParameters && !applyParameters(paramError))

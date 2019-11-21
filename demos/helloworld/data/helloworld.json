@@ -4,8 +4,6 @@
             "Type": "nap::CVCamera",
             "mID": "CaptureDevice",
             "Backend": "DirectShow",
-            "FrameWidth": 640,
-            "FrameHeight": 480,
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": true,
@@ -18,7 +16,18 @@
                 "Saturation": 1.0,
                 "Gain": 1.0,
                 "Exposure": 1.0
-            }
+            },
+            "FrameWidth": 640,
+            "FrameHeight": 480
+        },
+        {
+            "Type": "nap::CVVideo",
+            "mID": "VideoDevice",
+            "Backend": "Automatic",
+            "OverrideFPS": false,
+            "FPS": 25.0,
+            "Playback": "Automatic",
+            "File": "sequence/sequence.%04d.jpg"
         },
         {
             "Type": "nap::Entity",

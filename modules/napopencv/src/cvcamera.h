@@ -78,7 +78,7 @@ namespace nap
 		void syncParameters();
 
 		/**
-		 * Shows the device video capture dialog, only supported by DSHOW backend currently.
+		 * Displays the video capture settings dialog, only supported by DSHOW backend currently.
 		 * @return if call succeeded.
 		 */
 		bool showSettings();
@@ -88,6 +88,8 @@ namespace nap
 		bool				mFlipVertical = false;		///< Property: 'FlipVertical' flips the frame on the y-axis
 		bool				mApplyParameters = false;	///< Property: 'ApplyParameters' If the camera parameters are applied on startup
 		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' Capture device index
+		nap::uint			mFrameWidth = 640;			///< Property: 'FrameWidth' width of the frame in pixels
+		nap::uint			mFrameHeight = 480;			///< Property: 'FrameHeight' height of the frame in pixels
 		CVCameraParameters	mCameraParameters;			///< Property: 'Parameters' all configurable camera parameters
 
 	protected:
@@ -105,7 +107,7 @@ namespace nap
 		/**
 		 * Called before closing the device, stop processing threads.
 		 */
-		virtual void onStop();
+		virtual void onStop() override;
 
 	private:
 		cv::UMat			mCaptureMat;			///< The GPU / CPU matrix that holds the most recent captured video frame

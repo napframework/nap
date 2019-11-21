@@ -51,32 +51,17 @@ namespace nap
 		double getProperty(cv::VideoCaptureProperties propID) const;
 
 		/**
+		 * Returns the actual width of the frame in pixels.
 		 * @return actual width of the frame in pixels
 		 */
 		int getWidth() const;
 
 		/**
+		 * Returns the actual height of the frame in pixels.
 		 * @return actual height of the frame in pixels
 		 */
 		int getHeight() const;
 
-		/**
-		 * Sets the width of the frame in pixels.
-		 * @param width new width of the frame in pixels
-		 * @return if the width is updated
-		 */
-		bool setWidth(int width);
-
-		/**
-		 * Sets the height of the frame in pixels.
-		 * @param height new height of the frame in pixels
-		 * @return if the height is updated
-		 */
-		bool setHeight(int height);
-
-
-		nap::uint		mFrameWidth = 640;						///< Property: 'FrameWidth' width of the frame in pixels
-		nap::uint		mFrameHeight = 480;						///< Property: 'FrameHeight' height of the frame in pixels
 		ECVCaptureAPI	mAPIPreference =  ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
 
 	protected:
