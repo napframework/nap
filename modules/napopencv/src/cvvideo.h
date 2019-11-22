@@ -10,19 +10,10 @@
 namespace nap
 {
 	/**
-	 * OpenCV Video playback mode
-	 */
-	enum class ECVPlaybackMode : int
-	{
-		Manual		= 0,	///< Manual playback mode
-		Automatic	= 1		///< Automatic playback mode
-	};
-
-
-	/**
-	 * Plays back a video file or image sequence from disk using OpenCV.
-	 * Playback can be set to manual or automatic. 
-	 * Manual playback requires explicit frame requests.
+	 * OpenCV video capture device. 
+	 * Reads video files and is able to capture frames from the loaded video stream.
+	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
+	 * Call captureFrame to capture the next available frame in the background.
 	 */
 	class NAPAPI CVVideo : public CVVideoCapture
 	{
@@ -44,30 +35,60 @@ namespace nap
 		bool grab(cv::UMat& target);
 
 		/**
-		 * @return currently used playback speed in FPS
+		 * @return intended video playback speed in frames per second
 		 */
 		float getFramerate() const;
 
 		/**
-		 * Go to next frame
+		 * @return length of the video in seconds based on framerate and frame count.
 		 */
-		void nextFrame();
+		float getLength();
 
 		/**
-		 * Start playback
+		 * @return number of frames in video file or sequence
 		 */
-		void play();
+		int getCount() const;
 
 		/**
-		 * Pause playback
+		 * Reset the video to the beginning of the video stream.
+		 * The first frame is captured immediately in the background.
 		 */
-		void pause();
+		bool reset();
 
-		ECVPlaybackMode mMode = ECVPlaybackMode::Automatic;		///< Property: 'Playback' video playback mode, manual or automatic.
+		/**
+		 * Set the marker to a specific frame inside the video stream.
+		 * This function clamps the frame when out of bounds.
+		 * The requested frame is captured immediately in the background.
+		 * @param frame the requested frame inside the stream
+		 * @return if operation succeeded
+		 */
+		bool setFrame(int frame);
+
+		/**
+		 * @return current position of the marker inside the video stream
+		 */
+		int getFrame();
+
+		/**
+		 * Set the marker to a specific location inside the video stream.
+		 * This function clamps the time when out of bounds.
+		 * The requested frame at the given time is captured immediately in the background.
+		 * @param time time in seconds
+		 * @return if operation succeeded
+		 */
+		bool setTime(float time);
+
+		/**
+		 * @return the current time in seconds of the marker in the video stream
+		 */
+		float getTime();
+
+		/**
+		 * Tells the capture thread to capture the next available frame.
+		 */
+		void captureFrame();
+
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
-		bool			mOverrideFPS = false;					///< Property: 'OverrideFPS'  when set to true the 'FPS' value is used, otherwise the default video playback speed.
-		float			mFramerate = 25;						///< Property: 'FPS' video playback speed in frames per second
-
 
 	protected:
 		/**
@@ -90,8 +111,7 @@ namespace nap
 		std::mutex				mCaptureMutex;				///< The mutex that safe guards the capture thread
 		std::condition_variable	mCaptureCondition;			///< Used for telling the polling task to continue
 		bool					mStop = false;				///< Signals the capture thread to stop capturing video
-		bool					mPlay = false;				///< Playback video
-		bool					mNextFrame = false;			///< Proceed to next frame
+		std::atomic<bool>		mCaptureFrame = { true };	///< Proceed to next frame
 
 		cv::UMat				mCaptureMat;				///< The GPU / CPU matrix that holds the most recent captured video frame
 		std::atomic<bool>		mFrameAvailable = false;	///< If a new frame is captured

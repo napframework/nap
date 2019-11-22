@@ -76,7 +76,7 @@ namespace nap
 		};
 
 		mCaptureDevice->showSettingsDialog();
-		mVideoDevice->nextFrame();
+		//mVideoDevice->captureFrame();
 
 		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
 		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
@@ -271,7 +271,7 @@ namespace nap
 		{
 			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
-			mVideoDevice->nextFrame();
+			mVideoDevice->captureFrame();
 		}
 	}
 

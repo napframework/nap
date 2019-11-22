@@ -3,18 +3,11 @@
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/timer.h>
-
-RTTI_BEGIN_ENUM(nap::ECVPlaybackMode)
-	RTTI_ENUM_VALUE(nap::ECVPlaybackMode::Manual,		"Manual"),
-	RTTI_ENUM_VALUE(nap::ECVPlaybackMode::Automatic,	"Automatic")
-RTTI_END_ENUM
+#include <mathutils.h>
 
 
 // nap::cvvideo run time class definition 
 RTTI_BEGIN_CLASS(nap::CVVideo)
-	RTTI_PROPERTY("OverrideFPS",	&nap::CVVideo::mOverrideFPS,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FPS",			&nap::CVVideo::mFramerate,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Playback",		&nap::CVVideo::mMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("File",			&nap::CVVideo::mFile,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
 RTTI_END_CLASS
 
@@ -44,35 +37,77 @@ namespace nap
 
 	float CVVideo::getFramerate() const
 	{
-		return mFramerate;
+		return static_cast<float>(getProperty(cv::CAP_PROP_FPS));
 	}
 
 
-	void CVVideo::nextFrame()
+	float CVVideo::getLength()
 	{
+		return static_cast<float>(getCount()) / getFramerate();
+	}
+
+
+	int CVVideo::getCount() const
+	{
+		return static_cast<int>(getProperty(cv::VideoCaptureProperties::CAP_PROP_FRAME_COUNT));
+	}
+
+
+	bool CVVideo::reset()
+	{
+		if (setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, (double)0))
 		{
-			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			mNextFrame = true;
+			captureFrame();
+			return true;
 		}
-		mCaptureCondition.notify_one();
+		return false;
 	}
 
 
-	void CVVideo::play()
+	bool CVVideo::setFrame(int frame)
 	{
+		int req_frame = nap::math::clamp<int>(frame, 0, getCount() - 1);
+		if (setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, req_frame))
 		{
-			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			mPlay = true;
+			captureFrame();
+			return true;
 		}
-		mCaptureCondition.notify_one();
+		return false;
 	}
 
 
-	void CVVideo::pause()
+	int CVVideo::getFrame()
+	{
+		return static_cast<int>(getProperty(cv::CAP_PROP_POS_FRAMES));
+	}
+
+
+	bool CVVideo::setTime(float time)
+	{
+		int req_time_ms = static_cast<int>(time * 1000.0f);
+		int max_time_ms = static_cast<int>(getLength()) * 1000.0f;
+		req_time_ms = nap::math::clamp<int>(req_time_ms, 0, max_time_ms);
+
+		if (setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_MSEC, req_time_ms))
+		{
+			captureFrame();
+			return true;
+		}
+		return false;
+	}
+
+
+	float CVVideo::getTime()
+	{
+		return static_cast<float>(getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_MSEC)) / 1000.0f;
+	}
+
+
+	void CVVideo::captureFrame()
 	{
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			mPlay = false;
+			mCaptureFrame = true;
 		}
 		mCaptureCondition.notify_one();
 	}
@@ -88,9 +123,6 @@ namespace nap
 
 	bool CVVideo::onStart(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
-		// Set framerate
-		mFramerate = mOverrideFPS ? mFramerate : static_cast<float>(getProperty(cv::CAP_PROP_FPS));
-
 		mStop = false;
 		mCaptureTask = std::async(std::launch::async, std::bind(&CVVideo::capture, this));
 		return true;
@@ -126,7 +158,7 @@ namespace nap
 				std::unique_lock<std::mutex> lock(mCaptureMutex);
 				mCaptureCondition.wait(lock, [this]()
 				{
-					return (mStop || mPlay || mNextFrame);
+					return (mStop || mCaptureFrame);
 				});
 
 				// Exit loop when exit has been triggered
@@ -136,21 +168,24 @@ namespace nap
 				}
 			}
 
-			// Get next frame if playback is disabled
-			if (!mPlay && mNextFrame)
+			// Grab next frame
+			getCaptureDevice() >> cap_frame;
+
+			// If no next frame is available, it's most likely the end of the stream
+			if (cap_frame.empty())
 			{
-				getCaptureDevice() >> cap_frame;
-				if (!cap_frame.empty())
-				{
-					{
-						std::lock_guard<std::mutex> lock(mCaptureMutex);
-						cap_frame.copyTo(mCaptureMat);
-					}
-					mFrameAvailable = true;
-				}
+				mCaptureFrame = false;
+				return;
 			}
 
-			mNextFrame = false;
+			// Process
+			{
+				std::lock_guard<std::mutex> lock(mCaptureMutex);
+				cap_frame.copyTo(mCaptureMat);
+			}
+
+			mCaptureFrame	= false;
+			mFrameAvailable = true;
 		}
 	}
 }

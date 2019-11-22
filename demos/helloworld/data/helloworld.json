@@ -24,9 +24,6 @@
             "Type": "nap::CVVideo",
             "mID": "VideoDevice",
             "Backend": "Automatic",
-            "OverrideFPS": false,
-            "FPS": 25.0,
-            "Playback": "Automatic",
             "File": "people.mp4"
         },
         {
