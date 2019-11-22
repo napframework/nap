@@ -13,7 +13,7 @@ namespace nap
 	 * OpenCV video capture device. 
 	 * Reads video files and is able to capture frames from the loaded video stream.
 	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
-	 * Call captureFrame to capture the next available frame in the background.
+	 * Call captureFrame(int) or captureNextFrame() to capture a frame in the background.
 	 */
 	class NAPAPI CVVideo : public CVVideoCapture
 	{
@@ -85,10 +85,16 @@ namespace nap
 
 		/**
 		 * Tells the capture thread to capture the next available frame.
-		 * This is a non-blocking call! 
-		 * 
+		 * This is a non-blocking call!
 		 */
-		void captureFrame();
+		void captureNextFrame();
+
+		/**
+		 * Tells the capture thread to capture the given frame.
+		 * This is a non-blocking call!
+		 * @param frame index of the frame to capture
+		 */
+		void captureFrame(int frame);
 
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
 
@@ -117,9 +123,8 @@ namespace nap
 		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		bool					mCaptureFrame = true ;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
-		bool					mSetMarker = false;				///< If a new frame location needs to be set
-		float					mSetMarkerLocation = 0.0f;		///< New marker location in seconds
-		std::atomic<float>		mCurrentTime = 0.0f;			///< Current marker location in seconds
+		bool					mSetFrameMarker = false;		///< If a new frame location needs to be set
+		int						mCurrentFrame = 0;				///< Current frame location of marker
 
 		/**
 		 * Captures new frames.

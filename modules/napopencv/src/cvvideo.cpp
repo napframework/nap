@@ -57,7 +57,7 @@ namespace nap
 	{
 		if (setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, (double)0))
 		{
-			captureFrame();
+			captureNextFrame();
 			return true;
 		}
 		return false;
@@ -66,8 +66,7 @@ namespace nap
 
 	void CVVideo::setFrame(int frame)
 	{
-		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);
-		setTime(static_cast<float>(req_frame) / getFramerate());
+		captureFrame(frame);
 	}
 
 
@@ -78,32 +77,38 @@ namespace nap
 
 
 	void CVVideo::setTime(float time)
-	{
-		int req_time_ms = static_cast<int>(time * 1000.0f);
-		int max_time_ms = static_cast<int>(getLength()) * 1000.0f;
-		req_time_ms = nap::math::clamp<int>(req_time_ms, 0, max_time_ms);
-
-		// Force time update and capture frame
-		{
-			std::unique_lock<std::mutex> lock(mCaptureMutex);
-			mSetMarker = true;
-			mSetMarkerLocation = req_time_ms;
-		}
-		captureFrame();
+	{	
+		setFrame(static_cast<int>(time * getFramerate()));
 	}
 
 
 	float CVVideo::getTime()
 	{
-		return mCurrentTime;
+		return static_cast<float>(mCurrentFrame) / getFramerate();
 	}
 
 
-	void CVVideo::captureFrame()
+	void CVVideo::captureNextFrame()
 	{
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
 			mCaptureFrame = true;
+		}
+		mCaptureCondition.notify_one();
+	}
+
+
+	void CVVideo::captureFrame(int frame)
+	{
+		// Clamp to range
+		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);
+		
+		// Acquire lock, setup variables and try to wake up capture thread
+		{
+			std::unique_lock<std::mutex> lock(mCaptureMutex);
+			mSetFrameMarker = true;
+			mCurrentFrame	= frame;
+			mCaptureFrame	= true;
 		}
 		mCaptureCondition.notify_one();
 	}
@@ -145,6 +150,7 @@ namespace nap
 		// Some global loop variables
 		nap::SystemTimer timer;
 		cv::UMat cap_frame;
+
 		bool update_marker = false;
 		float marker_location = 0.0f;
 
@@ -166,26 +172,24 @@ namespace nap
 				}
 
 				// Copy some processing variables inside lock
-				update_marker	= mSetMarker;
-				marker_location = mSetMarkerLocation;
+				update_marker	= mSetFrameMarker;
+				marker_location = mCurrentFrame;
 				
 				// Reset input
-				mSetMarker		= false;
+				mSetFrameMarker	= false;
 				mCaptureFrame	= false;
 			}
 
 			// Update marker in video stream if requested
 			if (update_marker)
-			{
-				setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_MSEC, marker_location);
-				update_marker = false;
-			}
+				setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, marker_location);
 
 			// Grab next frame
 			getCaptureDevice() >> cap_frame;
 
-			// Store current location
-			mCurrentTime = static_cast<float>(getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_MSEC) / 1000.0f);
+			// Update current frame if we're not manually updating the marker
+			if(!update_marker)
+				mCurrentFrame = static_cast<int>(getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES));
 
 			// If no next frame is available, it's most likely the end of the stream
 			if (cap_frame.empty())

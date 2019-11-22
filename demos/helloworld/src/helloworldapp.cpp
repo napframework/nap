@@ -276,7 +276,7 @@ namespace nap
 		{
 			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
-			mVideoDevice->captureFrame();
+			mVideoDevice->captureNextFrame();
 		}
 	}
 
