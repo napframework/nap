@@ -47,7 +47,7 @@ namespace nap
 		/**
 		 * @return number of frames in video file or sequence
 		 */
-		int getCount() const;
+		int geFrameCount() const;
 
 		/**
 		 * Reset the video to the beginning of the video stream.
@@ -62,7 +62,7 @@ namespace nap
 		 * @param frame the requested frame inside the stream
 		 * @return if operation succeeded
 		 */
-		bool setFrame(int frame);
+		void setFrame(int frame);
 
 		/**
 		 * @return current position of the marker inside the video stream
@@ -76,7 +76,7 @@ namespace nap
 		 * @param time time in seconds
 		 * @return if operation succeeded
 		 */
-		bool setTime(float time);
+		void setTime(float time);
 
 		/**
 		 * @return the current time in seconds of the marker in the video stream
@@ -85,6 +85,8 @@ namespace nap
 
 		/**
 		 * Tells the capture thread to capture the next available frame.
+		 * This is a non-blocking call! 
+		 * 
 		 */
 		void captureFrame();
 
@@ -107,14 +109,17 @@ namespace nap
 		virtual void onStop() override;
 
 	private:
-		std::future<void>		mCaptureTask;				///< The thread that monitor the read thread
-		std::mutex				mCaptureMutex;				///< The mutex that safe guards the capture thread
-		std::condition_variable	mCaptureCondition;			///< Used for telling the polling task to continue
-		bool					mStop = false;				///< Signals the capture thread to stop capturing video
-		std::atomic<bool>		mCaptureFrame = { true };	///< Proceed to next frame
+		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
+		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
+		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
+		bool					mStop = false;					///< Signals the capture thread to stop capturing video
 
-		cv::UMat				mCaptureMat;				///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>		mFrameAvailable = false;	///< If a new frame is captured
+		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
+		bool					mCaptureFrame = true ;			///< Proceed to next frame
+		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
+		bool					mSetMarker = false;				///< If a new frame location needs to be set
+		float					mSetMarkerLocation = 0.0f;		///< New marker location in seconds
+		std::atomic<float>		mCurrentTime = 0.0f;			///< Current marker location in seconds
 
 		/**
 		 * Captures new frames.

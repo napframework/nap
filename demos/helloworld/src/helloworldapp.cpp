@@ -126,6 +126,11 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
+			float current_time = mVideoDevice->getTime();
+			if (ImGui::SliderFloat("Location", &current_time, 0, mVideoDevice->getLength()))
+			{
+				mVideoDevice->setTime(current_time);
+			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
 			ImGui::Image(*mVideoTexture, { col_width, col_width / ratio_video });
