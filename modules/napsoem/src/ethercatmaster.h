@@ -113,11 +113,12 @@ namespace nap
 		 */
 		ESlaveState updateState();
 
-		bool mForceOperational = false;	///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
-		std::string mAdapter;			///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
-		int mProcessCycleTime = 1000;	///< Property: 'ProcessCycleTime' process cycle time in us. 1000us = 1ms
-		int mErrorCycleTime = 40000;	///< Property: 'ErrorCycleTime' error checking cycle time in us. 1000us = 1ms
-		int mRecoveryTimeout = 500;		///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 1ms
+		bool mForceOperational = false;		///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
+		std::string mAdapter;				///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
+		int mProcessCycleTime	= 1000;		///< Property: 'ProcessCycleTime' process cycle time in us. 1000us = 1ms
+		int mErrorCycleTime		= 40000;	///< Property: 'ErrorCycleTime' error checking cycle time in us. 1000us = 1ms
+		int mRecoveryTimeout	= 500;		///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 1ms
+		int mProcessTimeout		= 2000;		///< Property: 'ProcessTimeout' time (in us) the master is given to process all slave input / output.
 
 	protected:
 		/**
