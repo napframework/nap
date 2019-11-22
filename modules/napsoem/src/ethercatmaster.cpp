@@ -11,6 +11,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ProcessCycleTime",	&nap::EtherCATMaster::mProcessCycleTime,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ProcessTimeout",		&nap::EtherCATMaster::mProcessTimeout,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -48,7 +49,7 @@ namespace nap
 		onStart();
 
 		// All slaves should be in pre-op mode now
-		checkState(0, ESlaveState::PreOperational, 2000);
+		checkState(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000);
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
 			onPreOperational(&(ec_slave[i]), i);
@@ -60,11 +61,11 @@ namespace nap
 		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
 		// All slaves should be in safe-op mode now
-		checkState(0, ESlaveState::SafeOperational, 2000);
+		checkState(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000);
 
 		// Send some data to make slaves happy
 		ec_send_processdata();
-		ec_receive_processdata(EC_TIMEOUTRET);
+		ec_receive_processdata(mProcessTimeout);
 
 		// Notify listeners
 		for (int i = 1; i <= ec_slavecount; i++)
@@ -263,7 +264,7 @@ namespace nap
 
 			// Transmit process-data to slaves and store actual work counter
 			ec_send_processdata();
-			mActualWCK = ec_receive_processdata(EC_TIMEOUTRET);
+			mActualWCK = ec_receive_processdata(mProcessTimeout);
 		
 			// Sleep xUS
 			osal_usleep(mProcessCycleTime);
@@ -283,9 +284,6 @@ namespace nap
 				continue;
 			}
 
-			// Update slave state when operational
-			updateState();
-
 			// Work-count matches and we don't have to check slave states
 			if (mActualWCK == mExpectedWKC && 
 				!ec_group[currentgroup].docheckstate)
@@ -303,7 +301,9 @@ namespace nap
 
 	void EtherCATMaster::processErrors(int slaveGroup)
 	{
-		ec_group[slaveGroup ].docheckstate = false;
+		ec_group[slaveGroup].docheckstate = false;
+		ec_readstate();
+
 		for (int slave = 1; slave <= ec_slavecount; slave++)
 		{
 			if ((ec_slave[slave].group == slaveGroup) && (ec_slave[slave].state != static_cast<uint16>(ESlaveState::Operational)))
@@ -357,7 +357,7 @@ namespace nap
 				{
 					// Check if the slave is operational
 					// If slave appears to be missing (none) tag it.
-					checkState(slave, ESlaveState::Operational, 2);
+					checkState(slave, ESlaveState::Operational, EC_TIMEOUTSTATE / 1000);
 					if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 					{
 						ec_slave[slave].islost = true;
