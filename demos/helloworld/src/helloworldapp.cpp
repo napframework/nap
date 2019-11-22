@@ -46,7 +46,9 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mCaptureDevice = mResourceManager->findObject<nap::CVCamera>("CaptureDevice");
+		mVideoDevice = mResourceManager->findObject<nap::CVVideo>("VideoDevice");
 		mCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CaptureTexture");
+		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -74,6 +76,7 @@ namespace nap
 		};
 
 		mCaptureDevice->showSettingsDialog();
+		mVideoDevice->nextFrame();
 
 		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
 		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
@@ -98,6 +101,7 @@ namespace nap
 	void HelloWorldApp::update(double deltaTime)
 	{
 		detectFaces();
+		copyVideo();
 
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
@@ -118,6 +122,13 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCaptureTexture->getWidth()) / static_cast<float>(mCaptureTexture->getHeight());
 			ImGui::Image(*mCaptureTexture, { col_width, col_width / ratio_video });
+		}
+
+		if (ImGui::CollapsingHeader("Video Feed"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
+			ImGui::Image(*mVideoTexture, { col_width, col_width / ratio_video });
 		}
 
 		ImGui::End();
@@ -253,4 +264,15 @@ namespace nap
 		nap::Logger::info("Detected: %d face(s)", faces.size());
 		*/
 	}
+
+	void HelloWorldApp::copyVideo()
+	{
+		if (mVideoDevice->grab(mVideoMatRGB))
+		{
+			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
+			mVideoTexture->update(cpu_mat.data);
+			mVideoDevice->nextFrame();
+		}
+	}
+
 }

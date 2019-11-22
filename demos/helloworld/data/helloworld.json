@@ -27,7 +27,7 @@
             "OverrideFPS": false,
             "FPS": 25.0,
             "Playback": "Automatic",
-            "File": "sequence/sequence.%04d.jpg"
+            "File": "people.mp4"
         },
         {
             "Type": "nap::Entity",
@@ -346,6 +346,21 @@
             "Usage": "Static",
             "Width": 640,
             "Height": 480,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 10
+            },
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGB8"
         },
         {

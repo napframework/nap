@@ -16,6 +16,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 #include <cvcamera.h>
+#include <cvvideo.h>
 #include <rendertexture2d.h>
 
 namespace nap
@@ -90,12 +91,14 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
-		ObjectPtr<CVCamera> mCaptureDevice = nullptr;				//< Pointer to the capture device
+		ObjectPtr<CVCamera> mCaptureDevice = nullptr;					//< Pointer to the capture device
+		ObjectPtr<CVVideo>	mVideoDevice = nullptr;						//< Pointer to the video device
 		ObjectPtr<RenderTexture2D> mCaptureTexture = nullptr;			//< Pointer to the texture we need to capture
+		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		
 		// CV
-		cv::UMat mMatBGR;
+		cv::UMat mVideoMatRGB;
 		cv::UMat mMatRGB;
 		cv::UMat mMatGS;
 		cv::VideoCapture mCapture;
@@ -103,5 +106,7 @@ namespace nap
 		cv::CascadeClassifier eyes_cascade;
 
 		void detectFaces();
+
+		void copyVideo();
 	};
 }
