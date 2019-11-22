@@ -30,6 +30,8 @@ namespace nap
 		LOAD_POPUP = 13,
 		EDIT_VALUE_POPUP = 14,
 		DRAGGING_SPECIALVALUE = 15,
+		DELETE_SEQUENCE_MODAL_POPUP = 16,
+		DELETE_ELEMENT_MODAL_POPUP = 17
 	};
 
 	class TimelineGuiProperties

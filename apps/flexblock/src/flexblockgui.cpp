@@ -1748,6 +1748,8 @@ namespace nap
 		if (openDeletionPopup)
 		{
 			ImGui::OpenPopup("Delete Sequence Confirmation");
+			mProps.mInPopup = true;
+			mProps.mCurrentAction = TimeLineActions::DELETE_SEQUENCE_MODAL_POPUP;
 		}
 
 		if (ImGui::BeginPopupModal("Delete Sequence Confirmation"))
@@ -2195,7 +2197,12 @@ namespace nap
 		}
 
 		if (openDeletionPopup)
+		{
 			ImGui::OpenPopup("Delete Sequence Element Confirmation");
+			mProps.mCurrentAction = TimeLineActions::DELETE_ELEMENT_MODAL_POPUP;
+			mProps.mInPopup = true;
+		}
+			
 
 		if (ImGui::BeginPopupModal("Delete Sequence Element Confirmation"))
 		{
@@ -2689,14 +2696,21 @@ namespace nap
 				{
 					if (element == sequence->getElements()[i])
 					{
-						index = i;
+						index = i+1;
 						break;
 					}
 				}
 
-				if (index >= 0 && index < sequence->getElements().size() - 1)
+				std::vector<timeline::SequenceElement*> sequenceElementsToDelete;
+				for (int i = index; i < sequence->getElements().size(); i++)
 				{
-					sequence->eraseElements(index + 1, sequence->getElements().size());
+					sequenceElementsToDelete.emplace_back(sequence->getElements()[i]);
+				}
+
+				for (auto element : sequenceElementsToDelete)
+				{
+					utility::ErrorState error;
+					mSequencePlayer->removeSequenceElement(sequence, element, error);
 				}
 
 				// insert the new sequence and move ownership
