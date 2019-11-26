@@ -118,6 +118,10 @@ namespace nap
 			 */
 			bool removeSequence(const Sequence* sequence, utility::ErrorState& errorState);
 
+			bool moveSequenceForward(const Sequence* sequence, utility::ErrorState& errorState);
+
+			bool moveSequenceBackward(const Sequence* sequence, utility::ErrorState& errorState);
+
 			/**
 			 * Removes sequence element from given sequence
 			 * @param sequence, sequence containing the element

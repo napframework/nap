@@ -1717,6 +1717,22 @@ namespace nap
 				mProps.mSelectedSequence->mName = newName;
 			}
 
+			ImGui::Spacing();
+			ImGui::Text("Reorder");
+
+			if (ImGui::Button("    -    "))
+			{
+				utility::ErrorState errorState;
+				mSequencePlayer->moveSequenceBackward(mProps.mSelectedSequence, errorState);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("    +    "))
+			{
+				utility::ErrorState errorState;
+				mSequencePlayer->moveSequenceForward(mProps.mSelectedSequence, errorState);
+			}
+			ImGui::Spacing();
+
 			if (mSequencePlayer->getSequences().size() > 1)
 			{
 				if (ImGui::Button("Delete"))

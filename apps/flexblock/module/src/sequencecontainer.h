@@ -52,6 +52,10 @@ namespace nap
 			 */
 			void removeSequenceElement(const Sequence * sequence, const SequenceElement * element);
 
+			void moveSequenceForward(const Sequence * sequence);
+
+			void moveSequenceBackward(const Sequence * sequence);
+
 			/**
 			 * Inserts sequences to vector containing sequences
 			 * @param sequence unique pointer of sequence, sequence container will own the unique_ptr

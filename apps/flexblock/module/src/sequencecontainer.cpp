@@ -110,6 +110,37 @@ namespace nap
 			}
 		}
 
+		void nap::timeline::SequenceContainer::moveSequenceForward(const Sequence * sequence)
+		{
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (mSequences[i] == sequence)
+				{
+					if (i < mSequences.size() - 1)
+					{
+						mSequences[i]->mIndexInSequenceContainer += 1;
+						mSequences[i + 1]->mIndexInSequenceContainer -= 1;
+						reconstruct();
+						break;
+					}
+				}
+			}
+		}
+
+		void nap::timeline::SequenceContainer::moveSequenceBackward(const Sequence * sequence)
+		{
+			for (int i = 1; i < mSequences.size(); i++)
+			{
+				if (mSequences[i] == sequence)
+				{
+					mSequences[i]->mIndexInSequenceContainer -= 1;
+					mSequences[i - 1]->mIndexInSequenceContainer += 1;
+					reconstruct();
+					break;
+				}
+			}
+		}
+
 
 		Sequence* SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
 		{
@@ -161,7 +192,7 @@ namespace nap
 			{
 				if (i > 0)
 				{
-					mSequences[i]->mStartParameters.clear();
+					//mSequences[i]->mStartParameters.clear();
 					mSequences[i]->mStartParametersReference = mSequences[i - 1]->getElements().back()->getEndParameters();
 					mSequences[i]->mUseReference = true;
 				}
@@ -170,14 +201,15 @@ namespace nap
 					mSequences[i]->mUseReference = false;
 				}
 
-				
-				mSequences[i]->mIndexInSequenceContainer = i;
-
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
 
 				for (int j = 0; j < mSequences[i]->getElements().size(); j++)
 				{
+					if (lastElement == nullptr )
+					{
+						mSequences[i]->getElements()[j]->setStartParameters(mSequences[i]->getStartParameters());
+					}
 					mSequences[i]->getElements()[j]->setPreviousElement(lastElement);
 					lastElement = mSequences[i]->getElements()[j];
 				}

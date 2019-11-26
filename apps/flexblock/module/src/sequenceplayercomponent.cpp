@@ -486,6 +486,26 @@ namespace nap
 			return true;
 		}
 
+		bool nap::timeline::SequencePlayerComponentInstance::moveSequenceForward(const Sequence * sequence, utility::ErrorState& errorState)
+		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
+				return false;
+
+			mSequenceContainer->moveSequenceForward(sequence);
+
+			return true;
+		}
+
+		bool nap::timeline::SequencePlayerComponentInstance::moveSequenceBackward(const Sequence * sequence, utility::ErrorState& errorState)
+		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
+				return false;
+
+			mSequenceContainer->moveSequenceBackward(sequence);
+
+			return true;
+		}
+
 
 		bool SequencePlayerComponentInstance::removeSequenceElement(const Sequence* sequence, const SequenceElement* element, utility::ErrorState& errorState)
 		{
