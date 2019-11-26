@@ -1523,7 +1523,7 @@ namespace nap
 		// zoom of timeline
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100.0f);
-		if (ImGui::SliderFloat("Horizontal Zoom", &mProps.mLengthPerSecond, 4.0f, 900.0f, ""))
+		if (ImGui::SliderFloat("Horizontal Zoom", &mProps.mLengthPerSecond, 4.0f, 9000.0f, ""))
 		{
 			for (auto& pair : mProps.mDirtyFlags)
 			{

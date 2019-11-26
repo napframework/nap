@@ -36,6 +36,15 @@ namespace nap
 				}
 			}
 
+			// sort the list of sequences
+			sort(mSequenceResourcePtrs.begin(), mSequenceResourcePtrs.end(), [](
+				const nap::ResourcePtr<Sequence> a,
+				const nap::ResourcePtr<Sequence> b)-> bool
+			{
+				return a.get()->mIndexInSequenceContainer < b.get()->mIndexInSequenceContainer;
+			});
+
+
 			double time = 0.0;
 			mSequences.clear();
 			for (const auto& sequence : mSequenceResourcePtrs)
