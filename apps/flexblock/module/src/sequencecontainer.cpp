@@ -47,11 +47,11 @@ namespace nap
 
 			double time = 0.0;
 			mSequences.clear();
-			for (const auto& sequence : mSequenceResourcePtrs)
+			for (int i = 0; i < mSequenceResourcePtrs.size(); i++)
 			{
-				sequence->setStartTime(time);
-				time += sequence->getDuration();
-				mSequences.emplace_back(sequence.get());
+				mSequenceResourcePtrs[i]->setStartTime(time);
+				time += mSequenceResourcePtrs[i]->getDuration();
+				mSequences.emplace_back(mSequenceResourcePtrs[i].get());
 			}
 
 			for (int i = 0; i < mSequences.size(); i++)
@@ -151,7 +151,7 @@ namespace nap
 				const Sequence *a,
 				const Sequence *b)-> bool
 			{
-				return a->getStartTime() < b->getStartTime();
+				return a->mIndexInSequenceContainer < b->mIndexInSequenceContainer;
 			});
 
 			double time = 0.0;
