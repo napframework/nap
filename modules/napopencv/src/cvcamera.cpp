@@ -56,7 +56,7 @@ namespace nap
 
 	void CVCamera::syncSettings()
 	{
-		mCameraSettings.mAutoExposure	= static_cast<bool>(getProperty(cv::CAP_PROP_AUTO_EXPOSURE));
+		mCameraSettings.mAutoExposure	= getProperty(cv::CAP_PROP_AUTO_EXPOSURE) > 0;
 		mCameraSettings.mBrightness		= getProperty(cv::CAP_PROP_BRIGHTNESS);
 		mCameraSettings.mContrast		= getProperty(cv::CAP_PROP_CONTRAST);
 		mCameraSettings.mExposure		= getProperty(cv::CAP_PROP_EXPOSURE);
