@@ -58,6 +58,7 @@ namespace nap
 		/**
 		 * Selects the frame to be captured next, where 0 is the first frame.
 		 * The requested frame is queued immediately for capture.
+		 * Note that only the last request is considered when multiple requests are made before the frame is available.
 		 * This function clamps the frame when out of bounds.
 		 * @param frame the requested frame inside the stream
 		 * @return if operation succeeded
@@ -65,7 +66,7 @@ namespace nap
 		void setFrame(int frame);
 
 		/**
-		 * Returns the current frame in the video stream.
+		 * Returns the current frame index.
 		 * This value is updated when a new frame is captured.
 		 * @return current position of the marker inside the video stream.
 		 */
@@ -73,8 +74,9 @@ namespace nap
 
 		/**
 		 * Set the marker to a specific location inside the video stream.
-		 * This function clamps the time when out of bounds.
 		 * The requested frame at the given time is captured immediately in the background.
+		 * Note that only the last request is considered when multiple requests are made before the frame is available.
+		 * This function clamps the time when out of bounds.
 		 * @param time time in seconds
 		 * @return if operation succeeded
 		 */
@@ -90,13 +92,6 @@ namespace nap
 		 * This is a non-blocking call!
 		 */
 		void captureNextFrame();
-
-		/**
-		 * Tells the capture thread to capture the given frame.
-		 * This is a non-blocking call!
-		 * @param frame index of the frame to capture
-		 */
-		void captureFrame(int frame);
 
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
 
@@ -127,8 +122,18 @@ namespace nap
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 		bool					mSetFrameMarker = false;		///< If a new frame location needs to be set
 		int						mMarkerFrame = 0;				///< Manual set location of marker
-		int						mCurrentFrame = 0;				///< Last captured frame in video stream
+		int						mCurrentFrame = 0;				///< Last (Current) captured video frame index
 
+
+		/**
+		 * Selects the frame to be captured next, where 0 is the first frame.
+		 * The requested frame is queued immediately for capture.
+		 * Note that only the last request is considered when multiple requests are made before the frame is available.
+		 * This function clamps the frame when out of bounds.
+		 * @param frame the requested frame inside the stream
+		 * @return if operation succeeded
+		 */
+		void captureFrame(int frame);
 
 		/**
 		 * Captures new frames.

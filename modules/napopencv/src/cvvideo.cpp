@@ -103,6 +103,7 @@ namespace nap
 		// Acquire lock, setup variables and try to wake up capture thread
 		{
 			std::unique_lock<std::mutex> lock(mCaptureMutex);
+			nap::Logger::info("requesting frame: %d", frame);
 			mSetFrameMarker = true;
 			mMarkerFrame	= frame;
 			mCaptureFrame	= true;
@@ -178,8 +179,8 @@ namespace nap
 			}
 
 			// Update marker in video stream if requested
-			if (update_marker)
-				setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, marker_location);
+			if (update_marker && !setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, marker_location))
+				nap::Logger::warn("%s: unable to set frame position: %d", mID.c_str(), marker_location);
 
 			// Grab next frame
 			getCaptureDevice() >> cap_frame;
@@ -208,7 +209,7 @@ namespace nap
 				assert(mCurrentFrame >= 0);
 			}
 
-			nap::Logger::info("setting frame: %d", mCurrentFrame);
+			nap::Logger::info("set frame: %d", mCurrentFrame);
 			mFrameAvailable = true;
 		}
 	}
