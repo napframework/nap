@@ -126,10 +126,9 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
-			float current_time = mVideoDevice->getTime();
-			if (ImGui::SliderFloat("Location", &current_time, 0, mVideoDevice->getLength()))
+			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, mVideoDevice->geFrameCount()))
 			{
-				mVideoDevice->setTime(current_time);
+				mVideoDevice->setFrame(mCurrentVideoFrame);
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
@@ -276,7 +275,7 @@ namespace nap
 		{
 			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
-			mVideoDevice->captureNextFrame();
+			//mVideoDevice->captureNextFrame();
 		}
 	}
 

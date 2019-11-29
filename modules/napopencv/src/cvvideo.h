@@ -53,19 +53,21 @@ namespace nap
 		 * Reset the video to the beginning of the video stream.
 		 * The first frame is captured immediately in the background.
 		 */
-		bool reset();
+		void reset();
 
 		/**
-		 * Set the marker to a specific frame inside the video stream.
+		 * Selects the frame to be captured next, where 0 is the first frame.
+		 * The requested frame is queued immediately for capture.
 		 * This function clamps the frame when out of bounds.
-		 * The requested frame is captured immediately in the background.
 		 * @param frame the requested frame inside the stream
 		 * @return if operation succeeded
 		 */
 		void setFrame(int frame);
 
 		/**
-		 * @return current position of the marker inside the video stream
+		 * Returns the current frame in the video stream.
+		 * This value is updated when a new frame is captured.
+		 * @return current position of the marker inside the video stream.
 		 */
 		int getFrame();
 
@@ -124,7 +126,9 @@ namespace nap
 		bool					mCaptureFrame = true ;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 		bool					mSetFrameMarker = false;		///< If a new frame location needs to be set
-		int						mCurrentFrame = 0;				///< Current frame location of marker
+		int						mMarkerFrame = 0;				///< Manual set location of marker
+		int						mCurrentFrame = 0;				///< Last captured frame in video stream
+
 
 		/**
 		 * Captures new frames.

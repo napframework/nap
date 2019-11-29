@@ -96,7 +96,8 @@ namespace nap
 		ObjectPtr<RenderTexture2D> mCaptureTexture = nullptr;			//< Pointer to the texture we need to capture
 		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		
+		int mCurrentVideoFrame = 0;
+
 		// CV
 		cv::UMat mVideoMatRGB;
 		cv::UMat mMatRGB;

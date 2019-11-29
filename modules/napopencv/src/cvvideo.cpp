@@ -4,6 +4,7 @@
 #include <utility/fileutils.h>
 #include <nap/timer.h>
 #include <mathutils.h>
+#include <nap/logger.h>
 
 
 // nap::cvvideo run time class definition 
@@ -53,14 +54,9 @@ namespace nap
 	}
 
 
-	bool CVVideo::reset()
+	void CVVideo::reset()
 	{
-		if (setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, (double)0))
-		{
-			captureNextFrame();
-			return true;
-		}
-		return false;
+		setFrame(0);
 	}
 
 
@@ -72,7 +68,8 @@ namespace nap
 
 	int CVVideo::getFrame()
 	{
-		return static_cast<int>(getProperty(cv::CAP_PROP_POS_FRAMES));
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
+		return mCurrentFrame;
 	}
 
 
@@ -102,12 +99,12 @@ namespace nap
 	{
 		// Clamp to range
 		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);
-		
+
 		// Acquire lock, setup variables and try to wake up capture thread
 		{
 			std::unique_lock<std::mutex> lock(mCaptureMutex);
 			mSetFrameMarker = true;
-			mCurrentFrame	= frame;
+			mMarkerFrame	= frame;
 			mCaptureFrame	= true;
 		}
 		mCaptureCondition.notify_one();
@@ -173,7 +170,7 @@ namespace nap
 
 				// Copy some processing variables inside lock
 				update_marker	= mSetFrameMarker;
-				marker_location = mCurrentFrame;
+				marker_location = mMarkerFrame;
 				
 				// Reset input
 				mSetFrameMarker	= false;
@@ -187,19 +184,31 @@ namespace nap
 			// Grab next frame
 			getCaptureDevice() >> cap_frame;
 
-			// Update current frame if we're not manually updating the marker
-			if(!update_marker)
-				mCurrentFrame = static_cast<int>(getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES));
-
 			// If no next frame is available, it's most likely the end of the stream
 			if (cap_frame.empty())
-				return;
+			{
+				nap::Logger::warn("%s: end of stream: %s", mID.c_str(), mFile.c_str());
+				continue;
+			}
 
-			// Process
+			// Flip vertically
+			cv::flip(cap_frame, cap_frame, 0);
+
+			// Flip Horizontally
+			cv::flip(cap_frame, cap_frame, 1);
+
+			// Convert to RGB
+			cv::cvtColor(cap_frame, cap_frame, cv::COLOR_BGR2RGB);
+
+			// Copy frame and save current location
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				cap_frame.copyTo(mCaptureMat);
+				mCurrentFrame = getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES) - 1;
+				assert(mCurrentFrame >= 0);
 			}
+
+			nap::Logger::info("setting frame: %d", mCurrentFrame);
 			mFrameAvailable = true;
 		}
 	}
