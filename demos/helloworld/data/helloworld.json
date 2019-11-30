@@ -6,7 +6,7 @@
             "Backend": "DirectShow",
             "ConvertRGB": true,
             "FlipHorizontal": false,
-            "FlipVertical": true,
+            "FlipVertical": false,
             "ApplySettings": false,
             "DeviceIndex": 0,
             "Settings": {

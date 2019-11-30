@@ -256,17 +256,24 @@ namespace nap
 		if (!mCaptureDevice->grab(mMatRGB))
 			return;
 
-		cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
-		mCaptureTexture->update(cpu_mat.data);
-
 		/*
-		cvtColor(mMatRGB, mMatGS, cv::COLOR_BGR2GRAY);
+		cvtColor(mMatRGB, mMatGS, cv::COLOR_RGB2GRAY);
 		equalizeHist(mMatGS, mMatGS);
-
+			
 		std::vector<cv::Rect> faces;
 		face_cascade.detectMultiScale(mMatGS, faces);
-		nap::Logger::info("Detected: %d face(s)", faces.size());
+		//nap::Logger::info("Detected: %d face(s)", faces.size());
+
+		for (size_t i = 0; i < faces.size(); i++)
+		{
+			cv::Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
+			ellipse(mMatRGB, center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
+		}
 		*/
+
+		cv::flip(mMatRGB, mMatRGB, 0);
+		cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
+		mCaptureTexture->update(cpu_mat.data);
 	}
 
 	void HelloWorldApp::copyVideo()
