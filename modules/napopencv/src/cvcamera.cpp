@@ -17,6 +17,7 @@ RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("ConvertRGB",			&nap::CVCamera::mConvertRGB,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCamera::mFlipHorizontal,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowDialog",			&nap::CVCamera::mShowDialog,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ApplySettings",		&nap::CVCamera::mApplySettings,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Settings",			&nap::CVCamera::mCameraSettings,			nap::rtti::EPropertyMetaData::Default)
@@ -47,10 +48,19 @@ namespace nap
 	CVCamera::~CVCamera()			{ }
 
 
-	bool CVCamera::setSettings(const nap::CVCameraSettings& settings, utility::ErrorState& error)
+	void CVCamera::setSettings(const nap::CVCameraSettings& settings)
 	{
+		// Copy settings and force update next grab
+		std::lock_guard<std::mutex> lock(mSettingsMutex);
 		mCameraSettings = settings;
-		return applySettings(error);
+		mSettingsDirty	= true;
+	}
+
+
+	void CVCamera::getSettings(nap::CVCameraSettings& settings)
+	{
+		std::lock_guard<std::mutex> lock(mSettingsMutex);
+		settings = mCameraSettings;
 	}
 
 
@@ -62,12 +72,6 @@ namespace nap
 		mCameraSettings.mExposure		= getProperty(cv::CAP_PROP_EXPOSURE);
 		mCameraSettings.mGain			= getProperty(cv::CAP_PROP_GAIN);
 		mCameraSettings.mSaturation		= getProperty(cv::CAP_PROP_SATURATION);
-	}
-
-
-	bool CVCamera::showSettingsDialog()
-	{
-		return setProperty(cv::CAP_PROP_SETTINGS, 0.0);
 	}
 
 
@@ -83,28 +87,32 @@ namespace nap
 	bool CVCamera::onStart(cv::VideoCapture& captureDevice, nap::utility::ErrorState& error)
 	{
 		// Set capture dimensions
-		if (!getCaptureDevice().set(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
+		if (!setProperty(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
 		{
 			error.fail("unable to set video capture frame width to: %d", mFrameWidth);
 			return false;
 		}
 
-		if (!getCaptureDevice().set(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
+		if (!setProperty(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
 		{
 			error.fail("unable to set video capture frame height to: %d", mFrameHeight);
 			return false;
 		}
 
-		// Apply settings if requested
+		if (mShowDialog && !setProperty(cv::CAP_PROP_SETTINGS, 0.0))
+			nap::Logger::warn("unable to show camera settings dialog");
+
+		// Apply and sync settings 
 		utility::ErrorState paramError;
 		if (mApplySettings && !applySettings(paramError))
 			nap::Logger::warn("%s: %s", mID.c_str(), paramError.toString().c_str());
-
-		// Update settings based on current config and print to console
 		syncSettings();
+
+		// Log current settings to console
 		rtti::TypeInfo type_info = RTTI_OF(nap::CVCameraSettings);
 		nap::Logger::info("%s: %s", mID.c_str(), mCameraSettings.toString().c_str());
 
+		// Start capture task
 		mStopCapturing = false;
 		mCaptureTask = std::async(std::launch::async, std::bind(&CVCamera::capture, this));
 
@@ -146,6 +154,18 @@ namespace nap
 		cv::UMat cap_frame;
 		while (!mStopCapturing)
 		{
+			// Apply camera settings if required
+			if (mSettingsDirty)
+			{
+				std::lock_guard<std::mutex> lock(mSettingsMutex);
+				nap::utility::ErrorState error;
+				if (!applySettings(error))
+					nap::Logger::warn(error.toString());
+
+				syncSettings();
+				mSettingsDirty = false;
+			}
+
 			// Fetch frame
 			getCaptureDevice() >> cap_frame;
 			if (cap_frame.empty())

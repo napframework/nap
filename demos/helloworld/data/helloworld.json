@@ -4,6 +4,7 @@
             "Type": "nap::CVCamera",
             "mID": "CaptureDevice",
             "Backend": "DirectShow",
+            "ShowDialog":true,
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": false,

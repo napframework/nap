@@ -75,13 +75,6 @@ namespace nap
 			return false;
 		};
 
-		mCaptureDevice->showSettingsDialog();
-		//mVideoDevice->captureFrame();
-
-		//mCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-		//mCapture.set(cv::CAP_PROP_FRAME_HEIGHT,720);
-		//nap::Logger::info("%s", cv::getBuildInformation().c_str());
-
 		return true;
 	}
 	

@@ -57,32 +57,18 @@ namespace nap
 		bool grab(cv::UMat& target);
 
 		/**
-		 * Sets and immediately applies new camera settings.
+		 * Sets and applies new camera settings the next time a frame is captured.
 		 * @param settings the camera settings to set and apply
 		 * @param error contains the error message if the operation fails
 		 * @return if the operation succeeded
 		 */
-		bool setSettings(const nap::CVCameraSettings& settings, utility::ErrorState& error);
+		void setSettings(const nap::CVCameraSettings& settings);
 
 		/**
-		 * Returns the camera settings.
-		 * To ensure the settings are up to date call syncSettings() first.
+		 * Returns the active, currently in use camera settings.
 		 * @return the current camera settings.
 		 */
-		const CVCameraSettings& getSettings()	const			{ return mCameraSettings; }
-
-		/**
-		 * Synchronizes the camera settings.
-		 * This call ensures the camera settings reflect the current state of the hardware.
-		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
-		 */
-		void syncSettings();
-
-		/**
-		 * Displays the video capture settings dialog, only supported by direct show backend currently.
-		 * @return if call succeeded.
-		 */
-		bool showSettingsDialog();
+		void getSettings(nap::CVCameraSettings& settings);
 
 		bool				mConvertRGB = true;			///< Property: 'ConvertRGB' if the frame is converted into RGB
 		bool				mFlipHorizontal = false;	///< Property: 'FlipHorizontal' flips the frame on the x-axis
@@ -92,6 +78,7 @@ namespace nap
 		nap::uint			mFrameWidth = 640;			///< Property: 'FrameWidth' width of the frame in pixels
 		nap::uint			mFrameHeight = 480;			///< Property: 'FrameHeight' height of the frame in pixels
 		CVCameraSettings	mCameraSettings;			///< Property: 'Settings' all configurable camera settings
+		bool				mShowDialog = false;		///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
 
 	protected:
 		/**
@@ -113,9 +100,11 @@ namespace nap
 	private:
 		cv::UMat			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		std::atomic<bool>	mFrameAvailable = { false };	///< If a new frame is captured
+		std::atomic<bool>	mSettingsDirty  = { false };	///< If settings need to be updated
 
 		std::future<void>	mCaptureTask;					///< The thread that monitor the read thread
 		std::mutex			mCaptureMutex;					///< The mutex that safe guards the capture thread
+		std::mutex			mSettingsMutex;					///< Guards getting / setting of camera settings
 		bool				mStopCapturing = false;			///< Signals the capture thread to stop capturing video
 
 		/**
@@ -129,5 +118,12 @@ namespace nap
 		 * @return if the operation succeeded
 		 */
 		bool applySettings(utility::ErrorState& error);
+
+		/**
+		 * Synchronizes the camera settings.
+		 * This call ensures the camera settings reflect the current state of the hardware.
+		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
+		 */
+		void syncSettings();
 	};
 }
