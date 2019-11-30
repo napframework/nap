@@ -98,14 +98,15 @@ namespace nap
 		virtual void onStop() override;
 
 	private:
-		cv::UMat			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>	mFrameAvailable = { false };	///< If a new frame is captured
-		std::atomic<bool>	mSettingsDirty  = { false };	///< If settings need to be updated
+		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
+		std::atomic<bool>		mFrameAvailable = { false };			///< If a new frame is captured
+		std::atomic<bool>		mSettingsDirty  = { false };	///< If settings need to be updated
 
-		std::future<void>	mCaptureTask;					///< The thread that monitor the read thread
-		std::mutex			mCaptureMutex;					///< The mutex that safe guards the capture thread
-		std::mutex			mSettingsMutex;					///< Guards getting / setting of camera settings
-		bool				mStopCapturing = false;			///< Signals the capture thread to stop capturing video
+		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
+		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
+		std::mutex				mSettingsMutex;					///< Guards getting / setting of camera settings
+		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
+		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
 
 		/**
 		 * Captures new frames.
@@ -114,16 +115,17 @@ namespace nap
 
 		/**
 		 * Tries to apply current camera settings.
+		 * @param camera settings to push to hardware
 		 * @param error contains the error if operation fails.
 		 * @return if the operation succeeded
 		 */
-		bool applySettings(utility::ErrorState& error);
+		bool applySettings(const CVCameraSettings& settings, utility::ErrorState& error);
 
 		/**
 		 * Synchronizes the camera settings.
-		 * This call ensures the camera settings reflect the current state of the hardware.
+		 * This call ensures the given camera settings reflect the current state of the hardware.
 		 * The result of this operation greatly depends on the underlying API, OS and hardware itself.
 		 */
-		void syncSettings();
+		void syncSettings(CVCameraSettings&  outSettings);
 	};
 }

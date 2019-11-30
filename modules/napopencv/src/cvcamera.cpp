@@ -51,7 +51,7 @@ namespace nap
 	void CVCamera::setSettings(const nap::CVCameraSettings& settings)
 	{
 		// Copy settings and force update next grab
-		std::lock_guard<std::mutex> lock(mSettingsMutex);
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
 		mCameraSettings = settings;
 		mSettingsDirty	= true;
 	}
@@ -59,19 +59,19 @@ namespace nap
 
 	void CVCamera::getSettings(nap::CVCameraSettings& settings)
 	{
-		std::lock_guard<std::mutex> lock(mSettingsMutex);
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
 		settings = mCameraSettings;
 	}
 
 
-	void CVCamera::syncSettings()
+	void CVCamera::syncSettings(CVCameraSettings&  outSettings)
 	{
-		mCameraSettings.mAutoExposure	= getProperty(cv::CAP_PROP_AUTO_EXPOSURE) > 0;
-		mCameraSettings.mBrightness		= getProperty(cv::CAP_PROP_BRIGHTNESS);
-		mCameraSettings.mContrast		= getProperty(cv::CAP_PROP_CONTRAST);
-		mCameraSettings.mExposure		= getProperty(cv::CAP_PROP_EXPOSURE);
-		mCameraSettings.mGain			= getProperty(cv::CAP_PROP_GAIN);
-		mCameraSettings.mSaturation		= getProperty(cv::CAP_PROP_SATURATION);
+		outSettings.mAutoExposure = getProperty(cv::CAP_PROP_AUTO_EXPOSURE) > 0;
+		outSettings.mBrightness = getProperty(cv::CAP_PROP_BRIGHTNESS);
+		outSettings.mContrast = getProperty(cv::CAP_PROP_CONTRAST);
+		outSettings.mExposure = getProperty(cv::CAP_PROP_EXPOSURE);
+		outSettings.mGain = getProperty(cv::CAP_PROP_GAIN);
+		outSettings.mSaturation = getProperty(cv::CAP_PROP_SATURATION);
 	}
 
 
@@ -104,9 +104,9 @@ namespace nap
 
 		// Apply and sync settings 
 		utility::ErrorState paramError;
-		if (mApplySettings && !applySettings(paramError))
+		if (mApplySettings && !applySettings(mCameraSettings, error))
 			nap::Logger::warn("%s: %s", mID.c_str(), paramError.toString().c_str());
-		syncSettings();
+		syncSettings(mCameraSettings);
 
 		// Log current settings to console
 		rtti::TypeInfo type_info = RTTI_OF(nap::CVCameraSettings);
@@ -122,8 +122,14 @@ namespace nap
 
 	void CVCamera::onStop()
 	{
-		// Stop capturing thread
-		mStopCapturing = true;
+		// Stop capturing thread and notify worker
+		{
+			std::lock_guard<std::mutex> lock(mCaptureMutex);
+			mStopCapturing = true;
+		}
+		mCaptureCondition.notify_one();
+
+		// Wait till exit
 		if (mCaptureTask.valid())
 			mCaptureTask.wait();
 	}
@@ -138,9 +144,12 @@ namespace nap
 		// Copy last captured frame using a deep copy.
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
-		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat.copyTo(target);
-		mFrameAvailable = false;
+		{
+			std::lock_guard<std::mutex> lock(mCaptureMutex);
+			mCaptureMat.copyTo(target);
+			mFrameAvailable = false;
+		}
+		mCaptureCondition.notify_one();
 		return true;
 	}
 
@@ -152,19 +161,37 @@ namespace nap
 		// Create the capture frame before starting the loop to ensure no storage on the GPU or CPU
 		// is allocated every time we capture a frame. 
 		cv::UMat cap_frame;
+		bool update_settings = false;
+		CVCameraSettings cam_settings;
+
 		while (!mStopCapturing)
 		{
-			// Apply camera settings if required
-			if (mSettingsDirty)
+			// Wait for playback to be enabled, a new frame request is issued or request to stop is made
+			// Exit loop immediately when a stop is requested. Otherwise process next frame
 			{
-				std::lock_guard<std::mutex> lock(mSettingsMutex);
-				nap::utility::ErrorState error;
-				if (!applySettings(error))
-					nap::Logger::warn(error.toString());
+				std::unique_lock<std::mutex> lock(mCaptureMutex);
+				mCaptureCondition.wait(lock, [this]()
+				{
+					return (mStopCapturing || !mFrameAvailable);
+				});
 
-				syncSettings();
+				// Exit loop when exit has been triggered
+				if (mStopCapturing)
+				{
+					break;
+				}
+
+				// Store camera settings for update later on
+				update_settings	= mSettingsDirty;
+				if(update_settings)
+					cam_settings = mCameraSettings;
 				mSettingsDirty = false;
 			}
+
+			// Update settings if requested
+			nap::utility::ErrorState error;
+			if(update_settings && !applySettings(cam_settings, error))
+				nap::Logger::warn(error.toString());
 
 			// Fetch frame
 			getCaptureDevice() >> cap_frame;
@@ -199,45 +226,47 @@ namespace nap
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				cap_frame.copyTo(mCaptureMat);
 			}
+
+			// New frame is available
 			mFrameAvailable = true;
 		}
 	}
 
 
-	bool CVCamera::applySettings(utility::ErrorState& error)
+	bool CVCamera::applySettings(const CVCameraSettings& settings, utility::ErrorState& error)
 	{
 		bool return_v = true;
-		if (!setProperty(cv::CAP_PROP_BRIGHTNESS, (double)mCameraSettings.mBrightness))
+		if (!setProperty(cv::CAP_PROP_BRIGHTNESS, (double)settings.mBrightness))
 		{
 			return_v = false;
 			error.fail("unable to set brightness");
 		}
 
-		if (!setProperty(cv::CAP_PROP_CONTRAST, (double)mCameraSettings.mContrast))
+		if (!setProperty(cv::CAP_PROP_CONTRAST, (double)settings.mContrast))
 		{
 			return_v = false;
 			error.fail("unable to set contrast");
 		}
 
-		if (!setProperty(cv::CAP_PROP_SATURATION, (double)mCameraSettings.mSaturation))
+		if (!setProperty(cv::CAP_PROP_SATURATION, (double)settings.mSaturation))
 		{
 			return_v = false;
 			error.fail("unable to set saturation");
 		}
 
-		if (!setProperty(cv::CAP_PROP_GAIN, (double)mCameraSettings.mGain))
+		if (!setProperty(cv::CAP_PROP_GAIN, (double)settings.mGain))
 		{
 			return_v = false;
 			error.fail("unable to set gain");
 		}
 
-		if (!setProperty(cv::CAP_PROP_EXPOSURE, (double)mCameraSettings.mExposure))
+		if (!setProperty(cv::CAP_PROP_EXPOSURE, (double)settings.mExposure))
 		{
 			return_v = false;
 			error.fail("unable to set exposure");
 		}
 
-		if (!setProperty(cv::CAP_PROP_AUTO_EXPOSURE, (double)mCameraSettings.mAutoExposure))
+		if (!setProperty(cv::CAP_PROP_AUTO_EXPOSURE, (double)settings.mAutoExposure))
 		{
 			return_v = false;
 			error.fail("unable to set auto-exposure");
