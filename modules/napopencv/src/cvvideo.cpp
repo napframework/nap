@@ -192,12 +192,6 @@ namespace nap
 				continue;
 			}
 
-			// Flip vertically
-			cv::flip(cap_frame, cap_frame, 0);
-
-			// Flip Horizontally
-			cv::flip(cap_frame, cap_frame, 1);
-
 			// Convert to RGB
 			cv::cvtColor(cap_frame, cap_frame, cv::COLOR_BGR2RGB);
 

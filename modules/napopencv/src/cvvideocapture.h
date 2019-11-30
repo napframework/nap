@@ -37,6 +37,7 @@ namespace nap
 
 		/**
 		 * Set an OpenCV capture device property.
+		 * Thread safety not guaranteed.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 * @return if the property is applied.
@@ -45,6 +46,7 @@ namespace nap
 
 		/**
 		 * Get an OpenCV camera device property.
+		 * Thread safety not guaranteed.
 		 * @param propID the property to get.
 		 * @return property value, if available.
 		 */
