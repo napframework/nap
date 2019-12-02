@@ -9,7 +9,7 @@
 #include "shader.h"
 #include "imagefromfile.h"
 #include "ngpumesh.h"
-#include "uniformbinding.h"
+#include "uniformcontainer.h"
 #include "rtti/factory.h"
 
 namespace nap

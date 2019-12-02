@@ -1,4 +1,4 @@
-#include "uniformbinding.h"
+#include "uniformcontainer.h"
 #include "uniforminstances.h"
 #include <rtti/rttiutilities.h>
 

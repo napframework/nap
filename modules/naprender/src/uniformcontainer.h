@@ -47,7 +47,6 @@ namespace nap
 		*/
 		UniformStructInstance& getUniform(const std::string& name);
 
-		const UniformStructInstanceList& getRootStructs() const { return mRootStructs; }
 		const SamplerInstanceList& getSamplers() const { return mSamplerInstances; }
 
 		SamplerInstance* findSampler(const std::string& name) const;
