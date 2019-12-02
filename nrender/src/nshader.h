@@ -81,7 +81,7 @@ namespace opengl
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const UniformSamplerDeclarations& getUniformSamplerDeclarations() const	{ return mSamplerDeclarations; }
+		const SamplerDeclarations& getSamplerDeclarations() const	{ return mSamplerDeclarations; }
 
 		const std::vector<UniformBufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
@@ -93,7 +93,7 @@ namespace opengl
 		VkShaderModule mFragmentModule = nullptr;
 
 		std::vector<UniformBufferObjectDeclaration> mUBODeclarations;
-		UniformSamplerDeclarations					mSamplerDeclarations;
+		SamplerDeclarations							mSamplerDeclarations;
 		ShaderVertexAttributes						mShaderAttributes;		// Shader program vertex attribute inputs
 	};
 }	// opengl

@@ -55,68 +55,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-// 	/**
-// 	 * This is a convenience function to get the number of elements in the specified uniform; it internally does the check to see if it's an 
-// 	 * array of values or array of textures.
-// 	 *
-// 	 * Note that this function is also called for non-array Uniforms; the return value can then be used by the client code to test if the uniform was an 
-// 	 * array or not. Otherwise, the client would have to do the array of values/array of textures check themselves before calling this function,
-// 	 * which would defeat the point.
-// 	 *
-// 	 * @return The number of array elements in the uniform; -1 if the uniform is not an array uniform.
-// 	 */
-// 	static int getNumArrayElements(const Uniform& uniform)
-// 	{
-// 		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
-// 		if (value_array != nullptr)
-// 			return value_array->getCount();
-// 
-// 		const UniformSamplerArray* texture_array = rtti_cast<const UniformSamplerArray>(&uniform);
-// 		if (texture_array != nullptr)
-// 			return texture_array->getNumElements();
-// 
-// 		return -1;
-// 	}
-// 
-// 	/**
-// 	 * Helper function to verify that the specified uniform matches with the uniform declaration in the shader.
-// 	 * It verifies that the type of uniform (array/non-array) matches with the shader; if it's an array, it also verifies that the lengths match
-// 	 */
-// 	static bool verifyUniform(const UniformValue& uniform, const opengl::UniformValueDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
-// 	{
-// 		// If the declaration is an array, verify that the uniform is also an array and that the sizes match
-// 		if (uniformDeclaration.isArray())
-// 		{
-// 			int numElements = getNumArrayElements(uniform);
-// 			if (!errorState.check(numElements != -1, "Uniform %s is not an array uniform but the variable type in shader %s is.", uniform.mName.c_str(), shaderID.c_str()))
-// 				return false;
-// 
-// 			if (!errorState.check(numElements == uniformDeclaration.mSize, "Amount of elements (%d) in uniform %s does not match the amount of elements (%d) declared in shader %s.", numElements, uniform.mName.c_str(), uniformDeclaration.mSize, shaderID.c_str()))
-// 				return false;
-// 		}
-// 
-// 		// Verify the uniform types match
-// 		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
-// 			return false;
-// 
-// 		return true;
-// 	}
-// 
-// 	/**
-// 	 * Helper function to verify that the two uniforms match in size. Note that this is also called for non-array uniforms, in which case it always matches.
-// 	 */
-// 	static bool verifyArrayUniforms(const std::string& fullUniformPath, const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
-// 	{
-// 		int source_size = getNumArrayElements(sourceUniform);
-// 		int dest_size = getNumArrayElements(destUniform);
-// 
-// 		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, fullUniformPath.c_str(), dest_size, shaderID.c_str()))
-// 			return false;
-// 
-// 		return true;
-// 	}
-
-
 	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
@@ -180,7 +118,7 @@ namespace nap
 	}
 
 	template<class T>
-	const Sampler* findUniformSampler(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
+	const Sampler* findSampler(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
 	{
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
@@ -489,56 +427,6 @@ namespace nap
 
 			vkUnmapMemory(device, ubo.mBuffersMemory[frameIndex]);
 		}
-
-// 		// Keep track of which uniforms were set (i.e. overridden) by the material instance
-// 		std::unordered_set<std::string> instance_bindings;
-// 		int texture_unit = 0;
-// 
-// 		// Push all texture uniforms that are set (i.e. overridden) in the instance
-// 		const UniformTextureBindings& instance_texture_bindings = getTextureBindings();
-// 		for (auto& kvp : instance_texture_bindings)
-// 		{
-// 			nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
-// 			assert(uniform_tex != nullptr);
-// 			texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
-// 			instance_bindings.insert(kvp.first);
-// 		}
-// 
-// 		// Push all value uniforms that are set (i.e. overridden) in the instance
-// 		const UniformValueBindings& instance_value_bindings = getValueBindings();
-// 		for (auto& kvp : instance_value_bindings)
-// 		{
-// 			nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
-// 			assert(uniform_val != nullptr);
-// 			uniform_val->push(*kvp.second.mDeclaration);
-// 			instance_bindings.insert(kvp.first);
-// 		}
-// 
-// 		// Push all uniform textures in the material that weren't overridden by the instance
-// 		// Note that the material contains mappings for all the possible uniforms in the shader
-// 		Material* material = getMaterial();
-// 		for (auto& kvp : material->getTextureBindings())
-// 		{
-// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-// 			{
-// 				nap::UniformTexture* uniform_tex = rtti_cast<nap::UniformTexture>(kvp.second.mUniform.get());
-// 				assert(uniform_tex != nullptr);
-// 				texture_unit += uniform_tex->push(*kvp.second.mDeclaration, texture_unit);
-// 			}
-// 		}
-// 
-// 		// Push all uniform values in the material that weren't overridden by the instance
-// 		for (auto& kvp : material->getValueBindings())
-// 		{
-// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-// 			{
-// 				nap::UniformValue* uniform_val = rtti_cast<nap::UniformValue>(kvp.second.mUniform.get());
-// 				assert(uniform_val != nullptr);
-// 				uniform_val->push(*kvp.second.mDeclaration);
-// 			}
-// 		}
-// 
-// 		glActiveTexture(GL_TEXTURE0);
 	}
 
 
@@ -623,44 +511,6 @@ namespace nap
 	}
 
 
-	int MaterialInstance::getTextureUnit(nap::Sampler& uniform)
-	{
-// 		int texture_unit = 0;
-// 		std::unordered_set<std::string> instance_bindings;
-// 
-// 		// Iterate over all material instance texture bindings
-// 		// If the texture uniform matches the requested uniform it is considered to be at that location
-// 		// If not the location is incremented until a match is found
-// 		const UniformSamplers& instance_texture_bindings = getUniformSamplers();
-// 		for (auto& kvp : instance_texture_bindings)
-// 		{
-// 			nap::Uniform* uniform_tex = kvp.second.get();
-// 			if (uniform_tex == &uniform)
-// 				return texture_unit;
-// 			texture_unit++;
-// 			instance_bindings.insert(kvp.first);
-// 		}
-// 
-// 		// Iterate over all source material bindings
-// 		// If the texture uniform matches the requested uniform it is considered to be at that location
-// 		// If not, there is no valid texture binding associated with the given uniform
-// 		Material* material = getMaterial();
-// 		for (auto& kvp : material->getTextureBindings())
-// 		{
-// 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-// 			{
-// 				nap::Uniform* uniform_tex = kvp.second.mUniform.get();
-// 				if (uniform_tex == &uniform)
-// 					return texture_unit;
-// 				texture_unit++;
-// 			}
-// 		}
-
-		// No texture binding associated with the given uniform
-		return -1;
-	}
-
-
 	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
@@ -690,10 +540,10 @@ namespace nap
 		mUniformsDirty = false;
 		
 		int total_num_samplers = 0;
-		const opengl::UniformSamplerDeclarations& sampler_declarations = shader.getUniformSamplerDeclarations();
+		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
-			const Sampler* sampler = findUniformSampler(resource.mSamplers, declaration);
+			const Sampler* sampler = findSampler(resource.mSamplers, declaration);
 			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
@@ -920,7 +770,7 @@ namespace nap
 				return false;
 		}
 
-		const opengl::UniformSamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
+		const opengl::SamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
 			if (!errorState.check(declaration.mType == opengl::SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))

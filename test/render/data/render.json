@@ -105,7 +105,7 @@
 						"Samplers" :
 						[
 							{
-								"Type" : "nap::UniformSampler2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "pigTexture",
 								"Texture" : "PigTexture"
 							}

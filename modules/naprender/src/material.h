@@ -155,16 +155,6 @@ namespace nap
 		 */
 		void pushBlendMode();
 
-		/**
-		 * Locates the texture unit that is associated with a specific uniform in this material.
-		 * Use this index when updating a specific texture uniform on the GPU.
-		 * The texture unit number is required when pushing a single texture to the GPU.
-		 * Note that the uniform needs to be managed (created) by this material instance or the underlying parent material.
-		 * @param uniform the texture uniform to find the texture unit number for.
-		 * @return the texture unit associated with a specific texture uniform in a material, -1 if not found
-		 */
-		int getTextureUnit(nap::Sampler& uniform);
-
 		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
 
 	private:

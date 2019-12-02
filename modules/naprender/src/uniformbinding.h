@@ -5,13 +5,11 @@
 
 // Local Includes
 #include "uniforms.h"
+#include "samplers.h"
 #include "imagefromfile.h"
 
 namespace nap
 {
-	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<Sampler>>;
-	using UniformValues = std::unordered_map<std::string, std::unique_ptr<UniformValue>>;
-
 	//////////////////////////////////////////////////////////////////////////
 
 	/**

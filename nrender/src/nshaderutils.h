@@ -189,7 +189,7 @@ namespace opengl
 	};
 
 	// Typedefs
-	using UniformSamplerDeclarations = std::vector<SamplerDeclaration>;
+	using SamplerDeclarations = std::vector<SamplerDeclaration>;
 
 	using ShaderVertexAttribute = ShaderInput;
 	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;
