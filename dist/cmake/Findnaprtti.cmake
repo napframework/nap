@@ -95,7 +95,7 @@ if (WIN32)
     )
 
     # Copy Python DLLs post-build on Windows
-    win64_copy_python_dlls_postbuild()
+    win64_copy_python_dlls_postbuild(FALSE)
 endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux

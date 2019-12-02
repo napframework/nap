@@ -1,34 +1,53 @@
 include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont mod_napinput)
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
 
+# Deploy into napkin directory alongside release/debug build dirs when not packaging an app
+if(NOT WIN32 OR NOT DEFINED PROJECT_PACKAGE_BIN_DIR)
+    set(NAPDEPLOY_PATH_SUFFIX "../napkin/")
+    set(NONPACKAGING_BUILD TRUE)
+else()
+    set(NAPDEPLOY_PATH_SUFFIX "")
+    set(NONPACKAGING_BUILD FALSE)
+endif()
+
 if(WIN32 OR APPLE)
     # Deploy Napkin executable on Win64 & macOS for running against packaged NAP
+    if(NONPACKAGING_BUILD)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+                           )
+    endif()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/$<CONFIG>/napkin${CMAKE_EXECUTABLE_SUFFIX} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/Release/napkin${CMAKE_EXECUTABLE_SUFFIX} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${NAPDEPLOY_PATH_SUFFIX}
                        )
     # Deploy Napkin resources on Win64 & macOS for running against packaged NAP
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/${NAPDEPLOY_PATH_SUFFIX}/resources
                        )
 else()
     # Deploy Napkin executable on Linux for running against packaged NAP
     get_target_property(PROJ_BUILD_PATH ${PROJECT_NAME} RUNTIME_OUTPUT_DIRECTORY)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/${CMAKE_BUILD_TYPE}/napkin${CMAKE_EXECUTABLE_SUFFIX} ${PROJ_BUILD_PATH}
+                       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJ_BUILD_PATH}/../napkin/
+                       )
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/tools/platform/napkin/Release/napkin${CMAKE_EXECUTABLE_SUFFIX} ${PROJ_BUILD_PATH}/../napkin/
                        )
 
     # Deploy Napkin resources on Linux for running against packaged NAP
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources ${PROJ_BUILD_PATH}/resources
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/tools/platform/napkin/resources ${PROJ_BUILD_PATH}/../napkin/resources
                        )
 endif()
 
@@ -36,17 +55,17 @@ if(WIN32)
     # Deploy main Qt libs on Win64
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/bin/$<CONFIG> $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/bin/Release $<TARGET_FILE_DIR:${PROJECT_NAME}>/${NAPDEPLOY_PATH_SUFFIX}
                        )
 
     # Deploy Qt plugins from thirdparty on Win64.  Unlike macOS Windows won't find the plugins under a plugins folder, the categories need to sit beside the binary.
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/$<CONFIG>/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/Release/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/${NAPDEPLOY_PATH_SUFFIX}/platforms
                        )
 
     # Deploy Python modules post-build on Win64
-    win64_copy_python_modules_postbuild()
+    win64_copy_python_modules_postbuild(NONPACKAGING_BUILD)
 
     # Deploy dependent modules on Win64
     foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
@@ -54,8 +73,8 @@ if(WIN32)
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
                                    -E copy
-                                   ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll
-                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                                   ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.dll
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>/${NAPDEPLOY_PATH_SUFFIX}
                            )
 
         # Run any module_extra to install module dependent DLLs
@@ -65,6 +84,71 @@ if(WIN32)
         endif()
         unset(INSTALLING_MODULE_FOR_NAPKIN)
     endforeach()
+
+    # If not packaging a single application deploy DLLs for Napkin into Napkin's separate directory post-build
+    if(NOT DEFINED PROJECT_PACKAGE_BIN_DIR)
+        # NAP RTTI
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/Release/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # RTTR
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:RTTR::Core>/rttr_core.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # Python DLLs
+        win64_copy_python_dlls_postbuild(TRUE)
+
+        # NAP core 
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${NAPCORE_LIBS_DIR}/Release/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # FreeImage
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # SDL2
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $ENV{SDL2DIR}/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+       )
+
+        # GLEW
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:GLEW> $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # Assimp
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:assimp> $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+
+        # FreeType
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} 
+                    -E copy 
+                    $<TARGET_FILE_DIR:freetype>/../Release/freetype.dll 
+                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/
+        )
+    endif()
 elseif(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
@@ -73,7 +157,7 @@ elseif(APPLE)
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_directory 
                                ${THIRDPARTY_DIR}/Qt/plugins 
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/plugins/
                        )
 
     # ---- Deploy napkin into bin dir when we do project builds running against released NAP ------
@@ -84,8 +168,8 @@ elseif(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                               -add_rpath ${PATH_TO_NAP_ROOT}/lib/$<CONFIG> 
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                               -add_rpath ${PATH_TO_NAP_ROOT}/lib/Release 
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/napkin
                        )
 
     # Add module paths to RPATH
@@ -93,8 +177,8 @@ elseif(APPLE)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                   -add_rpath ${PATH_TO_NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG> 
-                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                                   -add_rpath ${PATH_TO_NAP_ROOT}/modules/${MODULE_NAME}/lib/Release 
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/napkin
                            )
     endforeach()
 
@@ -102,7 +186,7 @@ elseif(APPLE)
     # any installed Qt library.
     macos_replace_qt_framework_links("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
                                      ${NAP_ROOT}/tools/platform/napkin/Release/napkin
-                                     $<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin
+                                     $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/napkin
                                      "${PATH_TO_THIRDPARTY}/Qt/lib/"
                                      )
 
@@ -154,7 +238,7 @@ else()
     # Deploy Qt plugins from thirdparty for Napkin running against released NAP
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/platforms/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${THIRDPARTY_DIR}/Qt/plugins/platforms/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/platforms
                        )
 
     # Allow Qt platform plugin to find Qt frameworks in thirdparty (against released NAP)
@@ -162,7 +246,7 @@ else()
                        POST_BUILD
                        COMMAND patchelf --set-rpath 
                                [=[\$$ORIGIN/../../../../../thirdparty/Qt/lib]=]
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms/libqxcb.so
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/../napkin/platforms/libqxcb.so
                        )
 
 
