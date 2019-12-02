@@ -12,28 +12,41 @@ namespace nap
 	// UniformContainer
 	//////////////////////////////////////////////////////////////////////////
 
-	Uniform* UniformContainer::findUniform(const std::string& name)
+	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
 	{
-		auto texture_binding = mUniformSamplers.find(name);
-		if (texture_binding != mUniformSamplers.end())
-			return texture_binding->second.get();
-
-		auto value_binding = mUniformValues.find(name);
-		if (value_binding != mUniformValues.end())
-			return value_binding->second.get();
+		for (auto& instance : mRootStructs)
+			if (instance->getDeclaration().mName == name)
+				return instance.get();
 
 		return nullptr;
 	}
 
-	Uniform& UniformContainer::addUniformValue(std::unique_ptr<UniformValue> uniform)
+	UniformStructInstance& UniformContainer::getUniform(const std::string& name)
 	{
-		auto inserted = mUniformValues.emplace(std::make_pair(uniform->getDeclaration().mName, std::move(uniform)));
-		return *inserted.first->second;
+		UniformStructInstance* instance = findUniform(name);
+		assert(instance != nullptr);
+		return *instance;
 	}
 
-	Uniform& UniformContainer::addUniformSampler(std::unique_ptr<UniformSampler> uniform)
+	UniformStructInstance& UniformContainer::createRootStruct(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
-		auto inserted = mUniformSamplers.emplace(std::make_pair(uniform->getDeclaration().mName, std::move(uniform)));
-		return *inserted.first->second;
+		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
+		UniformStructInstance* result = instance.get();
+		mRootStructs.emplace_back(std::move(instance));
+		return *result;
+	}
+
+	void UniformContainer::addSamplerInstance(std::unique_ptr<UniformSamplerInstance> instance)
+	{
+		mSamplerInstances.emplace_back(std::move(instance));
+	}
+
+	UniformSamplerInstance* UniformContainer::findSampler(const std::string& name) const
+	{
+		for (auto& sampler : mSamplerInstances)
+			if (sampler->getDeclaration().mName == name)
+				return sampler.get();
+
+		return nullptr;
 	}
 }

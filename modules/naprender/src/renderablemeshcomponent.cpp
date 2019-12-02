@@ -100,20 +100,16 @@ namespace nap
 		MaterialInstance& mat_instance = getMaterialInstance();
 
 		// Set projection uniform in shader
-		Material* comp_mat = mat_instance.getMaterial();
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
+		UniformMat4Instance& projectionUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+		projectionUniform.setValue(projectionMatrix);
 
 		// Set view uniform in shader
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
+		UniformMat4Instance& viewUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+		viewUniform.setValue(viewMatrix);
 
 		// Set model matrix uniform in shader
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(model_matrix);
+		UniformMat4Instance& modelUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+		modelUniform.setValue(model_matrix);
 
 		mat_instance.pushUniforms(frameIndex);
 

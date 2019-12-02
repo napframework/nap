@@ -56,6 +56,7 @@ find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(vulkansdk REQUIRED)
+find_package(SPIRVCross REQUIRED)
 
 # get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -72,6 +73,7 @@ set(INCLUDES
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
+	${SPIRVCROSS_INCLUDE_DIR}
     )
 
 set(LIBRARIES
@@ -99,6 +101,7 @@ endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
 
 if(MSVC)
     include(GenerateExportheader)

@@ -25,6 +25,8 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
+		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
+		using SamplerInstanceList = std::vector<std::unique_ptr<UniformSamplerInstance>>;
 
         UniformContainer() = default;
 		UniformContainer(const UniformContainer&) = delete;
@@ -37,64 +39,25 @@ namespace nap
 		* @return a uniform texture object that can be used to set a texture or value.
 		* If the uniform is not found, returns nullptr.
 		*/
-		Uniform* findUniform(const std::string& name);
-
-		/**
-		* @return a uniform texture object that can be used to set a texture or value.
-		* If the uniform is not found, returns nullptr.
-		*/
-		template<typename T>
-		T* findUniform(const std::string& name);
+		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
 		* @return a uniform object that can be used to set a texture or value.
 		* If the uniform is not found it will assert.
 		*/
-		template<typename T>
-		T& getUniform(const std::string& name);
+		UniformStructInstance& getUniform(const std::string& name);
 
-		/**
-		* @return All texture uniform bindings.
-		*/
-		const UniformSamplers& getUniformSamplers()	{ return mUniformSamplers; }
+		const UniformStructInstanceList& getRootStructs() const { return mRootStructs; }
+		const SamplerInstanceList& getSamplers() const { return mSamplerInstances; }
 
-		/**
-		* @return All value uniform bindings.
-		*/
-		const UniformValues& getUniformValues()		{ return mUniformValues; }
+		UniformSamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
-		/**
-		* Puts the uniform into either the texture or value mapping.
-		* @param uniform: the uniform to add. Ownership is transferred.
-		* @param declaration: the shader uniform declaration to bind the uniform to.
-		* @return reference to the newly added uniform.
-		*/
-		Uniform& addUniformValue(std::unique_ptr<UniformValue> uniform);
-		Uniform& addUniformSampler(std::unique_ptr<UniformSampler> uniform);
+		UniformStructInstance& createRootStruct(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		void addSamplerInstance(std::unique_ptr<UniformSamplerInstance> instance);
 
 	private:
-		UniformSamplers		mUniformSamplers;	///< Runtime map of sampler uniforms (superset of texture uniforms in mUniforms due to default uniforms).
-		UniformValues		mUniformValues;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
+		std::vector<std::unique_ptr<UniformStructInstance>> mRootStructs;
+		std::vector<std::unique_ptr<UniformSamplerInstance>> mSamplerInstances;
 	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	T* UniformContainer::findUniform(const std::string& name)
-	{
-		return rtti_cast<T>(findUniform(name));
-	}
-
-
-	template<typename T>
-	T& UniformContainer::getUniform(const std::string& name)
-	{
-		T* result = findUniform<T>(name);
-		assert(result);
-		return *result;
-	}
-
 } // nap

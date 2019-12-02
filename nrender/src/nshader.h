@@ -9,8 +9,6 @@
 #include <string>
 #include <sstream>
 
-struct SpvReflectShaderModule;
-
 namespace opengl
 {
 	/**
@@ -76,45 +74,26 @@ namespace opengl
 		bool init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState);
 
 		/**
-		 * @param name Name of the uniform attribute to get
-		 * @return shader uniform input attribute with associated name, 
-		 * nullptr if the uniform is not found
-		 */
-		const UniformValueDeclaration* getUniform(const std::string& name) const;
-
-		/**
 		 * @return all vertex shader attributes
 		 */
 		const ShaderVertexAttributes& getAttributes() const		{ return mShaderAttributes; }
 
 		/**
-		 * @return shader vertex attribute with given name
-		 * nullptr if the attribute is not found
-		 * @param name: Name of the vertex attribute
-		 */
-		const ShaderVertexAttribute* getAttribute(const std::string& name) const;
-
-		/**
 		 * @return all uniform shader attributes
 		 */
-		const UniformValueDeclarations& getUniformValueDeclarations() const	{ return mValueDeclarations; }
 		const UniformSamplerDeclarations& getUniformSamplerDeclarations() const	{ return mSamplerDeclarations; }
 
-		const std::vector<UniformBufferObjectDeclaration>& getUniformBufferObjectDeclarations() const { return mUniformBufferObjectDeclarations; }
+		const std::vector<UniformBufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
 		VkShaderModule getVertexModule() const { return mVertexModule; }
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
 
 	private:
-		bool parseUniforms(const SpvReflectShaderModule& inShaderModule, nap::utility::ErrorState& errorState);
-
-	private:
 		VkShaderModule mVertexModule = nullptr;
 		VkShaderModule mFragmentModule = nullptr;
 
-		std::vector<UniformBufferObjectDeclaration> mUniformBufferObjectDeclarations;
-		UniformValueDeclarations mValueDeclarations;	// Shader program uniform attributes
-		UniformSamplerDeclarations mSamplerDeclarations;
-		ShaderVertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
+		std::vector<UniformBufferObjectDeclaration> mUBODeclarations;
+		UniformSamplerDeclarations					mSamplerDeclarations;
+		ShaderVertexAttributes						mShaderAttributes;		// Shader program vertex attribute inputs
 	};
 }	// opengl

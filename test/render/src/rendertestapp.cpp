@@ -14,7 +14,7 @@ RTTI_END_CLASS
 glm::vec3 mColor{0.0f,0.0f,0.0f};
 int mWhite(0);
 bool mShow = true;
-
+ 
 namespace nap 
 {
 	/**
@@ -42,7 +42,8 @@ namespace nap
 //		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
  		mScene						= mResourceManager->findObject<Scene>("Scene");
-// 		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
+		mPigEntity					= mScene->findEntity("PigEntity");
+		// 		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
 // 		mPlaneEntity				= mScene->findEntity("PlaneEntity");
 // 		mWorldEntity				= mScene->findEntity("WorldEntity");
  		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
@@ -154,6 +155,14 @@ namespace nap
 		
 		// Render window 0
 		{
+
+			double currentTime = getCore().getElapsedTime();
+			float value = (sin(currentTime) + 1.0) * 0.5;
+
+			MaterialInstance& material_instance = mPigEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
+			color.setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
+
 			RenderWindow* render_window = mRenderWindows[0].get();
 			render_window->makeActive();
 			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();

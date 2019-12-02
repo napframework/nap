@@ -50,16 +50,17 @@ namespace nap
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
-		std::vector<ResourcePtr<Uniform>>	mUniforms;										///< Property: "Uniforms" that you're overriding
-		ResourcePtr<Material>				mMaterial;										///< Property: "Material" that you're overriding uniforms from
-		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
-		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
+		std::vector<ResourcePtr<UniformSampler>>	mSamplers;										///< Property: 
+		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
+		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
+		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
 
 	class UniformBufferObject
 	{
 	public:
-		using UniformMap = std::unordered_map<std::string, const Uniform*>;
+		using UniformList = std::vector<const UniformInstance*>;
 
 		UniformBufferObject(const opengl::UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
@@ -69,7 +70,7 @@ namespace nap
 		const opengl::UniformBufferObjectDeclaration*	mDeclaration;
 		std::vector<VkBuffer>							mBuffers;
 		std::vector<VkDeviceMemory>						mBuffersMemory;
-		UniformMap										mUniforms;
+		UniformList										mUniforms;
 	};
 
 	/**
@@ -136,32 +137,7 @@ namespace nap
 		 * @param name: the name of the uniform as it is in the shader.
 		 * @return reference to the uniform that was found or created.
 		 */
-		Uniform* getOrCreateUniform(const std::string& name);
-
-		/**
-		 * Get a uniform for this material instance of uniform type T. 
-		 * This means that the uniform returned is only applicable to this instance. 
-		 * In order to change a uniform so that it's value is shared among materials, use
-		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform 
-		 * does not match the type that you are trying to create.
-		 *
-		 * regular uniform get example:
-		 * nap::UniformVec3& mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
-		 *
-		 * uniform array get example: 
-		 * nap::UniformTextureArray& textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
-		 *
-		 * uniform member from struct example:
-		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
-		 *
-		 * uniform member from struct array example:
-		 * nap::UniformFloat& intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
-		 *
-		 * @param name: the name of the uniform as it is in the shader.
-		 * @return reference to the uniform that was found or created.
-		 */
-		template<typename T>
-		T& getOrCreateUniform(const std::string& name);
+		UniformStructInstance& getOrCreateUniform(const std::string& name);
 
 		/**
 		 * Uploads all uniforms stored in this material to the GPU. Call this after binding!
@@ -192,18 +168,19 @@ namespace nap
 		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
 
 	private:
-		/**
-		 * Creates a new uniform with the given name
-		 */
-		Uniform& createUniform(const std::string& name);
+		void onUniformCreated();
+		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
+	private:
 		//. Resource this instance is associated with
 		MaterialInstanceResource* mResource;
 
-		VkDevice							mDevice = nullptr;
-		std::vector<UniformBufferObject>	mUniformBufferObjects;
-		VkDescriptorPool					mDescriptorPool;
-		std::vector<VkDescriptorSet>		mDescriptorSets;
+		VkDevice								mDevice = nullptr;
+		std::vector<UniformBufferObject>		mUniformBufferObjects;
+		std::vector<UniformSamplerInstance*>	mSamplers;
+		VkDescriptorPool						mDescriptorPool;
+		std::vector<VkDescriptorSet>			mDescriptorSets;
+		bool									mUniformsDirty = false;
 	};
 
 
@@ -272,61 +249,21 @@ namespace nap
 
 		Renderer& getRenderer() { return *mRenderer; }
 
-	private:
-		/**
-		 * Recursively add uniforms for the specified declaration
-		 */
-		Uniform* addUniformRecursive(const opengl::UniformValueDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform);
-
-		/**
-		 * Ensure a UniformStruct with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
-		 * identifier that should only be unique within the container that the uniform is being added to
-		 */
-		UniformStruct& getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created);
-
-		/**
-		 * Ensure a UniformStructArray with the specified name is created. The globalName is an identifier that should be globally unique; the localName is an
-		 * identifier that should only be unique within the container that the uniform is being added to
-		 */
-		UniformStructArray& getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created);
-
 	public:
-		std::vector<ResourcePtr<Uniform>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
-		ResourcePtr<Shader>						mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
-		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
-		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<UniformSampler>>	mSamplers;											///< Property: 
+		std::vector<VertexAttributeBinding>			mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
+		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
+		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
+		EDepthMode									mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
 
 	private:
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
 		Renderer*									mRenderer = nullptr;
-		UniformStructMap							mOwnedStructUniforms;								///< Runtime map of struct uniforms
-		UniformStructArrayMap						mOwnedStructArrayUniforms;							///< Runtime map of struct array uniforms
 		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
 	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	T& MaterialInstance::getOrCreateUniform(const std::string& name)
-	{
-		// Find the uniform based on name
-		T* existing = findUniform<T>(name);
-		if (existing != nullptr)
-			return *existing;
-		
-		// Create the uniform if it can't be found
-		Uniform& new_uniform = createUniform(name);
-
-		// If the cast fails it means the requested uniform types do not match!
-		T* cast_uniform = rtti_cast<T>(&new_uniform);
-		assert(cast_uniform != nullptr);
-		return *cast_uniform;
-	}
 
 	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;
 }

@@ -46,11 +46,11 @@ namespace nap
 			return false;
 		
 		// Ensure the uniform to set the glyph is available on the source material
-		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
-		if (!errorState.check(glyph_uniform != nullptr, 
-			"%s: Unable to bind font character, can't find 2Dtexture uniform in shader: %s with name: %s", this->mID.c_str(), 
-			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
-			return false;
+// 		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
+// 		if (!errorState.check(glyph_uniform != nullptr, 
+// 			"%s: Unable to bind font character, can't find 2Dtexture uniform in shader: %s with name: %s", this->mID.c_str(), 
+// 			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
+// 			return false;
 
 		// Setup the plane
 		mPlane.mRows	= 1;
@@ -144,18 +144,18 @@ namespace nap
 		}
 
 		// Get the parent material and set uniform values if present
-		Material* comp_mat = mMaterialInstance.getMaterial();
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
-
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
-
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(modelMatrix);
+// 		Material* comp_mat = mMaterialInstance.getMaterial();
+// 		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
+// 		if (projectionUniform != nullptr)
+// 			projectionUniform->setValue(projectionMatrix);
+// 
+// 		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
+// 		if (viewUniform != nullptr)
+// 			viewUniform->setValue(viewMatrix);
+// 
+// 		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+// 		if (modelUniform != nullptr)
+// 			modelUniform->setValue(modelMatrix);
 
 		// Prepare blending
 		mMaterialInstance.pushBlendMode();
@@ -165,7 +165,7 @@ namespace nap
 		mRenderableMesh.bind();
 
 		// Fetch uniform for setting character
-		UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
+		//UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
 
 		// Get vertex position data (that we update in the loop
 		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
@@ -185,9 +185,9 @@ namespace nap
 		nap::utility::ErrorState error;
 
 		// Get uniforms to push in loop
-		const nap::UniformSampler2D& glyph_binding = mMaterialInstance.getUniform<UniformSampler2D>(glyph_uniform.mName);
-		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
-		assert(texture_unit > -1);
+// 		const nap::UniformSampler2D& glyph_binding = mMaterialInstance.getUniform<UniformSampler2D>(glyph_uniform.mName);
+// 		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
+// 		assert(texture_unit > -1);
 
 		// Push all uniforms now
 		mMaterialInstance.pushUniforms(0);		// TODO: correct frame index
@@ -217,7 +217,7 @@ namespace nap
 			mesh_instance.update(*mPositionAttr, error);
 
 			// Set texture and push uniforms
-			glyph_uniform.setTexture(render_glyph->getTexture());
+			//glyph_uniform.setTexture(render_glyph->getTexture());
 			//glyph_uniform.push(nullptr, glyph_binding.getDeclaration(), texture_unit); // TODO: UBO
 
 			// Bind and draw all the arrays

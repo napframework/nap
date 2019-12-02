@@ -35,6 +35,7 @@ RTTI_END_STRUCT
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,	nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,	nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -45,6 +46,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
@@ -53,149 +55,380 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	std::unique_ptr<UniformSampler> createUniformFromDeclaration(VkDevice device, const opengl::UniformSamplerDeclaration& declaration)
+// 	/**
+// 	 * This is a convenience function to get the number of elements in the specified uniform; it internally does the check to see if it's an 
+// 	 * array of values or array of textures.
+// 	 *
+// 	 * Note that this function is also called for non-array Uniforms; the return value can then be used by the client code to test if the uniform was an 
+// 	 * array or not. Otherwise, the client would have to do the array of values/array of textures check themselves before calling this function,
+// 	 * which would defeat the point.
+// 	 *
+// 	 * @return The number of array elements in the uniform; -1 if the uniform is not an array uniform.
+// 	 */
+// 	static int getNumArrayElements(const Uniform& uniform)
+// 	{
+// 		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
+// 		if (value_array != nullptr)
+// 			return value_array->getCount();
+// 
+// 		const UniformSamplerArray* texture_array = rtti_cast<const UniformSamplerArray>(&uniform);
+// 		if (texture_array != nullptr)
+// 			return texture_array->getNumElements();
+// 
+// 		return -1;
+// 	}
+// 
+// 	/**
+// 	 * Helper function to verify that the specified uniform matches with the uniform declaration in the shader.
+// 	 * It verifies that the type of uniform (array/non-array) matches with the shader; if it's an array, it also verifies that the lengths match
+// 	 */
+// 	static bool verifyUniform(const UniformValue& uniform, const opengl::UniformValueDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
+// 	{
+// 		// If the declaration is an array, verify that the uniform is also an array and that the sizes match
+// 		if (uniformDeclaration.isArray())
+// 		{
+// 			int numElements = getNumArrayElements(uniform);
+// 			if (!errorState.check(numElements != -1, "Uniform %s is not an array uniform but the variable type in shader %s is.", uniform.mName.c_str(), shaderID.c_str()))
+// 				return false;
+// 
+// 			if (!errorState.check(numElements == uniformDeclaration.mSize, "Amount of elements (%d) in uniform %s does not match the amount of elements (%d) declared in shader %s.", numElements, uniform.mName.c_str(), uniformDeclaration.mSize, shaderID.c_str()))
+// 				return false;
+// 		}
+// 
+// 		// Verify the uniform types match
+// 		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
+// 			return false;
+// 
+// 		return true;
+// 	}
+// 
+// 	/**
+// 	 * Helper function to verify that the two uniforms match in size. Note that this is also called for non-array uniforms, in which case it always matches.
+// 	 */
+// 	static bool verifyArrayUniforms(const std::string& fullUniformPath, const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
+// 	{
+// 		int source_size = getNumArrayElements(sourceUniform);
+// 		int dest_size = getNumArrayElements(destUniform);
+// 
+// 		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, fullUniformPath.c_str(), dest_size, shaderID.c_str()))
+// 			return false;
+// 
+// 		return true;
+// 	}
+
+
+	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
-		return std::make_unique<UniformSampler2D>(device, declaration);
-	}
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
-	/**
-	* Creates Uniform objects based on a declaration.
-	*/
-	std::unique_ptr<UniformValue> createUniformFromDeclaration(const opengl::UniformValueDeclaration& declaration)
-	{
-		std::unique_ptr<UniformValue> result;
-
-		switch (declaration.mType)
-		{
-		case opengl::EGLSLType::Int:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformIntArray>(declaration.mSize);
-				else
-					result = std::make_unique<UniformInt>();
-				
-				break;
-			}
-		case opengl::EGLSLType::Float:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformFloatArray>(declaration.mSize);
-				else
-					result = std::make_unique<UniformFloat>();
-
-				break;
-			}
-		case opengl::EGLSLType::Vec4:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformVec4Array>(declaration.mSize);
-				else
-					result = std::make_unique<UniformVec4>();
-
-				break;
-			}
-		case opengl::EGLSLType::Mat4:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformMat4Array>(declaration.mSize);
-				else
-					result = std::make_unique<UniformMat4>();
-
-				break;
-			}
-		case opengl::EGLSLType::Vec3:
-			{
-				if (declaration.isArray())
-					result = std::make_unique<UniformVec3Array>(declaration.mSize);
-				else
-					result = std::make_unique<UniformVec3>();
-
-				break;
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
 			}
 		}
-		assert(result);
-		result->mName = declaration.mName;
-		result->setDeclaration(declaration);
-		return result;
-	}
-
-	/**
-	 * This is a convenience function to get the number of elements in the specified uniform; it internally does the check to see if it's an 
-	 * array of values or array of textures.
-	 *
-	 * Note that this function is also called for non-array Uniforms; the return value can then be used by the client code to test if the uniform was an 
-	 * array or not. Otherwise, the client would have to do the array of values/array of textures check themselves before calling this function,
-	 * which would defeat the point.
-	 *
-	 * @return The number of array elements in the uniform; -1 if the uniform is not an array uniform.
-	 */
-	static int getNumArrayElements(const Uniform& uniform)
-	{
-		const UniformValueArray* value_array = rtti_cast<const UniformValueArray>(&uniform);
-		if (value_array != nullptr)
-			return value_array->getCount();
-
-		const UniformSamplerArray* texture_array = rtti_cast<const UniformSamplerArray>(&uniform);
-		if (texture_array != nullptr)
-			return texture_array->getNumElements();
 
 		return -1;
 	}
 
-	/**
-	 * Helper function to verify that the specified uniform matches with the uniform declaration in the shader.
-	 * It verifies that the type of uniform (array/non-array) matches with the shader; if it's an array, it also verifies that the lengths match
-	 */
-	static bool verifyUniform(const UniformValue& uniform, const opengl::UniformValueDeclaration& uniformDeclaration, const std::string& shaderID, utility::ErrorState& errorState)
+	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState)
 	{
-		// If the declaration is an array, verify that the uniform is also an array and that the sizes match
-		if (uniformDeclaration.isArray())
-		{
-			int numElements = getNumArrayElements(uniform);
-			if (!errorState.check(numElements != -1, "Uniform %s is not an array uniform but the variable type in shader %s is.", uniform.mName.c_str(), shaderID.c_str()))
-				return false;
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = usage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			if (!errorState.check(numElements == uniformDeclaration.mSize, "Amount of elements (%d) in uniform %s does not match the amount of elements (%d) declared in shader %s.", numElements, uniform.mName.c_str(), uniformDeclaration.mSize, shaderID.c_str()))
-				return false;
+		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
+			return false;
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+
+		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
+			return false;
+
+		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
+			return false;
+
+		return true;
+	}
+
+	template<class T>
+	const UniformInstance* findUniformStructInstanceMember(const std::vector<T>& members, const std::string& name)
+	{
+		for (auto& member : members)
+			if (member->getDeclaration().mName == name)
+				return member.get();
+
+		return nullptr;
+	}
+
+	template<class T>
+	const Uniform* findUniformStructMember(const std::vector<T>& members, const opengl::UniformDeclaration& declaration)
+	{
+		for (auto& member : members)
+			if (member->mName == declaration.mName)
+				return member.get();
+
+		return nullptr;
+	}
+
+	template<class T>
+	const UniformSampler* findUniformSampler(const std::vector<T>& samplers, const opengl::UniformSamplerDeclaration& declaration)
+	{
+		for (auto& sampler : samplers)
+			if (sampler->mName == declaration.mName)
+				return sampler.get();
+
+		return nullptr;
+	}
+
+	bool addUniformRecursive(const opengl::UniformStructDeclaration& structDeclaration, UniformStructInstance& structInstance, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState)
+	{
+		for (auto& uniform_declaration : structDeclaration.mMembers)
+		{
+			rtti::TypeInfo declaration_type = uniform_declaration->get_type();
+
+			const Uniform* resource = nullptr;
+			if (structResource != nullptr)
+				resource = findUniformStructMember(structResource->mUniforms, *uniform_declaration);
+
+			if (!createDefaults && resource == nullptr)
+				continue;
+
+			if (declaration_type == RTTI_OF(opengl::UniformStructArrayDeclaration))
+			{
+				const UniformStructArray* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
+
+				opengl::UniformStructArrayDeclaration* struct_array_declaration = rtti_cast<opengl::UniformStructArrayDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformStructArrayInstance> struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
+
+				if (!errorState.check(struct_array_resource->mStructs.size() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
+					return false;
+
+				int resource_index = 0;
+				for (auto& declaration_element : struct_array_declaration->mElements)
+				{
+					UniformStruct* struct_resource = nullptr;
+					if (struct_array_resource != nullptr && resource_index < struct_array_resource->mStructs.size())
+						struct_resource = struct_array_resource->mStructs[resource_index++].get();
+
+					std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
+					if (!addUniformRecursive(*declaration_element, *instance_element, struct_resource, uniformCreatedCallback, createDefaults, errorState))
+						return false;
+
+					struct_array_instance->addElement(std::move(instance_element));
+				}
+
+				structInstance.addUniform(std::move(struct_array_instance));
+			}
+			else if (declaration_type == RTTI_OF(opengl::UniformValueArrayDeclaration))
+			{
+				opengl::UniformValueArrayDeclaration* value_array_declaration = rtti_cast<opengl::UniformValueArrayDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformValueArrayInstance> instance_value_array;
+
+				const UniformValueArray* value_array_resource = rtti_cast<const UniformValueArray>(resource);
+				if (!errorState.check(value_array_resource != nullptr, "Type mismatch between shader type and json type"))
+					return false;
+
+				if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
+				{
+					const UniformIntArray* int_array_resource = rtti_cast<const UniformIntArray>(resource);
+					instance_value_array = std::make_unique<UniformIntArrayInstance>(*value_array_declaration, int_array_resource);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
+				{
+					const UniformFloatArray* float_array_resource = rtti_cast<const UniformFloatArray>(resource);
+					instance_value_array = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration, float_array_resource);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
+				{
+					const UniformVec3Array* vec3_array_resource = rtti_cast<const UniformVec3Array>(resource);
+					instance_value_array = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration, vec3_array_resource);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
+				{
+					const UniformVec4Array* vec4_array_resource = rtti_cast<const UniformVec4Array>(resource);
+					instance_value_array = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration, vec4_array_resource);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
+				{
+					const UniformMat4Array* mat4_array_resource = rtti_cast<const UniformMat4Array>(resource);
+					instance_value_array = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration, mat4_array_resource);
+				}
+				else
+				{
+					assert(false);
+				}
+				structInstance.addUniform(std::move(instance_value_array));
+			}
+			else if (declaration_type == RTTI_OF(opengl::UniformStructDeclaration))
+			{
+				const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(resource);
+
+				opengl::UniformStructDeclaration* struct_declaration = rtti_cast<opengl::UniformStructDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformStructInstance> struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
+				if (!addUniformRecursive(*struct_declaration, *struct_instance, struct_resource, uniformCreatedCallback, createDefaults, errorState))
+					return false;
+
+				structInstance.addUniform(std::move(struct_instance));
+			}
+			else
+			{
+				opengl::UniformValueDeclaration* value_declaration = rtti_cast<opengl::UniformValueDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformValueInstance> value_instance;
+
+				if (value_declaration->mType == opengl::EGLSLType::Int)
+				{
+					const UniformInt* int_resource = rtti_cast<const UniformInt>(resource);
+					value_instance = std::make_unique<UniformIntInstance>(*value_declaration, int_resource);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Float)
+				{
+					const UniformFloat* float_resource = rtti_cast<const UniformFloat>(resource);
+					value_instance = std::make_unique<UniformFloatInstance>(*value_declaration, float_resource);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec3)
+				{
+					const UniformVec3* vec3_resource = rtti_cast<const UniformVec3>(resource);
+					value_instance = std::make_unique<UniformVec3Instance>(*value_declaration, vec3_resource);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec4)
+				{
+					const UniformVec4* vec4_resource = rtti_cast<const UniformVec4>(resource);
+					value_instance = std::make_unique<UniformVec4Instance>(*value_declaration, vec4_resource);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Mat4)
+				{
+					const UniformMat4* mat4_resource = rtti_cast<const UniformMat4>(resource);
+					value_instance = std::make_unique<UniformMat4Instance>(*value_declaration, mat4_resource);
+				}
+				else
+				{
+					assert(false);
+				}
+				structInstance.addUniform(std::move(value_instance));
+			}
 		}
 
-		// Verify the uniform types match
-		if (!errorState.check(uniform.getGLSLType() == uniformDeclaration.mType, "Uniform %s does not match the variable type in the shader %s", uniform.mName.c_str(), shaderID.c_str()))
-			return false;
-
 		return true;
 	}
 
-	/**
-	 * Helper function to verify that the two uniforms match in size. Note that this is also called for non-array uniforms, in which case it always matches.
-	 */
-	static bool verifyArrayUniforms(const std::string& fullUniformPath, const Uniform& sourceUniform, const Uniform& destUniform, const std::string& shaderID, utility::ErrorState& errorState)
+	void buildUniformBufferObjectRecursive(const UniformStructInstance& baseInstance, const UniformStructInstance* overrideInstance, UniformBufferObject& ubo)
 	{
-		int source_size = getNumArrayElements(sourceUniform);
-		int dest_size = getNumArrayElements(destUniform);
+		for (auto& base_uniform : baseInstance.getUniforms())
+		{
+			rtti::TypeInfo declaration_type = base_uniform->get_type();
 
-		if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s is higher than the number of elements (%d) declared in shader %s", source_size, fullUniformPath.c_str(), dest_size, shaderID.c_str()))
-			return false;
+			const UniformInstance* override_uniform = nullptr;
+			if (overrideInstance != nullptr)
+				override_uniform = findUniformStructInstanceMember(overrideInstance->getUniforms(), base_uniform->getDeclaration().mName);
 
-		return true;
+			if (declaration_type == RTTI_OF(UniformStructArrayInstance))
+			{
+				const UniformStructArrayInstance* struct_array_override = rtti_cast<const UniformStructArrayInstance>(override_uniform);
+				const UniformStructArrayInstance* struct_array_declaration = rtti_cast<const UniformStructArrayInstance>(base_uniform.get());
+
+				int resource_index = 0;
+				for (auto& base_element : struct_array_declaration->getElements())
+				{
+					UniformStructInstance* element_override = nullptr;
+					if (struct_array_override != nullptr && resource_index < struct_array_override->getElements().size())
+						element_override = struct_array_override->getElements()[resource_index++].get();
+
+					buildUniformBufferObjectRecursive(*base_element, element_override, ubo);
+				}
+			}
+			else if (declaration_type == RTTI_OF(UniformValueArrayInstance))
+			{
+				const UniformValueArrayInstance* base_array_uniform = rtti_cast<const UniformValueArrayInstance>(base_uniform.get());
+				const UniformValueArrayInstance* override_array_uniform = rtti_cast<const UniformValueArrayInstance>(override_uniform);
+
+				if (override_array_uniform != nullptr)
+					ubo.mUniforms.push_back(override_array_uniform);
+				else
+					ubo.mUniforms.push_back(base_array_uniform);
+			}
+			else if (declaration_type == RTTI_OF(UniformStructInstance))
+			{
+				const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(base_uniform.get());
+				const UniformStructInstance* override_struct = rtti_cast<const UniformStructInstance>(override_uniform);
+
+				buildUniformBufferObjectRecursive(*base_struct, override_struct, ubo);
+			}
+			else
+			{
+				const UniformValueInstance* base_value = rtti_cast<const UniformValueInstance>(base_uniform.get());
+				const UniformValueInstance* override_value = rtti_cast<const UniformValueInstance>(override_uniform);
+
+				if (override_value != nullptr)
+					ubo.mUniforms.push_back(override_value);
+				else
+					ubo.mUniforms.push_back(base_value);
+			}
+		}
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	Uniform* MaterialInstance::getOrCreateUniform(const std::string& name)
+	UniformStructInstance& MaterialInstance::getOrCreateUniform(const std::string& name)
 	{
-		Uniform* existing = findUniform(name);
+		UniformStructInstance* existing = findUniform(name);
 		if (existing != nullptr)
-			return existing;
+			return *existing;
 
-		return &createUniform(name);
+		const opengl::UniformStructDeclaration* declaration = nullptr;
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader()->getShader().getUBODeclarations();
+		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		{
+			if (ubo_declaration.mName == name)
+			{
+				declaration = &ubo_declaration;
+				break;
+			}
+		}
+		assert(declaration != nullptr);
+
+		return createRootStruct(*declaration, std::bind(&MaterialInstance::onUniformCreated, this));
+	}
+
+
+	void MaterialInstance::onUniformCreated()
+	{
+		mUniformsDirty = true;
+	}
+
+
+	void MaterialInstance::rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct)
+	{
+		ubo.mUniforms.clear();
+
+		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(findUniformStructInstanceMember(getMaterial()->getRootStructs(), ubo.mDeclaration->mName));
+		assert(base_struct != nullptr);
+
+		buildUniformBufferObjectRecursive(*base_struct, overrideStruct, ubo);
 	}
 
 
 	void MaterialInstance::pushUniforms(int frameIndex)
 	{
+		if (mUniformsDirty)
+		{
+			for (UniformBufferObject& ubo : mUniformBufferObjects)
+				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
+
+			mUniformsDirty = false;
+		}
+
 		VkDevice device = getMaterial()->getRenderer().getDevice();
 
 		for (UniformBufferObject& ubo : mUniformBufferObjects)
@@ -203,14 +436,18 @@ namespace nap
 			void* mapped_memory;
 			vkMapMemory(device, ubo.mBuffersMemory[frameIndex], 0, ubo.mDeclaration->mSize, 0, &mapped_memory);
 			
-			for (auto& kvp : ubo.mUniforms)
+			for (auto& uniform : ubo.mUniforms)
 			{
-				const Uniform* uniform = kvp.second;
-				
-				const nap::UniformValue* uniform_val = rtti_cast<const nap::UniformValue>(uniform);
-				if (uniform_val != nullptr)
+				const UniformValueInstance* value_instance = rtti_cast<const UniformValueInstance>(uniform);
+				if (value_instance == nullptr)
 				{
-					uniform_val->push((uint8_t*)mapped_memory);
+					const UniformValueArrayInstance* value_array_instance = rtti_cast<const UniformValueArrayInstance>(uniform);
+					assert(value_array_instance != nullptr);
+					value_array_instance->push((uint8_t*)mapped_memory);
+				}
+				else
+				{
+					value_instance->push((uint8_t*)mapped_memory);
 				}
 			}
 
@@ -387,71 +624,6 @@ namespace nap
 		return -1;
 	}
 
-	
-	Uniform& MaterialInstance::createUniform(const std::string& name)
-	{
-		const opengl::UniformValueDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformValueDeclarations();
-		const opengl::UniformSamplerDeclarations& sampler_declarations = mResource->mMaterial->getShader()->getShader().getUniformSamplerDeclarations();
-
-		opengl::UniformValueDeclarations::const_iterator value_pos = uniform_declarations.find(name);
-		if (value_pos != uniform_declarations.end())
-		{
-			const opengl::UniformValueDeclaration* declaration = value_pos->second;
-			std::unique_ptr<UniformValue> uniform = createUniformFromDeclaration(*declaration);
-			return addUniformValue(std::move(uniform));
-		}
-		else
-		{
-			opengl::UniformSamplerDeclarations::const_iterator sampler_pos = sampler_declarations.find(name);
-			assert(sampler_pos != sampler_declarations.end());
-
-			const opengl::UniformSamplerDeclaration& declaration = sampler_pos->second;
-			std::unique_ptr<UniformSampler> uniform = createUniformFromDeclaration(mDevice, declaration);
-			return addUniformSampler(std::move(uniform));
-		}
-	}
-
-	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
-	{
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState) 
-	{
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
-			return false;
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
-			return false;
-
-		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
-			return false;
-
-		return true;
-	}
 
 	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
@@ -461,59 +633,52 @@ namespace nap
 		Material& material = *resource.mMaterial;
 		const opengl::Shader& shader = material.getShader()->getShader();
 
-		const opengl::UniformValueDeclarations& uniform_values = shader.getUniformValueDeclarations();
-		const opengl::UniformSamplerDeclarations& uniform_samplers = shader.getUniformSamplerDeclarations();
-
-		// Create new uniforms for all the uniforms in mUniforms
-		for (ResourcePtr<Uniform>& uniform : resource.mUniforms)
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
+		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			if (uniform->get_type().is_derived_from<UniformValue>())
-			{
-				opengl::UniformValueDeclarations::const_iterator declaration = uniform_values.find(uniform->mName);
-				if (declaration == uniform_values.end())
-					continue;
+			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(resource.mUniforms, ubo_declaration));
 
-				if (!verifyUniform(*rtti_cast<UniformValue>(uniform.get()), *declaration->second, material.getShader()->mID, errorState))
+			UniformStructInstance* override_struct = nullptr;
+			if (struct_resource != nullptr)
+			{
+				override_struct = &createRootStruct(ubo_declaration, std::bind(&MaterialInstance::onUniformCreated, this));
+				if (!addUniformRecursive(ubo_declaration, *override_struct, struct_resource, std::bind(&MaterialInstance::onUniformCreated, this), false, errorState))
 					return false;
-
-				std::unique_ptr<UniformValue> new_uniform = createUniformFromDeclaration(*declaration->second);
-				nap::rtti::copyObject(*uniform, *new_uniform.get());
-
-				addUniformValue(std::move(new_uniform));
 			}
-			else if (uniform->get_type().is_derived_from<UniformSampler>())
-			{
-				opengl::UniformSamplerDeclarations::const_iterator declaration = uniform_samplers.find(uniform->mName);
-				if (declaration == uniform_samplers.end())
-					continue;
 
-				std::unique_ptr<UniformSampler> new_uniform = createUniformFromDeclaration(renderer.getDevice(), declaration->second);
-				nap::rtti::copyObject(*uniform, *new_uniform.get());
-
-				addUniformSampler(std::move(new_uniform));
-			}
-		}
-
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUniformBufferObjectDeclarations();
-
-		for (int index = 0; index < ubo_declarations.size(); ++index)
-		{
-			const opengl::UniformBufferObjectDeclaration& ubo_declaration = ubo_declarations[index];
-			
 			UniformBufferObject ubo(ubo_declaration);
-			for (auto& uniform_declaration : ubo_declaration.mDeclarations)
+			rebuildUBO(ubo, override_struct);
+			mUniformBufferObjects.emplace_back(std::move(ubo));
+		}
+		
+		mUniformsDirty = false;
+		
+		int total_num_samplers = 0;
+		const opengl::UniformSamplerDeclarations& sampler_declarations = shader.getUniformSamplerDeclarations();
+		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
+		{
+			const UniformSampler* sampler = findUniformSampler(resource.mSamplers, declaration);
+			UniformSamplerInstance* sampler_instance = nullptr;
+			if (sampler != nullptr)
 			{
-				const Uniform* uniform = findUniform(uniform_declaration->mName);
-				if (uniform == nullptr)
-					uniform = material.findUniform(uniform_declaration->mName);
+				bool is_array = declaration.mNumArrayElements > 1;
 
-				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
-					return false;
+				std::unique_ptr<UniformSamplerInstance> sampler_instance_override;
+				if (is_array)
+					sampler_instance_override = std::make_unique<UniformSampler2DArrayInstance>(renderer.getDevice(), declaration, (UniformSampler2DArray*)sampler);
+				else
+					sampler_instance_override = std::make_unique<UniformSampler2DInstance>(renderer.getDevice(), declaration, (UniformSampler2D*)sampler);
 
-				ubo.mUniforms.insert(std::make_pair(uniform_declaration->mName, uniform));
+				sampler_instance = sampler_instance_override.get();
+				addSamplerInstance(std::move(sampler_instance_override));
+			}
+			else
+			{
+				sampler_instance = material.findSampler(declaration.mName);
 			}
 
-			mUniformBufferObjects.emplace_back(std::move(ubo));
+			mSamplers.push_back(sampler_instance);
+			total_num_samplers += declaration.mNumArrayElements;
 		}
 
 		int num_frames = 2;
@@ -521,8 +686,9 @@ namespace nap
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[0].descriptorCount = num_frames * ubo_declarations.size();
+
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = num_frames * uniform_samplers.size() ;
+		poolSizes[1].descriptorCount = num_frames * total_num_samplers;
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -544,9 +710,12 @@ namespace nap
 		if (!errorState.check(vkAllocateDescriptorSets(renderer.getDevice(), &allocInfo, mDescriptorSets.data()) == VK_SUCCESS, "Failed to create descriptor set"))
 			return false;
 
-		int num_descriptors = (num_frames * ubo_declarations.size()) + (num_frames * uniform_samplers.size());
+		int num_descriptors = (num_frames * ubo_declarations.size()) + (num_frames * mSamplers.size());
 		std::vector<VkWriteDescriptorSet> descriptor_writes;
 		descriptor_writes.resize(num_descriptors);
+
+		std::vector<VkDescriptorImageInfo> image_infos;
+		image_infos.reserve(total_num_samplers * num_frames);
 
 		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
 		descriptor_buffers.resize(num_descriptors);
@@ -564,7 +733,7 @@ namespace nap
 
 				UniformBufferObject& ubo = mUniformBufferObjects[buffer_index];
 				ubo.mBuffers.push_back(vkBuffer);
-				ubo.mBuffersMemory.push_back(vkBufferMemory);
+				ubo.mBuffersMemory.push_back(vkBufferMemory); 
 
 				VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[descriptor_index];
 				bufferInfo.buffer = ubo.mBuffers.back();
@@ -572,42 +741,54 @@ namespace nap
 				bufferInfo.range = VK_WHOLE_SIZE;
 
 				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
-				write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				write_descriptor_set.dstSet = mDescriptorSets[frame_index];
-				write_descriptor_set.dstBinding = ubo_declarations[buffer_index].mBinding;
-				write_descriptor_set.dstArrayElement = 0;
-				write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				write_descriptor_set.descriptorCount = 1;
-				write_descriptor_set.pBufferInfo = &bufferInfo;
+				write_descriptor_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write_descriptor_set.dstSet				= mDescriptorSets[frame_index];
+				write_descriptor_set.dstBinding			= ubo_declarations[buffer_index].mBinding;
+				write_descriptor_set.dstArrayElement	= 0;
+				write_descriptor_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				write_descriptor_set.descriptorCount	= 1;
+				write_descriptor_set.pBufferInfo		= &bufferInfo;
 
 				descriptor_index++;
 			}
 
-			for (auto& sampler_declaration : uniform_samplers)
+			for (UniformSamplerInstance* sampler_instance : mSamplers)
 			{
-				const UniformSampler2D* uniform = findUniform<UniformSampler2D>(sampler_declaration.second.mName);
-				if (uniform == nullptr)
-					uniform = material.findUniform<UniformSampler2D>(sampler_declaration.second.mName);
+				size_t image_info_start_index = image_infos.size();
+				if (sampler_instance->get_type() == RTTI_OF(UniformSampler2DInstance))
+				{
+					UniformSampler2DInstance* sampler_2d = rtti_cast<UniformSampler2DInstance>(sampler_instance);
 
-				if (!errorState.check(uniform != nullptr, "Unable to find uniform for declaration"))
-					return false;
+					VkDescriptorImageInfo imageInfo = {};
+					imageInfo.imageLayout	 = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageView		= sampler_2d->mTexture2D->getImageView();
+					imageInfo.sampler		= sampler_instance->getSampler();
 
-				if (!errorState.check(uniform->mTexture != nullptr, "No texture set for uniform"))
-					return false;
+					image_infos.push_back(imageInfo);
+				}
+				else if (sampler_instance->get_type() == RTTI_OF(UniformSampler2DArrayInstance))
+				{
+					UniformSampler2DArrayInstance* sampler_2d_array = rtti_cast<UniformSampler2DArrayInstance>(sampler_instance);
 
-				VkDescriptorImageInfo imageInfo = {};
-				imageInfo.imageLayout	= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView		= uniform->mTexture->getImageView();
-				imageInfo.sampler		= uniform->getSampler();
+					for (auto& texture : sampler_2d_array->mTextures)
+					{
+						VkDescriptorImageInfo imageInfo = {};
+						imageInfo.imageLayout	= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						imageInfo.imageView		= texture->getImageView();
+						imageInfo.sampler		= sampler_instance->getSampler();
+
+						image_infos.push_back(imageInfo);
+					}
+				}
 
 				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
-				write_descriptor_set.sType	= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				write_descriptor_set.dstSet = mDescriptorSets[frame_index];
-				write_descriptor_set.dstBinding = sampler_declaration.second.mBinding;
-				write_descriptor_set.dstArrayElement = 0;
-				write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				write_descriptor_set.descriptorCount = 1;
-				write_descriptor_set.pImageInfo = &imageInfo;
+				write_descriptor_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write_descriptor_set.dstSet				= mDescriptorSets[frame_index];
+				write_descriptor_set.dstBinding			= sampler_instance->getDeclaration().mBinding;
+				write_descriptor_set.dstArrayElement	= 0;
+				write_descriptor_set.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				write_descriptor_set.descriptorCount	= image_infos.size() - image_info_start_index;
+				write_descriptor_set.pImageInfo			= image_infos.data() + image_info_start_index;
 
 				descriptor_index++;
 			}
@@ -664,244 +845,6 @@ namespace nap
 	{
 	}
 
-	UniformStruct& Material::getOrCreateUniformStruct(const std::string& globalName, const std::string& localName, bool& created)
-	{
-		auto pos = mOwnedStructUniforms.find(globalName);
-		if (pos == mOwnedStructUniforms.end())
-		{
-			auto inserted = mOwnedStructUniforms.insert(std::make_pair(globalName, std::make_unique<UniformStruct>()));
-			inserted.first->second->mName = localName;
-			created = true;
-			return *inserted.first->second;
-		}
-
-		created = false;
-		return *pos->second;
-	}
-
-
-	UniformStructArray& Material::getOrCreateUniformStructArray(const std::string& globalName, const std::string& localName, bool& created)
-	{
-		auto pos = mOwnedStructArrayUniforms.find(globalName);
-		if (pos == mOwnedStructArrayUniforms.end())
-		{
-			auto inserted = mOwnedStructArrayUniforms.insert(std::make_pair(globalName, std::make_unique<UniformStructArray>()));
-			inserted.first->second->mName = localName;
-			created = true;
-			return *inserted.first->second;
-		}
-
-		created = false;
-		return *pos->second;
-	}
-
-
-	/**
-	 * This function recursively creates uniform for the specified declaration. It correctly deals with regular uniforms, arrays of uniforms, structures and all combinations.
-	 * It works by inspecting the 'path' to a particular uniform. For example, consider the following shader code:
-	 *
-	 * struct Point
-	 * {
-	 *     float x;
-	 *     float y;
-	 * };
-	 *
-	 * struct Light
-	 * {
-	 *     Point		mPoint;
-	 *     float 		mTest[2];
-	 *     sampler2D 	mTestSampler[2];
-	 * };
-	 *
-     * uniform Light mLight[2];
-	 *
-	 * This will result in a number of shader declarations that looks like the following (assuming all uniforms are actually used by the shader):
-	 *
-	 * mLight[0].mPoint.x
-	 * mLight[0].mPoint.y
-	 * mLight[0].mTest[0]
-	 * mLight[1].mPoint.x
-	 * mLight[1].mPoint.y
-	 * mLight[1].mTest[0]
-	 *
-	 * Note a few things:
-	 * - There are only declarations for the 'leaf' elements, i.e. the actual uniforms. There are no separate declarations for intermediate structs or arrays that are on the 'path'
-	 * - Leaf arrays (mTest in the above example) only have a single declaration, not one per element. The size of the declaration will be set to the number of elements in the array.
-	 * - Non-leaf arrays (mLight in the above example) have declaration for each used element
-	 *
-	 * While recursing into each element, we'll create the appropriate type of element (Uniform, UniformStructArray or UniformStruct) to represent each 'part'. 
-	 * The name given to each uniform will be the name of the current part we're in, without the path and without the brackets.  In the above example, 
-	 * the uniform 'mLight[0].mTest[0]' will be given the name 'mTest'. 
-	 *
-	 * This naming scheme was chosen to ensure that the user doesn't need to specify the full path when declaring these uniforms in the material; the full path can always 
-	 * be deduced (during the 'apply') phase as we recursively go through the uniforms.
-	 */
-	Uniform* Material::addUniformRecursive(const opengl::UniformValueDeclaration& declaration, const std::string& path, const std::vector<std::string>& parts, int partIndex, bool& didCreateUniform)
-	{
-		assert(partIndex < parts.size());
-
-		const std::string& part = parts[partIndex];
-
-		// Determine the type of the uniform. The cases we're interested in are:
-		// - There is a bracket present in the current part. This must mean that we're currently in an array
-		// - The path consists of multiple elements and we're not at the last element yet. This must mean that we're currently in a struct, otherwise there wouldn't be multiple parts in the first place.
-		//
-		// Note that it is possible to both be in an array and in a struct (i.e. array of structures).
-		size_t bracketPos = part.find_first_of('[');
-		bool isArray = bracketPos != std::string::npos;
-		bool isStruct = partIndex < parts.size() - 1;
-
-		// Build up the full path as we go. This allows us to give each uniform we construct along the way a unique 'name'
-		std::string currentPath = path;
-		if (!currentPath.empty())
-			currentPath += ".";
-
-		currentPath += part;
-
-		// If the part is both an array and a struct, we need to create multiple elements:
-		// - An element to represent the array (UniformStructArray)
-		// - An element to represent the struct inside the array (UniformStruct)
-		if (isArray && isStruct)
-		{
-			// The local name for a uniform is the part without the brackets and without the full path (i.e. mLight in the above example)
-			std::string local_name = part.substr(0, bracketPos);
-
-			// Determine the index of the array we're currently at. We do this by looking for the last opening bracket and assuming it's followed by a number.
-			size_t arrayStartPos = currentPath.find_last_of('[');
-			assert(arrayStartPos != std::string::npos);
-
-			int array_index = (int)strtol(currentPath.data() + arrayStartPos + 1, nullptr, 10);			
-
-			// Ensure there's an element to represent the array
-			UniformStructArray& array = getOrCreateUniformStructArray(currentPath.substr(0, arrayStartPos), local_name, didCreateUniform);			
-
-			// Note that since non-leaf arrays can be present in multiple declarations, we can
-
-			// Ensure there's an element to represent the struct at this index
-			bool did_create_child_struct = false;
-			UniformStruct& child_struct = getOrCreateUniformStruct(currentPath, part, did_create_child_struct);
-
-			// Since the array / struct can be present in multiple declarations (see the x, y members of the point struct in the above example),
-			// we only want to add the struct into the array if this is the first time we're seeing it (i.e. we just created it). Otherwise, we would end up with duplicates.
-			if (did_create_child_struct)
-				array.insertStruct(array_index, child_struct);
-
-			// Recurse into struct to add the uniform
-			bool did_create_child = false;
-			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
-			assert(child_uniform != nullptr);
-
-			// If we created a new uniform, add it to the struct. Note that we need to deal with duplicates here again, in cases of nested structs.
-			if (did_create_child)
-				child_struct.addUniform(*child_uniform);
-
-			return &array;
-		}
-		else if (isStruct)
-		{
-			// The part is just a struct; we can recurse directly into it
-			UniformStruct& uniform_struct = getOrCreateUniformStruct(currentPath, part, didCreateUniform);
-
-			bool did_create_child = false;
-			Uniform* child_uniform = addUniformRecursive(declaration, currentPath, parts, partIndex + 1, did_create_child);
-			assert(child_uniform != nullptr);
-
-			// If we created a new uniform, add it to the struct. Note that we need to deal with duplicates here again, in cases of nested structs.
-			if (did_create_child)
-				uniform_struct.addUniform(*child_uniform);
-
-			return &uniform_struct;
-		}
-		else
-		{
-			// Create a new uniform from the declaration and set its name
-			std::unique_ptr<UniformValue> new_uniform = createUniformFromDeclaration(declaration);
-			new_uniform->mName = part;
-
-			// Add the container
-			Uniform* result = new_uniform.get();
-			addUniformValue(std::move(new_uniform));
-
-			didCreateUniform = true;
-			return result;
-		}
-	}
-
-
-	/**
-	 * Recursively apply uniforms in the source struct onto the destination struct
-	 */
-	bool applyUniformsRecursive(const std::string& parentUniformPath, const std::string& shaderID, UniformStruct& sourceStruct, UniformStruct& destStruct, utility::ErrorState& errorState)
-	{
-		for (auto& source_uniform : sourceStruct.mUniforms)
-		{
-			std::string current_uniform_path = utility::stringFormat("%s.%s", parentUniformPath.c_str(), source_uniform->mName.c_str());
-
-			// All uniforms in the source (i.e. defined in the material) should also be present in the destination (i.e. defined in shader)
-			Uniform* dest_uniform = destStruct.findUniform(source_uniform->mName);
-			if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", current_uniform_path.c_str(), shaderID.c_str()))
-			{
-				nap::Logger::warn(errorState.toString());
-				continue;
-			}
-
-			// Types must match
-			if (!errorState.check(source_uniform->get_type() == dest_uniform->get_type(), "Mismatch between types for uniform '%s' (source type = %s, target type = %s) in shader %s",
-								  current_uniform_path.c_str(), source_uniform.get_type().get_name().data(), dest_uniform->get_type().get_name().data(), shaderID.c_str()))
-			{
-				return false;
-			}
-
-			// If the uniform is an array of structures, recursively apply the nested uniforms
-			UniformStructArray* source_struct_array = rtti_cast<UniformStructArray>(source_uniform.get());
-			if (source_struct_array != nullptr)
-			{
-				UniformStructArray* dest_struct_array = (UniformStructArray*)dest_uniform;
-
-				// Size of the source must be <= the size in the dest (shader)
-				size_t source_size = source_struct_array->mStructs.size();
-				size_t dest_size = dest_struct_array->mStructs.size();
-				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, current_uniform_path.c_str(), dest_size, shaderID.c_str()))
-					return false;
-
-				// Recurse
-				for (int index = 0; index < std::min(source_size, dest_size); ++index)
-				{
-					std::string array_uniform_path = utility::stringFormat("%s[%d]", current_uniform_path.c_str(), index);
-
-					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_struct_array->mStructs[index].get());
-					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_struct_array->mStructs[index].get());
-
-					if (!applyUniformsRecursive(array_uniform_path, shaderID, *source_uniform_struct, *dest_uniform_struct, errorState))
-						return false;
-				}
-			}
-			else
-			{
-				// If the uniform is a struct, just recurse
-				UniformStruct* source_struct = rtti_cast<UniformStruct>(source_uniform.get());
-				if (source_struct != nullptr)
-				{
-					UniformStruct* dest_struct = (UniformStruct*)dest_uniform;
-					if (!applyUniformsRecursive(current_uniform_path, shaderID, *source_struct, *dest_struct, errorState))
-						return false;
-				}
-				else
-				{
-					// Regular uniform; verify array lengths match if it's an array uniform
-					if (!verifyArrayUniforms(current_uniform_path, *source_uniform, *dest_uniform, shaderID, errorState))
-						return false;
-
-					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
-					nap::rtti::copyObject(*source_uniform, *dest_uniform);
-				}
-			}
-		}
-
-		return true;
-	}
-
-
 	/**
 	 * The Material init will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
 	 * the Uniforms defined in the material must match the Uniforms declared by the shader. If the shader declares a Uniform that is not present in the Material, a 
@@ -931,103 +874,51 @@ namespace nap
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
-		// First pass: recursively create uniforms for all declarations present in the shader.
-		const opengl::UniformValueDeclarations& uniform_declarations = mShader->getShader().getUniformValueDeclarations();
-		for (auto& kvp : uniform_declarations)
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = mShader->getShader().getUBODeclarations();
+		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			const opengl::UniformValueDeclaration& declaration = *kvp.second;
+			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
-			std::vector<std::string> parts = utility::splitString(declaration.mName, '.');
-
-			bool did_create_uniform = false;
-			addUniformRecursive(declaration, "", parts, 0, did_create_uniform);
+			UniformStructInstance& root_struct = createRootStruct(ubo_declaration, UniformCreatedCallback());
+			if (!addUniformRecursive(ubo_declaration, root_struct, struct_resource, UniformCreatedCallback(), true, errorState))
+				return false;
 		}
 
 		const opengl::UniformSamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
-		for (auto& kvp : sampler_declarations)
+		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
 		{
-			const opengl::UniformSamplerDeclaration& declaration = kvp.second;
+			if (!errorState.check(declaration.mType == opengl::UniformSamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
+				return false;
 
-			// Create a new uniform from the declaration and set its name
-			std::unique_ptr<UniformSampler> new_uniform = createUniformFromDeclaration(mRenderer->getDevice(), declaration);
+			bool is_array = declaration.mNumArrayElements > 1;
 
-			// Add the container
-			Uniform* result = new_uniform.get();
-			addUniformSampler(std::move(new_uniform));
-		}
-
-		// Second pass: recursively apply uniforms present in the material on top of the uniforms we created in the first pass
-		// Note that the list of uniforms in mUniforms only contains the 'root' uniforms; any uniforms within a struct or array will be contained within 
-		// the corresponding UniformStructArray or UniformStruct.
-		for (ResourcePtr<Uniform>& uniform : mUniforms)
-		{
-			// If the uniform is a an array of structures, we need to go through all elements (structures) in the array and recursively apply the uniforms inside each element
-			UniformStructArray* source_uniform_struct_array = rtti_cast<UniformStructArray>(uniform.get());
-			if (source_uniform_struct_array != nullptr)
+			std::unique_ptr<UniformSamplerInstance> sampler_instance;
+			for (auto& sampler : mSamplers)
 			{
-				// There must be a uniform with matching name
-				UniformStructArrayMap::iterator pos = mOwnedStructArrayUniforms.find(source_uniform_struct_array->mName);
-				if (!errorState.check(pos != mOwnedStructArrayUniforms.end(), "Structure array uniform '%s' could not be found in shader %s: either it doesn't exist, or the type doesn't match", source_uniform_struct_array->mName.c_str(), mID.c_str()))
-					return false;
-
-				UniformStructArray* dest_uniform_struct_array = pos->second.get();
-
-				// The uniform defined by the user must have at most the number of elements in the shader. Less is fine, since it will just mean that the undefined elements
-				// will get default values.
-				size_t source_size = source_uniform_struct_array->mStructs.size();
-				size_t dest_size = dest_uniform_struct_array->mStructs.size();
-				if (!errorState.check(source_size <= dest_size, "The number of elements (%d) in uniform %s exceeds the number of elements (%d) declared in shader %s", source_size, source_uniform_struct_array->mName.c_str(), dest_size, mID.c_str()))
-					return false;
-
-				// Apply recursively
-				for (int index = 0; index < std::min(source_size, dest_size); ++index)
+				if (sampler->mName == declaration.mName)
 				{
-					std::string path = utility::stringFormat("%s[%d]", source_uniform_struct_array->mName.c_str(), index);
+					bool target_is_array = sampler->get_type().is_derived_from<UniformSamplerArray>();
 
-					UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(source_uniform_struct_array->mStructs[index].get());
-					UniformStruct* dest_uniform_struct = rtti_cast<UniformStruct>(dest_uniform_struct_array->mStructs[index].get());
-
-					if (!applyUniformsRecursive(path, mID, *source_uniform_struct, *dest_uniform_struct, errorState))
+					if (!errorState.check(is_array == target_is_array, "Sampler %s does not match array type of sampler in shader", sampler->mName.c_str()))
 						return false;
+
+					if (is_array)
+						sampler_instance = std::make_unique<UniformSampler2DArrayInstance>(mRenderer->getDevice(), declaration, (UniformSampler2DArray*)sampler.get());
+					else
+						sampler_instance = std::make_unique<UniformSampler2DInstance>(mRenderer->getDevice(), declaration, (UniformSampler2D*)sampler.get());
 				}
 			}
-			else
-			{
-				// If the uniform is a structure, apply recursively
-				UniformStruct* source_uniform_struct = rtti_cast<UniformStruct>(uniform.get());
-				if (source_uniform_struct != nullptr)
-				{
-					// There must be a uniform with matching name
-					UniformStructMap::iterator pos = mOwnedStructUniforms.find(source_uniform_struct->mName);
-					if (!errorState.check(pos != mOwnedStructUniforms.end(), "Unable to match uniform '%s' with shader", source_uniform_struct->mName.c_str()))
-						return false;
 
-					// Recurse
-					UniformStruct* dest_uniform_struct = pos->second.get();
-					if (!applyUniformsRecursive(source_uniform_struct->mName, mID, *source_uniform_struct, *dest_uniform_struct, errorState))
-						return false;
-				}
+			if (sampler_instance == nullptr)
+			{
+				if (is_array)
+					sampler_instance = std::make_unique<UniformSampler2DArrayInstance>(mRenderer->getDevice(), declaration, nullptr);
 				else
-				{
-					// Regular uniform; there must be a matching uniform
-					Uniform* dest_uniform = findUniform(uniform->mName);
-					if (!errorState.check(dest_uniform != nullptr, "Uniform '%s' could not be matched with an uniform in shader %s. Perhaps the uniform is not used in the shader or the name is incorrect.", uniform->mName.c_str(), mID.c_str()))
-					{
-						nap::Logger::warn(errorState.toString());
-						continue;
-					}
-
-					// If the uniform is an array uniform, verify that the lengths match
-					if (!verifyArrayUniforms(dest_uniform->mName, *uniform, *dest_uniform, mID, errorState))
-						return false;
-
-					// Copy the properties of the uniform as defined in the material over the default-constructed uniform
-					nap::rtti::copyObject(*uniform, *dest_uniform);
-				}
+					sampler_instance = std::make_unique<UniformSampler2DInstance>(mRenderer->getDevice(), declaration, nullptr);
 			}
-		}
 
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = mShader->getShader().getUniformBufferObjectDeclarations();
+			addSamplerInstance(std::move(sampler_instance));
+		}
 
 		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
 		for (int index = 0; index < ubo_declarations.size(); ++index)
@@ -1044,10 +935,8 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		for (auto& kvp : sampler_declarations)
+		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
 		{
-			const opengl::UniformSamplerDeclaration& declaration = kvp.second;
-			
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 			samplerLayoutBinding.binding			= declaration.mBinding;
 			samplerLayoutBinding.descriptorCount	= 1;

@@ -7,10 +7,15 @@ layout(location=0) out vec4 out_Color;
 layout(binding=1) uniform sampler2D	pigTexture;
 //layout(binding=1) uniform sampler2D	testTexture;
 
-layout(binding=2) uniform UniformBufferObject
+struct Data
 {
 	vec4		mColor;
 	int			mTextureIndex;
+};
+
+layout(binding=2) uniform UBO
+{
+	Data mData[2];
 }pig;
 
 void main(void)
@@ -19,5 +24,5 @@ void main(void)
 	vec3 color = texture(pigTexture, uvs).rgb;
 
 	// Set output color
-	out_Color = vec4(color, 1.0) * pig.mColor;
+	out_Color = vec4(color, 1.0) * pig.mData[0].mColor * pig.mData[1].mColor;
 }

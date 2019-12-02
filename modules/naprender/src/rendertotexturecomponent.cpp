@@ -177,12 +177,12 @@ namespace nap
 		Material* comp_mat = mMaterialInstance.getMaterial();
 
 		// Push matrices
-		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mProjectMatrixUniform);
-		projectionUniform.setValue(projectionMatrix);
-
-		computeModelMatrix();
-		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mModelMatrixUniform);
-		modelUniform.setValue(mModelMatrix);
+// 		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mProjectMatrixUniform);
+// 		projectionUniform.setValue(projectionMatrix);
+// 
+// 		computeModelMatrix();
+// 		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mModelMatrixUniform);
+// 		modelUniform.setValue(mModelMatrix);
 
 		// Prepare blending
 		mMaterialInstance.pushBlendMode();

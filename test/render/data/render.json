@@ -40,7 +40,7 @@
 					"Entity" : "DefaultInputRouterEntity"
 				}				
 			]
-		},
+		}, 
 		{
 			"Type" : "nap::Entity",
 			"mID": "DefaultInputRouterEntity",		
@@ -65,10 +65,50 @@
 						"Uniforms" : 
 						[
 							{
+
+								"Type" : "nap::UniformStruct",
+								"Name" : "UBO",
+								"Uniforms" :
+								[
+									{
+										"Type" : "nap::UniformStructArray",
+										"Name" : "mData",
+										"Structs" :
+										[
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 0
+													}
+												]
+											},
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 1
+													}
+												]
+											}													
+										]
+									}
+								]
+							}
+						],
+						"Samplers" :
+						[
+							{
 								"Type" : "nap::UniformSampler2D",
 								"Name" : "pigTexture",
 								"Texture" : "PigTexture"
-							}						
+							}
 						]
 					}
 				},
@@ -132,17 +172,55 @@
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformVec4",
-					"Name" : "pig.mColor",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0,
-						"w" : 1.0						
-					}
+
+					"Type" : "nap::UniformStruct",
+					"Name" : "UBO",
+					"Uniforms" :
+					[
+						{
+							"Type" : "nap::UniformStructArray",
+							"Name" : "mData",
+							"Structs" :
+							[
+								{
+									"Type" : "nap::UniformStruct",
+									"Uniforms" :
+									[
+										{
+											"Type" : "nap::UniformVec4",
+											"Name" : "mColor",
+											"Value" : 
+											{
+												"x" : 1.0,
+												"y" : 1.0,
+												"z" : 1.0,
+												"w" : 1.0						
+											}
+										}
+									]
+								},
+								{
+									"Type" : "nap::UniformStruct",
+									"Uniforms" :
+									[
+										{
+											"Type" : "nap::UniformVec4",
+											"Name" : "mColor",
+											"Value" : 
+											{
+												"x" : 1.0,
+												"y" : 1.0,
+												"z" : 1.0,
+												"w" : 1.0						
+											}
+										}
+									]
+								}								
+							]
+						}
+					]
 				}
-			]			
+			]
 		},
 		{
 			"Type" : "nap::Entity",

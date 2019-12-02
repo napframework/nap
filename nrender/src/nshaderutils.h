@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include "vulkan/vulkan_core.h"
+#include "rtti/typeinfo.h"
 
 namespace opengl
 {
@@ -59,70 +60,136 @@ namespace opengl
 		std::string		mName;							///< Name of the shader attribute
 		int				mLocation;
 		VkFormat		mFormat;
-
-// 		/**
-// 		 * @return if this shader input is an array or single value
-// 		 */
-// 		bool isArray() const							{ return mSize > 1; }
 	};
-
-	class ShaderUniformInput
-	{
-	public:
-		// Constructor
-		ShaderUniformInput(const std::string& name, int offset, int size, EGLSLType type);
-		ShaderUniformInput() = delete;
-
-		std::string		mName;							///< Name of the shader attribute
-		int				mOffset;
-		int				mSize;
-		EGLSLType		mType;
-
-		/**
-		* @return if this shader input is an array or single value
-		*/
-		bool isArray() const { return false; }
-	};
-
-	using UniformValueDeclaration = ShaderUniformInput; 
 
 	class UniformSamplerDeclaration
 	{
+		RTTI_ENABLE()
+
 	public:
-		UniformSamplerDeclaration() = default;
-		UniformSamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage) :
+		enum class EType : uint8_t
+		{
+			Type_1D,
+			Type_2D,
+			Type_3D
+		};
+
+		UniformSamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, int numArrayElements) :
 			mName(name),
+			mBinding(binding),
+			mStage(stage),
+			mType(type),
+			mNumArrayElements(numArrayElements)
+		{
+		}
+
+		std::string				mName;
+		int						mBinding = -1;
+		VkShaderStageFlagBits	mStage;
+		EType					mType = EType::Type_2D;
+		int						mNumArrayElements = 1;
+	};
+
+	class UniformDeclaration
+	{
+		RTTI_ENABLE()
+
+	public:
+		UniformDeclaration(const std::string& name, int offset, int size) :
+			mName(name),
+			mOffset(offset),
+			mSize(size)
+		{
+		}
+		
+		std::string		mName;
+		int				mOffset;
+		int				mSize;
+	};
+
+	class UniformValueDeclaration : public UniformDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+
+	public:
+		UniformValueDeclaration(const std::string& name, int offset, int size, EGLSLType type) :
+			UniformDeclaration(name, offset, size),
+			mType(type)
+		{
+		}
+
+		EGLSLType	mType;
+	};
+
+	class UniformStructDeclaration : public UniformDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+
+	public:
+		UniformStructDeclaration(const std::string& name, int offset, int size) :
+			UniformDeclaration(name, offset, size)
+		{
+		}
+
+		const UniformDeclaration* findMember(const std::string& name) const
+		{
+			for (auto& member : mMembers)
+				if (member->mName == name)
+					return member.get();
+
+			return nullptr;
+		}
+
+		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;
+	};
+
+	class UniformStructArrayDeclaration : public UniformDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+
+	public:
+		UniformStructArrayDeclaration(const std::string& name, int offset, int size) :
+			UniformDeclaration(name, offset, size)
+		{
+		}
+
+		std::vector<std::unique_ptr<UniformStructDeclaration>> mElements;
+	};
+
+	class UniformValueArrayDeclaration : public UniformDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+
+	public:
+		UniformValueArrayDeclaration(const std::string& name, int offset, int size, EGLSLType elementType, int numElements) :
+			UniformDeclaration(name, offset, size),
+			mElementType(elementType),
+			mNumElements(numElements)
+		{
+		}
+
+		EGLSLType	mElementType;
+		int			mNumElements;
+	};
+
+	class UniformBufferObjectDeclaration : public UniformStructDeclaration
+	{
+		RTTI_ENABLE(UniformStructDeclaration)
+
+	public:
+		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size) :
+			UniformStructDeclaration(name, 0, size),
 			mBinding(binding),
 			mStage(inStage)
 		{
 		}
 
-		std::string											mName;
-		int													mBinding;
-		VkShaderStageFlagBits								mStage;
-	};
-
-	class UniformBufferObjectDeclaration
-	{
-	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size) :
-			mName(name),
-			mBinding(binding),
-			mStage(inStage),
-			mSize(size)
-		{
-		}
-
-		std::string											mName;
-		int													mBinding;
-		VkShaderStageFlagBits								mStage;
-		int													mSize;
-		std::vector<std::unique_ptr<UniformValueDeclaration>>	mDeclarations;		
+		int														mBinding;
+		VkShaderStageFlagBits									mStage;
 	};
 
 	// Typedefs
-	using UniformValueDeclarations = std::unordered_map<std::string, UniformValueDeclaration*>;
-	using UniformSamplerDeclarations = std::unordered_map<std::string, UniformSamplerDeclaration>;
+	using UniformSamplerDeclarations = std::vector<UniformSamplerDeclaration>;
 
 	using ShaderVertexAttribute = ShaderInput;
 	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;
@@ -144,22 +211,6 @@ namespace opengl
 	 * @return if the shader program is loaded correctly without errors
 	 */
 	EShaderValidationResult validateShaderProgram(GLuint program, std::string& validationMessage);
-
-
-	/**
-	 * Extracts all shader uniforms, note that the program must be loaded
-	 * @param program: The shader program to extract uniform inputs from
-	 * @param outUniforms: The populated list of uniforms
-	 */
-	void extractShaderUniforms(GLuint program, UniformValueDeclarations& outUniforms);
-
-
-	/**
-	 * Extracts all shader attributes, note that the program must be loaded
-	 * @param program The shader program to extract attribute inputs from
-	 * @param outAttributes The populated list of shader attributes
-	 */
-	void extractShaderAttributes(GLuint program, ShaderVertexAttributes& outAttributes);
 }
 
 //////////////////////////////////////////////////////////////////////////

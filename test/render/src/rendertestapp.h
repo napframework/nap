@@ -85,7 +85,7 @@ namespace nap
 		
 		rtti::ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
 		rtti::ObjectPtr<Scene>		mScene;
-		SpawnedEntityInstance	mPigEntity;				//< Pig entity
+		rtti::ObjectPtr<EntityInstance>	mPigEntity;				//< Pig entity
 		rtti::ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
 		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
