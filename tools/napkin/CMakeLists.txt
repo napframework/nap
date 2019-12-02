@@ -89,17 +89,11 @@ include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 install(TARGETS ${PROJECT_NAME}
         DESTINATION tools/platform/napkin/Release
         CONFIGURATIONS Release)
-install(TARGETS ${PROJECT_NAME}
-        DESTINATION tools/platform/napkin/Debug
-        CONFIGURATIONS Debug)
 if(APPLE)
     # Remove thirdparty from framework release at install time
     macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Release/napkin
                                                     ${THIRDPARTY_DIR}  
                                                     Release)
-    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Debug/napkin
-                                                    ${THIRDPARTY_DIR}  
-                                                    Debug)
 endif()
 if(MSVC AND PACKAGE_PDBS)
     install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/platform/napkin/$<CONFIG>)
@@ -126,7 +120,7 @@ if(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/libsndfile/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/freetype/lib)
 
-    foreach(MODULECONFIG Release Debug)
+    foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
                                                                                 "${NAP_MODULES_USAGE_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/${MODULECONFIG}/napkin
@@ -135,14 +129,16 @@ if(APPLE)
     endforeach()
 
 elseif(UNIX)
-    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
-    list(APPEND EXTRA_RPATH lib)
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
+        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
+        list(APPEND EXTRA_RPATH lib)
 
-    set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
+    endif()
 endif()

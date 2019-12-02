@@ -193,21 +193,33 @@ macro(find_python_in_thirdparty)
 endmacro()
 
 # Windows: Post-build copy Python DLLs into project bin output
-macro(win64_copy_python_dlls_postbuild)
+# FOR_NAPKIN: Whether copying for Napkin (changing output dir)
+macro(win64_copy_python_dlls_postbuild FOR_NAPKIN)
+    if(${FOR_NAPKIN})
+        set(PYDLL_PATH_SUFFIX "../napkin/")
+    else()
+        set(PYDLL_PATH_SUFFIX "")
+    endif()
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
     foreach(PYTHON_DLL ${PYTHON_DLLS})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYDLL_PATH_SUFFIX}
                            )
     endforeach()
 endmacro()
 
 # Windows: Post-build copy Python modules into project bin output
-macro(win64_copy_python_modules_postbuild)
+# FOR_NAPKIN_BUILD_OUTPUT: Whether copying for Napkin (changing output dir)
+macro(win64_copy_python_modules_postbuild FOR_NAPKIN_BUILD_OUTPUT)
+    if(${FOR_NAPKIN_BUILD_OUTPUT})
+        set(PYMOD_PATH_SUFFIX "../napkin/")
+    else()
+        set(PYMOD_PATH_SUFFIX "")
+    endif()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYMOD_PATH_SUFFIX}
                        )
 endmacro()
 
