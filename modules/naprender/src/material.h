@@ -51,7 +51,7 @@ namespace nap
 	{
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
-		std::vector<ResourcePtr<Sampler>>	mSamplers;										///< Property: 
+		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: 
 		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
 		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
 		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode

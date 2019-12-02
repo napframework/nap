@@ -9,6 +9,7 @@
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
 #include "nshaderutils.h"
+#include "uniforminstances.h"
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
@@ -118,7 +119,7 @@ namespace nap
 	}
 
 	template<class T>
-	const Sampler* findSampler(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
+	const Sampler* findSamplerResource(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
 	{
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
@@ -543,7 +544,7 @@ namespace nap
 		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
-			const Sampler* sampler = findSampler(resource.mSamplers, declaration);
+			const Sampler* sampler = findSamplerResource(resource.mSamplers, declaration);
 			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
@@ -770,7 +771,7 @@ namespace nap
 				return false;
 		}
 
-		const opengl::SamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
+		const opengl::SamplerDeclarations& sampler_declarations = mShader->getShader().getSamplerDeclarations();
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
 			if (!errorState.check(declaration.mType == opengl::SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))

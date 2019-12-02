@@ -1,4 +1,5 @@
 #include "uniformbinding.h"
+#include "uniforminstances.h"
 #include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS(nap::UniformContainer)
@@ -11,6 +12,14 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// UniformContainer
 	//////////////////////////////////////////////////////////////////////////
+
+	UniformContainer::UniformContainer()
+	{
+	}
+
+	UniformContainer::~UniformContainer()
+	{
+	}
 
 	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
 	{

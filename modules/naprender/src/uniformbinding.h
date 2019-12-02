@@ -10,6 +10,8 @@
 
 namespace nap
 {
+	class UniformStructInstance;
+
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -26,10 +28,10 @@ namespace nap
 		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
 		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
 
-        UniformContainer() = default;
+        UniformContainer();
 		UniformContainer(const UniformContainer&) = delete;
 
-        virtual ~UniformContainer() = default;
+		virtual ~UniformContainer();
         
 		UniformContainer& operator=(const UniformContainer&) = delete;
 

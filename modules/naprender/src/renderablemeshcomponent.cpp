@@ -6,6 +6,7 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
+#include "uniforminstances.h"
 
 // External Includes
 #include <entity.h>
