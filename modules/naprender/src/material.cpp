@@ -180,13 +180,48 @@ namespace nap
 	}
 
 	template<class T>
-	const UniformSampler* findUniformSampler(const std::vector<T>& samplers, const opengl::UniformSamplerDeclaration& declaration)
+	const Sampler* findUniformSampler(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
 	{
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
 				return sampler.get();
 
 		return nullptr;
+	}
+
+	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
+	std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
+	{
+		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
+
+		if (value != nullptr)
+		{
+			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
+			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
+				return nullptr;
+			
+			result->set(*typed_resource);
+		}
+
+		return result;
+	}
+
+
+	template<typename T>
+	std::unique_ptr<TypedUniformValueArrayInstance<T>> createUniformValueArrayInstance(const Uniform* value, const opengl::UniformValueArrayDeclaration& declaration, utility::ErrorState& errorState)
+	{
+		std::unique_ptr<TypedUniformValueArrayInstance<T>> result = std::make_unique<TypedUniformValueArrayInstance<T>>(declaration);
+
+		if (value != nullptr)
+		{
+			const TypedUniformValueArray<T>* typed_resource = rtti_cast<const TypedUniformValueArray<T>>(value);
+			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
+				return nullptr;
+
+			result->setValues(typed_resource->mValues);
+		}
+
+		return result;
 	}
 
 	bool addUniformRecursive(const opengl::UniformStructDeclaration& structDeclaration, UniformStructInstance& structInstance, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState)
@@ -239,33 +274,35 @@ namespace nap
 
 				if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
 				{
-					const UniformIntArray* int_array_resource = rtti_cast<const UniformIntArray>(resource);
-					instance_value_array = std::make_unique<UniformIntArrayInstance>(*value_array_declaration, int_array_resource);
+					instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_array_declaration, errorState);
 				}
 				else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
 				{
-					const UniformFloatArray* float_array_resource = rtti_cast<const UniformFloatArray>(resource);
-					instance_value_array = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration, float_array_resource);
+					instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_array_declaration, errorState);
 				}
 				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
 				{
-					const UniformVec3Array* vec3_array_resource = rtti_cast<const UniformVec3Array>(resource);
-					instance_value_array = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration, vec3_array_resource);
+					instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_array_declaration, errorState);
 				}
 				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
 				{
-					const UniformVec4Array* vec4_array_resource = rtti_cast<const UniformVec4Array>(resource);
-					instance_value_array = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration, vec4_array_resource);
+					instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_array_declaration, errorState);
 				}
 				else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
 				{
-					const UniformMat4Array* mat4_array_resource = rtti_cast<const UniformMat4Array>(resource);
-					instance_value_array = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration, mat4_array_resource);
+					instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_array_declaration, errorState);
 				}
 				else
 				{
 					assert(false);
 				}
+
+				if (instance_value_array == nullptr)
+					return false;
+
+				if (!errorState.check(value_array_resource->getCount() == value_array_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+					return false;
+
 				structInstance.addUniform(std::move(instance_value_array));
 			}
 			else if (declaration_type == RTTI_OF(opengl::UniformStructDeclaration))
@@ -286,33 +323,32 @@ namespace nap
 
 				if (value_declaration->mType == opengl::EGLSLType::Int)
 				{
-					const UniformInt* int_resource = rtti_cast<const UniformInt>(resource);
-					value_instance = std::make_unique<UniformIntInstance>(*value_declaration, int_resource);
+					value_instance = createUniformValueInstance<UniformIntInstance, UniformInt>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == opengl::EGLSLType::Float)
 				{
-					const UniformFloat* float_resource = rtti_cast<const UniformFloat>(resource);
-					value_instance = std::make_unique<UniformFloatInstance>(*value_declaration, float_resource);
+					value_instance = createUniformValueInstance<UniformFloatInstance, UniformFloat>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == opengl::EGLSLType::Vec3)
 				{
-					const UniformVec3* vec3_resource = rtti_cast<const UniformVec3>(resource);
-					value_instance = std::make_unique<UniformVec3Instance>(*value_declaration, vec3_resource);
+					value_instance = createUniformValueInstance<UniformVec3Instance, UniformVec3>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == opengl::EGLSLType::Vec4)
 				{
-					const UniformVec4* vec4_resource = rtti_cast<const UniformVec4>(resource);
-					value_instance = std::make_unique<UniformVec4Instance>(*value_declaration, vec4_resource);
+					value_instance = createUniformValueInstance<UniformVec4Instance, UniformVec4>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == opengl::EGLSLType::Mat4)
 				{
-					const UniformMat4* mat4_resource = rtti_cast<const UniformMat4>(resource);
-					value_instance = std::make_unique<UniformMat4Instance>(*value_declaration, mat4_resource);
+					value_instance = createUniformValueInstance<UniformMat4Instance, UniformMat4>(resource, *value_declaration, errorState);
 				}
 				else
 				{
 					assert(false);
 				}
+
+				if (value_instance == nullptr)
+					return false;
+
 				structInstance.addUniform(std::move(value_instance));
 			}
 		}
@@ -587,7 +623,7 @@ namespace nap
 	}
 
 
-	int MaterialInstance::getTextureUnit(nap::UniformSampler& uniform)
+	int MaterialInstance::getTextureUnit(nap::Sampler& uniform)
 	{
 // 		int texture_unit = 0;
 // 		std::unordered_set<std::string> instance_bindings;
@@ -655,19 +691,19 @@ namespace nap
 		
 		int total_num_samplers = 0;
 		const opengl::UniformSamplerDeclarations& sampler_declarations = shader.getUniformSamplerDeclarations();
-		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
+		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
-			const UniformSampler* sampler = findUniformSampler(resource.mSamplers, declaration);
-			UniformSamplerInstance* sampler_instance = nullptr;
+			const Sampler* sampler = findUniformSampler(resource.mSamplers, declaration);
+			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
 				bool is_array = declaration.mNumArrayElements > 1;
 
-				std::unique_ptr<UniformSamplerInstance> sampler_instance_override;
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<UniformSampler2DArrayInstance>(renderer.getDevice(), declaration, (UniformSampler2DArray*)sampler);
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(renderer.getDevice(), declaration, (Sampler2DArray*)sampler);
 				else
-					sampler_instance_override = std::make_unique<UniformSampler2DInstance>(renderer.getDevice(), declaration, (UniformSampler2D*)sampler);
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(renderer.getDevice(), declaration, (Sampler2D*)sampler);
 
 				sampler_instance = sampler_instance_override.get();
 				addSamplerInstance(std::move(sampler_instance_override));
@@ -752,12 +788,12 @@ namespace nap
 				descriptor_index++;
 			}
 
-			for (UniformSamplerInstance* sampler_instance : mSamplers)
+			for (SamplerInstance* sampler_instance : mSamplers)
 			{
 				size_t image_info_start_index = image_infos.size();
-				if (sampler_instance->get_type() == RTTI_OF(UniformSampler2DInstance))
+				if (sampler_instance->get_type() == RTTI_OF(Sampler2DInstance))
 				{
-					UniformSampler2DInstance* sampler_2d = rtti_cast<UniformSampler2DInstance>(sampler_instance);
+					Sampler2DInstance* sampler_2d = rtti_cast<Sampler2DInstance>(sampler_instance);
 
 					VkDescriptorImageInfo imageInfo = {};
 					imageInfo.imageLayout	 = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -766,9 +802,9 @@ namespace nap
 
 					image_infos.push_back(imageInfo);
 				}
-				else if (sampler_instance->get_type() == RTTI_OF(UniformSampler2DArrayInstance))
+				else if (sampler_instance->get_type() == RTTI_OF(Sampler2DArrayInstance))
 				{
-					UniformSampler2DArrayInstance* sampler_2d_array = rtti_cast<UniformSampler2DArrayInstance>(sampler_instance);
+					Sampler2DArrayInstance* sampler_2d_array = rtti_cast<Sampler2DArrayInstance>(sampler_instance);
 
 					for (auto& texture : sampler_2d_array->mTextures)
 					{
@@ -885,36 +921,36 @@ namespace nap
 		}
 
 		const opengl::UniformSamplerDeclarations& sampler_declarations = mShader->getShader().getUniformSamplerDeclarations();
-		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
+		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
-			if (!errorState.check(declaration.mType == opengl::UniformSamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
+			if (!errorState.check(declaration.mType == opengl::SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
 				return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
 
-			std::unique_ptr<UniformSamplerInstance> sampler_instance;
+			std::unique_ptr<SamplerInstance> sampler_instance;
 			for (auto& sampler : mSamplers)
 			{
 				if (sampler->mName == declaration.mName)
 				{
-					bool target_is_array = sampler->get_type().is_derived_from<UniformSamplerArray>();
+					bool target_is_array = sampler->get_type().is_derived_from<SamplerArray>();
 
 					if (!errorState.check(is_array == target_is_array, "Sampler %s does not match array type of sampler in shader", sampler->mName.c_str()))
 						return false;
 
 					if (is_array)
-						sampler_instance = std::make_unique<UniformSampler2DArrayInstance>(mRenderer->getDevice(), declaration, (UniformSampler2DArray*)sampler.get());
+						sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, (Sampler2DArray*)sampler.get());
 					else
-						sampler_instance = std::make_unique<UniformSampler2DInstance>(mRenderer->getDevice(), declaration, (UniformSampler2D*)sampler.get());
+						sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, (Sampler2D*)sampler.get());
 				}
 			}
 
 			if (sampler_instance == nullptr)
 			{
 				if (is_array)
-					sampler_instance = std::make_unique<UniformSampler2DArrayInstance>(mRenderer->getDevice(), declaration, nullptr);
+					sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, nullptr);
 				else
-					sampler_instance = std::make_unique<UniformSampler2DInstance>(mRenderer->getDevice(), declaration, nullptr);
+					sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, nullptr);
 			}
 
 			addSamplerInstance(std::move(sampler_instance));
@@ -935,7 +971,7 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		for (const opengl::UniformSamplerDeclaration& declaration : sampler_declarations)
+		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 			samplerLayoutBinding.binding			= declaration.mBinding;

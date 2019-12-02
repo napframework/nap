@@ -62,7 +62,7 @@ namespace opengl
 		VkFormat		mFormat;
 	};
 
-	class UniformSamplerDeclaration
+	class SamplerDeclaration
 	{
 		RTTI_ENABLE()
 
@@ -74,7 +74,7 @@ namespace opengl
 			Type_3D
 		};
 
-		UniformSamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, int numArrayElements) :
+		SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, int numArrayElements) :
 			mName(name),
 			mBinding(binding),
 			mStage(stage),
@@ -189,7 +189,7 @@ namespace opengl
 	};
 
 	// Typedefs
-	using UniformSamplerDeclarations = std::vector<UniformSamplerDeclaration>;
+	using UniformSamplerDeclarations = std::vector<SamplerDeclaration>;
 
 	using ShaderVertexAttribute = ShaderInput;
 	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;

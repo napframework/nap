@@ -209,7 +209,7 @@ namespace opengl
 	}
 
 
-	bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, std::vector<UniformBufferObjectDeclaration>& uboDeclarations, std::vector<UniformSamplerDeclaration>& samplerDeclarations, nap::utility::ErrorState& errorState)
+	bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, std::vector<UniformBufferObjectDeclaration>& uboDeclarations, std::vector<SamplerDeclaration>& samplerDeclarations, nap::utility::ErrorState& errorState)
 	{
 		spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
@@ -240,18 +240,18 @@ namespace opengl
 			if (is_array)
 				num_elements = sampler_type.array[0];
 
-			UniformSamplerDeclaration::EType type;
+			SamplerDeclaration::EType type;
 			if (sampler_type.image.dim == spv::Dim1D)
 			{
-				type = UniformSamplerDeclaration::EType::Type_1D;
+				type = SamplerDeclaration::EType::Type_1D;
 			}
 			else if (sampler_type.image.dim == spv::Dim2D)
 			{
-				type = UniformSamplerDeclaration::EType::Type_2D;
+				type = SamplerDeclaration::EType::Type_2D;
 			}
 			else if (sampler_type.image.dim == spv::Dim3D)
 			{
-				type = UniformSamplerDeclaration::EType::Type_3D;
+				type = SamplerDeclaration::EType::Type_3D;
 			}
 			else
 			{
@@ -260,7 +260,7 @@ namespace opengl
 			}
 
 			uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
-			samplerDeclarations.emplace_back(UniformSamplerDeclaration(sampled_image.name, binding, inStage, type, num_elements));
+			samplerDeclarations.emplace_back(SamplerDeclaration(sampled_image.name, binding, inStage, type, num_elements));
 		}
 
 		return true;

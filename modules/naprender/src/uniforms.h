@@ -184,6 +184,51 @@ namespace nap
 		const opengl::UniformValueDeclaration*	mDeclaration = nullptr;
 	};
 
+
+	template<typename T>
+	class TypedUniformValue : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	
+	public:
+		T mValue = T();			///< Data storage
+	};
+
+	template<class T>
+	class TypedUniformValueInstance : public UniformValueInstance
+	{
+		RTTI_ENABLE(UniformValueInstance)
+
+	public:
+		TypedUniformValueInstance(const opengl::UniformValueDeclaration& declaration) :
+			UniformValueInstance(declaration)
+		{
+		}
+
+		/**
+		* @param value integer value to set.
+		*/
+		void setValue(T value) { mValue = value; }
+
+		void set(const TypedUniformValue<T>& resource)
+		{
+			mValue = resource.mValue;
+		}
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(uint8_t* uniformBuffer) const override
+		{
+			assert(sizeof(mValue) == mDeclaration->mSize);
+			memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
+		}
+
+	private:
+		T mValue = T();
+	};
+
 	/**
 	* Represents an array of 'value' uniforms.
 	* Derived classes should return the correct amount of elements that are in the array.
@@ -219,12 +264,81 @@ namespace nap
 		const opengl::UniformValueArrayDeclaration* mDeclaration;
 	};
 
-	class NAPAPI UniformSampler : public Resource
+	template<typename T>
+	class TypedUniformValueArray : public UniformValueArray
+	{
+		RTTI_ENABLE(UniformValueArray)
+
+		virtual int getCount() const override { return mValues.size(); }
+
+	public:
+		std::vector<T> mValues;
+	};
+
+	template<typename T>
+	class TypedUniformValueArrayInstance : public UniformValueArrayInstance
+	{
+		RTTI_ENABLE(UniformValueArrayInstance)
+
+	public:
+		TypedUniformValueArrayInstance(const opengl::UniformValueArrayDeclaration& declaration) :
+			UniformValueArrayInstance(declaration)
+		{
+		}
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(uint8_t* uniformBuffer) const override
+		{
+			size_t size = mValues.size() * sizeof(T);
+			assert(size == mDeclaration->mSize);
+			memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+		}
+
+		void set(const TypedUniformValueArray<T>& resource)
+		{
+			mValues = resource.mValues;
+		}
+
+		std::vector<T>& getValues() { return mValues; }
+
+	private:
+		std::vector<T> mValues;
+	};
+
+
+	using UniformInt = TypedUniformValue<int>;
+	using UniformFloat = TypedUniformValue<float>;
+	using UniformVec3 = TypedUniformValue<glm::vec3>;
+	using UniformVec4 = TypedUniformValue<glm::vec4>;
+	using UniformMat4 = TypedUniformValue<glm::mat4>;
+
+	using UniformIntInstance = TypedUniformValueInstance<int>;
+	using UniformFloatInstance = TypedUniformValueInstance<float>;
+	using UniformVec3Instance = TypedUniformValueInstance<glm::vec3>;
+	using UniformVec4Instance = TypedUniformValueInstance<glm::vec4>;
+	using UniformMat4Instance = TypedUniformValueInstance<glm::mat4>;
+
+	using UniformIntArray = TypedUniformValueArray<int>;
+	using UniformFloatArray = TypedUniformValueArray<float>;
+	using UniformVec3Array = TypedUniformValueArray<glm::vec3>;
+	using UniformVec4Array = TypedUniformValueArray<glm::vec4>;
+	using UniformMat4Array = TypedUniformValueArray<glm::mat4>;
+
+	using UniformIntArrayInstance = TypedUniformValueArrayInstance<int>;
+	using UniformFloatArrayInstance = TypedUniformValueArrayInstance<float>;
+	using UniformVec3ArrayInstance = TypedUniformValueArrayInstance<glm::vec3>;
+	using UniformVec4ArrayInstance = TypedUniformValueArrayInstance<glm::vec4>;
+	using UniformMat4ArrayInstance = TypedUniformValueArrayInstance<glm::mat4>;
+
+	class NAPAPI Sampler : public Resource
 	{
 		RTTI_ENABLE(Resource)
 
 	public:
-		UniformSampler() = default;
+		Sampler() = default;
 
 		std::string mName;
 	};
@@ -234,9 +348,9 @@ namespace nap
 	 * Represents an array of 'texture' uniforms.
 	 * Derived classes should return the correct amount of elements that are in the array.
  	 */
-	class NAPAPI UniformSamplerArray : public UniformSampler
+	class NAPAPI SamplerArray : public Sampler
 	{
-		RTTI_ENABLE(UniformSampler)
+		RTTI_ENABLE(Sampler)
 
 	public:
 		/**
@@ -247,226 +361,40 @@ namespace nap
 		virtual int getNumElements() const = 0;
 	};
 
-	/**
-	 * Represents a single int value that can be pushed to a shader uniform.
-	 */
-	class NAPAPI UniformInt : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-	public:
-		int mValue = 0;			///< Data storage
-	};
-
-	class NAPAPI UniformIntInstance : public UniformValueInstance
-	{
-		RTTI_ENABLE(UniformValueInstance)
-
-	public:
-		UniformIntInstance(const opengl::UniformValueDeclaration& declaration, const UniformInt* uniformInt) :
-			UniformValueInstance(declaration)
-		{
-			if (uniformInt != nullptr)
-				mValue = uniformInt->mValue;
-		}
-
-		/**
-		* @param value integer value to set.
-		*/
-		void setValue(int value) { mValue = value; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		int mValue = 0;
-	};
-
-
-	/**
-	 * Represents a single float value that can be pushed to a shader uniform.
-	 */
-	class NAPAPI UniformFloat : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-
-	public:
-
-		float mValue = 0.0f;			///< Data storage
-	};
-
-	class NAPAPI UniformFloatInstance : public UniformValueInstance
-	{
-		RTTI_ENABLE(UniformValueInstance)
-
-	public:
-		UniformFloatInstance(const opengl::UniformValueDeclaration& declaration, const UniformFloat* uniformFloat) :
-			UniformValueInstance(declaration)
-		{
-			if (uniformFloat != nullptr)
-				mValue = uniformFloat->mValue;
-		}
-
-		/**
-		* @param value integer value to set.
-		*/
-		void setValue(float value) { mValue = value; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		float mValue = 0.0f;
-	};
-
-	/**
-	 * Represents a single vec3 value that can be pushed to a shader uniform.
-	 */
-	class NAPAPI UniformVec3 : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-	public:
-
-		glm::vec3 mValue;		///< Data storage
-	};
-
-	class NAPAPI UniformVec3Instance : public UniformValueInstance
-	{
-		RTTI_ENABLE(UniformValueInstance)
-
-	public:
-		UniformVec3Instance(const opengl::UniformValueDeclaration& declaration, const UniformVec3* uniformVec3) :
-			UniformValueInstance(declaration)
-		{
-			if (uniformVec3 != nullptr)
-				mValue = uniformVec3->mValue;
-		}
-
-		/**
-		* @param value vec4 value to set.
-		*/
-		void setValue(const glm::vec3& value) { mValue = value; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		glm::vec3 mValue;
-	};
-
-	/**
-	 * Represents a single vec4 value that can be pushed to a shader uniform.
-	 */
-	class NAPAPI UniformVec4 : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-	public:
-
-		glm::vec4 mValue;		///< Data storage
-	};
-
-	class NAPAPI UniformVec4Instance : public UniformValueInstance
-	{
-		RTTI_ENABLE(UniformValueInstance)
-
-	public:
-		UniformVec4Instance(const opengl::UniformValueDeclaration& declaration, const UniformVec4* uniformVec4) :
-			UniformValueInstance(declaration)
-		{
-			if (uniformVec4 != nullptr)
-				mValue = uniformVec4->mValue;
-		}
-
-		/**
-		* @param value vec4 value to set.
-		*/
-		void setValue(const glm::vec4& value) { mValue = value; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		glm::vec4 mValue;
-	};
-
-	/**
-	 * Represents a single 4x4 matrix that can be pushed to a shader uniform.
-	 */
-	class NAPAPI UniformMat4 : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-
-	public:
-		glm::mat4 mValue;		///< Data storage
-	};
-
-	class NAPAPI UniformMat4Instance : public UniformValueInstance
-	{
-		RTTI_ENABLE(UniformValueInstance)
-
-	public:
-		UniformMat4Instance(const opengl::UniformValueDeclaration& declaration, const UniformMat4* uniformMat4) :
-			UniformValueInstance(declaration)
-		{
-			if (uniformMat4 != nullptr)
-				mValue = uniformMat4->mValue;
-		}
-		
-		/**
-		* @param value mat4 value to set.
-		*/
-		void setValue(const glm::mat4& value) { mValue = value; }
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		glm::mat4 mValue;
-	};
-
-	class NAPAPI UniformSamplerInstance
+	class NAPAPI SamplerInstance
 	{
 		RTTI_ENABLE()
 
 	public:
-		UniformSamplerInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration);
+		SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration);
 
-		const opengl::UniformSamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
+		const opengl::SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
 		VkSampler getSampler() const { return mSampler; }
 
 	private:
-		const opengl::UniformSamplerDeclaration*	mDeclaration = nullptr;
+		const opengl::SamplerDeclaration*	mDeclaration = nullptr;
 		VkSampler									mSampler = nullptr;
 	};
 
 	/**
 	 * Pointer to a single 2D Texture that can be pushed to a shader uniform.
 	 */
-	class NAPAPI UniformSampler2D : public UniformSampler
+	class NAPAPI Sampler2D : public Sampler
 	{
-		RTTI_ENABLE(UniformSampler)
+		RTTI_ENABLE(Sampler)
 
 	public:
-		UniformSampler2D() = default;
+		Sampler2D() = default;
 
 		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 
-	class NAPAPI UniformSampler2DInstance : public UniformSamplerInstance
+	class NAPAPI Sampler2DInstance : public SamplerInstance
 	{
-		RTTI_ENABLE(UniformSamplerInstance)
+		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		UniformSampler2DInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration, const UniformSampler2D* sampler2D);
+		Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
@@ -475,281 +403,24 @@ namespace nap
 
 		rtti::ObjectPtr<Texture2D>					mTexture2D;
 	};
-	
-	//////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Stores an array of integer data and is capable of updating the integer uniform in the shader.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
-	 */
-	class NAPAPI UniformIntArray : public UniformValueArray
-	{
-		RTTI_ENABLE(UniformValueArray)
-
-	public:
-
-		UniformIntArray() = default;
-
-		/**
-		 * Constructor to ensure the array has the correct size to match the shader
-		 */
-		UniformIntArray(int inSize) :
-			mValues(inSize)
-		{
-		}
-
-		/**
-		 * Retrieve the number of elements in this array
-		 *
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const override { return mValues.size(); }
-
-		std::vector<int> mValues;			///< Data storage
-	};
-
-	class NAPAPI UniformIntArrayInstance : public UniformValueArrayInstance
-	{
-		RTTI_ENABLE(UniformValueArrayInstance)
-
-	public:
-		UniformIntArrayInstance(const opengl::UniformValueArrayDeclaration& declaration, const UniformIntArray* uniformIntArray) :
-			UniformValueArrayInstance(declaration)
-		{
-			if (uniformIntArray != nullptr)
-				mValues = uniformIntArray->mValues;
-		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		std::vector<int> mValues;			///< Data storage
-	};
-
-
-	/**
-	 * Stores an array of float data and is capable of updating the integer uniform in the shader.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
-	 */
-	class NAPAPI UniformFloatArray : public UniformValueArray
-	{
-		RTTI_ENABLE(UniformValueArray)
-
-	public:
-
-		UniformFloatArray() = default;
-
-		/**
-		 * Constructor to ensure the array has the correct size to match the shader
-		 */
-		UniformFloatArray(int inSize) :
-			mValues(inSize)
-		{
-		}
-
-		/**
-		 * Retrieve the number of elements in this array
-		 *
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const override { return mValues.size(); }
-
-		std::vector<float> mValues;			///< Data storage
-	};
-
-	class NAPAPI UniformFloatArrayInstance : public UniformValueArrayInstance
-	{
-		RTTI_ENABLE(UniformValueArrayInstance)
-
-	public:
-		UniformFloatArrayInstance(const opengl::UniformValueArrayDeclaration& declaration, const UniformFloatArray* uniformFloatArray) :
-			UniformValueArrayInstance(declaration)
-		{
-			if (uniformFloatArray != nullptr)
-				mValues = uniformFloatArray->mValues;
-		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		std::vector<float> mValues;			///< Data storage
-	};
-
-	/**
-	 * Stores an array of vec3 data and is capable of updating the vec3 uniform in the shader.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
-	 */
-	class NAPAPI UniformVec3Array : public UniformValueArray
-	{
-		RTTI_ENABLE(UniformValueArray)
-
-	public:
-
-		UniformVec3Array() = default;
-
-		/**
-		 * Constructor to ensure the array has the correct size to match the shader
-		 */
-		UniformVec3Array(int inSize) :
-			mValues(inSize)
-		{
-		}
-
-		/**
-		 * Retrieve the number of elements in this array
-		 *
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const override { return mValues.size(); }
-
-		std::vector<glm::vec3> mValues;		///< Data storage
-	};
-
-	class NAPAPI UniformVec3ArrayInstance : public UniformValueArrayInstance
-	{
-		RTTI_ENABLE(UniformValueArrayInstance)
-
-	public:
-		UniformVec3ArrayInstance(const opengl::UniformValueArrayDeclaration& declaration, const UniformVec3Array* uniformVec3Array) :
-			UniformValueArrayInstance(declaration)
-		{
-			if (uniformVec3Array != nullptr)
-				mValues = uniformVec3Array->mValues;
-		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		std::vector<glm::vec3> mValues;			///< Data storage
-	};
-
-	/**
-	 * Stores an array of vec4 data and is capable of updating the vec4 uniform in the shader.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
-	 */
-	class NAPAPI UniformVec4Array : public UniformValueArray
-	{
-		RTTI_ENABLE(UniformValueArray)
-
-	public:
-
-		UniformVec4Array() = default;
-
-		/**
-		 * Constructor to ensure the array has the correct size to match the shader
-		 */
-		UniformVec4Array(int inSize) :
-			mValues(inSize)
-		{
-		}
-
-		/**
-		 * Retrieve the number of elements in this array
-		 *
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const override { return mValues.size(); }
-
-		std::vector<glm::vec4> mValues;		///< Data storage
-	};
-
-	class NAPAPI UniformVec4ArrayInstance : public UniformValueArrayInstance
-	{
-		RTTI_ENABLE(UniformValueArrayInstance)
-
-	public:
-		UniformVec4ArrayInstance(const opengl::UniformValueArrayDeclaration& declaration, const UniformVec4Array* uniformVec4Array) :
-			UniformValueArrayInstance(declaration)
-		{
-			if (uniformVec4Array != nullptr)
-				mValues = uniformVec4Array->mValues;
-		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		std::vector<glm::vec4> mValues;			///< Data storage
-	};
-
-	/**
-	 * Stores an array of 4x4 matrix data and is capable of updating the 4x4 matrix uniform in the shader.
-	 * Number of elements must be equal or lower than the number of elements declared in the shader.
-	 */
-	class NAPAPI UniformMat4Array : public UniformValueArray
-	{
-		RTTI_ENABLE(UniformValueArray)
-
-	public:
-
-		UniformMat4Array() = default;
-
-		/**
-		 * Constructor to ensure the array has the correct size to match the shader
-		 */
-		UniformMat4Array(int inSize) :
-			mValues(inSize)
-		{
-		}
-
-		/**
-		 * Retrieve the number of elements in this array
-		 *
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const override { return mValues.size(); }
-
-		std::vector<glm::mat4> mValues;		///< Data storage
-	};
-
-	class NAPAPI UniformMat4ArrayInstance : public UniformValueArrayInstance
-	{
-		RTTI_ENABLE(UniformValueArrayInstance)
-
-	public:
-		UniformMat4ArrayInstance(const opengl::UniformValueArrayDeclaration& declaration, const UniformMat4Array* uniformMat4Array) :
-			UniformValueArrayInstance(declaration)
-		{
-			if (uniformMat4Array != nullptr)
-				mValues = uniformMat4Array->mValues;
-		}
-
-		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override;
-
-		std::vector<glm::mat4> mValues;			///< Data storage
-	};
 
 	/**
 	 * Stores and array of 2D textures.
 	 * Number of textures must be equal or lower than the number of textures declared in the shader.
 	 */
-	class NAPAPI UniformSampler2DArray : public UniformSamplerArray
+	class NAPAPI Sampler2DArray : public SamplerArray
 	{
-		RTTI_ENABLE(UniformSamplerArray)
+		RTTI_ENABLE(SamplerArray)
 
 	public:
 
-		UniformSampler2DArray() = default;
+		Sampler2DArray() = default;
 
 		/**
 		 * Constructor to ensure the array has the correct size to match the shader
 		 */
-		UniformSampler2DArray(int inSize) :
+		Sampler2DArray(int inSize) :
 			mTextures(inSize)
 		{
 		}
@@ -764,12 +435,12 @@ namespace nap
 		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;		///< Texture to use for this uniform
 	};
 
-	class NAPAPI UniformSampler2DArrayInstance : public UniformSamplerInstance
+	class NAPAPI Sampler2DArrayInstance : public SamplerInstance
 	{
-		RTTI_ENABLE(UniformSamplerInstance)
+		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		UniformSampler2DArrayInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration, const UniformSampler2DArray* sampler2DArray);
+		Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray);
 
 		std::vector<rtti::ObjectPtr<Texture2D>>				mTextures;
 	};

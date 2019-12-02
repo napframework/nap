@@ -36,12 +36,12 @@ namespace nap
 		return *result;
 	}
 
-	void UniformContainer::addSamplerInstance(std::unique_ptr<UniformSamplerInstance> instance)
+	void UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
 	{
 		mSamplerInstances.emplace_back(std::move(instance));
 	}
 
-	UniformSamplerInstance* UniformContainer::findSampler(const std::string& name) const
+	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
 	{
 		for (auto& sampler : mSamplerInstances)
 			if (sampler->getDeclaration().mName == name)

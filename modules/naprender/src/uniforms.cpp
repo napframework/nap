@@ -13,11 +13,11 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueArray)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformSampler)
-	RTTI_PROPERTY("Name", &nap::UniformSampler::mName, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)
+	RTTI_PROPERTY("Name", &nap::Sampler::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformSamplerArray)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SamplerArray)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformStruct)
@@ -53,8 +53,8 @@ RTTI_BEGIN_CLASS(nap::UniformMat4)
 	//RTTI_FUNCTION("setValue", &nap::UniformMat4::setValue)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformSampler2D)
-	RTTI_PROPERTY("Texture", &nap::UniformSampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Sampler2D)
+	RTTI_PROPERTY("Texture", &nap::Sampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,8 +79,8 @@ RTTI_BEGIN_CLASS(nap::UniformMat4Array)
 	RTTI_PROPERTY("Values", &nap::UniformMat4Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformSampler2DArray)
-	RTTI_PROPERTY("Textures", &nap::UniformSampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Sampler2DArray)
+	RTTI_PROPERTY("Textures", &nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -106,32 +106,32 @@ namespace nap
 
 			if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
 			{
-				std::unique_ptr<UniformIntArrayInstance> array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration, nullptr);
-				array_instance->mValues.resize(value_array_declaration->mNumElements);
+				std::unique_ptr<UniformIntArrayInstance> array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
 			{
-				std::unique_ptr<UniformFloatArrayInstance> array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration, nullptr);
-				array_instance->mValues.resize(value_array_declaration->mNumElements);
+				std::unique_ptr<UniformFloatArrayInstance> array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
 			{
-				std::unique_ptr<UniformVec3ArrayInstance> array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration, nullptr);
-				array_instance->mValues.resize(value_array_declaration->mNumElements);
+				std::unique_ptr<UniformVec3ArrayInstance> array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
 			{
-				std::unique_ptr<UniformVec4ArrayInstance> array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration, nullptr);
-				array_instance->mValues.resize(value_array_declaration->mNumElements);
+				std::unique_ptr<UniformVec4ArrayInstance> array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
 			{
-				std::unique_ptr<UniformMat4ArrayInstance> array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration, nullptr);
-				array_instance->mValues.resize(value_array_declaration->mNumElements);
+				std::unique_ptr<UniformMat4ArrayInstance> array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 		}
@@ -146,23 +146,19 @@ namespace nap
 
 			if (value_declaration->mType == opengl::EGLSLType::Int)
 			{
-				return std::make_unique<UniformIntInstance>(*value_declaration, nullptr);
-			}
-			else if (value_declaration->mType == opengl::EGLSLType::Float)
-			{
-				return std::make_unique<UniformFloatInstance>(*value_declaration, nullptr);
+				return std::make_unique<UniformIntInstance>(*value_declaration);
 			}
 			else if (value_declaration->mType == opengl::EGLSLType::Vec3)
 			{
-				return std::make_unique<UniformVec3Instance>(*value_declaration, nullptr);
+				return std::make_unique<UniformVec3Instance>(*value_declaration);
 			}
 			else if (value_declaration->mType == opengl::EGLSLType::Vec4)
 			{
-				return std::make_unique<UniformVec4Instance>(*value_declaration, nullptr);
+				return std::make_unique<UniformVec4Instance>(*value_declaration);
 			}
 			else if (value_declaration->mType == opengl::EGLSLType::Mat4)
 			{
-				return std::make_unique<UniformMat4Instance>(*value_declaration, nullptr);
+				return std::make_unique<UniformMat4Instance>(*value_declaration);
 			}
 		}
 
@@ -205,43 +201,9 @@ namespace nap
 		mStructs[index] = &uniformStruct;
 	}
 
-	void UniformIntInstance::push(uint8_t* uniformBuffer) const
-	{
-		assert(sizeof(mValue) == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-	}
-
-
-	void UniformFloatInstance::push(uint8_t* uniformBuffer) const
-	{
-		assert(sizeof(mValue) == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-	}
-
-
-	void UniformVec3Instance::push(uint8_t* uniformBuffer) const
-	{
-		assert(sizeof(mValue) == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-	}
-
-
-	void UniformVec4Instance::push(uint8_t* uniformBuffer) const
-	{
-		assert(sizeof(mValue) == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-	}
-
-
-	void UniformMat4Instance::push(uint8_t* uniformBuffer) const
-	{
-		assert(sizeof(mValue) == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformSamplerInstance::UniformSamplerInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration) :
+	SamplerInstance::SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration) :
 		mDeclaration(&declaration)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
@@ -265,8 +227,8 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformSampler2DInstance::UniformSampler2DInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration, const UniformSampler2D* sampler2D) :
-		UniformSamplerInstance(device, declaration)
+	Sampler2DInstance::Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D) :
+		SamplerInstance(device, declaration)
 	{
 		if (sampler2D != nullptr)
 			mTexture2D = sampler2D->mTexture;
@@ -274,58 +236,11 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformSampler2DArrayInstance::UniformSampler2DArrayInstance(VkDevice device, const opengl::UniformSamplerDeclaration& declaration, const UniformSampler2DArray* sampler2DArray) :
-		UniformSamplerInstance(device, declaration)
+	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray) :
+		SamplerInstance(device, declaration)
 	{
 		if (sampler2DArray != nullptr)
 			mTextures = sampler2DArray->mTextures;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-
-	template<class T>
-	size_t getVectorByteSize(const std::vector<T>& vector)
-	{
-		return vector.size() * sizeof(std::vector<T>::value_type);
-	}
-
-	void UniformIntArrayInstance::push(uint8_t* uniformBuffer) const
-	{
-		size_t size = getVectorByteSize(mValues);
-		assert(size == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
-	}
-
-
-	void UniformFloatArrayInstance::push(uint8_t* uniformBuffer) const
-	{
-		size_t size = getVectorByteSize(mValues);
-		assert(size == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
-	}
-
-
-	void UniformVec3ArrayInstance::push(uint8_t* uniformBuffer) const
-	{
-		size_t size = getVectorByteSize(mValues);
-		assert(size == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
-	}
-
-
-	void UniformVec4ArrayInstance::push(uint8_t* uniformBuffer) const
-	{
-		size_t size = getVectorByteSize(mValues);
-		assert(size == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
-	}
-
-
-	void UniformMat4ArrayInstance::push(uint8_t* uniformBuffer) const
-	{
-		size_t size = getVectorByteSize(mValues);
-		assert(size == mDeclaration->mSize);
-		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
 	}
 
 } // End Namespace NAP

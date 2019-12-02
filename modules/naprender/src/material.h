@@ -51,7 +51,7 @@ namespace nap
 	{
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
-		std::vector<ResourcePtr<UniformSampler>>	mSamplers;										///< Property: 
+		std::vector<ResourcePtr<Sampler>>	mSamplers;										///< Property: 
 		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
 		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
 		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
@@ -163,7 +163,7 @@ namespace nap
 		 * @param uniform the texture uniform to find the texture unit number for.
 		 * @return the texture unit associated with a specific texture uniform in a material, -1 if not found
 		 */
-		int getTextureUnit(nap::UniformSampler& uniform);
+		int getTextureUnit(nap::Sampler& uniform);
 
 		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
 
@@ -177,7 +177,7 @@ namespace nap
 
 		VkDevice								mDevice = nullptr;
 		std::vector<UniformBufferObject>		mUniformBufferObjects;
-		std::vector<UniformSamplerInstance*>	mSamplers;
+		std::vector<SamplerInstance*>	mSamplers;
 		VkDescriptorPool						mDescriptorPool;
 		std::vector<VkDescriptorSet>			mDescriptorSets;
 		bool									mUniformsDirty = false;
@@ -251,7 +251,7 @@ namespace nap
 
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<UniformSampler>>	mSamplers;											///< Property: 
+		std::vector<ResourcePtr<Sampler>>	mSamplers;											///< Property: 
 		std::vector<VertexAttributeBinding>			mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material

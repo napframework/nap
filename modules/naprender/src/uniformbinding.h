@@ -9,7 +9,7 @@
 
 namespace nap
 {
-	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<UniformSampler>>;
+	using UniformSamplers = std::unordered_map<std::string, std::unique_ptr<Sampler>>;
 	using UniformValues = std::unordered_map<std::string, std::unique_ptr<UniformValue>>;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
-		using SamplerInstanceList = std::vector<std::unique_ptr<UniformSamplerInstance>>;
+		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
 
         UniformContainer() = default;
 		UniformContainer(const UniformContainer&) = delete;
@@ -50,14 +50,14 @@ namespace nap
 		const UniformStructInstanceList& getRootStructs() const { return mRootStructs; }
 		const SamplerInstanceList& getSamplers() const { return mSamplerInstances; }
 
-		UniformSamplerInstance* findSampler(const std::string& name) const;
+		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
 		UniformStructInstance& createRootStruct(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		void addSamplerInstance(std::unique_ptr<UniformSamplerInstance> instance);
+		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
 		std::vector<std::unique_ptr<UniformStructInstance>> mRootStructs;
-		std::vector<std::unique_ptr<UniformSamplerInstance>> mSamplerInstances;
+		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
 } // nap
