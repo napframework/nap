@@ -80,6 +80,8 @@ namespace nap
 				}
 			}
 
+			int sequenceIndex = sequence->mIndexInSequenceContainer;
+
 			if (indexToRemove > -1)
 			{
 				mSequences.erase(mSequences.begin() + indexToRemove);
@@ -91,6 +93,14 @@ namespace nap
 				{
 					mOwnedSequences.erase(mOwnedSequences.begin() + i);
 					break;
+				}
+			}
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (mSequences[i]->mIndexInSequenceContainer >= sequenceIndex)
+				{
+					mSequences[i]->mIndexInSequenceContainer -= 1;
 				}
 			}
 
@@ -184,6 +194,11 @@ namespace nap
 			{
 				return a->mIndexInSequenceContainer < b->mIndexInSequenceContainer;
 			});
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mIndexInSequenceContainer = i;
+			}
 
 			double time = 0.0;
 			SequenceElement* lastElement = nullptr;

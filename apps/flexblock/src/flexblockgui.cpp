@@ -2679,7 +2679,8 @@ namespace nap
 		std::string timeString = getTimeString();
 		newSequence->mID = "GeneratedSequence" + timeString;
 		newSequence->mName = newSequence->mID;
-		newSequence->mIndexInSequenceContainer = sequence->mIndexInSequenceContainer;
+		int newSequenceIndex = sequence->mIndexInSequenceContainer + 1;
+		newSequence->mIndexInSequenceContainer = newSequenceIndex;
 		newSequence->setStartTime(time);
 
 		// make new element and configure
@@ -2727,6 +2728,17 @@ namespace nap
 				{
 					utility::ErrorState error;
 					mSequencePlayer->removeSequenceElement(sequence, element, error);
+				}
+
+				// set sequences index after inserted sequence
+				auto sequences = mSequencePlayer->getSequences();
+				for (int i = 0; i < sequences.size(); i++)
+				{
+					if (sequences[i]->mIndexInSequenceContainer >= newSequenceIndex)
+					{
+						sequences[i]->mIndexInSequenceContainer += 1;
+						break;
+					}
 				}
 
 				// insert the new sequence and move ownership
