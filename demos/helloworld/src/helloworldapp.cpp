@@ -99,6 +99,7 @@ namespace nap
 			cv::flip(mMatRGB, mMatRGB, 0);
 			cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
+			mCaptureDevice->captureNextFrame();
 		}
 		
 		if (mVideoDevice->grab(mVideoMatRGB))
@@ -270,15 +271,4 @@ namespace nap
 			ellipse(frame, center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
 		}
 	}
-
-	void HelloWorldApp::copyVideo()
-	{
-		if (mVideoDevice->grab(mVideoMatRGB))
-		{
-			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
-			mVideoTexture->update(cpu_mat.data);
-			//mVideoDevice->captureNextFrame();
-		}
-	}
-
 }

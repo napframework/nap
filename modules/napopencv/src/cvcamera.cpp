@@ -144,13 +144,20 @@ namespace nap
 		// Copy last captured frame using a deep copy.
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
+		mCaptureMat.copyTo(target);
+		mFrameAvailable = false;
+		return true;
+	}
+
+
+	void CVCamera::captureNextFrame()
+	{
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			mCaptureMat.copyTo(target);
-			mFrameAvailable = false;
+			mCaptureFrame = true;
 		}
 		mCaptureCondition.notify_one();
-		return true;
 	}
 
 
@@ -172,7 +179,7 @@ namespace nap
 				std::unique_lock<std::mutex> lock(mCaptureMutex);
 				mCaptureCondition.wait(lock, [this]()
 				{
-					return (mStopCapturing || !mFrameAvailable);
+					return (mStopCapturing || mCaptureFrame);
 				});
 
 				// Exit loop when exit has been triggered
@@ -185,7 +192,9 @@ namespace nap
 				update_settings	= mSettingsDirty;
 				if(update_settings)
 					cam_settings = mCameraSettings;
-				mSettingsDirty = false;
+				
+				mSettingsDirty	= false;
+				mCaptureFrame	= false;
 			}
 
 			// Update settings if requested
@@ -194,8 +203,13 @@ namespace nap
 				nap::Logger::warn(error.toString());
 
 			// Fetch frame
-			getCaptureDevice() >> cap_frame;
-			if (cap_frame.empty())
+			if (!getCaptureDevice().grab())
+			{
+				nap::Logger::error("failed to capture frame, aborting: %s", mID.c_str());
+				break;
+			}
+
+			if (!getCaptureDevice().retrieve(cap_frame))
 			{
 				nap::Logger::error("failed to capture frame, aborting: %s", mID.c_str());
 				break;

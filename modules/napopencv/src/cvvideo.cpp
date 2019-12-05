@@ -182,11 +182,14 @@ namespace nap
 			if (update_marker && !setProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, marker_location))
 				nap::Logger::warn("%s: unable to set frame position: %d", mID.c_str(), marker_location);
 
-			// Grab next frame
-			getCaptureDevice() >> cap_frame;
+			// Fetch frame
+			if (!getCaptureDevice().grab())
+			{
+				nap::Logger::warn("%s: end of stream: %s", mID.c_str(), mFile.c_str());
+				continue;
+			}
 
-			// If no next frame is available, it's most likely the end of the stream
-			if (cap_frame.empty())
+			if (!getCaptureDevice().retrieve(cap_frame))
 			{
 				nap::Logger::warn("%s: end of stream: %s", mID.c_str(), mFile.c_str());
 				continue;

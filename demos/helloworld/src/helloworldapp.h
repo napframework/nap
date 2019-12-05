@@ -107,7 +107,5 @@ namespace nap
 		cv::CascadeClassifier eyes_cascade;
 
 		void detectFaces(cv::UMat& frame);
-
-		void copyVideo();
 	};
 }

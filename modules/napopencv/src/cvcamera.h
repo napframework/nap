@@ -57,6 +57,12 @@ namespace nap
 		bool grab(cv::UMat& target);
 
 		/**
+		 * Tells the capture thread to capture the next available frame.
+		 * This is a non-blocking call!
+		 */
+		void captureNextFrame();
+
+		/**
 		 * Sets and applies new camera settings the next time a frame is captured.
 		 * @param settings the camera settings to set and apply
 		 * @param error contains the error message if the operation fails
@@ -99,7 +105,8 @@ namespace nap
 
 	private:
 		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>		mFrameAvailable = { false };			///< If a new frame is captured
+		bool					mCaptureFrame = true;			///< Proceed to next frame
+		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 		std::atomic<bool>		mSettingsDirty  = { false };	///< If settings need to be updated
 
 		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
