@@ -113,10 +113,7 @@ namespace nap
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) = 0;
 
 		/**
-		 * Can be implemented in a derived class.
-		 * Called automatically by this device on stop, before the capture device is released.
-		 * @param error contains the error when the device can not be started
-		 * @return if the device started correctly
+		 * Called automatically by this device on stop, after the capture device is released.
 		 */
 		virtual void onClose()									{ }
 

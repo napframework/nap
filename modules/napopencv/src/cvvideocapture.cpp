@@ -78,8 +78,6 @@ namespace nap
 
 	void CVVideoCapture::stop()
 	{
-		onClose();
-
 		// Stop capturing thread and notify worker
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
@@ -94,6 +92,7 @@ namespace nap
 		// Release capture device
 		if (mCaptureDevice.isOpened())
 			mCaptureDevice.release();
+		onClose();
 	}
 
 

@@ -44,6 +44,14 @@ namespace nap
 	}
 
 
+	bool CVVideo::changeVideo(const std::string& video, nap::utility::ErrorState& error)
+	{
+		this->stop();
+		mFile = video;
+		return this->start(error);
+	}
+
+
 	void CVVideo::setFrame(int frame)
 	{
 		// Clamp to range and set as property
@@ -75,6 +83,7 @@ namespace nap
 	{
 		if (!error.check(captureDevice.open(mFile, api), "unable to open video file: %s", mFile.c_str()))
 			return false;
+		mCurrentFrame = 0;
 		return true;
 	}
 

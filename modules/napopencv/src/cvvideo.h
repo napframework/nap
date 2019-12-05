@@ -45,6 +45,14 @@ namespace nap
 		void reset();
 
 		/**
+		 * Changes the video
+		 * @param video the new video file to load
+		 * @param error contains the error if the video could not be loaded
+		 * @return if the video changed correctly.
+		 */
+		bool changeVideo(const std::string& video, nap::utility::ErrorState& error);
+
+		/**
 		 * Selects the frame to be captured next, where 0 is the first frame.
 		 * The requested frame is queued immediately for capture.
 		 * Note that only the last request is considered when multiple requests are made before the frame is available.
@@ -104,8 +112,6 @@ namespace nap
 		virtual void onCopy() override;
 
 	private:
-		bool					mSetFrameMarker = false;		///< If a new frame location needs to be set
-		int						mMarkerFrame = 0;				///< Manual set location of marker
 		std::atomic<int>		mCurrentFrame = 0;				///< Last (Current) captured video frame index
 	};
 }
