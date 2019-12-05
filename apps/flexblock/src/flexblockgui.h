@@ -59,6 +59,8 @@ namespace nap
 		 */
 		void toggleVisibility();
 
+		void toggleEditableTimelines();
+
 		/**
 		 * Sets the window size, use for calculating positions of imgui windows
 		 */
@@ -85,6 +87,7 @@ namespace nap
 		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
 		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+		bool								mEditAllTimelines = false;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;

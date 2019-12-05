@@ -352,6 +352,17 @@ namespace nap
 		mHide = !mHide;
 	}
 
+	void FlexblockGui::toggleEditableTimelines()
+	{
+		mEditAllTimelines = !mEditAllTimelines;
+
+		for (auto& handler : mProps.mTimelineHandlerIndex)
+		{
+			int zero = 0;
+			handler.second = mEditAllTimelines ? ~zero : zero;
+		}
+	}
+
 
 	void FlexblockGui::showTimeLineWindow()
 	{

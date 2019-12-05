@@ -178,6 +178,12 @@ namespace nap
 			{
 				mGui->toggleVisibility();
 			}
+
+			// if 'v' is pressed, all timelines become editable
+			if (press_event->mKey == nap::EKeyCode::KEY_v)
+			{
+				mGui->toggleEditableTimelines();
+			}
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
