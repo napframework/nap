@@ -1983,68 +1983,73 @@ namespace nap
 
 		// play list controlers
 
-		ImGui::Text("Play Controls");
-		// stop button
-		if (ImGui::Button("Stop"))
-		{
-			mSequencePlayer->stop();
-		}
+		float y_pos = ImGui::GetCursorPosY();
+		ImGui::SetCursorPosY(ImGui::GetScrollY() + 27);
 
-		// draw sequence player controls
-		if (mSequencePlayer->getIsLoaded())
+		ImGui::BeginChild("Play Controls", ImVec2(ImGui::GetWindowWidth(), 120), false);
 		{
+			ImGui::Text("Play Controls");
+			// stop button
+			if (ImGui::Button("Stop"))
+			{
+				mSequencePlayer->stop();
+			}
+
+			// draw sequence player controls
+			if (mSequencePlayer->getIsLoaded())
+			{
+				ImGui::SameLine();
+				if (!mSequencePlayer->getIsPaused() &&
+					mSequencePlayer->getIsPlaying())
+				{
+					if (ImGui::Button("Pause"))
+					{
+						mSequencePlayer->pause();
+					}
+				}
+				else
+				{
+					if (mSequencePlayer->getIsFinished())
+					{
+						mSequencePlayer->setTime(0.0);
+					}
+
+					if (ImGui::Button("Play"))
+					{
+						mSequencePlayer->play();
+					}
+				}
+			}
+
+			//
+			ImGui::Text("Play Speed");
+			if (ImGui::Button("   -   "))
+			{
+				mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() - 0.05f);
+			}
 			ImGui::SameLine();
-			if (!mSequencePlayer->getIsPaused() &&
-				mSequencePlayer->getIsPlaying())
+			if (ImGui::Button("   +   "))
 			{
-				if (ImGui::Button("Pause"))
-				{
-					mSequencePlayer->pause();
-				}
+				mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() + 0.05f);
 			}
-			else
+			ImGui::SameLine();
+			if (ImGui::Button("Reset"))
 			{
-				if (mSequencePlayer->getIsFinished())
-				{
-					mSequencePlayer->setTime(0.0);
-				}
-
-				if (ImGui::Button("Play"))
-				{
-					mSequencePlayer->play();
-				}
+				mSequencePlayer->setSpeed(1);
 			}
+			ImGui::SameLine();
+
+			float s = mSequencePlayer->getSpeed();
+
+			std::stringstream ss;
+			ss << std::fixed << std::setprecision(2) << s;
+			ImGui::Text(ss.str().c_str());
 		}
-
-		//
-		ImGui::Text("Play Speed");
-		if (ImGui::Button("   -   "))
-		{
-			mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() - 0.05f);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("   +   "))
-		{
-			mSequencePlayer->setSpeed(mSequencePlayer->getSpeed() + 0.05f);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Reset"))
-		{
-			mSequencePlayer->setSpeed(1);
-		}
-		ImGui::SameLine();
-		
-		float s = mSequencePlayer->getSpeed();
-
-		std::stringstream ss;
-		ss << std::fixed << std::setprecision(2) << s;
-		ImGui::Text(ss.str().c_str());
-
-		ImGui::Spacing();
-
-		ImGui::Spacing();
-
 		ImGui::Separator();
+
+		ImGui::EndChild();
+
+		ImGui::SetCursorPosY(y_pos + 120);
 
 		if (ImGui::TreeNode("Playlist"))
 		{
