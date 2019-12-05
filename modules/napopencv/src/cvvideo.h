@@ -24,17 +24,6 @@ namespace nap
 		virtual ~CVVideo() override;
 
 		/**
-		 * Grabs the last captured frame if new. The result is stored in the given target.
-		 * Internally the frame is removed from the queue.
-		 * If there is no new capture the target is not updated and the function returns false.
-		 * This operation hands over ownership of the captured frame.
-		 * This call is thread safe and can be called every frame in to check for a new frame.
-		 * @param target updated to hold the last captured frame data if a new frame is available.
-		 * @return if the target is updated with the contents of a new captured frame.
-		 */
-		bool grab(cv::UMat& target);
-
-		/**
 		 * @return intended video playback speed in frames per second
 		 */
 		float getFramerate() const;
@@ -87,57 +76,36 @@ namespace nap
 		 */
 		float getTime();
 
-		/**
-		 * Tells the capture thread to capture the next available frame.
-		 * This is a non-blocking call!
-		 */
-		void captureNextFrame();
-
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
 
 	protected:
 		/**
-		 * Called by the capture device. Opens the video file or image sequence
+		 * Called by the capture device. Opens the video file or image sequence.
+		 * @param captureDevice device to open
+		 * @param api api back-end to use
+		 * @param error contains the error if the opening operation fails
 		 */
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) override;
+		
+		/**
+		 * This method decodes and returns the just grabbed frame.
+		 * Needs to be implemented in a derived class.
+		 * Return false when decoding fails, otherwise return true.
+		 * The 'outFrame' should contain the decoded frame on success.
+		 * @param captureDevice the device to capture the frame from.
+		 * @param outFrame contains the new decoded frame
+		 * @return if decoding succeeded.
+		 */
+		virtual bool onRetrieve(cv::VideoCapture& captureDevice, cv::UMat& outFrame, utility::ErrorState& error) override;
 
 		/**
-		 * Called by the capture device. Starts video playback
+		 *	Stores the current frame index
 		 */
-		virtual bool onStart(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
-
-		/**
-		 * Called by the capture device. Stops video playback
-		 */
-		virtual void onStop() override;
+		virtual void onCopy() override;
 
 	private:
-		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
-		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
-		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
-		bool					mStop = false;					///< Signals the capture thread to stop capturing video
-
-		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
-		bool					mCaptureFrame = true ;			///< Proceed to next frame
-		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 		bool					mSetFrameMarker = false;		///< If a new frame location needs to be set
 		int						mMarkerFrame = 0;				///< Manual set location of marker
-		int						mCurrentFrame = 0;				///< Last (Current) captured video frame index
-
-
-		/**
-		 * Selects the frame to be captured next, where 0 is the first frame.
-		 * The requested frame is queued immediately for capture.
-		 * Note that only the last request is considered when multiple requests are made before the frame is available.
-		 * This function clamps the frame when out of bounds.
-		 * @param frame the requested frame inside the stream
-		 * @return if operation succeeded
-		 */
-		void captureFrame(int frame);
-
-		/**
-		 * Captures new frames.
-		 */
-		void capture();
+		std::atomic<int>		mCurrentFrame = 0;				///< Last (Current) captured video frame index
 	};
 }

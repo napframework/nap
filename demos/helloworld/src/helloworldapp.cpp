@@ -99,7 +99,7 @@ namespace nap
 			cv::flip(mMatRGB, mMatRGB, 0);
 			cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
-			mCaptureDevice->captureNextFrame();
+			mCaptureDevice->capture();
 		}
 		
 		if (mVideoDevice->grab(mVideoMatRGB))
