@@ -61,10 +61,9 @@ namespace nap
 		void getSettings(nap::CVCameraSettings& settings);
 
 		bool				mApplySettings = false;		///< Property: 'ApplySettings' if the camera settings are applied on startup
-		bool				mApplyDimensions = true;	///< Property: 'ApplyDimensions' if the frame width and height are applied, when set to false default values are used.
+		bool				mDefaultResolution = true;	///< Property: 'DefaultResolution' if the default camera resolution is used, when set to false the specified 'Resolution' is enforced.
 		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' capture device index
-		nap::uint			mFrameWidth = 640;			///< Property: 'FrameWidth' width of the frame in pixels
-		nap::uint			mFrameHeight = 480;			///< Property: 'FrameHeight' height of the frame in pixels
+		glm::ivec2			mResolution = { 640, 480 };	///< Property: 'Resolution' camera record resolution, only used when 'DefaultResolution' is turned off
 		CVCameraSettings	mCameraSettings;			///< Property: 'Settings' all configurable camera settings
 		bool				mShowDialog = false;		///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
 

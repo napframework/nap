@@ -8,7 +8,6 @@
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": false,
-            "ApplySettings": false,
             "DeviceIndex": 0,
             "Settings": {
                 "AutoExposure": false,
@@ -18,8 +17,11 @@
                 "Gain": 1.0,
                 "Exposure": 1.0
             },
-            "FrameWidth": 640,
-            "FrameHeight": 480
+            "DefaultResolution": true,
+            "Resolution": {
+                "x": 320,
+                "y": 240
+            }
         },
         {
             "Type": "nap::CVVideo",
