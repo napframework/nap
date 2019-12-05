@@ -57,9 +57,9 @@ namespace nap
 		virtual void stop() override final;
 
 		/**
-		 * Sets an OpenCV capture property thread safe.
+		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
-		 * A new frame is queued.
+		 * A new frame is queued immediately.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */
@@ -143,10 +143,8 @@ namespace nap
 		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
 		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
 		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
-
-		// Properties that are set when a new frame is grabbed
-		std::unordered_map<int, double> mProperties;
-		bool mSetProperties = false;
+		
+		std::unordered_map<int, double> mProperties;			///< Properties that are set when a new frame is grabbed
 
 		/**
 		 * Captures new frames.

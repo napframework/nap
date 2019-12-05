@@ -16,6 +16,7 @@ RTTI_END_STRUCT
 RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("ShowDialog",			&nap::CVCamera::mShowDialog,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ApplySettings",		&nap::CVCamera::mApplySettings,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ApplyDimensions",	&nap::CVCamera::mApplyDimensions,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Settings",			&nap::CVCamera::mCameraSettings,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrameWidth",			&nap::CVCamera::mFrameWidth,				nap::rtti::EPropertyMetaData::Default)
@@ -74,16 +75,19 @@ namespace nap
 			return false;
 
 		// Set capture dimensions
-		if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
+		if (mApplyDimensions)
 		{
-			error.fail("unable to set video capture frame width to: %d", mFrameWidth);
-			return false;
-		}
+			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)mFrameWidth))
+			{
+				error.fail("unable to set video capture frame width to: %d", mFrameWidth);
+				return false;
+			}
 
-		if (!captureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
-		{
-			error.fail("unable to set video capture frame height to: %d", mFrameHeight);
-			return false;
+			if (!captureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, (double)mFrameHeight))
+			{
+				error.fail("unable to set video capture frame height to: %d", mFrameHeight);
+				return false;
+			}
 		}
 
 		if (mShowDialog && !captureDevice.set(cv::CAP_PROP_SETTINGS, 0.0))

@@ -60,8 +60,9 @@ namespace nap
 		 */
 		void getSettings(nap::CVCameraSettings& settings);
 
-		bool				mApplySettings = false;		///< Property: 'ApplySettings' If the camera settings are applied on startup
-		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' Capture device index
+		bool				mApplySettings = false;		///< Property: 'ApplySettings' if the camera settings are applied on startup
+		bool				mApplyDimensions = true;	///< Property: 'ApplyDimensions' if the frame width and height are applied, when set to false default values are used.
+		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' capture device index
 		nap::uint			mFrameWidth = 640;			///< Property: 'FrameWidth' width of the frame in pixels
 		nap::uint			mFrameHeight = 480;			///< Property: 'FrameHeight' height of the frame in pixels
 		CVCameraSettings	mCameraSettings;			///< Property: 'Settings' all configurable camera settings
