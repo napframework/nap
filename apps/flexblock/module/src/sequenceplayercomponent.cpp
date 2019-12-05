@@ -19,6 +19,8 @@ RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mPa
 RTTI_PROPERTY("StartShowFile", &nap::timeline::SequencePlayerComponent::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Flex Device", &nap::timeline::SequencePlayerComponent::mFlexDevice, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Frequency", &nap::timeline::SequencePlayerComponent::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("MAC Controller", &nap::timeline::SequencePlayerComponent::mMacController, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Need Operational MAC Controller", &nap::timeline::SequencePlayerComponent::mNeedOperationalMacController, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
@@ -63,6 +65,8 @@ namespace nap
 			//
 			mFrequency = resource->mFrequency;
 			mFlexDevice = resource->mFlexDevice.get();
+			mMacController = resource->mMacController.get();
+			mNeedOperationalMacController = resource->mNeedOperationalMacController;
 
 			//
 			mSequenceContainer = std::make_unique<SequenceContainer>();
@@ -85,6 +89,21 @@ namespace nap
 				mDuration = mSequenceContainer->getSequences().back()->getStartTime() + mSequenceContainer->getSequences().back()->getDuration();
 
 			return true;
+		}
+
+		void nap::timeline::SequencePlayerComponentInstance::update(double deltaTime)
+		{
+			if (mNeedOperationalMacController)
+			{
+				if (mIsPlaying && !mIsPaused)
+				{
+					if (!mMacController->isRunning())
+					{
+						printf("SequencePlayerCompenent : pausing playing of timeline because we have no operational MACController!\n");
+						pause();
+					}
+				}
+			}
 		}
 
 

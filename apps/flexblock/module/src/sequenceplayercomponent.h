@@ -8,6 +8,7 @@
 
 #include "sequencecontainer.h"
 #include "flexdevice.h"
+#include "maccontroller.h"
 
 namespace nap
 {
@@ -39,6 +40,8 @@ namespace nap
 			std::string										mDefaultShow;
 			std::vector<ResourcePtr<ParameterGroup>>		mParameterGroups;
 			ResourcePtr<FlexDevice>							mFlexDevice;
+			ResourcePtr<MACController>						mMacController;
+			bool											mNeedOperationalMacController = false;
 			int												mFrequency = 1000;
 		};
 
@@ -66,6 +69,8 @@ namespace nap
 			 * @return if the SequencePlayerComponentInstance is initialized successfully
 			 */
 			virtual bool init(utility::ErrorState& errorState) override;
+
+			virtual void update(double deltaTime);
 
 			/**
 			 * Play a sequence
@@ -243,15 +248,16 @@ namespace nap
 			std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
 
 			//
-			double mTime					= 0.0;
-			bool mIsPlaying					= false;
-			bool mIsPaused					= false;
-			bool mIsFinished				= false;
-			bool mIsLooping					= false;
-			size_t mCurrentSequenceIndex	= 0;
-			float mSpeed					= 1.0f;
-			double mDuration				= 0.0;
-
+			double mTime						= 0.0;
+			bool mIsPlaying						= false;
+			bool mIsPaused						= false;
+			bool mIsFinished					= false;
+			bool mIsLooping						= false;
+			size_t mCurrentSequenceIndex		= 0;
+			float mSpeed						= 1.0f;
+			double mDuration					= 0.0;
+			MACController* mMacController		= nullptr;
+			bool mNeedOperationalMacController	= false;
 			//
 			std::atomic_bool				mShouldSetLooping;
 			std::atomic_bool				mShouldSetLoopingValue;
