@@ -7,6 +7,7 @@
 #include <thread>
 #include <future>
 #include <atomic>
+#include <glm/glm.hpp>
 
 namespace nap
 {
