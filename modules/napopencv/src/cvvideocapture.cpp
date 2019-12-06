@@ -9,6 +9,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVVideoCapture)
 	RTTI_PROPERTY("ConvertRGB",		&nap::CVVideoCapture::mConvertRGB,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipHorizontal", &nap::CVVideoCapture::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipVertical",	&nap::CVVideoCapture::mFlipVertical,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resize",			&nap::CVVideoCapture::mResize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",			&nap::CVVideoCapture::mSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Backend",		&nap::CVVideoCapture::mAPIPreference,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -113,6 +115,7 @@ namespace nap
 		// Wait for playback to be enabled, a new frame request is issued or request to stop is made
 		// Exit loop immediately when a stop is requested. Otherwise process next frame
 		cv::UMat cap_frame;
+		cv::UMat res_frame;
 		std::unordered_map<int, double> properties;
 		bool set_properties = false;
 
@@ -162,17 +165,24 @@ namespace nap
 				continue;
 			}
 
+			// Resize frame if required
+			// Otherwise simply copy mat reference (no actual data copy takes place)
+			if (mResize)
+				cv::resize(cap_frame, res_frame, cv::Size(mSize.x, mSize.y));
+			else
+				res_frame = cap_frame;
+
 			// Convert to RGB
 			if(mConvertRGB)
-				cv::cvtColor(cap_frame, cap_frame, cv::COLOR_BGR2RGB);
+				cv::cvtColor(res_frame, res_frame, cv::COLOR_BGR2RGB);
 
 			// Flip horizontal
 			if (mFlipHorizontal)
-				cv::flip(cap_frame, cap_frame, 1);
+				cv::flip(res_frame, res_frame, 1);
 
 			// Flip vertical
 			if (mFlipVertical)
-				cv::flip(cap_frame, cap_frame, 0);
+				cv::flip(res_frame, res_frame, 0);
 
 			// Deep copy the captured frame to our storage matrix.
 			// This updates the data of our storage container and ensures the same dimensionality.
@@ -185,7 +195,7 @@ namespace nap
 			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
-				cap_frame.copyTo(mCaptureMat);
+				res_frame.copyTo(mCaptureMat);
 				onCopy();
 			}
 

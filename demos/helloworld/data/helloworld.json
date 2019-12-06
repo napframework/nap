@@ -27,7 +27,12 @@
             "Type": "nap::CVVideo",
             "mID": "VideoDevice",
             "Backend": "Automatic",
-            "File": "people.mp4"
+            "File": "people.mp4",
+            "Resize": true,
+            "Size": {
+                "x": 640,
+                "y": 360
+            }
         },
         {
             "Type": "nap::Entity",
@@ -359,8 +364,8 @@
                 "MaxLodLevel": 10
             },
             "Usage": "Static",
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 640,
+            "Height": 360,
             "Format": "RGB8"
         },
         {
