@@ -97,11 +97,31 @@ namespace nap
 			{
 				if (mIsPlaying && !mIsPaused)
 				{
-					if (!mMacController->isRunning())
+					if (mMacController->isRunning())
 					{
-						printf("SequencePlayerCompenent : pausing playing of timeline because we have no operational MACController!\n");
+						bool slaveError = false;
+						for (int i = 0; i < mMacController->getSlaveCount(); i++)
+						{
+							if (mMacController->hasError(i))
+							{
+								slaveError = true;
+								break;
+							}
+						}
+
+						if (slaveError)
+						{
+							printf("SequencePlayerCompenent : pausing playing of timeline because we have an error in slave!\n");
+							pause();
+						}
+					}
+					else
+
+					{
+						printf("SequencePlayerCompenent : pausing playing of timeline because mac controller is not running!\n");
 						pause();
 					}
+
 				}
 			}
 		}
