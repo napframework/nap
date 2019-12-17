@@ -13,6 +13,8 @@
 namespace napkin
 {
 
+	std::vector<rttr::type> getDerivedTypes(const rttr::type& type);
+
 	/**
 	 * An item displaying an RTTI Type
 	 */
@@ -26,7 +28,7 @@ namespace napkin
 		void refresh();
 
 	private:
-		const nap::rtti::TypeInfo& type;
+		const nap::rtti::TypeInfo& mType;
 	};
 
 	/**

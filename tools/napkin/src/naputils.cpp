@@ -7,9 +7,7 @@
 #include <QDialogButtonBox>
 
 #include <component.h>
-#include <nap/logger.h>
 #include <entity.h>
-#include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
 #include <cctype>
@@ -24,9 +22,42 @@ using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
-napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
+std::vector<rttr::type> napkin::getDerivedTypes(const rttr::type& type)
 {
-	setText(type.get_name().data());
+	std::vector<rttr::type> derivedTypes;
+	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+	{
+		if (derived.get_base_classes().empty())
+			continue;
+
+//		if (derived == RTTI_OF(nap::Scene))
+//			nap::Logger::info("Koek!");
+
+		bool foundBase = false;
+		const auto& baseClasses = derived.get_base_classes();
+		for (auto it = baseClasses.rbegin(); it != baseClasses.rend(); ++it)
+		{
+			rttr::type base = *it;
+			if (base == type)
+				foundBase = true;
+			break;
+		}
+
+		if (foundBase)
+			derivedTypes.emplace_back(derived);
+	}
+	return derivedTypes;
+}
+
+napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
+{
+
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
+	setText(QString("%1 (%2)").arg(type.get_name().data(), name.c_str()));
 	setEditable(false);
 	//    setForeground(getSoftForeground());
 	//    setBackground(getSoftBackground());
@@ -46,7 +77,8 @@ napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 
 void napkin::RTTITypeItem::refresh()
 {
-	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+
+	for (const auto& derived : getDerivedTypes(mType))
 	{
 		appendRow(new RTTITypeItem(derived));
 	}
@@ -155,8 +187,12 @@ std::vector<rttr::type> napkin::getComponentTypes()
 
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
 	std::vector<rttr::type> ret;
+	auto core = AppContext::get().getCore();
+	if (!core)
+		return ret;
+
+	nap::rtti::Factory& factory = core->getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
 	auto rootType = RTTI_OF(nap::rtti::Object);

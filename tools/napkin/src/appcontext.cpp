@@ -18,6 +18,8 @@
 #include <naputils.h>
 #include <utility/fileutils.h>
 
+#import "nap/simpleserializer.h"
+
 using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
@@ -77,6 +79,32 @@ Document* AppContext::loadDocument(const QString& filename)
 	return loadDocumentFromString(buffer, filename);
 }
 
+nap::ProjectInfo* AppContext::loadProject(const QString& filename)
+{
+	ErrorState err;
+	mProjectInfo = std::make_unique<nap::ProjectInfo>();
+	if (!mProjectInfo->load(filename.toStdString(), err))
+	{
+		nap::Logger::error(err.toString());
+		mProjectInfo = nullptr;
+		return nullptr;
+	}
+
+	nap::Logger::info("Loading project '%s' ver. %s (%s)",
+					  mProjectInfo->mTitle.c_str(),
+					  mProjectInfo->mVersion.c_str(),
+					  mProjectInfo->getDirectory().c_str());
+
+	mCore = std::make_unique<nap::Core>();
+	if (!mCore->initializeEngine(err, *mProjectInfo))
+	{
+		nap::Logger::error(err.toString());
+		return nullptr;
+	}
+
+	return mProjectInfo.get();
+}
+
 void AppContext::reloadDocument()
 {
 	loadDocument(mCurrentFilename);
@@ -86,7 +114,13 @@ Document* AppContext::newDocument()
 {
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(getCore());
+	auto core = getCore();
+	if (!core)
+	{
+		nap::Logger::warn("Core not loaded, cannot create document");
+		return nullptr;
+	}
+	mDocument = std::make_unique<Document>(*core);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -99,7 +133,14 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	auto& factory = getCore().getResourceManager()->getFactory();
+	auto core = getCore();
+	if (!core)
+	{
+		nap::Logger::warn("Core not loaded, cannot load document");
+		return nullptr;
+	}
+
+	auto& factory = core->getResourceManager()->getFactory();
 
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
@@ -115,7 +156,8 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
+
+	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -306,19 +348,19 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
-nap::Core& AppContext::getCore()
+nap::Core* AppContext::getCore()
 {
-	if (!mCoreInitialized)
-	{
-		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir(), true))
-		{
-			nap::Logger::fatal("Failed to initialize engine");
-		}
-		mCoreInitialized = true;
-		coreInitialized();
-	}
-	return mCore;
+//	if (!mCore)
+//	{
+//		ErrorState err;
+//		if (!mCore->initializeEngine(err, getExecutableDir(), true))
+//		{
+//			nap::Logger::fatal("Failed to initialize engine");
+//			return nullptr;
+//		}
+//		coreInitialized();
+//	}
+	return mCore.get();
 }
 
 Document* AppContext::getDocument()

@@ -17,6 +17,7 @@
 #include "thememanager.h"
 #include "document.h"
 #include "resourcefactory.h"
+#include "nap/projectinfo.h"
 
 namespace napkin
 {
@@ -72,7 +73,7 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& getCore();
+		nap::Core* getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
@@ -91,6 +92,9 @@ namespace napkin
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
 		Document* loadDocument(const QString& filename);
+
+		nap::ProjectInfo* loadProject(const QString& filename);
+
 
 		/**
 		 * Reload the current document from disk
@@ -336,8 +340,8 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;										// The nap::Core
-		bool mCoreInitialized = false;							// Keep track of core initialization state
+		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here

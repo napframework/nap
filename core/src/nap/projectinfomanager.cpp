@@ -1,5 +1,4 @@
 #include "projectinfomanager.h"
-#include "logger.h"
 
 #include <utility/fileutils.h>
 
@@ -57,8 +56,8 @@ namespace nap
 			return false;
 	
 		// Populate into info struct and return
-		if (!result.mModules.empty())
-			result.mModules.clear();
+		if (!result.mModuleNames.empty())
+			result.mModuleNames.clear();
 		
 		for (std::size_t index = 0; index < modules->value.Size(); ++index)
 		{
@@ -66,7 +65,7 @@ namespace nap
 			if (!errorState.check(json_element.IsString(), "Entries in 'modules' array in project info field must be a strings"))
 				return false;
 			
-			result.mModules.push_back(json_element.GetString());
+			result.mModuleNames.push_back(json_element.GetString());
 		}
 		
 		result.mTitle = document["title"].GetString();

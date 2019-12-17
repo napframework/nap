@@ -8,6 +8,7 @@
 #include "utility/module.h"
 #include "utility/errorstate.h"
 #include "rtti/typeinfo.h"
+#include "projectinfo.h"
 
 namespace nap
 {
@@ -27,7 +28,9 @@ namespace nap
 		*/
 		struct Module
 		{
+			std::string			mName;									// The canonical name of the module
 			ModuleDescriptor*	mDescriptor;							// The descriptor that belongs to the module
+			ModuleInfo			mInfo;									// Data that was loaded from the module json
 			void*				mHandle;								// Handle to native module
 			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
 		};
@@ -50,9 +53,19 @@ namespace nap
 		 */
 		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);
 
+		bool loadModules(const ProjectInfo& projectInfo, utility::ErrorState& error);
+
 		const std::vector<Module>& getModules() const { return mModules; }
 
 	private:
+		bool loadModule_(const ProjectInfo& projectinfo, const std::string& moduleFile, utility::ErrorState& err);
+
+		const Module* getLoadedModule(const std::string& moduleName);
+
+		bool findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
+							 std::string& moduleFile, std::string& moduleJson);
+
+
 		/**
 		 * Build directories to search in for specified modules
 		 * @param moduleNames The names of the modules in use in the project

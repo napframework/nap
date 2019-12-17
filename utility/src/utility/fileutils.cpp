@@ -80,6 +80,25 @@ namespace nap
 			return true;
 		}
 
+		bool isAbsolutePath(const std::string& path)
+		{
+			if (path.empty())
+				return false;
+#ifdef _WIN32
+			TCHAR _path[MAX_PATH_SIZE];
+			TCHAR** filenameComponent = nullptr;
+#ifdef _MSC_VER
+			const char* p = path.c_str();
+			GetFullPathName(_T(p), MAX_PATH_SIZE, _path, filenameComponent);
+#else
+			GetFullPathName((LPCSTR)path.c_str(), MAX_PATH_SIZE, _path, filenameComponent);
+#endif
+			return std::string((char*)_path);
+#else
+			return path.at(0) == '/';
+#endif
+		}
+
 		std::string getAbsolutePath(const std::string& relPath)
 		{
 #ifdef _WIN32

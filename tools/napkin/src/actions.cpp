@@ -55,7 +55,7 @@ void OpenFileAction::perform()
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadDocument(filename);
+	AppContext::get().loadProject(filename);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

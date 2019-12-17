@@ -7,10 +7,7 @@
 
 // External Includes
 #include <utility/fileutils.h>
-#include <packaginginfo.h>
-#include <rapidjson/document.h>
-#include <rapidjson/error/en.h>
-#include <fstream>
+#include <dlfcn.h>
 
 namespace nap
 {
@@ -132,9 +129,25 @@ namespace nap
 		return true;
 	}
 
+	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
+	{
+		std::string moduleFile;
+		std::string moduleJson;
+		for (const auto& moduleName : projectInfo.mModuleNames)
+		{
+			// Load the module
+			utility::ErrorState moduleErr;
+			if (!loadModule_(projectInfo, moduleName, moduleErr))
+			{
+				nap::Logger::error(moduleErr.toString());
+				continue;
+			}
+		}
+		return true;
+	}
 
-	bool ModuleManager::buildModuleSearchDirectories(const std::vector<std::string>& moduleNames, 
-		                                             std::vector<std::string>& searchDirectories, 
+	bool ModuleManager::buildModuleSearchDirectories(const std::vector<std::string>& moduleNames,
+		                                             std::vector<std::string>& searchDirectories,
 		                                             utility::ErrorState& errorState)
 	{
 #ifdef _WIN32
@@ -143,7 +156,7 @@ namespace nap
 #elif defined(NAP_PACKAGED_BUILD)
 		// Running against released NAP on macOS & Linux
 		const std::string exeDir = utility::getExecutableDir();
-		
+
 		// Check if we're running a packaged project (on macOS or Linux)
 		if (utility::fileExists(exeDir + "/lib/libnapcore." + getModuleExtension()))
 		{
@@ -161,7 +174,7 @@ namespace nap
 			if (folderNameContainsBuildConfiguration(dirParts.end()[-1]))
 			{
 				buildPackagedNapProjectModulePaths(moduleNames, searchDirectories);
-			} else 
+			} else
 			{
 				errorState.fail("Unexpected path configuration found, can't locate modules");
 				return false;
@@ -169,7 +182,7 @@ namespace nap
 		}
 #else
 		Logger::debug("Running from NAP source");
-	
+
 		const std::string exeDir = utility::getExecutableDir();
 
 		std::vector<std::string> dirParts;
@@ -182,7 +195,7 @@ namespace nap
 			const std::string full_configuration_name = dirParts.end()[-1];
 			searchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
 
-		} else 
+		} else
 		{
 			errorState.fail("Unexpected path configuration found, can't locate modules");
 			return false;
@@ -191,9 +204,8 @@ namespace nap
 		return true;
 	}
 
-
-	bool ModuleManager::fetchProjectModuleDependencies(const std::vector<std::string>& topLevelProjectModules, 
-		                                               std::vector<std::string>& dependencies, 
+	bool ModuleManager::fetchProjectModuleDependencies(const std::vector<std::string>& topLevelProjectModules,
+		                                               std::vector<std::string>& dependencies,
 		                                               utility::ErrorState& errorState)
 	{
 		// Take the top level modules from project.json as the first modules to work on
@@ -205,18 +217,129 @@ namespace nap
 		{
 			// Add our new dependencies to our master list
 			dependencies.insert(dependencies.end(), newModules.begin(), newModules.end());
-			
+
 			// Fetch any new dependencies for the dependencies found in the last loop
 			searchModules = newModules;
 			newModules.clear();
-			if (!fetchImmediateModuleDependencies(searchModules, dependencies, newModules, 
+			if (!fetchImmediateModuleDependencies(searchModules, dependencies, newModules,
 				                                  errorState))
 				return false;
 		}
-		
+
 		return true;
 	}
 
+	bool ModuleManager::loadModule_(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
+	{
+		// Fail if we're trying to load the same module twice
+		if (getLoadedModule(moduleName))
+		{
+			err.fail(utility::stringFormat("Module already loaded: %s", moduleName.c_str()));
+			return false;
+		}
+
+		// Attempt to find the module files first
+		std::string moduleFile;
+		std::string moduleJson;
+		if (!findModuleFiles(project, moduleName, moduleFile, moduleJson))
+		{
+			nap::Logger::error("Cannot find module %s", moduleName.c_str());
+			return false;
+		}
+
+		// Load module json
+		ModuleInfo modinfo;
+		if (!modinfo.load(moduleJson, err))
+			return false;
+
+		// Load module dependencies first
+		for (const auto& modName : modinfo.mDependencies)
+		{
+			if (getLoadedModule(modName))
+				continue;
+
+			if (!loadModule_(project, modName, err))
+				return false;
+		}
+
+		// Load module binary
+		void* module_handle = dlopen(moduleFile.c_str(), RTLD_LAZY);
+		if (!module_handle)
+		{
+			err.fail(utility::stringFormat("Failed to load module '%s': %s", moduleFile.c_str(), dlerror()));
+			return false;
+		}
+
+		// Find descriptor. If the descriptor wasn't found in the dll,
+		// assume it's not actually a nap module and unload it again.
+		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, "descriptor");
+		if (!descriptor)
+		{
+			unloadModule(module_handle);
+			return false;
+		}
+
+		// Check that the module version matches, skip otherwise.
+		if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+		{
+			err.fail(utility::stringFormat("Module %s version mismatch (found %d, expected %d)",
+										   moduleFile.c_str(), descriptor->mAPIVersion,
+										   ModuleDescriptor::ModuleAPIVersion));
+			unloadModule(module_handle);
+			return false;
+		}
+
+		// Try to load service if one is defined
+		rtti::TypeInfo service = rtti::TypeInfo::empty();
+		if (descriptor->mService)
+		{
+			rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
+			if (!stype.is_derived_from(RTTI_OF(Service)))
+			{
+				err.fail(utility::stringFormat("Module %s service descriptor %s is not a service",
+											   moduleFile.c_str(), descriptor->mService));
+				unloadModule(module_handle);
+				return false;
+			}
+			service = stype;
+		}
+
+		// Load successful, store loaded module
+		Module module;
+		module.mName = moduleName;
+		module.mDescriptor = descriptor;
+		module.mInfo = modinfo;
+		module.mHandle = module_handle;
+		module.mService = service;
+		mModules.emplace_back(module);
+		nap::Logger::debug("Module loaded: %s", module.mDescriptor->mID);
+
+		return true;
+	}
+
+	const ModuleManager::Module* ModuleManager::getLoadedModule(const std::string& moduleName)
+	{
+		for (const auto& mod : mModules)
+			if (mod.mName == moduleName)
+				return &mod;
+		return nullptr;
+	}
+
+	bool ModuleManager::findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
+										std::string& moduleFile, std::string& moduleJson)
+	{
+		auto expectedFilename = utility::stringFormat("lib%s.so", moduleName.c_str());
+		auto expectedJsonFile = utility::stringFormat("lib%s.json", moduleName.c_str());
+
+		for (const auto& dir : projectInfo.getModuleDirectories())
+		{
+			moduleFile = utility::stringFormat("%s/%s", dir.c_str(), expectedFilename.c_str());
+			moduleJson = utility::stringFormat("%s/%s", dir.c_str(), expectedJsonFile.c_str());
+			if (utility::fileExists(moduleFile) and utility::fileExists(moduleJson))
+				return true;
+		}
+		return false;
+	}
 
 	bool ModuleManager::fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, 
 		                                                 std::vector<std::string>& previouslyFoundModules, 

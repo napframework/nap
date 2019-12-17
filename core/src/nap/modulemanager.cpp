@@ -28,7 +28,7 @@ namespace nap
 			This should probably be fixed in RTTR itself, but I'm not sure how yet. For now I've disabled the unloading of modules, 
 			since this only happens during shutdown and modules will be unloaded then anyway.
 		
- 		for (Module& module : mModules)
+ 		for (Module& module : mModuleNames)
  			UnloadModule(module.mHandle);
 		*/
 	}
@@ -193,5 +193,4 @@ namespace nap
 		
 		return true;		
 	}
-
 }

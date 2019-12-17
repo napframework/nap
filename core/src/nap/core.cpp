@@ -7,6 +7,7 @@
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
 #include "python.h"
+#include "simpleserializer.h"
 
 // External Includes
 #include <iostream>
@@ -90,7 +91,7 @@ namespace nap
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 
 		// Load modules
-		if (!mModuleManager->loadModules(projectInfo.mModules, error))
+		if (!mModuleManager->loadModules(projectInfo.mModuleNames, error))
 			return false;
 
 		// Create the various services based on their dependencies
@@ -100,6 +101,34 @@ namespace nap
 		return true;
 	}
 
+	bool nap::Core::initializeEngine(nap::utility::ErrorState& error, const ProjectInfo& projectInfo)
+	{
+		// Ensure our current working directory is where the executable is.
+		// Works around issues with the current working directory not being set as
+		// expected when apps are launched directly from macOS Finder and probably other things too.
+		nap::utility::changeDir(nap::utility::getExecutableDir());
+
+		// Setup our Python environment
+#ifdef NAP_ENABLE_PYTHON
+		setupPythonEnvironment();
+#endif
+
+		// Create the resource manager
+		mResourceManager = std::make_unique<ResourceManager>(*this);
+
+		// Create the module manager
+		mModuleManager = std::make_unique<ModuleManager>(*this);
+
+		// Load modules
+		if (!mModuleManager->loadModules(projectInfo, error))
+			return false;
+
+//		// Create the various services based on their dependencies
+//		if (!createServices(error))
+//			return false;
+
+		return true;
+	}
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{

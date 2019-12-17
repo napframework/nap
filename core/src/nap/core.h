@@ -17,6 +17,7 @@
 #include "service.h"
 #include "timer.h"
 #include "coreextension.h"
+#include "projectinfo.h"
 
 // Name of the file that contains all the settings for the NAP services.
 constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
@@ -68,7 +69,9 @@ namespace nap
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
-		
+
+		bool initializeEngine(utility::ErrorState& error, const ProjectInfo& projectInfo);
+
 		/**
 		 * Initializes all registered services
 		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
