@@ -45,7 +45,6 @@ void MainWindow::showEvent(QShowEvent* event)
 		rebuildRecentMenu();
 		mFirstShowEvent = false;
 	}
-	fixTabs();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -259,16 +258,6 @@ void MainWindow::rebuildRecentMenu()
 
 void MainWindow::onDocked(QDockWidget *dockWidget)
 {
-	fixTabs();
 }
 
-
-void MainWindow::fixTabs()
-{
-	// Removes the rendering of white lines bottom of tabs
-	// see: https://stackoverflow.com/questions/42746408/how-to-get-rid-of-strange-white-line-under-qtabbar-while-customzing-tabified-qdo
-	QList<QTabBar*> tabBars = findChildren<QTabBar*>("", Qt::FindChildrenRecursively);
-	for (auto& bar : tabBars)
-		bar->setDrawBase(false);
-}
 

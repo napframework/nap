@@ -68,11 +68,6 @@ namespace napkin
 		void onDocked(QDockWidget *dockWidget);
 
 		/**
-		 * Removes possible white line under docked widgets
-		 */
-		void fixTabs();
-
-		/**
 		 * Add the menu
 		 */
 		void addMenu();
