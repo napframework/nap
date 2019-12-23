@@ -327,10 +327,10 @@ namespace nap
 			}
 			else
 			{
-				mCurrentSequenceIndex = 0;
+				//mCurrentSequenceIndex = 0;
 				mIsPlaying = true;
 				mIsFinished = false;
-				mTime = 0.0;
+				//mTime = 0.0;
 			}
 
 			startThread();
@@ -361,12 +361,20 @@ namespace nap
 
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
-			mShouldSetTime = true;
-			mShouldSetTimeValue = math::clamp<double>(time, 0.0, mDuration);
+			// clamp just to make sure our time is not invalid
+			double timeValue = math::clamp<double>(time, 0.0, mDuration);
 
-			/*
-
-			*/
+			// if we are playing, update time from worker thread
+			if (mIsPlaying)
+			{
+				mShouldSetTime = true;
+				mShouldSetTimeValue = timeValue;
+			}else if (!mIsPlaying)
+			{
+				// otherwise, just set the time
+				mReturnTime = timeValue;
+				mTime = timeValue;
+			}
 		}
 
 
@@ -391,8 +399,8 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused = false;
 			mIsFinished = false;
-			mCurrentSequenceIndex = 0;
-			mTime = 0.0;
+			//mCurrentSequenceIndex = 0;
+			//mTime = 0.0;
 			mReturnTime = mTime;
 		}
 
