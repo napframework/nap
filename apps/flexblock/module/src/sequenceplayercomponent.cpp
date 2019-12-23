@@ -327,10 +327,8 @@ namespace nap
 			}
 			else
 			{
-				//mCurrentSequenceIndex = 0;
 				mIsPlaying = true;
 				mIsFinished = false;
-				//mTime = 0.0;
 			}
 
 			startThread();
@@ -399,8 +397,6 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused = false;
 			mIsFinished = false;
-			//mCurrentSequenceIndex = 0;
-			//mTime = 0.0;
 			mReturnTime = mTime;
 		}
 

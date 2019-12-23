@@ -89,6 +89,13 @@ namespace nap
 		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 		bool								mEditAllTimelines = false;
 
+		bool								mTimeJumpSequencePlayerWasPlaying = false;
+		bool								mTimeJumpTransitionDone = false;
+		bool								mInTimeJumpTransition = false;
+		double								mTimeJumpTransitionTime = 0.0;
+		double								mTimeJumpTransitionTarget = 3.0;
+		double								mTimeJumpSequencePlayerTarget = 0.0;
+
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
 		std::vector<ParameterFloat*> mParameters;
@@ -160,6 +167,10 @@ namespace nap
 		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState& errorState);
 
 		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState);
+
+		bool handleTimeJump(const double time);
+
+		void handleTimeJumpPopup();
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);

@@ -338,6 +338,15 @@ namespace nap
 		}
 
 		handleQuitPopup();
+
+		if (mInTimeJumpTransition)
+		{
+			mTimeJumpTransitionTime += deltaTime;
+			if (mTimeJumpTransitionTime > mTimeJumpTransitionTarget)
+			{
+				mTimeJumpTransitionDone = true;
+			}
+		}
 	}
 	
 
@@ -422,6 +431,9 @@ namespace nap
 
 		//
 		handleEditValuePopup();
+
+		//
+		handleTimeJumpPopup();
 
 
 		// release mouse
@@ -1339,12 +1351,19 @@ namespace nap
 							{
 								mProps.mCurrentAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
 
-								mSequencePlayer->setTime(mProps.mCurrentTimeOfMouseInSequence);
+								if (handleTimeJump(mProps.mCurrentTimeOfMouseInSequence))
+								{
+									outPopupOpened = true;
+									outPopupId = "TimeJump";
+									mProps.mInPopup = true;
+									mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
+								}
 							}
 						}
 
 						if (mProps.mCurrentAction == TimeLineActions::DRAGGING_PLAYERPOSITION)
 						{
+							/*
 							// handle drag in timeline
 							if (ImGui::IsMouseDragging())
 							{
@@ -1353,15 +1372,16 @@ namespace nap
 								mousePos = ImVec2(mousePos.x - mProps.mTopLeftPosition.x, mousePos.y - mProps.mTopLeftPosition.y);
 								float pos = mousePos.x / childSize.x;
 								mProps.mCurrentTimeOfMouseInSequence = pos * mSequencePlayer->getDuration();
+
 								mSequencePlayer->setTime(mProps.mCurrentTimeOfMouseInSequence);
-							}
+							}*/
 						}
 						else
 						{
 							if (mProps.mShowToolTips && !mProps.mInPopup)
 							{
 								ImGui::BeginTooltip();
-								ImGui::Text("Left click to jump to position, hold to drag/scrub position.\nRight click to add elements/sequences.");
+								ImGui::Text("Left click to jump to position.\nRight click to add elements/sequences.");
 								ImGui::EndTooltip();
 							}
 						}
@@ -2764,6 +2784,116 @@ namespace nap
 		}
 
 		return true;
+	}
+
+	bool FlexblockGui::handleTimeJump(const double time)
+	{
+		if (mSequencePlayer->getIsPlaying())
+		{
+			mTimeJumpSequencePlayerTarget = time;
+			return true;
+		}
+		else
+		{
+			mSequencePlayer->setTime(time);
+		}
+
+		return false;
+	}
+
+
+	void FlexblockGui::handleTimeJumpPopup()
+	{
+		if (ImGui::BeginPopupModal("TimeJump"))
+		{
+			if (!mInTimeJumpTransition)
+			{
+				if (ImGui::Button("Cancel"))
+				{
+					mProps.mInPopup = false;
+					mProps.mCurrentAction = TimeLineActions::NONE;
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				bool go = false;
+
+				if (ImGui::Button("Slow 10s"))
+				{
+					go = true;
+					mTimeJumpTransitionTarget = 10.0;
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Fast 3s"))
+				{
+					go = true;
+					mTimeJumpTransitionTarget = 3.0;
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("!Immediate!"))
+				{
+					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
+					mProps.mInPopup = false;
+					mProps.mCurrentAction = TimeLineActions::NONE;
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (go)
+				{
+					// TODO : enable smoother
+
+					//
+					mTimeJumpSequencePlayerWasPlaying = mSequencePlayer->getIsPlaying() && !mSequencePlayer->getIsPaused();
+					mInTimeJumpTransition = true;
+					mTimeJumpTransitionTime = 0.0;
+					mSequencePlayer->pause();
+					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
+				}
+			}
+			else
+			{
+				if (mTimeJumpTransitionDone)
+				{
+					// TODO: Smoother off
+
+					mTimeJumpTransitionDone = false;
+					mInTimeJumpTransition = false;
+
+					mProps.mInPopup = false;
+					mProps.mCurrentAction = TimeLineActions::NONE;
+					if (mTimeJumpSequencePlayerWasPlaying)
+					{
+						mSequencePlayer->play();
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+				else
+				{
+
+					std::string text("Transitioning");
+					int dots = fmodf(mTimeJumpTransitionTime, 2.0) / 0.333;
+
+					for (int i = 0; i < dots; i++)
+					{
+						text.append(".");
+					}
+
+					ImGui::Text(text.c_str());
+					std::string percentage = std::to_string((int)((mTimeJumpTransitionTime / mTimeJumpTransitionTarget) * 100));
+					percentage += "%";
+					ImGui::Text("%s",percentage.c_str());
+				}
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 
 
