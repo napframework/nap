@@ -89,5 +89,8 @@ namespace nap
 		std::atomic<bool> mEnableSmoothing		= false;
 		std::atomic<float> mSmoothTimeLocal		= 1.0f;
 		std::mutex mMotorMutex;
+
+		// Computes the lag
+		void applyLag(std::vector<float>& outSteps, double deltaTime);
 	};
 }

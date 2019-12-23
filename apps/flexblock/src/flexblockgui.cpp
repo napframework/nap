@@ -2889,14 +2889,12 @@ namespace nap
 				mMotorAdapter->setSmoothTime(smooth_time);
 			}
 			
-			std::vector<float> cur_motor_steps;
 			std::vector<float> tar_motor_steps;
 			std::vector<float> tar_motor_velo;
-			mMotorAdapter->getMotorInput(cur_motor_steps);
 			mMotorAdapter->getLag(tar_motor_steps, tar_motor_velo);
 			for (int mo = 0; mo < tar_motor_steps.size(); mo++)
 			{
-				ImGui::Text("Smooth Diff: %f", tar_motor_steps[mo]);
+				ImGui::Text("Diff: %.2f, Vel: %.2f", tar_motor_steps[mo], math::abs<float>(tar_motor_velo[mo]));
 			}
 		}
 

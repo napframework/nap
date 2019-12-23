@@ -50,26 +50,8 @@ namespace nap
 		for (auto& length : mMotorStepsInt)
 			length *= mMotorStepsPerMeter;
 
-		// Smoothly interpolate values if enabled.
-		// Always copy at the end of the cycle
-		{
-			std::lock_guard<std::mutex> lock(mMotorMutex);
-			if (mEnableSmoothing)
-			{
-				// Lock for smoothing
-				int idx = 0;
-				float smooth_time = mSmoothTimeLocal;
-				for (auto& smoother : mSmoothers)
-				{
-					smoother->mSmoothTime = smooth_time;
-					mMotorStepsInt[idx] = smoother->update(mMotorStepsInt[idx], deltaTime);
-					idx++;
-				}
-			}
-
-			// Store steps
-			mMotorInput = mMotorStepsInt;
-		}
+		// Apply lag
+		applyLag(mMotorStepsInt, deltaTime);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Set motor values in controller
@@ -114,6 +96,28 @@ namespace nap
 	}
 
 
+	void MACAdapter::applyLag(std::vector<float>& outSteps, double deltaTime)
+	{
+		// Lock
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		if (mEnableSmoothing)
+		{
+			assert(outSteps.size() == mSmoothers.size());
+
+			// Copy most recent smooth time
+			float smooth_time = mSmoothTimeLocal;
+			for (int i = 0; i < mSmoothers.size(); i++)
+			{
+				mSmoothers[i]->mSmoothTime = smooth_time;
+				outSteps[i] = mSmoothers[i]->update(outSteps[i], deltaTime);
+			}
+		}
+
+		// Store current motor input
+		mMotorInput = mMotorStepsInt;
+	}
+
+
 	void MACAdapter::getMotorInput(std::vector<float>& outSteps)
 	{
 		std::lock_guard<std::mutex> lock(mMotorMutex);
@@ -123,29 +127,20 @@ namespace nap
 
 	void MACAdapter::getLag(std::vector<float>& outLag, std::vector<float>& outVel)
 	{
-		// No lag when smoothing is disabled
-		if (!mEnableSmoothing)
-		{
-			const static std::vector<float> empty(8, 0);
-			outLag = empty;
-			outVel = empty;
-			return;
-		}
-
-		// Setup 
 		outLag.clear();
-		outLag.reserve(mSmoothers.size());
-
+		outLag.resize(mSmoothers.size(), 0);
 		outVel.clear();
-		outVel.reserve(mSmoothers.size());
+		outVel.resize(mSmoothers.size(), 0);
 		
+		if (!mEnableSmoothing)
+			return;
+
 		std::lock_guard<std::mutex> lock(mMotorMutex);
 		assert(mMotorInput.size() == mSmoothers.size());
-
 		for (auto i = 0; i < mMotorInput.size(); i++)
 		{
-			outLag.emplace_back(math::abs<float>(mSmoothers[i]->getTarget() - mMotorInput[i]));
-			outVel.emplace_back(mSmoothers[i]->getVelocity());
+			outLag[i] = math::abs<float>(mSmoothers[i]->getTarget() - mMotorInput[i]);
+			outVel[i] = mSmoothers[i]->getVelocity();
 		}
 	}
 
