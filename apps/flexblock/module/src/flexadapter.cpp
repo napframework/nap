@@ -21,10 +21,10 @@ namespace nap
 	}
 
 
-	void FlexAdapter::compute(const FlexDevice& device)
+	void FlexAdapter::compute(const FlexDevice& device, double deltaTime)
 	{
 		if (!mEnabled)
 			return;
-		onCompute(device);
+		onCompute(device, deltaTime);
 	}
 }

@@ -2874,6 +2874,32 @@ namespace nap
 			mMotorController->setComputeDigitalPin(compute_digital_pin);
 		}
 
+		bool enable_smoothing = mMotorAdapter->smoothingEnabled();
+		if (ImGui::Checkbox("Enable Smoothing", &enable_smoothing))
+		{
+			mMotorAdapter->enableSmoothing(enable_smoothing);
+		}
+
+		if (enable_smoothing)
+		{
+			ImGui::SameLine();
+			float smooth_time = mMotorAdapter->getSmoothTime();
+			if (ImGui::SliderFloat("Smooth Time", &smooth_time, 0.0f, 10.0f))
+			{
+				mMotorAdapter->setSmoothTime(smooth_time);
+			}
+			
+			std::vector<float> cur_motor_steps;
+			std::vector<float> tar_motor_steps;
+			std::vector<float> tar_motor_velo;
+			mMotorAdapter->getMotorInput(cur_motor_steps);
+			mMotorAdapter->getLag(tar_motor_steps, tar_motor_velo);
+			for (int mo = 0; mo < tar_motor_steps.size(); mo++)
+			{
+				ImGui::Text("Smooth Diff: %f", tar_motor_steps[mo]);
+			}
+		}
+
 		ImGui::Separator();
 		for (int i = 0; i < mMotorController->getSlaveCount(); i++)
 		{

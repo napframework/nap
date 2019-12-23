@@ -46,13 +46,14 @@ namespace nap
 		 * Note that this will be called from the same thread as the flexblock algorithm,
 		 * It is your responsibility to act accordingly, do not stall this thread!
 		 * @param device the flexblock algorithm
+		 * @param deltaTime time in seconds between compute cycles
 		 */
-		virtual void onCompute(const FlexDevice& device) = 0;
+		virtual void onCompute(const FlexDevice& device, double deltaTime) = 0;
 
 	private:
 		/**
 		 * Called by the flex device when a compute cycle completed
 		 */
-		void compute(const FlexDevice& device);
+		void compute(const FlexDevice& device, double deltaTime);
 	};
 }

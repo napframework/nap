@@ -170,8 +170,10 @@ namespace nap
 		glm::vec3 mPointForce = {0,0,0};
 		glm::vec3 mPointForceCorr = {0,0,0};
 
-		//
+		// Time related members
 		double mSinTime = 0.0;
+		HighResolutionTimer mTimer;
+		double mLastTimeStamp = 0;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Flex-block logic
