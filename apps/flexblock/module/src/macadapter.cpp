@@ -35,7 +35,7 @@ namespace nap
 		setSmoothTime(mSmoothTime);
 		for (auto& smoother : mSmoothers)
 		{
-			smoother = std::make_unique<math::FloatSmoothOperator>(0, mSmoothTimeLocal, mMaxSmoothTime);
+			smoother = std::make_unique<math::FloatSmoothOperator>(0, getSmoothTime(), mMaxSmoothTime);
 		}
 		return true;
 	}
@@ -142,17 +142,21 @@ namespace nap
 
 		// Update positions based on smoothed interpolation values
 		assert(outSteps.size() == mSmoothers.size());
-
-		mVelocity = 0.0f;
+		float vel_wei = 0.0f, vel_sum = 0.0f;
 		for (int i = 0; i < mSmoothers.size(); i++)
 		{
 			mSmoothers[i]->mSmoothTime = smooth_time;
 			outSteps[i] = mSmoothers[i]->update(outSteps[i], deltaTime);
-			mVelocity += math::abs<float>(mSmoothers[i]->getVelocity());
+			
+			// Calculate weighted velocity contribution
+			float smooth_vel = math::abs<float>(mSmoothers[i]->getVelocity());
+			float smooth_con = math::fit<float>(smooth_vel, mSmoothMinVel, mSmoothMaxVel, 1.0f, 5.0f);
+			vel_sum += (smooth_vel * smooth_con);
+			vel_wei += smooth_con;
 		}
 
 		// Calculate new current velocity and check if the velocity is falling
-		mVelocity  /= static_cast<float>(mSmoothers.size());
+		mVelocity = vel_sum / vel_wei;
 		mMotorInput = mMotorStepsInt;
 	}
 
