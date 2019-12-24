@@ -81,6 +81,10 @@ namespace nap
 	protected:
 		virtual void onCompute(const FlexDevice& device, double deltaTime) override;
 
+		virtual void onStart() override;
+
+		virtual void onEnable(bool value) override;
+
 	private:
 
 		using FlexSmoothPtr = std::unique_ptr<math::FloatSmoothOperator>;
@@ -92,8 +96,9 @@ namespace nap
 		std::vector<MacPosition> mMotorData		= std::vector<MacPosition>(8);
 		std::atomic<bool> mEnableSmoothing		= false;
 		std::atomic<float> mSmoothTimeLocal		= 1.0f;
+		bool mSetSteps							= false;
+		float mVelocity							= 0.0f;
 		std::mutex mMotorMutex;
-		float mPreviousVelocity					= 0.0f;
 
 		// Computes the lag
 		void applyLag(std::vector<float>& outSteps, double deltaTime);

@@ -100,42 +100,60 @@ namespace nap
 	}
 
 
+	void MACAdapter::onStart()
+	{
+		mSetSteps = true;
+	}
+
+
+	void MACAdapter::onEnable(bool value)
+	{
+		mSetSteps = true;
+	}
+
+
 	void MACAdapter::applyLag(std::vector<float>& outSteps, double deltaTime)
 	{
-		// Lock
+		// Simply copy input when lag is turned off
 		std::lock_guard<std::mutex> lock(mMotorMutex);
-		if (mEnableSmoothing)
+		if (!mEnableSmoothing)
 		{
-			assert(outSteps.size() == mSmoothers.size());
-			
-			// Scale smooth time using velocity if required
-			float smooth_time = mSmoothTimeLocal;
-			if(mSmoothUsingVel)
-			{
-				// Ensure smooth time is always lower than default smooth time
-				float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
-				
-				// Scale smooth time based on velocity
-				smooth_time = math::fit<float>(mPreviousVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
-				//nap::Logger::info("smooth time: %.2f", smooth_time);
-			}
-
-			// Update smoothers and sum velocity
-			float current_vel = 0.0f;
-			for (int i = 0; i < mSmoothers.size(); i++)
-			{
-				mSmoothers[i]->mSmoothTime = smooth_time;
-				outSteps[i]  =	mSmoothers[i]->update(outSteps[i], deltaTime);
-				current_vel  += math::abs<float>(mSmoothers[i]->getVelocity());
-			}
-
-			// Calculate new current velocity and check if the velocity is falling
-			current_vel /= static_cast<float>(mSmoothers.size());
-			mPreviousVelocity = current_vel;
+			mMotorInput = mMotorStepsInt;
+			return;
 		}
 
-		// Store current motor input
-		mMotorInput = mMotorStepsInt;
+		// Check if we need to update reference position of smoothers first
+		if (mSetSteps)
+		{
+			nap::Logger::info("updating smoothing values");
+			for (auto i = 0; i < mSmoothers.size(); i++)
+				mSmoothers[i]->setValue(outSteps[i]);
+
+			mVelocity = 0.0f;
+			mSetSteps = false;
+		}
+
+		// Scale time based on velocity
+		float smooth_time = mSmoothTimeLocal;
+		if (mSmoothUsingVel)
+		{
+			float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
+			smooth_time = math::fit<float>(mVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
+		}
+
+		// Update positions based on smoothed interpolation values
+		assert(outSteps.size() == mSmoothers.size());
+
+		mVelocity = 0.0f;
+		for (int i = 0; i < mSmoothers.size(); i++)
+		{
+			mSmoothers[i]->mSmoothTime = smooth_time;
+			outSteps[i] = mSmoothers[i]->update(outSteps[i], deltaTime);
+			mVelocity += math::abs<float>(mSmoothers[i]->getVelocity());
+		}
+
+		// Calculate new current velocity and check if the velocity is falling
+		mVelocity /= static_cast<float>(mSmoothers.size());
 	}
 
 
@@ -168,32 +186,9 @@ namespace nap
 
 	void MACAdapter::enableSmoothing(bool value)
 	{
-		// Turn off
-		if (!value)
-		{
-			mEnableSmoothing = false;
-			return;
-		}
-		
-		// Now update smoothers, the reference position is updated. 
-		// This ensures that when a new target position is given, the smoother works it's way there based
-		// on the current motor position.
-		{
-			// Lock for smoothing
-			std::lock_guard<std::mutex> lock(mMotorMutex);
-
-			// Before we enable the smoothers, we need to update the current reference position.
-			int idx = 0;
-			for (auto& smoother : mSmoothers)
-			{
-				smoother->setValue(mMotorInput[idx]);
-				idx++;
-
-			}
-		}
-
-		mPreviousVelocity	= 0.0f;
-		mEnableSmoothing	= true;
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		mSetSteps = value;
+		mEnableSmoothing = value;
 	}
 
 

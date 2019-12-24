@@ -31,7 +31,7 @@ namespace nap
 		 * When the adapter is disabled onCompute won't be called.
 		 * @param value enable / disable the adapter
 		 */
-		void setEnabled(bool value)								{ mEnabled = value; }
+		void setEnabled(bool value);
 
 		/**
 		 * @return if the adapter is enabled
@@ -50,10 +50,36 @@ namespace nap
 		 */
 		virtual void onCompute(const FlexDevice& device, double deltaTime) = 0;
 
+		/**
+		 * Called after the flex device started
+		 */
+		virtual void onStart()									{ }
+
+		/**
+		 * Called before the flex device is stopped
+		 */
+		virtual void onStop()									{ }
+
+		/**
+		 * Called when adapter is enabled / disabled
+		 * @param value enabled or disabled
+		 */
+		virtual void onEnable(bool value)						{ }
+
 	private:
 		/**
 		 * Called by the flex device when a compute cycle completed
 		 */
 		void compute(const FlexDevice& device, double deltaTime);
+
+		/**
+		 * Called by the flex device when it starts
+		 */
+		void start()											{ onStart(); }
+
+		/**
+		 * Called by the flex device when it stops
+		 */
+		void stop()												{ onStop(); }
 	};
 }

@@ -107,14 +107,25 @@ namespace nap
 	{
 		assert(!mComputeTask.valid());
 		mStopCompute = false;
-		mComputeTask = std::async(std::launch::async, std::bind(&FlexDevice::compute, this));
 		mTimer.reset();
+
+		// Notify adapters
+		for(auto& adapter : mAdapters)
+			adapter->start();
+
+		// Start compute task
+		mComputeTask = std::async(std::launch::async, std::bind(&FlexDevice::compute, this));
 		return true;
 	}
 
 
 	void FlexDevice::stop()
 	{
+		// Notify adapters
+		for (auto& adapter : mAdapters)
+			adapter->stop();
+
+		// Stop computing task
 		mStopCompute = true;
 		if (mComputeTask.valid())
 		{
