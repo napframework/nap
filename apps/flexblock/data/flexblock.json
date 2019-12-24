@@ -840,6 +840,8 @@
             "Type": "nap::MACAdapter",
             "mID": "MACAdapter",
             "Enabled": false,
+            "Smooth Time": 3.0,
+            "Max Smooth Speed":1000000,
             "Motor Steps Per Meter": 129473.40625,
             "Motor Step Offset": 0,
             "Motor Mapping": [
@@ -852,7 +854,11 @@
                 0,
                 4
             ],
-            "Controller": "MACController"
+            "Controller": "MACController",
+            "Smooth Using Velocity": true,
+            "Min Smooth Velocity": 10000,
+            "Max Smooth Velocity": 35000,
+            "Smooth Time Min": 0.5
         },
         {
             "Type": "nap::MACController",

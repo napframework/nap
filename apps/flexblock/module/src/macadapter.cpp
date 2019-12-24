@@ -102,13 +102,13 @@ namespace nap
 
 	void MACAdapter::onStart()
 	{
-		mSetSteps = true;
+		mRestart = true;
 	}
 
 
 	void MACAdapter::onEnable(bool value)
 	{
-		mSetSteps = true;
+		mRestart = true;
 	}
 
 
@@ -123,23 +123,33 @@ namespace nap
 		}
 
 		// Check if we need to update reference position of smoothers first
-		if (mSetSteps)
+		// If this occurs after a restart we take the actual motor position as reference
+		// Otherwise we sample the flexblock algorithm location
+		if (mSetStep || mRestart)
 		{
 			for (auto i = 0; i < mSmoothers.size(); i++)
-				mSmoothers[i]->setValue(outSteps[i]);
-
+			{
+				if (mMotorMapping[i] < mController->getSlaveCount() && mRestart)
+				{
+					nap::int32 actual_pos = mController->getActualPosition(mMotorMapping[i]);
+					mSmoothers[i]->setValue(static_cast<float>(actual_pos));
+				}
+				else
+				{
+					mSmoothers[i]->setValue(mMotorInput[i]);
+				}
+			}
 			mVelocity = 0.0f;
-			mSmoothDirection = true;
-			mSetSteps = false;
+			mRestart = false;
+			mSetStep = false;
 		}
 
 		// Scale time based on velocity
 		float smooth_time = mSmoothTimeLocal;
-		if (mSmoothUsingVel && !mSmoothDirection)
+		if (mSmoothUsingVel)
 		{
 			float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
 			smooth_time = math::fit<float>(mVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
-			nap::Logger::info("smooth value: %.2f", smooth_time);
 		}
 
 		// Update positions based on smoothed interpolation values
@@ -157,22 +167,8 @@ namespace nap
 			vel_wei += smooth_con;
 		}
 
-		float new_vel = vel_sum / vel_wei;
-		
-		// Calculate current velocity direction (up or down)
-		float dif_vel = new_vel - mVelocity;
-		if (math::abs<float>(dif_vel) > 10.0f)
-		{
-			mSmoothDirection = dif_vel > 10.0f;
-		}
-
-		if (mSmoothDirection)
-		{
-			nap::Logger::info("Up!");
-		}
-
-		// Calculate new current velocity and check if the velocity is falling
-		mVelocity = new_vel;
+		// Update velocity and store motor input
+		mVelocity = vel_sum / vel_wei;
 		mMotorInput = mMotorStepsInt;
 	}
 
@@ -188,6 +184,7 @@ namespace nap
 	{
 		outLag.clear();
 		outLag.resize(mSmoothers.size(), 0);
+
 		outVel.clear();
 		outVel.resize(mSmoothers.size(), 0);
 		
@@ -207,7 +204,7 @@ namespace nap
 	void MACAdapter::enableSmoothing(bool value)
 	{
 		std::lock_guard<std::mutex> lock(mMotorMutex);
-		mSetSteps = value;
+		mSetStep = value;
 		mEnableSmoothing = value;
 	}
 
