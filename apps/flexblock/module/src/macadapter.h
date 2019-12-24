@@ -75,6 +75,7 @@ namespace nap
 		float	mSmoothMinVel	= 1000.0f;							///< Property: 'Min Smooth Velocity' velocity low cutoff point, smooth time will be 'Min Smooth Time'
 		float	mSmoothMaxVel	= 25000.0f;							///< Property: 'Max Smooth Velocity' velocity max cutoff point, smooth time will be 'Smooth Time'
 		float	mSmoothTimeMin	= 0.5f;								///< Property: 'Smooth Time Min' smooth time used when velocity is low.
+		bool	mSmoothDirection = true;
 
 		std::vector<int> mMotorMapping;								///< Property: 'Motor Mapping' flex to individual motor mapping
 

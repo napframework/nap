@@ -129,15 +129,17 @@ namespace nap
 				mSmoothers[i]->setValue(outSteps[i]);
 
 			mVelocity = 0.0f;
+			mSmoothDirection = true;
 			mSetSteps = false;
 		}
 
 		// Scale time based on velocity
 		float smooth_time = mSmoothTimeLocal;
-		if (mSmoothUsingVel)
+		if (mSmoothUsingVel && !mSmoothDirection)
 		{
 			float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
 			smooth_time = math::fit<float>(mVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
+			nap::Logger::info("smooth value: %.2f", smooth_time);
 		}
 
 		// Update positions based on smoothed interpolation values
@@ -155,8 +157,22 @@ namespace nap
 			vel_wei += smooth_con;
 		}
 
+		float new_vel = vel_sum / vel_wei;
+		
+		// Calculate current velocity direction (up or down)
+		float dif_vel = new_vel - mVelocity;
+		if (math::abs<float>(dif_vel) > 10.0f)
+		{
+			mSmoothDirection = dif_vel > 10.0f;
+		}
+
+		if (mSmoothDirection)
+		{
+			nap::Logger::info("Up!");
+		}
+
 		// Calculate new current velocity and check if the velocity is falling
-		mVelocity = vel_sum / vel_wei;
+		mVelocity = new_vel;
 		mMotorInput = mMotorStepsInt;
 	}
 
