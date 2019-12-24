@@ -116,7 +116,7 @@ namespace nap
 			 * Sets the current blend value.
 			 * @param value the value to set as blend value
 			 */
-			void setValue(const T& value)							{ mValue = value; }
+			void setValue(const T& value);
 
 		protected:
 			/**
@@ -180,5 +180,17 @@ namespace nap
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<glm::vec4>::init();
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<float>::setValue(const float& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec3>::setValue(const glm::vec3& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec4>::setValue(const glm::vec4& value);
 	}
 }
