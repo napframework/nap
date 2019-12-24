@@ -125,7 +125,6 @@ namespace nap
 		// Check if we need to update reference position of smoothers first
 		if (mSetSteps)
 		{
-			nap::Logger::info("updating smoothing values");
 			for (auto i = 0; i < mSmoothers.size(); i++)
 				mSmoothers[i]->setValue(outSteps[i]);
 
@@ -153,7 +152,8 @@ namespace nap
 		}
 
 		// Calculate new current velocity and check if the velocity is falling
-		mVelocity /= static_cast<float>(mSmoothers.size());
+		mVelocity  /= static_cast<float>(mSmoothers.size());
+		mMotorInput = mMotorStepsInt;
 	}
 
 

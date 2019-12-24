@@ -94,8 +94,8 @@ namespace nap
 		std::vector<float> mMotorStepsInt		= std::vector<float>(8);
 		std::vector<FlexSmoothPtr> mSmoothers	= std::vector<FlexSmoothPtr>(8);
 		std::vector<MacPosition> mMotorData		= std::vector<MacPosition>(8);
-		std::atomic<bool> mEnableSmoothing		= false;
-		std::atomic<float> mSmoothTimeLocal		= 1.0f;
+		std::atomic<bool> mEnableSmoothing		= { false };
+		std::atomic<float> mSmoothTimeLocal		= { 1.0f };
 		bool mSetSteps							= false;
 		float mVelocity							= 0.0f;
 		std::mutex mMotorMutex;
