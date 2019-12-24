@@ -193,7 +193,6 @@ namespace nap
 		}
 
 		mPreviousVelocity	= 0.0f;
-		mFalling			= false;
 		mEnableSmoothing	= true;
 	}
 

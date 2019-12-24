@@ -94,7 +94,6 @@ namespace nap
 		std::atomic<float> mSmoothTimeLocal		= 1.0f;
 		std::mutex mMotorMutex;
 		float mPreviousVelocity					= 0.0f;
-		bool mFalling = false;
 
 		// Computes the lag
 		void applyLag(std::vector<float>& outSteps, double deltaTime);
