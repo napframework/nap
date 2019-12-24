@@ -68,9 +68,15 @@ namespace nap
 
 		float	mMotorStepsPerMeter = 129473.41f;					///< Property: 'Motor Steps Per Meter' number of motor steps associated with a single meter
 		int		mMotorStepOffset = 0;								///< Property: 'Motor Step Offset'
+		
+		float	mSmoothTime		= 2.0f;								///< Property: 'Smooth Time' time it will take to reach target value in seconds
+		float	mMaxSmoothTime	= 1000000.0f;						///< Property: 'Max Smooth Speed' maximum smooth interpolation speed
+		bool	mSmoothUsingVel = true;								///< Property: 'Smooth Using Velocity' if smooth time is scaled by velocity
+		float	mSmoothMinVel	= 1000.0f;							///< Property: 'Min Smooth Velocity' velocity low cutoff point, smooth time will be 'Min Smooth Time'
+		float	mSmoothMaxVel	= 25000.0f;							///< Property: 'Max Smooth Velocity' velocity max cutoff point, smooth time will be 'Smooth Time'
+		float	mSmoothTimeMin	= 0.5f;								///< Property: 'Smooth Time Min' smooth time used when velocity is low.
+
 		std::vector<int> mMotorMapping;								///< Property: 'Motor Mapping' flex to individual motor mapping
-		float	mSmoothTime = 1.0f;									///< Property: 'Smooth Time' time it will take to reach target value in seconds
-		float	mMaxSmoothTime = 1000000.0f;						///< Property: 'Max Smooth Speed' maximum smooth interpolation speed
 
 	protected:
 		virtual void onCompute(const FlexDevice& device, double deltaTime) override;
@@ -83,12 +89,12 @@ namespace nap
 		std::vector<float> mMotorInput			= std::vector<float>(8);
 		std::vector<float> mMotorStepsInt		= std::vector<float>(8);
 		std::vector<FlexSmoothPtr> mSmoothers	= std::vector<FlexSmoothPtr>(8);
-		std::vector<float> mSmoothDifference	= std::vector<float>(8);
-		std::vector<float> mSmoothVelocity		= std::vector<float>(8);
 		std::vector<MacPosition> mMotorData		= std::vector<MacPosition>(8);
 		std::atomic<bool> mEnableSmoothing		= false;
 		std::atomic<float> mSmoothTimeLocal		= 1.0f;
 		std::mutex mMotorMutex;
+		float mPreviousVelocity					= 0.0f;
+		bool mFalling = false;
 
 		// Computes the lag
 		void applyLag(std::vector<float>& outSteps, double deltaTime);

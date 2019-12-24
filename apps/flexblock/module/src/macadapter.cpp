@@ -11,6 +11,10 @@ RTTI_BEGIN_CLASS(nap::MACAdapter)
 	RTTI_PROPERTY("Max Smooth Speed",		&nap::MACAdapter::mMaxSmoothTime,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Motor Mapping",			&nap::MACAdapter::mMotorMapping,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Controller",				&nap::MACAdapter::mController,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Smooth Using Velocity",	&nap::MACAdapter::mSmoothUsingVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Min Smooth Velocity",	&nap::MACAdapter::mSmoothMinVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Max Smooth Velocity",	&nap::MACAdapter::mSmoothMaxVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Smooth Time Min",		&nap::MACAdapter::mSmoothTimeMin,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,14 +107,31 @@ namespace nap
 		if (mEnableSmoothing)
 		{
 			assert(outSteps.size() == mSmoothers.size());
-
-			// Copy most recent smooth time
+			
+			// Scale smooth time using velocity if required
 			float smooth_time = mSmoothTimeLocal;
+			if(mSmoothUsingVel)
+			{
+				// Ensure smooth time is always lower than default smooth time
+				float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
+				
+				// Scale smooth time based on velocity
+				smooth_time = math::fit<float>(mPreviousVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
+				//nap::Logger::info("smooth time: %.2f", smooth_time);
+			}
+
+			// Update smoothers and sum velocity
+			float current_vel = 0.0f;
 			for (int i = 0; i < mSmoothers.size(); i++)
 			{
 				mSmoothers[i]->mSmoothTime = smooth_time;
-				outSteps[i] = mSmoothers[i]->update(outSteps[i], deltaTime);
+				outSteps[i]  =	mSmoothers[i]->update(outSteps[i], deltaTime);
+				current_vel  += math::abs<float>(mSmoothers[i]->getVelocity());
 			}
+
+			// Calculate new current velocity and check if the velocity is falling
+			current_vel /= static_cast<float>(mSmoothers.size());
+			mPreviousVelocity = current_vel;
 		}
 
 		// Store current motor input
@@ -162,24 +183,18 @@ namespace nap
 			std::lock_guard<std::mutex> lock(mMotorMutex);
 
 			// Before we enable the smoothers, we need to update the current reference position.
-			// This position is either the current motor position or current target position, if they motor is not available.
 			int idx = 0;
 			for (auto& smoother : mSmoothers)
 			{
-				if (mMotorMapping[idx] < mController->getSlaveCount())
-				{
-					nap::int32 actual_pos = mController->getActualPosition(mMotorMapping[idx]);
-					smoother->setValue(static_cast<float>(actual_pos));
-				}
-				else
-				{
-					smoother->setValue(mMotorInput[idx]);
-				}
+				smoother->setValue(mMotorInput[idx]);
 				idx++;
 
 			}
-			mEnableSmoothing = true;
 		}
+
+		mPreviousVelocity	= 0.0f;
+		mFalling			= false;
+		mEnableSmoothing	= true;
 	}
 
 
@@ -191,7 +206,7 @@ namespace nap
 
 	void MACAdapter::setSmoothTime(float smoothTime)
 	{
-		mSmoothTimeLocal = math::max<float>(smoothTime, 0.001f);
+		mSmoothTimeLocal = math::max<float>(smoothTime, 0.01f);
 	}
 
 
