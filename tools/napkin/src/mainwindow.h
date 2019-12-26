@@ -130,6 +130,11 @@ namespace napkin
 		 */
 		void rebuildRecentMenu();
 
+		/**
+		 * @return The application context, providing access to the application's content state
+		 */
+		AppContext& getContext() const;
+
 	private:
 		bool mFirstShowEvent = true;
 

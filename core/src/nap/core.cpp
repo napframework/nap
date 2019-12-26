@@ -123,9 +123,9 @@ namespace nap
 		if (!mModuleManager->loadModules(projectInfo, error))
 			return false;
 
-//		// Create the various services based on their dependencies
-//		if (!createServices(error))
-//			return false;
+		// Create the various services based on their dependencies
+		if (!createServices(error))
+			return false;
 
 		return true;
 	}

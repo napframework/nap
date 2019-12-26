@@ -93,7 +93,17 @@ namespace napkin
 		 */
 		Document* loadDocument(const QString& filename);
 
+		/**
+		 * Load the specified project into the application context
+		 * @param filename The json file that contains the project's definition/dependencies/etc
+		 * @return A pointer to the loaded project info or nullptr when loading failed
+		 */
 		nap::ProjectInfo* loadProject(const QString& filename);
+
+		/**
+		 * @return The currently loaded project or a nullptr when no project is loaded
+		 */
+		nap::ProjectInfo* getProject() const;
 
 
 		/**

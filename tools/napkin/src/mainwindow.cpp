@@ -10,26 +10,26 @@ using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	connect(&getContext(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	connect(&getContext(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(&getContext(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	connect(&getContext(), &AppContext::logMessage, this, &MainWindow::onLog);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
 
 void MainWindow::unbindSignals()
 {
-	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	disconnect(&getContext(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	disconnect(&getContext(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(&getContext(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	disconnect(&getContext(), &AppContext::logMessage, this, &MainWindow::onLog);
 }
 
 
@@ -41,7 +41,7 @@ void MainWindow::showEvent(QShowEvent* event)
 	{
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
-		AppContext::get().restoreUI();
+		getContext().restoreUI();
 		rebuildRecentMenu();
 		mFirstShowEvent = false;
 	}
@@ -61,7 +61,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::addDocks()
 {
-	addDock("Available Types", &mHierarchyPanel);
+//	addDock("Available Types", &mHierarchyPanel);
 //	addDock("History", &mHistoryPanel);
 //	addDock("Path Browser", &mPathBrowser);
 
@@ -127,16 +127,16 @@ void MainWindow::onDocumentChanged()
 
 void MainWindow::updateWindowTitle()
 {
-	QString filename = AppContext::get().getDocument()->getCurrentFilename();
-	if (filename.isEmpty()) {
-		filename = napkin::TXT_UNTITLED_DOCUMENT;
-	} else {
-		filename = QFileInfo(filename).filePath();
-	}
+	auto& ctx = getContext();
 
-	QString changed = AppContext::get().getDocument()->isDirty() ? "*" : "";
+	auto project = ctx.getProject();
+	if (!project)
+		setWindowTitle(QApplication::applicationName());
 
-	setWindowTitle(QString("%1%2 - %3").arg(filename, changed, QApplication::applicationName()));
+	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
+	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project->mTitle),
+											   changed, QString::fromStdString(project->mVersion),
+											   QApplication::applicationName()));
 }
 
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
@@ -220,7 +220,7 @@ void MainWindow::showError(nap::LogMessage msg)
 
 bool MainWindow::confirmSaveCurrentFile()
 {
-	if (!AppContext::get().getDocument()->isDirty())
+	if (!getContext().getDocument()->isDirty())
 		return true;
 
 	auto result = QMessageBox::question(this, "Confirm save unsaved change",
@@ -241,14 +241,14 @@ void MainWindow::rebuildRecentMenu()
 {
 	mRecentFilesMenu->clear();
 
-	auto recentFiles = AppContext::get().getRecentlyOpenedFiles();
+	auto recentFiles = getContext().getRecentlyOpenedFiles();
 	for (const auto& filename : recentFiles)
 	{
 		auto action = mRecentFilesMenu->addAction(filename);
 		connect(action, &QAction::triggered, [this, filename]()
 		{
 			if (confirmSaveCurrentFile())
-				AppContext::get().loadDocument(filename);
+				getContext().loadDocument(filename);
 		});
 	}
 
@@ -258,6 +258,11 @@ void MainWindow::rebuildRecentMenu()
 
 void MainWindow::onDocked(QDockWidget *dockWidget)
 {
+}
+
+AppContext& MainWindow::getContext() const
+{
+	return AppContext::get();
 }
 
 

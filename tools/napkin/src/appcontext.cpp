@@ -102,6 +102,15 @@ nap::ProjectInfo* AppContext::loadProject(const QString& filename)
 		return nullptr;
 	}
 
+	loadDocument(QString::fromStdString(mProjectInfo->getDefaultDataFile()));
+
+	return mProjectInfo.get();
+}
+
+nap::ProjectInfo* AppContext::getProject() const
+{
+	if (!mProjectInfo)
+		return nullptr;
 	return mProjectInfo.get();
 }
 
