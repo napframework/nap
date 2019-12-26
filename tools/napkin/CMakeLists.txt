@@ -29,20 +29,20 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 # The NAP modules Napkin needs to link against
 # TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
 set(NAP_MODULES_LINK_DEPENDENCIES
-        mod_nappython
+#        mod_nappython
         )
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES} mod_napinput mod_napparameter)
+set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES})
 
-add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
+#add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 
 set(LIBS
     napcore
-    mod_napmath
+    mod_napscene
     napqt
-    ${NAP_MODULES_LINK_DEPENDENCIES}
+#    ${NAP_MODULES_LINK_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
     )
 
