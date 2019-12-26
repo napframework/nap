@@ -10,7 +10,7 @@ napkin::TypeModel::TypeModel()
 void napkin::TypeModel::refresh()
 {
 	// Clear existing items first
-	while (rowCount() > 0)
+	while (rowCount())
 		removeRow(0);
 
 	nap::rtti::TypeInfo rootType = RTTI_OF(nap::rtti::Object);

@@ -30,9 +30,6 @@ std::vector<rttr::type> napkin::getDerivedTypes(const rttr::type& type)
 		if (derived.get_base_classes().empty())
 			continue;
 
-//		if (derived == RTTI_OF(nap::Scene))
-//			nap::Logger::info("Koek!");
-
 		bool foundBase = false;
 		const auto& baseClasses = derived.get_base_classes();
 		for (auto it = baseClasses.rbegin(); it != baseClasses.rend(); ++it)
@@ -47,6 +44,18 @@ std::vector<rttr::type> napkin::getDerivedTypes(const rttr::type& type)
 			derivedTypes.emplace_back(derived);
 	}
 	return derivedTypes;
+}
+
+void napkin::dumpTypes(rttr::type type, const std::string& indent)
+{
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
+	nap::Logger::info("type: " + indent + type.get_name().data() + " (" + ss.str() + ")");
+	for (const auto& derived : getDerivedTypes(type))
+		dumpTypes(derived, indent + "    ");
 }
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)

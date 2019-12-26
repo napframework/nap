@@ -15,7 +15,8 @@ namespace nap
 	 * @param modulePath The path to the shared library to load
 	 * @param errorString If the module failed to load, the error string
 	 * @return Handle to the loaded module
-	 */	NAPAPI void* loadModule(const std::string& modulePath, std::string& errorString);
+	 */
+	NAPAPI void* loadModule(const std::string& modulePath, std::string& errorString);
 
 	/**
 	 * Platform-wrapper function to unload a shared library

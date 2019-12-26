@@ -6,6 +6,7 @@
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("title", &nap::ProjectInfo::mTitle, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("version", &nap::ProjectInfo::mVersion, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("default_data", &nap::ProjectInfo::mDefaultData, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("modules", &nap::ProjectInfo::mModuleNames, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("modulepaths", &nap::ProjectInfo::mModuleDirs, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -20,7 +21,6 @@ namespace nap
 	{
 		return nap::utility::getFileDir(mFilename);
 	}
-
 
 	std::vector<std::string> ProjectInfo::getModuleDirectories() const
 	{
@@ -37,6 +37,11 @@ namespace nap
 		}
 
 		return dirs;
+	}
+
+	std::string ProjectInfo::getDefaultDataFile() const
+	{
+		return getDirectory() + "/" + mDefaultData;
 	}
 
 	bool ProjectInfo::load(const std::string& filename, utility::ErrorState& err)
