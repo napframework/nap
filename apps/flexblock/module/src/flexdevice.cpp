@@ -107,6 +107,13 @@ namespace nap
 	{
 		assert(!mComputeTask.valid());
 		mStopCompute = false;
+		mTimer.reset();
+
+		// Notify adapters
+		for(auto& adapter : mAdapters)
+			adapter->start();
+
+		// Start compute task
 		mComputeTask = std::async(std::launch::async, std::bind(&FlexDevice::compute, this));
 		return true;
 	}
@@ -114,6 +121,11 @@ namespace nap
 
 	void FlexDevice::stop()
 	{
+		// Notify adapters
+		for (auto& adapter : mAdapters)
+			adapter->stop();
+
+		// Stop computing task
 		mStopCompute = true;
 		if (mComputeTask.valid())
 		{
@@ -173,13 +185,14 @@ namespace nap
 		std::vector<float> calc_ropes(8);
 		std::vector<glm::vec3> calc_points(8);
 
-		// Timer used for calculating sin-value
-		nap::SystemTimer timer;
-		timer.reset();
-
 		// Compute loop
 		while (!mStopCompute)
 		{
+			// Compute loop delta-time in seconds
+			double new_elapsed_time = mTimer.getElapsedTime();
+			double delta_time = new_elapsed_time - mLastTimeStamp;
+			mLastTimeStamp = new_elapsed_time;
+
 			// Get current input arguments
 			getInput(input);
 
@@ -257,15 +270,14 @@ namespace nap
 			calcElements(calc_points);
 
 			// Calculate final algorithm output
-			calcRopeLengths(timer.getElapsedTime(), input, calc_ropes);
-			timer.reset();
+			calcRopeLengths(delta_time, input, calc_ropes);
 
 			// Update internal data, which can be used by external processes
 			setData(calc_points, calc_ropes);
 			
 			// Now call adapters!
 			for (auto& adapter: mAdapters)
-				adapter->compute(*this);
+				adapter->compute(*this, delta_time);
 
 			// Wait update time
 			// TODO: Do we need to consider the actual compute time of the algorithm here?
@@ -386,7 +398,6 @@ namespace nap
 	void FlexDevice::calcRopeLengths(double elapsed, const FlexInput& input, std::vector<float>& outLengths)
 	{
 		mSinTime += elapsed * (double)(input.mSinusFrequency * mFrequencyRange);
-		
 
 		outLengths.clear();
 		for (int i = 12; i < 20; i++)
