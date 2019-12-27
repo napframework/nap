@@ -88,7 +88,7 @@ void MainWindow::addMenu()
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
 
-		mRecentFilesMenu = filemenu->addMenu("Open Recent");
+		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
 
 		auto reloadFileAction = new ReloadFileAction();
 		addAction(reloadFileAction);
@@ -239,20 +239,20 @@ bool MainWindow::confirmSaveCurrentFile()
 
 void MainWindow::rebuildRecentMenu()
 {
-	mRecentFilesMenu->clear();
+	mRecentProjectsMenu->clear();
 
-	auto recentFiles = getContext().getRecentlyOpenedFiles();
+	auto recentFiles = getContext().getRecentlyOpenedProjects();
 	for (const auto& filename : recentFiles)
 	{
-		auto action = mRecentFilesMenu->addAction(filename);
+		auto action = mRecentProjectsMenu->addAction(filename);
 		connect(action, &QAction::triggered, [this, filename]()
 		{
 			if (confirmSaveCurrentFile())
-				getContext().loadDocument(filename);
+				getContext().loadProject(filename);
 		});
 	}
 
-	mRecentFilesMenu->setEnabled(!mRecentFilesMenu->isEmpty());
+	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
 }
 
 

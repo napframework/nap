@@ -32,7 +32,7 @@ namespace napkin
 		static const QString WIN_GEO		   	= "windowGeometry";
 		static const QString WIN_STATE		   	= "windowState";
 		static const QString LAST_THEME		   	= "lastTheme";
-		static const QString RECENTLY_OPENED	= "recentlyOpened";
+		static const QString RECENTLY_OPENED	= "recentProjects";
 	}
 
 	static const std::string PROP_CHILDREN   = "Children";

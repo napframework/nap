@@ -163,6 +163,14 @@ namespace nap
 		 */
 		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace);
 
+		/**
+		 * Based on a string and a character offset into this string, return the line number
+		 * @param buffer The string to search
+		 * @param offset Character offset into the provided buffer
+		 * @return The line number at which the character at offset appears
+		 */
+		int getLine(const std::string& buffer, size_t offset);
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template Definitions

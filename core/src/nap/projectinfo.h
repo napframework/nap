@@ -14,6 +14,8 @@ namespace nap
 		std::vector<std::string> mModuleNames; // Names of modules this project depends on
 		std::vector<std::string> mModuleDirs; // Relative or absolute directory paths to search for modules
 
+		std::string getFilename() const { return mFilename; }
+
 		/**
 		 * @return Absolute path of the project directory
 		 */

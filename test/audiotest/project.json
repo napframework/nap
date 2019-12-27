@@ -8,5 +8,15 @@
         "mod_naposc",
         "mod_napmidi",
         "mod_napaudio"
+    ],
+    "service_configurations": [
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "AudioServiceConfiguration",
+            "SampleRate": 44100,
+            "InputChannelCount": 1,
+            "OutputChannelCount": 2,
+            "AllowChannelCountFailure": "True"
+        }
     ]
 }

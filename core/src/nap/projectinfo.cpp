@@ -47,12 +47,14 @@ namespace nap
 	bool ProjectInfo::load(const std::string& filename, utility::ErrorState& err)
 	{
 		mFilename = filename;
-		return nap::loadJSONSimple(filename, *this, err);
+		return nap::deserializeObjectFromJsonFile(filename, *this, err);
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool ModuleInfo::load(const std::string& filename, utility::ErrorState& err)
 	{
 		mFilename = filename;
-		return nap::loadJSONSimple(filename, *this, err);
+		return nap::deserializeObjectFromJsonFile(filename, *this, err);
 	}
 }

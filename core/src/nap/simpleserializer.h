@@ -1,5 +1,10 @@
+// STL
 #include <string>
+
+// External
 #include <rttr/type>
+#include <rapidjson//document.h>
+#include <utility/errorstate.h>
 
 namespace nap
 {
@@ -11,7 +16,7 @@ namespace nap
 	 * @param err Will be populated with any errors when they happen.
 	 * @return True on success, false otherwise.
 	 */
-	bool deserializeSimple(const std::string& json, rttr::instance obj, nap::utility::ErrorState& err);
+	bool deserializeObjectFromJsonString(const std::string& json, rttr::instance obj, nap::utility::ErrorState& err);
 
 	/**
 	 * Load a json file and deserialize its data onto the given object.
@@ -21,5 +26,8 @@ namespace nap
 	 * @param err Will be populated with any errors when they happen.
 	 * @return True on success, false otherwise.
 	 */
-	bool loadJSONSimple(const std::string& filename, rttr::instance obj, nap::utility::ErrorState& err);
+	bool deserializeObjectFromJsonFile(const std::string& filename, rttr::instance obj, nap::utility::ErrorState& err);
+
+	bool loadJSONDocument(const std::string& filename, rapidjson::Document& doc, nap::utility::ErrorState& err);
+	bool parseJSONDocument(const std::string& jsonString, rapidjson::Document& doc, nap::utility::ErrorState& err);
 }

@@ -49,7 +49,7 @@ OpenFileAction::OpenFileAction()
 
 void OpenFileAction::perform()
 {
-	auto lastFilename = AppContext::get().getLastOpenedFilename();
+	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
 	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
 													lastFilename, JSON_FILE_FILTER);
 	if (filename.isNull())
@@ -101,7 +101,7 @@ void SaveFileAsAction::perform()
 	auto& ctx = AppContext::get();
 	auto prevFilename = ctx.getDocument()->getCurrentFilename();
 	if (prevFilename.isNull())
-		prevFilename = ctx.getLastOpenedFilename();
+		prevFilename = ctx.getLastOpenedProjectFilename();
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);

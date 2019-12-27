@@ -53,8 +53,17 @@ namespace nap
 		 */
 		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);
 
+		/**
+		 * Load all modules specified in the project info
+		 * @param projectInfo The descriptor providing the module dependencies
+		 * @param error Any errors will be stored here
+		 * @return True on success, false otherwise
+		 */
 		bool loadModules(const ProjectInfo& projectInfo, utility::ErrorState& error);
 
+		/**
+		 * @return All currently loaded modules
+		 */
 		const std::vector<Module>& getModules() const { return mModules; }
 
 	private:

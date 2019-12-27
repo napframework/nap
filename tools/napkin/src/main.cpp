@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		return 0;
 
 	if (parser.isSet(opProject))
-		AppContext::get().loadProject(parser.value(opProject));
+		AppContext::get().addRecentlyOpenedProject(parser.value(opProject));
 
 	// Create main window and run
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));

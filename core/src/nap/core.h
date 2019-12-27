@@ -24,6 +24,8 @@ constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
+	using ServiceConfigMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+
 	/**
 	 * Core manages the object graph, modules and services
 	 * Core is required in every NAP application and should be the first object that is created and
@@ -195,6 +197,13 @@ namespace nap
 		bool createServices(utility::ErrorState& errorState);
 
 		/**
+		* Helper function that creates all the services that are found in the various modules
+		* Note that a module does not need to define a service, only if it has been defined
+		* this call will try to create it.
+	 	*/
+		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
+
+		/**
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
 		* @param configuration The ServiceConfiguration that should be used to construct the service
@@ -217,6 +226,19 @@ namespace nap
 		 * @return if service configuration reading succeeded or not
 		 */
 		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
+
+		/**
+		 * Load service configurations from the project file
+		 * @param projectInfo The current project
+		 * @param serviceConfigs Used to store the result
+		 * @param errorState Will contain any error messages when loading fails
+		 * @return True if loading succeeded, false otherwise
+		 */
+		bool loadServiceConfiguration(const nap::ProjectInfo& projectInfo,
+									  ServiceConfigMap& serviceConfigs,
+									  utility::ErrorState& errorState);
+
+
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -274,8 +296,7 @@ namespace nap
 		// Interface associated with this instance of core.
 		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = {
-			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};
 }
 

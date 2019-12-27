@@ -95,10 +95,10 @@ namespace napkin
 
 		/**
 		 * Load the specified project into the application context
-		 * @param filename The json file that contains the project's definition/dependencies/etc
+		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
 		 * @return A pointer to the loaded project info or nullptr when loading failed
 		 */
-		nap::ProjectInfo* loadProject(const QString& filename);
+		nap::ProjectInfo* loadProject(const QString& projectFilename);
 
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
@@ -142,18 +142,22 @@ namespace napkin
 		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
-		void openRecentDocument();
+		void openRecentProject();
 
 		/**
 		 * @return The path of the file that was opened last.
 		 */
-		const QString getLastOpenedFilename();
+		const QString getLastOpenedProjectFilename();
 
 		/**
 		 * Add a filename to the recently opened file list or bump an existing filename to the top
 		 */
-		void addRecentlyOpenedFile(const QString& filename);
-		QStringList getRecentlyOpenedFiles() const;
+		void addRecentlyOpenedProject(const QString& filename);
+
+		/**
+		 * @return The list of recently opened project files
+		 */
+		QStringList getRecentlyOpenedProjects() const;
 
 		/**
 		 * @return The current document

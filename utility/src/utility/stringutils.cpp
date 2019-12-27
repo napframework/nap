@@ -193,6 +193,21 @@ namespace nap
 			}
 			return outString;
 		}
+
+		int getLine(const std::string& buffer, size_t offset) {
+			int line = 1;
+			size_t line_offset = 0;
+			while (true)
+			{
+				line_offset = buffer.find('\n', line_offset);
+				if (line_offset == std::string::npos || line_offset > offset)
+					break;
+				++line;
+				line_offset += 1;
+			}
+			return line;
+		}
+
 	}
 
 }

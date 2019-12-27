@@ -9,21 +9,6 @@
 
 namespace nap
 {	
-	int getLine(const std::string& json, size_t offset)
-	{
-		int line = 1;
-		int line_offset = 0;
-		while (true)
-		{
-			line_offset = json.find('\n', line_offset);
-			if (line_offset == std::string::npos || line_offset > offset)
-				break;
-			++line;
-			line_offset += 1;
-		}
-		return line;
-	}
-	
 	bool deserializeProjectInfoJSON(const std::string& json, ProjectInfo& result, utility::ErrorState& errorState)
 	{
 		// Try to parse the json file
@@ -31,7 +16,7 @@ namespace nap
 		rapidjson::ParseResult parse_result = document.Parse(json.c_str());
 		if (!parse_result)
 		{
-			errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), getLine(json, parse_result.Offset()));
+			errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), utility::getLine(json, parse_result.Offset()));
 			return false;
 		}
 		

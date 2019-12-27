@@ -66,7 +66,7 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type
 	ss << address;
 	std::string name = ss.str();
 
-	setText(QString("%1 (%2)").arg(type.get_name().data(), name.c_str()));
+	setText(type.get_name().data());
 	setEditable(false);
 	//    setForeground(getSoftForeground());
 	//    setBackground(getSoftBackground());

@@ -150,7 +150,7 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ThemeSelectionMenu mThemeMenu;
 		ScenePanel mScenePanel;
-		QMenu* mRecentFilesMenu = nullptr;
+		QMenu* mRecentProjectsMenu = nullptr;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;

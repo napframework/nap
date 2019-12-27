@@ -8,6 +8,7 @@
 // External Includes
 #include <utility/fileutils.h>
 #include <dlfcn.h>
+#include <nap/simpleserializer.h>
 
 namespace nap
 {
@@ -131,16 +132,12 @@ namespace nap
 
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
-		std::string moduleFile;
-		std::string moduleJson;
-		for (const auto& moduleName : projectInfo.mModuleNames)
+		for (const std::string& moduleName : projectInfo.mModuleNames)
 		{
-			// Load the module
-			utility::ErrorState moduleErr;
-			if (!loadModule_(projectInfo, moduleName, moduleErr))
+			if (!loadModule_(projectInfo, moduleName, err))
 			{
-				nap::Logger::error(moduleErr.toString());
-				continue;
+				err.fail("Failed to load module '%s'", moduleName.c_str());
+				return false;
 			}
 		}
 		return true;

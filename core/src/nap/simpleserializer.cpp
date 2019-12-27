@@ -1,12 +1,11 @@
+#include "simpleserializer.h"
 #include <string>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <rttr/type>
 #include <rtti/deserializeresult.h>
-#include <utility/errorstate.h>
 #include <utility/fileutils.h>
-#include "logger.h"
 
 using namespace rapidjson;
 using namespace rttr;
@@ -190,31 +189,43 @@ namespace nap
 		}
 	}
 
-	bool deserializeSimple(const std::string& json, rttr::instance obj, nap::utility::ErrorState& err)
+	bool deserializeObjectFromJsonString(const std::string& json, rttr::instance obj, nap::utility::ErrorState& err)
 	{
 		Document document;  // Default template parameter uses UTF8 and MemoryPoolAllocator.
-
-		// "normal" parsing, decode strings to new buffers. Can use other input stream via ParseStream().
-		if (document.Parse(json.c_str()).HasParseError())
-		{
-			err.fail(nap::utility::stringFormat("Failed to parse json: %s",
-												rapidjson::GetParseError_En(document.GetParseError())));
+		if (!parseJSONDocument(json, document, err))
 			return false;
-		}
-
 		fromJSON(obj, document);
-
 		return true;
 	}
 
-	bool loadJSONSimple(const std::string& filename, rttr::instance obj, nap::utility::ErrorState& err)
+	bool deserializeObjectFromJsonFile(const std::string& filename, rttr::instance obj, nap::utility::ErrorState& err)
 	{
 		std::string buffer;
 		if (!readFileToString(filename, buffer, err))
 			return false;
 
-		if (!nap::deserializeSimple(buffer, obj, err))
+		return deserializeObjectFromJsonString(buffer, obj, err);
+	}
+
+	bool loadJSONDocument(const std::string& filename, rapidjson::Document& doc, nap::utility::ErrorState& err)
+	{
+		std::string buffer;
+		if (!utility::readFileToString(filename, buffer, err))
 			return false;
+
+		return parseJSONDocument(buffer, doc, err);
+	}
+
+
+	bool parseJSONDocument(const std::string& buffer, rapidjson::Document& doc, nap::utility::ErrorState& err)
+	{
+		// "normal" parsing, decode strings to new buffers. Can use other input stream via ParseStream().
+		if (doc.Parse(buffer.c_str()).HasParseError())
+		{
+			err.fail(nap::utility::stringFormat("Failed to parse json string: %s",
+												rapidjson::GetParseError_En(doc.GetParseError())));
+			return false;
+		}
 
 		return true;
 	}
