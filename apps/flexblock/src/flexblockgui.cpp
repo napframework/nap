@@ -316,8 +316,6 @@ namespace nap
 			ImGui::SetNextWindowPos(ImVec2(50, 50));
 			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f - 50, mWindowSize.y - 100));
 		}
-		if( mProps.mShowPlaylist )
-			showPlaylist();
 
 		if (resetLayout)
 		{
@@ -338,6 +336,7 @@ namespace nap
 		}
 
 		handleQuitPopup();
+
 
 		if (mInTimeJumpTransition)
 		{
@@ -409,6 +408,11 @@ namespace nap
 
 		// draw player controls
 		drawTimelinePlayerControls(needToOpenPopup, popupIdToOpen);
+
+
+		//
+		if (mProps.mShowPlaylist)
+			drawPlaylist(needToOpenPopup, popupIdToOpen);
 
 		//
 		if (needToOpenPopup)
@@ -2005,7 +2009,7 @@ namespace nap
 	}
 
 
-	void FlexblockGui::showPlaylist()
+	void FlexblockGui::drawPlaylist(bool &outOpenPopup, std::string& outPopupID)
 	{
 		// Fetch resource manager to get access to all loaded resources
 		ResourceManager* resourceManager = mApp.getCore().getResourceManager();
@@ -2103,7 +2107,13 @@ namespace nap
 				ImGui::PushStyleColor(0, color);
 				if(ImGui::Button(sequence->mName.c_str(), ImVec2(150, 35)))
 				{
-					mSequencePlayer->skipToSequence(sequence);
+					if (handleTimeJump(sequence->getStartTime()))
+					{
+						mProps.mInPopup = true;
+						mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
+						outOpenPopup = true;
+						outPopupID = "TimeJump";
+					}
 				}
 				ImGui::SameLine();
 				ImGui::Text(formatTimeString(sequence->getStartTime()).c_str());
@@ -2127,8 +2137,13 @@ namespace nap
 
 					if (ImGui::Button(element->mName.c_str(), ImVec2(150, 25)))
 					{
-						//mSequencePlayer->skipToSequence(sequence);
-						mSequencePlayer->setTime(element->getStartTime());
+						if (handleTimeJump(element->getStartTime()))
+						{
+							mProps.mInPopup = true;
+							mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
+							outOpenPopup = true;
+							outPopupID = "TimeJump";
+						}
 					}
 					ImGui::SameLine();
 					ImGui::Text(formatTimeString(element->getStartTime()).c_str());
@@ -2926,6 +2941,19 @@ namespace nap
 		ImGui::End();
 	}
 
+
+	void FlexblockGui::emergencyStop()
+	{
+		mSequencePlayer->stop();
+		mMotorController->emergencyStop();
+
+		// if we emergency stop in a transition, cancel time jump
+		if (mInTimeJumpTransition)
+		{
+			mTimeJumpTransitionDone = true;
+			mTimeJumpSequencePlayerWasPlaying = false;
+		}
+	}
 
 	void FlexblockGui::showMotorControlWindow()
 	{

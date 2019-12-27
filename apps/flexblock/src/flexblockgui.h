@@ -75,6 +75,8 @@ namespace nap
 		 * 
 		 */
 		void quitDialog();
+
+		void emergencyStop();
 	private:
 		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
@@ -115,7 +117,7 @@ namespace nap
 
 		std::string formatTimeString(float time);
 
-		void showPlaylist();
+		void drawPlaylist(bool& outOpenPopup, std::string & outPopupID);
 
 		void handleElementActionsPopup();
 
@@ -171,6 +173,8 @@ namespace nap
 		bool handleTimeJump(const double time);
 
 		void handleTimeJumpPopup();
+
+		
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);
