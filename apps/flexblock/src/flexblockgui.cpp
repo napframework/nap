@@ -2956,7 +2956,30 @@ namespace nap
 			}
 			else
 			{
-				if (ImGui::Button("Finish"))
+				if (ImGui::SliderFloat("Threshold", &mTimeJumpDifferenceThreshold, 0.0f, 200.0f))
+				{
+				}
+
+				float smooth_time = mMotorAdapter->getSmoothTime();
+				if (ImGui::SliderFloat("Smooth Time", &smooth_time, 0.0f, 30.0f))
+				{
+					mMotorAdapter->setSmoothTime(smooth_time);
+				}
+
+				std::vector<float> tar_motor_steps;
+				std::vector<float> tar_motor_velo;
+				mMotorAdapter->getLag(tar_motor_steps, tar_motor_velo);
+				bool thresholdReached = true;
+				for (int mo = 0; mo < tar_motor_steps.size(); mo++)
+				{
+					ImGui::Text("Diff: %.2f, Vel: %.2f", tar_motor_steps[mo], math::abs<float>(tar_motor_velo[mo]));
+					if (math::abs<float>(tar_motor_steps[mo]) > mTimeJumpDifferenceThreshold)
+					{
+						thresholdReached = false;
+					}
+				}
+
+				if (ImGui::Button("Continue") || thresholdReached)
 				{
 					if (mTimeJumpShouldPlayAfterTransitionDone)
 					{

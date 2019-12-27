@@ -94,6 +94,7 @@ namespace nap
 		bool								mTimeJumpShouldPlayAfterTransitionDone = false;
 		bool								mInTimeJumpTransition = false;
 		double								mTimeJumpSequencePlayerTarget = 0.0;
+		float								mTimeJumpDifferenceThreshold = 10.0f;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
