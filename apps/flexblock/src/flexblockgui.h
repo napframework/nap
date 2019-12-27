@@ -91,11 +91,8 @@ namespace nap
 		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 		bool								mEditAllTimelines = false;
 
-		bool								mTimeJumpSequencePlayerWasPlaying = false;
-		bool								mTimeJumpTransitionDone = false;
+		bool								mTimeJumpShouldPlayAfterTransitionDone = false;
 		bool								mInTimeJumpTransition = false;
-		double								mTimeJumpTransitionTime = 0.0;
-		double								mTimeJumpTransitionTarget = 3.0;
 		double								mTimeJumpSequencePlayerTarget = 0.0;
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
