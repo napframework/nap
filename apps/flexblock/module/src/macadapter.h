@@ -43,6 +43,13 @@ namespace nap
 		void getLag(std::vector<float>& outLag, std::vector<float>& outVel);
 
 		/**
+		 * Returns targets of the smoothers
+		 * To get the actual motor position values given to the mac-controller use getMotorSteps().
+		 * @param outTarget the smoother target values
+		 */
+		void getSmootherTarget(std::vector<float>& outSteps);
+
+		/**
 		 * Enables or disables the smoothing of motor positions. Thread safe.
 		 * @param value if smoothing should be turned on or off
 		 */
@@ -63,6 +70,11 @@ namespace nap
 		 * @return motor smooth time in seconds
 		 */
 		float getSmoothTime();
+
+		/**
+		 * @return motor steps per meter
+		 */
+		float getMotorStepsPerMeter() const;
 
 		nap::ResourcePtr<MACController> mController = nullptr;		///< Property: 'Controller' the MAC controller that manages all the motor
 

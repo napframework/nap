@@ -334,6 +334,11 @@ namespace nap
 		}
 
 		handleQuitPopup();
+
+		if (mInTimeJumpTransition)
+		{
+			mTimeJumpActiveTime += deltaTime;
+		}
 	}
 	
 
@@ -2882,6 +2887,8 @@ namespace nap
 				mProps.mCurrentAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
 				mEmergencyCloseTimeJumpPopup = false;
+				mInTimeJumpTransition = false;
+				return;
 			}
 
 			if (!mInTimeJumpTransition)
@@ -2901,7 +2908,16 @@ namespace nap
 				ImVec2 topleftPosition = ImGui::GetWindowPos();
 				ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-				topleftPosition = ImVec2(topleftPosition.x + 20, topleftPosition.y + 20);
+				// parameter text
+				drawList->AddText(
+					ImVec2(topleftPosition.x + 20, topleftPosition.y + 10), colorWhite,
+					"Timeline difference");
+
+				drawList->AddText(
+					ImVec2(topleftPosition.x + 20, topleftPosition.y + 25), colorRed,
+					"*Please note this does NOT mean motor position difference!");
+
+				topleftPosition = ImVec2(topleftPosition.x + 20, topleftPosition.y + 60);
 				for (int i = 0; i < 19; i++)
 				{
 					const float startPos = 50;
@@ -2949,6 +2965,7 @@ namespace nap
 						ImGui::ColorConvertFloat4ToU32(color));
 
 					float difference = target - now;
+
 					// text
 					switch ((flexblock::PARAMETER_IDS)i)
 					{
@@ -3087,13 +3104,15 @@ namespace nap
 					//
 					mMotorAdapter->setEnabled(true);
 					mInTimeJumpTransition = true;
+					mTimeJumpActiveTime = 0.0;
 					mSequencePlayer->pause();
 					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
+					mTimeJumpDifferenceThreshold = 0.05f;
 				}
 			}
 			else
 			{
-				if (ImGui::SliderFloat("Threshold", &mTimeJumpDifferenceThreshold, 0.0f, 200.0f))
+				if (ImGui::SliderFloat("Threshold ( Meters )", &mTimeJumpDifferenceThreshold, 0.001f, 1.0f))
 				{
 				}
 
@@ -3103,20 +3122,80 @@ namespace nap
 					mMotorAdapter->setSmoothTime(smooth_time);
 				}
 
+				// get information from motoradapter
+				std::vector<float> cur_input;
+				mMotorAdapter->getMotorInput(cur_input);
+
+				std::vector<float> cur_target;
+				mMotorAdapter->getSmootherTarget(cur_target);
+
 				std::vector<float> tar_motor_steps;
 				std::vector<float> tar_motor_velo;
 				mMotorAdapter->getLag(tar_motor_steps, tar_motor_velo);
+
+				//
+				ImGui::BeginChild("TimeJumpPopupChild", ImVec2(600, 300), true, ImGuiWindowFlags_NoMove);
+				ImVec2 topleftPosition = ImGui::GetWindowPos();
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+				// parameter text
+				drawList->AddText(
+					ImVec2(topleftPosition.x + 20, topleftPosition.y + 10), colorWhite,
+					"Motor differences");
+
+				topleftPosition = ImVec2(topleftPosition.x + 20, topleftPosition.y + 40);
+				for (int i = 0; i < cur_input.size(); i++)
+				{
+					const float startPos = 100;
+					const float rectPaddingHeight = 5;
+					const float rectWidth = 400;
+					const float rectHeight = 25;
+
+					float meterDifference = tar_motor_steps[i] / mMotorAdapter->getMotorStepsPerMeter();
+
+					char buff[128];
+					sprintf(buff, "Motor : %i", i + 1);
+
+					// parameter text
+					drawList->AddText(
+						ImVec2(topleftPosition.x, topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+						meterDifference < mTimeJumpDifferenceThreshold ? colorWhite : colorRed, buff);
+
+					// rect
+					ImVec2 boxPos = ImVec2(
+						topleftPosition.x + startPos,
+						topleftPosition.y + (rectHeight + rectPaddingHeight) * i);
+					float boxRightBorder = boxPos.x + rectWidth * (tar_motor_steps[i] / cur_target[i]);
+					drawList->AddRectFilled(boxPos, ImVec2(boxRightBorder, boxPos.y + rectHeight), colorRed);
+				
+					// text
+					sprintf(buff, "%.3f meter", meterDifference);
+					drawList->AddText(
+						ImVec2(boxRightBorder + 5, boxPos.y),
+						colorWhite, buff);
+				}
+
+				ImGui::EndChild();
+
 				bool thresholdReached = true;
 				for (int mo = 0; mo < tar_motor_steps.size(); mo++)
 				{
-					ImGui::Text("Diff: %.2f, Vel: %.2f", tar_motor_steps[mo], math::abs<float>(tar_motor_velo[mo]));
-					if (math::abs<float>(tar_motor_steps[mo]) > mTimeJumpDifferenceThreshold)
+					float meterDifference = tar_motor_steps[mo] / mMotorAdapter->getMotorStepsPerMeter();
+
+					ImGui::Text("%i : Diff: %.3f, Vel: %.3f, Input: %.3f, Target: %.3f", 
+						mo + 1,
+						tar_motor_steps[mo] / mMotorAdapter->getMotorStepsPerMeter(),
+						math::abs<float>(tar_motor_velo[mo] / mMotorAdapter->getMotorStepsPerMeter()),
+						cur_input[mo] / mMotorAdapter->getMotorStepsPerMeter(),
+						cur_target[mo] / mMotorAdapter->getMotorStepsPerMeter());
+
+					if (meterDifference > mTimeJumpDifferenceThreshold)
 					{
 						thresholdReached = false;
 					}
 				}
 
-				if (ImGui::Button("Continue") || thresholdReached)
+				if (ImGui::Button("Continue") || ( thresholdReached && mTimeJumpActiveTime > mTimeJumpMinimumActiveTime ))
 				{
 					if (mTimeJumpShouldPlayAfterTransitionDone)
 					{

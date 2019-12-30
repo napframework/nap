@@ -201,6 +201,18 @@ namespace nap
 	}
 
 
+	void MACAdapter::getSmootherTarget(std::vector<float>& outSteps)
+	{
+		outSteps.clear();
+		outSteps.resize(mSmoothers.size(), 0);
+
+		for (auto i = 0; i < mSmoothers.size(); i++)
+		{
+			outSteps[i] = mSmoothers[i]->getTarget();
+		}
+	}
+
+
 	void MACAdapter::enableSmoothing(bool value)
 	{
 		std::lock_guard<std::mutex> lock(mMotorMutex);
@@ -224,5 +236,11 @@ namespace nap
 	float MACAdapter::getSmoothTime()
 	{
 		return mSmoothTimeLocal;
+	}
+
+
+	float nap::MACAdapter::getMotorStepsPerMeter() const
+	{
+		return mMotorStepsPerMeter;
 	}
 }
