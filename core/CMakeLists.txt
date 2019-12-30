@@ -21,7 +21,7 @@ if(APPLE)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-            src/nap/native/resourcemanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
@@ -31,7 +31,7 @@ elseif(MSVC)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-            src/nap/native/resourcemanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(ANDROID)
     # Bring in Android libs
@@ -64,7 +64,7 @@ elseif(UNIX)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-            src/nap/native/resourcemanager_ext.cpp
+                src/nap/native/resourcemanager_ext.cpp
                 )
 endif()
 

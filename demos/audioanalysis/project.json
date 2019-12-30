@@ -20,6 +20,6 @@
         "../../lib/Clang-Debug-x86_64",
         "../../modules/mod_napapp",
         "../../modules/mod_napaudio",
-        "../../modules/mod_napimgui",
+        "../../modules/mod_napimgui"
     ]
 }

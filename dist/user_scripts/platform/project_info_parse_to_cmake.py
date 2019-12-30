@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import sys
 
 PROJECT_INFO_FILENAME = 'project.json'
 PROJECT_INFO_CMAKE_CACHE_FILENAME = 'cached_project_json.cmake'
@@ -18,8 +19,12 @@ def update_project_info_to_cmake(project_path):
         os.remove(output_filename)
 
     # Read in the JSON
-    with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
-        json_dict = json.load(json_file)
+    project_filename = os.path.join(project_path, PROJECT_INFO_FILENAME)
+    with open(project_filename) as json_file:
+        try:
+            json_dict = json.load(json_file)
+        except json.JSONDecodeError as e:
+            raise Exception('While opening %s: %s' % (project_filename, e))
 
     modulelist = json_dict.get('modules')
     assert isinstance(modulelist, list), "Expected list 'modules' in %s" % PROJECT_INFO_FILENAME
