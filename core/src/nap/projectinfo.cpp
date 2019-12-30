@@ -50,6 +50,11 @@ namespace nap
 		return nap::deserializeObjectFromJsonFile(filename, *this, err);
 	}
 
+	std::string ProjectInfo::dataDirectory() const
+	{
+		return getDirectory() + "/data";
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool ModuleInfo::load(const std::string& filename, utility::ErrorState& err)

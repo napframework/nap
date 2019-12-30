@@ -19,74 +19,6 @@ namespace nap
 			};
 
 
-	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
-	{
-		// If we've been provided with an explicit data path let's use that
-		if (!forcedDataPath.empty())
-		{
-			// Verify path exists
-			if (!utility::dirExists(forcedDataPath))
-			{
-				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
-				return false;
-			}
-			else
-			{
-				utility::changeDir(forcedDataPath);
-				return true;
-			}
-		}
-
-		// Check if we have our data dir alongside our exe
-		std::string testDataPath = utility::getExecutableDir() + "/data";
-		if (utility::dirExists(testDataPath))
-		{
-			utility::changeDir(testDataPath);
-			return true;
-		}
-
-		// Split up our executable path to scrape our project name
-		std::string exeDir = utility::getExecutableDir();
-		std::vector<std::string> dirParts;
-		utility::splitString(exeDir, '/', dirParts);
-
-		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-
-		std::string napRoot;
-		std::string projectName;
-#ifdef NAP_PACKAGED_BUILD
-		// We're running from a NAP release
-		if (dirParts.size() >= 3)
-		{
-			// Non-packaged apps against released framework
-			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
-			projectName = dirParts.end()[-3];
-		}
-		else {
-			errorState.fail("Unexpected path configuration found, could not locate project data");
-			return false;
-		}
-#else // NAP_PACKAGED_BUILD
-		// We're running from NAP source
-		napRoot = utility::getAbsolutePath(exeDir + "/../../");
-		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-#endif // NAP_PACKAGED_BUILD
-
-		for (auto& parentPath : sPossibleProjectParents)
-		{
-			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
-			if (utility::dirExists(testDataPath))
-			{
-				utility::changeDir(testDataPath);
-				return true;
-			}
-		}
-
-		errorState.fail("Couldn't find data for project %s", projectName.c_str());
-		return false;
-	}
-
-
 	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
 	{
 		const std::string exeDir = utility::getExecutableDir();
@@ -118,10 +50,10 @@ namespace nap
 			// We found our project folder, now let's verify we have a our file in there
 			testDataPath += "/";
 			testDataPath += filename;
-			nap::Logger::debug("Looking for '%s'...", testDataPath.c_str());
 			if (utility::fileExists(testDataPath))
 			{
 				foundFilePath = testDataPath;
+				nap::Logger::debug("Found '%s'...", foundFilePath.c_str());
 				return true;
 			}
 		}

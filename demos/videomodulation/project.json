@@ -6,5 +6,8 @@
         "mod_napapp",
         "mod_napimgui",
         "mod_napcameracontrol"
+    ],
+    "modulepaths": [
+        "../../lib/Clang-Debug-x86_64"
     ]
 }

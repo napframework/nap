@@ -10,10 +10,16 @@
         {
             "Type": "nap::audio::AudioServiceConfiguration",
             "mID": "AudioServiceConfiguration",
-            "SampleRate" : 44100,
-            "InputChannelCount" : 1,
-            "OutputChannelCount" : 2,
+            "SampleRate": 44100,
+            "InputChannelCount": 1,
+            "OutputChannelCount": 2,
             "AllowChannelCountFailure": "True"
         }
+    ],
+    "modulepaths": [
+        "../../lib/Clang-Debug-x86_64",
+        "../../modules/mod_napapp",
+        "../../modules/mod_napaudio",
+        "../../modules/mod_napimgui",
     ]
 }

@@ -8,7 +8,6 @@
         "mod_napimgui"
     ],
     "modulepaths": [
-        "modules",
-        "/home/bmod/Documents/nap/lib/Clang-Debug-x86_64"
+        "../../lib/Clang-Debug-x86_64"
     ]
 }

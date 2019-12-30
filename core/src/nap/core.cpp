@@ -60,7 +60,7 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
+	bool Core::initializeEngine(utility::ErrorState& error)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -72,26 +72,27 @@ namespace nap
 		setupPythonEnvironment();
 #endif
 
-		// Load our module names from the project info
+		// Load project info descriptor file
+		std::string projectFile;
+		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFile),
+							  "Failed to find %s", PROJECT_INFO_FILENAME))
+			return false;
 		ProjectInfo projectInfo;
-		if (!runningInNonProjectContext)
-		{
-			if (!loadProjectInfoFromFile(*this, projectInfo, error))
-				return false;
-		}
-
-		// Find our project data
-		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
+		if (!projectInfo.load(projectFile, error))
 			return false;
 
-		// Create the resource manager
-		mResourceManager = std::make_unique<ResourceManager>(*this);
+		// Change directory to data folder
+		std::string dataDir = projectInfo.dataDirectory();
+		if (!error.check(utility::fileExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
+			return false;
+		utility::changeDir(dataDir);
 
-		// Create the module manager
+		// Initialize managers
+		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 
 		// Load modules
-		if (!mModuleManager->loadModules(projectInfo.mModuleNames, error))
+		if (!mModuleManager->loadModules(projectInfo, error))
 			return false;
 
 		// Create the various services based on their dependencies
@@ -108,7 +109,6 @@ namespace nap
 		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 
-		// Setup our Python environment
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif

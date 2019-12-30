@@ -4,6 +4,9 @@
     "modules": [
         "mod_napapp",
         "mod_napsandbox",
-        "mod_napimgui" 
+        "mod_napimgui"
+    ],
+    "modulepaths": [
+        "../../lib/Clang-Debug-x86_64"
     ]
 }

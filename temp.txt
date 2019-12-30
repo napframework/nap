@@ -1,0 +1,67 @@
+Hey guys,
+
+I've nudged this along over in the branch napkin_own_dir_in_framework_release.
+
+As planned the branch..:
+Includes only release-build Napkin in the framework release
+Moves Napkin out into its own directory alongside the build configurations in the build output (for each project, working against the framework release)
+Is fully working on Linux and macOS
+Has the required changes to allow Napkin to launch from its own directory on Win64
+I had a quick prod at the module loading on Windows and found:
+Napkin on Windows can load NAP modules located outside of its current directory (when I tweak the module manager)
+Trying to load the same module twice, eg. from the current directory directory alongside the Napkin binary and from within release_root/modules/ results in engine initialisation failure
+There are issues loading some modules..
+It seems some of these issues could be resolved by dumping the required third party DLLs alongside the modules (eg. etherdream) while others (eg. artnet & yoctopuce) seemed to need to have their third party DLLs alongside the Napkin binary.
+Other modules seem to have issues unrelated to third party DLL requirements
+Problem modules: apiwebsocket, artnet, etherdream, imgui, parametergui, yoctopuce
+Perhaps next steps could be:
+Make the modulemanager load modules from the distributed locations on Win64 when loading for a project in Napkin (but not for running normal projects)
+Handle the duplicate module loading issues, some possible solutions being
+a) Identify attempted duplicate module in the engine skip the module
+b) Remove Napkin's dependency on any modules (Coen mentioned this as a possibility)
+c) Don't search for modules in CWD on Windows when working from Napkin against a framework release (CWD should still be used for the other two contexts - source and packaged apps)
+Restrict modules loaded in Napkin to those required by the project. This a) should be trivial to do, b) needs to be done eventually, plus c) will work around a separate duplicate module loading issue that exists relating to project modules. The project.json should always be able to found at ../project.json relative to the project data JSON file.
+Deal with remaining 'problem modules' loading issues
+#1 and perhaps #2c (if done) and #4 might in some ways be more easily/efficiently taken on by me, but I'm well and truly out of the approved hours*, so move ahead as you see fit.
+
+*Coen: I'll invoice for the cap but getting the DLL copying settled down on Windows, combined somewhat with the cross platform testing and re-testing took things a good way beyond in the end.
+
+Alternatively it might be tempting to do a proof of concept for working around the 'problem modules' listed above first. FYI the branch is currently not attempting to load modules from the distributed locations (as it would take a little bit of work to have it doing that without breaking normal apps) but this is easy to temporarily setup.
+
+Bas, re. ramping up with relationships between the project/Napkin location and module locations in the different contexts (source, project running against framework release and packaged app) Coen mentioned that you may not have worked with the framework release very much? Having a play with that, referring to the user docs could be a good jumping off point, running a project against the release and packaging a project against a release and running it from the output. But I'm sure you're all over that.
+
+The one of the largest differences between the source build system and framework release build system is that the framework release system is project-centric, having an IDE/makefile solution per project, instead of one that covers everything. Plus, where possible, we attempt to not copy everything all over the place. So that means on Linux on macOS NAP modules and user modules are sourced from /modules/<module name>/lib/<build type> and the same for /user_modules.
+
+The relationships between the binaries and the module shared libraries look like this (in v0.3):
+
+Source, Unices:
+Binaries in /bin/<build configuration>, modules in /modules/<build configuration>
+
+Source, Win64:
+Everything in /bin/<build configuration>
+
+Framework release, Unices:
+Project executable and Napkin in /projects/<project name>/bin/<build configuration>,
+NAP modules in /modules/<module name>/lib/<build type>, user modules in /user_modules/<module name>/lib/<build type>,
+project module (if it exists) in /projects/<project name>/module/lib/<build configuration>
+
+Framework release, Win64:
+Everything in /projects/<project name>/bin/<build configuration>
+
+Packaged app, Unices:
+Executables in /, modules in /lib
+
+Packaged app, Win64:
+Everything in /
+
+What we're looking to do is make "Framework release, Win64", look more like "Framework release, Unices" above,
+so that we can move Napkin outside of the project bin directory, and later, eventually move it to a central location.
+
+Re. your question about RPATH management, that's only relevant for the Unices which are working fine so I don't think there anything to cover there, but let me know if something pop's up.
+
+One important verification step against regressions is running the packaging dependencies tester (/packaging/packaging_dependencies_tester) on the framework release for each platform after the changes. Somewhat crude but very effective vs. the process before that was brought in.
+
+Hope this makes sense! And yeah thanks, super good time here in France!
+
+Cheers,
+Chris

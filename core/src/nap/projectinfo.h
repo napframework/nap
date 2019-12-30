@@ -36,6 +36,7 @@ namespace nap
 		 */
 		bool load(const std::string& filename, utility::ErrorState& err);
 
+		std::string dataDirectory() const;
 	};
 
 	class ModuleInfo

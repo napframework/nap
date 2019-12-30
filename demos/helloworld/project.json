@@ -2,8 +2,11 @@
     "title": "HelloWorld",
     "version": "0.3.0",
     "modules": [
-    	"mod_napapp",
+        "mod_napapp",
         "mod_napimgui",
         "mod_napcameracontrol"
+    ],
+    "modulepaths": [
+        "../../lib/Clang-Debug-x86_64"
     ]
 }

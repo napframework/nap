@@ -70,7 +70,7 @@ namespace nap
 		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
+		bool initializeEngine(utility::ErrorState& error);
 
 		bool initializeEngine(utility::ErrorState& error, const ProjectInfo& projectInfo);
 
@@ -252,15 +252,7 @@ namespace nap
 		 *	Calculates the framerate over time
 		 */
 		void calculateFramerate(double deltaTime);
-		
-		/**
-		 * Determine and set our working directory based on where our project data is
-		 * @param errorState if false is returned, contains error information
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @return if the project data was successfully found and working path set
-		 */
-		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
-		
+
 		/**
 		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
 		 * or alongside our binary for a packaged project

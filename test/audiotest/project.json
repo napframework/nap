@@ -18,5 +18,8 @@
             "OutputChannelCount": 2,
             "AllowChannelCountFailure": "True"
         }
+    ],
+    "modulepaths": [
+        "../../lib/Clang-Debug-x86_64"
     ]
 }
