@@ -322,8 +322,6 @@ namespace nap
 			ImGui::SetNextWindowPos(ImVec2(100, 100));
 			ImGui::SetNextWindowSize(ImVec2(mWindowSize.x * 0.5f, mWindowSize.y * 0.3f));
 		}
-		if( mProps.mShowMotorControl )
-			showMotorControlWindow();
 
 		if (mProps.mShowMotorSteps)
 			showMotorSteps();
@@ -399,6 +397,8 @@ namespace nap
 		// draw player controls
 		drawTimelinePlayerControls(needToOpenPopup, popupIdToOpen);
 
+		if (mProps.mShowMotorControl)
+			showMotorControlWindow(needToOpenPopup, popupIdToOpen);
 
 		//
 		if (mProps.mShowPlaylist)
@@ -432,7 +432,6 @@ namespace nap
 
 		//
 		handleTimeJumpPopup();
-
 
 		// release mouse
 		if (ImGui::IsMouseReleased(0) && !mProps.mInPopup)
@@ -1349,12 +1348,21 @@ namespace nap
 							{
 								mProps.mCurrentAction = TimeLineActions::DRAGGING_PLAYERPOSITION;
 
-								if (handleTimeJump(mProps.mCurrentTimeOfMouseInSequence))
+								// if flexblock is enabled, check whether we need to do a time jump
+								if (mProps.mEnableFlexblock &&
+									mSequencePlayer->getIsPlaying() &&
+									checkIfTimeJumpPopupNecessary(mProps.mCurrentTimeOfMouseInSequence))
 								{
+									mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
+									mTimeJumpSequencePlayerTarget = mProps.mCurrentTimeOfMouseInSequence;
 									outPopupOpened = true;
 									outPopupId = "TimeJump";
 									mProps.mInPopup = true;
 									mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
+								}
+								else
+								{
+									mSequencePlayer->setTime(mProps.mCurrentTimeOfMouseInSequence);
 								}
 							}
 						}
@@ -1492,9 +1500,18 @@ namespace nap
 
 				if (ImGui::Button("Play"))
 				{
-					outPopupOpened = true;
-					popupId = "TimeJump";
-					mTimeJumpShouldPlayAfterTransitionDone = true;
+					if (checkIfTimeJumpPopupNecessary(mSequencePlayer->getCurrentTime()))
+					{
+						outPopupOpened = true;
+						popupId = "TimeJump";
+						mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
+						mTimeJumpShouldPlayAfterTransitionDone = true;
+					}
+					else
+					{
+						mSequencePlayer->play();
+					}
+
 				}
 
 				showTip("Starts the player");
@@ -2047,9 +2064,19 @@ namespace nap
 
 					if (ImGui::Button("Play"))
 					{
-						mTimeJumpShouldPlayAfterTransitionDone = true;
-						outPopupID = "TimeJump";
-						outOpenPopup = true;
+						if (mProps.mEnableFlexblock &&
+							checkIfTimeJumpPopupNecessary(mProps.mCurrentTimeOfMouseInSequence))
+						{
+							mTimeJumpShouldPlayAfterTransitionDone = true;
+							mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
+							outPopupID = "TimeJump";
+							outOpenPopup = true;
+						}
+						else
+						{
+							mSequencePlayer->play();
+						}
+
 					}
 				}
 			}
@@ -2105,12 +2132,18 @@ namespace nap
 				ImGui::PushStyleColor(0, color);
 				if(ImGui::Button(sequence->mName.c_str(), ImVec2(150, 35)))
 				{
-					if (handleTimeJump(sequence->getStartTime()))
+					if (mProps.mEnableFlexblock && mSequencePlayer->getIsPlaying() && checkIfTimeJumpPopupNecessary(sequence->getStartTime()) )
 					{
+						mTimeJumpSequencePlayerTarget = sequence->getStartTime();
+						mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
 						mProps.mInPopup = true;
 						mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
 						outOpenPopup = true;
 						outPopupID = "TimeJump";
+					}
+					else
+					{
+						mSequencePlayer->setTime(sequence->getStartTime());
 					}
 				}
 				ImGui::SameLine();
@@ -2135,12 +2168,20 @@ namespace nap
 
 					if (ImGui::Button(element->mName.c_str(), ImVec2(150, 25)))
 					{
-						if (handleTimeJump(element->getStartTime()))
+						if (mProps.mEnableFlexblock && 
+							mSequencePlayer->getIsPlaying() && 
+							checkIfTimeJumpPopupNecessary(sequence->getStartTime()))
 						{
+							mTimeJumpSequencePlayerTarget = element->getStartTime();
+							mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
 							mProps.mInPopup = true;
 							mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
 							outOpenPopup = true;
 							outPopupID = "TimeJump";
+						}
+						else
+						{
+							mSequencePlayer->setTime(element->getStartTime());
 						}
 					}
 					ImGui::SameLine();
@@ -2803,26 +2844,46 @@ namespace nap
 		return true;
 	}
 
-	bool FlexblockGui::handleTimeJump(const double time)
+	bool FlexblockGui::checkIfTimeJumpPopupNecessary(const double time)
 	{
-		if (mSequencePlayer->getIsPlaying())
+		//
+		if (!mProps.mEnableFlexblock)
+			return false;
+
+		// check for parameter difference
+
+		// create parameters that we evaluate
+		std::vector<std::unique_ptr<ParameterFloat>> parametersTargetPts;
+		std::vector<Parameter*> parametersTarget;
+		for (int p = 0; p < 19; p++)
 		{
-			mTimeJumpSequencePlayerTarget = time;
-			return true;
+			parametersTargetPts.emplace_back(std::make_unique<ParameterFloat>());
+			parametersTarget.emplace_back(parametersTargetPts.back().get());
 		}
-		else
+		mSequencePlayer->evaluate(time, parametersTarget);
+
+		//
+		float totalDifference = 0.0f;
+		for (int p = 0; p < 19; p++)
 		{
-			mSequencePlayer->setTime(time);
+			totalDifference += math::abs<float>(((ParameterFloat*)parametersTarget[p])->mValue - ((ParameterFloat*)mParameters[p])->mValue);
 		}
 
-		return false;
+		return totalDifference > 0.00001f;
 	}
-
 
 	void FlexblockGui::handleTimeJumpPopup()
 	{
-		if (ImGui::BeginPopupModal("TimeJump", nullptr, ImGuiWindowFlags_NoResize))
+		if (ImGui::BeginPopupModal("TimeJump", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 		{
+			if (mEmergencyCloseTimeJumpPopup)
+			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+				mEmergencyCloseTimeJumpPopup = false;
+			}
+
 			if (!mInTimeJumpTransition)
 			{
 				// create parameters that we evaluate
@@ -2843,7 +2904,7 @@ namespace nap
 				topleftPosition = ImVec2(topleftPosition.x + 20, topleftPosition.y + 20);
 				for (int i = 0; i < 19; i++)
 				{
-					const float startPos = 100;
+					const float startPos = 50;
 					const float rectPaddingHeight = 5;
 					const float rectWidth = 400;
 					const float rectHeight = 25;
@@ -2886,6 +2947,81 @@ namespace nap
 						ImVec2(boxPos.x + now * rectWidth, boxPos.y),
 						ImVec2(boxPos.x + target * rectWidth, boxPos.y + rectHeight),
 						ImGui::ColorConvertFloat4ToU32(color));
+
+					float difference = target - now;
+					// text
+					switch ((flexblock::PARAMETER_IDS)i)
+					{
+					case flexblock::MOTOR_ONE:
+					case flexblock::MOTOR_TWO:
+					case flexblock::MOTOR_THREE:
+					case flexblock::MOTOR_FOUR:
+					case flexblock::MOTOR_FIVE:
+					case flexblock::MOTOR_SIX:
+					case flexblock::MOTOR_SEVEN:
+					case flexblock::MOTOR_EIGHT:
+					{
+						char buff[512];
+						sprintf(buff, "diff: %.3f", difference);
+						drawList->AddText(
+							ImVec2(
+								topleftPosition.x + rectWidth + startPos + 5, 
+								topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+							colorWhite, buff);
+					}
+						break;
+					case flexblock::SLACK:
+					{
+						char buff[512];
+						sprintf(buff, "diff: %.3f meters", difference * mFlexBlock->getSlackRange());
+						drawList->AddText(
+							ImVec2(
+								topleftPosition.x + rectWidth + startPos + 5,
+								topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+							colorWhite, buff);
+					}
+						break;
+					case flexblock::MOTOR_OVERRIDE_ONE:
+					case flexblock::MOTOR_OVERRIDE_TWO:
+					case flexblock::MOTOR_OVERRIDE_THREE:
+					case flexblock::MOTOR_OVERRIDE_FOUR:
+					case flexblock::MOTOR_OVERRIDE_FIVE:
+					case flexblock::MOTOR_OVERRIDE_SIX:
+					case flexblock::MOTOR_OVERRIDE_SEVEN:
+					case flexblock::MOTOR_OVERRIDE_EIGHT:
+					{
+						char buff[512];
+						sprintf(buff, "diff: %.3f meters", difference * mFlexBlock->getMotorOverrideRange());
+						drawList->AddText(
+							ImVec2(
+								topleftPosition.x + rectWidth + startPos + 5,
+								topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+							colorWhite, buff);
+					}
+						break;
+					case flexblock::SINUS_AMPLITUDE:
+					{
+						char buff[512];
+						sprintf(buff, "diff: %.3f meters", difference * mFlexBlock->getSinusAmplitudeRange());
+						drawList->AddText(
+							ImVec2(
+								topleftPosition.x + rectWidth + startPos + 5,
+								topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+							colorWhite, buff);
+					}
+						break;
+					case flexblock::SINUS_FREQUENCY:
+					{
+						char buff[512];
+						sprintf(buff, "diff: %.3f hz", difference * mFlexBlock->getSinusFrequencyRange());
+						drawList->AddText(
+							ImVec2(
+								topleftPosition.x + rectWidth + startPos + 5,
+								topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
+							colorWhite, buff);
+					}
+						break;
+					}
 				}
 
 				ImGui::EndChild();
@@ -2935,11 +3071,12 @@ namespace nap
 				if (ImGui::Button("!Immediate!"))
 				{
 					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
+					mMotorAdapter->setEnabled(true);
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
 					ImGui::CloseCurrentPopup();
 
-					if (!mSequencePlayer->getIsPlaying() && mTimeJumpShouldPlayAfterTransitionDone)
+					if (mTimeJumpShouldPlayAfterTransitionDone)
 					{
 						mSequencePlayer->play();
 					}
@@ -2948,7 +3085,7 @@ namespace nap
 				if (go)
 				{
 					//
-					mTimeJumpShouldPlayAfterTransitionDone = mSequencePlayer->getIsPlaying() && !mSequencePlayer->getIsPaused();
+					mMotorAdapter->setEnabled(true);
 					mInTimeJumpTransition = true;
 					mSequencePlayer->pause();
 					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
@@ -2997,6 +3134,8 @@ namespace nap
 
 			ImGui::EndPopup();
 		}
+
+		mEmergencyCloseTimeJumpPopup = false;
 	}
 
 
@@ -3034,11 +3173,14 @@ namespace nap
 	{
 		mSequencePlayer->stop();
 		mMotorController->emergencyStop();
+		mMotorAdapter->setEnabled(false);
+		mMotorAdapter->enableSmoothing(false);
 
 		mInTimeJumpTransition = false;
+		mEmergencyCloseTimeJumpPopup = true;
 	}
 
-	void FlexblockGui::showMotorControlWindow()
+	void FlexblockGui::showMotorControlWindow(bool &outOpenPopup, std::string &outPopupID)
 	{
 		static auto showTip = [this](const char* tip)
 		{
@@ -3071,8 +3213,23 @@ namespace nap
 		mProps.mEnableFlexblock = mMotorAdapter->getEnabled();
 		if (ImGui::Checkbox("Enable flexblock", &mProps.mEnableFlexblock))
 		{
-			mMotorAdapter->setEnabled(mProps.mEnableFlexblock);
+			if (mProps.mEnableFlexblock)
+			{
+				outOpenPopup = true;
+				outPopupID = "TimeJump";
+				mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
+				mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
+				if (mSequencePlayer->getIsPlaying() && !mSequencePlayer->getIsPaused())
+				{
+					mSequencePlayer->pause();
+				}
+			}
+			else
+			{
+				mMotorAdapter->setEnabled(false);
+			}
 		}
+
 		showTip("Enables the flexblock algorithm to control the motors");
 
 		ImGui::SameLine();

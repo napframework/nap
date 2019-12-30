@@ -93,6 +93,7 @@ namespace nap
 
 		bool								mTimeJumpShouldPlayAfterTransitionDone = false;
 		bool								mInTimeJumpTransition = false;
+		bool								mEmergencyCloseTimeJumpPopup = false;
 		double								mTimeJumpSequencePlayerTarget = 0.0;
 		float								mTimeJumpDifferenceThreshold = 10.0f;
 
@@ -109,7 +110,7 @@ namespace nap
 		/**
 		 * Shows motor control window
 		 */
-		void showMotorControlWindow();
+		void showMotorControlWindow(bool & outPopupOpened, std::string & popupId);
 
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 
@@ -168,11 +169,9 @@ namespace nap
 
 		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState);
 
-		bool handleTimeJump(const double time);
-
 		void handleTimeJumpPopup();
 
-		
+		bool checkIfTimeJumpPopupNecessary(const double time);
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);
