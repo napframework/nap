@@ -415,6 +415,14 @@ namespace nap
 			mProps.mInPopup = true;
 			ImGui::OpenPopup(popupIdToOpen.c_str());
 		}
+
+		//
+		if (mOpenTimeJumpPopupFromExternalPlay)
+		{
+			mOpenTimeJumpPopupFromExternalPlay = false;
+			mProps.mInPopup = true;
+			ImGui::OpenPopup("TimeJump");
+		}
 			
 
 		//
@@ -2397,6 +2405,8 @@ namespace nap
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
 			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -3107,12 +3117,12 @@ namespace nap
 					mTimeJumpActiveTime = 0.0;
 					mSequencePlayer->pause();
 					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
-					mTimeJumpDifferenceThreshold = 0.05f;
+					mTimeJumpDifferenceThreshold = 0.025f;
 				}
 			}
 			else
 			{
-				if (ImGui::SliderFloat("Threshold ( Meters )", &mTimeJumpDifferenceThreshold, 0.001f, 1.0f))
+				if (ImGui::SliderFloat("Threshold ( Velocity Meters )", &mTimeJumpDifferenceThreshold, 0.001f, 1.0f))
 				{
 				}
 
@@ -3180,7 +3190,7 @@ namespace nap
 				bool thresholdReached = true;
 				for (int mo = 0; mo < tar_motor_steps.size(); mo++)
 				{
-					float meterDifference = tar_motor_steps[mo] / mMotorAdapter->getMotorStepsPerMeter();
+					float meterDifference = tar_motor_velo[mo] / mMotorAdapter->getMotorStepsPerMeter();
 
 					ImGui::Text("%i : Diff: %.3f, Vel: %.3f, Input: %.3f, Target: %.3f", 
 						mo + 1,
@@ -3259,6 +3269,44 @@ namespace nap
 		mEmergencyCloseTimeJumpPopup = true;
 	}
 
+	void FlexblockGui::playPause()
+	{
+		if (mSequencePlayer->getIsPlaying() && !mSequencePlayer->getIsPaused())
+		{
+			mSequencePlayer->pause();
+		}
+		else
+		{
+			if (mSequencePlayer->getIsPaused() || !mSequencePlayer->getIsPlaying() )
+			{
+				if (mProps.mEnableFlexblock)
+				{
+					if (checkIfTimeJumpPopupNecessary(mSequencePlayer->getCurrentTime()))
+					{
+						mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
+						mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
+
+						mProps.mInPopup = true;
+						mProps.mCurrentAction = TimeLineActions::TIME_JUMP_POPUP;
+						mOpenTimeJumpPopupFromExternalPlay = true;
+					}
+					else
+					{
+						mSequencePlayer->play();
+					}
+				}
+				else
+				{
+					mSequencePlayer->play();
+				}
+			}
+			else 
+			{
+				mSequencePlayer->pause();
+			}
+		}
+	}
+
 	void FlexblockGui::showMotorControlWindow(bool &outOpenPopup, std::string &outPopupID)
 	{
 		static auto showTip = [this](const char* tip)
@@ -3297,7 +3345,7 @@ namespace nap
 				outOpenPopup = true;
 				outPopupID = "TimeJump";
 				mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
-				mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
+				mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused() && mSequencePlayer->getIsPlaying();
 				if (mSequencePlayer->getIsPlaying() && !mSequencePlayer->getIsPaused())
 				{
 					mSequencePlayer->pause();

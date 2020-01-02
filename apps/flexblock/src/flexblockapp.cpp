@@ -185,10 +185,16 @@ namespace nap
 				mGui->toggleEditableTimelines();
 			}
 
-			// if 'spacebar' is pressed, emergency stop
-			if (press_event->mKey == nap::EKeyCode::KEY_SPACE)
+			// if 'return' is pressed, emergency stop
+			if (press_event->mKey == nap::EKeyCode::KEY_RETURN)
 			{
 				mGui->emergencyStop();
+			}
+
+			// if 'spacebar' is pressed, play/pause
+			if (press_event->mKey == nap::EKeyCode::KEY_SPACE)
+			{
+				mGui->playPause();
 			}
 		}
 		mInputService->addEvent(std::move(inputEvent));

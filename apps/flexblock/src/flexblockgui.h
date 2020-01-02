@@ -77,6 +77,8 @@ namespace nap
 		void quitDialog();
 
 		void emergencyStop();
+
+		void playPause();
 	private:
 		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
@@ -98,6 +100,9 @@ namespace nap
 		float								mTimeJumpDifferenceThreshold = 0.05f;
 		double								mTimeJumpActiveTime = 0.0;
 		const double						mTimeJumpMinimumActiveTime = 1.0;
+
+		bool								mOpenTimeJumpPopupFromExternalPlay = false;
+
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
