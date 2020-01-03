@@ -3119,12 +3119,17 @@ namespace nap
 					mTimeJumpActiveTime = 0.0;
 					mSequencePlayer->pause();
 					mSequencePlayer->setTime(mTimeJumpSequencePlayerTarget);
-					mTimeJumpDifferenceThreshold = 0.025f;
+					mTimeJumpDifferenceVelocityThreshold = 0.025f;
+					mTimeJumpDifferenceDistanceThreshold = 0.05f;
 				}
 			}
 			else
 			{
-				if (ImGui::SliderFloat("Threshold ( Velocity Meters )", &mTimeJumpDifferenceThreshold, 0.001f, 1.0f))
+				if (ImGui::SliderFloat("Threshold ( Distance )", &mTimeJumpDifferenceDistanceThreshold, 0.001f, 1.0f))
+				{
+				}
+
+				if (ImGui::SliderFloat("Threshold ( Velocity )", &mTimeJumpDifferenceVelocityThreshold, 0.001f, 1.0f))
 				{
 				}
 
@@ -3164,6 +3169,7 @@ namespace nap
 					const float rectHeight = 25;
 
 					float meterDifference = tar_motor_steps[i] / mMotorAdapter->getMotorStepsPerMeter();
+					float velocityDifference = tar_motor_velo[i] / mMotorAdapter->getMotorStepsPerMeter();
 
 					char buff[128];
 					sprintf(buff, "Motor : %i", i + 1);
@@ -3171,7 +3177,7 @@ namespace nap
 					// parameter text
 					drawList->AddText(
 						ImVec2(topleftPosition.x, topleftPosition.y + (rectHeight + rectPaddingHeight) * i),
-						meterDifference < mTimeJumpDifferenceThreshold ? colorWhite : colorRed, buff);
+						( meterDifference < mTimeJumpDifferenceDistanceThreshold &&  velocityDifference < mTimeJumpDifferenceVelocityThreshold ) ? colorWhite : colorRed, buff);
 
 					// rect
 					ImVec2 boxPos = ImVec2(
@@ -3192,7 +3198,8 @@ namespace nap
 				bool thresholdReached = true;
 				for (int mo = 0; mo < tar_motor_steps.size(); mo++)
 				{
-					float meterDifference = tar_motor_velo[mo] / mMotorAdapter->getMotorStepsPerMeter();
+					float velocityDifference = tar_motor_velo[mo] / mMotorAdapter->getMotorStepsPerMeter();
+					float distanceDifference = tar_motor_steps[mo] / mMotorAdapter->getMotorStepsPerMeter();
 
 					ImGui::Text("%i : Diff: %.3f, Vel: %.3f, Input: %.3f, Target: %.3f", 
 						mo + 1,
@@ -3201,7 +3208,7 @@ namespace nap
 						cur_input[mo] / mMotorAdapter->getMotorStepsPerMeter(),
 						cur_target[mo] / mMotorAdapter->getMotorStepsPerMeter());
 
-					if (meterDifference > mTimeJumpDifferenceThreshold)
+					if (velocityDifference > mTimeJumpDifferenceVelocityThreshold || distanceDifference > mTimeJumpDifferenceDistanceThreshold)
 					{
 						thresholdReached = false;
 					}
