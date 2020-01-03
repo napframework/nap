@@ -171,7 +171,7 @@ namespace nap
 			if (mResize)
 				cv::resize(cap_frame[0], out_frame[0], cv::Size(mSize.x, mSize.y));
 			else
-				out_frame = cap_frame;
+				out_frame[0] = cap_frame[0];
 
 			// Convert to RGB
 			if(mConvertRGB)

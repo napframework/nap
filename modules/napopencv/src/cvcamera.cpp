@@ -3,15 +3,6 @@
 #include <utility/stringutils.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_STRUCT(nap::CVCameraSettings)
-	RTTI_PROPERTY("AutoExposure",		&nap::CVCameraSettings::mAutoExposure,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Brightness",			&nap::CVCameraSettings::mBrightness,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Contrast",			&nap::CVCameraSettings::mContrast,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Saturation",			&nap::CVCameraSettings::mSaturation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Gain",				&nap::CVCameraSettings::mGain,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Exposure",			&nap::CVCameraSettings::mExposure,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("ShowDialog",			&nap::CVCamera::mShowDialog,				nap::rtti::EPropertyMetaData::Default)
@@ -27,21 +18,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
-	std::string nap::CVCameraSettings::toString() const
-	{
-		rtti::TypeInfo type = RTTI_OF(nap::CVCameraSettings);
-		std::string return_v;
-		for (const rtti::Property& property : type.get_properties())
-		{
-			rtti::Variant value = property.get_value(*this);
-			return_v += utility::stringFormat("%s: %s ", property.get_name().to_string().c_str(),
-				value.to_string().c_str());
-		}
-		return return_v;
-	}
-
-
 	CVCamera::~CVCamera()			{ }
 
 

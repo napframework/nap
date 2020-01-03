@@ -108,16 +108,16 @@ namespace nap
 	{
 		if (mCaptureDevice->grab(mCamFrame))
 		{
-			//detectFaces(mCamMat[0]);
+			mCaptureDevice->capture();
+			detectFaces(mCamFrame);
 			cv::flip(mCamFrame[0], mCamFrame[0], 0);
 			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
-			mCaptureDevice->capture();
 		}
 		
 		if (mVideoDevice->grab(mVidFrame))
 		{
-			//detectFaces(mVideoMat[0]);
+			detectFaces(mVidFrame);
 			cv::flip(mVidFrame[0], mVidFrame[0], 0);
 			cv::Mat cpu_mat = mVidFrame[0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
@@ -270,9 +270,9 @@ namespace nap
 	}
 
 
-	void HelloWorldApp::detectFaces(cv::UMat& frame)
+	void HelloWorldApp::detectFaces(CVFrame& frame)
 	{
-		cvtColor(frame, mMatGS, cv::COLOR_RGB2GRAY);
+		cvtColor(frame[0], mMatGS, cv::COLOR_RGB2GRAY);
 		equalizeHist(mMatGS, mMatGS);
 			
 		std::vector<cv::Rect> faces;
@@ -281,7 +281,7 @@ namespace nap
 		for (size_t i = 0; i < faces.size(); i++)
 		{
 			cv::Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
-			ellipse(frame, center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
+			ellipse(frame[0], center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
 		}
 	}
 }

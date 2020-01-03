@@ -1,32 +1,63 @@
 #pragma once
 
 // Local Includes
-#include "cvvideocapture.h"
-#include "cvcameraadapter.h"
+#include "cvadapter.h"
 
 // External Includes
-#include <thread>
-#include <future>
-#include <atomic>
 #include <glm/glm.hpp>
+#include <atomic>
+#include <nap/numeric.h>
 
 namespace nap
 {
 	/**
-	 * Captures a video stream from a web cam or other peripheral video capture device. 
+	 * Configurable OpenCV camera settings.
+	 */
+	struct NAPAPI CVCameraSettings
+	{
+		bool	mAutoExposure	= true;		///< Property: 'AutoExposure' if auto exposure is turned on or off
+		float	mBrightness		= 1.0f;		///< Property: 'Brightness' camera brightness
+		float	mContrast		= 1.0f;		///< Property: 'Contrast' camera contrast
+		float	mSaturation		= 1.0f;		///< Property: 'Saturation' camera saturation
+		float	mGain			= 1.0f;		///< Property: 'Gain' camera gain
+		float	mExposure		= 1.0f;		///< Property: 'Exposure' camera exposure
+
+		/**
+		 * @return the settings as a human readable string.
+		 */
+		std::string toString() const;
+	};
+
+
+	/**
+	 * Captures a video stream from a web cam or other peripheral video capture device.
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * Otherwise the captured video frame is stored on the CPU.
-	 * This device captures the video stream on a background thread, call grab() to grab the last recorded video frame.
 	 * Camera settings can be provided on startup by enabling 'ApplySettings'.
 	 * After startup the camera settings reflect the current state of the hardware.
 	 */
-	class NAPAPI CVCamera : public CVVideoCapture
+	class NAPAPI CVCameraAdapter : public CVAdapter
 	{
-		RTTI_ENABLE(CVVideoCapture)
+		RTTI_ENABLE(CVAdapter)
 	public:
 
-		// Stops the device
-		virtual ~CVCamera() override;
+		/**
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Returns frame width in pixels.
+		 * @return frame width in pixels.
+		 */
+		int getWidth() const;
+
+		/**
+		 * Returns frame height in pixels.
+		 * @return frame height in pixels.
+		 */
+		int getHeight() const;
 
 		/**
 		 * Sets and applies new camera settings the next time a frame is captured.
@@ -43,6 +74,11 @@ namespace nap
 		 */
 		void getSettings(nap::CVCameraSettings& settings);
 
+		bool				mConvertRGB = true;			///< Property: 'ConvertRGB' if the frame is converted into RGB
+		bool				mFlipHorizontal = false;	///< Property: 'FlipHorizontal' flips the frame on the x-axis
+		bool				mFlipVertical = false;		///< Property: 'FlipVertical' flips the frame on the y-axis
+		bool				mResize = false;			///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
+		glm::ivec2			mSize = { 1280, 720 };		///< Property: 'Size' frame size, only used when 'Resize' is turned on.
 		bool				mApplySettings = false;		///< Property: 'ApplySettings' if the camera settings are applied on startup
 		bool				mDefaultResolution = true;	///< Property: 'DefaultResolution' if the default camera resolution is used, when set to false the specified 'Resolution' is enforced.
 		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' capture device index
@@ -54,7 +90,10 @@ namespace nap
 		virtual int getMatrixCount() override			{ return 1; }
 
 		/**
-		 * Called by the capture device when the camera needs to be opened.
+		 * Called by the capture device. Opens the video file or image sequence.
+		 * @param captureDevice device to open
+		 * @param api api back-end to use
+		 * @param error contains the error if the opening operation fails
 		 */
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) override;
 
@@ -70,7 +109,7 @@ namespace nap
 		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) override;
 
 	private:
-		std::atomic<bool>		mSettingsDirty			= { false };	///< If settings need to be updated
 		bool					mLocalSettings;
+		CVFrame					mFrame					{ 1 };
 	};
 }
