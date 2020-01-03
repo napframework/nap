@@ -2145,7 +2145,9 @@ namespace nap
 				ImGui::PushStyleColor(0, color);
 				if(ImGui::Button(sequence->mName.c_str(), ImVec2(150, 35)))
 				{
-					if (mProps.mEnableFlexblock && mSequencePlayer->getIsPlaying() && checkIfTimeJumpPopupNecessary(sequence->getStartTime()) )
+					if (mProps.mEnableFlexblock && 
+						mSequencePlayer->getIsPlaying() && 
+						checkIfTimeJumpPopupNecessary(sequence->getStartTime()) )
 					{
 						mTimeJumpSequencePlayerTarget = sequence->getStartTime();
 						mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
@@ -2183,7 +2185,7 @@ namespace nap
 					{
 						if (mProps.mEnableFlexblock && 
 							mSequencePlayer->getIsPlaying() && 
-							checkIfTimeJumpPopupNecessary(sequence->getStartTime()))
+							checkIfTimeJumpPopupNecessary(element->getStartTime()))
 						{
 							mTimeJumpSequencePlayerTarget = element->getStartTime();
 							mTimeJumpShouldPlayAfterTransitionDone = !mSequencePlayer->getIsPaused();
