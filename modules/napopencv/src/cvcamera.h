@@ -69,6 +69,8 @@ namespace nap
 		bool				mShowDialog = false;		///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
 
 	protected:
+		virtual int getMatrixCount() override			{ return 1; }
+
 		/**
 		 * Called by the capture device when the camera needs to be opened.
 		 */
@@ -83,7 +85,7 @@ namespace nap
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.
 		 */
-		virtual bool onRetrieve(cv::VideoCapture& captureDevice, cv::UMat& outFrame, utility::ErrorState& error) override;
+		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) override;
 
 	private:
 		std::atomic<bool>		mSettingsDirty			= { false };	///< If settings need to be updated

@@ -102,9 +102,10 @@ namespace nap
 	}
 
 
-	bool CVCamera::onRetrieve(cv::VideoCapture& captureDevice, cv::UMat& outFrame, utility::ErrorState& error)
+	bool CVCamera::onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error)
 	{
-		if (!captureDevice.retrieve(outFrame))
+		assert(outFrame.getCount() == getMatrixCount());
+		if (!captureDevice.retrieve(outFrame[0]))
 		{
 			error.fail("%s: no new frame available", mID.c_str());
 			return false;

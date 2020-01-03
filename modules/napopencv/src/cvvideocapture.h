@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "cvcaptureapi.h"
+#include "cvevent.h"
 
 // External Includes
 #include <nap/device.h>
@@ -36,7 +37,7 @@ namespace nap
 		 * @param target updated to hold the last captured frame data if a new frame is available.
 		 * @return if the target is updated with the contents of a new captured frame.
 		 */
-		bool grab(cv::UMat& target);
+		bool grab(CVFrame& target);
 
 		/**
 		 * Tells the capture thread to capture the next available frame.
@@ -105,6 +106,11 @@ namespace nap
 
 	protected:
 		/**
+		 * @return number of opencv matrices associated with a single frame
+		 */
+		virtual int getMatrixCount() = 0;
+
+		/**
 		 * Needs to be implemented in a derived class.
 		 * Called automatically by this device on startup when the OpenCV capture device needs to be opened.
 		 * It is the responsibility of the derived class to open the device in this call and return success or failure.
@@ -129,7 +135,7 @@ namespace nap
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.
 		 */
-		virtual bool onRetrieve(cv::VideoCapture& captureDevice, cv::UMat& outFrame, utility::ErrorState& error) = 0;
+		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) = 0;
 
 		/**
 		 * Called right after the frame is stored.
@@ -138,7 +144,7 @@ namespace nap
 
 	private:
 		cv::VideoCapture		mCaptureDevice;					///< The open-cv video capture device
-		cv::UMat				mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
+		CVFrame					mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		bool					mCaptureFrame	= true;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 

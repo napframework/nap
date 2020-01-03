@@ -22,7 +22,7 @@ namespace nap
 	CVVideoCapture::~CVVideoCapture()			{ }
 
 
-	bool CVVideoCapture::grab(cv::UMat& target)
+	bool CVVideoCapture::grab(CVFrame& target)
 	{
 		// Check if a new frame is available
 		if (!mFrameAvailable)
@@ -32,7 +32,7 @@ namespace nap
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat.copyTo(target);
+		mCaptureMat.deepCopyTo(target);
 		mFrameAvailable = false;
 		return true;
 	}
@@ -114,8 +114,9 @@ namespace nap
 	{
 		// Wait for playback to be enabled, a new frame request is issued or request to stop is made
 		// Exit loop immediately when a stop is requested. Otherwise process next frame
-		cv::UMat cap_frame;
-		cv::UMat res_frame;
+		CVFrame cap_frame(1);
+		CVFrame out_frame(1);
+
 		std::unordered_map<int, double> properties;
 		bool set_properties = false;
 
@@ -168,21 +169,21 @@ namespace nap
 			// Resize frame if required
 			// Otherwise simply copy mat reference (no actual data copy takes place)
 			if (mResize)
-				cv::resize(cap_frame, res_frame, cv::Size(mSize.x, mSize.y));
+				cv::resize(cap_frame[0], out_frame[0], cv::Size(mSize.x, mSize.y));
 			else
-				res_frame = cap_frame;
+				out_frame = cap_frame;
 
 			// Convert to RGB
 			if(mConvertRGB)
-				cv::cvtColor(res_frame, res_frame, cv::COLOR_BGR2RGB);
+				cv::cvtColor(out_frame[0], out_frame[0], cv::COLOR_BGR2RGB);
 
 			// Flip horizontal
 			if (mFlipHorizontal)
-				cv::flip(res_frame, res_frame, 1);
+				cv::flip(out_frame[0], out_frame[0], 1);
 
 			// Flip vertical
 			if (mFlipVertical)
-				cv::flip(res_frame, res_frame, 0);
+				cv::flip(out_frame[0], out_frame[0], 0);
 
 			// Deep copy the captured frame to our storage matrix.
 			// This updates the data of our storage container and ensures the same dimensionality.
@@ -195,7 +196,7 @@ namespace nap
 			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
-				res_frame.copyTo(mCaptureMat);
+				out_frame.deepCopyTo(mCaptureMat);
 				onCopy();
 			}
 

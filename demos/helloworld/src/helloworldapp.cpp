@@ -78,12 +78,8 @@ namespace nap
 
 		// Create a new frame
 		CVFrame frame_one;
-		cv::UMat matrix_one(256, 256, 0);
-		cv::UMat matrix_two(128, 127, 0);
-		
-		// Add frame data
-		frame_one.add(std::move(matrix_one));
-		frame_one.add(std::move(matrix_two));
+		frame_one.add(cv::UMat(256, 256, 0));
+		frame_one.add(cv::UMat(128, 128, 0));
 
 		// Perform a deep copy
 		CVFrame frame_two;
@@ -110,20 +106,20 @@ namespace nap
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
-		if (mCaptureDevice->grab(mMatRGB))
+		if (mCaptureDevice->grab(mCamFrame))
 		{
-			detectFaces(mMatRGB);
-			cv::flip(mMatRGB, mMatRGB, 0);
-			cv::Mat cpu_mat = mMatRGB.getMat(cv::ACCESS_READ);
+			//detectFaces(mCamMat[0]);
+			cv::flip(mCamFrame[0], mCamFrame[0], 0);
+			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
 			mCaptureDevice->capture();
 		}
 		
-		if (mVideoDevice->grab(mVideoMatRGB))
+		if (mVideoDevice->grab(mVidFrame))
 		{
-			detectFaces(mVideoMatRGB);
-			cv::flip(mVideoMatRGB, mVideoMatRGB, 0);
-			cv::Mat cpu_mat = mVideoMatRGB.getMat(cv::ACCESS_READ);
+			//detectFaces(mVideoMat[0]);
+			cv::flip(mVidFrame[0], mVidFrame[0], 0);
+			cv::Mat cpu_mat = mVidFrame[0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
 		}
 

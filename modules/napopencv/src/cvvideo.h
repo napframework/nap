@@ -87,6 +87,8 @@ namespace nap
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
 
 	protected:
+		virtual int getMatrixCount() override { return 1; }
+
 		/**
 		 * Called by the capture device. Opens the video file or image sequence.
 		 * @param captureDevice device to open
@@ -104,7 +106,7 @@ namespace nap
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.
 		 */
-		virtual bool onRetrieve(cv::VideoCapture& captureDevice, cv::UMat& outFrame, utility::ErrorState& error) override;
+		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) override;
 
 		/**
 		 *	Stores the current frame index

@@ -16,24 +16,29 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		/**
-		 * Constructs a new frame using the given matrix.
-		 * @param matrix the OpenCV matrix associated with this frame.
-		 */
-		CVFrame(const cv::UMat& matrix);
-
 		// Default Constructor
 		CVFrame() = default;
+		
 		// Default Destructor
 		~CVFrame() = default;
+		
 		// Default copy constructor
 		CVFrame(const CVFrame& other) = default;
+		
 		// Default copy assignment operator
 		CVFrame& operator=(const CVFrame& other) = default;
+		
 		// Move constructor
 		CVFrame(CVFrame&& other);
+		
 		// Move assignment operator
 		CVFrame& operator=(CVFrame&& other);
+
+		/**
+		 * Constructs a new frame with the given number of matrices.
+		 * @param count the number of matrices to create.
+		 */
+		CVFrame(int count);
 
 		/**
 		 * Array subscript overload. Does not perform a bounds check!
@@ -46,29 +51,6 @@ namespace nap
 		 * @return the matrix at the given index
 		 */
 		const cv::UMat& operator[](std::size_t index) const		{ return mMatrices[index]; }
-
-		/**
-		 * @return the number of matrices this frame contains.
-		 */
-		int getCount() const									{ return static_cast<int>(mMatrices.size()); }
-
-		/**
-		 * Adds the given matrix to this frame.
-		 * @param matrix new OpenCV matrix to add to this frame.
-		 */
-		void add(const cv::UMat& matrix);
-
-		/**
-		 * Gives the given matrix to this frame.
-		 * @param matrix new OpenCV matrix to add to this frame.
-		 */
-		void add(cv::UMat&& matrix);
-
-		/**
-		 * Adds a new empty matrix to this frame.
-		 * @return the newly created matrix.
-		 */
-		cv::UMat& addNew();
 
 		/**
 		 * Performs a deep copy of this frame.
@@ -84,6 +66,34 @@ namespace nap
 		 * @return a clone of this frame.
 		 */
 		CVFrame clone() const;
+
+		/**
+		 * @return the number of matrices this frame contains.
+		 */
+		int getCount() const									{ return static_cast<int>(mMatrices.size()); }
+
+		/**
+		 * Adds a new empty matrix to this frame.
+		 * @return the newly created matrix.
+		 */
+		cv::UMat& addNew();
+
+		/**
+		 * Adds the given matrix to this frame.
+		 * @param matrix new OpenCV matrix to add to this frame.
+		 */
+		void add(const cv::UMat& matrix);
+
+		/**
+		 * Gives a matrix to this frame. Ownership is transferred.
+		 * @param matrix new OpenCV matrix to add to this frame.
+		 */
+		void add(cv::UMat&& matrix);
+
+		/**
+		 * Clears all frame data.
+		 */
+		void clear();
 
 	private:
 		std::vector<cv::UMat> mMatrices;	///< All OpenCV matrices associated with the frame

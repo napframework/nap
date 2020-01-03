@@ -17,6 +17,7 @@
 #include <opencv2/videoio.hpp>
 #include <cvcamera.h>
 #include <cvvideo.h>
+#include <cvframe.h>
 #include <rendertexture2d.h>
 
 namespace nap
@@ -99,8 +100,8 @@ namespace nap
 		int mCurrentVideoFrame = 0;
 
 		// CV
-		cv::UMat mVideoMatRGB;
-		cv::UMat mMatRGB;
+		CVFrame mVidFrame;
+		CVFrame mCamFrame;
 		cv::UMat mMatGS;
 		cv::VideoCapture mCapture;
 		cv::CascadeClassifier face_cascade;

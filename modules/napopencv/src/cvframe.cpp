@@ -11,9 +11,9 @@ namespace nap
 	}
 
 
-	CVFrame::CVFrame(const cv::UMat& matrix)
+	CVFrame::CVFrame(int count)
 	{
-		add(matrix);
+		mMatrices.resize(count);
 	}
 
 
@@ -38,8 +38,8 @@ namespace nap
 
 	cv::UMat& CVFrame::addNew()
 	{
-		add(std::move(cv::UMat()));
-		return mMatrices[mMatrices.size() - 1];
+		add(cv::UMat());
+		return mMatrices.back();
 	}
 
 
@@ -60,5 +60,11 @@ namespace nap
 		CVFrame clone;
 		this->deepCopyTo(clone);
 		return clone;
+	}
+
+
+	void CVFrame::clear()
+	{
+		mMatrices.clear();
 	}
 }
