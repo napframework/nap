@@ -2079,8 +2079,7 @@ namespace nap
 
 					if (ImGui::Button("Play"))
 					{
-						if (mProps.mEnableFlexblock &&
-							checkIfTimeJumpPopupNecessary(mSequencePlayer->getCurrentTime()))
+						if (checkIfTimeJumpPopupNecessary(mSequencePlayer->getCurrentTime()))
 						{
 							mTimeJumpShouldPlayAfterTransitionDone = true;
 							mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
@@ -2091,7 +2090,6 @@ namespace nap
 						{
 							mSequencePlayer->play();
 						}
-
 					}
 				}
 			}
