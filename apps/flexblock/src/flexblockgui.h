@@ -97,7 +97,8 @@ namespace nap
 		bool								mInTimeJumpTransition = false;
 		bool								mEmergencyCloseTimeJumpPopup = false;
 		double								mTimeJumpSequencePlayerTarget = 0.0;
-		float								mTimeJumpDifferenceThreshold = 0.05f;
+		float								mTimeJumpDifferenceVelocityThreshold = 0.05f;
+		float								mTimeJumpDifferenceDistanceThreshold = 0.05f;
 		double								mTimeJumpActiveTime = 0.0;
 		const double						mTimeJumpMinimumActiveTime = 1.0;
 
