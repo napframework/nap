@@ -500,6 +500,10 @@ namespace nap
 			// reconstruct the sequence
 			reconstruct();
 
+			mTime = 0.0;
+			mReturnTime = 0.0;
+
+
 			return true;
 		}
 

@@ -1727,6 +1727,8 @@ namespace nap
 						pair.second = true;
 					}
 
+					mProps.mCurrentTimeOfMouseInSequence = 0.0;
+					
 					ImGui::CloseCurrentPopup();
 					mProps.mInPopup = false;
 					mProps.mCurrentAction = TimeLineActions::NONE;
@@ -2078,7 +2080,7 @@ namespace nap
 					if (ImGui::Button("Play"))
 					{
 						if (mProps.mEnableFlexblock &&
-							checkIfTimeJumpPopupNecessary(mProps.mCurrentTimeOfMouseInSequence))
+							checkIfTimeJumpPopupNecessary(mSequencePlayer->getCurrentTime()))
 						{
 							mTimeJumpShouldPlayAfterTransitionDone = true;
 							mTimeJumpSequencePlayerTarget = mSequencePlayer->getCurrentTime();
