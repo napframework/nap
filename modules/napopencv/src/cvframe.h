@@ -72,10 +72,18 @@ namespace nap
 
 		/**
 		 * Performs a deep copy of this frame.
+		 * The default copy operation does not copy the actual content of the matrices, only increases the ref count.
 		 * The content of the given frame is cleared.
-		 * @param frame the frame to copy the data of this frame to.
+		 * @param outFrame the frame to copy the data of this frame to.
 		 */
-		void deepCopyTo(CVFrame& frame);
+		void deepCopyTo(CVFrame& outFrame) const;
+
+		/**
+		 * Clones this frame including all of it's content.
+		 * The default copy operation does not copy the actual content of the matrices, only increases the ref count.
+		 * @return a clone of this frame.
+		 */
+		CVFrame clone() const;
 
 	private:
 		std::vector<cv::UMat> mMatrices;	///< All OpenCV matrices associated with the frame

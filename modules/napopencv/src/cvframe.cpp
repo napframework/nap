@@ -43,13 +43,22 @@ namespace nap
 	}
 
 
-	void CVFrame::deepCopyTo(CVFrame& frame)
+	void CVFrame::deepCopyTo(CVFrame& outFrame) const
 	{
-		frame.mMatrices.clear();
+		outFrame.mMatrices.clear();
+		outFrame.mMatrices.reserve(mMatrices.size());
 		for (auto& matrix : mMatrices)
 		{
-			cv::UMat& copy_matrix = frame.addNew();
+			cv::UMat& copy_matrix = outFrame.addNew();
 			matrix.copyTo(copy_matrix);
 		}
+	}
+
+
+	CVFrame CVFrame::clone() const
+	{
+		CVFrame clone;
+		this->deepCopyTo(clone);
+		return clone;
 	}
 }

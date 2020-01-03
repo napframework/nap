@@ -18,6 +18,7 @@
 #include <renderableglyph.h>
 #include <font.h>
 #include <imguiutils.h>
+#include <cvframe.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -74,6 +75,22 @@ namespace nap
 			std::cout << "--(!)Error loading eyes cascade\n";
 			return false;
 		};
+
+		// Create a new frame
+		CVFrame frame_one;
+		cv::UMat matrix_one(256, 256, 0);
+		cv::UMat matrix_two(128, 127, 0);
+		
+		// Add frame data
+		frame_one.add(std::move(matrix_one));
+		frame_one.add(std::move(matrix_two));
+
+		// Perform a deep copy
+		CVFrame frame_two;
+		frame_one.deepCopyTo(frame_two);
+
+		// Perform a weak copy
+		CVFrame frame_three(frame_two);
 
 		return true;
 	}
