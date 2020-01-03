@@ -167,11 +167,12 @@ namespace nap
 				mGui->quitDialog();
 			}
 
+			/*
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
 				mMainWindow->toggleFullscreen();
-			}
+			}*/
 
 			// If 'h' is pressed toggle gui visibility
 			if (press_event->mKey == nap::EKeyCode::KEY_h)
