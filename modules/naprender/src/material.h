@@ -241,7 +241,7 @@ namespace nap
 
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>	mSamplers;											///< Property: 
+		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 
 		std::vector<VertexAttributeBinding>			mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material

@@ -47,12 +47,15 @@ namespace nap
 	public:
 		SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration);
 
+		bool init(utility::ErrorState& errorState);
+
 		const opengl::SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
 		VkSampler getSampler() const { return mSampler; }
 
 	private:
+		VkDevice							mDevice;
 		const opengl::SamplerDeclaration*	mDeclaration = nullptr;
-		VkSampler									mSampler = nullptr;
+		VkSampler							mSampler = nullptr;
 	};
 
 	/**

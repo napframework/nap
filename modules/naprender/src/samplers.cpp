@@ -25,7 +25,12 @@ namespace nap
 {
 
 	SamplerInstance::SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration) :
-		mDeclaration(&declaration)
+		mDeclaration(&declaration),
+		mDevice(device)
+	{
+	}
+
+	bool SamplerInstance::init(utility::ErrorState& errorState)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -42,8 +47,7 @@ namespace nap
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-		VkResult result = vkCreateSampler(device, &samplerInfo, nullptr, &mSampler);
-		assert(result == VK_SUCCESS);
+		return errorState.check(vkCreateSampler(mDevice, &samplerInfo, nullptr, &mSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}
 
 	//////////////////////////////////////////////////////////////////////////

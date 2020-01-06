@@ -220,8 +220,105 @@ namespace nap
 		}
 	}
 	
-	bool createGraphicsPipeline(VkDevice device, Material& material, const IMesh& mesh, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
+		VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
+		depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depth_stencil.depthTestEnable = VK_FALSE;
+		depth_stencil.depthWriteEnable = VK_FALSE;
+		depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depth_stencil.depthBoundsTestEnable = VK_FALSE;
+		depth_stencil.stencilTestEnable = VK_FALSE;
+
+		EDepthMode depth_mode = materialInstance.getDepthMode();
+
+		// If the depth mode is inherited from the blend mode, determine the correct depth mode to use
+		if (depth_mode == EDepthMode::InheritFromBlendMode)
+		{
+			if (materialInstance.getBlendMode() == EBlendMode::Opaque)
+				depth_mode = EDepthMode::ReadWrite;
+			else
+				depth_mode = EDepthMode::ReadOnly;
+		}
+		
+		switch (depth_mode)
+		{
+			case EDepthMode::ReadWrite:
+			{
+				depth_stencil.depthTestEnable = VK_TRUE;
+				depth_stencil.depthWriteEnable = VK_TRUE;
+				break;
+			}
+			case EDepthMode::ReadOnly:
+			{
+				depth_stencil.depthTestEnable = VK_TRUE;
+				depth_stencil.depthWriteEnable = VK_FALSE;
+				break;
+			}
+			case EDepthMode::WriteOnly:
+			{
+				depth_stencil.depthTestEnable = VK_FALSE;
+				depth_stencil.depthWriteEnable = VK_TRUE;
+				break;
+			}
+			case EDepthMode::NoReadWrite:
+			{
+				depth_stencil.depthTestEnable = VK_FALSE;
+				depth_stencil.depthWriteEnable = VK_FALSE;
+				break;
+			}
+			default:
+				assert(false);
+		}
+
+		return depth_stencil;
+	}
+
+
+	VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
+	{
+		VkPipelineColorBlendAttachmentState color_blend_attachment_state;
+		color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD;
+		color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD;
+
+		EBlendMode blend_mode = materialInstance.getBlendMode();
+
+		switch (blend_mode)
+		{
+			case EBlendMode::Opaque:
+			{
+				color_blend_attachment_state.blendEnable = VK_FALSE;
+				break;
+			}
+			case EBlendMode::AlphaBlend:
+			{
+				color_blend_attachment_state.blendEnable = VK_TRUE;
+				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				break;
+			}
+			case EBlendMode::Additive:
+			{
+				color_blend_attachment_state.blendEnable = VK_TRUE;
+				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				break;
+			}
+		}
+
+		return color_blend_attachment_state;
+	}
+
+
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, const IMesh& mesh, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	{
+		Material& material = *materialInstance.getMaterial();
+
 		Shader& shader = *material.getShader();
 
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
@@ -314,17 +411,8 @@ namespace nap
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-		VkPipelineDepthStencilStateCreateInfo depthStencil = {};
-		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-		depthStencil.depthBoundsTestEnable = VK_FALSE;
-		depthStencil.stencilTestEnable = VK_FALSE;
-
-		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_FALSE;
+		VkPipelineDepthStencilStateCreateInfo depthStencil = getDepthStencilCreateInfo(materialInstance);
+		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
 
 		VkPipelineColorBlendStateCreateInfo colorBlending = {};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -411,7 +499,7 @@ namespace nap
 
 		VkPipelineLayout layout;
 		VkPipeline pipeline;
-		if (!createGraphicsPipeline(mRenderer->getDevice(), *materialInstance.getMaterial(), mesh, *render_pass, layout, pipeline, errorState))
+		if (!createGraphicsPipeline(mRenderer->getDevice(), materialInstance, mesh, *render_pass, layout, pipeline, errorState))
 			return RenderableMesh();
 
 		return RenderableMesh(mesh, materialInstance, layout, pipeline);

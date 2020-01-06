@@ -35,6 +35,12 @@ namespace nap
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
+			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec2)
+			{
+				std::unique_ptr<UniformVec2ArrayInstance> array_instance = std::make_unique<UniformVec2ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
+				return std::move(array_instance);
+			}
 			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
 			{
 				std::unique_ptr<UniformVec3ArrayInstance> array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
@@ -66,6 +72,10 @@ namespace nap
 			if (value_declaration->mType == opengl::EGLSLType::Int)
 			{
 				return std::make_unique<UniformIntInstance>(*value_declaration);
+			}
+			else if (value_declaration->mType == opengl::EGLSLType::Vec2)
+			{
+				return std::make_unique<UniformVec2Instance>(*value_declaration);
 			}
 			else if (value_declaration->mType == opengl::EGLSLType::Vec3)
 			{

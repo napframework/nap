@@ -219,6 +219,10 @@ namespace nap
 				{
 					instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_array_declaration, errorState);
 				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec2)
+				{
+					instance_value_array = createUniformValueInstance<UniformVec2ArrayInstance, UniformVec2Array>(resource, *value_array_declaration, errorState);
+				}
 				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
 				{
 					instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_array_declaration, errorState);
@@ -267,6 +271,10 @@ namespace nap
 				else if (value_declaration->mType == opengl::EGLSLType::Float)
 				{
 					value_instance = createUniformValueInstance<UniformFloatInstance, UniformFloat>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec2)
+				{
+					value_instance = createUniformValueInstance<UniformVec2Instance, UniformVec2>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == opengl::EGLSLType::Vec3)
 				{
@@ -555,6 +563,9 @@ namespace nap
 					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(renderer.getDevice(), declaration, (Sampler2DArray*)sampler);
 				else
 					sampler_instance_override = std::make_unique<Sampler2DInstance>(renderer.getDevice(), declaration, (Sampler2D*)sampler);
+
+				if (!sampler_instance_override->init(errorState))
+					return false;
 
 				sampler_instance = sampler_instance_override.get();
 				addSamplerInstance(std::move(sampler_instance_override));

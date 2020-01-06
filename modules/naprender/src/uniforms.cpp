@@ -30,6 +30,11 @@ RTTI_BEGIN_CLASS(nap::UniformFloat)
 	//RTTI_FUNCTION("setValue", &nap::UniformFloat::setValue)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniformVec2)
+	RTTI_PROPERTY("Value", &nap::UniformVec2::mValue, nap::rtti::EPropertyMetaData::Required)
+	//RTTI_FUNCTION("setValue", &nap::UniformVec2::setValue)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::UniformVec3)
 	RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
 	//RTTI_FUNCTION("setValue", &nap::UniformVec3::setValue)
@@ -53,6 +58,10 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformFloatArray)
 	RTTI_PROPERTY("Values", &nap::UniformFloatArray::mValues, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformVec2Array)
+	RTTI_PROPERTY("Values", &nap::UniformVec2Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec3Array)
