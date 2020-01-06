@@ -129,7 +129,10 @@ namespace nap
 		{
 			for (auto i = 0; i < mSmoothers.size(); i++)
 			{
-				if (mMotorMapping[i] < mController->getSlaveCount() && mRestart)
+				if (i < mController->getSlaveCount() &&
+					i < mMotorMapping.size() &&
+					mMotorMapping[i] < mSmoothers.size() && 
+					mRestart)
 				{
 					// get the motor position
 					nap::int32 actual_pos = mController->getActualPosition(i);
