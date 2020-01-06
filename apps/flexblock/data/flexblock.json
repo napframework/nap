@@ -840,10 +840,10 @@
             "Type": "nap::MACAdapter",
             "mID": "MACAdapter",
             "Enabled": false,
-            "Smooth Time": 3.0,
-            "Max Smooth Speed":1000000,
             "Motor Steps Per Meter": 129473.40625,
             "Motor Step Offset": 0,
+            "Smooth Time": 3.0,
+            "Max Smooth Speed": 1000000.0,
             "Motor Mapping": [
                 5,
                 1,
@@ -855,16 +855,16 @@
                 4
             ],
             "Controller": "MACController",
-            "Smooth Using Velocity": true,
-            "Min Smooth Velocity": 10000,
-            "Max Smooth Velocity": 35000,
+            "Smooth Using Velocity": false,
+            "Min Smooth Velocity": 10000.0,
+            "Max Smooth Velocity": 35000.0,
             "Smooth Time Min": 0.5
         },
         {
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{04F58279-FD7B-4DD4-AF3F-D5FE15941398}",
+            "Adapter": "\\Device\\NPF_{3DAF9A24-3985-4C0F-BBD2-C076D3C2C8AD}",
             "ProcessCycleTime": 0,
             "ErrorCycleTime": 10000,
             "ProcessTimeout": 2000,

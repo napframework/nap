@@ -131,8 +131,13 @@ namespace nap
 			{
 				if (mMotorMapping[i] < mController->getSlaveCount() && mRestart)
 				{
-					nap::int32 actual_pos = mController->getActualPosition(mMotorMapping[i]);
-					mSmoothers[i]->setValue(static_cast<float>(actual_pos));
+					// get the motor position
+					nap::int32 actual_pos = mController->getActualPosition(i);
+
+					// get the mapped motor index, maps to input
+					int mapped_idx = mMotorMapping[i];
+
+					mSmoothers[mapped_idx]->setValue(static_cast<float>(actual_pos));
 				}
 				else
 				{
