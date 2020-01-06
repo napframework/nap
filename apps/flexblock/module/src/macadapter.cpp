@@ -28,7 +28,7 @@ namespace nap
 	bool MACAdapter::init(utility::ErrorState& errorState)
 	{
 		// Ensure we have enough mappings for the slaves
-		if (!errorState.check(mController->getSlaveCount() < mMotorMapping.size(), "slave count exceeds number of motor mappings"))
+		if (!errorState.check(mController->getSlaveCount() <= mMotorMapping.size(), "slave count exceeds number of motor mappings"))
 			return false;
 
 		// Create our smoothers
