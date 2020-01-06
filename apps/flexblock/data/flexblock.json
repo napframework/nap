@@ -163,136 +163,7 @@
                     "Flex Device": "Flex",
                     "Frequency": 1000,
                     "MAC Controller": "MACController",
-                    "Need Operational MAC Controller": false
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCInputComponent",
-                    "Addresses": [
-                        "/flexblock"
-                    ]
-                },
-                {
-                    "Type": "nap::TouchOscComponent",
-                    "mID": "TouchOSCComponent",
-                    "Links": [
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_16839d28",
-                            "Adress": "/flexblock/motor/1",
-                            "Parameter": "Input 1"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_f18646fe",
-                            "Adress": "/flexblock/motor/2",
-                            "Parameter": "Input 2"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_45a0ddab",
-                            "Adress": "/flexblock/motor/3",
-                            "Parameter": "Input 3"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_2deb99de",
-                            "Adress": "/flexblock/motor/4",
-                            "Parameter": "Input 4"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_831fda7b",
-                            "Adress": "/flexblock/motor/5",
-                            "Parameter": "Input 5"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_350f6fde",
-                            "Adress": "/flexblock/motor/6",
-                            "Parameter": "Input 6"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_e5379ff6",
-                            "Adress": "/flexblock/motor/7",
-                            "Parameter": "Input 7"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_01a541b7",
-                            "Adress": "/flexblock/motor/8",
-                            "Parameter": "Input 8"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_fd7e1359",
-                            "Adress": "/flexblock/override/1",
-                            "Parameter": "Override 1"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_4ffa6493",
-                            "Adress": "/flexblock/override/2",
-                            "Parameter": "Override 2"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_231ebf02",
-                            "Adress": "/flexblock/override/3",
-                            "Parameter": "Override 3"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_58db7e19",
-                            "Adress": "/flexblock/override/4",
-                            "Parameter": "Override 4"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_f6a91418",
-                            "Adress": "/flexblock/override/5",
-                            "Parameter": "Override 5"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_eec158eb",
-                            "Adress": "/flexblock/override/6",
-                            "Parameter": "Override 6"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_e990d304",
-                            "Adress": "/flexblock/override/7",
-                            "Parameter": "Override 7"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_017574e9",
-                            "Adress": "/flexblock/override/8",
-                            "Parameter": "Override 8"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_a7055d52",
-                            "Adress": "/flexblock/slack",
-                            "Parameter": "Slack"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_9537c732",
-                            "Adress": "/flexblock/sinus_frequency",
-                            "Parameter": "Sinus Frequency"
-                        },
-                        {
-                            "Type": "nap::TouchOscParameterLink",
-                            "mID": "TouchOscParameterLink_6aaeed40",
-                            "Adress": "/flexblock/sinus_amplitude",
-                            "Parameter": "Sinus Amplitude"
-                        }
-                    ],
-                    "OSCSender": "OSCSender",
-                    "OSCInput": "./OSCInputComponent"
+                    "Need Operational MAC Controller": true
                 }
             ],
             "Children": [
@@ -741,44 +612,44 @@
             ],
             "Frame": [
                 {
-                    "x": -9.640000343322754,
-                    "y": 4.019999980926514,
-                    "z": -4.380000114440918
+                    "x": -9.479999542236329,
+                    "y": 3.7799999713897707,
+                    "z": -5.260000228881836
                 },
                 {
-                    "x": 9.630000114440918,
-                    "y": 4.019999980926514,
-                    "z": -4.420000076293945
+                    "x": 9.430000305175782,
+                    "y": 3.7799999713897707,
+                    "z": -5.289999961853027
                 },
                 {
-                    "x": 8.779999732971192,
-                    "y": -3.9600000381469728,
-                    "z": -4.480000019073486
+                    "x": 8.130000114440918,
+                    "y": -3.7799999713897707,
+                    "z": -5.28000020980835
                 },
                 {
-                    "x": -8.779999732971192,
-                    "y": -3.9100000858306886,
-                    "z": -4.400000095367432
+                    "x": -8.130000114440918,
+                    "y": -3.8299999237060549,
+                    "z": -5.260000228881836
                 },
                 {
-                    "x": -9.640000343322754,
-                    "y": 3.880000114440918,
-                    "z": 4.53000020980835
+                    "x": -9.420000076293946,
+                    "y": 3.75,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": 9.649999618530274,
-                    "y": 3.940000057220459,
-                    "z": 4.46999979019165
+                    "x": 9.470000267028809,
+                    "y": 3.75,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": 8.760000228881836,
-                    "y": -4.03000020980835,
-                    "z": 4.320000171661377
+                    "x": 8.1899995803833,
+                    "y": -3.740000009536743,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": -8.789999961853028,
-                    "y": -3.9800000190734865,
-                    "z": 4.360000133514404
+                    "x": -8.170000076293946,
+                    "y": -3.7100000381469728,
+                    "z": 5.269999980926514
                 }
             ]
         },
@@ -808,8 +679,8 @@
             "FlexBlockShape": "ShapeSize",
             "Frequency": 1000,
             "Slack Scale": 2.0,
-            "Slack Min": -0.30000001192092898,
-            "Override Scale": 23.0,
+            "Slack Min": -0.27000001072883608,
+            "Override Scale": 11.0,
             "Override Min": 0.0,
             "Sinus Frequency": 20.0,
             "Sinus Amplitude": 1.0,
@@ -842,7 +713,7 @@
             "Enabled": false,
             "Motor Steps Per Meter": 129473.40625,
             "Motor Step Offset": 0,
-            "Smooth Time": 3.0,
+            "Smooth Time": 2.0,
             "Max Smooth Speed": 1000000.0,
             "Motor Mapping": [
                 5,
@@ -855,27 +726,27 @@
                 4
             ],
             "Controller": "MACController",
-            "Smooth Using Velocity": false,
-            "Min Smooth Velocity": 10000.0,
-            "Max Smooth Velocity": 35000.0,
+            "Smooth Using Velocity": true,
+            "Min Smooth Velocity": 1000.0,
+            "Max Smooth Velocity": 25000.0,
             "Smooth Time Min": 0.5
         },
         {
             "Type": "nap::MACController",
             "mID": "MACController",
             "ForceOperational": false,
-            "Adapter": "\\Device\\NPF_{3DAF9A24-3985-4C0F-BBD2-C076D3C2C8AD}",
+            "Adapter": "eno1",
             "ProcessCycleTime": 0,
             "ErrorCycleTime": 10000,
-            "ProcessTimeout": 2000,
+            "ProcessTimeout": 6000,
             "RecoveryTimeout": 1000,
-            "ResetPosition": true,
+            "ResetPosition": false,
             "DisableErrorHandling": false,
             "ResetPositionValue": 1000000,
             "Mode": "Position",
             "Velocity": 3000,
             "MaxVelocity": 3000,
-            "Acceleration": 1200,
+            "Acceleration": 900,
             "Torque": 100,
             "VelocityGetRatio": 0.1340000033378601,
             "VelocitySetRatio": 2.18435001373291,
@@ -1020,20 +891,6 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::OSCReceiver",
-            "mID": "OSCReceiver",
-            "Port": 7000,
-            "EnableDebugOutput": true,
-            "AllowPortReuse": false
-        },
-        {
-            "Type": "nap::OSCSender",
-            "mID": "OSCSender",
-            "IpAddress": "192.168.33.237",
-            "Port": 8000,
-            "BufferScale": 2
         },
         {
             "Type": "nap::ParameterGroup",
@@ -1230,21 +1087,7 @@
             "Entities": [
                 {
                     "Entity": "WorldEntity",
-                    "InstanceProperties": [
-                        {
-                            "TargetComponent": "./FlexBlockEntity:0/Motor Sequence Player",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "MAC Controller",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_056425-078065-008373-097960",
-                                        "Value": "MACController"
-                                    }
-                                }
-                            ]
-                        }
-                    ]
+                    "InstanceProperties": []
                 }
             ]
         },
