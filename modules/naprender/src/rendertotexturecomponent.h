@@ -94,7 +94,7 @@ namespace nap
 		 * A custom orthographic projection matrix is constructed based on the size of the render target.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
-		void draw(VkCommandBuffer commandBuffer, int frameIndex);
+		void draw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex);
 
 		/**
 		 * Called by the Render Service.
@@ -108,7 +108,7 @@ namespace nap
 		* @param viewMatrix often the camera world space location
 		* @param projectionMatrix often the camera projection matrix
 		*/
-		virtual void onDraw(VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		nap::RenderTarget	mTarget;										///< Internally managed render target

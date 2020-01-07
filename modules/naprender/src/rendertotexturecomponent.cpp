@@ -132,7 +132,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::draw(VkCommandBuffer commandBuffer, int frameIndex)
+	void RenderToTextureComponentInstance::draw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex)
 	{
 		// Create orthographic projection matrix
 		glm::ivec2 size = mTarget.getTarget().getSize();
@@ -148,7 +148,7 @@ namespace nap
 		mService->pushRenderState();
 
 		// Call on draw
-		onDraw(commandBuffer, frameIndex, sIdentityMatrix, proj_matrix);
+		onDraw(renderTarget, commandBuffer, frameIndex, sIdentityMatrix, proj_matrix);
 
 		// Unbind render target
 		mTarget.getTarget().unbind();
@@ -161,7 +161,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::onDraw(VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderToTextureComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -185,14 +185,10 @@ namespace nap
 // 		modelUniform.setValue(mModelMatrix);
 
 		// Prepare blending
-		mMaterialInstance.pushBlendMode();
+		mMaterialInstance.update(frame_index);
 
 		// Push all uniforms now
 		//mMaterialInstance.pushUniforms();
-
-		// Bind vertex array object
-		// The VAO handle works for all the registered render contexts
-		mRenderableMesh.bind();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -211,10 +207,6 @@ namespace nap
 // 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
 // 			index_buffer.unbind();
 		}
-
-		// Unbind all GL resources
-		mRenderableMesh.unbind();
-		//mMaterialInstance.unbind();
 	}
 
 

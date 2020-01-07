@@ -402,7 +402,7 @@ namespace nap
 	}
 
 
-	void MaterialInstance::pushUniforms(int frameIndex)
+	MaterialInstance::EUpdateResult MaterialInstance::update(int frameIndex)
 	{
 		if (mUniformsDirty)
 		{
@@ -436,87 +436,14 @@ namespace nap
 
 			vkUnmapMemory(device, ubo.mBuffersMemory[frameIndex]);
 		}
-	}
 
-
-	void MaterialInstance::pushBlendMode()
-	{
-		EDepthMode depth_mode = getDepthMode();
-		
-		// Global
-		glDepthFunc(GL_LEQUAL);
-		glBlendEquation(GL_FUNC_ADD);
-
-		// Switch based on blend mode
-		switch (getBlendMode())
+		if (mPipelineStateDirty)
 		{
-			case EBlendMode::Opaque:
-			{
-				glDisable(GL_BLEND);
-				if (depth_mode == EDepthMode::InheritFromBlendMode)
-				{
-					glEnable(GL_DEPTH_TEST);
-					glDepthMask(GL_TRUE);
-				}
-				break;
-			}
-			case EBlendMode::AlphaBlend:
-			{
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				if (depth_mode == EDepthMode::InheritFromBlendMode)
-				{
-					glEnable(GL_DEPTH_TEST);
-					glDepthMask(GL_FALSE);
-				}
-				break;
-			}
-			case EBlendMode::Additive:
-			{
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_ONE, GL_ONE);
-				if (depth_mode == EDepthMode::InheritFromBlendMode)
-				{
-					glEnable(GL_DEPTH_TEST);
-					glDepthMask(GL_FALSE);
-				}
-				break;
-			}
+			mPipelineStateDirty = false;
+			return EUpdateResult::PipelineStateDirty;
 		}
 
-		// If the depth mode is not inherited (based on blend mode) set it.
-		if (depth_mode != EDepthMode::InheritFromBlendMode)
-		{
-			switch (depth_mode)
-			{
-			case EDepthMode::ReadWrite:
-			{
-				glEnable(GL_DEPTH_TEST);
-				glDepthMask(GL_TRUE);
-				break;
-			}
-			case EDepthMode::ReadOnly:
-			{
-				glEnable(GL_DEPTH_TEST);
-				glDepthMask(GL_FALSE);
-				break;
-			}
-			case EDepthMode::WriteOnly:
-			{
-				glDisable(GL_DEPTH_TEST);
-				glDepthMask(GL_TRUE);
-				break;
-			}
-			case EDepthMode::NoReadWrite:
-			{
-				glDisable(GL_DEPTH_TEST);
-				glDepthMask(GL_FALSE);
-				break;
-			}
-			default:
-				assert(false);
-			}
-		}
+		return EUpdateResult::PipelineStateNotDirty;
 	}
 
 
@@ -716,12 +643,14 @@ namespace nap
 	void MaterialInstance::setBlendMode(EBlendMode blendMode)
 	{
 		mResource->mBlendMode = blendMode;
+		mPipelineStateDirty = true;
 	}
 
 	
 	void MaterialInstance::setDepthMode(EDepthMode depthMode)
 	{
 		mResource->mDepthMode = depthMode;
+		mPipelineStateDirty = true;
 	}
 
 

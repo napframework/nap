@@ -4,8 +4,8 @@
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window0",
-			"Width" : 256,
-			"Height" : 256,
+			"Width" : 512,
+			"Height" : 512,
 			"Title" : "Window 1"
 		},
 		{

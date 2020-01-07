@@ -215,6 +215,10 @@ namespace nap
 		*/
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
+		void updateRenderableMesh(int frameIndex, RenderableMesh& renderableMesh);
+
+		void destroyPipelines(int frameIndex);
+
 		Renderer& getRenderer() { return *mRenderer; }
 
 	protected:
@@ -302,6 +306,8 @@ namespace nap
 		*/
 		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
+		VkRenderPass* getOrCreateRenderPass(ERenderTargetFormat format);
+
 		/**
 		* Helper struct to refcount opengl VAOs.
 		*/
@@ -311,16 +317,25 @@ namespace nap
 			int mRefCount = 0;
 		};
 
+		struct PipelineToDestroy
+		{
+			int			mFrameIndex;
+			VkPipeline	mPipeline;
+		};
+
 		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
 		using WindowList = std::vector<RenderWindow*>;
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
+		using PipelineList = std::vector<PipelineToDestroy>;
 
 		RenderState	 mRenderState;																//< The latest render state as set by the user
 		ContextSpecificStateMap mContextSpecificState;											//< The per-context render state
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	//< Array of per-context GL resources scheduled for destruction
-		VAOMap mVAOMap;																			//< Map from material-mesh combination to opengl VAO
-		WindowList mWindows;																	//< All available windows
-		SceneService* mSceneService = nullptr;													//< Service that manages all the scenes
+		VAOMap			 mVAOMap;																//< Map from material-mesh combination to opengl VAO
+		WindowList		mWindows;																//< All available windows
+		SceneService*	mSceneService = nullptr;												//< Service that manages all the scenes
+
+		PipelineList	mPipelinesToDestroy;
 
 		VkRenderPass	mRenderPassRGBA8 = nullptr;
 		VkRenderPass	mRenderPassRGB8 = nullptr;

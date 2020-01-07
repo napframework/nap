@@ -52,20 +52,6 @@ namespace nap
 		 */
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
-		/**
-		 * Binds the managed vertex array object. Call this before rendering your vertex buffers.
-		 * Only call bind when this object is valid! 
-		 * Note that the material and mesh are not bound, only the vertex array object managed internally.
-		 */
-		void bind();
-		
-		/**
-		 * Unbinds the managed vertex array object. Call this after rendering your vertex buffers.
-		 * Only call unbind when this object is valid!
-		 * Note that the material and mesh are not unbound, only the vertex array object managed internally.
-		 */
-		void unbind();
-
 		VkPipelineLayout getPipelineLayout() const { return mPipelineLayout; }
 
 		VkPipeline getPipeline() { return mPipeline; }
@@ -78,6 +64,10 @@ namespace nap
 		 * @param vaoHandle issued by the render service based on mesh / material combination
 		 */
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, VkPipelineLayout layout, VkPipeline pipeline);
+
+	private:
+		friend class RenderService;
+		void updatePipeline(VkPipelineLayout layout, VkPipeline pipeline);
 
 	private:
 		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance

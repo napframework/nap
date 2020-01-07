@@ -158,11 +158,7 @@ namespace nap
 // 			modelUniform->setValue(modelMatrix);
 
 		// Prepare blending
-		mMaterialInstance.pushBlendMode();
-
-		// Bind vertex array object
-		// The VAO handle works for all the registered render contexts
-		mRenderableMesh.bind();
+		mMaterialInstance.update(0); // todo: frame_index
 
 		// Fetch uniform for setting character
 		//UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
@@ -190,7 +186,7 @@ namespace nap
 // 		assert(texture_unit > -1);
 
 		// Push all uniforms now
-		mMaterialInstance.pushUniforms(0);		// TODO: correct frame index
+		mMaterialInstance.update(0);		// TODO: correct frame index
 
 		// Location of active letter
 		float x = 0.0f;
@@ -228,10 +224,6 @@ namespace nap
 			// Update x
 			x += render_glyph->getHorizontalAdvance();
 		}
-
-		// Unbind
-//		index_buffer.unbind();
-		mRenderableMesh.unbind();
 	}
 
 

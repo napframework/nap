@@ -11,15 +11,10 @@ namespace nap
 	{
 	}
 
-
-	void RenderableMesh::bind()
+	void RenderableMesh::updatePipeline(VkPipelineLayout layout, VkPipeline pipeline)
 	{
+		mPipelineLayout = layout;
+		mPipeline = pipeline;
 	}
-
-
-	void RenderableMesh::unbind()
-	{
-	}
-
 }
 

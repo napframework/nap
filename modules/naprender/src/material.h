@@ -84,6 +84,12 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformContainer)
 	public:
+		enum class EUpdateResult : uint8_t
+		{
+			PipelineStateNotDirty,
+			PipelineStateDirty
+		};
+
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
 		 */
@@ -144,16 +150,7 @@ namespace nap
 		 * Only call this after binding the material otherwise the outcome of this call is uncertain.
 		 * This applies to the uniforms in the instance that are overridden as for the uniforms in the underlying material.
 		 */
-		void pushUniforms(int frameIndex);
-
-		/**
-		 * Updates the blend mode on the GPU based on the blend settings associated with this material.
-		 * Both the instance and parent material have the option to change the blend mode.
-		 * If this material inherits the blend mode from the parent material the blend mode of the parent material is used.
-		 * Otherwise the blend settings that have been given to this instance are taken into account. 
-		 * Preferably call this after binding!
-		 */
-		void pushBlendMode();
+		EUpdateResult update(int frameIndex);
 
 		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
 
@@ -167,10 +164,11 @@ namespace nap
 
 		VkDevice								mDevice = nullptr;
 		std::vector<UniformBufferObject>		mUniformBufferObjects;
-		std::vector<SamplerInstance*>	mSamplers;
+		std::vector<SamplerInstance*>			mSamplers;
 		VkDescriptorPool						mDescriptorPool;
 		std::vector<VkDescriptorSet>			mDescriptorSets;
 		bool									mUniformsDirty = false;
+		bool									mPipelineStateDirty = false;
 	};
 
 

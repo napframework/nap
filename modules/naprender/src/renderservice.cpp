@@ -277,7 +277,7 @@ namespace nap
 
 	VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
 	{
-		VkPipelineColorBlendAttachmentState color_blend_attachment_state;
+		VkPipelineColorBlendAttachmentState color_blend_attachment_state = {};
 		color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD;
 		color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD;
@@ -377,24 +377,22 @@ namespace nap
 		inputAssembly.topology = getTopology(mesh);
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = 256.0f;
-		viewport.height = 256.0f;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		VkDynamicState dynamic_states[2] = {
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_SCISSOR
+		};
 
-		VkRect2D scissor = {};
-		scissor.offset = { 0, 0 };
-		scissor.extent = { 256, 256 };
+		VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
+		dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamic_state_create_info.dynamicStateCount = 2;
+		dynamic_state_create_info.pDynamicStates = dynamic_states;
 
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
+		viewportState.pViewports = nullptr;
 		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
+		viewportState.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizer = {};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -449,6 +447,7 @@ namespace nap
 		pipelineInfo.pDepthStencilState = &depthStencil;
 		pipelineInfo.layout = pipelineLayout;
 		pipelineInfo.renderPass = renderPass;
+		pipelineInfo.pDynamicState = &dynamic_state_create_info;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -458,10 +457,10 @@ namespace nap
 		return true;
 	}
 
-	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	VkRenderPass* RenderService::getOrCreateRenderPass(ERenderTargetFormat format)
 	{
 		VkRenderPass* render_pass = nullptr;
-		switch (materialInstance.getMaterial()->getShader()->mOutputFormat)
+		switch (format)
 		{
 		case ERenderTargetFormat::RGBA8:
 			{
@@ -497,12 +496,52 @@ namespace nap
 			break;
 		}
 
+		assert(render_pass != nullptr);
+
+		return render_pass;
+	}
+
+	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	{
+		VkRenderPass* render_pass = getOrCreateRenderPass(materialInstance.getMaterial()->getShader()->mOutputFormat);
+
 		VkPipelineLayout layout;
 		VkPipeline pipeline;
 		if (!createGraphicsPipeline(mRenderer->getDevice(), materialInstance, mesh, *render_pass, layout, pipeline, errorState))
 			return RenderableMesh();
 
 		return RenderableMesh(mesh, materialInstance, layout, pipeline);
+	}
+
+
+	void RenderService::updateRenderableMesh(int frameIndex, RenderableMesh& renderableMesh)
+	{
+		VkRenderPass* render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial()->getShader()->mOutputFormat);
+
+		VkPipelineLayout layout;
+		VkPipeline pipeline;
+		utility::ErrorState errorState;
+		if (!createGraphicsPipeline(mRenderer->getDevice(), renderableMesh.getMaterialInstance(), renderableMesh.getMesh(), *render_pass, layout, pipeline, errorState))
+			return;
+
+		mPipelinesToDestroy.push_back({ frameIndex, renderableMesh.getPipeline() });
+
+		renderableMesh.updatePipeline(layout, pipeline);
+	}
+
+
+	void RenderService::destroyPipelines(int frameIndex)
+	{
+		mPipelinesToDestroy.erase(std::remove_if(mPipelinesToDestroy.begin(), mPipelinesToDestroy.end(), [this, frameIndex](PipelineToDestroy& pipelineToDestroy) 
+		{
+			if (frameIndex == pipelineToDestroy.mFrameIndex)
+			{
+				vkDestroyPipeline(mRenderer->getDevice(), pipelineToDestroy.mPipeline, nullptr);
+				return true;
+			}
+
+			return false;
+		}), mPipelinesToDestroy.end());
 	}
 
 
@@ -650,7 +689,7 @@ namespace nap
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
-			comp->draw(commandBuffer, frameIndex, view_matrix, projection_matrix);
+			comp->draw(renderTarget, commandBuffer, frameIndex, view_matrix, projection_matrix);
 		}
 
 		//renderTarget.unbind();

@@ -174,7 +174,7 @@ namespace nap
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
 		// Push all existing uniforms to GPU
-		mMaterialInstance.pushUniforms();
+		mMaterialInstance.update();
 
 		// Fetch the uniform declarations of the uniform values we want to update in the copy loop
 		// This allows us to only push a specific uniform instead of all uniforms.

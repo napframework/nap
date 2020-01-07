@@ -6,6 +6,7 @@
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
+#include "uniforminstances.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -155,18 +156,35 @@ namespace nap
 		
 		// Render window 0
 		{
+			RenderWindow* render_window = mRenderWindows[0].get();
 
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
 
-			MaterialInstance& material_instance = mPigEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+			RenderableMeshComponentInstance& renderable_mesh_component = mPigEntity->getComponent<RenderableMeshComponentInstance>();
+			renderable_mesh_component.setClipRect(math::Rect(0, 0, render_window->getWidthPixels() / 2, render_window->getHeightPixels() / 2));
+
+			MaterialInstance& material_instance = renderable_mesh_component.getMaterialInstance();
+			if ((int)fmodf(currentTime, 4.0f) > 2.0)
+			{
+				if (material_instance.getBlendMode() == EBlendMode::Opaque)
+					material_instance.setBlendMode(EBlendMode::Additive);
+			}
+			else
+			{
+				if (material_instance.getBlendMode() == EBlendMode::Additive)
+					material_instance.setBlendMode(EBlendMode::Opaque);
+			}
+
 			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
 			color.setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
 
-			RenderWindow* render_window = mRenderWindows[0].get();
+			
 			render_window->makeActive();
 			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();
 			int frame_index = render_window->getWindow()->getCurrentFrameIndex() % 2;
+
+			mRenderService->destroyPipelines(frame_index);
 
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());

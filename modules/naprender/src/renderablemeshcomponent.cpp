@@ -86,7 +86,7 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(VkCommandBuffer commandBuffer, int frameIndex, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mRenderableMesh.isValid())
 		{
@@ -112,9 +112,22 @@ namespace nap
 		UniformMat4Instance& modelUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
 		modelUniform.setValue(model_matrix);
 
-		mat_instance.pushUniforms(frameIndex);
+		if (mat_instance.update(frameIndex) == MaterialInstance::EUpdateResult::PipelineStateDirty)
+		{
+			nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+			render_service->updateRenderableMesh(frameIndex, mRenderableMesh);
+		}
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = renderTarget.getSize().x;
+		viewport.height = renderTarget.getSize().y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 		// Gather draw info
 		MeshInstance& mesh_instance = getMeshInstance();
@@ -140,7 +153,15 @@ namespace nap
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 
-
+		if (mClipRect.hasWidth() && mClipRect.hasHeight())
+		{
+			VkRect2D rect;
+			rect.offset.x = mClipRect.getMin().x;
+			rect.offset.y = mClipRect.getMin().y;
+			rect.extent.width = mClipRect.getWidth();
+			rect.extent.height = mClipRect.getHeight();
+			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+		}
 
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
