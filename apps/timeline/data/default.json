@@ -1,0 +1,72 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "MyFloatParameter",
+            "Name": "",
+            "Value": 0.0,
+            "Minimum": 0.0,
+            "Maximum": 1.0
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Timeline",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": []
+        },
+        {
+            "Type": "nap::Timeline",
+            "mID": "Timeline 1",
+            "Name": "Timeline 1",
+            "Parameters": [
+                "MyFloatParameter"
+            ],
+            "KeyFrames": [
+                {
+                    "Type": "nap::KeyFrame",
+                    "mID": "KeyFrame_cf184cd3",
+                    "Name": "",
+                    "Time": 0.0
+                },
+                {
+                    "Type": "nap::KeyFrame",
+                    "mID": "KeyFrame_548c9625",
+                    "Name": "",
+                    "Time": 1.0
+                }
+            ]
+        },
+        {
+            "Type": "nap::Timeline",
+            "mID": "Timeline 2",
+            "Name": "Timeline 2",
+            "Parameters": [],
+            "KeyFrames": []
+        },
+        {
+            "Type": "nap::TimelineGUI",
+            "mID": "TimelineGUI 1",
+            "Timeline": "Timeline 1"
+        },
+        {
+            "Type": "nap::TimelineGUI",
+            "mID": "TimelineGUI 2",
+            "Timeline": "Timeline 2"
+        }
+    ]
+}
