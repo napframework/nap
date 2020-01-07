@@ -73,6 +73,12 @@ namespace nap
 		 * @return the adapter at the given index as type T.
 		 */
 		template<typename T>
+		const T& getAdapter(int index) const;
+
+		/**
+		 * @return the adapter at the given index as type T.
+		 */
+		template<typename T>
 		T& getAdapter(int index);
 
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
@@ -101,6 +107,16 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
 	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	const T& nap::CVVideoCapture::getAdapter(int index) const
+	{
+		assert(index < mAdapters.size());
+		T* adapter = rtti_cast<T>(mAdapters[index].get());
+		assert(adapter != nullptr);
+		return *adapter;
+	}
+
 
 	template<typename T>
 	T& nap::CVVideoCapture::getAdapter(int index)

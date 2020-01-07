@@ -133,6 +133,8 @@ namespace nap
 				properties = mPropertyMap;
 				for (auto& prop : mPropertyMap)
 					prop.second.clear();
+
+				// Reset this flag immediately, ensures new requests are forwarded immediately.
 				mCaptureFrame = false;
 			}
 
@@ -189,5 +191,4 @@ namespace nap
 			mFrameAvailable = true;
 		}
 	}
-
 }
