@@ -1,4 +1,5 @@
 #include "cvadapter.h"
+#include "cvvideocapture.h"
 
 // nap::cvadapter run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVAdapter)
@@ -21,7 +22,8 @@ namespace nap
 
 	void CVAdapter::setProperty(cv::VideoCaptureProperties propID, double value)
 	{
-
+		assert(mParent != nullptr);
+		mParent->setProperty(*this, propID, value);
 	}
 
 

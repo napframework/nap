@@ -17,7 +17,7 @@ namespace nap
 	 */
 	class NAPAPI CVVideoAdapter : public CVAdapter
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(CVAdapter)
 	public:
 
 		/**

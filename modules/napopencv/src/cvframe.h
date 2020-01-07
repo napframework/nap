@@ -58,7 +58,7 @@ namespace nap
 		 * The content of the given frame is cleared.
 		 * @param outFrame the frame to copy the data of this frame to.
 		 */
-		void deepCopyTo(CVFrame& outFrame) const;
+		void copyTo(CVFrame& outFrame) const;
 
 		/**
 		 * Clones this frame including all of it's content.

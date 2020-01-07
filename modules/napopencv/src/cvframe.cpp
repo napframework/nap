@@ -43,7 +43,7 @@ namespace nap
 	}
 
 
-	void CVFrame::deepCopyTo(CVFrame& outFrame) const
+	void CVFrame::copyTo(CVFrame& outFrame) const
 	{
 		outFrame.mMatrices.clear();
 		outFrame.mMatrices.reserve(mMatrices.size());
@@ -58,7 +58,7 @@ namespace nap
 	CVFrame CVFrame::clone() const
 	{
 		CVFrame clone;
-		this->deepCopyTo(clone);
+		this->copyTo(clone);
 		return clone;
 	}
 

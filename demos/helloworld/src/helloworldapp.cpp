@@ -83,7 +83,7 @@ namespace nap
 
 		// Perform a deep copy
 		CVFrame frame_two;
-		frame_one.deepCopyTo(frame_two);
+		frame_one.copyTo(frame_two);
 
 		// Perform a weak copy
 		CVFrame frame_three(frame_two);
@@ -109,7 +109,7 @@ namespace nap
 		if (mCaptureDevice->grab(mCamFrame))
 		{
 			mCaptureDevice->capture();
-			detectFaces(mCamFrame);
+			//detectFaces(mCamFrame);
 			cv::flip(mCamFrame[0], mCamFrame[0], 0);
 			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
@@ -117,7 +117,7 @@ namespace nap
 		
 		if (mVideoDevice->grab(mVidFrame))
 		{
-			detectFaces(mVidFrame);
+			//detectFaces(mVidFrame);
 			cv::flip(mVidFrame[0], mVidFrame[0], 0);
 			cv::Mat cpu_mat = mVidFrame[0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);

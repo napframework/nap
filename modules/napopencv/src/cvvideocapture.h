@@ -3,10 +3,12 @@
 // Local Includes
 #include "cvcaptureapi.h"
 #include "cvevent.h"
+#include "cvadapter.h"
 
 // External Includes
 #include <nap/device.h>
 #include <nap/numeric.h>
+#include <nap/resourceptr.h>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
 #include <thread>
@@ -66,6 +68,15 @@ namespace nap
 		 * @param value the new property value.
 		 */
 		void setProperty(cv::VideoCaptureProperties propID, double value);
+		
+		/**
+		 * Sets an OpenCV capture property. This call is thread safe.
+		 * The actual property is applied when the new frame is captured, not immediately.
+		 * A new frame is queued immediately.
+		 * @param propID the property to set.
+		 * @param value the new property value.
+		 */
+		void setProperty(const CVAdapter& adapter, cv::VideoCaptureProperties propID, double value);
 
 		/**
 		 * Get an OpenCV camera device property. Property is read immediately.
@@ -103,6 +114,7 @@ namespace nap
 		bool			mFlipVertical = false;					///< Property: 'FlipVertical' flips the frame on the y-axis
 		bool			mResize = false;						///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
 		glm::ivec2		mSize = { 1280, 720 };					///< Property: 'Size' frame size, only used when 'Resize' is turned on.
+		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.
 
 	protected:
 		/**
@@ -154,6 +166,9 @@ namespace nap
 		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
 		
 		std::unordered_map<int, double> mProperties;			///< Properties that are set when a new frame is grabbed
+
+		using PropertyMap = std::unordered_map<int, double>;
+		std::unordered_map<const CVAdapter*, PropertyMap> mPropertyMap;
 
 		/**
 		 * Captures new frames.

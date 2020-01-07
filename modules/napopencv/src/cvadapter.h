@@ -99,7 +99,8 @@ namespace nap
 
 	private:
 		friend class CVVideoCapture;
-		cv::VideoCapture  mCaptureDevice;					///< The open-cv video capture device
+		CVVideoCapture*		mParent;						///< The nap parent capture device
+		cv::VideoCapture	mCaptureDevice;					///< The open-cv video capture device
 
 		bool open(nap::utility::ErrorState& error);
 		

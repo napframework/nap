@@ -12,6 +12,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVVideoCapture)
 	RTTI_PROPERTY("Resize",			&nap::CVVideoCapture::mResize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",			&nap::CVVideoCapture::mSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Backend",		&nap::CVVideoCapture::mAPIPreference,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapters",		&nap::CVVideoCapture::mAdapters,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@ namespace nap
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat.deepCopyTo(target);
+		mCaptureMat.copyTo(target);
 		mFrameAvailable = false;
 		return true;
 	}
@@ -50,6 +51,14 @@ namespace nap
 
 	bool CVVideoCapture::start(utility::ErrorState& errorState)
 	{
+		// Initialize property map
+		mPropertyMap.reserve(mAdapters.size());
+		for (auto& adapter : mAdapters)
+		{
+			mPropertyMap[adapter.get()] = {};
+			adapter->mParent = this;
+		}
+
 		assert(!mCaptureDevice.isOpened());
 		if (!onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState))
 			return false;
@@ -67,6 +76,22 @@ namespace nap
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
 			mProperties[propID] = value;
 			mCaptureFrame = true;
+		}
+		mCaptureCondition.notify_one();
+	}
+
+
+	void CVVideoCapture::setProperty(const CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
+	{
+		{
+			std::lock_guard<std::mutex> lock(mCaptureMutex);
+			auto it = mPropertyMap.find(&adapter);
+			if (it == mPropertyMap.end())
+			{
+				nap::Logger::warn("%s: unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
+				return;
+			}
+			(*it).second[propID] = value;
 		}
 		mCaptureCondition.notify_one();
 	}
@@ -95,6 +120,14 @@ namespace nap
 		if (mCaptureDevice.isOpened())
 			mCaptureDevice.release();
 		onClose();
+
+		// Reset parent
+		for (auto& adapter : mAdapters)
+			adapter->mParent = nullptr;
+
+		// Clear all properties
+		mPropertyMap.clear();
+
 	}
 
 
@@ -196,7 +229,7 @@ namespace nap
 			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
-				out_frame.deepCopyTo(mCaptureMat);
+				out_frame.copyTo(mCaptureMat);
 				onCopy();
 			}
 
