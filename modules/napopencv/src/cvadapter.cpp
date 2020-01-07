@@ -35,13 +35,22 @@ namespace nap
 
 	bool CVAdapter::open(nap::utility::ErrorState& error)
 	{
-		return this->onOpen(getCaptureDevice(), static_cast<int>(mAPIPreference), error);
+		assert(!mCaptureDevice.isOpened());
+		return this->onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), error);
+	}
+
+
+	void CVAdapter::close()
+	{
+		if (mCaptureDevice.isOpened())
+			mCaptureDevice.release();
+		onClose();
 	}
 
 
 	bool CVAdapter::retrieve(CVFrame& frame, utility::ErrorState& error)
 	{
-		return this->onRetrieve(getCaptureDevice(), frame, error);
+		return this->onRetrieve(mCaptureDevice, frame, error);
 	}
 
 }

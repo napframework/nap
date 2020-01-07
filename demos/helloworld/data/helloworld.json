@@ -1,36 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::CVCamera",
-            "mID": "CaptureDevice",
-            "ConvertRGB": true,
-            "FlipHorizontal": false,
-            "FlipVertical": false,
-            "Resize": false,
-            "Size": {
-                "x": 1280,
-                "y": 720
-            },
-            "Backend": "DirectShow",
-            "Adapters": [],
-            "ShowDialog": true,
-            "ApplySettings": false,
-            "DefaultResolution": true,
-            "DeviceIndex": 0,
-            "Settings": {
-                "AutoExposure": false,
-                "Brightness": 1.0,
-                "Contrast": 1.0,
-                "Saturation": 1.0,
-                "Gain": 1.0,
-                "Exposure": 1.0
-            },
-            "Resolution": {
-                "x": 320,
-                "y": 240
-            }
-        },
-        {
             "Type": "nap::CVCameraAdapter",
             "mID": "CameraAdapter",
             "Backend": "DirectShow",
@@ -60,22 +30,18 @@
             }
         },
         {
-            "Type": "nap::CVVideo",
-            "mID": "VideoDevice",
-            "ConvertRGB": true,
-            "FlipHorizontal": false,
-            "FlipVertical": false,
-            "Resize": true,
-            "Size": {
-                "x": 640,
-                "y": 360
-            },
-            "Backend": "Automatic",
+            "Type": "nap::CVVideoCapture",
+            "mID": "VideoCaptureDevice",
             "Adapters": [
-                "CameraAdapter",
                 "VideoAdapter"
-            ],
-            "File": "people.mp4"
+            ]
+        },
+        {
+            "Type": "nap::CVVideoCapture",
+            "mID": "CameraCaptureDevice",
+            "Adapters": [
+                "CameraAdapter"
+            ]
         },
         {
             "Type": "nap::CVVideoAdapter",

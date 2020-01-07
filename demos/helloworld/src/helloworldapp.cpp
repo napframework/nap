@@ -46,8 +46,8 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mCaptureDevice = mResourceManager->findObject<nap::CVCamera>("CaptureDevice");
-		mVideoDevice = mResourceManager->findObject<nap::CVVideo>("VideoDevice");
+		mCameraCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CameraCaptureDevice");
+		mVideoCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("VideoCaptureDevice");
 		mCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CaptureTexture");
 		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
 
@@ -106,16 +106,16 @@ namespace nap
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
-		if (mCaptureDevice->grab(mCamFrame))
+		if (mCameraCaptureDevice->grab(mCamFrame))
 		{
-			mCaptureDevice->capture();
+			mCameraCaptureDevice->capture();
 			//detectFaces(mCamFrame);
 			cv::flip(mCamFrame[0], mCamFrame[0], 0);
 			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
 		}
 		
-		if (mVideoDevice->grab(mVidFrame))
+		if (mVideoCaptureDevice->grab(mVidFrame))
 		{
 			//detectFaces(mVidFrame);
 			cv::flip(mVidFrame[0], mVidFrame[0], 0);
@@ -146,9 +146,11 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
-			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, mVideoDevice->geFrameCount()))
+			CVVideoAdapter& adapter = mVideoCaptureDevice->getAdapter<CVVideoAdapter>(0);
+			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
 			{
-				mVideoDevice->setFrame(mCurrentVideoFrame);
+				adapter.setFrame(mCurrentVideoFrame);
+				mVideoCaptureDevice->capture();
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());

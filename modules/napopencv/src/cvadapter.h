@@ -104,7 +104,7 @@ namespace nap
 
 		bool open(nap::utility::ErrorState& error);
 		
-		void close()										{ onClose(); }
+		void close();
 
 		bool retrieve(CVFrame& frame, utility::ErrorState& error);
 

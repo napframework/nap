@@ -131,16 +131,11 @@ namespace nap
 			return false;
 		}
 
-		// Resize frame if required
-		// Otherwise simply copy mat reference (no actual data copy takes place)
+		// Resize or perform a weak copy.
 		if (mResize)
-		{
 			cv::resize(mFrame[0], outFrame[0], cv::Size(mSize.x, mSize.y));
-		}
 		else
-		{
 			outFrame[0] = mFrame[0];
-		}
 
 		// Convert to RGB
 		if (mConvertRGB)

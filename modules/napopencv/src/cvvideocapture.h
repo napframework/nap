@@ -31,6 +31,18 @@ namespace nap
 		virtual ~CVVideoCapture() override;
 
 		/**
+		 * Starts the capture device.
+		 * @param errorState contains the error if the device can't be started
+		 * @return if the device started
+		 */
+		virtual bool start(utility::ErrorState& errorState) override final;
+
+		/**
+		 * Stops the capture device.
+		 */
+		virtual void stop() override final;
+
+		/**
 		 * Grabs the last captured frame if new. The result is stored in the given target.
 		 * Internally the frame is removed from the queue.
 		 * If there is no new capture the target is not updated and the function returns false.
@@ -49,113 +61,23 @@ namespace nap
 		void capture();
 
 		/**
-		 * Starts the capture device.
-		 * @param errorState contains the error if the device can't be started
-		 * @return if the device started
-		 */
-		virtual bool start(utility::ErrorState& errorState) override final;
-
-		/**
-		 * Stops the capture device.
-		 */
-		virtual void stop() override final;
-
-		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
 		 * A new frame is queued immediately.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */
-		void setProperty(cv::VideoCaptureProperties propID, double value);
-		
-		/**
-		 * Sets an OpenCV capture property. This call is thread safe.
-		 * The actual property is applied when the new frame is captured, not immediately.
-		 * A new frame is queued immediately.
-		 * @param propID the property to set.
-		 * @param value the new property value.
-		 */
-		void setProperty(const CVAdapter& adapter, cv::VideoCaptureProperties propID, double value);
+		void setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value);
 
 		/**
-		 * Get an OpenCV camera device property. Property is read immediately.
-		 * Note that depending on your hardware this call can be slow!
-		 * @param propID the property to get.
-		 * @return property value, if available.
+		 * @return the adapter at the given index as type T.
 		 */
-		double getProperty(cv::VideoCaptureProperties propID) const;
+		template<typename T>
+		T& getAdapter(int index);
 
-		/**
-		 * Returns the OpenCV capture device frame width.
-		 * @return the OpenCV capture device frame width in pixels.
-		 */
-		int getWidth() const;
-
-		/**
-		 * Returns the OpenCV capture device frame height.
-		 * @return the OpenCV capture device frame height in pixels.
-		 */
-		int getHeight() const;
-
-		/**
-		 * @return the OpenCV video capture device
-		 */
-		cv::VideoCapture& getCaptureDevice()					{ return mCaptureDevice; }
-
-		/**
-		 * @return the OpenCV video capture device
-		 */
-		const cv::VideoCapture&	getCaptureDevice() const		{ return mCaptureDevice; }
-
-		ECVCaptureAPI	mAPIPreference =  ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
-		bool			mConvertRGB = true;						///< Property: 'ConvertRGB' if the frame is converted into RGB
-		bool			mFlipHorizontal = false;				///< Property: 'FlipHorizontal' flips the frame on the x-axis
-		bool			mFlipVertical = false;					///< Property: 'FlipVertical' flips the frame on the y-axis
-		bool			mResize = false;						///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
-		glm::ivec2		mSize = { 1280, 720 };					///< Property: 'Size' frame size, only used when 'Resize' is turned on.
-		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.
-
-	protected:
-		/**
-		 * @return number of opencv matrices associated with a single frame
-		 */
-		virtual int getMatrixCount() = 0;
-
-		/**
-		 * Needs to be implemented in a derived class.
-		 * Called automatically by this device on startup when the OpenCV capture device needs to be opened.
-		 * It is the responsibility of the derived class to open the device in this call and return success or failure.
-		 * @param captureDevice handle to the device that needs to be opened.
-		 * @param api the preferred backend video capture api
-		 * @param error contains the error when the device could not be opened
-		 * @return if the device opened correctly
-		 */
-		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) = 0;
-
-		/**
-		 * Called automatically by this device on stop, after the capture device is released.
-		 */
-		virtual void onClose()									{ }
-
-		/**
-		 * This method decodes and returns the just grabbed frame.
-		 * Needs to be implemented in a derived class. 
-		 * Return false when decoding fails, otherwise return true.
-		 * The 'outFrame' should contain the decoded frame on success.
-		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
-		 * @return if decoding succeeded.
-		 */
-		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) = 0;
-
-		/**
-		 * Called right after the frame is stored.
-		 */
-		virtual void onCopy()									{ }
+		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
 
 	private:
-		cv::VideoCapture		mCaptureDevice;					///< The open-cv video capture device
 		CVFrame					mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		bool					mCaptureFrame	= true;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
@@ -164,11 +86,9 @@ namespace nap
 		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
 		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
 		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
-		
-		std::unordered_map<int, double> mProperties;			///< Properties that are set when a new frame is grabbed
 
 		using PropertyMap = std::unordered_map<int, double>;
-		std::unordered_map<const CVAdapter*, PropertyMap> mPropertyMap;
+		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;
 
 		/**
 		 * Captures new frames.
@@ -176,4 +96,18 @@ namespace nap
 		void captureTask();
 
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T& nap::CVVideoCapture::getAdapter(int index)
+	{
+		assert(index < mAdapters.size());
+		T* adapter = rtti_cast<T>(mAdapters[index].get());
+		assert(adapter != nullptr);
+		return *adapter;
+	}
 }
