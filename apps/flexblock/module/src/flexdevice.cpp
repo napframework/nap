@@ -184,6 +184,7 @@ namespace nap
 		std::vector<int> objectElementIds1;
 		std::vector<float> calc_ropes(8);
 		std::vector<glm::vec3> calc_points(8);
+		mLastTimeStamp = 0.0;
 
 		// Compute loop
 		while (!mStopCompute)
