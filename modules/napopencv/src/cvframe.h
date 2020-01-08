@@ -95,6 +95,12 @@ namespace nap
 		 */
 		void clear();
 
+		/**
+		 * @return if this frame does not contain any data.
+		 */
+		bool empty() const										{ return mMatrices.empty(); }
+		
+
 	private:
 		std::vector<cv::UMat> mMatrices;	///< All OpenCV matrices associated with the frame
 	};

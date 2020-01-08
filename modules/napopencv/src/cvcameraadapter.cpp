@@ -122,33 +122,32 @@ namespace nap
 	}
 
 
-	bool CVCameraAdapter::onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error)
+	CVFrame CVCameraAdapter::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
-		assert(outFrame.getCount() >= getMatrixCount());
-		if (!captureDevice.retrieve(mFrame[0]))
+		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
 			error.fail("%s: no new frame available", mID.c_str());
-			return false;
+			return CVFrame();
 		}
 
 		// Resize or perform a weak copy.
 		if (mResize)
-			cv::resize(mFrame[0], outFrame[0], cv::Size(mSize.x, mSize.y));
+			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
 		else
-			outFrame[0] = mFrame[0];
+			mOutputFrame[0] = mCaptureFrame[0];
 
 		// Convert to RGB
 		if (mConvertRGB)
-			cv::cvtColor(outFrame[0], outFrame[0], cv::COLOR_BGR2RGB);
+			cv::cvtColor(mOutputFrame[0], mOutputFrame[0], cv::COLOR_BGR2RGB);
 
 		// Flip horizontal
 		if (mFlipHorizontal)
-			cv::flip(outFrame[0], outFrame[0], 1);
+			cv::flip(mOutputFrame[0], mOutputFrame[0], 1);
 
 		// Flip vertical
 		if (mFlipVertical)
-			cv::flip(outFrame[0], outFrame[0], 0);
+			cv::flip(mOutputFrame[0], mOutputFrame[0], 0);
 
-		return true;
+		return mOutputFrame;
 	}
 }

@@ -27,7 +27,7 @@ namespace nap
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat.copyTo(target);
+		mCaptureMat[0].copyTo(target);
 		mFrameAvailable = false;
 		return true;
 	}
@@ -110,8 +110,8 @@ namespace nap
 	{
 		// Wait for playback to be enabled, a new frame request is issued or request to stop is made
 		// Exit loop immediately when a stop is requested. Otherwise process next frame
-		CVFrame cap_frame(1);
-
+		CVFrameEvent frame_event;
+		frame_event.reserve(mAdapters.size());
 		std::unordered_map<CVAdapter*, PropertyMap> properties;
 		std::vector<nap::CVAdapter*> capture_adapters;
 		bool set_properties = false;
@@ -132,7 +132,9 @@ namespace nap
 				// Copy and clear properties
 				properties = mPropertyMap;
 				for (auto& prop : mPropertyMap)
+				{
 					prop.second.clear();
+				}
 
 				// Reset this flag immediately, ensures new requests are forwarded immediately.
 				mCaptureFrame = false;
@@ -162,30 +164,39 @@ namespace nap
 
 			// Now retrieve frame (heaviest operation)
 			nap::utility::ErrorState grab_error;
+			
+			frame_event.clear();
 			for (auto& adapter : capture_adapters)
 			{
-				if (!adapter->retrieve(cap_frame, grab_error))
+				frame_event.addFrame(adapter->retrieve(grab_error));
+				if (frame_event.lastFrame().empty())
 				{
-					grab_error.fail("%s: failed to decode frame", mID.c_str());
-					nap::Logger::error(grab_error.toString());
+					nap::Logger::error("%s: failed to decode frame", mID.c_str());
+					frame_event.popFrame();
 					continue;
 				}
-
-				// Deep copy the captured frame to our storage matrix.
-				// This updates the data of our storage container and ensures the same dimensionality.
-				// We need to perform a deep-copy because if we choose to use a shallow copy, 
-				// by the time the frame is grabbed the data 'mCaptureMat' points to could have changed, 
-				// as it references the same data as in 'cap_frame'. And the 'cap_frame' process loop already started.
-				// Performing a deep_copy ensures that when the data is grabbed it will contain the latest full processed frame.
-				//
-				// Alternatively, we could make the 'cap_frame' variable local to this loop, but that creates
-				// more overhead than the copy below.
-				{
-					std::lock_guard<std::mutex> lock(mCaptureMutex);
-					cap_frame.copyTo(mCaptureMat);
-					adapter->copied();
-				}
+				adapter->copied();
 			}
+
+			// No frames captured
+			if (frame_event.empty())
+				continue;
+
+			// Deep copy the captured frame to our storage matrix.
+			// This updates the data of our storage container and ensures the same dimensionality.
+			// We need to perform a deep-copy because if we choose to use a shallow copy, 
+			// by the time the frame is grabbed the data 'mCaptureMat' points to could have changed, 
+			// as it references the same data as in 'cap_frame'. And the 'cap_frame' process loop already started.
+			// Performing a deep_copy ensures that when the data is grabbed it will contain the latest full processed frame.
+			//
+			// Alternatively, we could make the 'cap_frame' variable local to this loop, but that creates
+			// more overhead than the copy below.
+			{
+				std::lock_guard<std::mutex> lock(mCaptureMutex);
+				frame_event.copyTo(mCaptureMat);
+			}
+
+			// TODO: Send Signal!
 
 			// New frame is available
 			mFrameAvailable = true;

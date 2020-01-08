@@ -48,9 +48,9 @@ namespace nap
 	}
 
 
-	bool CVAdapter::retrieve(CVFrame& frame, utility::ErrorState& error)
+	CVFrame CVAdapter::retrieve(utility::ErrorState& error)
 	{
-		return this->onRetrieve(mCaptureDevice, frame, error);
+		return this->onRetrieve(mCaptureDevice, error);
 	}
 
 }

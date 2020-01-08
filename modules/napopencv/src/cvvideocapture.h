@@ -84,7 +84,7 @@ namespace nap
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
 
 	private:
-		CVFrame					mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
+		CVFrameEvent			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		bool					mCaptureFrame	= true;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 

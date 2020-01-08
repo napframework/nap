@@ -17,26 +17,20 @@ namespace nap
 	{
 		RTTI_ENABLE(Event)
 	public:
-		/**
-		 * Constructs a frame event with the given number of frames.
-		 * @param count number of frames.
-		 */
-		CVFrameEvent(int count);
-
 		// Default Constructor
 		CVFrameEvent() = default;
 
 		/**
-		 * Constructor that takes a frame as input argument.
-		 * @param frame frame associated with this event.
+		 * Constructor that takes multiple frames asn an input argument.
+		 * @param frame frames associated with this event.
 		 */
-		CVFrameEvent(const CVFrame& frame);
-		
+		CVFrameEvent(const std::vector<CVFrame>& frames);
+
 		/**
-		 * Constructor that takes a frame as input argument, the input is moved.
-		 * @param frame frame associated with this event.
+		 * Constructor that takes multiple frames asn an input argument.
+		 * @param frame frames associated with this event.
 		 */
-		CVFrameEvent(CVFrame&& frame);
+		CVFrameEvent(const std::vector<CVFrame>&& frames);
 
 		/**
 		 * Adds a new frame to this event.
@@ -51,9 +45,38 @@ namespace nap
 		void addFrame(CVFrame&& frame);
 
 		/**
+		 * Performs a deep copy of the frames in this event.
+		 * The default copy operation does not copy the actual content of the frames, only increases the ref count.
+		 * The content of the given event is cleared.
+		 * @param outEvent the event to copy the data of this frame to.
+		 */
+		void copyTo(CVFrameEvent& outEvent) const;
+
+		/**
 		 * @return number of frames associated with this event
 		 */
 		int getCount() const										{ return static_cast<int>(mFrames.size()); }
+
+		/**
+		 * Request a change in frame capacity.
+		 * @param count number of frames
+		 */
+		void reserve(int count)										{ mFrames.reserve(count); }
+
+		/**
+		 * Pop the last frame from the stack, the frame is destroyed
+		 */
+		void popFrame()												{ mFrames.pop_back(); }
+
+		/**
+		 * @return the last frame
+		 */
+		CVFrame& lastFrame()										{ return mFrames.back(); }
+
+		/**
+		 * @return if the event contains no frame data
+		 */
+		bool empty() const											{ return mFrames.empty(); }
 
 		/**
 		 * @return all the frames associated with this event.
@@ -64,6 +87,11 @@ namespace nap
 		 * @return the frame at the given index
 		 */
 		const CVFrame& getFrame(int index);
+
+		/**
+		 *	Clears all frames
+		 */
+		void clear()												{ mFrames.clear(); }
 
 		/**
 		 * Array subscript overload. Does not perform a bounds check!

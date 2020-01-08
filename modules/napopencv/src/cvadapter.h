@@ -75,7 +75,7 @@ namespace nap
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.
 		 */
-		virtual bool onRetrieve(cv::VideoCapture& captureDevice, CVFrame& outFrame, utility::ErrorState& error) = 0;
+		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) = 0;
 
 		/**
 		 * Called automatically by this device on stop, after the capture device is released.
@@ -106,7 +106,7 @@ namespace nap
 		
 		void close();
 
-		bool retrieve(CVFrame& frame, utility::ErrorState& error);
+		CVFrame retrieve(utility::ErrorState& error);
 
 		void copied()										{ onCopy(); }
 	};
