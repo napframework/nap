@@ -446,6 +446,102 @@ namespace nap
 		return EUpdateResult::PipelineStateNotDirty;
 	}
 
+	bool createDescriptorSet(VkDevice device, VkPhysicalDevice physicalDevice, std::vector<UniformBufferObject>& ubos, const std::vector<SamplerInstance*>& samplers, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool, VkDescriptorSet& descriptorSet, utility::ErrorState& errorState)
+	{
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayout;
+
+		if (!errorState.check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) == VK_SUCCESS, "Failed to create descriptor set"))
+			return false;
+
+		int num_descriptors = ubos.size() + samplers.size();
+		std::vector<VkWriteDescriptorSet> descriptor_writes;
+		descriptor_writes.resize(num_descriptors);
+
+		std::vector<VkDescriptorImageInfo> image_infos;
+
+		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
+		descriptor_buffers.resize(num_descriptors);
+
+		int descriptor_index = 0;
+		for (UniformBufferObject& ubo : ubos)
+		{
+			VkBuffer vkBuffer;
+			VkDeviceMemory vkBufferMemory;
+
+			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+
+			if (!createBuffer(device, physicalDevice, ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkBufferMemory, errorState))
+				return false;
+
+			ubo.mBuffers.push_back(vkBuffer);
+			ubo.mBuffersMemory.push_back(vkBufferMemory);
+
+			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[descriptor_index];
+			bufferInfo.buffer = ubo.mBuffers.back();
+			bufferInfo.offset = 0;
+			bufferInfo.range = VK_WHOLE_SIZE;
+
+			VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
+			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write_descriptor_set.dstSet = descriptorSet;
+			write_descriptor_set.dstBinding = ubo_declaration.mBinding;
+			write_descriptor_set.dstArrayElement = 0;
+			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			write_descriptor_set.descriptorCount = 1;
+			write_descriptor_set.pBufferInfo = &bufferInfo;
+
+			descriptor_index++;
+		}
+
+		for (SamplerInstance* sampler_instance : samplers)
+		{
+			size_t image_info_start_index = image_infos.size();
+			if (sampler_instance->get_type() == RTTI_OF(Sampler2DInstance))
+			{
+				Sampler2DInstance* sampler_2d = rtti_cast<Sampler2DInstance>(sampler_instance);
+
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = sampler_2d->mTexture2D->getImageView();
+				imageInfo.sampler = sampler_instance->getSampler();
+
+				image_infos.push_back(imageInfo);
+			}
+			else if (sampler_instance->get_type() == RTTI_OF(Sampler2DArrayInstance))
+			{
+				Sampler2DArrayInstance* sampler_2d_array = rtti_cast<Sampler2DArrayInstance>(sampler_instance);
+
+				for (auto& texture : sampler_2d_array->mTextures)
+				{
+					VkDescriptorImageInfo imageInfo = {};
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageView = texture->getImageView();
+					imageInfo.sampler = sampler_instance->getSampler();
+
+					image_infos.push_back(imageInfo);
+				}
+			}
+
+			VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
+			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write_descriptor_set.dstSet = descriptorSet;
+			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
+			write_descriptor_set.dstArrayElement = 0;
+			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write_descriptor_set.descriptorCount = image_infos.size() - image_info_start_index;
+			write_descriptor_set.pImageInfo = image_infos.data() + image_info_start_index;
+
+			descriptor_index++;
+		}
+
+		vkUpdateDescriptorSets(device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+
+		return true;
+	}
 
 	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
@@ -475,7 +571,6 @@ namespace nap
 		
 		mUniformsDirty = false;
 		
-		int total_num_samplers = 0;
 		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
@@ -503,123 +598,33 @@ namespace nap
 			}
 
 			mSamplers.push_back(sampler_instance);
-			total_num_samplers += declaration.mNumArrayElements;
 		}
 
 		int num_frames = 2;
 
+		mDescriptorSets.resize(num_frames);
+
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = num_frames * ubo_declarations.size();
+		poolSizes[0].descriptorCount = mUniformBufferObjects.size() * num_frames;
 
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = num_frames * total_num_samplers;
+		poolSizes[1].descriptorCount = mSamplers.size() * num_frames;
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount	= poolSizes.size();
-		poolInfo.pPoolSizes		= poolSizes.data();
-		poolInfo.maxSets		= num_frames;
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = poolSizes.size();
+		poolInfo.pPoolSizes = poolSizes.data();
+		poolInfo.maxSets = num_frames;
 
 		if (!errorState.check(vkCreateDescriptorPool(renderer.getDevice(), &poolInfo, nullptr, &mDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool"))
 			return false;
 
-		std::vector<VkDescriptorSetLayout> layouts(num_frames, getMaterial()->getDescriptorSetLayout());
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool		= mDescriptorPool;
-		allocInfo.descriptorSetCount	= num_frames;
-		allocInfo.pSetLayouts			= layouts.data();
-
-		mDescriptorSets.resize(num_frames);
-		if (!errorState.check(vkAllocateDescriptorSets(renderer.getDevice(), &allocInfo, mDescriptorSets.data()) == VK_SUCCESS, "Failed to create descriptor set"))
+		if (!createDescriptorSet(renderer.getDevice(), renderer.getPhysicalDevice(), mUniformBufferObjects, mSamplers, material.getDescriptorSetLayout(), mDescriptorPool, mDescriptorSets[0], errorState))
 			return false;
 
-		int num_descriptors = (num_frames * ubo_declarations.size()) + (num_frames * mSamplers.size());
-		std::vector<VkWriteDescriptorSet> descriptor_writes;
-		descriptor_writes.resize(num_descriptors);
-
-		std::vector<VkDescriptorImageInfo> image_infos;
-		image_infos.reserve(total_num_samplers * num_frames);
-
-		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
-		descriptor_buffers.resize(num_descriptors);
-
-		int descriptor_index = 0;
-		for (size_t frame_index = 0; frame_index < num_frames; frame_index++)
-		{
-			for (int buffer_index = 0; buffer_index != ubo_declarations.size(); ++buffer_index)
-			{
-				VkBuffer vkBuffer;
-				VkDeviceMemory vkBufferMemory;
-
-				if (!createBuffer(renderer.getDevice(), renderer.getPhysicalDevice(), ubo_declarations[buffer_index].mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkBufferMemory, errorState))
-					return false;
-
-				UniformBufferObject& ubo = mUniformBufferObjects[buffer_index];
-				ubo.mBuffers.push_back(vkBuffer);
-				ubo.mBuffersMemory.push_back(vkBufferMemory); 
-
-				VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[descriptor_index];
-				bufferInfo.buffer = ubo.mBuffers.back();
-				bufferInfo.offset = 0;
-				bufferInfo.range = VK_WHOLE_SIZE;
-
-				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
-				write_descriptor_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				write_descriptor_set.dstSet				= mDescriptorSets[frame_index];
-				write_descriptor_set.dstBinding			= ubo_declarations[buffer_index].mBinding;
-				write_descriptor_set.dstArrayElement	= 0;
-				write_descriptor_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				write_descriptor_set.descriptorCount	= 1;
-				write_descriptor_set.pBufferInfo		= &bufferInfo;
-
-				descriptor_index++;
-			}
-
-			for (SamplerInstance* sampler_instance : mSamplers)
-			{
-				size_t image_info_start_index = image_infos.size();
-				if (sampler_instance->get_type() == RTTI_OF(Sampler2DInstance))
-				{
-					Sampler2DInstance* sampler_2d = rtti_cast<Sampler2DInstance>(sampler_instance);
-
-					VkDescriptorImageInfo imageInfo = {};
-					imageInfo.imageLayout	 = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					imageInfo.imageView		= sampler_2d->mTexture2D->getImageView();
-					imageInfo.sampler		= sampler_instance->getSampler();
-
-					image_infos.push_back(imageInfo);
-				}
-				else if (sampler_instance->get_type() == RTTI_OF(Sampler2DArrayInstance))
-				{
-					Sampler2DArrayInstance* sampler_2d_array = rtti_cast<Sampler2DArrayInstance>(sampler_instance);
-
-					for (auto& texture : sampler_2d_array->mTextures)
-					{
-						VkDescriptorImageInfo imageInfo = {};
-						imageInfo.imageLayout	= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-						imageInfo.imageView		= texture->getImageView();
-						imageInfo.sampler		= sampler_instance->getSampler();
-
-						image_infos.push_back(imageInfo);
-					}
-				}
-
-				VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
-				write_descriptor_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				write_descriptor_set.dstSet				= mDescriptorSets[frame_index];
-				write_descriptor_set.dstBinding			= sampler_instance->getDeclaration().mBinding;
-				write_descriptor_set.dstArrayElement	= 0;
-				write_descriptor_set.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				write_descriptor_set.descriptorCount	= image_infos.size() - image_info_start_index;
-				write_descriptor_set.pImageInfo			= image_infos.data() + image_info_start_index;
-
-				descriptor_index++;
-			}
-		}
-
-		vkUpdateDescriptorSets(renderer.getDevice(), descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+		if (!createDescriptorSet(renderer.getDevice(), renderer.getPhysicalDevice(), mUniformBufferObjects, mSamplers, material.getDescriptorSetLayout(), mDescriptorPool, mDescriptorSets[1], errorState))
+			return false;
 
 		return true;
 	}
