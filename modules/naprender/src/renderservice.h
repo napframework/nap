@@ -28,6 +28,19 @@ namespace nap
 	class RenderService;
 	class SceneService;
 
+	struct DescriptorSetBuffer
+	{
+		VkBuffer		mBuffer;
+		VkDeviceMemory	mMemory;
+	};
+
+	struct DescriptorSet
+	{
+		VkDescriptorSetLayout				mLayout;
+		VkDescriptorSet						mSet;
+		std::vector<DescriptorSetBuffer>	mBuffers;
+	};
+
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
@@ -215,11 +228,13 @@ namespace nap
 		*/
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void updateRenderableMesh(int frameIndex, RenderableMesh& renderableMesh);
+		void recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline);
 
-		void destroyPipelines(int frameIndex);
+		void advanceToFrame(int frameIndex);
 
 		Renderer& getRenderer() { return *mRenderer; }
+
+		const DescriptorSet& acquireDescriptorSet(MaterialInstance& materialInstance);
 
 	protected:
 		/**
@@ -308,6 +323,8 @@ namespace nap
 
 		VkRenderPass* getOrCreateRenderPass(ERenderTargetFormat format);
 
+		VkDescriptorPool getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors);
+
 		/**
 		* Helper struct to refcount opengl VAOs.
 		*/
@@ -327,20 +344,28 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
+		using DescriptorPoolMap = std::unordered_map<uint64_t, VkDescriptorPool>;
+		using UnusedDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, std::vector<DescriptorSet>>;
+		using UsedDescriptorSetMap = std::array<std::vector<DescriptorSet>, 2>;
 
-		RenderState	 mRenderState;																//< The latest render state as set by the user
-		ContextSpecificStateMap mContextSpecificState;											//< The per-context render state
-		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	//< Array of per-context GL resources scheduled for destruction
-		VAOMap			 mVAOMap;																//< Map from material-mesh combination to opengl VAO
-		WindowList		mWindows;																//< All available windows
-		SceneService*	mSceneService = nullptr;												//< Service that manages all the scenes
+		RenderState				mRenderState;															//< The latest render state as set by the user
+		ContextSpecificStateMap mContextSpecificState;													//< The per-context render state
+		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;			//< Array of per-context GL resources scheduled for destruction
+		VAOMap					mVAOMap;																//< Map from material-mesh combination to opengl VAO
+		WindowList				mWindows;																//< All available windows
+		SceneService*			mSceneService = nullptr;												//< Service that manages all the scenes
 
-		PipelineList	mPipelinesToDestroy;
+		DescriptorPoolMap		mDescriptorPools;
+		PipelineList			mPipelinesToDestroy;
 
-		VkRenderPass	mRenderPassRGBA8 = nullptr;
-		VkRenderPass	mRenderPassRGB8 = nullptr;
-		VkRenderPass	mRenderPassR8 = nullptr;
-		VkRenderPass	mRenderPassDepth = nullptr;
+		int						mCurrentFrameIndex = 0;
+		UnusedDescriptorSetMap	mUnusedDescriptors;
+		UsedDescriptorSetMap	mUsedDescriptors;
+
+		VkRenderPass			mRenderPassRGBA8 = nullptr;
+		VkRenderPass			mRenderPassRGB8 = nullptr;
+		VkRenderPass			mRenderPassR8 = nullptr;
+		VkRenderPass			mRenderPassDepth = nullptr;
 	};
 } // nap
 

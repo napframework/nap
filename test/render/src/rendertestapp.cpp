@@ -161,8 +161,9 @@ namespace nap
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
 
+			TransformComponentInstance& transform_component = mPigEntity->getComponent<TransformComponentInstance>();
 			RenderableMeshComponentInstance& renderable_mesh_component = mPigEntity->getComponent<RenderableMeshComponentInstance>();
-			renderable_mesh_component.setClipRect(math::Rect(0, 0, render_window->getWidthPixels() / 2, render_window->getHeightPixels() / 2));
+			renderable_mesh_component.setClipRect(math::Rect(0, 0, render_window->getWidthPixels(), render_window->getHeightPixels()));
 
 			MaterialInstance& material_instance = renderable_mesh_component.getMaterialInstance();
 			if ((int)fmodf(currentTime, 4.0f) > 2.0)
@@ -182,12 +183,21 @@ namespace nap
 			
 			render_window->makeActive();
 			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();
-			int frame_index = render_window->getWindow()->getCurrentFrameIndex() % 2;
+			int frame_index = render_window->getWindow()->getCurrentFrameIndex();
 
-			mRenderService->destroyPipelines(frame_index);
+			mRenderService->advanceToFrame(frame_index);
 
 			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
+			
+			glm::mat4 identity = glm::mat4(1.0f);
+
+			transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
+			transform_component.update(identity);
 			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+
+ 			transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
+			transform_component.update(identity);
+ 			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
 			/*
 			// Render output texture to plane

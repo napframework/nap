@@ -4,6 +4,7 @@
 #include <nap/resourceptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
+#include <nap/signalslot.h>
 
 // Local includes
 #include "shader.h"
@@ -17,6 +18,8 @@ namespace nap
 	class Material;
 	class MaterialInstance;
 	class Renderer;
+	struct DescriptorSet;
+
 	/**
 	 * Blend mode for Materials.
 	 */
@@ -68,8 +71,6 @@ namespace nap
 		}
 
 		const opengl::UniformBufferObjectDeclaration*	mDeclaration;
-		std::vector<VkBuffer>							mBuffers;
-		std::vector<VkDeviceMemory>						mBuffersMemory;
 		UniformList										mUniforms;
 	};
 
@@ -84,16 +85,11 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformContainer)
 	public:
-		enum class EUpdateResult : uint8_t
-		{
-			PipelineStateNotDirty,
-			PipelineStateDirty
-		};
 
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
 		 */
-		bool init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState);
+		bool init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		/**
 		* @return material that this instance is overriding.
@@ -150,25 +146,28 @@ namespace nap
 		 * Only call this after binding the material otherwise the outcome of this call is uncertain.
 		 * This applies to the uniforms in the instance that are overridden as for the uniforms in the underlying material.
 		 */
-		EUpdateResult update(int frameIndex);
+		VkDescriptorSet update();
 
-		VkDescriptorSet getDescriptorSet(int frameIndex) const { return mDescriptorSets[frameIndex]; }
+		Signal<const MaterialInstance&, RenderService&> pipelineStateChanged;
 
 	private:
+		friend class RenderService;
+
 		void onUniformCreated();
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
+
+		void updateUniforms(const DescriptorSet& descriptorSet);
+		void updateSamplers(const DescriptorSet& descriptorSet);
 
 	private:
 		//. Resource this instance is associated with
 		MaterialInstanceResource* mResource;
 
 		VkDevice								mDevice = nullptr;
+		RenderService*							mRenderService = nullptr;
 		std::vector<UniformBufferObject>		mUniformBufferObjects;
 		std::vector<SamplerInstance*>			mSamplers;
-		VkDescriptorPool						mDescriptorPool;
-		std::vector<VkDescriptorSet>			mDescriptorSets;
 		bool									mUniformsDirty = false;
-		bool									mPipelineStateDirty = false;
 	};
 
 

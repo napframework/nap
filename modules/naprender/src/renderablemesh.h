@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "material.h"
 #include "vao.h"
+#include "nap/signalslot.h"
 
 namespace nap
 {
@@ -25,6 +26,10 @@ namespace nap
 		 * Can be used to declare a member of this type that is invalid on initialization.
 		 */
 		RenderableMesh() = default;
+
+		RenderableMesh(const RenderableMesh& renderableMesh);
+
+		RenderableMesh& operator=(const RenderableMesh& renderableMesh);
 
 		/**
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
@@ -66,10 +71,10 @@ namespace nap
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, VkPipelineLayout layout, VkPipeline pipeline);
 
 	private:
-		friend class RenderService;
-		void updatePipeline(VkPipelineLayout layout, VkPipeline pipeline);
+		void onPipelineStateChanged(const MaterialInstance& materialInstance , RenderService& renderService);
 
 	private:
+		Slot<const MaterialInstance&, RenderService&> mPipelineStateChangedSlot = { std::bind(&RenderableMesh::onPipelineStateChanged, this, std::placeholders::_1, std::placeholders::_2) };
 		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance
 		IMesh*				mMesh = nullptr;				///< Mesh
 		VkPipelineLayout	mPipelineLayout = nullptr;

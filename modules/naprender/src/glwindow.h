@@ -159,7 +159,7 @@ namespace nap
 
 		VkCommandBuffer	getCommandBuffer();
 
-		int getCurrentFrameIndex() const { return mCurrentImageIndex; }
+		int getCurrentFrameIndex() const { return mCurrentFrame; }
 
 	private:
 		opengl::BackbufferRenderTarget					mBackbuffer;

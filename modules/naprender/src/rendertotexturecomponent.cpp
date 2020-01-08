@@ -82,7 +82,7 @@ namespace nap
 		RenderService* render_service = getEntityInstance()->getCore()->getService<RenderService>();
 
 		// Create material instance
-		if (!mMaterialInstance.init(render_service->getRenderer(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*render_service, resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Ensure the matrices are present on the material
@@ -185,7 +185,7 @@ namespace nap
 // 		modelUniform.setValue(mModelMatrix);
 
 		// Prepare blending
-		mMaterialInstance.update(frame_index);
+		//mMaterialInstance.update(frame_index);
 
 		// Push all uniforms now
 		//mMaterialInstance.pushUniforms();

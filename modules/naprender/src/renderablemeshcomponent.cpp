@@ -42,7 +42,7 @@ namespace nap
 	{
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
-		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
@@ -112,11 +112,7 @@ namespace nap
 		UniformMat4Instance& modelUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
 		modelUniform.setValue(model_matrix);
 
-		if (mat_instance.update(frameIndex) == MaterialInstance::EUpdateResult::PipelineStateDirty)
-		{
-			nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-			render_service->updateRenderableMesh(frameIndex, mRenderableMesh);
-		}
+		VkDescriptorSet descriptor_set = mat_instance.update();
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
 
@@ -135,7 +131,6 @@ namespace nap
 
 		Material& material = *mRenderableMesh.getMaterialInstance().getMaterial();
 
-		VkDescriptorSet descriptor_set = mRenderableMesh.getMaterialInstance().getDescriptorSet(frameIndex);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
 
 		std::vector<VkBuffer> vertexBuffers;

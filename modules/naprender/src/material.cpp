@@ -56,47 +56,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
-	{
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState)
-	{
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
-			return false;
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
-			return false;
-
-		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
-			return false;
-
-		return true;
-	}
 
 	template<class T>
 	const UniformInstance* findUniformStructInstanceMember(const std::vector<T>& members, const std::string& name)
@@ -402,23 +362,18 @@ namespace nap
 	}
 
 
-	MaterialInstance::EUpdateResult MaterialInstance::update(int frameIndex)
+	void MaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
 	{
-		if (mUniformsDirty)
-		{
-			for (UniformBufferObject& ubo : mUniformBufferObjects)
-				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
-
-			mUniformsDirty = false;
-		}
-
 		VkDevice device = getMaterial()->getRenderer().getDevice();
 
-		for (UniformBufferObject& ubo : mUniformBufferObjects)
+		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
+			UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
+			VkDeviceMemory buffer_memory = descriptorSet.mBuffers[ubo_index].mMemory;
+
 			void* mapped_memory;
-			vkMapMemory(device, ubo.mBuffersMemory[frameIndex], 0, ubo.mDeclaration->mSize, 0, &mapped_memory);
-			
+			vkMapMemory(device, buffer_memory, 0, ubo.mDeclaration->mSize, 0, &mapped_memory);
+
 			for (auto& uniform : ubo.mUniforms)
 			{
 				const UniformValueInstance* value_instance = rtti_cast<const UniformValueInstance>(uniform);
@@ -434,72 +389,23 @@ namespace nap
 				}
 			}
 
-			vkUnmapMemory(device, ubo.mBuffersMemory[frameIndex]);
+			vkUnmapMemory(device, buffer_memory);
 		}
-
-		if (mPipelineStateDirty)
-		{
-			mPipelineStateDirty = false;
-			return EUpdateResult::PipelineStateDirty;
-		}
-
-		return EUpdateResult::PipelineStateNotDirty;
 	}
 
-	bool createDescriptorSet(VkDevice device, VkPhysicalDevice physicalDevice, std::vector<UniformBufferObject>& ubos, const std::vector<SamplerInstance*>& samplers, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool, VkDescriptorSet& descriptorSet, utility::ErrorState& errorState)
+	void MaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
 	{
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &descriptorSetLayout;
+		int num_descriptors = mSamplers.size();
+		std::vector<VkWriteDescriptorSet> sampler_descriptors;
+		sampler_descriptors.resize(num_descriptors);
 
-		if (!errorState.check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) == VK_SUCCESS, "Failed to create descriptor set"))
-			return false;
+		std::vector<VkDescriptorImageInfo> sampler_images;
 
-		int num_descriptors = ubos.size() + samplers.size();
-		std::vector<VkWriteDescriptorSet> descriptor_writes;
-		descriptor_writes.resize(num_descriptors);
-
-		std::vector<VkDescriptorImageInfo> image_infos;
-
-		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
-		descriptor_buffers.resize(num_descriptors);
-
-		int descriptor_index = 0;
-		for (UniformBufferObject& ubo : ubos)
+		for (int sampler_index = 0; sampler_index < mSamplers.size(); ++sampler_index)
 		{
-			VkBuffer vkBuffer;
-			VkDeviceMemory vkBufferMemory;
+			SamplerInstance* sampler_instance = mSamplers[sampler_index];
 
-			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
-
-			if (!createBuffer(device, physicalDevice, ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkBufferMemory, errorState))
-				return false;
-
-			ubo.mBuffers.push_back(vkBuffer);
-			ubo.mBuffersMemory.push_back(vkBufferMemory);
-
-			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[descriptor_index];
-			bufferInfo.buffer = ubo.mBuffers.back();
-			bufferInfo.offset = 0;
-			bufferInfo.range = VK_WHOLE_SIZE;
-
-			VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
-			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write_descriptor_set.dstSet = descriptorSet;
-			write_descriptor_set.dstBinding = ubo_declaration.mBinding;
-			write_descriptor_set.dstArrayElement = 0;
-			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			write_descriptor_set.descriptorCount = 1;
-			write_descriptor_set.pBufferInfo = &bufferInfo;
-
-			descriptor_index++;
-		}
-
-		for (SamplerInstance* sampler_instance : samplers)
-		{
-			size_t image_info_start_index = image_infos.size();
+			size_t sampler_image_start_index = sampler_images.size();
 			if (sampler_instance->get_type() == RTTI_OF(Sampler2DInstance))
 			{
 				Sampler2DInstance* sampler_2d = rtti_cast<Sampler2DInstance>(sampler_instance);
@@ -509,7 +415,7 @@ namespace nap
 				imageInfo.imageView = sampler_2d->mTexture2D->getImageView();
 				imageInfo.sampler = sampler_instance->getSampler();
 
-				image_infos.push_back(imageInfo);
+				sampler_images.push_back(imageInfo);
 			}
 			else if (sampler_instance->get_type() == RTTI_OF(Sampler2DArrayInstance))
 			{
@@ -522,31 +428,46 @@ namespace nap
 					imageInfo.imageView = texture->getImageView();
 					imageInfo.sampler = sampler_instance->getSampler();
 
-					image_infos.push_back(imageInfo);
+					sampler_images.push_back(imageInfo);
 				}
 			}
 
-			VkWriteDescriptorSet& write_descriptor_set = descriptor_writes[descriptor_index];
+			VkWriteDescriptorSet& write_descriptor_set = sampler_descriptors[sampler_index];
 			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write_descriptor_set.dstSet = descriptorSet;
+			write_descriptor_set.dstSet = descriptorSet.mSet;
 			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
 			write_descriptor_set.dstArrayElement = 0;
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write_descriptor_set.descriptorCount = image_infos.size() - image_info_start_index;
-			write_descriptor_set.pImageInfo = image_infos.data() + image_info_start_index;
-
-			descriptor_index++;
+			write_descriptor_set.descriptorCount = sampler_images.size() - sampler_image_start_index;
+			write_descriptor_set.pImageInfo = sampler_images.data() + sampler_image_start_index;
 		}
 
-		vkUpdateDescriptorSets(device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
-
-		return true;
+		vkUpdateDescriptorSets(mDevice, sampler_descriptors.size(), sampler_descriptors.data(), 0, nullptr);
 	}
 
-	bool MaterialInstance::init(Renderer& renderer, MaterialInstanceResource& resource, utility::ErrorState& errorState)
+	VkDescriptorSet MaterialInstance::update()
+	{
+		if (mUniformsDirty)
+		{
+			for (UniformBufferObject& ubo : mUniformBufferObjects)
+				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
+
+			mUniformsDirty = false;
+		}
+
+		const DescriptorSet& descriptor_set = mRenderService->acquireDescriptorSet(*this);
+
+		updateUniforms(descriptor_set);
+		updateSamplers(descriptor_set);
+
+		return descriptor_set.mSet;
+	}
+
+	bool MaterialInstance::init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		mDevice = renderer.getDevice();
+		mDevice = renderService.getRenderer().getDevice();
+		mRenderService = &renderService;
 
 		Material& material = *resource.mMaterial;
 		const opengl::Shader& shader = material.getShader()->getShader();
@@ -582,9 +503,9 @@ namespace nap
 
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(renderer.getDevice(), declaration, (Sampler2DArray*)sampler);
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler);
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(renderer.getDevice(), declaration, (Sampler2D*)sampler);
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler);
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -599,32 +520,6 @@ namespace nap
 
 			mSamplers.push_back(sampler_instance);
 		}
-
-		int num_frames = 2;
-
-		mDescriptorSets.resize(num_frames);
-
-		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = mUniformBufferObjects.size() * num_frames;
-
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = mSamplers.size() * num_frames;
-
-		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = poolSizes.size();
-		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = num_frames;
-
-		if (!errorState.check(vkCreateDescriptorPool(renderer.getDevice(), &poolInfo, nullptr, &mDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool"))
-			return false;
-
-		if (!createDescriptorSet(renderer.getDevice(), renderer.getPhysicalDevice(), mUniformBufferObjects, mSamplers, material.getDescriptorSetLayout(), mDescriptorPool, mDescriptorSets[0], errorState))
-			return false;
-
-		if (!createDescriptorSet(renderer.getDevice(), renderer.getPhysicalDevice(), mUniformBufferObjects, mSamplers, material.getDescriptorSetLayout(), mDescriptorPool, mDescriptorSets[1], errorState))
-			return false;
 
 		return true;
 	}
@@ -648,14 +543,14 @@ namespace nap
 	void MaterialInstance::setBlendMode(EBlendMode blendMode)
 	{
 		mResource->mBlendMode = blendMode;
-		mPipelineStateDirty = true;
+		pipelineStateChanged(*this, *mRenderService);
 	}
 
 	
 	void MaterialInstance::setDepthMode(EDepthMode depthMode)
 	{
 		mResource->mDepthMode = depthMode;
-		mPipelineStateDirty = true;
+		pipelineStateChanged(*this, *mRenderService);
 	}
 
 

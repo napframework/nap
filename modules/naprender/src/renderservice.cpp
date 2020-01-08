@@ -514,27 +514,28 @@ namespace nap
 	}
 
 
-	void RenderService::updateRenderableMesh(int frameIndex, RenderableMesh& renderableMesh)
+	void RenderService::recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline)
 	{
 		VkRenderPass* render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial()->getShader()->mOutputFormat);
 
-		VkPipelineLayout layout;
-		VkPipeline pipeline;
+		VkPipeline old_pipeline = renderableMesh.getPipeline();
+
 		utility::ErrorState errorState;
 		if (!createGraphicsPipeline(mRenderer->getDevice(), renderableMesh.getMaterialInstance(), renderableMesh.getMesh(), *render_pass, layout, pipeline, errorState))
 			return;
 
-		mPipelinesToDestroy.push_back({ frameIndex, renderableMesh.getPipeline() });
-
-		renderableMesh.updatePipeline(layout, pipeline);
+		mPipelinesToDestroy.push_back({ mCurrentFrameIndex, old_pipeline });
 	}
 
 
-	void RenderService::destroyPipelines(int frameIndex)
+	void RenderService::advanceToFrame(int frameIndex)
 	{
+		mCurrentFrameIndex = frameIndex;
+
+		// Destroy pipelines for the new frame
 		mPipelinesToDestroy.erase(std::remove_if(mPipelinesToDestroy.begin(), mPipelinesToDestroy.end(), [this, frameIndex](PipelineToDestroy& pipelineToDestroy) 
 		{
-			if (frameIndex == pipelineToDestroy.mFrameIndex)
+			if (pipelineToDestroy.mFrameIndex == mCurrentFrameIndex)
 			{
 				vkDestroyPipeline(mRenderer->getDevice(), pipelineToDestroy.mPipeline, nullptr);
 				return true;
@@ -542,6 +543,12 @@ namespace nap
 
 			return false;
 		}), mPipelinesToDestroy.end());
+
+		// Move used descriptor set to unused for the new frame
+		for (DescriptorSet& descriptor_set : mUsedDescriptors[mCurrentFrameIndex])
+			mUnusedDescriptors[descriptor_set.mLayout].push_back(descriptor_set);
+		
+		mUsedDescriptors[mCurrentFrameIndex].clear();
 	}
 
 
@@ -862,6 +869,148 @@ namespace nap
 			queueResourceForDestruction(std::move(pos->second.mObject));
 			mVAOMap.erase(pos);
 		}
+	}
+
+	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState)
+	{
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = usage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
+			return false;
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+
+		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
+			return false;
+
+		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
+			return false;
+
+		return true;
+	}
+
+	VkDescriptorPool RenderService::getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors)
+	{
+		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
+
+		DescriptorPoolMap::iterator pos = mDescriptorPools.find(key);
+		if (pos != mDescriptorPools.end())
+			return pos->second;
+
+		int maxSets = 100;
+
+		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[0].descriptorCount = numUBODescriptors * maxSets;
+
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].descriptorCount = numSamplerDescriptors * maxSets;
+
+		VkDescriptorPoolCreateInfo poolInfo = {};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = poolSizes.size();
+		poolInfo.pPoolSizes = poolSizes.data();
+		poolInfo.maxSets = maxSets;
+
+		VkDescriptorPool pool = nullptr;
+		VkResult result = vkCreateDescriptorPool(mRenderer->getDevice(), &poolInfo, nullptr, &pool);
+		assert(result == VK_SUCCESS);
+
+		mDescriptorPools.insert(std::make_pair(key, pool));
+		return pool;
+	}
+
+	const DescriptorSet& RenderService::acquireDescriptorSet(MaterialInstance& materialInstance)
+	{
+		VkDescriptorSetLayout layout = materialInstance.getMaterial()->getDescriptorSetLayout();
+
+		UnusedDescriptorSetMap::iterator pos = mUnusedDescriptors.find(layout);
+		if (pos != mUnusedDescriptors.end() && !pos->second.empty())
+		{
+			std::vector<DescriptorSet>& free_descriptor_list = pos->second;
+			DescriptorSet descriptor_set = free_descriptor_list.back();
+			free_descriptor_list.pop_back();
+			mUsedDescriptors[mCurrentFrameIndex].push_back(descriptor_set);
+			return mUsedDescriptors[mCurrentFrameIndex].back();
+		}
+
+		DescriptorSet descriptor_set;
+		descriptor_set.mLayout = layout;
+		
+		VkDescriptorPool descriptor_pool = getOrCreatePool(materialInstance.mUniformBufferObjects.size(), materialInstance.mSamplers.size());
+		VkDescriptorSetLayout descriptor_set_layout = materialInstance.getMaterial()->getDescriptorSetLayout();
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptor_pool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptor_set_layout;
+
+		bool success = vkAllocateDescriptorSets(mRenderer->getDevice(), &allocInfo, &descriptor_set.mSet) == VK_SUCCESS;
+		assert(success);
+
+		int num_descriptors = materialInstance.mUniformBufferObjects.size();
+		std::vector<VkWriteDescriptorSet> ubo_descriptors;
+		ubo_descriptors.resize(num_descriptors);
+
+		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
+		descriptor_buffers.resize(num_descriptors);
+
+		for (int ubo_index = 0; ubo_index < materialInstance.mUniformBufferObjects.size(); ++ubo_index)
+		{
+			UniformBufferObject& ubo = materialInstance.mUniformBufferObjects[ubo_index];
+			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+
+			DescriptorSetBuffer buffer;
+			utility::ErrorState error_state;
+			bool success = createBuffer(mRenderer->getDevice(), mRenderer->getPhysicalDevice(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffer.mBuffer, buffer.mMemory, error_state);
+			assert(success);
+
+			descriptor_set.mBuffers.push_back(buffer);
+
+			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
+			bufferInfo.buffer = buffer.mBuffer;
+			bufferInfo.offset = 0;
+			bufferInfo.range = VK_WHOLE_SIZE;
+
+			VkWriteDescriptorSet& ubo_descriptor = ubo_descriptors[ubo_index];
+			ubo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ubo_descriptor.dstSet = descriptor_set.mSet;
+			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
+			ubo_descriptor.dstArrayElement = 0;
+			ubo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			ubo_descriptor.descriptorCount = 1;
+			ubo_descriptor.pBufferInfo = &bufferInfo;
+		}
+		
+		vkUpdateDescriptorSets(mRenderer->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
+
+		mUsedDescriptors[mCurrentFrameIndex].push_back(descriptor_set);
+		return mUsedDescriptors[mCurrentFrameIndex].back();
 	}
 
 } // Renderservice

@@ -42,7 +42,7 @@ namespace nap
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 
 		// Create material instance
-		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 		
 		// Ensure the uniform to set the glyph is available on the source material
@@ -158,7 +158,7 @@ namespace nap
 // 			modelUniform->setValue(modelMatrix);
 
 		// Prepare blending
-		mMaterialInstance.update(0); // todo: frame_index
+		//mMaterialInstance.update(0); // todo: frame_index
 
 		// Fetch uniform for setting character
 		//UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
@@ -186,7 +186,7 @@ namespace nap
 // 		assert(texture_unit > -1);
 
 		// Push all uniforms now
-		mMaterialInstance.update(0);		// TODO: correct frame index
+		//mMaterialInstance.update(0);		// TODO: correct frame index
 
 		// Location of active letter
 		float x = 0.0f;

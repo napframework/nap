@@ -9,12 +9,35 @@ namespace nap
 		mPipelineLayout(layout),
 		mPipeline(pipeline)
 	{
+		mMaterialInstance->pipelineStateChanged.connect(mPipelineStateChangedSlot);
 	}
 
-	void RenderableMesh::updatePipeline(VkPipelineLayout layout, VkPipeline pipeline)
+	RenderableMesh::RenderableMesh(const RenderableMesh& renderableMesh) :
+		mMaterialInstance(renderableMesh.mMaterialInstance),
+		mMesh(renderableMesh.mMesh),
+		mPipelineLayout(renderableMesh.mPipelineLayout),
+		mPipeline(renderableMesh.mPipeline)
 	{
-		mPipelineLayout = layout;
-		mPipeline = pipeline;
+		mMaterialInstance->pipelineStateChanged.connect(mPipelineStateChangedSlot);
+	}
+
+	RenderableMesh& RenderableMesh::operator=(const RenderableMesh& renderableMesh)
+	{
+		if (this != &renderableMesh)
+		{
+			mMaterialInstance = renderableMesh.mMaterialInstance;
+			mMesh = renderableMesh.mMesh;
+			mPipelineLayout = renderableMesh.mPipelineLayout;
+			mPipeline = renderableMesh.mPipeline;
+
+			mMaterialInstance->pipelineStateChanged.connect(mPipelineStateChangedSlot);
+		}
+		return *this;
+	}
+
+	void RenderableMesh::onPipelineStateChanged(const MaterialInstance& materialInstance, RenderService& renderService)
+	{
+		renderService.recreatePipeline(*this, mPipelineLayout, mPipeline);;
 	}
 }
 
