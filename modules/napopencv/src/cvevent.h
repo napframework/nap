@@ -20,6 +20,12 @@ namespace nap
 		// Default Constructor
 		CVFrameEvent() = default;
 
+		// Default copy constructor
+		CVFrameEvent(const CVFrameEvent& other);
+
+		// Default copy assignment operator
+		CVFrameEvent& operator=(const CVFrameEvent& other);
+
 		/**
 		 * Constructor that takes multiple frames asn an input argument.
 		 * @param frame frames associated with this event.

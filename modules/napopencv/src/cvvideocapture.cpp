@@ -186,10 +186,10 @@ namespace nap
 			// This updates the data of our storage container and ensures the same dimensionality.
 			// We need to perform a deep-copy because if we choose to use a shallow copy, 
 			// by the time the frame is grabbed the data 'mCaptureMat' points to could have changed, 
-			// as it references the same data as in 'cap_frame'. And the 'cap_frame' process loop already started.
+			// as it references the same data as in the event. And the process loop already started.
 			// Performing a deep_copy ensures that when the data is grabbed it will contain the latest full processed frame.
 			//
-			// Alternatively, we could make the 'cap_frame' variable local to this loop, but that creates
+			// Alternatively, we could make the capture variable local to this loop, but that creates
 			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);

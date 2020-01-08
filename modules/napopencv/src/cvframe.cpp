@@ -45,12 +45,10 @@ namespace nap
 
 	void CVFrame::copyTo(CVFrame& outFrame) const
 	{
-		outFrame.mMatrices.clear();
-		outFrame.mMatrices.reserve(mMatrices.size());
-		for (auto& matrix : mMatrices)
+		outFrame.mMatrices.resize(mMatrices.size());
+		for (auto i = 0; i < mMatrices.size(); i++)
 		{
-			cv::UMat& copy_matrix = outFrame.addNew();
-			matrix.copyTo(copy_matrix);
+			mMatrices[i].copyTo(outFrame.mMatrices[i]);
 		}
 	}
 

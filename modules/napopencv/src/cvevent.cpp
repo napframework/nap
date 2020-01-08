@@ -17,6 +17,19 @@ namespace nap
 	}
 
 
+	CVFrameEvent::CVFrameEvent(const CVFrameEvent& other)
+	{
+		mFrames = other.mFrames;
+	}
+
+
+	CVFrameEvent& CVFrameEvent::operator=(const CVFrameEvent& other)
+	{
+		mFrames = other.mFrames;
+		return *this;
+	}
+
+
 	void CVFrameEvent::addFrame(const CVFrame& frame)
 	{
 		mFrames.emplace_back(frame);
@@ -38,13 +51,10 @@ namespace nap
 
 	void CVFrameEvent::copyTo(CVFrameEvent& outEvent) const
 	{
-		outEvent.mFrames.clear();
-		outEvent.mFrames.reserve(mFrames.size());
-		for (auto& frame : mFrames)
+		outEvent.mFrames.resize(mFrames.size());
+		for (auto i = 0; i < mFrames.size() ; i++)
 		{
-			outEvent.addFrame(CVFrame());
-			CVFrame& last_frame = outEvent.mFrames.back();
-			frame.copyTo(last_frame);
+			mFrames[i].copyTo(outEvent[i]);
 		}
 	}
 }
