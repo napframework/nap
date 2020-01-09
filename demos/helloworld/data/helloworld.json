@@ -9,10 +9,10 @@
             "FlipHorizontal": false,
             "FlipVertical": false,
             "DeviceIndex": 0,
-            "DefaultResolution": true,
+            "DefaultResolution": false,
             "Resolution": {
-                "x": 640,
-                "y": 480
+                "x": 1280,
+                "y": 720
             },
             "Resize": false,
             "Size": {
@@ -372,8 +372,8 @@
                 "MaxLodLevel": 10
             },
             "Usage": "Static",
-            "Width": 640,
-            "Height": 480,
+            "Width": 1280,
+            "Height": 720,
             "Format": "RGB8"
         },
         {

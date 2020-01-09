@@ -108,12 +108,12 @@ namespace nap
 	{
 		if (mCameraCaptureDevice->grab(mCamFrame))
 		{
-			detectFaces(mCamFrame);
+			//detectFaces(mCamFrame);
 			cv::flip(mCamFrame[0], mCamFrame[0], 0);
 			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
 			mCaptureTexture->update(cpu_mat.data);
-			mCameraCaptureDevice->capture();
 		}
+		mCameraCaptureDevice->capture();
 		
 		if (mVideoCaptureDevice->grab(mVidFrame))
 		{

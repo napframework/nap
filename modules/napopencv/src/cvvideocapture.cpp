@@ -3,6 +3,7 @@
 
 // External Includes
 #include <nap/logger.h>
+#include <nap/timer.h>
 
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS(nap::CVVideoCapture)
@@ -116,8 +117,18 @@ namespace nap
 		std::vector<nap::CVAdapter*> capture_adapters;
 		bool set_properties = false;
 
+		// Used to calculate framerate over time
+		std::array<double, 20> mTicks;
+		double mTicksum = 0;
+		uint32 mTickIdx = 0;
+		SystemTimer timer;
+		timer.start();
+		int previous_time = 0;
+
 		while(!mStopCapturing)
 		{
+			nap::Logger::info("loop milli: %d", timer.getMillis());
+			timer.reset();
 			{
 				std::unique_lock<std::mutex> lock(mCaptureMutex);
 				mCaptureCondition.wait(lock, [this]()
@@ -164,7 +175,7 @@ namespace nap
 
 			// Now retrieve frame (heaviest operation)
 			nap::utility::ErrorState grab_error;
-			
+
 			frame_event.clear();
 			for (auto& adapter : capture_adapters)
 			{

@@ -3,6 +3,8 @@
 
 // External Includes
 #include <nap/logger.h>
+#include <nap/timer.h>
+#include <opencv2/video.hpp>
 
 RTTI_BEGIN_STRUCT(nap::CVCameraSettings)
 	RTTI_PROPERTY("AutoExposure",		&nap::CVCameraSettings::mAutoExposure,		nap::rtti::EPropertyMetaData::Default)
@@ -89,6 +91,8 @@ namespace nap
 
 	bool CVCameraAdapter::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
+		cv::getBuildInformation();
+
 		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
 			"unable to open video capture device: %d", mDeviceIndex))
 			return false;
@@ -96,6 +100,13 @@ namespace nap
 		// Set capture dimensions
 		if (!mDefaultResolution)
 		{
+			int codec = cv::VideoWriter::fourcc('M','J','P','G');
+			if (!captureDevice.set(cv::CAP_PROP_FOURCC, codec))
+			{
+				error.fail("unable to set codec!");
+				return false;
+			}
+
 			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)(mResolution.x)))
 			{
 				error.fail("unable to set video capture frame width to: %d", mResolution.x);
@@ -118,17 +129,23 @@ namespace nap
 		{
 			setSettings(mCameraSettings);
 		}
+
 		return true;
 	}
 
 
 	CVFrame CVCameraAdapter::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
+		HighResolutionTimer timer;
+		timer.start();
+
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
 			error.fail("%s: no new frame available", mID.c_str());
 			return CVFrame();
 		}
+
+		nap::Logger::info("retr milli: %d", timer.getMillis().count());
 
 		// Resize or perform a weak copy.
 		if (mResize)
