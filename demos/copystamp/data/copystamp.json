@@ -121,24 +121,76 @@
         {
             "Type": "nap::Material",
             "mID": "CopyMaterial",
-            "Uniforms": [
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "meshColor",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_2c4a1f6f",
-                    "Name": "lights",
-                    "Structs": [
-                        "Light1",
-                        "Light2"
+
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "Name": "meshColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformStructArray",
+                            "Name": "lights",
+                            "Structs" :
+                            [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "Name": "mPosition",
+                                            "Value": {
+                                                "x": 50.0,
+                                                "y": 0.0,
+                                                "z": 100.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "Name": "mIntensity",
+                                            "Value": {
+                                                "x": 0.75,
+                                                "y": 0.75,
+                                                "z": 0.75
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "Name": "mPosition",
+                                            "Value": {
+                                                "x": 0.0,
+                                                "y": 100.0,
+                                                "z": 100.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "Name": "mIntensity",
+                                            "Value": {
+                                                "x": 0.25,
+                                                "y": 0.25,
+                                                "z": 0.25
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ],
@@ -206,8 +258,9 @@
         {
             "Type": "nap::Shader",
             "mID": "CopyShader",
-            "mVertShader": "shaders/copy.vert",
-            "mFragShader": "shaders/copy.frag"
+            "mVertShader": "shaders/copy_vert.spv",
+            "mFragShader": "shaders/copy_frag.spv",
+            "OutputFormat": "RGBA8"
         },
         {
             "Type": "nap::SphereMesh",
@@ -215,60 +268,6 @@
             "Radius": 1.0,
             "Rings": 15.0,
             "Sectors": 15.0
-        },
-        {
-            "Type": "nap::UniformStruct",
-            "mID": "Light1",
-            "Name": "light",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_7575d818",
-                    "Name": "mPosition",
-                    "Value": {
-                        "x": 50.0,
-                        "y": 0.0,
-                        "z": 100.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_ec4f00d9",
-                    "Name": "mIntensity",
-                    "Value": {
-                        "x": 0.75,
-                        "y": 0.75,
-                        "z": 0.75
-                    }
-                }
-            ]
-        },
-        {
-            "Type": "nap::UniformStruct",
-            "mID": "Light2",
-            "Name": "light",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_4dc3768f",
-                    "Name": "mPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 100.0,
-                        "z": 100.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_f7971e5a",
-                    "Name": "mIntensity",
-                    "Value": {
-                        "x": 0.25,
-                        "y": 0.25,
-                        "z": 0.25
-                    }
-                }
-            ]
         }
     ]
 }

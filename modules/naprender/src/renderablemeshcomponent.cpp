@@ -86,7 +86,7 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mRenderableMesh.isValid())
 		{
@@ -164,69 +164,6 @@ namespace nap
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
-
-		/*
-
-		// Get global transform
-		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
-
-		// Bind material
-		MaterialInstance& mat_instance = getMaterialInstance();
-		mat_instance.bind();
-
-		// Set projection uniform in shader
-		Material* comp_mat = mat_instance.getMaterial();
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
-
-		// Set view uniform in shader
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
-
-		// Set model matrix uniform in shader
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(model_matrix);
-
-		// Prepare blending
-		mat_instance.pushBlendMode();
-
-		// Push all shader uniforms
-		mat_instance.pushUniforms();
-
-		// Bind mesh for rendering
-		mRenderableMesh.bind();
-
-		// If a cliprect was set, enable scissor and set correct values
-		if (mClipRect.hasWidth() && mClipRect.hasHeight())
-		{
-			opengl::enableScissorTest(false);
-			glScissor(mClipRect.getMin().x, mClipRect.getMin().y, mClipRect.getWidth(), mClipRect.getHeight());
-		}
-
-		// Gather draw info
-		MeshInstance& mesh_instance = getMeshInstance();
-		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
-
-		// Draw all shapes associated with the mesh
-		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
-		{
-			MeshShape& shape = mesh_instance.getShape(index);
-			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
-			
-			GLenum draw_mode = getGLMode(shape.getDrawMode());
-			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-
-// 			index_buffer.bind();
-// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-// 			index_buffer.unbind();
-		}
-
-		mat_instance.unbind();
-		mRenderableMesh.unbind();
-		opengl::enableScissorTest(false);*/
 	}
 
 

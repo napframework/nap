@@ -6,6 +6,7 @@
 #include <componentptr.h>
 #include <transformcomponent.h>
 #include <color.h>
+#include "uniforminstances.h"
 
 namespace nap
 {
@@ -89,17 +90,9 @@ namespace nap
 		* @param viewMatrix the camera world space location
 		* @param projectionMatrix the camera projection matrix
 		*/
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		/**
-		 * Helper function that is used to extract a specific type of uniform out of a material.
-		 * First it checks if the material actually has (supports) a uniform with the given name.
-		 * If that is the case a new uniform with that name is created that can be used by this component only.
-		 */
-		template<typename T>
-		T* extractUniform(const std::string& name, utility::ErrorState& error);
-
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position instanced meshes
 		std::vector<RenderableMesh> mMeshes;							///< All the valid mesh / material combinations
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
@@ -108,27 +101,12 @@ namespace nap
 		std::vector<RenderableMesh> mCopyMeshes;						///< All renderable variants of the mesh to copy
 		Vec3VertexAttribute* mTargetVertices = nullptr;					///< Point positions to copy meshes onto
 		Vec3VertexAttribute* mTargetNormals = nullptr;					///< Point orientation of target mesh
-		nap::UniformVec3* mColorUniform = nullptr;						///< Color uniform slot
-		nap::UniformMat4* mProjectionUniform = nullptr;					///< Projection matrix uniform slot
-		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
-		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform slot
+		nap::UniformVec3Instance* mColorUniform = nullptr;				///< Color uniform slot
+		nap::UniformMat4Instance* mProjectionUniform = nullptr;			///< Projection matrix uniform slot
+		nap::UniformMat4Instance* mViewUniform = nullptr;				///< View matrix uniform slot
+		nap::UniformMat4Instance* mModelUniform = nullptr;				///< Model matrix uniform slot
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors 
 		double mTime = 0.0;												///< Total running time
 		float mRandomRotation = 0.0f;									///< Amount of randomization of rotation speed
 	};
-
-
-	template<typename T>
-	T* nap::RenderableCopyMeshComponentInstance::extractUniform(const std::string& name, utility::ErrorState& error)
-	{
-		// Find the uniform in the material first
-		nap::Material* material = mMaterialInstance.getMaterial();
-		T* found_uni = material->findUniform<T>(name);
-		if (!error.check(found_uni != nullptr, "%s: unable to find uniform: %s", material->mID.c_str(), name.c_str()))
-			return nullptr;
-
-		// If found, create a uniform associated with the instance of that material
-		return &(mMaterialInstance.getOrCreateUniform<T>(name));
-	}
-
 }

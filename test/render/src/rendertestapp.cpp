@@ -193,11 +193,11 @@ namespace nap
 
 			transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 			transform_component.update(identity);
-			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
  			transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
 			transform_component.update(identity);
- 			mRenderService->renderObjects(backbuffer, frame_index, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+ 			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
 			/*
 			// Render output texture to plane

@@ -148,7 +148,7 @@ namespace nap
 		mService->pushRenderState();
 
 		// Call on draw
-		onDraw(renderTarget, commandBuffer, frameIndex, sIdentityMatrix, proj_matrix);
+		onDraw(renderTarget, commandBuffer, sIdentityMatrix, proj_matrix);
 
 		// Unbind render target
 		mTarget.getTarget().unbind();
@@ -161,7 +161,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frame_index, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderToTextureComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())

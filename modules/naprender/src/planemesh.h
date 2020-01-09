@@ -17,6 +17,9 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		PlaneMesh();
+		PlaneMesh(RenderService& renderService);
+
 		/**
 		 * Sets up and initializes the plane as a mesh based on the provided parameters.
 		 * @param errorState contains the error message if the mesh could not be created.
@@ -55,6 +58,7 @@ namespace nap
 		int			mColumns = 1;										///< Property: 'Columns' number of columns
 
 	private:
+		Renderer* mRenderer;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Rect mRect;
 
@@ -65,4 +69,6 @@ namespace nap
 		 */
 		void constructPlane(const math::Rect& planeRect, nap::MeshInstance& mesh);
 	};
+
+	using PlaneMeshCreator = rtti::ObjectCreator<PlaneMesh, RenderService>;
 }

@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include "material.h"
 #include <glm/glm.hpp>
+#include "renderservice.h"
 
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
@@ -14,6 +15,15 @@ RTTI_END_CLASS
  
 namespace nap
 {
+	PlaneMesh::PlaneMesh() :
+		mRenderer(nullptr)
+	{
+	}
+	PlaneMesh::PlaneMesh(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+	}
+
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
 		if (!setup(errorState))
@@ -39,7 +49,7 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect

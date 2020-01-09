@@ -102,7 +102,7 @@ namespace nap
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
-		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		bool	mNormalize = true;						///< If the text as a mesh is normalized (-0.5,0.5)

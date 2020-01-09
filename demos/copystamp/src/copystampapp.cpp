@@ -70,7 +70,7 @@ namespace nap
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Update gui and check for gui changes
-		updateGui();
+		//updateGui();
 	}
 
 	
@@ -80,14 +80,13 @@ namespace nap
 	 */
 	void CopystampApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
-
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		VkCommandBuffer commandBuffer = mRenderWindow->getWindow()->getCommandBuffer();
+		int frame_index = mRenderWindow->getWindow()->getCurrentFrameIndex();
+
+		mRenderService->advanceToFrame(frame_index);
 
 		// Get perspective camera
 		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
@@ -98,15 +97,15 @@ namespace nap
 		// Set camera location in the shader that draws all the meshes.
 		// The camera location is used for the light computation.
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
-		UniformVec3& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform<UniformVec3>("cameraLocation");
+		UniformVec3Instance& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform("UBO").getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 		
 		// Render all copied meshes
 		std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), commandBuffer, persp_camera, renderable_comps);
 
 		// Draw gui
-		mGuiService->draw();
+		//mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();

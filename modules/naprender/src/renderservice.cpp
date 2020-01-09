@@ -26,6 +26,8 @@
 #include "imagefromfile.h"
 #include "image.h"
 #include "texture2d.h"
+#include "planemesh.h"
+#include "spheremesh.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
@@ -49,6 +51,8 @@ namespace nap
 		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
 		factory.addObjectCreator(std::make_unique<MeshCreator>(*this));
 		factory.addObjectCreator(std::make_unique<BoxMeshCreator>(*this));
+		factory.addObjectCreator(std::make_unique<PlaneMeshCreator>(*this));
+		factory.addObjectCreator(std::make_unique<SphereMeshCreator>(*this));
 		factory.addObjectCreator(std::make_unique<TriangleMeshCreator>(*this));
 		factory.addObjectCreator(std::make_unique<MeshFromFileCreator>(*this));
 		factory.addObjectCreator(std::make_unique<ShaderCreator>(*this));
@@ -569,14 +573,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera)
 	{
-		renderObjects(renderTarget, frameIndex, commandBuffer, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, commandBuffer, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -597,7 +601,7 @@ namespace nap
 		}
 
 		// Render these objects
-		renderObjects(renderTarget, frameIndex, commandBuffer, camera, render_comps, sortFunction);
+		renderObjects(renderTarget, commandBuffer, camera, render_comps, sortFunction);
 	}
 
 
@@ -660,13 +664,13 @@ namespace nap
 
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
-		renderObjects(renderTarget, frameIndex, commandBuffer, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, commandBuffer, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, int frameIndex, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
 		// Sort objects to render
 		std::vector<RenderableComponentInstance*> components_to_render = comps;
@@ -696,7 +700,7 @@ namespace nap
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
-			comp->draw(renderTarget, commandBuffer, frameIndex, view_matrix, projection_matrix);
+			comp->draw(renderTarget, commandBuffer, view_matrix, projection_matrix);
 		}
 
 		//renderTarget.unbind();
@@ -921,7 +925,7 @@ namespace nap
 		if (pos != mDescriptorPools.end())
 			return pos->second;
 
-		int maxSets = 100;
+		int maxSets = 10000;
 
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

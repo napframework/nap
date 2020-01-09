@@ -55,24 +55,16 @@ namespace nap
 			return false;
 
 		// Initialize our material instance based on values in the resource
-		if (!mMaterialInstance.init(getEntityInstance()->getCore()->getService<RenderService>()->getRenderer(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
-		mColorUniform = extractUniform<UniformVec3>(resource->mColorUniform, errorState);
-		if (mColorUniform == nullptr)
-			return false;
+		mColorUniform = &mMaterialInstance.getOrCreateUniform("UBO").getOrCreateUniform<UniformVec3Instance>("meshColor");
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = extractUniform<UniformMat4>("projectionMatrix", errorState);
-		if (mProjectionUniform == nullptr)
-			return false;
-		mViewUniform = extractUniform<UniformMat4>("viewMatrix", errorState);
-		if (mViewUniform == nullptr)
-			return false;
-		mModelUniform = extractUniform<UniformMat4>("modelMatrix", errorState);
-		if (mModelUniform == nullptr)
-			return false;
+		mProjectionUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("projectionMatrix");
+		mViewUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("viewMatrix");
+		mModelUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("modelMatrix");
 
 		// Ensure there's at least 1 mesh to copy
 		if (!errorState.check(!(resource->mCopyMeshes.empty()), 
@@ -136,27 +128,74 @@ namespace nap
 		return mMaterialInstance;
 	}
 
+	void renderMesh(RenderableMesh& renderableMesh, opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer)
+	{
+		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
+		VkDescriptorSet descriptor_set = mat_instance.update();
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderableMesh.getPipeline());
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = renderTarget.getSize().x;
+		viewport.height = renderTarget.getSize().y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+		// Gather draw info
+		MeshInstance& mesh_instance = renderableMesh.getMesh().getMeshInstance();
+		opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+
+		Material& material = *mat_instance.getMaterial();
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
+
+		std::vector<VkBuffer> vertexBuffers;
+		std::vector<VkDeviceSize> vertexBufferOffsets;
+
+		for (auto& kvp : material.getShader()->getShader().getAttributes())
+		{
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			assert(material_binding != nullptr);
+
+			opengl::VertexAttributeBuffer& vertex_buffer = mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			vertexBuffers.push_back(vertex_buffer.getBuffer());
+			vertexBufferOffsets.push_back(0);
+		}
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+		VkRect2D rect;
+		rect.offset.x = 0;
+		rect.offset.y = 0;
+		rect.extent.width = renderTarget.getSize().x;
+		rect.extent.height = renderTarget.getSize().y;
+		vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+
+		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
+		{
+			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
+		}
+	}
 
 	/**
 	 * Called by the render service when the app wants to draw this component.
 	 * A randomly selected mesh is rendered at the position of every vertex in the reference mesh.
 	 * You can change the meshes that are copied and the reference mesh in the JSON file.
 	 */
-	void RenderableCopyMeshComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableCopyMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
-
-		// Bind material
-		mMaterialInstance.bind();
 
 		// Set non changing uniforms
 		mViewUniform->setValue(viewMatrix);
 		mProjectionUniform->setValue(projectionMatrix);
 		mColorUniform->setValue({ 1.0,0.0,0.0 });
-
-		// Prepare blending
-		mMaterialInstance.pushBlendMode();
 
 		// Get points to copy onto
 		std::vector<glm::vec3>& pos_data = mTargetVertices->getData();
@@ -173,16 +212,6 @@ namespace nap
 		// Get camera location
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
-		// Push all existing uniforms to GPU
-		mMaterialInstance.update();
-
-		// Fetch the uniform declarations of the uniform values we want to update in the copy loop
-		// This allows us to only push a specific uniform instead of all uniforms.
-		// Every uniform maps to a declaration, where there can be multiple values associated with a single declaration.
-		// You can look at the uniform declaration as the actual slot on a shader that accepts a value of a specific type.
-		const auto& color_binding = mMaterialInstance.getUniformBinding(mColorUniform->mName);
-		const auto& objec_binding = mMaterialInstance.getUniformBinding(mModelUniform->mName);
-
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
 		for (auto i = 0; i < pos_data.size(); i++)
 		{
@@ -192,11 +221,9 @@ namespace nap
 			// Pick random color for mesh and push to GPU
 			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
 			mColorUniform->setValue(color);
-			mColorUniform->push(*color_binding.mDeclaration);
 
 			// Get the mesh to stamp onto this point and bind
 			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
-			render_mesh.bind();
 
 			// Get data of that mesh
 			MeshInstance& mesh_instance = render_mesh.getMesh().getMeshInstance();
@@ -225,29 +252,9 @@ namespace nap
 			// Add scale, set as value and push
 			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
 			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
-			mModelUniform->push(*objec_binding.mDeclaration);
 
-			// Iterate over all the shapes and render
-			for (int shape_idx = 0; shape_idx < mesh_instance.getNumShapes(); ++shape_idx)
-			{
-				// Get the shape we want to draw and the index buffer associated with that shape
-				MeshShape& shape = mesh_instance.getShape(shape_idx);
-				const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(shape_idx);
-
-				GLenum draw_mode = getGLMode(shape.getDrawMode());
-				GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-
-				// Bind and draw all the currently attached vbo's based on the shape's indices.
-				index_buffer.bind();
-				glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-				index_buffer.unbind();
-			}
-			// Unbind this instance
-			render_mesh.unbind();
+			renderMesh(render_mesh, renderTarget, commandBuffer);
 		}
-
-		// Unbind material
-		mMaterialInstance.unbind();
 	}
 
 }

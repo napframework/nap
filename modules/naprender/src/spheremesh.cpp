@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <cmath>
 #include <meshutils.h>
+#include "renderservice.h"
 
 RTTI_BEGIN_CLASS(nap::SphereMesh)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
@@ -16,9 +17,19 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	SphereMesh::SphereMesh() :
+		mRenderer(nullptr)
+	{
+	}
+
+	SphereMesh::SphereMesh(RenderService& renderService) :
+		mRenderer(&renderService.getRenderer())
+	{
+	}
+
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		mMeshInstance = std::make_unique<MeshInstance>(nullptr); 	// TODO: proper init
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
 
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec3> normals;

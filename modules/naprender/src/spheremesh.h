@@ -13,6 +13,9 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 
 	public:
+		SphereMesh();
+		SphereMesh(RenderService& renderService);
+
 		/**
  		 * Load the mesh
  		 */
@@ -34,6 +37,9 @@ namespace nap
 		float mSectors	= 50.0f;	///< Property: 'Sectors' number of sectors
 
 	private:
+		Renderer* mRenderer;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 	};
+
+	using SphereMeshCreator = rtti::ObjectCreator<SphereMesh, RenderService>;
 }
