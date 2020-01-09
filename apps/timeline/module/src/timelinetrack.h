@@ -1,9 +1,12 @@
 #pragma once
 
+// internal includes
+#include "keyframe.h"
+
 // external includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
-#include <fcurve.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -11,12 +14,11 @@ namespace nap
 
 	/**
 	 */
-	class NAPAPI KeyFrame : public Resource
+	class NAPAPI TimelineTrack : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		double										mTime = 0.0;
-		std::string									mName = "";
-		ResourcePtr<math::FCurve<float, float>>		mCurve;
+		ResourcePtr<ParameterFloat>					mParameter;
+		std::vector<ResourcePtr<KeyFrame>>			mKeyFrames;
 	};
 }

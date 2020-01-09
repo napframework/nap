@@ -3,8 +3,8 @@
 
 RTTI_BEGIN_CLASS(nap::Timeline)
 RTTI_PROPERTY("Name", &nap::Timeline::mName, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Parameters", &nap::Timeline::mParameters, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("KeyFrames", &nap::Timeline::mKeyFrames, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Tracks", &nap::Timeline::mTracks, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Duration", &nap::Timeline::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

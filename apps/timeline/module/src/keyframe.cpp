@@ -4,6 +4,7 @@
 RTTI_BEGIN_CLASS(nap::KeyFrame)
 RTTI_PROPERTY("Name", &nap::KeyFrame::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Time", &nap::KeyFrame::mTime, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Curve", &nap::KeyFrame::mCurve, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

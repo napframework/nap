@@ -2,6 +2,7 @@
 
 // internal includes
 #include "keyframe.h"
+#include "timelinetrack.h"
 
 // external includes
 #include <nap/resource.h>
@@ -18,10 +19,11 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		std::string								mName = "Timeline";
-		std::vector<ResourcePtr<Parameter>>		mParameters;
-		std::vector<ResourcePtr<KeyFrame>>		mKeyFrames;
-
+		std::vector<ResourcePtr<TimelineTrack>> mTracks;
+		
 		bool init(utility::ErrorState& errorState) override;
+
+		double mDuration = 1.0;
 	protected:
 	};
 }
