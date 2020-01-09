@@ -10,6 +10,7 @@
 #include "renderservice.h"
 #include "nshaderutils.h"
 #include "uniforminstances.h"
+#include "vk_mem_alloc.h"
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
@@ -366,13 +367,15 @@ namespace nap
 	{
 		VkDevice device = getMaterial()->getRenderer().getDevice();
 
+		VmaAllocator allocator = mRenderService->getVulkanAllocator();
+
 		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
 			UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
-			VkDeviceMemory buffer_memory = descriptorSet.mBuffers[ubo_index].mMemory;
+			VmaAllocation allocation = descriptorSet.mBuffers[ubo_index].mAllocation;
 
 			void* mapped_memory;
-			vkMapMemory(device, buffer_memory, 0, ubo.mDeclaration->mSize, 0, &mapped_memory);
+			vmaMapMemory(allocator, allocation, &mapped_memory);
 
 			for (auto& uniform : ubo.mUniforms)
 			{
@@ -389,7 +392,7 @@ namespace nap
 				}
 			}
 
-			vkUnmapMemory(device, buffer_memory);
+			vmaUnmapMemory(allocator, allocation);
 		}
 	}
 

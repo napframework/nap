@@ -13,6 +13,9 @@
 #include "renderstate.h"
 #include "vao.h"
 
+typedef struct VmaAllocator_T* VmaAllocator;
+typedef struct VmaAllocation_T* VmaAllocation;
+
 namespace opengl
 {
 	class RenderTarget;
@@ -31,7 +34,7 @@ namespace nap
 	struct DescriptorSetBuffer
 	{
 		VkBuffer		mBuffer;
-		VkDeviceMemory	mMemory;
+		VmaAllocation	mAllocation;
 	};
 
 	struct DescriptorSet
@@ -236,6 +239,8 @@ namespace nap
 
 		const DescriptorSet& acquireDescriptorSet(MaterialInstance& materialInstance);
 
+		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
+
 	protected:
 		/**
 		* Object creation registration
@@ -348,6 +353,7 @@ namespace nap
 		using UnusedDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, std::vector<DescriptorSet>>;
 		using UsedDescriptorSetMap = std::array<std::vector<DescriptorSet>, 2>;
 
+		VmaAllocator			mVulkanAllocator;
 		RenderState				mRenderState;															//< The latest render state as set by the user
 		ContextSpecificStateMap mContextSpecificState;													//< The per-context render state
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;			//< Array of per-context GL resources scheduled for destruction

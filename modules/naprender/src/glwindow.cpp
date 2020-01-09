@@ -211,7 +211,7 @@ namespace nap
 		for (const auto& found_format_outer : found_formats)
 		{
 			// Format found
-			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_SRGB)
+			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_UNORM)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but this is compatible with out previous OpenGL setting
 			{
 				outFormat.format = found_format_outer.format;
 				for (const auto& found_format_inner : found_formats)
@@ -785,8 +785,10 @@ namespace nap
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
 
+		glm::vec4 clearColor = mBackbuffer.getClearColor();
+
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { 0.0f, 0.0f, 1.0f, 1.0f };
+		clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());

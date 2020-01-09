@@ -28,6 +28,7 @@
 #include "texture2d.h"
 #include "planemesh.h"
 #include "spheremesh.h"
+#include "vk_mem_alloc.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
@@ -735,7 +736,16 @@ namespace nap
 		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
 		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
+		
 		mRenderer = std::move(renderer);
+
+		VmaAllocatorCreateInfo allocatorInfo = {};
+		allocatorInfo.physicalDevice = mRenderer->getPhysicalDevice();
+		allocatorInfo.device = mRenderer->getDevice();
+
+		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
+			return false;
+
 		return true;
 	}
 	
@@ -875,46 +885,17 @@ namespace nap
 		}
 	}
 
-	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation)
 	{
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState)
-	{
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
 		bufferInfo.size = size;
-		bufferInfo.usage = usage;
+		bufferInfo.usage = bufferUsage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
-			return false;
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = memoryUsage;
 
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
-			return false;
-
-		if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Could not bind buffer memory"))
-			return false;
-
-		return true;
+		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, nullptr) == VK_SUCCESS;
 	}
 
 	VkDescriptorPool RenderService::getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors)
@@ -927,17 +908,17 @@ namespace nap
 
 		int maxSets = 10000;
 
-		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = numUBODescriptors * maxSets;
+		std::vector<VkDescriptorPoolSize> pool_sizes;
+		if (numUBODescriptors != 0)
+			pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
 
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = numSamplerDescriptors * maxSets;
+		if (numSamplerDescriptors != 0)
+			pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = poolSizes.size();
-		poolInfo.pPoolSizes = poolSizes.data();
+		poolInfo.poolSizeCount = pool_sizes.size();
+		poolInfo.pPoolSizes = pool_sizes.data();
 		poolInfo.maxSets = maxSets;
 
 		VkDescriptorPool pool = nullptr;
@@ -956,9 +937,9 @@ namespace nap
 		if (pos != mUnusedDescriptors.end() && !pos->second.empty())
 		{
 			std::vector<DescriptorSet>& free_descriptor_list = pos->second;
-			DescriptorSet descriptor_set = free_descriptor_list.back();
+			DescriptorSet descriptor_set = std::move(free_descriptor_list.back());
 			free_descriptor_list.pop_back();
-			mUsedDescriptors[mCurrentFrameIndex].push_back(descriptor_set);
+			mUsedDescriptors[mCurrentFrameIndex].emplace_back(std::move(descriptor_set));
 			return mUsedDescriptors[mCurrentFrameIndex].back();
 		}
 
@@ -991,7 +972,7 @@ namespace nap
 
 			DescriptorSetBuffer buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderer->getDevice(), mRenderer->getPhysicalDevice(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffer.mBuffer, buffer.mMemory, error_state);
+			bool success = createBuffer(mVulkanAllocator, ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer.mBuffer, buffer.mAllocation);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -1013,7 +994,7 @@ namespace nap
 		
 		vkUpdateDescriptorSets(mRenderer->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 
-		mUsedDescriptors[mCurrentFrameIndex].push_back(descriptor_set);
+		mUsedDescriptors[mCurrentFrameIndex].emplace_back(std::move(descriptor_set));
 		return mUsedDescriptors[mCurrentFrameIndex].back();
 	}
 
