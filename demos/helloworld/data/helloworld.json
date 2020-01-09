@@ -42,8 +42,8 @@
             "DeviceIndex": 1,
             "OverrideResolution": false,
             "Resolution": {
-                "x": 320,
-                "y": 240
+                "x": 640,
+                "y": 480
             },
             "Resize": true,
             "Size": {

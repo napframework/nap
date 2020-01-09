@@ -23,7 +23,7 @@ RTTI_BEGIN_CLASS(nap::CVCameraAdapter)
 	RTTI_PROPERTY("FlipVertical",		&nap::CVCameraAdapter::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCameraAdapter::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Codec",				&nap::CVCameraAdapter::mCodec,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DefaultResolution",	&nap::CVCameraAdapter::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OverrideResolution",	&nap::CVCameraAdapter::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resolution",			&nap::CVCameraAdapter::mResolution,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resize",				&nap::CVCameraAdapter::mResize,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",				&nap::CVCameraAdapter::mSize,				nap::rtti::EPropertyMetaData::Default)
@@ -117,13 +117,13 @@ namespace nap
 		// Set capture dimensions
 		if (mOverrideResolution)
 		{
-			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)(mResolution.x)))
+			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, static_cast<double>(mResolution.x)))
 			{
 				error.fail("unable to set video capture frame width to: %d", mResolution.x);
 				return false;
 			}
 
-			if (!captureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, (double)(mResolution.y)))
+			if (!captureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, static_cast<double>(mResolution.y)))
 			{
 				error.fail("unable to set video capture frame height to: %d", mResolution.y);
 				return false;
