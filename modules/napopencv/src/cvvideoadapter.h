@@ -27,6 +27,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * Changes the video. Note that this call stops the parent device processing loop.
+		 * The other capture devices associated with the parent (such as a video etc.) are restarted as well.
+		 * @param file new video file to load
+		 * @return if the video loaded successfully. 
+		 */
+		bool changeVideo(const std::string& video, nap::utility::ErrorState& error);
+
+		/**
 		 * @return intended video playback speed in frames per second
 		 */
 		float getFramerate() const;

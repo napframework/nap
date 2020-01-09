@@ -97,6 +97,12 @@ namespace nap
 		 */
 		const cv::VideoCapture&	getCaptureDevice() const	{ return mCaptureDevice; }
 
+	protected:
+		/**
+		 * @return video capture device this adapter belongs to
+		 */
+		CVVideoCapture& getParent() const;
+
 	private:
 		friend class CVVideoCapture;
 		CVVideoCapture*		mParent;						///< The nap parent capture device

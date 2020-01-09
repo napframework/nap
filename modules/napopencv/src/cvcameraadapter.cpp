@@ -22,7 +22,8 @@ RTTI_BEGIN_CLASS(nap::CVCameraAdapter)
 	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCameraAdapter::mFlipHorizontal,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipVertical",		&nap::CVCameraAdapter::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DeviceIndex",		&nap::CVCameraAdapter::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DefaultResolution",	&nap::CVCameraAdapter::mDefaultResolution,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Codec",				&nap::CVCameraAdapter::mCodec,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DefaultResolution",	&nap::CVCameraAdapter::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resolution",			&nap::CVCameraAdapter::mResolution,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resize",				&nap::CVCameraAdapter::mResize,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",				&nap::CVCameraAdapter::mSize,				nap::rtti::EPropertyMetaData::Default)
@@ -91,22 +92,31 @@ namespace nap
 
 	bool CVCameraAdapter::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
-		cv::getBuildInformation();
-
+		// Open capture device
 		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
 			"unable to open video capture device: %d", mDeviceIndex))
 			return false;
 
-		// Set capture dimensions
-		if (!mDefaultResolution)
+		// Set codec
+		if (!mCodec.empty())
 		{
-			int codec = cv::VideoWriter::fourcc('M','J','P','G');
-			if (!captureDevice.set(cv::CAP_PROP_FOURCC, codec))
+			if (mCodec.length() != 4)
 			{
-				error.fail("unable to set codec!");
+				error.fail("invalid codec, requires exactly 4 characters, for example: 'MJPG'");
 				return false;
 			}
 
+			int codec_id = cv::VideoWriter::fourcc(mCodec[0], mCodec[1], mCodec[2], mCodec[3]);
+			if (!captureDevice.set(cv::CAP_PROP_FOURCC, codec_id))
+			{
+				error.fail("unsupported codec: %s", mCodec.c_str());
+				return false;
+			}
+		}
+
+		// Set capture dimensions
+		if (mOverrideResolution)
+		{
 			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, (double)(mResolution.x)))
 			{
 				error.fail("unable to set video capture frame width to: %d", mResolution.x);
@@ -136,22 +146,23 @@ namespace nap
 
 	CVFrame CVCameraAdapter::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
-		HighResolutionTimer timer;
-		timer.start();
-
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
 			error.fail("%s: no new frame available", mID.c_str());
 			return CVFrame();
 		}
 
-		nap::Logger::info("retr milli: %d", timer.getMillis().count());
-
 		// Resize or perform a weak copy.
-		if (mResize)
+		if (mResize &&
+			mCaptureFrame[0].cols != mSize.x &&
+			mCaptureFrame[0].rows != mSize.y)
+		{
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
+		}
 		else
+		{
 			mOutputFrame[0] = mCaptureFrame[0];
+		}
 
 		// Convert to RGB
 		if (mConvertRGB)

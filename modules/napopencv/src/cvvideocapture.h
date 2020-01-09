@@ -51,7 +51,7 @@ namespace nap
 		 * @param target updated to hold the last captured frame data if a new frame is available.
 		 * @return if the target is updated with the contents of a new captured frame.
 		 */
-		bool grab(CVFrame& target);
+		bool grab(CVFrameEvent& target);
 
 		/**
 		 * Tells the capture thread to capture the next available frame.

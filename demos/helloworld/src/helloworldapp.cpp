@@ -48,7 +48,8 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mCameraCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CameraCaptureDevice");
 		mVideoCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("VideoCaptureDevice");
-		mCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CaptureTexture");
+		mCameraTextureOne = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureOne");
+		mCameraTextureTwo = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureTwo");
 		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
 
 		// Get the resource that manages all the entities
@@ -108,18 +109,24 @@ namespace nap
 	{
 		if (mCameraCaptureDevice->grab(mCamFrame))
 		{
-			//detectFaces(mCamFrame);
-			cv::flip(mCamFrame[0], mCamFrame[0], 0);
-			cv::Mat cpu_mat = mCamFrame[0].getMat(cv::ACCESS_READ);
-			mCaptureTexture->update(cpu_mat.data);
+			mCameraCaptureDevice->capture();
+			
+			//detectFaces(mCamFrame[0]);
+			assert(mCamFrame.getCount() == 2);
+			cv::flip(mCamFrame[0][0], mCamFrame[0][0], 0);
+			cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
+			mCameraTextureOne->update(cpu_mat.data);
+
+			cv::flip(mCamFrame[1][0], mCamFrame[1][0], 0);
+			cpu_mat = mCamFrame[1][0].getMat(cv::ACCESS_READ);
+			mCameraTextureTwo->update(cpu_mat.data);
 		}
-		mCameraCaptureDevice->capture();
 		
 		if (mVideoCaptureDevice->grab(mVidFrame))
 		{
-			detectFaces(mVidFrame);
-			cv::flip(mVidFrame[0], mVidFrame[0], 0);
-			cv::Mat cpu_mat = mVidFrame[0].getMat(cv::ACCESS_READ);
+			detectFaces(mVidFrame[0]);
+			cv::flip(mVidFrame[0][0], mVidFrame[0][0], 0);
+			cv::Mat cpu_mat = mVidFrame[0][0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
 		}
 
@@ -137,13 +144,18 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		if (ImGui::CollapsingHeader("Webcam Feed"))
+		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCaptureTexture->getWidth()) / static_cast<float>(mCaptureTexture->getHeight());
-			ImGui::Image(*mCaptureTexture, { col_width, col_width / ratio_video });
+			float ratio_video = static_cast<float>(mCameraTextureOne->getWidth()) / static_cast<float>(mCameraTextureOne->getHeight());
+			ImGui::Image(*mCameraTextureOne, { col_width, col_width / ratio_video });
 		}
-
+		if (ImGui::CollapsingHeader("Webcam Feed Two"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mCameraTextureTwo->getWidth()) / static_cast<float>(mCameraTextureTwo->getHeight());
+			ImGui::Image(*mCameraTextureTwo, { col_width, col_width / ratio_video });
+		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
 			CVVideoAdapter& adapter = mVideoCaptureDevice->getAdapter<CVVideoAdapter>(0);

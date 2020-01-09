@@ -74,17 +74,18 @@ namespace nap
 		 */
 		void getSettings(nap::CVCameraSettings& settings);
 
-		bool				mConvertRGB = true;			///< Property: 'ConvertRGB' if the frame is converted into RGB
-		bool				mFlipHorizontal = false;	///< Property: 'FlipHorizontal' flips the frame on the x-axis
-		bool				mFlipVertical = false;		///< Property: 'FlipVertical' flips the frame on the y-axis
-		bool				mResize = false;			///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
-		glm::ivec2			mSize = { 1280, 720 };		///< Property: 'Size' frame size, only used when 'Resize' is turned on.
-		bool				mApplySettings = false;		///< Property: 'ApplySettings' if the camera settings are applied on startup
-		bool				mDefaultResolution = true;	///< Property: 'DefaultResolution' if the default camera resolution is used, when set to false the specified 'Resolution' is enforced.
-		nap::uint			mDeviceIndex = 0;			///< Property: 'DeviceIndex' capture device index
-		glm::ivec2			mResolution = { 640, 480 };	///< Property: 'Resolution' camera record resolution, only used when 'DefaultResolution' is turned off
-		CVCameraSettings	mCameraSettings;			///< Property: 'Settings' all configurable camera settings
-		bool				mShowDialog = false;		///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
+		std::string			mCodec = "";					///< Property: 'Codec' optional video capture codec, for example: 'MJPG' or 'H264'. Leaving this empty defaults to regular codec. 
+		bool				mConvertRGB = true;				///< Property: 'ConvertRGB' if the frame is converted into RGB
+		bool				mFlipHorizontal = false;		///< Property: 'FlipHorizontal' flips the frame on the x-axis
+		bool				mFlipVertical = false;			///< Property: 'FlipVertical' flips the frame on the y-axis
+		bool				mResize = false;				///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
+		glm::ivec2			mSize = { 1280, 720 };			///< Property: 'Size' frame size, only used when 'Resize' is turned on.
+		bool				mApplySettings = false;			///< Property: 'ApplySettings' if the camera settings are applied on startup
+		nap::uint			mDeviceIndex = 0;				///< Property: 'DeviceIndex' capture device index
+		bool				mOverrideResolution = false;	///< Property: 'OverrideResolution' if the default camera resolution is used, when set to false the specified 'Resolution' is enforced.
+		glm::ivec2			mResolution = { 640, 480 };		///< Property: 'Resolution' camera record resolution, only used when 'DefaultResolution' is turned off
+		CVCameraSettings	mCameraSettings;				///< Property: 'Settings' all configurable camera settings
+		bool				mShowDialog = false;			///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
 
 	protected:
 		virtual int getMatrixCount() override			{ return 1; }

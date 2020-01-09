@@ -33,6 +33,13 @@ namespace nap
 	}
 
 
+	nap::CVVideoCapture& CVAdapter::getParent() const
+	{
+		assert(mParent != nullptr);
+		return *mParent;
+	}
+
+
 	bool CVAdapter::open(nap::utility::ErrorState& error)
 	{
 		assert(!mCaptureDevice.isOpened());

@@ -3,21 +3,52 @@
         {
             "Type": "nap::CVCameraAdapter",
             "mID": "CameraAdapter",
+            "Codec":"MJPG",
             "Backend": "DirectShow",
             "ShowDialog": true,
             "ConvertRGB": true,
             "FlipHorizontal": false,
             "FlipVertical": false,
             "DeviceIndex": 0,
-            "DefaultResolution": false,
+            "OverrideResolution": false,
             "Resolution": {
-                "x": 1280,
-                "y": 720
+                "x": 640,
+                "y": 480
             },
-            "Resize": false,
+            "Resize": true,
             "Size": {
-                "x": 1280,
-                "y": 720
+                "x": 640,
+                "y": 480
+            },
+            "ApplySettings": false,
+            "Settings": {
+                "AutoExposure": true,
+                "Brightness": 1.0,
+                "Contrast": 1.0,
+                "Saturation": 1.0,
+                "Gain": 1.0,
+                "Exposure": 1.0
+            }
+        },        
+        {
+            "Type": "nap::CVCameraAdapter",
+            "mID": "CameraAdapterTwo",
+            "Codec":"MJPG",
+            "Backend": "DirectShow",
+            "ShowDialog": true,
+            "ConvertRGB": true,
+            "FlipHorizontal": false,
+            "FlipVertical": false,
+            "DeviceIndex": 1,
+            "OverrideResolution": false,
+            "Resolution": {
+                "x": 320,
+                "y": 240
+            },
+            "Resize": true,
+            "Size": {
+                "x": 640,
+                "y": 480
             },
             "ApplySettings": false,
             "Settings": {
@@ -40,7 +71,8 @@
             "Type": "nap::CVVideoCapture",
             "mID": "CameraCaptureDevice",
             "Adapters": [
-                "CameraAdapter"
+                "CameraAdapter",
+                "CameraAdapterTwo"
             ]
         },
         {
@@ -363,7 +395,7 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "CaptureTexture",
+            "mID": "CameraTextureOne",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -372,8 +404,23 @@
                 "MaxLodLevel": 10
             },
             "Usage": "Static",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 640,
+            "Height": 480,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CameraTextureTwo",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 10
+            },
+            "Usage": "Static",
+            "Width": 640,
+            "Height": 480,
             "Format": "RGB8"
         },
         {

@@ -1,4 +1,5 @@
 #include "cvvideoadapter.h"
+#include "cvvideocapture.h"
 
 #include <nap/logger.h>
 #include <mathutils.h>
@@ -21,6 +22,25 @@ namespace nap
 	bool CVVideoAdapter::init(utility::ErrorState& errorState)
 	{
 		return CVAdapter::init(errorState);
+	}
+
+
+	bool CVVideoAdapter::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
+	{
+		if (!error.check(captureDevice.open(mFile, api), "unable to open video file: %s", mFile.c_str()))
+			return false;
+
+		mCurrentFrame = 0;
+		return true;
+	}
+
+
+	bool CVVideoAdapter::changeVideo(const std::string& video, nap::utility::ErrorState& error)
+	{
+		CVVideoCapture& capture_device = getParent();
+		capture_device.stop();
+		mFile = video;
+		return capture_device.start(error);
 	}
 
 
@@ -75,15 +95,6 @@ namespace nap
 	}
 
 
-	bool CVVideoAdapter::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
-	{
-		if (!error.check(captureDevice.open(mFile, api), "unable to open video file: %s", mFile.c_str()))
-			return false;
-		mCurrentFrame = 0;
-		return true;
-	}
-
-
 	CVFrame CVVideoAdapter::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
@@ -94,10 +105,16 @@ namespace nap
 
 		// Resize frame if required
 		// Otherwise simply copy mat reference (no actual data copy takes place)
-		if (mResize)
+		if (mResize &&
+			mCaptureFrame[0].cols != mSize.x &&
+			mCaptureFrame[0].rows != mSize.y)
+		{
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
+		}
 		else
+		{
 			mOutputFrame[0] = mCaptureFrame[0];
+		}
 
 		// Convert to RGB
 		if (mConvertRGB)

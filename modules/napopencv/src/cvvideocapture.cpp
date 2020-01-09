@@ -18,7 +18,7 @@ namespace nap
 	CVVideoCapture::~CVVideoCapture()			{ }
 
 
-	bool CVVideoCapture::grab(CVFrame& target)
+	bool CVVideoCapture::grab(CVFrameEvent& target)
 	{
 		// Check if a new frame is available
 		if (!mFrameAvailable)
@@ -28,7 +28,7 @@ namespace nap
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat[0].copyTo(target);
+		mCaptureMat.copyTo(target);
 		mFrameAvailable = false;
 		return true;
 	}
@@ -175,18 +175,16 @@ namespace nap
 
 			// Now retrieve frame (heaviest operation)
 			nap::utility::ErrorState grab_error;
-
 			frame_event.clear();
-			for (auto& adapter : capture_adapters)
+			for (auto it = capture_adapters.begin(); it != capture_adapters.end(); it++)
 			{
-				frame_event.addFrame(adapter->retrieve(grab_error));
+				frame_event.addFrame((*it)->retrieve(grab_error));
 				if (frame_event.lastFrame().empty())
 				{
 					nap::Logger::error("%s: failed to decode frame", mID.c_str());
 					frame_event.popFrame();
-					continue;
+					capture_adapters.erase(it--);
 				}
-				adapter->copied();
 			}
 
 			// No frames captured
@@ -206,6 +204,11 @@ namespace nap
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				frame_event.copyTo(mCaptureMat);
 			}
+
+			// Notify adapters that a frame is copied.
+			// Only do this for adapters for which the frame was retrieved successfully. 
+			for (auto& adapter : capture_adapters)
+				adapter->copied();
 
 			// TODO: Send Signal!
 
