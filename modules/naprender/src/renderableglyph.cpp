@@ -38,7 +38,7 @@ namespace nap
 		// We clear the bitmap data at the end of this function to safe memory
 		FT_Vector  origin = {0, 0};
 		auto error = FT_Glyph_To_Bitmap(&bitmap, FT_RENDER_MODE_NORMAL, &origin, false);
-		if (errorCode.check(error > 0, "unable to convert glyph to bitmap"))
+		if (!errorCode.check(error == 0, "unable to convert glyph to bitmap"))
 			return false;
 		
 		// cast to bitmap and extract values
