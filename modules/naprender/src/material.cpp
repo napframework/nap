@@ -594,7 +594,7 @@ namespace nap
 		if (!initSamplers(errorState))
 			return false;
 
-		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getDescriptorSetLayout());
+		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getShader()->getShader().getDescriptorSetLayout());
 
 		return true;
 	}
@@ -724,41 +724,6 @@ namespace nap
 
 			addSamplerInstance(std::move(sampler_instance));
 		}
-
-		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
-		for (int index = 0; index < ubo_declarations.size(); ++index)
-		{
-			const opengl::UniformBufferObjectDeclaration& uniform_buffer_object = ubo_declarations[index];
-
-			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-			uboLayoutBinding.binding			= uniform_buffer_object.mBinding;
-			uboLayoutBinding.descriptorCount	= 1;
-			uboLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uboLayoutBinding.pImmutableSamplers = nullptr;
-			uboLayoutBinding.stageFlags			= uniform_buffer_object.mStage;
-
-			descriptor_set_layouts.push_back(uboLayoutBinding);
-		}
-
-		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
-		{
-			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-			samplerLayoutBinding.binding			= declaration.mBinding;
-			samplerLayoutBinding.descriptorCount	= 1;
-			samplerLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			samplerLayoutBinding.pImmutableSamplers = nullptr;
-			samplerLayoutBinding.stageFlags			= declaration.mStage;
-
-			descriptor_set_layouts.push_back(samplerLayoutBinding);
-		}
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-		layoutInfo.sType		= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount	= (int)descriptor_set_layouts.size();
-		layoutInfo.pBindings	= descriptor_set_layouts.data();
-
-		if (!errorState.check(vkCreateDescriptorSetLayout(mRenderer->getDevice(), &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout"))
-			return false;
 
 		return true;
 	}

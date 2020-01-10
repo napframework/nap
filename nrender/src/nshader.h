@@ -88,6 +88,11 @@ namespace opengl
 		VkShaderModule getVertexModule() const { return mVertexModule; }
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
 
+		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+
+	private:
+		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
+
 	private:
 		VkShaderModule mVertexModule = nullptr;
 		VkShaderModule mFragmentModule = nullptr;
@@ -95,5 +100,6 @@ namespace opengl
 		std::vector<UniformBufferObjectDeclaration> mUBODeclarations;
 		SamplerDeclarations							mSamplerDeclarations;
 		ShaderVertexAttributes						mShaderAttributes;		// Shader program vertex attribute inputs
+		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
 	};
 }	// opengl

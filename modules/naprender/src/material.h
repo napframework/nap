@@ -243,8 +243,6 @@ namespace nap
 		*/
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
-
 		Renderer& getRenderer() { return *mRenderer; }
 
 	public:
@@ -260,7 +258,6 @@ namespace nap
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
 		Renderer*									mRenderer = nullptr;
-		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
 	};
 
 	template<class T>

@@ -428,7 +428,7 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getDescriptorSetLayout();
+		VkDescriptorSetLayout set_layout = material.getShader()->getShader().getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

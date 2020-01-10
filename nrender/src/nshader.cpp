@@ -129,16 +129,16 @@ namespace opengl
 	}
 
 	bool addUniformsRecursive(UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
-	{	
+	{
 		assert(type.basetype == spirv_cross::SPIRType::Struct);
 
 		for (int index = 0; index < type.member_types.size(); ++index)
 		{
 			spirv_cross::SPIRType member_type = compiler.get_type(type.member_types[index]);
 
-			std::string name	= compiler.get_member_name(type.self, index);
-			int absoluteOffset	= parentOffset + compiler.type_struct_member_offset(type, index);
-			size_t member_size	= compiler.get_declared_struct_member_size(type, index);
+			std::string name = compiler.get_member_name(type.self, index);
+			int absoluteOffset = parentOffset + compiler.type_struct_member_offset(type, index);
+			size_t member_size = compiler.get_declared_struct_member_size(type, index);
 
 			std::string full_path = path + "." + name;
 
@@ -288,12 +288,12 @@ namespace opengl
 
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
 		{
- 			spirv_cross::SPIRType input_type = vertex_shader_compiler.get_type(stage_input.type_id);
-		
+			spirv_cross::SPIRType input_type = vertex_shader_compiler.get_type(stage_input.type_id);
+
 			VkFormat format = getFormatFromType(input_type);
 			if (!errorState.check(format != VK_FORMAT_UNDEFINED, "Encountered unsupported vertex attribute type"))
 				return false;
-			
+
 			uint32_t location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
 			mShaderAttributes[stage_input.name] = std::make_unique<ShaderVertexAttribute>(stage_input.name, location, format);
 		}
@@ -311,7 +311,44 @@ namespace opengl
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
+		return initLayout(device, errorState);
+
 		return true;
+	}
+
+	bool Shader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	{
+		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
+		for (const opengl::UniformBufferObjectDeclaration& declaration : mUBODeclarations)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = declaration.mBinding;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags = declaration.mStage;
+
+			descriptor_set_layouts.push_back(uboLayoutBinding);
+		}
+
+		for (const opengl::SamplerDeclaration& declaration : mSamplerDeclarations)
+		{
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding = declaration.mBinding;
+			samplerLayoutBinding.descriptorCount = 1;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags = declaration.mStage;
+
+			descriptor_set_layouts.push_back(samplerLayoutBinding);
+		}
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
+		layoutInfo.pBindings = descriptor_set_layouts.data();
+
+		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
 	}
 
 
