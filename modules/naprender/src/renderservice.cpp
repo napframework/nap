@@ -78,12 +78,12 @@ namespace nap
 
 		// Get settings
 		RenderWindowSettings window_settings;
-		window_settings.width		= window.mWidth;
-		window_settings.height		= window.mHeight;
-		window_settings.borderless	= window.mBorderless;
-		window_settings.resizable	= window.mResizable;
-		window_settings.title		= window.mTitle;
-		window_settings.sync		= window.mSync;
+		window_settings.width = window.mWidth;
+		window_settings.height = window.mHeight;
+		window_settings.borderless = window.mBorderless;
+		window_settings.resizable = window.mResizable;
+		window_settings.title = window.mTitle;
+		window_settings.sync = window.mSync;
 
 		std::shared_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, window.mID, errorState);
 		if (new_window == nullptr)
@@ -100,21 +100,21 @@ namespace nap
 
 	void RenderService::removeWindow(RenderWindow& window)
 	{
-		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val == &window; 
+		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val == &window;
 		});
-		
+
 		assert(pos != mWindows.end());
 		mWindows.erase(pos);
 	}
-	
+
 
 	RenderWindow* RenderService::findWindow(void* nativeWindow) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val->getWindow()->getNativeWindow() == nativeWindow; 
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val->getWindow()->getNativeWindow() == nativeWindow;
 		});
 
 		if (pos != mWindows.end())
@@ -125,9 +125,9 @@ namespace nap
 
 	RenderWindow* RenderService::findWindow(uint id) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val->getNumber() == id; 
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val->getNumber() == id;
 		});
 
 		if (pos != mWindows.end())
@@ -137,12 +137,12 @@ namespace nap
 
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
-        nap::Window* window = findWindow(windowEvent->mWindow);
-		assert (window != nullptr);
+		nap::Window* window = findWindow(windowEvent->mWindow);
+		assert(window != nullptr);
 		window->addEvent(std::move(windowEvent));
 	}
 
-	void createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass) 
+	void createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = colorFormat;
@@ -205,26 +205,26 @@ namespace nap
 	{
 		switch (inMesh.getMeshInstance().getShape(0).getDrawMode())
 		{
-		    case opengl::EDrawMode::POINTS:
-				return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-			case opengl::EDrawMode::LINES:
-				return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-			case opengl::EDrawMode::LINE_STRIP:
-				return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-			case opengl::EDrawMode::TRIANGLES:
-				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-			case opengl::EDrawMode::TRIANGLE_STRIP:
-				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-			case opengl::EDrawMode::TRIANGLE_FAN:
-				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-			default:
-			{
-				assert(false);
-				return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
-			}
+		case opengl::EDrawMode::POINTS:
+			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		case opengl::EDrawMode::LINES:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		case opengl::EDrawMode::LINE_STRIP:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		case opengl::EDrawMode::TRIANGLES:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		case opengl::EDrawMode::TRIANGLE_STRIP:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		case opengl::EDrawMode::TRIANGLE_FAN:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+		default:
+		{
+			assert(false);
+			return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+		}
 		}
 	}
-	
+
 	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
 		VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
@@ -245,35 +245,35 @@ namespace nap
 			else
 				depth_mode = EDepthMode::ReadOnly;
 		}
-		
+
 		switch (depth_mode)
 		{
-			case EDepthMode::ReadWrite:
-			{
-				depth_stencil.depthTestEnable = VK_TRUE;
-				depth_stencil.depthWriteEnable = VK_TRUE;
-				break;
-			}
-			case EDepthMode::ReadOnly:
-			{
-				depth_stencil.depthTestEnable = VK_TRUE;
-				depth_stencil.depthWriteEnable = VK_FALSE;
-				break;
-			}
-			case EDepthMode::WriteOnly:
-			{
-				depth_stencil.depthTestEnable = VK_FALSE;
-				depth_stencil.depthWriteEnable = VK_TRUE;
-				break;
-			}
-			case EDepthMode::NoReadWrite:
-			{
-				depth_stencil.depthTestEnable = VK_FALSE;
-				depth_stencil.depthWriteEnable = VK_FALSE;
-				break;
-			}
-			default:
-				assert(false);
+		case EDepthMode::ReadWrite:
+		{
+			depth_stencil.depthTestEnable = VK_TRUE;
+			depth_stencil.depthWriteEnable = VK_TRUE;
+			break;
+		}
+		case EDepthMode::ReadOnly:
+		{
+			depth_stencil.depthTestEnable = VK_TRUE;
+			depth_stencil.depthWriteEnable = VK_FALSE;
+			break;
+		}
+		case EDepthMode::WriteOnly:
+		{
+			depth_stencil.depthTestEnable = VK_FALSE;
+			depth_stencil.depthWriteEnable = VK_TRUE;
+			break;
+		}
+		case EDepthMode::NoReadWrite:
+		{
+			depth_stencil.depthTestEnable = VK_FALSE;
+			depth_stencil.depthWriteEnable = VK_FALSE;
+			break;
+		}
+		default:
+			assert(false);
 		}
 
 		return depth_stencil;
@@ -291,29 +291,29 @@ namespace nap
 
 		switch (blend_mode)
 		{
-			case EBlendMode::Opaque:
-			{
-				color_blend_attachment_state.blendEnable = VK_FALSE;
-				break;
-			}
-			case EBlendMode::AlphaBlend:
-			{
-				color_blend_attachment_state.blendEnable = VK_TRUE;
-				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-				break;
-			}
-			case EBlendMode::Additive:
-			{
-				color_blend_attachment_state.blendEnable = VK_TRUE;
-				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-				break;
-			}
+		case EBlendMode::Opaque:
+		{
+			color_blend_attachment_state.blendEnable = VK_FALSE;
+			break;
+		}
+		case EBlendMode::AlphaBlend:
+		{
+			color_blend_attachment_state.blendEnable = VK_TRUE;
+			color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			break;
+		}
+		case EBlendMode::Additive:
+		{
+			color_blend_attachment_state.blendEnable = VK_TRUE;
+			color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			break;
+		}
 		}
 
 		return color_blend_attachment_state;
@@ -431,10 +431,10 @@ namespace nap
 		VkDescriptorSetLayout set_layout = material.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount			= 1;
-		pipelineLayoutInfo.pSetLayouts				= &set_layout;
-		pipelineLayoutInfo.pushConstantRangeCount	= 0;
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &set_layout;
+		pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
 			return false;
@@ -468,37 +468,37 @@ namespace nap
 		switch (format)
 		{
 		case ERenderTargetFormat::RGBA8:
-			{
-				if (mRenderPassRGBA8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8A8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGBA8);
+		{
+			if (mRenderPassRGBA8 == nullptr)
+				createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8A8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGBA8);
 
-				render_pass = &mRenderPassRGBA8;
-			}
-			break;
+			render_pass = &mRenderPassRGBA8;
+		}
+		break;
 		case ERenderTargetFormat::RGB8:
-			{
-				if (mRenderPassRGB8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGB8);
+		{
+			if (mRenderPassRGB8 == nullptr)
+				createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGB8);
 
-				render_pass = &mRenderPassRGB8;
-			}
-			break;
+			render_pass = &mRenderPassRGB8;
+		}
+		break;
 		case ERenderTargetFormat::R8:
-			{
-				if (mRenderPassR8 == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_R8_SRGB, mRenderer->getDepthFormat(), mRenderPassR8);
+		{
+			if (mRenderPassR8 == nullptr)
+				createRenderPass(mRenderer->getDevice(), VK_FORMAT_R8_SRGB, mRenderer->getDepthFormat(), mRenderPassR8);
 
-				render_pass = &mRenderPassR8;
-			}
-			break;
+			render_pass = &mRenderPassR8;
+		}
+		break;
 		case ERenderTargetFormat::Depth:
-			{
-				if (mRenderPassDepth == nullptr)
-					createRenderPass(mRenderer->getDevice(), VK_FORMAT_D24_UNORM_S8_UINT, mRenderer->getDepthFormat(), mRenderPassDepth);
+		{
+			if (mRenderPassDepth == nullptr)
+				createRenderPass(mRenderer->getDevice(), VK_FORMAT_D24_UNORM_S8_UINT, mRenderer->getDepthFormat(), mRenderPassDepth);
 
-				render_pass = &mRenderPassDepth;
-			}
-			break;
+			render_pass = &mRenderPassDepth;
+		}
+		break;
 		}
 
 		assert(render_pass != nullptr);
@@ -538,7 +538,7 @@ namespace nap
 		mCurrentFrameIndex = frameIndex;
 
 		// Destroy pipelines for the new frame
-		mPipelinesToDestroy.erase(std::remove_if(mPipelinesToDestroy.begin(), mPipelinesToDestroy.end(), [this, frameIndex](PipelineToDestroy& pipelineToDestroy) 
+		mPipelinesToDestroy.erase(std::remove_if(mPipelinesToDestroy.begin(), mPipelinesToDestroy.end(), [this, frameIndex](PipelineToDestroy& pipelineToDestroy)
 		{
 			if (pipelineToDestroy.mFrameIndex == mCurrentFrameIndex)
 			{
@@ -549,11 +549,8 @@ namespace nap
 			return false;
 		}), mPipelinesToDestroy.end());
 
-		// Move used descriptor set to unused for the new frame
-		for (DescriptorSet& descriptor_set : mUsedDescriptors[mCurrentFrameIndex])
-			mUnusedDescriptors[descriptor_set.mLayout].push_back(descriptor_set);
-		
-		mUsedDescriptors[mCurrentFrameIndex].clear();
+		for (auto& kvp : mDescriptorSetAllocators)
+			kvp.second->release(mCurrentFrameIndex);
 	}
 
 
@@ -593,7 +590,7 @@ namespace nap
 			{
 				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
-				for (const auto& comp : entity_render_comps) 
+				for (const auto& comp : entity_render_comps)
 				{
 					if (comp->isSupported(camera))
 						render_comps.emplace_back(comp);
@@ -620,7 +617,7 @@ namespace nap
 			if (renderable_mesh != nullptr)
 			{
 				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
 				if (blend_mode == EBlendMode::AlphaBlend)
 					back_to_front.emplace_back(component);
 				else
@@ -697,7 +694,7 @@ namespace nap
 		{
 			if (!comp->isSupported(camera))
 			{
-				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
+				nap::Logger::warn("unable to render component: %s, unsupported camera %s",
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
@@ -736,7 +733,7 @@ namespace nap
 		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
 		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
-		
+
 		mRenderer = std::move(renderer);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
@@ -748,11 +745,11 @@ namespace nap
 
 		return true;
 	}
-	
+
 
 	void RenderService::preUpdate(double deltaTime)
 	{
-	//	getPrimaryWindow().makeCurrent();
+		//	getPrimaryWindow().makeCurrent();
 	}
 
 
@@ -779,11 +776,11 @@ namespace nap
 		updateRenderState();
 	}
 
-	
+
 	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
-	{ 
+	{
 		if (resource != nullptr)
-			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 
+			mGLContextResourcesToDestroy.emplace_back(std::move(resource));
 	}
 
 
@@ -797,7 +794,7 @@ namespace nap
 			for (auto& resource : mGLContextResourcesToDestroy)
 				resource->destroy(getPrimaryWindow().getContext());
 
-			// We go over the windows to make the GL context active, and then destroy 
+			// We go over the windows to make the GL context active, and then destroy
 			// the resources for that context
 			for (const rtti::ObjectPtr<RenderWindow>& render_window : renderWindows)
 			{
@@ -814,9 +811,9 @@ namespace nap
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
-        // If initializing the renderer failed, mRenderer will be null
-        if (mRenderer != nullptr)
-		    mRenderer->shutdown();
+		// If initializing the renderer failed, mRenderer will be null
+		if (mRenderer != nullptr)
+			mRenderer->shutdown();
 	}
 
 	/**
@@ -824,8 +821,8 @@ namespace nap
 	 *	1) Internally, a cache of opengl::VertexArrayObjects is created for each mesh-material combination. When retrieving a VAO
 	 *	   for an already known mesh-material combination, the VAO is retrieved from the cache.
 	 *	2) Ownership of the VAO's does not lie in the RenderService: instead it is shared by all clients. To accomplish this, handles
-	 *	   are returned to clients that perform refcounting into the internal RenderService cache. When there are no more references 
-	 *	   to a VAO, it is queued for destruction. An important detail to notice is that the RenderService does not store handles 
+	 *	   are returned to clients that perform refcounting into the internal RenderService cache. When there are no more references
+	 *	   to a VAO, it is queued for destruction. An important detail to notice is that the RenderService does not store handles
 	 *	   internally, it hands them out when pulling VAOs from the cache or when creating new VAOs.
 	 */
 	VAOHandle RenderService::acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState)
@@ -865,7 +862,7 @@ namespace nap
 	void RenderService::incrementVAORefCount(const VAOKey& key)
 	{
 		VAOMap::iterator pos = mVAOMap.find(key);
-		assert(pos != mVAOMap.end()); 
+		assert(pos != mVAOMap.end());
 
 		++pos->second.mRefCount;
 	}
@@ -885,7 +882,7 @@ namespace nap
 		}
 	}
 
-	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation)
+	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation, VmaAllocationInfo& bufferAllocationInfo)
 	{
 		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
 		bufferInfo.size = size;
@@ -894,8 +891,9 @@ namespace nap
 
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
+		allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, nullptr) == VK_SUCCESS;
+		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
 	}
 
 	VkDescriptorPool RenderService::getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors)
@@ -929,50 +927,65 @@ namespace nap
 		return pool;
 	}
 
-	const DescriptorSet& RenderService::acquireDescriptorSet(MaterialInstance& materialInstance)
+	DescriptorSetAllocator& RenderService::getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout)
 	{
-		VkDescriptorSetLayout layout = materialInstance.getMaterial()->getDescriptorSetLayout();
+		DescriptorSetAllocatorMap::iterator pos = mDescriptorSetAllocators.find(layout);
+		if (pos != mDescriptorSetAllocators.end())
+			return *pos->second;
 
-		UnusedDescriptorSetMap::iterator pos = mUnusedDescriptors.find(layout);
-		if (pos != mUnusedDescriptors.end() && !pos->second.empty())
+		std::unique_ptr<DescriptorSetAllocator> allocator = std::make_unique<DescriptorSetAllocator>(*this, layout);
+		auto inserted = mDescriptorSetAllocators.insert(std::make_pair(layout, std::move(allocator)));
+		return *inserted.first->second;
+	}
+
+	DescriptorSetAllocator::DescriptorSetAllocator(RenderService& renderService, VkDescriptorSetLayout layout) :
+		mRenderService(&renderService),
+		mLayout(layout)
+	{
+	}
+
+	const DescriptorSet& DescriptorSetAllocator::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers)
+	{
+		int frame_index = mRenderService->getCurrentFrameIndex();
+		DescriptorSetList& used_list = mUsedList[frame_index];
+		
+		if (!mFreeList.empty())
 		{
-			std::vector<DescriptorSet>& free_descriptor_list = pos->second;
-			DescriptorSet descriptor_set = std::move(free_descriptor_list.back());
-			free_descriptor_list.pop_back();
-			mUsedDescriptors[mCurrentFrameIndex].emplace_back(std::move(descriptor_set));
-			return mUsedDescriptors[mCurrentFrameIndex].back();
+			used_list.splice(used_list.end(), mFreeList, --mFreeList.end());
+			return used_list.back();
 		}
 
 		DescriptorSet descriptor_set;
-		descriptor_set.mLayout = layout;
-		
-		VkDescriptorPool descriptor_pool = getOrCreatePool(materialInstance.mUniformBufferObjects.size(), materialInstance.mSamplers.size());
-		VkDescriptorSetLayout descriptor_set_layout = materialInstance.getMaterial()->getDescriptorSetLayout();
+		descriptor_set.mLayout = mLayout;
+
+		VkDescriptorPool descriptor_pool = mRenderService->getOrCreatePool(uniformBufferObjects.size(), samplers.size());
 
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptor_pool;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &descriptor_set_layout;
+		allocInfo.pSetLayouts = &mLayout;
 
-		bool success = vkAllocateDescriptorSets(mRenderer->getDevice(), &allocInfo, &descriptor_set.mSet) == VK_SUCCESS;
+		VkDevice device = mRenderService->getRenderer().getDevice();
+
+		bool success = vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set.mSet) == VK_SUCCESS;
 		assert(success);
 
-		int num_descriptors = materialInstance.mUniformBufferObjects.size();
+		int num_descriptors = uniformBufferObjects.size();
 		std::vector<VkWriteDescriptorSet> ubo_descriptors;
 		ubo_descriptors.resize(num_descriptors);
 
 		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
 		descriptor_buffers.resize(num_descriptors);
 
-		for (int ubo_index = 0; ubo_index < materialInstance.mUniformBufferObjects.size(); ++ubo_index)
+		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
 		{
-			UniformBufferObject& ubo = materialInstance.mUniformBufferObjects[ubo_index];
+			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
 			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
 
 			DescriptorSetBuffer buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mVulkanAllocator, ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer.mBuffer, buffer.mAllocation);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer.mBuffer, buffer.mAllocation, buffer.mAllocationInfo);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -991,11 +1004,17 @@ namespace nap
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
-		
-		vkUpdateDescriptorSets(mRenderer->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 
-		mUsedDescriptors[mCurrentFrameIndex].emplace_back(std::move(descriptor_set));
-		return mUsedDescriptors[mCurrentFrameIndex].back();
+		vkUpdateDescriptorSets(device, ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
+
+		used_list.emplace_back(std::move(descriptor_set));
+		return used_list.back();
+	}
+
+	void DescriptorSetAllocator::release(int frameIndex)
+	{
+		DescriptorSetList& used_list = mUsedList[frameIndex];
+		mFreeList.splice(mFreeList.end(), used_list);
 	}
 
 } // Renderservice

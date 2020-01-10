@@ -133,18 +133,8 @@ namespace nap
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
 
-		std::vector<VkBuffer> vertexBuffers;
-		std::vector<VkDeviceSize> vertexBufferOffsets;
-
-		for (auto& kvp : material.getShader()->getShader().getAttributes())
-		{
-			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			assert(material_binding != nullptr);
-
-			opengl::VertexAttributeBuffer& vertex_buffer = mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
-			vertexBuffers.push_back(vertex_buffer.getBuffer());
-			vertexBufferOffsets.push_back(0);
-		}
+		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 

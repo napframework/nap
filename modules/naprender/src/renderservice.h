@@ -13,8 +13,7 @@
 #include "renderstate.h"
 #include "vao.h"
 
-typedef struct VmaAllocator_T* VmaAllocator;
-typedef struct VmaAllocation_T* VmaAllocation;
+#include "vk_mem_alloc.h"
 
 namespace opengl
 {
@@ -33,8 +32,9 @@ namespace nap
 
 	struct DescriptorSetBuffer
 	{
-		VkBuffer		mBuffer;
-		VmaAllocation	mAllocation;
+		VkBuffer			mBuffer;
+		VmaAllocation		mAllocation;
+		VmaAllocationInfo	mAllocationInfo;
 	};
 
 	struct DescriptorSet
@@ -52,6 +52,24 @@ namespace nap
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 
 		RendererSettings mSettings;		///< Property: 'Settings' All render settings
+	};
+
+	class DescriptorSetAllocator
+	{
+	public:
+		DescriptorSetAllocator(RenderService& renderService, VkDescriptorSetLayout layout);
+
+		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers);
+		void release(int frameIndex);
+
+	private:
+		using DescriptorSetList = std::list<DescriptorSet>;
+		using DescriptorSetFrameList = std::array<DescriptorSetList, 2>;
+		
+		RenderService*			mRenderService;
+		VkDescriptorSetLayout	mLayout;
+		DescriptorSetList		mFreeList;
+		DescriptorSetFrameList	mUsedList;
 	};
 
 	/**
@@ -237,9 +255,13 @@ namespace nap
 
 		Renderer& getRenderer() { return *mRenderer; }
 
-		const DescriptorSet& acquireDescriptorSet(MaterialInstance& materialInstance);
+		DescriptorSetAllocator& getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
+
+		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
+
+		VkDescriptorPool getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors);
 
 	protected:
 		/**
@@ -328,8 +350,6 @@ namespace nap
 
 		VkRenderPass* getOrCreateRenderPass(ERenderTargetFormat format);
 
-		VkDescriptorPool getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors);
-
 		/**
 		* Helper struct to refcount opengl VAOs.
 		*/
@@ -350,28 +370,26 @@ namespace nap
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorPoolMap = std::unordered_map<uint64_t, VkDescriptorPool>;
-		using UnusedDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, std::vector<DescriptorSet>>;
-		using UsedDescriptorSetMap = std::array<std::vector<DescriptorSet>, 2>;
+		using DescriptorSetAllocatorMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetAllocator>>;
 
-		VmaAllocator			mVulkanAllocator;
-		RenderState				mRenderState;															//< The latest render state as set by the user
-		ContextSpecificStateMap mContextSpecificState;													//< The per-context render state
+		VmaAllocator				mVulkanAllocator;
+		RenderState					mRenderState;															//< The latest render state as set by the user
+		ContextSpecificStateMap		mContextSpecificState;													//< The per-context render state
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;			//< Array of per-context GL resources scheduled for destruction
-		VAOMap					mVAOMap;																//< Map from material-mesh combination to opengl VAO
-		WindowList				mWindows;																//< All available windows
-		SceneService*			mSceneService = nullptr;												//< Service that manages all the scenes
+		VAOMap						mVAOMap;																//< Map from material-mesh combination to opengl VAO
+		WindowList					mWindows;																//< All available windows
+		SceneService*				mSceneService = nullptr;												//< Service that manages all the scenes
 
-		DescriptorPoolMap		mDescriptorPools;
-		PipelineList			mPipelinesToDestroy;
+		DescriptorPoolMap			mDescriptorPools;
+		PipelineList				mPipelinesToDestroy;
 
-		int						mCurrentFrameIndex = 0;
-		UnusedDescriptorSetMap	mUnusedDescriptors;
-		UsedDescriptorSetMap	mUsedDescriptors;
+		int							mCurrentFrameIndex = 0;
+		DescriptorSetAllocatorMap	mDescriptorSetAllocators;
 
-		VkRenderPass			mRenderPassRGBA8 = nullptr;
-		VkRenderPass			mRenderPassRGB8 = nullptr;
-		VkRenderPass			mRenderPassR8 = nullptr;
-		VkRenderPass			mRenderPassDepth = nullptr;
+		VkRenderPass				mRenderPassRGBA8 = nullptr;
+		VkRenderPass				mRenderPassRGB8 = nullptr;
+		VkRenderPass				mRenderPassR8 = nullptr;
+		VkRenderPass				mRenderPassDepth = nullptr;
 	};
 } // nap
 

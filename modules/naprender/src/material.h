@@ -17,8 +17,10 @@ namespace nap
 {
 	class Material;
 	class MaterialInstance;
+	class UniformLeafInstance;
 	class Renderer;
 	struct DescriptorSet;
+	class DescriptorSetAllocator;
 
 	/**
 	 * Blend mode for Materials.
@@ -63,7 +65,7 @@ namespace nap
 	class UniformBufferObject
 	{
 	public:
-		using UniformList = std::vector<const UniformInstance*>;
+		using UniformList = std::vector<const UniformLeafInstance*>;
 
 		UniformBufferObject(const opengl::UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
@@ -161,10 +163,10 @@ namespace nap
 
 	private:
 		//. Resource this instance is associated with
-		MaterialInstanceResource* mResource;
-
+		MaterialInstanceResource*				mResource;
 		VkDevice								mDevice = nullptr;
 		RenderService*							mRenderService = nullptr;
+		DescriptorSetAllocator*					mDescriptorSetAllocator = nullptr;
 		std::vector<UniformBufferObject>		mUniformBufferObjects;
 		std::vector<SamplerInstance*>			mSamplers;
 		bool									mUniformsDirty = false;

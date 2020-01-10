@@ -61,6 +61,9 @@ namespace nap
 
 		VkPipeline getPipeline() { return mPipeline; }
 
+		const std::vector<VkBuffer>& getVertexBuffers() const { return mVertexBuffers; }
+		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const { return mVertexBufferOffsets; }
+
 	protected:
 		/**
 		 * Constructor
@@ -75,10 +78,12 @@ namespace nap
 
 	private:
 		Slot<const MaterialInstance&, RenderService&> mPipelineStateChangedSlot = { std::bind(&RenderableMesh::onPipelineStateChanged, this, std::placeholders::_1, std::placeholders::_2) };
-		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance
-		IMesh*				mMesh = nullptr;				///< Mesh
-		VkPipelineLayout	mPipelineLayout = nullptr;
-		VkPipeline			mPipeline = nullptr;
+		MaterialInstance*			mMaterialInstance = nullptr;	///< Material instance
+		IMesh*						mMesh = nullptr;				///< Mesh
+		VkPipelineLayout			mPipelineLayout = nullptr;
+		VkPipeline					mPipeline = nullptr;
+		std::vector<VkBuffer>		mVertexBuffers;
+		std::vector<VkDeviceSize>	mVertexBufferOffsets;
 	};
 
 }

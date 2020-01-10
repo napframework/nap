@@ -119,9 +119,17 @@ namespace nap
 		std::vector<std::unique_ptr<UniformStructInstance>> mElements;
 	};
 
-	class NAPAPI UniformValueInstance : public UniformInstance
+	class NAPAPI UniformLeafInstance : public UniformInstance
 	{
 		RTTI_ENABLE(UniformInstance)
+
+	public:
+		virtual void push(uint8_t* uniformBuffer) const = 0;
+	};
+
+	class NAPAPI UniformValueInstance : public UniformLeafInstance
+	{
+		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
 		UniformValueInstance(const opengl::UniformValueDeclaration& declaration) :
@@ -130,8 +138,6 @@ namespace nap
 		}
 
 		virtual const opengl::UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
-
-		virtual void push(uint8_t* uniformBuffer) const = 0;
 
 	protected:
 		const opengl::UniformValueDeclaration*	mDeclaration = nullptr;
@@ -172,9 +178,9 @@ namespace nap
 		T mValue = T();
 	};
 
-	class NAPAPI UniformValueArrayInstance : public UniformInstance
+	class NAPAPI UniformValueArrayInstance : public UniformLeafInstance
 	{
-		RTTI_ENABLE(UniformInstance)
+		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
 		UniformValueArrayInstance(const opengl::UniformValueArrayDeclaration& declaration) :
@@ -183,8 +189,6 @@ namespace nap
 		}
 
 		virtual const opengl::UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
-
-		virtual void push(uint8_t* uniformBuffer) const = 0;
 
 	protected:
 		const opengl::UniformValueArrayDeclaration* mDeclaration;

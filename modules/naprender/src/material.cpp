@@ -372,27 +372,12 @@ namespace nap
 		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
 			UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
-			VmaAllocation allocation = descriptorSet.mBuffers[ubo_index].mAllocation;
-
-			void* mapped_memory;
-			vmaMapMemory(allocator, allocation, &mapped_memory);
+			VmaAllocationInfo allocation = descriptorSet.mBuffers[ubo_index].mAllocationInfo;
+			
+			void* mapped_memory = allocation.pMappedData;
 
 			for (auto& uniform : ubo.mUniforms)
-			{
-				const UniformValueInstance* value_instance = rtti_cast<const UniformValueInstance>(uniform);
-				if (value_instance == nullptr)
-				{
-					const UniformValueArrayInstance* value_array_instance = rtti_cast<const UniformValueArrayInstance>(uniform);
-					assert(value_array_instance != nullptr);
-					value_array_instance->push((uint8_t*)mapped_memory);
-				}
-				else
-				{
-					value_instance->push((uint8_t*)mapped_memory);
-				}
-			}
-
-			vmaUnmapMemory(allocator, allocation);
+				uniform->push((uint8_t*)mapped_memory);
 		}
 	}
 
@@ -458,7 +443,7 @@ namespace nap
 			mUniformsDirty = false;
 		}
 
-		const DescriptorSet& descriptor_set = mRenderService->acquireDescriptorSet(*this);
+		const DescriptorSet& descriptor_set = mDescriptorSetAllocator->acquire(mUniformBufferObjects, mSamplers);
 
 		updateUniforms(descriptor_set);
 		updateSamplers(descriptor_set);
@@ -523,6 +508,8 @@ namespace nap
 
 			mSamplers.push_back(sampler_instance);
 		}
+
+		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getDescriptorSetLayout());
 
 		return true;
 	}
