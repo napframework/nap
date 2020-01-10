@@ -159,10 +159,14 @@ namespace nap
 		friend class RenderService;
 
 		void onUniformCreated();
+		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
 		void updateUniforms(const DescriptorSet& descriptorSet);
 		void updateSamplers(const DescriptorSet& descriptorSet);
+		bool initSamplers(utility::ErrorState& errorState);
+
+		SamplerInstance& getOrCreateSamplerInternal(const std::string& name);
 
 	private:
 		//. Resource this instance is associated with
@@ -172,6 +176,8 @@ namespace nap
 		DescriptorSetAllocator*					mDescriptorSetAllocator = nullptr;
 		std::vector<UniformBufferObject>		mUniformBufferObjects;
 		std::vector<SamplerInstance*>			mSamplers;
+		std::vector<VkWriteDescriptorSet>		mSamplerDescriptors;
+		std::vector<VkDescriptorImageInfo>		mSamplerImages;
 		bool									mUniformsDirty = false;
 	};
 
@@ -260,39 +266,7 @@ namespace nap
 	template<class T>
 	T& MaterialInstance::getOrCreateSampler(const std::string& name)
 	{
-		T* existing_sampler = rtti_cast<T>(findSampler(name));
-		if (existing_sampler != nullptr)
-			return *existing_sampler;
-
-		T* result = nullptr;
-
-		for (int index = 0; index < mSamplers.size(); ++index)
-		{
-			const opengl::SamplerDeclaration& declaration = mSamplers[index]->getDeclaration();
-			if (declaration.mName == name)
-			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
-				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, nullptr);
-				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, nullptr);
-
-				utility::ErrorState error_state;
-				bool initialized = sampler_instance_override->init(error_state);
-				assert(initialized);
-
-				result = rtti_cast<T>(sampler_instance_override.get());
-				mSamplers[index] = result;
-
-				addSamplerInstance(std::move(sampler_instance_override));
-				break;
-			}
-		}
-
-		assert(result != nullptr);
-		return *result;
+		return *rtti_cast<T>(&getOrCreateSamplerInternal(name));
 	}
 
 	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;

@@ -211,7 +211,7 @@ namespace nap
 		for (const auto& found_format_outer : found_formats)
 		{
 			// Format found
-			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_UNORM)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but this is compatible with out previous OpenGL setting
+			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_SRGB)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but it appears that the previous OpenGl implementation didn't use it, so some colors could be washed out
 			{
 				outFormat.format = found_format_outer.format;
 				for (const auto& found_format_inner : found_formats)

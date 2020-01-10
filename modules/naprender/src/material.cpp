@@ -352,6 +352,37 @@ namespace nap
 	}
 
 
+	void MaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance)
+	{
+		size_t sampler_image_start_index = mSamplerImages.size();
+		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
+		{
+			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+
+			for (int index = imageStartIndex; index < sampler_2d_array->getNumElements(); ++index)
+			{
+				const Texture2D& texture = sampler_2d_array->getTexture(index);
+
+				VkDescriptorImageInfo& imageInfo = mSamplerImages[index];
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = texture.getImageView();
+				imageInfo.sampler = sampler_2d_array->getSampler();
+			}
+		}
+		else
+		{
+			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
+
+			VkDescriptorImageInfo& imageInfo = mSamplerImages[imageStartIndex];
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = sampler_2d->getTexture().getImageView();
+			imageInfo.sampler = sampler_2d->getSampler();
+
+			mSamplerImages.push_back(imageInfo);
+		}
+	}
+
+
 	void MaterialInstance::rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct)
 	{
 		ubo.mUniforms.clear();
@@ -381,56 +412,136 @@ namespace nap
 		}
 	}
 
-	void MaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
+	bool MaterialInstance::initSamplers(utility::ErrorState& errorState)
 	{
-		int num_descriptors = mSamplers.size();
-		std::vector<VkWriteDescriptorSet> sampler_descriptors;
-		sampler_descriptors.resize(num_descriptors);
+		Material& material = *mResource->mMaterial;
+		const opengl::Shader& shader = material.getShader()->getShader();
 
-		std::vector<VkDescriptorImageInfo> sampler_images;
+		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 
-		for (int sampler_index = 0; sampler_index < mSamplers.size(); ++sampler_index)
+		int num_sampler_images = 0;
+		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
+			num_sampler_images += declaration.mNumArrayElements;
+
+		mSamplerDescriptors.resize(sampler_declarations.size());
+		mSamplerImages.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
+		
+		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
-			SamplerInstance* sampler_instance = mSamplers[sampler_index];
+			const opengl::SamplerDeclaration& declaration = sampler_declarations[sampler_index];
+			bool is_array = declaration.mNumArrayElements > 1;
 
-			size_t sampler_image_start_index = sampler_images.size();
-			if (sampler_instance->get_type() == RTTI_OF(Sampler2DInstance))
+			const Sampler* sampler = findSamplerResource(mResource->mSamplers, declaration);
+			SamplerInstance* sampler_instance = nullptr;
+			if (sampler != nullptr)
 			{
-				Sampler2DInstance* sampler_2d = rtti_cast<Sampler2DInstance>(sampler_instance);
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (is_array)
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerImages.size(), std::placeholders::_1));
+				else
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerImages.size(), std::placeholders::_1));
+
+				if (!sampler_instance_override->init(errorState))
+					return false;
+
+				sampler_instance = sampler_instance_override.get();
+				addSamplerInstance(std::move(sampler_instance_override));
+			}
+			else
+			{
+				sampler_instance = material.findSampler(declaration.mName);
+			}
+
+			size_t sampler_image_start_index = mSamplerImages.size();
+			if (is_array)
+			{
+				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(sampler_instance);
+
+				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+				{
+					const Texture2D& texture = sampler_2d_array->getTexture(index);
+
+					VkDescriptorImageInfo imageInfo = {};
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageView = texture.getImageView();
+					imageInfo.sampler = sampler_instance->getSampler();
+
+					mSamplerImages.push_back(imageInfo);
+				}
+			}
+			else
+			{
+				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(sampler_instance);
 
 				VkDescriptorImageInfo imageInfo = {};
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = sampler_2d->mTexture2D->getImageView();
+				imageInfo.imageView = sampler_2d->getTexture().getImageView();
 				imageInfo.sampler = sampler_instance->getSampler();
 
-				sampler_images.push_back(imageInfo);
-			}
-			else if (sampler_instance->get_type() == RTTI_OF(Sampler2DArrayInstance))
-			{
-				Sampler2DArrayInstance* sampler_2d_array = rtti_cast<Sampler2DArrayInstance>(sampler_instance);
-
-				for (auto& texture : sampler_2d_array->mTextures)
-				{
-					VkDescriptorImageInfo imageInfo = {};
-					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					imageInfo.imageView = texture->getImageView();
-					imageInfo.sampler = sampler_instance->getSampler();
-
-					sampler_images.push_back(imageInfo);
-				}
+				mSamplerImages.push_back(imageInfo);
 			}
 
-			VkWriteDescriptorSet& write_descriptor_set = sampler_descriptors[sampler_index];
+			VkWriteDescriptorSet& write_descriptor_set = mSamplerDescriptors[sampler_index];
 			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write_descriptor_set.dstSet = descriptorSet.mSet;
+			write_descriptor_set.dstSet = nullptr;
 			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
 			write_descriptor_set.dstArrayElement = 0;
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write_descriptor_set.descriptorCount = sampler_images.size() - sampler_image_start_index;
-			write_descriptor_set.pImageInfo = sampler_images.data() + sampler_image_start_index;
+			write_descriptor_set.descriptorCount = mSamplerImages.size() - sampler_image_start_index;
+			write_descriptor_set.pImageInfo = mSamplerImages.data() + sampler_image_start_index;
+
+			mSamplers.push_back(sampler_instance);
 		}
 
-		vkUpdateDescriptorSets(mDevice, sampler_descriptors.size(), sampler_descriptors.data(), 0, nullptr);
+		return true;
+	}
+
+	SamplerInstance& MaterialInstance::getOrCreateSamplerInternal(const std::string& name)
+	{
+		SamplerInstance* existing_sampler = findSampler(name);
+		if (existing_sampler != nullptr)
+			return *existing_sampler;
+
+		SamplerInstance* result = nullptr;
+
+		int image_start_index = 0;
+		for (int index = 0; index < mSamplers.size(); ++index)
+		{
+			const opengl::SamplerDeclaration& declaration = mSamplers[index]->getDeclaration();
+			if (declaration.mName == name)
+			{
+				bool is_array = declaration.mNumArrayElements > 1;
+
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (is_array)
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				else
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state);
+				assert(initialized);
+
+				result = sampler_instance_override.get();
+				mSamplers[index] = result;
+
+				addSamplerInstance(std::move(sampler_instance_override));
+				break;
+			}
+
+			image_start_index += declaration.mNumArrayElements;
+		}
+
+		assert(result != nullptr);
+		return *result;
+	}
+
+	void MaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
+	{
+		for (VkWriteDescriptorSet& write_descriptor : mSamplerDescriptors)
+			write_descriptor.dstSet = descriptorSet.mSet;
+
+		vkUpdateDescriptorSets(mDevice, mSamplerDescriptors.size(), mSamplerDescriptors.data(), 0, nullptr);
 	}
 
 	VkDescriptorSet MaterialInstance::update()
@@ -479,35 +590,9 @@ namespace nap
 		}
 		
 		mUniformsDirty = false;
-		
-		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
-		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
-		{
-			const Sampler* sampler = findSamplerResource(resource.mSamplers, declaration);
-			SamplerInstance* sampler_instance = nullptr;
-			if (sampler != nullptr)
-			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
-				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler);
-				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler);
-
-				if (!sampler_instance_override->init(errorState))
-					return false;
-
-				sampler_instance = sampler_instance_override.get();
-				addSamplerInstance(std::move(sampler_instance_override));
-			}
-			else
-			{
-				sampler_instance = material.findSampler(declaration.mName);
-			}
-
-			mSamplers.push_back(sampler_instance);
-		}
+				
+		if (!initSamplers(errorState))
+			return false;
 
 		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getDescriptorSetLayout());
 
@@ -620,19 +705,22 @@ namespace nap
 						return false;
 
 					if (is_array)
-						sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, (Sampler2DArray*)sampler.get());
+						sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, (Sampler2DArray*)sampler.get(), SamplerChangedCallback());
 					else
-						sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, (Sampler2D*)sampler.get());
+						sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, (Sampler2D*)sampler.get(), SamplerChangedCallback());
 				}
 			}
 
 			if (sampler_instance == nullptr)
 			{
 				if (is_array)
-					sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, nullptr);
+					sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderer->getDevice(), declaration, nullptr, SamplerChangedCallback());
 				else
-					sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, nullptr);
+					sampler_instance = std::make_unique<Sampler2DInstance>(mRenderer->getDevice(), declaration, nullptr, SamplerChangedCallback());
 			}
+			
+			if (!sampler_instance->init(errorState))
+				return false;
 
 			addSamplerInstance(std::move(sampler_instance));
 		}

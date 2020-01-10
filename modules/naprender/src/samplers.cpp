@@ -24,9 +24,10 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	SamplerInstance::SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration) :
+	SamplerInstance::SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback) :
 		mDeclaration(&declaration),
-		mDevice(device)
+		mDevice(device),
+		mSamplerChangedCallback(samplerChangedCallback)
 	{
 	}
 
@@ -52,20 +53,32 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DInstance::Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D) :
-		SamplerInstance(device, declaration)
+	Sampler2DInstance::Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(device, declaration, samplerChangedCallback)
 	{
 		if (sampler2D != nullptr)
 			mTexture2D = sampler2D->mTexture;
 	}
 
+	void Sampler2DInstance::setTexture(Texture2D& texture) 
+	{ 
+		mTexture2D = &texture;
+		raiseChanged(); 
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray) :
-		SamplerInstance(device, declaration)
+	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(device, declaration, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)
 			mTextures = sampler2DArray->mTextures;
+	}
+
+	void Sampler2DArrayInstance::setTexture(int index, Texture2D& texture)
+	{
+		mTextures[index] = &texture; 
+		raiseChanged();
 	}
 
 } // End Namespace NAP

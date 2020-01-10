@@ -12,6 +12,9 @@ namespace nap
 {
 	class Texture2D;
 
+	class SamplerInstance;
+	using SamplerChangedCallback = std::function<void(SamplerInstance&)>;
+
 	class NAPAPI Sampler : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -45,17 +48,21 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
-		SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration);
+		SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
 
 		bool init(utility::ErrorState& errorState);
 
 		const opengl::SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
 		VkSampler getSampler() const { return mSampler; }
 
+	protected:
+		void raiseChanged() { mSamplerChangedCallback(*this); }
+
 	private:
 		VkDevice							mDevice;
 		const opengl::SamplerDeclaration*	mDeclaration = nullptr;
 		VkSampler							mSampler = nullptr;
+		SamplerChangedCallback				mSamplerChangedCallback;
 	};
 
 	/**
@@ -76,14 +83,16 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D);
+		Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
 		*/
-		void setTexture(Texture2D& texture) { mTexture2D = &texture; }
+		void setTexture(Texture2D& texture);
+		const Texture2D& getTexture() const { return *mTexture2D; }
 
-		rtti::ObjectPtr<Texture2D>					mTexture2D;
+	private:
+		rtti::ObjectPtr<Texture2D>				mTexture2D;
 	};
 
 
@@ -122,8 +131,14 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray);
+		Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
 
+		int getNumElements() const { return mTextures.size(); }
+
+		const Texture2D& getTexture(int index) const { return *mTextures[index]; }
+		void setTexture(int index, Texture2D& texture);
+
+	private:
 		std::vector<rtti::ObjectPtr<Texture2D>>				mTextures;
 	};
 
