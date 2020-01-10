@@ -86,6 +86,14 @@ namespace nap
 		mReadObjects.clear();
 		for (auto& readObject : result.mReadObjects)
 		{
+			//
+			if (readObject->get_type().is_derived_from<Timeline>())
+			{
+				auto* timeline = dynamic_cast<Timeline*>(readObject.get());
+				mDuration = timeline->mDuration;
+			}
+
+			// fill the tracks
 			if (readObject->get_type().is_derived_from<TimelineTrack>())
 			{
 				mTracks.emplace_back(ResourcePtr<TimelineTrack>(dynamic_cast<TimelineTrack*>(readObject.get())));

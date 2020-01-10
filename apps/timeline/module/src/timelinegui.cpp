@@ -72,11 +72,12 @@ namespace nap
 
 				//
 				const float trackHeight = 100.0f;
+				const float keyframeHandlerHeight = 10.0f;
 
 				// begin track
 				if (ImGui::BeginChild(
 					track->mID.c_str(), // id
-					ImVec2(timelineWidth, trackHeight), // size
+					ImVec2(timelineWidth, trackHeight + keyframeHandlerHeight), // size
 					false)) // no border
 				{
 					// get child focus
@@ -100,17 +101,67 @@ namespace nap
 						ImVec2(timelineTopLeft.x + timelineWidth, timelineTopLeft.y + trackHeight), // bottom right position
 						guicolors::black); // color 
 
+					//
+					float previousKeyFrameX = 0.0f;
+
 					// draw keyframes
 					for (const auto& keyFrame : track->mKeyFrames)
 					{
 						// position of keyframe
 						float x = keyFrame->mTime * stepSize;
 
+						// draw keyframe line
 						drawList->AddLine(
 							ImVec2(timelineTopLeft.x + x, timelineTopLeft.y), // top left
 							ImVec2(timelineTopLeft.x + x, timelineTopLeft.y + trackHeight), // bottom right
 							guicolors::white, // color
 							1.0f); // thickness
+
+						// evaluate curve
+						float curveWidth = x - previousKeyFrameX;
+						const int resolution = 20;
+						std::vector<ImVec2> points;
+						points.resize(resolution+1);
+						for (int i = 0; i <= resolution; i++)
+						{
+							float value = keyFrame->mCurve->evaluate((float)i / resolution);
+
+							points[i] = ImVec2(
+								timelineTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution), 
+								timelineTopLeft.y + value * trackHeight);
+						}
+
+						// draw points of curve
+						drawList->AddPolyline(
+							&*points.begin(), 
+							points.size(),
+							guicolors::red,
+							false, 
+							1.0f, 
+							true);
+
+						// handler box coordinates
+						ImVec2 handlerBoxTopLeft = ImVec2(timelineTopLeft.x + x, timelineTopLeft.y + trackHeight);
+						ImVec2 handlerBoxBottomLeft = ImVec2(timelineTopLeft.x + x + keyframeHandlerHeight, timelineTopLeft.y + trackHeight + keyframeHandlerHeight);
+
+						if (ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomLeft))
+						{
+							drawList->AddRectFilled(
+								handlerBoxTopLeft,
+								handlerBoxBottomLeft,
+								guicolors::white
+							);
+						}
+						else
+						{
+							drawList->AddRect(
+								handlerBoxTopLeft,
+								handlerBoxBottomLeft,
+								guicolors::white
+							);
+						}
+
+						previousKeyFrameX = x;
 					}
 				}
 

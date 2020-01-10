@@ -15,6 +15,8 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		double										mTime = 0.0;
 		std::string									mName = "";
 		ResourcePtr<math::FCurve<float, float>>		mCurve;

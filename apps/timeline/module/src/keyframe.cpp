@@ -12,4 +12,18 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool KeyFrame::init(utility::ErrorState& errorState)
+	{
+		if (!Resource::init(errorState))
+		{
+			return false;
+		}
+
+		if (!errorState.check(mCurve != nullptr, "Curve cannot be null!"))
+		{
+			return false;
+		}
+
+		return true;
+	}
 }

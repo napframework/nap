@@ -15,14 +15,88 @@
                             "mID": "KeyFrame_b2953c2f",
                             "Name": "",
                             "Time": 1.0,
-                            "Curve": ""
+                            "Curve": {
+								"Type": "nap::math::FloatFCurve",
+								"mID": "CurveOne",
+								"Points": [
+									{
+										"Position": {
+											"Time": 0.0,
+											"Value": 0.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									},
+									{
+										"Position": {
+											"Time": 1.0,
+											"Value": 1.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									}
+								]
+							}
                         },
                         {
                             "Type": "nap::KeyFrame",
                             "mID": "KeyFrame_37e997a9",
                             "Name": "",
                             "Time": 2.0,
-                            "Curve": ""
+                            "Curve": {
+								"Type": "nap::math::FloatFCurve",
+								"mID": "CurveTwo",
+								"Points": [
+									{
+										"Position": {
+											"Time": 0.0,
+											"Value": 0.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									},
+									{
+										"Position": {
+											"Time": 1.0,
+											"Value": 1.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									}
+								]
+							}
                         }
                     ]
                 },
@@ -36,14 +110,88 @@
                             "mID": "KeyFrame_007e2497",
                             "Name": "",
                             "Time": 0.5,
-                            "Curve": ""
+                            "Curve": {
+								"Type": "nap::math::FloatFCurve",
+								"mID": "CurveFour",
+								"Points": [
+									{
+										"Position": {
+											"Time": 0.0,
+											"Value": 0.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									},
+									{
+										"Position": {
+											"Time": 1.0,
+											"Value": 1.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									}
+								]
+							}
                         },
                         {
                             "Type": "nap::KeyFrame",
                             "mID": "KeyFrame_4f631970",
                             "Name": "",
                             "Time": 1.5,
-                            "Curve": ""
+                            "Curve": {
+								"Type": "nap::math::FloatFCurve",
+								"mID": "CurveFive",
+								"Points": [
+									{
+										"Position": {
+											"Time": 0.0,
+											"Value": 0.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									},
+									{
+										"Position": {
+											"Time": 1.0,
+											"Value": 1.0
+										},
+										"InTangent": {
+											"Time": -0.10000000149011612,
+											"Value": 0.0
+										},
+										"OutTangent": {
+											"Time": 0.10000000149011612,
+											"Value": 0.0
+										},
+										"InterpolationType": "Bezier",
+										"AlignedTangents": true
+									}
+								]
+							}
                         }
                     ]
                 }
