@@ -7,7 +7,7 @@
 #include <imgui/imgui.h>
 
 RTTI_BEGIN_CLASS(nap::TimelineGUI)
-RTTI_PROPERTY("Timeline", &nap::TimelineGUI::mTimeline, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Timeline", &nap::TimelineGUI::mTimelineHolder, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -17,6 +17,9 @@ namespace nap
 {
 	void TimelineGUI::construct()
 	{
+		//
+		auto& timeline = mTimelineHolder->getTimelineRef();
+
 		// push id
 		ImGui::PushID(mID.c_str());
 
@@ -24,27 +27,34 @@ namespace nap
 		float stepSize = 100.0f;
 
 		// calc width of content in timeline window
-		float timelineWidth = stepSize * mTimeline->mDuration + 150.0f;
+		float timelineWidth = stepSize * timeline.mDuration + 150.0f;
 
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(timelineWidth);
 
 		// begin window
 		if (ImGui::Begin(
-			mTimeline->mName.c_str(), // id
+			timeline.mName.c_str(), // id
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
 			// check if window has focus
 			bool windowHasFocus = ImGui::IsWindowFocused();
 
-			for (const auto& track : mTimeline->mTracks)
+			//
+			if (ImGui::Button("Save"))
+			{
+				utility::ErrorState errorState;
+				timeline.save("test.json", errorState);
+			}
+
+			for (const auto& track : timeline.mTracks)
 			{
 				// push id
 				ImGui::PushID(track->mID.c_str());
 
 				// construct dropdown
-				int currentItemIndex = std::distance(mParameters.cbegin(), std::find(mParameters.cbegin(), mParameters.cend(), track->mParameter));
+				int currentItemIndex = std::distance(mParameterIDs.cbegin(), std::find(mParameterIDs.cbegin(), mParameterIDs.cend(), track->mParameterID));
 				
 				ImGui::PushItemWidth(150.0f);
 				if (ImGui::Combo(
@@ -53,9 +63,10 @@ namespace nap
 					&mParameterNames[0], // pointer to name array
 					mParameterNames.size())) // size of name array items
 				{
-					track->mParameter = mParameters[currentItemIndex];
+					track->mParameterID = mParameterIDs[currentItemIndex];
 				}
 				ImGui::PopItemWidth();
+
 				
 				ImGui::SameLine();
 
@@ -121,19 +132,24 @@ namespace nap
 
 	void nap::TimelineGUI::setParameters(const std::vector<rtti::ObjectPtr<ParameterFloat>>& parameters)
 	{
-		mParameters = parameters;
+		mParameterIDs.clear();
+		for (const auto& parameter : parameters)
+		{
+			mParameterIDs.emplace_back(parameter->mID);
+		}
 
 		mParameterNames.clear();
-		for (const auto& parameter : mParameters)
+		for (const auto& parameter : mParameterIDs)
 		{
-			mParameterNames.emplace_back(parameter->mID.c_str());
+			mParameterNames.emplace_back(parameter.c_str());
 		}
 	}
 
 
 	std::string TimelineGUI::getName() const
 	{
-		return mTimeline->mName;
+		auto& timeline = mTimelineHolder->getTimelineRef();
+		return timeline.mName;
 	}
 
 

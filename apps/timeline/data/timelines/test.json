@@ -1,0 +1,54 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Timeline",
+            "mID": "Timeline 1",
+            "Name": "Timeline 1",
+            "Tracks": [
+                {
+                    "Type": "nap::TimelineTrack",
+                    "mID": "TimelineTrack_e282c6af",
+                    "Parameter": "MyFloatParameter",
+                    "KeyFrames": [
+                        {
+                            "Type": "nap::KeyFrame",
+                            "mID": "KeyFrame_b2953c2f",
+                            "Name": "",
+                            "Time": 1.0,
+                            "Curve": ""
+                        },
+                        {
+                            "Type": "nap::KeyFrame",
+                            "mID": "KeyFrame_37e997a9",
+                            "Name": "",
+                            "Time": 2.0,
+                            "Curve": ""
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::TimelineTrack",
+                    "mID": "TimelineTrack_0f645810",
+                    "Parameter": "MyFloatParameter2",
+                    "KeyFrames": [
+                        {
+                            "Type": "nap::KeyFrame",
+                            "mID": "KeyFrame_007e2497",
+                            "Name": "",
+                            "Time": 0.5,
+                            "Curve": ""
+                        },
+                        {
+                            "Type": "nap::KeyFrame",
+                            "mID": "KeyFrame_4f631970",
+                            "Name": "",
+                            "Time": 1.5,
+                            "Curve": ""
+                        }
+                    ]
+                }
+            ],
+            "Duration": 3.0
+        }
+    ]
+}

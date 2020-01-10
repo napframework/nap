@@ -1,7 +1,7 @@
 #pragma once
 
 // internal includes
-#include "timeline.h"
+#include "timelineholder.h"
 
 // external includes
 #include <nap/resource.h>
@@ -26,9 +26,9 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 	public:
-		ResourcePtr<Timeline>							mTimeline;
-		std::vector<rtti::ObjectPtr<ParameterFloat>>	mParameters;
+		ResourcePtr<TimelineHolder>						mTimelineHolder;
 	protected:
 		std::vector<const char*>						mParameterNames;
+		std::vector<std::string>						mParameterIDs;
 	};
 }

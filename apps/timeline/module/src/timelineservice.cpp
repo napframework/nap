@@ -55,8 +55,6 @@ namespace nap
 
 	bool TimelineService::init(nap::utility::ErrorState& errorState)
 	{
-
-
 		return true;
 	}
 
