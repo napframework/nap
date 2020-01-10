@@ -10,7 +10,7 @@
         },
         {
             "Type": "nap::ParameterFloat",
-            "mID": "ParameterFloat_1e4e08c5",
+            "mID": "MyFloatParameter2",
             "Name": "",
             "Value": 0.0,
             "Minimum": 0.0,
@@ -66,7 +66,7 @@
                 {
                     "Type": "nap::TimelineTrack",
                     "mID": "TimelineTrack_0f645810",
-                    "Parameter": "ParameterFloat_1e4e08c5",
+                    "Parameter": "MyFloatParameter2",
                     "KeyFrames": [
                         {
                             "Type": "nap::KeyFrame",

@@ -24,7 +24,7 @@ namespace nap
 		float stepSize = 100.0f;
 
 		// calc width of content in timeline window
-		float timelineWidth = stepSize * mTimeline->mDuration;
+		float timelineWidth = stepSize * mTimeline->mDuration + 150.0f;
 
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(timelineWidth);
@@ -35,8 +35,30 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
+			// check if window has focus
+			bool windowHasFocus = ImGui::IsWindowFocused();
+
 			for (const auto& track : mTimeline->mTracks)
 			{
+				// push id
+				ImGui::PushID(track->mID.c_str());
+
+				// construct dropdown
+				int currentItemIndex = std::distance(mParameters.cbegin(), std::find(mParameters.cbegin(), mParameters.cend(), track->mParameter));
+				
+				ImGui::PushItemWidth(150.0f);
+				if (ImGui::Combo(
+					"", // label
+					&currentItemIndex, // current item index
+					&mParameterNames[0], // pointer to name array
+					mParameterNames.size())) // size of name array items
+				{
+					track->mParameter = mParameters[currentItemIndex];
+				}
+				ImGui::PopItemWidth();
+				
+				ImGui::SameLine();
+
 				//
 				const float trackHeight = 100.0f;
 
@@ -46,6 +68,9 @@ namespace nap
 					ImVec2(timelineWidth, trackHeight), // size
 					false)) // no border
 				{
+					// get child focus
+					bool childHasFocus = windowHasFocus && ImGui::IsWindowFocused();
+
 					// get window drawlist
 					auto drawList = ImGui::GetWindowDrawList();
 
@@ -80,6 +105,9 @@ namespace nap
 
 				// end track
 				ImGui::EndChild();
+
+				// pop id
+				ImGui::PopID();
 			}
 		}
 
@@ -91,8 +119,31 @@ namespace nap
 	}
 
 
+	void nap::TimelineGUI::setParameters(const std::vector<rtti::ObjectPtr<ParameterFloat>>& parameters)
+	{
+		mParameters = parameters;
+
+		mParameterNames.clear();
+		for (const auto& parameter : mParameters)
+		{
+			mParameterNames.emplace_back(parameter->mID.c_str());
+		}
+	}
+
+
 	std::string TimelineGUI::getName() const
 	{
 		return mTimeline->mName;
+	}
+
+
+	bool nap::TimelineGUI::init(utility::ErrorState & errorState)
+	{
+		if (!Resource::init(errorState))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }
