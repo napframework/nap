@@ -896,35 +896,71 @@ namespace nap
 		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
 	}
 
-	VkDescriptorPool RenderService::getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors)
+	VkDescriptorSet RenderService::allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
 	{
 		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
 
+		DescriptorPool* free_descriptor_pool = nullptr;
 		DescriptorPoolMap::iterator pos = mDescriptorPools.find(key);
+
 		if (pos != mDescriptorPools.end())
-			return pos->second;
+		{
+			std::vector<DescriptorPool>& pools = pos->second;
+			for (int i = pools.size() - 1; i >= 0; --i)
+			{
+				DescriptorPool& descriptor_pool = pools[i];
 
-		int maxSets = 10000;
+				if (descriptor_pool.mCurNumSets < descriptor_pool.mMaxNumSets)
+				{
+					free_descriptor_pool = &descriptor_pool;
+					break;
+				}
+			}
+		}
+	
+		if (free_descriptor_pool == nullptr)
+		{
+			int maxSets = 100;
 
-		std::vector<VkDescriptorPoolSize> pool_sizes;
-		if (numUBODescriptors != 0)
-			pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
+			std::vector<VkDescriptorPoolSize> pool_sizes;
+			if (numUBODescriptors != 0)
+				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
 
-		if (numSamplerDescriptors != 0)
-			pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });
+			if (numSamplerDescriptors != 0)
+				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });
 
-		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = pool_sizes.size();
-		poolInfo.pPoolSizes = pool_sizes.data();
-		poolInfo.maxSets = maxSets;
+			VkDescriptorPoolCreateInfo poolInfo = {};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.poolSizeCount = pool_sizes.size();
+			poolInfo.pPoolSizes = pool_sizes.data();
+			poolInfo.maxSets = maxSets;
 
-		VkDescriptorPool pool = nullptr;
-		VkResult result = vkCreateDescriptorPool(mRenderer->getDevice(), &poolInfo, nullptr, &pool);
-		assert(result == VK_SUCCESS);
+			DescriptorPool new_descriptor_pool;
+			new_descriptor_pool.mCurNumSets = 0;
+			new_descriptor_pool.mMaxNumSets = maxSets;
 
-		mDescriptorPools.insert(std::make_pair(key, pool));
-		return pool;
+			VkResult result = vkCreateDescriptorPool(mRenderer->getDevice(), &poolInfo, nullptr, &new_descriptor_pool.mPool);
+			assert(result == VK_SUCCESS);					
+			
+			mDescriptorPools[key].push_back(new_descriptor_pool);
+
+			free_descriptor_pool = &mDescriptorPools[key].back();
+		}
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = free_descriptor_pool->mPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &layout;
+
+		VkDescriptorSet descriptor_set = nullptr;
+
+		vkAllocateDescriptorSets(mRenderer->getDevice(), &allocInfo, &descriptor_set);
+		assert(descriptor_set != nullptr);
+
+		++free_descriptor_pool->mCurNumSets;
+
+		return descriptor_set;
 	}
 
 	DescriptorSetAllocator& RenderService::getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout)
@@ -957,19 +993,7 @@ namespace nap
 
 		DescriptorSet descriptor_set;
 		descriptor_set.mLayout = mLayout;
-
-		VkDescriptorPool descriptor_pool = mRenderService->getOrCreatePool(uniformBufferObjects.size(), samplers.size());
-
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptor_pool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &mLayout;
-
-		VkDevice device = mRenderService->getRenderer().getDevice();
-
-		bool success = vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set.mSet) == VK_SUCCESS;
-		assert(success);
+		descriptor_set.mSet = mRenderService->allocateDescriptorSet(mLayout, uniformBufferObjects.size(), samplers.size());
 
 		int num_descriptors = uniformBufferObjects.size();
 		std::vector<VkWriteDescriptorSet> ubo_descriptors;
@@ -1005,7 +1029,7 @@ namespace nap
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
 
-		vkUpdateDescriptorSets(device, ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
+		vkUpdateDescriptorSets(mRenderService->getRenderer().getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 
 		used_list.emplace_back(std::move(descriptor_set));
 		return used_list.back();

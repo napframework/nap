@@ -377,8 +377,6 @@ namespace nap
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getImageView();
 			imageInfo.sampler = sampler_2d->getSampler();
-
-			mSamplerImages.push_back(imageInfo);
 		}
 	}
 

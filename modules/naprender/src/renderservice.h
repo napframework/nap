@@ -44,6 +44,13 @@ namespace nap
 		std::vector<DescriptorSetBuffer>	mBuffers;
 	};
 
+	struct DescriptorPool
+	{
+		VkDescriptorPool	mPool = nullptr;
+		int					mMaxNumSets = 0;
+		int					mCurNumSets = 0;
+	};
+
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
@@ -261,7 +268,7 @@ namespace nap
 
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 
-		VkDescriptorPool getOrCreatePool(int numUBODescriptors, int numSamplerDescriptors);
+		VkDescriptorSet allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors);
 
 	protected:
 		/**
@@ -369,7 +376,7 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
-		using DescriptorPoolMap = std::unordered_map<uint64_t, VkDescriptorPool>;
+		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
 		using DescriptorSetAllocatorMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetAllocator>>;
 
 		VmaAllocator				mVulkanAllocator;
