@@ -143,6 +143,9 @@ namespace nap
 		 */
 		UniformStructInstance& getOrCreateUniform(const std::string& name);
 
+		template<class T>
+		T& getOrCreateSampler(const std::string& name);
+
 		/**
 		 * Uploads all uniforms stored in this material to the GPU. Call this after binding!
 		 * Only call this after binding the material otherwise the outcome of this call is uncertain.
@@ -253,6 +256,44 @@ namespace nap
 		Renderer*									mRenderer = nullptr;
 		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
 	};
+
+	template<class T>
+	T& MaterialInstance::getOrCreateSampler(const std::string& name)
+	{
+		T* existing_sampler = rtti_cast<T>(findSampler(name));
+		if (existing_sampler != nullptr)
+			return *existing_sampler;
+
+		T* result = nullptr;
+
+		for (int index = 0; index < mSamplers.size(); ++index)
+		{
+			const opengl::SamplerDeclaration& declaration = mSamplers[index]->getDeclaration();
+			if (declaration.mName == name)
+			{
+				bool is_array = declaration.mNumArrayElements > 1;
+
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (is_array)
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, nullptr);
+				else
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, nullptr);
+
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state);
+				assert(initialized);
+
+				result = rtti_cast<T>(sampler_instance_override.get());
+				mSamplers[index] = result;
+
+				addSamplerInstance(std::move(sampler_instance_override));
+				break;
+			}
+		}
+
+		assert(result != nullptr);
+		return *result;
+	}
 
 	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;
 }

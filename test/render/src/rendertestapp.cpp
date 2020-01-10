@@ -51,6 +51,7 @@ namespace nap
 // 		mCameraEntityRight			= mScene->findEntity("CameraEntityRight");
 // 		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
  		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
+
 		
 		/*
 		// Set render states
@@ -157,6 +158,7 @@ namespace nap
 		// Render window 0
 		{
 			RenderWindow* render_window = mRenderWindows[0].get();
+			render_window->getWindow()->getBackbuffer().setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
@@ -169,12 +171,26 @@ namespace nap
 			if ((int)fmodf(currentTime, 4.0f) > 2.0)
 			{
 				if (material_instance.getBlendMode() == EBlendMode::Opaque)
+				{
+					rtti::ObjectPtr<ImageFromFile> test_texture = mResourceManager->findObject<ImageFromFile>("TestTexture");
+					assert(test_texture != nullptr);
+					Sampler2DInstance& pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
+					pig_texture_sampler.setTexture(*test_texture);
+
 					material_instance.setBlendMode(EBlendMode::Additive);
+				}
 			}
 			else
 			{
 				if (material_instance.getBlendMode() == EBlendMode::Additive)
+				{
+					rtti::ObjectPtr<ImageFromFile> test_texture = mResourceManager->findObject<ImageFromFile>("PigTexture");
+					assert(test_texture != nullptr);
+					Sampler2DInstance& pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
+					pig_texture_sampler.setTexture(*test_texture);
+
 					material_instance.setBlendMode(EBlendMode::Opaque);
+				}
 			}
 
 			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");

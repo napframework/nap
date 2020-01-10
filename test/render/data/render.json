@@ -15,6 +15,11 @@
 		},
 		{
 			"Type" : "nap::ImageFromFile",
+			"mID" : "TestTexture",
+			"ImagePath" : "test.jpg"
+		},		
+		{
+			"Type" : "nap::ImageFromFile",
 			"mID" : "PigTexture",
 			"ImagePath" : "pig_head.jpg"
 		},		
