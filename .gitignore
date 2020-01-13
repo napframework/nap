@@ -79,3 +79,6 @@ local.properties
 **/assets/nap_modules/*/module.json
 *.db-shm
 *.db-wal
+apply_executable_permissions.cmd
+dist/cmake/qt_checker/proj_temp
+*.swp

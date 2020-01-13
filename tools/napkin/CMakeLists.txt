@@ -69,9 +69,10 @@ target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
 
 nap_qt_post(${PROJECT_NAME})
 
+# Add the runtime paths for RTTR & GLEW on macOS
 if(APPLE)
-    # Add the runtime path for RTTR on macOS
     add_macos_rttr_rpath()
+    add_macos_glew_rpath()
 endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -100,6 +101,9 @@ if(APPLE)
                                                     ${THIRDPARTY_DIR}  
                                                     Debug)
 endif()
+if(MSVC AND PACKAGE_PDBS)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/platform/napkin/$<CONFIG>)
+endif()        
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/platform/napkin/)

@@ -54,6 +54,15 @@ if (WIN32)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${NAPCORE_LIBS_DIR}/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
     )
+
+    # Copy PDB post-build, if we have them
+    if(EXISTS ${NAPCORE_LIBS_DIR}/Debug/napcore.pdb)
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPCORE_LIBS_DIR}/$<CONFIG>/napcore.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+            )
+    endif()
 endif()
 
 # Install into packaged project for macOS/Linux

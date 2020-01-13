@@ -79,6 +79,15 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 
+    # Copy PDB post-build, if we have them
+    if(EXISTS ${NAPRTTI_LIBS_DIR}/Debug/naprtti.pdb)
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+            )
+    endif()
+
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD

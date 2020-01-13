@@ -81,6 +81,10 @@ if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
             CONFIGURATIONS Release)
+
+    if(PACKAGE_PDBS)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>)
+    endif()
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
 elseif(ANDROID)

@@ -46,13 +46,13 @@ macro(package_nap)
 
         # Package check_build_environment scripts
         if(APPLE)
-            install(PROGRAMS ${NAP_ROOT}/dist/macos/check_build_environment/check_build_environment DESTINATION tools)
+            install(PROGRAMS ${NAP_ROOT}/build_tools/check_build_environment/macos/check_build_environment DESTINATION tools)
         elseif(UNIX)
-            install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment DESTINATION tools)
-            install(PROGRAMS ${NAP_ROOT}/dist/linux/check_build_environment/check_build_environment_worker.py DESTINATION tools/platform)
+            install(PROGRAMS ${NAP_ROOT}/build_tools/check_build_environment/linux/check_build_environment DESTINATION tools)
+            install(PROGRAMS ${NAP_ROOT}/build_tools/check_build_environment/linux/check_build_environment_worker.py DESTINATION tools/platform)
         else()
-            install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment.bat DESTINATION tools)
-            install(FILES ${NAP_ROOT}/dist/win64/check_build_environment/check_build_environment_continued.py DESTINATION tools/platform)
+            install(FILES ${NAP_ROOT}/build_tools/check_build_environment/win64/check_build_environment.bat DESTINATION tools)
+            install(FILES ${NAP_ROOT}/build_tools/check_build_environment/win64/check_build_environment_continued.py DESTINATION tools/platform)
         endif()
 
         # Create empty projects and usermodules directories
@@ -80,6 +80,9 @@ macro(package_nap)
         elseif(APPLE)
             install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
         endif()
+        
+        # Package CMake
+        package_cmake()
 
         # Package Windows redistributable help
         if(WIN32)
@@ -271,6 +274,28 @@ macro(package_qt)
     endif()
 endmacro()
 
+# Package CMake into release
+macro(package_cmake)
+    if(APPLE)
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/osx/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                USE_SOURCE_PERMISSIONS
+                )    
+    elseif(UNIX)
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                USE_SOURCE_PERMISSIONS
+                )    
+    else()
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/install/
+                DESTINATION thirdparty/cmake
+                CONFIGURATIONS Release
+                )    
+    endif()
+endmacro()
+
 # Package project directory package & regenerate shortcuts
 # DESTINATION: Directory to package into
 macro(package_project_dir_shortcuts DESTINATION)
@@ -308,19 +333,23 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
             )
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/CMakeLists.txt DESTINATION ${DEST_DIR})
+    install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
-    # Package any projectmodule cmake files
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/CMakeLists.txt DESTINATION ${DEST_DIR}/module)
-    endif()
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
-    endif()   
-
-    # Package any project extra cmake
+    # Package any project extra CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake DESTINATION ${DEST_DIR})
+    endif()
+
+    # Package any projectmodule CMake
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
+        set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
+        configure_file(${NAP_ROOT}/dist/cmake/native/module_creator/template/CMakeLists.txt 
+                       ${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt 
+                       @ONLY
+                       )
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
+        endif()
     endif()
 
     # Package our regenerate & package shortcuts into the project directory
@@ -343,6 +372,9 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        if(PACKAGE_PDBS)
+            install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        endif()        
     elseif(APPLE)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(ANDROID)

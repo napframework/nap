@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
 
 # Exclude for Android
 if(ANDROID)
@@ -68,8 +68,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIR}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
@@ -82,7 +80,6 @@ set(LIBRARIES
     )
 
 list(APPEND LIBRARIES
-     ${GLEW_LIBRARIES}
      ${FREEIMAGE_LIBRARIES}
      )
 
@@ -100,7 +97,7 @@ endif()
 # add to include path and expose to depending projects
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti GLEW::glew)
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
 
 if(MSVC)
@@ -124,6 +121,9 @@ endif()
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
+    if(PACKAGE_PDBS)
+        install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.dir/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION lib/$<CONFIG>)
+    endif()
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
 else()
