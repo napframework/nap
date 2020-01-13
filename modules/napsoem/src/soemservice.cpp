@@ -37,9 +37,4 @@ namespace nap
 		}
 		return true;
 	}
-
-
-	void SOEMService::shutdown()
-	{
-	}
 }
