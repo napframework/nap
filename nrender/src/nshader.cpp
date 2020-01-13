@@ -11,8 +11,120 @@
 #include "utility/stringutils.h"
 #include "spirv_cross/spirv_cross.hpp"
 #include "spirv_cross/spirv_parser.hpp"
+#include "glslang/Public/ShaderLang.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
 
 using namespace std; // Include the standard namespace
+
+
+// From https://github.com/KhronosGroup/glslang/blob/master/StandAlone/ResourceLimits.cpp
+const TBuiltInResource defaultResource = 
+{
+	/* .MaxLights = */ 32,
+	/* .MaxClipPlanes = */ 6,
+	/* .MaxTextureUnits = */ 32,
+	/* .MaxTextureCoords = */ 32,
+	/* .MaxVertexAttribs = */ 64,
+	/* .MaxVertexUniformComponents = */ 4096,
+	/* .MaxVaryingFloats = */ 64,
+	/* .MaxVertexTextureImageUnits = */ 32,
+	/* .MaxCombinedTextureImageUnits = */ 80,
+	/* .MaxTextureImageUnits = */ 32,
+	/* .MaxFragmentUniformComponents = */ 4096,
+	/* .MaxDrawBuffers = */ 32,
+	/* .MaxVertexUniformVectors = */ 128,
+	/* .MaxVaryingVectors = */ 8,
+	/* .MaxFragmentUniformVectors = */ 16,
+	/* .MaxVertexOutputVectors = */ 16,
+	/* .MaxFragmentInputVectors = */ 15,
+	/* .MinProgramTexelOffset = */ -8,
+	/* .MaxProgramTexelOffset = */ 7,
+	/* .MaxClipDistances = */ 8,
+	/* .MaxComputeWorkGroupCountX = */ 65535,
+	/* .MaxComputeWorkGroupCountY = */ 65535,
+	/* .MaxComputeWorkGroupCountZ = */ 65535,
+	/* .MaxComputeWorkGroupSizeX = */ 1024,
+	/* .MaxComputeWorkGroupSizeY = */ 1024,
+	/* .MaxComputeWorkGroupSizeZ = */ 64,
+	/* .MaxComputeUniformComponents = */ 1024,
+	/* .MaxComputeTextureImageUnits = */ 16,
+	/* .MaxComputeImageUniforms = */ 8,
+	/* .MaxComputeAtomicCounters = */ 8,
+	/* .MaxComputeAtomicCounterBuffers = */ 1,
+	/* .MaxVaryingComponents = */ 60,
+	/* .MaxVertexOutputComponents = */ 64,
+	/* .MaxGeometryInputComponents = */ 64,
+	/* .MaxGeometryOutputComponents = */ 128,
+	/* .MaxFragmentInputComponents = */ 128,
+	/* .MaxImageUnits = */ 8,
+	/* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
+	/* .MaxCombinedShaderOutputResources = */ 8,
+	/* .MaxImageSamples = */ 0,
+	/* .MaxVertexImageUniforms = */ 0,
+	/* .MaxTessControlImageUniforms = */ 0,
+	/* .MaxTessEvaluationImageUniforms = */ 0,
+	/* .MaxGeometryImageUniforms = */ 0,
+	/* .MaxFragmentImageUniforms = */ 8,
+	/* .MaxCombinedImageUniforms = */ 8,
+	/* .MaxGeometryTextureImageUnits = */ 16,
+	/* .MaxGeometryOutputVertices = */ 256,
+	/* .MaxGeometryTotalOutputComponents = */ 1024,
+	/* .MaxGeometryUniformComponents = */ 1024,
+	/* .MaxGeometryVaryingComponents = */ 64,
+	/* .MaxTessControlInputComponents = */ 128,
+	/* .MaxTessControlOutputComponents = */ 128,
+	/* .MaxTessControlTextureImageUnits = */ 16,
+	/* .MaxTessControlUniformComponents = */ 1024,
+	/* .MaxTessControlTotalOutputComponents = */ 4096,
+	/* .MaxTessEvaluationInputComponents = */ 128,
+	/* .MaxTessEvaluationOutputComponents = */ 128,
+	/* .MaxTessEvaluationTextureImageUnits = */ 16,
+	/* .MaxTessEvaluationUniformComponents = */ 1024,
+	/* .MaxTessPatchComponents = */ 120,
+	/* .MaxPatchVertices = */ 32,
+	/* .MaxTessGenLevel = */ 64,
+	/* .MaxViewports = */ 16,
+	/* .MaxVertexAtomicCounters = */ 0,
+	/* .MaxTessControlAtomicCounters = */ 0,
+	/* .MaxTessEvaluationAtomicCounters = */ 0,
+	/* .MaxGeometryAtomicCounters = */ 0,
+	/* .MaxFragmentAtomicCounters = */ 8,
+	/* .MaxCombinedAtomicCounters = */ 8,
+	/* .MaxAtomicCounterBindings = */ 1,
+	/* .MaxVertexAtomicCounterBuffers = */ 0,
+	/* .MaxTessControlAtomicCounterBuffers = */ 0,
+	/* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
+	/* .MaxGeometryAtomicCounterBuffers = */ 0,
+	/* .MaxFragmentAtomicCounterBuffers = */ 1,
+	/* .MaxCombinedAtomicCounterBuffers = */ 1,
+	/* .MaxAtomicCounterBufferSize = */ 16384,
+	/* .MaxTransformFeedbackBuffers = */ 4,
+	/* .MaxTransformFeedbackInterleavedComponents = */ 64,
+	/* .MaxCullDistances = */ 8,
+	/* .MaxCombinedClipAndCullDistances = */ 8,
+	/* .MaxSamples = */ 4,
+	/* .maxMeshOutputVerticesNV = */ 256,
+	/* .maxMeshOutputPrimitivesNV = */ 512,
+	/* .maxMeshWorkGroupSizeX_NV = */ 32,
+	/* .maxMeshWorkGroupSizeY_NV = */ 1,
+	/* .maxMeshWorkGroupSizeZ_NV = */ 1,
+	/* .maxTaskWorkGroupSizeX_NV = */ 32,
+	/* .maxTaskWorkGroupSizeY_NV = */ 1,
+	/* .maxTaskWorkGroupSizeZ_NV = */ 1,
+	/* .maxMeshViewCountNV = */ 4,
+
+	/* .limits = */ {
+	/* .nonInductiveForLoops = */ 1,
+	/* .whileLoops = */ 1,
+	/* .doWhileLoops = */ 1,
+	/* .generalUniformIndexing = */ 1,
+	/* .generalAttributeMatrixVectorIndexing = */ 1,
+	/* .generalVaryingIndexing = */ 1,
+	/* .generalSamplerIndexing = */ 1,
+	/* .generalVariableIndexing = */ 1,
+	/* .generalConstantMatrixVectorIndexing = */ 1,
+	}
+};
 
 static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffer)
 {
@@ -34,12 +146,12 @@ static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffe
 	return true;
 }
 
-VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device) 
+VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevice device) 
 {
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	createInfo.codeSize = code.size() * sizeof(unsigned int);
+	createInfo.pCode = code.data();
 
 	VkShaderModule shaderModule;
 	if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
@@ -48,6 +160,54 @@ VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device
 	return shaderModule;
 }
 
+
+bool compileShader(VkDevice device, const std::string& file, EShLanguage stage, std::vector<unsigned int>& spirv, nap::utility::ErrorState& errorState)
+{
+	std::vector<char> shader_source;
+	if (!errorState.check(tryReadFile(file, shader_source), "Unable to read shader file %s", file.c_str()))
+		return false;
+
+	const char* sources[] = { shader_source.data() };
+	int source_sizes[] = { (int)shader_source.size() };
+	const char* file_names[] = { file.data() };
+
+	glslang::TShader shader(stage);
+	shader.setStringsWithLengthsAndNames(sources, source_sizes, file_names, 1);
+	shader.setAutoMapBindings(false);
+	shader.setAutoMapLocations(false);
+
+	// 110 = Vulkan 1.1
+	int default_version = 110;
+	shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, default_version);
+	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
+	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+
+	EShMessages messages = EShMsgDefault;
+	messages = (EShMessages)(messages | EShMsgSpvRules);
+	messages = (EShMessages)(messages | EShMsgVulkanRules);
+
+	bool result = shader.parse(&defaultResource, default_version, false, messages);		
+	if (!result)
+	{
+		errorState.fail("Failed to compile shader %s: %s", file.c_str(), shader.getInfoLog());
+		return false;
+	}
+	
+	glslang::SpvOptions spv_options;
+	spv_options.generateDebugInfo = false;
+	spv_options.disableOptimizer = false;
+	spv_options.optimizeSize = false;
+	spv_options.disassemble = false;
+	spv_options.validate = true;
+
+	spv::SpvBuildLogger logger;
+	glslang::GlslangToSpv(*shader.getIntermediate(), spirv, &logger, &spv_options);
+
+	if (!errorState.check(!spirv.empty(), "Failed to compile shader %s: %s", file.c_str(), logger.getAllMessages().c_str()))
+		return false;
+
+	return true;
+}
 
 namespace opengl
 {
@@ -273,16 +433,15 @@ namespace opengl
 	 */
 	bool Shader::init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState)
 	{
-		std::vector<char> vertexShaderData;
-		if (!errorState.check(tryReadFile(vsFile, vertexShaderData), "Unable to read vertex shader file %s", vsFile.c_str()))
+		std::vector<unsigned int> vertexShaderData;
+		if (!compileShader(device, vsFile, EShLangVertex, vertexShaderData, errorState))
 			return false;
 
 		mVertexModule = createShaderModule(vertexShaderData, device);
 		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", vsFile.c_str()))
 			return false;
-
-		spirv_cross::Compiler vertex_shader_compiler((uint32_t*)vertexShaderData.data(), vertexShaderData.size() / sizeof(uint32_t));
-
+		
+		spirv_cross::Compiler vertex_shader_compiler(vertexShaderData.data(), vertexShaderData.size());
 		if (!parseUniforms(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
@@ -298,16 +457,15 @@ namespace opengl
 			mShaderAttributes[stage_input.name] = std::make_unique<ShaderVertexAttribute>(stage_input.name, location, format);
 		}
 
-		std::vector<char> fragmentShaderData;
-		if (!errorState.check(tryReadFile(fsFile, fragmentShaderData), "Unable to read fragment shader file %s", fsFile.c_str()))
+		std::vector<unsigned int> fragmentShaderData;
+		if (!compileShader(device, fsFile, EShLangFragment, fragmentShaderData, errorState))
 			return false;
 
 		mFragmentModule = createShaderModule(fragmentShaderData, device);
 		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", fsFile.c_str()))
 			return false;
 
-		spirv_cross::Compiler fragment_shader_compiler((uint32_t*)fragmentShaderData.data(), fragmentShaderData.size() / sizeof(uint32_t));
-
+		spirv_cross::Compiler fragment_shader_compiler(fragmentShaderData.data(), fragmentShaderData.size());
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 

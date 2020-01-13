@@ -57,6 +57,7 @@ find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(vulkansdk REQUIRED)
 find_package(SPIRVCross REQUIRED)
+find_package(glslang REQUIRED)
 
 # get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -72,6 +73,7 @@ set(INCLUDES
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
 	${SPIRVCROSS_INCLUDE_DIR}
+	${GLSLANG_INCLUDE_DIR}
     )
 
 set(LIBRARIES
@@ -99,6 +101,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility naprtti GLEW::glew)
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
+target_link_libraries(${PROJECT_NAME} debug "${GLSLANG_LIBS_DEBUG}" optimized "${GLSLANG_LIBS_RELEASE}")
 
 if(MSVC)
     include(GenerateExportheader)

@@ -258,8 +258,8 @@
         {
             "Type": "nap::Shader",
             "mID": "CopyShader",
-            "mVertShader": "shaders/copy_vert.spv",
-            "mFragShader": "shaders/copy_frag.spv",
+            "mVertShader": "shaders/copy.vert",
+            "mFragShader": "shaders/copy.frag",
             "OutputFormat": "RGBA8"
         },
         {
