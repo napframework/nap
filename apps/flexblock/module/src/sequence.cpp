@@ -107,6 +107,7 @@ namespace nap
 			mDuration = time - mStartTime;
 		}
 
+
 		int Sequence::process(double time, std::vector<Parameter*>& outParameters)
 		{
 			if(time < mStartTime )
@@ -125,6 +126,33 @@ namespace nap
 				{
 					mCurrentElementIndex++;
 					mCurrentElementIndex %= mElements.size();
+				}
+			}
+
+			return 0;
+		}
+
+
+		int Sequence::evaluate(double time, std::vector<Parameter*>& outParameters)
+		{
+			int currentElementIndex = 0;
+
+			if (time < mStartTime)
+				return -1;
+
+			if (time >= mStartTime + mDuration)
+				return 1;
+
+			for (int i = 0; i < mElements.size(); i++)
+			{
+				if (mElements[currentElementIndex]->process(time, outParameters))
+				{
+					break;
+				}
+				else
+				{
+					currentElementIndex++;
+					currentElementIndex %= mElements.size();
 				}
 			}
 
@@ -251,7 +279,7 @@ namespace nap
 			mCurrentElementIndex = 0;
 		}
 
-		void Sequence::insertElement(std::unique_ptr<SequenceElement> element)
+		SequenceElement* Sequence::insertElement(std::unique_ptr<SequenceElement> element)
 		{
 			ResourcePtr<SequenceElement> elementResourcePtr(element.get());
 			mSequenceElementsResourcePtrs.emplace_back(elementResourcePtr);
@@ -273,6 +301,8 @@ namespace nap
 			mCurrentElementIndex = 0;
 
 			mOwnedElements.emplace_back(std::move(element));
+
+			return mOwnedElements.back().get();
 		}
 	}
 }

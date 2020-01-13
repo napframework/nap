@@ -15,9 +15,12 @@
 // nap::flexblocksequenceplayer run time class definition 
 RTTI_BEGIN_CLASS(nap::timeline::SequencePlayerComponent)
 // Put additional properties here
-RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroup, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("TimelineParameters", &nap::timeline::SequencePlayerComponent::mParameterGroups, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("StartShowFile", &nap::timeline::SequencePlayerComponent::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
-
+RTTI_PROPERTY("Flex Device", &nap::timeline::SequencePlayerComponent::mFlexDevice, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Frequency", &nap::timeline::SequencePlayerComponent::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("MAC Controller", &nap::timeline::SequencePlayerComponent::mMacController, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Need Operational MAC Controller", &nap::timeline::SequencePlayerComponent::mNeedOperationalMacController, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::flexblocksequenceplayerInstance run time class definition 
@@ -50,19 +53,33 @@ namespace nap
 			}
 		}
 
+		SequencePlayerComponentInstance::~SequencePlayerComponentInstance()
+		{
+			stopThread();
+		}
 
 		bool SequencePlayerComponentInstance::init(utility::ErrorState& errorState)
 		{
 			SequencePlayerComponent* resource = getComponent<SequencePlayerComponent>();
 
+			//
+			mFrequency = resource->mFrequency;
+			mFlexDevice = resource->mFlexDevice.get();
+			mMacController = resource->mMacController.get();
+			mNeedOperationalMacController = resource->mNeedOperationalMacController;
+
+			//
 			mSequenceContainer = std::make_unique<SequenceContainer>();
 			if (!mSequenceContainer->init(errorState))
 				return false;
 
-			const auto& parameterGroup = resource->mParameterGroup;
-			for (const auto& parameter : parameterGroup->mParameters)
+			const auto& parameterGroups = resource->mParameterGroups;
+			for (const auto& parameterGroup : parameterGroups)
 			{
-				mParameters.emplace_back(parameter.get());
+				for (const auto& parameter : parameterGroup->mParameters)
+				{
+					mParameters.emplace_back(parameter.get());
+				}
 			}
 
 			if (!load(resource->mDefaultShow, errorState))
@@ -74,61 +91,174 @@ namespace nap
 			return true;
 		}
 
-
-		void SequencePlayerComponentInstance::update(double deltaTime)
+		void nap::timeline::SequencePlayerComponentInstance::update(double deltaTime)
 		{
-			if (mIsPlaying)
+			if (mNeedOperationalMacController)
 			{
-				if (!mIsPaused)
+				if (mIsPlaying && !mIsPaused)
 				{
-					mTime += deltaTime * mSpeed;
-				}
-
-				for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
-				{
-					int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
-					
-					if (result != 0)
+					if (mMacController->isRunning())
 					{
-						mCurrentSequenceIndex += result;
-
-						int size = mSequenceContainer->getSequences().size();
-						if (mCurrentSequenceIndex >= size)
+						bool slaveError = false;
+						for (int i = 0; i < mMacController->getSlaveCount(); i++)
 						{
-							if (mIsLooping)
+							if (mMacController->hasError(i))
 							{
-								mCurrentSequenceIndex = 0;
-								i = 0;
-								mTime = deltaTime;
-							}
-							else
-							{
-								mIsFinished = true;
-								mIsPlaying = false;
-								mCurrentSequenceIndex = 0;
+								slaveError = true;
+								break;
 							}
 						}
-						else if (mCurrentSequenceIndex < 0)
+
+						if (slaveError)
 						{
-							if (mIsLooping)
-							{
-								mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
-								i = 0;
-								mTime = mDuration - deltaTime;
-							}
-							else
-							{
-								mIsFinished = true;
-								mIsPlaying = false;
-								mCurrentSequenceIndex = 0;
-							}
+							printf("SequencePlayerCompenent : pausing playing of timeline because we have an error in slave!\n");
+							pause();
 						}
 					}
 					else
+
 					{
-						break;
+						printf("SequencePlayerCompenent : pausing playing of timeline because mac controller is not running!\n");
+						pause();
 					}
+
 				}
+			}
+		}
+
+
+		void SequencePlayerComponentInstance::onUpdate()
+		{
+			// Compute sleep time in microseconds 
+			float sleep_time_microf = 000.0f / static_cast<float>(mFrequency);
+			long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
+
+			while (mUpdateThreadRunning)
+			{
+				if (mShouldSetLooping)
+				{
+					mShouldSetLooping = false;
+					mIsLooping = mShouldSetLoopingValue;
+				}
+
+				if (mShouldSetSpeed)
+				{
+					mShouldSetSpeed = false;
+					mSpeed = mShouldSetSpeedValue;
+				}
+
+				if (mShouldSetTime)
+				{
+					mShouldSetTime = false;
+					mTime = mShouldSetTimeValue;
+					mReturnTime = mTime;
+					mCurrentSequenceIndex = 0;
+				}
+
+				if (mIsPlaying)
+				{
+					// calc delta time
+					auto now = std::chrono::high_resolution_clock::now();
+					auto elapsed = now - mBefore;
+					float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
+					mBefore = now;
+
+					// are we not paused ? then advance time
+					if (!mIsPaused)
+					{
+						mTime += deltaTime * mSpeed;
+					}
+
+					// iterate trough sequences
+					for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
+					{
+						// get result of process
+						// -1 is we should move backwards ( time is smaller then start time of current sequence )
+						// 1 is we should move forward ( time is bigger then start time + duration of current sequence )
+						// 0 is we are in the right sequence ( time is bigger then start time and smaller then start time + duration of sequence )
+						int result = mSequenceContainer->getSequences()[mCurrentSequenceIndex]->process(mTime, mParameters);
+
+						if (result != 0)
+						{
+							// move backwards or forward in index according to result
+							mCurrentSequenceIndex += result;
+
+							size_t size = mSequenceContainer->getSequences().size();
+							if (mCurrentSequenceIndex >= size)
+							{
+								// if we have reached the end of the sequence container, 
+								// stop or start again depending on whether loop is true or not
+								if (mIsLooping)
+								{
+									mCurrentSequenceIndex = 0;
+									i = 0;
+									mTime = deltaTime;
+								}
+								else
+								{
+									mIsFinished = true;
+									mIsPlaying = false;
+									mCurrentSequenceIndex = 0;
+								}
+							}
+							else if (mCurrentSequenceIndex < 0)
+							{
+								// if we have reached the beginning of the sequence container ( time is smaller then zero ), 
+								// stop or start again from the end depending on whether loop is true or not
+								if (mIsLooping)
+								{
+									mCurrentSequenceIndex = mSequenceContainer->getSequences().size() - 1;
+									i = 0;
+									mTime = mDuration - deltaTime;
+								}
+								else
+								{
+									mIsFinished = true;
+									mIsPlaying = false;
+									mCurrentSequenceIndex = 0;
+								}
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+
+					// set the return time
+					mReturnTime = mTime;
+
+					// declare struct for input for of flex device
+					FlexInput flexInput;
+
+					// motor inputs
+					for (int i = 0; i < 8; i++)
+					{
+						flexInput.setInput(i, static_cast<ParameterFloat*>(mParameters[i])->mValue);
+					}
+
+					// slack
+					flexInput.mSlack = static_cast<ParameterFloat*>(mParameters[8])->mValue;
+
+					// overrides
+					for (int i = 9; i < 17; i++)
+					{
+						flexInput.setOverride(i - 9, static_cast<ParameterFloat*>(mParameters[i])->mValue);
+					}
+
+					// sinus
+					flexInput.mSinusAmplitude = static_cast<ParameterFloat*>(mParameters[18])->mValue;
+					flexInput.mSinusFrequency = static_cast<ParameterFloat*>(mParameters[17])->mValue;
+
+					// give input
+					mFlexDevice->setInput(flexInput);
+				}
+				else
+				{
+					mUpdateThreadRunning = false;
+				}
+
+				std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 			}
 		}
 
@@ -141,13 +271,13 @@ namespace nap
 		}
 
 
-		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output) const
+		const void SequencePlayerComponentInstance::evaluate(double time, std::vector<Parameter*> &output, int offset) const
 		{
 			int currentSequenceIndex = 0;
 
 			for (int i = 0; i < mSequenceContainer->getSequences().size(); i++)
 			{
-				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->process(time, output);
+				int result = mSequenceContainer->getSequences()[currentSequenceIndex]->evaluate(time, output);
 
 				if (result != 0)
 				{
@@ -173,19 +303,42 @@ namespace nap
 		}
 
 
+		void SequencePlayerComponentInstance::stopThread()
+		{
+			// stop running thread
+			mUpdateThreadRunning = false;
+			if (mUpdateTask.valid())
+			{
+				mUpdateTask.wait();
+			}
+		}
+
+
 		void SequencePlayerComponentInstance::play()
 		{
+			stopThread();
+
+			mBefore = std::chrono::high_resolution_clock::now();
+
+			//
 			if (mIsPlaying)
 			{
 				mIsPaused = false;
 			}
 			else
 			{
-				mCurrentSequenceIndex = 0;
 				mIsPlaying = true;
 				mIsFinished = false;
-				mTime = 0.0;
 			}
+
+			startThread();
+		}
+
+		void SequencePlayerComponentInstance::startThread()
+		{
+			//
+			mUpdateThreadRunning = true;
+			mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayerComponentInstance::onUpdate, this));
 		}
 
 
@@ -203,33 +356,58 @@ namespace nap
 			return nullptr;
 		}
 
+
 		void SequencePlayerComponentInstance::setTime(const double time)
 		{
-			mTime = math::clamp<double>(time, 0.0, mDuration);
-			mCurrentSequenceIndex = 0;
+			// clamp just to make sure our time is not invalid
+			double timeValue = math::clamp<double>(time, 0.0, mDuration);
+
+			// if we are playing, update time from worker thread
+			if (mIsPlaying)
+			{
+				mShouldSetTime = true;
+				mShouldSetTimeValue = timeValue;
+			}else if (!mIsPlaying)
+			{
+				// otherwise, just set the time
+				mReturnTime = timeValue;
+				mTime = timeValue;
+			}
 		}
 
 
 		void SequencePlayerComponentInstance::pause()
 		{
-			mIsPaused = true;
+			stopThread();
+
+			if (!mIsPaused)
+			{
+				mIsPaused = true;
+			}
+
+			startThread();
 		}
 
 
 		void SequencePlayerComponentInstance::stop()
 		{
+			// stop running thread
+			stopThread();
+
 			mIsPlaying = false;
 			mIsPaused = false;
 			mIsFinished = false;
-			mCurrentSequenceIndex = 0;
-			mTime = 0.0;
+			mReturnTime = mTime;
 		}
 
 
 		bool SequencePlayerComponentInstance::save(std::string showName, utility::ErrorState& errorState)
 		{
+			if (errorState.check(mIsPlaying, "Cannot save when playing!"))
+				return false;
+
 			//
-			// Ensure the presets directory exists
+			// Ensure the shows directory exists
 			const std::string dir = "shows";
 			utility::makeDirs(utility::getAbsolutePath(dir));
 
@@ -243,6 +421,7 @@ namespace nap
 				sequenceList.emplace_back(sequence);
 			}
 
+			// serialize the list
 			if (!rtti::serializeObjects(sequenceList, writer, errorState))
 				return false;
 
@@ -261,6 +440,9 @@ namespace nap
 
 		bool SequencePlayerComponentInstance::load(std::string showPath, utility::ErrorState& errorState)
 		{
+			if (errorState.check(mIsPlaying, "Cannot load when playing!"))
+				return false;
+
 			//
 			rtti::DeserializeResult result;
 
@@ -295,7 +477,7 @@ namespace nap
 				}
 			}
 
-			// transfer ownership
+			// transfer ownership of read objects
 			mOwnedObjects.clear();
 			for (int i = 0; i < result.mReadObjects.size(); i++)
 			{
@@ -318,29 +500,83 @@ namespace nap
 			// reconstruct the sequence
 			reconstruct();
 
+			mTime = 0.0;
+			mReturnTime = 0.0;
+
+
 			return true;
 		}
 
 
-		void SequencePlayerComponentInstance::insertSequence(std::unique_ptr<Sequence> sequence)
+		bool SequencePlayerComponentInstance::insertSequence(std::unique_ptr<Sequence> sequence, utility::ErrorState& errorState)
 		{
+			if (errorState.check(mIsPlaying, "Cannot insert sequence when playing!"))
+				return false;
+
 			mSequenceContainer->insertSequence(std::move(sequence));
 
 			reconstruct();
+
+			return true;
 		}
 
 
-		void SequencePlayerComponentInstance::removeSequence(const Sequence* sequence)
+		bool SequencePlayerComponentInstance::removeSequence(const Sequence* sequence, utility::ErrorState& errorState)
 		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
+				return false;
+
 			mSequenceContainer->removeSequence(sequence);
+
 			reconstruct();
+
+			return true;
+		}
+
+		bool nap::timeline::SequencePlayerComponentInstance::moveSequenceForward(const Sequence * sequence, utility::ErrorState& errorState)
+		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
+				return false;
+
+			mSequenceContainer->moveSequenceForward(sequence);
+
+			return true;
+		}
+
+		bool nap::timeline::SequencePlayerComponentInstance::moveSequenceBackward(const Sequence * sequence, utility::ErrorState& errorState)
+		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence when playing!"))
+				return false;
+
+			mSequenceContainer->moveSequenceBackward(sequence);
+
+			return true;
 		}
 
 
-		void SequencePlayerComponentInstance::removeSequenceElement(const Sequence* sequence, const SequenceElement* element)
+		bool SequencePlayerComponentInstance::removeSequenceElement(const Sequence* sequence, const SequenceElement* element, utility::ErrorState& errorState)
 		{
+			if (errorState.check(mIsPlaying, "Cannot remove sequence element when playing!"))
+				return false;
+
 			mSequenceContainer->removeSequenceElement(sequence, element);
 			reconstruct();
+
+			return true;
+		}
+
+
+		void SequencePlayerComponentInstance::setSpeed(const float speed)
+		{
+			mShouldSetSpeed = true;
+			mShouldSetSpeedValue = speed;
+		}
+
+
+		void SequencePlayerComponentInstance::setIsLooping(const bool isLooping)
+		{
+			mShouldSetLooping = true;
+			mShouldSetLoopingValue = isLooping;
 		}
 	}
 }

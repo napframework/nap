@@ -3,8 +3,12 @@
 #include <nap/resourceptr.h>
 #include <component.h>
 #include <parameternumeric.h>
+#include <thread>
+#include <atomic>
 
 #include "sequencecontainer.h"
+#include "flexdevice.h"
+#include "maccontroller.h"
 
 namespace nap
 {
@@ -33,8 +37,12 @@ namespace nap
 			*/
 			virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-			std::string						mDefaultShow;
-			ResourcePtr<ParameterGroup>		mParameterGroup;
+			std::string										mDefaultShow;
+			std::vector<ResourcePtr<ParameterGroup>>		mParameterGroups;
+			ResourcePtr<FlexDevice>							mFlexDevice;
+			ResourcePtr<MACController>						mMacController;
+			bool											mNeedOperationalMacController = false;
+			int												mFrequency = 1000;
 		};
 
 		//////////////////////////////////////////////////////////////////////////
@@ -50,6 +58,11 @@ namespace nap
 				ComponentInstance(entity, resource) { }
 
 			/**
+			 * Deconstructor
+			 */
+			~SequencePlayerComponentInstance();
+
+			/**
 			 * Initialize SequencePlayerComponentInstance based on theSequencePlayerComponent resource
 			 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 			 * @param errorState should hold the error message when initialization fails
@@ -57,11 +70,7 @@ namespace nap
 			 */
 			virtual bool init(utility::ErrorState& errorState) override;
 
-			/**
-			 * update SequencePlayerComponentInstance. This is called by NAP core automatically
-			 * @param deltaTime time in between frames in seconds
-			 */
-			virtual void update(double deltaTime) override;
+			virtual void update(double deltaTime);
 
 			/**
 			 * Play a sequence
@@ -82,7 +91,7 @@ namespace nap
 			 * Plays sequence from beginning when finished
 			 * @param value, true or false
 			 */
-			void setIsLooping(bool isLooping) { mIsLooping = isLooping; }
+			void setIsLooping(const bool isLooping);
 
 			/**
 			 * Sets the current time of the sequence
@@ -94,7 +103,7 @@ namespace nap
 			 * Sets the speed
 			 * @param time, time to set sequence to
 			 */
-			void setSpeed(const float speed) { mSpeed = speed; }
+			void setSpeed(const float speed);
 
 			/**
 			 * Skips to sequence in time
@@ -103,8 +112,8 @@ namespace nap
 			void skipToSequence(const Sequence * sequence);
 
 			/**
-			 * Reconstructs sequence container and recalculates duration, this call is necessary when changing, 
-			 * adding or removing sequences/elements
+			 * Reconstructs sequence container and recalculates duration,
+			 * this call is necessary when changing, adding or removing sequences/elements
 			 */
 			void reconstruct();
 
@@ -112,14 +121,18 @@ namespace nap
 			 * Removes sequence from sequence container, removes owned sequences as well;
 			 * param sequence, sequence that needs to be removed
 			 */
-			void removeSequence(const Sequence* sequence);
+			bool removeSequence(const Sequence* sequence, utility::ErrorState& errorState);
+
+			bool moveSequenceForward(const Sequence* sequence, utility::ErrorState& errorState);
+
+			bool moveSequenceBackward(const Sequence* sequence, utility::ErrorState& errorState);
 
 			/**
 			 * Removes sequence element from given sequence
 			 * @param sequence, sequence containing the element
 			 * @param element, element that needs to be removed
 			 */
-			void removeSequenceElement(const Sequence* sequence, const SequenceElement* element);
+			bool removeSequenceElement(const Sequence* sequence, const SequenceElement* element, utility::ErrorState& errorState);
 
 			/**
 			 * Serializes and saves the current sequence container as a json file, fileName must include filename extension.
@@ -142,7 +155,7 @@ namespace nap
 			 * Inserts sequence into sequence container, player holds unique pointer to sequence inserted
 			 * @param sequence unique_ptr to sequence, will be moved
 			 */
-			void insertSequence(std::unique_ptr<Sequence> sequence);
+			bool insertSequence(std::unique_ptr<Sequence> sequence, utility::ErrorState& errorState);
 
 			/**
 			 * @return true if loaded sequence
@@ -156,9 +169,9 @@ namespace nap
 
 			/**
 			 * Evaluate acts the same as process but doesn't advance the
-			 * current element index or finishes 
+			 * current element index or finishes the player
 			 */
-			const void evaluate(double time, std::vector<Parameter*> &output) const;
+			const void evaluate(double time, std::vector<Parameter*> &output, const int offset = 0) const;
 
 			/**
 			 * @return true if paused
@@ -178,7 +191,7 @@ namespace nap
 			/**
 			 * @return current time in sequence
 			 */
-			const double getCurrentTime() const { return mTime; }
+			const double getCurrentTime() const { return mReturnTime; }
 
 			/**
 			 * @return duration of sequence
@@ -210,21 +223,61 @@ namespace nap
 			 */
 			const std::string getShowName() const { return mShowName; }
 		protected:
-			double mTime				= 0.0;
-			bool mIsPlaying				= false;
-			bool mIsPaused				= false;
-			bool mIsFinished			= false;
-			bool mIsLooping				= false;
-			int mCurrentSequenceIndex	= 0;
-			float mSpeed				= 1.0f;
-			double mDuration			= 0.0;
+			/**
+			 * update 
+			 */
+			void onUpdate();
 
+			/**
+			 * Stops current update thread
+			 */
+			void stopThread();
+
+			/**
+			 * Starts update thread
+			 */
+			void startThread();
+
+			// threading 
+			std::future<void>	mUpdateTask;
+			bool				mUpdateThreadRunning;
+			std::atomic<double>	mReturnTime = { 0.0 };
+
+			// used to calculate delta time in update
+			std::chrono::high_resolution_clock mTimer;
+			std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
+
+			//
+			double mTime						= 0.0;
+			bool mIsPlaying						= false;
+			bool mIsPaused						= false;
+			bool mIsFinished					= false;
+			bool mIsLooping						= false;
+			size_t mCurrentSequenceIndex		= 0;
+			float mSpeed						= 1.0f;
+			double mDuration					= 0.0;
+			MACController* mMacController		= nullptr;
+			bool mNeedOperationalMacController	= false;
+			//
+			std::atomic_bool				mShouldSetLooping;
+			std::atomic_bool				mShouldSetLoopingValue;
+
+			std::atomic_bool				mShouldSetTime;
+			std::atomic<double>				mShouldSetTimeValue;
+
+			std::atomic_bool				mShouldSetSpeed;
+			std::atomic<float>				mShouldSetSpeedValue;
+
+			//
 			std::string mShowName;
 			std::vector<Parameter*> mParameters = std::vector<Parameter*>();
 			rtti::OwnedObjectList mOwnedObjects;
 			std::vector<std::unique_ptr<Sequence>> mOwnedSequences;
 
 			std::unique_ptr<timeline::SequenceContainer> mSequenceContainer = nullptr;
+
+			FlexDevice *mFlexDevice;
+			int			mFrequency;
 		};
 	}
 }

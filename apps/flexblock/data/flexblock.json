@@ -46,13 +46,6 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OscInput",
-                    "Addresses": [
-                        "flexblock"
-                    ]
                 }
             ],
             "Children": []
@@ -84,23 +77,6 @@
                     }
                 },
                 {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "PerspectiveCamera",
-                    "Properties": {
-                        "FieldOfView": 60.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::KeyInputComponent",
                     "mID": "CameraKeyInput"
                 },
@@ -113,12 +89,31 @@
                     "mID": "CameraOrbitController",
                     "MovementSpeed": 0.05000000074505806,
                     "RotateSpeed": 0.003999999724328518,
-                    "PerspCameraComponent": "./PerspectiveCamera",
+                    "PerspCameraComponent": "./FlexblockCameraComponent",
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     }
+                },
+                {
+                    "Type": "nap::FlexblockCameraComponent",
+                    "mID": "FlexblockCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 100.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    },
+                    "Left Offset": 0.25,
+                    "Top Offset": 0.25
                 }
             ],
             "Children": []
@@ -154,26 +149,21 @@
                     "mID": "FlexBlockComponent",
                     "FrameMesh": "FrameMesh",
                     "FlexBlockMesh": "BoxMesh",
-                    "SerialComponent": "./FlexBlockSerialComponent",
-                    "FlexBlockShape": "ProtoShapeSize"
-                },
-                {
-                    "Type": "nap::FlexBlockSerialComponent",
-                    "mID": "FlexBlockSerialComponent",
-                    "SerialPort": "SerialPort"
-                },
-                {
-                    "Type": "nap::OSCInputComponent",
-                    "mID": "OSCMotorInputs",
-                    "Addresses": [
-                        "/flexblock"
-                    ]
+                    "FlexBlockShape": "ShapeSize",
+                    "FlexBlockDevice": "Flex"
                 },
                 {
                     "Type": "nap::timeline::SequencePlayerComponent",
-                    "mID": "nap::timeline::SequencePlayerComponent_b9bef377",
-                    "TimelineParameters": "Motor Inputs Parameters",
-                    "StartShowFile": "shows/start_template.json"
+                    "mID": "Motor Sequence Player",
+                    "TimelineParameters": [
+                        "Motor Inputs",
+                        "Special Parameters"
+                    ],
+                    "StartShowFile": "shows/start_template.json",
+                    "Flex Device": "Flex",
+                    "Frequency": 1000,
+                    "MAC Controller": "MACController",
+                    "Need Operational MAC Controller": true
                 }
             ],
             "Children": [
@@ -388,7 +378,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "WorldTransform",
+                    "mID": "nap::TransformComponent_667bf951",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -396,12 +386,12 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
+                            "x": -90.0,
                             "y": 0.0,
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 1.0,
+                            "x": -1.0,
                             "y": 1.0,
                             "z": 1.0
                         },
@@ -410,7 +400,9 @@
                 }
             ],
             "Children": [
-                "FlexBlockEntity"
+                "FlexBlockEntity",
+                "CameraEntity",
+                "TextEntity"
             ]
         },
         {
@@ -566,16 +558,16 @@
         },
         {
             "Type": "nap::FlexBlockShape",
-            "mID": "ProtoShapeSize",
+            "mID": "ShapeSize",
             "Name": "block_proto",
             "Motor Count": 8,
             "Size": "FlexBlockShapeSize",
             "Elements": "ProtoElements",
-            "Points": "ProtoShapePoints"
+            "Points": "ShapePoints"
         },
         {
             "Type": "nap::FlexBlockShapePoints",
-            "mID": "ProtoShapePoints",
+            "mID": "ShapePoints",
             "Object": [
                 {
                     "x": -1.0,
@@ -620,44 +612,44 @@
             ],
             "Frame": [
                 {
-                    "x": -1.0,
-                    "y": 1.0,
-                    "z": -1.0
+                    "x": -9.479999542236329,
+                    "y": 3.7799999713897707,
+                    "z": -5.260000228881836
                 },
                 {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": -1.0
+                    "x": 9.430000305175782,
+                    "y": 3.7799999713897707,
+                    "z": -5.289999961853027
                 },
                 {
-                    "x": 1.0,
-                    "y": -1.0,
-                    "z": -1.0
+                    "x": 8.130000114440918,
+                    "y": -3.7799999713897707,
+                    "z": -5.28000020980835
                 },
                 {
-                    "x": -1.0,
-                    "y": -1.0,
-                    "z": -1.0
+                    "x": -8.130000114440918,
+                    "y": -3.8299999237060549,
+                    "z": -5.260000228881836
                 },
                 {
-                    "x": -1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": -9.420000076293946,
+                    "y": 3.75,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 9.470000267028809,
+                    "y": 3.75,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": 1.0,
-                    "y": -1.0,
-                    "z": 1.0
+                    "x": 8.1899995803833,
+                    "y": -3.740000009536743,
+                    "z": 5.269999980926514
                 },
                 {
-                    "x": -1.0,
-                    "y": -1.0,
-                    "z": 1.0
+                    "x": -8.170000076293946,
+                    "y": -3.7100000381469728,
+                    "z": 5.269999980926514
                 }
             ]
         },
@@ -665,21 +657,36 @@
             "Type": "nap::FlexBlockShapeSize",
             "mID": "FlexBlockShapeSize",
             "Name": "proto",
-            "Values": "ProtoShapeSizeValues"
+            "Values": "ShapeSizeValues"
         },
         {
             "Type": "nap::FlexBlockShapeSizeValues",
-            "mID": "ProtoShapeSizeValues",
+            "mID": "ShapeSizeValues",
             "Object": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
+                "x": 9.0,
+                "y": 4.5,
+                "z": 4.5
             },
             "Frame": {
-                "x": 2.0480000972747804,
-                "y": 1.4249999523162842,
-                "z": 1.3530000448226929
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
             }
+        },
+        {
+            "Type": "nap::FlexDevice",
+            "mID": "Flex",
+            "FlexBlockShape": "ShapeSize",
+            "Frequency": 1000,
+            "Slack Scale": 2.0,
+            "Slack Min": -0.27000001072883608,
+            "Override Scale": 11.0,
+            "Override Min": 0.0,
+            "Sinus Frequency": 20.0,
+            "Sinus Amplitude": 1.0,
+            "Adapters": [
+                "MACAdapter"
+            ]
         },
         {
             "Type": "nap::Font",
@@ -699,6 +706,59 @@
                 "z": 2.0
             },
             "ReferenceMesh": "BoxMesh"
+        },
+        {
+            "Type": "nap::MACAdapter",
+            "mID": "MACAdapter",
+            "Enabled": false,
+            "Motor Steps Per Meter": 129473.40625,
+            "Motor Step Offset": 0,
+            "Smooth Time": 2.0,
+            "Max Smooth Speed": 1000000.0,
+            "Motor Mapping": [
+                5,
+                1,
+                2,
+                6,
+                3,
+                7,
+                0,
+                4
+            ],
+            "Controller": "MACController",
+            "Smooth Using Velocity": true,
+            "Min Smooth Velocity": 1000.0,
+            "Max Smooth Velocity": 25000.0,
+            "Smooth Time Min": 0.5
+        },
+        {
+            "Type": "nap::MACController",
+            "mID": "MACController",
+            "ForceOperational": false,
+            "Adapter": "eno1",
+            "ProcessCycleTime": 0,
+            "ErrorCycleTime": 10000,
+            "ProcessTimeout": 6000,
+            "RecoveryTimeout": 1000,
+            "ResetPosition": false,
+            "DisableErrorHandling": false,
+            "ResetPositionValue": 1000000,
+            "Mode": "Position",
+            "Velocity": 3000,
+            "MaxVelocity": 3000,
+            "Acceleration": 900,
+            "Torque": 100,
+            "VelocityGetRatio": 0.1340000033378601,
+            "VelocitySetRatio": 2.18435001373291,
+            "RecoveryTimeout": 1000,
+            "DigitalPinValueThreshold": 30,
+            "DigitalPinTimeThreshold": 0.10000000149011612,
+            "InvertDigitalPin": false,
+            "ComputeDigitalPin": true,
+            "Calibration Velocity": 300,
+            "Calibration MaxVelocity": 3000,
+            "Calibration Acceleration": 1000,
+            "Calibration Torque": 50
         },
         {
             "Type": "nap::Material",
@@ -775,9 +835,9 @@
                     "mID": "UniformVec3FrameColor",
                     "Name": "inColor",
                     "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 0.0
+                        "x": 0.5450900197029114,
+                        "y": 0.5490196347236633,
+                        "z": 0.6274510025978088
                     }
                 }
             ],
@@ -833,107 +893,186 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::OSCReceiver",
-            "mID": "OSCInput",
-            "Port": 7000,
-            "EnableDebugOutput": true,
-            "AllowPortReuse": false
-        },
-        {
             "Type": "nap::ParameterGroup",
-            "mID": "Motor Inputs Parameters",
-            "Parameters": [
+            "mID": "Parameters",
+            "Parameters": [],
+            "Groups": [
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 1",
-                    "Name": "Input 1",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Motor Inputs",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 1",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 2",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 3",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 4",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 5",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 6",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 7",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Input 8",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
                 },
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 2",
-                    "Name": "Input 2",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 3",
-                    "Name": "Input 3",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 4",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 5",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 6",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 7",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Input 8",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Special Parameters",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Slack",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 1",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 2",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 3",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 4",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 5",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 6",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 7",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Override 8",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Sinus Frequency",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Sinus Amplitude",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
                 }
-            ],
-            "Groups": []
+            ]
         },
         {
             "Type": "nap::RenderWindow",
             "mID": "MainWindow",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Borderless": false,
             "Resizable": true,
             "Title": "Flexblock",
-            "Sync": false,
-            "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            }
-        },
-        {
-            "Type": "nap::RenderWindow",
-            "mID": "TimelineWindow",
-            "Width": 1280,
-            "Height": 720,
-            "Borderless": false,
-            "Resizable": true,
-            "Title": "Timeline",
             "Sync": false,
             "ClearColor": {
                 "x": 0.0,
@@ -947,32 +1086,10 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "CameraEntity",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "WorldEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "TextEntity",
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::SerialPort",
-            "mID": "SerialPort",
-            "PortName": "COM19",
-            "BaudRate": 9600,
-            "ByteSize": "Eight",
-            "Parity": "None",
-            "StopBits": "One",
-            "FlowControl": "None",
-            "ReadTimeout": 0,
-            "WriteTimeout": 0,
-            "InterByteTimeout": 0,
-            "AllowFailure": true
         },
         {
             "Type": "nap::Shader",

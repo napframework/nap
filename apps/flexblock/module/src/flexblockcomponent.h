@@ -4,9 +4,8 @@
 #include "framemesh.h"
 #include "flexblockmesh.h"
 #include "flexblockdata.h"
-#include "flex.h"
 #include "visualizenormalsmesh.h"
-#include "flexblockserialcomponent.h"
+#include "flexdevice.h"
 
 // external includes
 #include <component.h>
@@ -15,6 +14,7 @@
 #include <renderable2dtextcomponent.h>
 #include <componentptr.h>
 #include <perspcameracomponent.h>
+#include <maccontroller.h>
 
 namespace nap
 {
@@ -22,8 +22,7 @@ namespace nap
 	class FlexBlockComponentInstance;
 
 	/**
-	 * FlexBlockComponent controls a flexblock mesh, frame mesh and optionally writes
-	 * data to serial motors. 
+	 * FlexBlockComponent controls a flexblock mesh, frame mesh and provides input to the flexblock algorithm.
 	 * FlexBlockComponent needs a flexblock shape definition. See FlexBlockShape and flexblockdata.h
 	 */
 	class NAPAPI FlexBlockComponent : public Component
@@ -32,45 +31,18 @@ namespace nap
 		DECLARE_COMPONENT(FlexBlockComponent, FlexBlockComponentInstance)
 	public:
 		
-		/**
-		 * Resource pointer to the mesh of the frame
-		 */
-		ResourcePtr<FrameMesh> mFrameMesh; ///< Property: 'FrameMesh' Reference to the frame mesh
+		ResourcePtr<FrameMesh>			mFrameMesh;			///< Property: 'FrameMesh' Reference to the frame mesh
+		ResourcePtr<FlexBlockMesh>		mFlexBlockMesh;		///< Property: 'FlexBlockMesh' Reference to the FlexBlockMesh 
+		ResourcePtr<FlexBlockShape>		mFlexBlockShape;	///< Property: 'FlexBlockShape' Reference to the shape definition of the block 
+		nap::ResourcePtr<FlexDevice>	mFlexBlockDevice;	///< Property: 'FlexBlockDevice' Reference to the flexblock device 
 
-		/**
-		 * Resource pointer to the flexblock mesh 
-		 */
-		ResourcePtr<FlexBlockMesh> mFlexBlockMesh; ///< Property: 'FlexBlockMesh' Reference to the FlexBlockMesh 
-
-		/**
-		 * Resource pointer to the shape definition
-		 */
-		ResourcePtr<FlexBlockShape> mFlexBlockShape; ///< Property: 'FlexBlockShape' Reference to the shape definition of the block 
-		
-		/**
-		 * Reference to the component of the FlexBlockSerialComponent
-		 */
-		ComponentPtr<FlexBlockSerialComponent> mFlexBlockSerialComponent; ///< Property: 'FlexBlockSerialComponent' Reference to the component of the flexblock serial component
-	
-		float mMillimeterToMotorsteps = 12.73239f; ///< Property: 'Millimeter to Motorsteps' value that we need to calculate how much steps we need the motor(s) to make
-
-		int mMotorOffset = 7542; ///< Property: 'Motor Offset' value that we need to calculate the zero position of the motor
-
-		/**
-		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		 * @param components the components this object depends on
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
-		
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	* FlexBlockComponentInstance
-	* Instantiated flexblock component
-	*/
+	 * Runtime version of flexblock component
+	 */
 	class NAPAPI FlexBlockComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -98,53 +70,92 @@ namespace nap
 		* @param index index of motor [0..8]
 		* @param value motor input 0-1
 		*/
-		void setMotorInput(int index, float value);
+		void setInput(int index, float value);
 
 		/**
-		 * @return returns object points in local space
+		 * Set slack parameter
+		 * @param value slack value, typically between -0.5 and 0.5
 		 */
-		const std::vector<glm::vec3>& getObjectPoints() const { return mObjectPoints; }
+		void setSlack(float value);
 
 		/**
-		 * @return returns frame points in local space
+		 * @return the current slack value, including scale and offset
 		 */
-		const std::vector<glm::vec3>& getFramePoints() const { return mFramePoints; }
+		float getSlack() const;
 
 		/**
-		 * Converts a vector of Flex points to nap points
-		 * This is necessary because our coordinate system of mapping points of the block differs
-		 * from the coordinates used in the flex algorithm
-		 * @param flexPoints the points calculated by the flex algorithm
-		 * @param napPoints the converted nap points
+		 * Set override
+		 * @param override range index, motor index will be in flexblock space
+		 * @param value between 0..1 , will be multiplied by override range 
 		 */
-		void toNapPoints(const std::vector<glm::vec3>& flexPoints, std::vector<glm::vec3>& napPoints);
-		
+		void setOverride(int index, float value);
+
 		/**
-		 * Remaps motor id 0--1 to the correct motors used in the hardware
-		 * @param index motor id used in the software
-		 * @return index motor id used in hardware
+		 * Sets frequency of override
+		 * @param value between 0..1 , will be multiplied with sinus frequency
 		 */
-		const int remapMotorInput(const int index) const;
+		void setSinusFrequency(float value);
+
+		/**
+		 * Sets sinus amplitude
+		 * @param value between 0..1 , will be multiplied with amplitude
+		 */
+		void setSinusAmplitude(float value);
+
+		void getRopeLengths(std::vector<float>& output);
+
+		/**
+		 * @return returns cube mesh points in local space
+		 */
+		const std::vector<glm::vec3>& getObjectPoints() const		{ return mObjectPoints; }
+
+		/**
+		 * @return returns frame mesh points in local space
+		 */
+		const std::vector<glm::vec3>& getFramePoints() const		{ return mFramePoints; }
+
+
+		/**
+		 * @param index of motor in flexblock space
+		 * @return returns motor override
+		 */
+		float getMotorOverride(const int index) const;
+
+		/**
+		 * @return returns motor override minimum
+		 */
+		float getMotorOverrideMinimum() const						{ return mFlexblockDevice->mOverrideMin; }
+
+		/**
+		 * @return returns motor override range
+		 */
+		float getMotorOverrideRange() const							{ return mFlexblockDevice->mOverrideScale; }
+
+		/**
+		 * @return returns motor amplitude range
+		 */
+		float getSinusAmplitudeRange() const						{ return mFlexblockDevice->mAmplitudeRange; }
+
+		/**
+		 * @return returns motor frequency range
+		 */
+		float getSinusFrequencyRange() const						{ return mFlexblockDevice->mFrequencyRange; }
+
+		float getSlackMinimum() const { return mFlexblockDevice->mSlackMin; }
+
+		float getSlackRange() const {
+			return mFlexblockDevice->mSlackScale;
+		}
+
 	protected:
-		FrameMesh* mFrameMesh = nullptr;
-		FlexBlockMesh* mFlexBlockMesh = nullptr;
 
-		//
-        ComponentInstancePtr<FlexBlockSerialComponent> mFlexBlockSerialComponentInstance = { this, &FlexBlockComponent::mFlexBlockSerialComponent  };
-		// Initialize flexblock unique ptr to null
-		std::unique_ptr<Flex> mFlexLogic = nullptr;
+		// Resources / Devices
+		FrameMesh*		mFrameMesh		 = nullptr;
+		FlexBlockMesh*	mFlexBlockMesh	 = nullptr;
+		FlexDevice*		mFlexblockDevice = nullptr;
 
-		//
-		double mUpdateSerialTime = 0.0;
-		
+		// Meshes
 		std::vector<glm::vec3> mObjectPoints = std::vector<glm::vec3>(8);
-
 		std::vector<glm::vec3> mFramePoints = std::vector<glm::vec3>(8);
-
-		std::vector<float> mMotorInputs = std::vector<float>(8);
-
-		float mMillimeterToMotorsteps;
-
-		int mMotorOffset;
 	};
 }

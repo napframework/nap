@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "timelineguiproperties.h"
+
 // External Includes
 #include <nap/datetime.h>
 #include <color.h>
@@ -14,9 +17,12 @@
 #include <parametervec.h>
 #include <sequenceplayercomponent.h>
 #include <oscinputcomponent.h>
+#include <oscsender.h>
+#include <maccontroller.h>
 
-#include "flexblockcomponent.h"
-#include "sequenceplayercomponent.h"
+#include <flexblockcomponent.h>
+#include <sequenceplayercomponent.h>
+#include <macadapter.h>
 
 namespace nap
 {
@@ -24,6 +30,7 @@ namespace nap
 	class FlexblockApp;
 	class ParameterGUI;
 	class ParameterService;
+	class TimelineGuiProperties;
 
 	class FlexblockGui final
 	{
@@ -37,12 +44,10 @@ namespace nap
 		 */
 		void init();
 
-		void initOscInputs();
-
 		/**
 		 *	Update all the various gui components
 		 */
-		void update();
+		void update(double time);
 
 		/**
 		 *	Render the gui
@@ -54,62 +59,135 @@ namespace nap
 		 */
 		void toggleVisibility();
 
-		void showTimeLineWindow();
+		void toggleEditableTimelines();
 
-		void handleInsertionPopup();
+		/**
+		 * Sets the window size, use for calculating positions of imgui windows
+		 */
+		void setWindowSize(glm::vec2 size) { mWindowSize = size; }
 
-		void drawTimeline(bool & outPopupOpened, std::string & popupId);
+		/**
+		 * 
+		 */
+		void shutDown();
 
-		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
+		/**
+		 * 
+		 */
+		void quitDialog();
 
-		void handleLoadPopup();
+		void emergencyStop();
 
-		void handleSequenceActionsPopup();
-
-		void handleSaveAsPopup();
-
+		void playPause();
 	private:
-		FlexblockApp&						mApp;				///< The actual atmos application we build the gui for
+		FlexblockApp&						mApp;					///< The actual flexblock application we build the gui for
 		ParameterService&					mParameterService;
 		std::unique_ptr<ParameterGUI>		mParameterGUI;
 		bool								mHide = false;
-		bool								mShowTimeLine = false;
-		bool								mShowSequenceList = false;
 		DateTime							mDateTime;
+		double								mTime = 0.0f;
+		nap::ResourcePtr<MACController>		mMotorController;
+		nap::ResourcePtr<MACAdapter>		mMotorAdapter;
+		int									mResetMotorPos = 0;
 		RGBColor8							mTextColor = { 0xC8, 0x69, 0x69 };
-		float								mTexPreviewDisplaySize = 1.0f;
-		float								mWraPreviewDisplaySize = 1.0f;
-		float								mVidPreviewDisplaySize = 1.0f;
-		float								mScrub = 0.0f;
+		std::vector<float>					mTargetMeters = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+		bool								mEditAllTimelines = false;
+
+		bool								mTimeJumpShouldPlayAfterTransitionDone = false;
+		bool								mInTimeJumpTransition = false;
+		bool								mEmergencyCloseTimeJumpPopup = false;
+		double								mTimeJumpSequencePlayerTarget = 0.0;
+		float								mTimeJumpDifferenceVelocityThreshold = 0.05f;
+		float								mTimeJumpDifferenceDistanceThreshold = 0.05f;
+		double								mTimeJumpActiveTime = 0.0;
+		const double						mTimeJumpMinimumActiveTime = 1.0;
+
+		bool								mOpenTimeJumpPopupFromExternalPlay = false;
+
 
 		timeline::SequencePlayerComponentInstance* mSequencePlayer = nullptr;
 		FlexBlockComponentInstance* mFlexBlock = nullptr;
-
-		std::vector<OSCInputComponentInstance*> mOscInputs;
 		std::vector<ParameterFloat*> mParameters;
+		TimelineGuiProperties mProps;
+
 		/**
 		 * Shows the information window
 		 */
 		void showInfoWindow();
 
+		/**
+		 * Shows motor control window
+		 */
+		void showMotorControlWindow(bool & outPopupOpened, std::string & popupId);
+
 		bool handleNewShowPopup(std::string & outNewFilename, utility::ErrorState& error);
 
 		std::string formatTimeString(float time);
 
-		void showSequencesWindow();
+		void drawPlaylist(bool& outOpenPopup, std::string & outPopupID);
 
 		void handleElementActionsPopup();
 
+		/**
+		* show the timeline window
+		*/
+		void showTimeLineWindow();
+
+		void handleQuitPopup();
+
+		/**
+		* Handle insertion popup
+		*/
+		void handleInsertionPopup();
+
+		void handleEditValuePopup();
+
+		/**
+		* Draw timeline
+		*/
+		void drawTimeline(bool & outPopupOpened, std::string & popupId, std::string timelineId, int size, int offset);
+
+		/**
+		* Draw controls
+		*/
+		void drawTimelinePlayerControls(bool & outPopupOpened, std::string & popupId);
+
+		/**
+		* handle show load popup
+		*/
+		void handleLoadPopup();
+
+		/**
+		* handle sequence actions popup
+		*/
+		void handleSequenceActionsPopup();
+
+		/**
+		* Handle save popup
+		*/
+		void handleSaveAsPopup();
+
 		void initParameters();
+
 		void updateInput(int index, float value);
 
-		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState errorState);
+		void updateOverride(int index, float value);
 
-		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState errorState);
+		bool insertNewElement(std::unique_ptr<timeline::SequenceElement> newElement, utility::ErrorState& errorState);
+
+		bool insertNewSequence(std::unique_ptr<timeline::Sequence> newSequence, utility::ErrorState& errorState);
+
+		void handleTimeJumpPopup();
+
+		bool checkIfTimeJumpPopupNecessary(const double time);
 
 		template<typename T1>
 		std::string convertToString(T1 number, int precision);
 
 		std::string getTimeString();
+
+		void showMotorSteps();
+
+		glm::vec2 mWindowSize;
 	};
 }

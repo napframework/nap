@@ -1,0 +1,259 @@
+#include "macadapter.h"
+#include "flexdevice.h"
+
+#include <nap/logger.h>
+
+// nap::macadapter run time class definition 
+RTTI_BEGIN_CLASS(nap::MACAdapter)
+	RTTI_PROPERTY("Motor Steps Per Meter",	&nap::MACAdapter::mMotorStepsPerMeter,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor Step Offset",		&nap::MACAdapter::mMotorStepOffset,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Smooth Time",			&nap::MACAdapter::mSmoothTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Max Smooth Speed",		&nap::MACAdapter::mMaxSmoothTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Motor Mapping",			&nap::MACAdapter::mMotorMapping,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Controller",				&nap::MACAdapter::mController,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Smooth Using Velocity",	&nap::MACAdapter::mSmoothUsingVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Min Smooth Velocity",	&nap::MACAdapter::mSmoothMinVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Max Smooth Velocity",	&nap::MACAdapter::mSmoothMaxVel,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Smooth Time Min",		&nap::MACAdapter::mSmoothTimeMin,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+//////////////////////////////////////////////////////////////////////////
+
+
+namespace nap
+{
+	MACAdapter::~MACAdapter()			{ }
+
+
+	bool MACAdapter::init(utility::ErrorState& errorState)
+	{
+		// Ensure we have enough mappings for the slaves
+		if (!errorState.check(mController->getSlaveCount() <= mMotorMapping.size(), "slave count exceeds number of motor mappings"))
+			return false;
+
+		// Create our smoothers
+		setSmoothTime(mSmoothTime);
+		for (auto& smoother : mSmoothers)
+		{
+			smoother = std::make_unique<math::FloatSmoothOperator>(0, getSmoothTime(), mMaxSmoothTime);
+		}
+		return true;
+	}
+
+
+	void MACAdapter::onCompute(const FlexDevice& device, double deltaTime)
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// Convert flexblock output into motor values
+		//////////////////////////////////////////////////////////////////////////
+
+		// Extract rope lengths
+		device.getRopeLengths(mMotorStepsInt);
+
+		// convert meters to motor-steps
+		for (auto& length : mMotorStepsInt)
+			length *= mMotorStepsPerMeter;
+
+		// Apply lag
+		applyLag(mMotorStepsInt, deltaTime);
+
+		//////////////////////////////////////////////////////////////////////////
+		// Set motor values in controller
+		//////////////////////////////////////////////////////////////////////////
+
+		// Don't perform any tasks when the controller isn't running
+		if (!mController->isRunning())
+			return;
+
+		// check for all slaves to be operational and without errors
+		// if any slave isn't operational stop processing
+		for (int i = 0; i < mController->getSlaveCount(); i++)
+		{
+			if (mController->getSlaveState(i) != EtherCATMaster::ESlaveState::Operational)
+			{
+				nap::Logger::error("Slave: %d not operational! Stopping MACController!", i);
+				mController->stop();
+				return;
+			}
+		}
+
+		// Ensure out input data matches number of slaves
+		// This also ensures the initial set of motor positions matches that of the controller
+		mController->getPositionData(mMotorData);
+
+		// All slaves are operational
+		for (int i = 0; i < mController->getSlaveCount(); i++)
+		{
+			// get the input for motor index
+			int input_index = mMotorMapping[i];
+
+			// Update target position
+			assert(input_index < mMotorStepsInt.size());
+			mMotorData[i].setTargetPosition(mMotorStepsInt[input_index]);
+		}
+
+		// Update position data
+		mController->setPositionData(mMotorData);
+	}
+
+
+	void MACAdapter::onStart()
+	{
+		mRestart = true;
+	}
+
+
+	void MACAdapter::onEnable(bool value)
+	{
+		mRestart = true;
+	}
+
+
+	void MACAdapter::applyLag(std::vector<float>& outSteps, double deltaTime)
+	{
+		// Simply copy input when lag is turned off
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		if (!mEnableSmoothing)
+		{
+			mMotorInput = mMotorStepsInt;
+			return;
+		}
+
+		// Check if we need to update reference position of smoothers first
+		// If this occurs after a restart we take the actual motor position as reference
+		// Otherwise we sample the flexblock algorithm location
+		if (mSetStep || mRestart)
+		{
+			std::unordered_set<int> mRestarted;
+			if (mRestart)
+			{
+				// If a smoother restart is requested, do so for all motors attached to the system
+				// Restarted smoothers do no receive a regular value reset but reset their position to the actual motor position.
+				for (int i = 0; i < mController->getSlaveCount(); i++)
+				{
+					// get the motor position of the requested motor
+					nap::int32 actual_pos = mController->getActualPosition(i);
+
+					// map it back to a smoother, so we can override it's current value
+					int smooth_index = mMotorMapping[i];
+
+					// Update the smoother with the current motor value
+					assert(smooth_index < mSmoothers.size());
+					mSmoothers[smooth_index]->setValue(static_cast<float>(actual_pos));
+					mRestarted.emplace(smooth_index);
+				}
+			}
+
+			// Now update all the smoothers based on flexblock input, skip the ones that were restarted.
+			for (int i = 0; i < mSmoothers.size(); i++)
+			{
+				if(mRestarted.find(i) != mRestarted.end())
+					continue;
+				mSmoothers[i]->setValue(mMotorInput[i]);
+			}
+
+			mVelocity = 0.0f;
+			mRestart = false;
+			mSetStep = false;
+		}
+
+		// Scale time based on velocity
+		float smooth_time = mSmoothTimeLocal;
+		if (mSmoothUsingVel)
+		{
+			float min_target = math::min<float>(mSmoothTimeMin, mSmoothTimeLocal);
+			smooth_time = math::fit<float>(mVelocity, mSmoothMinVel, mSmoothMaxVel, min_target, mSmoothTimeLocal);
+		}
+
+		// Update positions based on smoothed interpolation values
+		assert(outSteps.size() == mSmoothers.size());
+		float vel_wei = 0.0f, vel_sum = 0.0f;
+		for (int i = 0; i < mSmoothers.size(); i++)
+		{
+			mSmoothers[i]->mSmoothTime = smooth_time;
+			outSteps[i] = mSmoothers[i]->update(outSteps[i], deltaTime);
+			
+			// Calculate weighted velocity contribution
+			float smooth_vel = math::abs<float>(mSmoothers[i]->getVelocity());
+			float smooth_con = math::fit<float>(smooth_vel, mSmoothMinVel, mSmoothMaxVel, 1.0f, 5.0f);
+			vel_sum += (smooth_vel * smooth_con);
+			vel_wei += smooth_con;
+		}
+
+		// Update velocity and store motor input
+		mVelocity = vel_sum / vel_wei;
+		mMotorInput = mMotorStepsInt;
+	}
+
+
+	void MACAdapter::getMotorInput(std::vector<float>& outSteps)
+	{
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		outSteps = mMotorInput;
+	}
+
+
+	void MACAdapter::getLag(std::vector<float>& outLag, std::vector<float>& outVel)
+	{
+		outLag.clear();
+		outLag.resize(mSmoothers.size(), 0);
+
+		outVel.clear();
+		outVel.resize(mSmoothers.size(), 0);
+		
+		if (!mEnableSmoothing)
+			return;
+
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		assert(mMotorInput.size() == mSmoothers.size());
+		for (auto i = 0; i < mMotorInput.size(); i++)
+		{
+			outLag[i] = math::abs<float>(mSmoothers[i]->getTarget() - mMotorInput[i]);
+			outVel[i] = mSmoothers[i]->getVelocity();
+		}
+	}
+
+
+	void MACAdapter::getSmootherTarget(std::vector<float>& outSteps)
+	{
+		outSteps.clear();
+		outSteps.resize(mSmoothers.size(), 0);
+
+		for (auto i = 0; i < mSmoothers.size(); i++)
+		{
+			outSteps[i] = mSmoothers[i]->getTarget();
+		}
+	}
+
+
+	void MACAdapter::enableSmoothing(bool value)
+	{
+		std::lock_guard<std::mutex> lock(mMotorMutex);
+		mSetStep = value;
+		mEnableSmoothing = value;
+	}
+
+
+	bool MACAdapter::smoothingEnabled() const
+	{
+		return mEnableSmoothing;
+	}
+
+
+	void MACAdapter::setSmoothTime(float smoothTime)
+	{
+		mSmoothTimeLocal = math::max<float>(smoothTime, 0.01f);
+	}
+
+
+	float MACAdapter::getSmoothTime()
+	{
+		return mSmoothTimeLocal;
+	}
+
+
+	float nap::MACAdapter::getMotorStepsPerMeter() const
+	{
+		return mMotorStepsPerMeter;
+	}
+}

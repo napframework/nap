@@ -36,13 +36,22 @@ namespace nap
 				}
 			}
 
+			// sort the list of sequences
+			sort(mSequenceResourcePtrs.begin(), mSequenceResourcePtrs.end(), [](
+				const nap::ResourcePtr<Sequence> a,
+				const nap::ResourcePtr<Sequence> b)-> bool
+			{
+				return a.get()->mIndexInSequenceContainer < b.get()->mIndexInSequenceContainer;
+			});
+
+
 			double time = 0.0;
 			mSequences.clear();
-			for (const auto& sequence : mSequenceResourcePtrs)
+			for (int i = 0; i < mSequenceResourcePtrs.size(); i++)
 			{
-				sequence->setStartTime(time);
-				time += sequence->getDuration();
-				mSequences.emplace_back(sequence.get());
+				mSequenceResourcePtrs[i]->setStartTime(time);
+				time += mSequenceResourcePtrs[i]->getDuration();
+				mSequences.emplace_back(mSequenceResourcePtrs[i].get());
 			}
 
 			for (int i = 0; i < mSequences.size(); i++)
@@ -71,6 +80,8 @@ namespace nap
 				}
 			}
 
+			int sequenceIndex = sequence->mIndexInSequenceContainer;
+
 			if (indexToRemove > -1)
 			{
 				mSequences.erase(mSequences.begin() + indexToRemove);
@@ -82,6 +93,14 @@ namespace nap
 				{
 					mOwnedSequences.erase(mOwnedSequences.begin() + i);
 					break;
+				}
+			}
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (mSequences[i]->mIndexInSequenceContainer >= sequenceIndex)
+				{
+					mSequences[i]->mIndexInSequenceContainer -= 1;
 				}
 			}
 
@@ -101,13 +120,49 @@ namespace nap
 			}
 		}
 
-		void SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
+		void nap::timeline::SequenceContainer::moveSequenceForward(const Sequence * sequence)
 		{
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				if (mSequences[i] == sequence)
+				{
+					if (i < mSequences.size() - 1)
+					{
+						mSequences[i]->mIndexInSequenceContainer += 1;
+						mSequences[i + 1]->mIndexInSequenceContainer -= 1;
+						reconstruct();
+						break;
+					}
+				}
+			}
+		}
+
+		void nap::timeline::SequenceContainer::moveSequenceBackward(const Sequence * sequence)
+		{
+			for (int i = 1; i < mSequences.size(); i++)
+			{
+				if (mSequences[i] == sequence)
+				{
+					mSequences[i]->mIndexInSequenceContainer -= 1;
+					mSequences[i - 1]->mIndexInSequenceContainer += 1;
+					reconstruct();
+					break;
+				}
+			}
+		}
+
+
+		Sequence* SequenceContainer::insertSequence(std::unique_ptr<Sequence> sequence)
+		{
+			Sequence* returnSequenecePtr = sequence.get();
 			mSequences.emplace_back(sequence.get());
 			mOwnedSequences.emplace_back(std::move(sequence));
 
 			reconstruct();
+
+			return returnSequenecePtr;
 		}
+
 
 		void SequenceContainer::setSequences(std::vector<std::unique_ptr<Sequence>>& sequences)
 		{
@@ -137,8 +192,13 @@ namespace nap
 				const Sequence *a,
 				const Sequence *b)-> bool
 			{
-				return a->getStartTime() < b->getStartTime();
+				return a->mIndexInSequenceContainer < b->mIndexInSequenceContainer;
 			});
+
+			for (int i = 0; i < mSequences.size(); i++)
+			{
+				mSequences[i]->mIndexInSequenceContainer = i;
+			}
 
 			double time = 0.0;
 			SequenceElement* lastElement = nullptr;
@@ -147,7 +207,7 @@ namespace nap
 			{
 				if (i > 0)
 				{
-					mSequences[i]->mStartParameters.clear();
+					//mSequences[i]->mStartParameters.clear();
 					mSequences[i]->mStartParametersReference = mSequences[i - 1]->getElements().back()->getEndParameters();
 					mSequences[i]->mUseReference = true;
 				}
@@ -156,15 +216,15 @@ namespace nap
 					mSequences[i]->mUseReference = false;
 				}
 
-				
-				mSequences[i]->mIndexInSequenceContainer = i;
-
 				mSequences[i]->setStartTime(time);
 				time += mSequences[i]->getDuration();
-				//mSequences[i]->reconstruct();
 
 				for (int j = 0; j < mSequences[i]->getElements().size(); j++)
 				{
+					if (lastElement == nullptr )
+					{
+						mSequences[i]->getElements()[j]->setStartParameters(mSequences[i]->getStartParameters());
+					}
 					mSequences[i]->getElements()[j]->setPreviousElement(lastElement);
 					lastElement = mSequences[i]->getElements()[j];
 				}

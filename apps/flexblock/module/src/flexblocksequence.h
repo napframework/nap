@@ -9,6 +9,29 @@ namespace nap
 {
 	namespace flexblock
 	{
+		enum PARAMETER_IDS
+		{
+			MOTOR_ONE = 0,
+			MOTOR_TWO = 1,
+			MOTOR_THREE = 2,
+			MOTOR_FOUR = 3,
+			MOTOR_FIVE = 4,
+			MOTOR_SIX = 5,
+			MOTOR_SEVEN = 6,
+			MOTOR_EIGHT = 7,
+			SLACK = 8,
+			MOTOR_OVERRIDE_ONE = 9,
+			MOTOR_OVERRIDE_TWO = 10,
+			MOTOR_OVERRIDE_THREE = 11,
+			MOTOR_OVERRIDE_FOUR = 12,
+			MOTOR_OVERRIDE_FIVE = 13,
+			MOTOR_OVERRIDE_SIX = 14,
+			MOTOR_OVERRIDE_SEVEN = 15,
+			MOTOR_OVERRIDE_EIGHT = 16,
+			SINUS_FREQUENCY = 17,
+			SINUS_AMPLITUDE = 18
+		};
+
 		//////////////////////////////////////////////////////////////////////////
 		/**
 		 * FlexblockSequence
@@ -32,6 +55,8 @@ namespace nap
 			* 8 floating point values that will be used to create parameter resources during init
 			*/
 			std::vector<float> mMotorInputs = std::vector<float>(8);
+
+			std::vector<float> mSpecials = std::vector<float>(11);
 		protected:
 			/**
 			* A vector holder unique pointers to created parameters

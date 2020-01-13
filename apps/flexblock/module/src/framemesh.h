@@ -13,9 +13,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * FrameMesh
-	 * Renders the frame of a flexblock object
-	 */
+	* FrameMesh
+	* Renders the frame of a flexblock object
+	*/
 	class NAPAPI FrameMesh : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
@@ -28,10 +28,10 @@ namespace nap
 
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 		ResourcePtr<FlexBlockMesh> mFlexBlockMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-		
+
 		const math::Box& getBox() const { return mBox; }
 
-		void setFramePoints(std::vector<glm::vec3> frame);
+		void setFramePoints(std::vector<glm::vec3> frame, std::vector<glm::vec3> box);
 	public:
 		glm::vec3 mSize = { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the frame
 	protected:
@@ -49,6 +49,9 @@ namespace nap
 
 		// Color attribute data
 		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
+
+		std::vector<glm::vec3> mBoxPoints;
+		std::vector<glm::vec3> mFramePoints;
 
 		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};
