@@ -7,6 +7,8 @@
 #include <nopengl.h>
 #include <utility/errorstate.h>
 
+#include "glslang/Public/ShaderLang.h"
+
 RTTI_DEFINE_CLASS(nap::Renderer)
 
 RTTI_BEGIN_CLASS(nap::RendererSettings)
@@ -443,6 +445,9 @@ namespace nap
 	bool Renderer::init(const RendererSettings& rendererSettings, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
+			return false;
+
+		if (!errorState.check(ShInitialize() != 0, "Failed to initialize shader compiler"))
 			return false;
 
 		// Store render settings, used for initialization and global window creation

@@ -26,8 +26,8 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "GeneralShader",
-			"mVertShader": "shaders/shader_vert.spv",
-			"mFragShader": "shaders/shader_frag.spv",
+			"mVertShader": "shaders/shader.vert",
+			"mFragShader": "shaders/shader.frag",
             "OutputFormat": "RGBA8"
 		},        
 		{
