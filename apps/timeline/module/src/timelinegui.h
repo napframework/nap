@@ -7,10 +7,27 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <rtti/objectptr.h>
+#include <imgui/imgui.h>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+
+	enum TimelineGUIMouseActions
+	{
+		DRAGGING_KEYFRAME,
+		DRAGGING_KEYFRAMEVALUE,
+		NONE
+	};
+
+	struct TimelineGUIMouseActionData
+	{
+	public:
+		bool	mouseWasDown					= false;
+		ImVec2	previousMousePos				= ImVec2(0, 0);
+		TimelineGUIMouseActions currentAction	= TimelineGUIMouseActions::NONE;
+		rtti::Object* currentObject				= nullptr;
+	};
 
 	/**
 	 */
@@ -18,9 +35,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		void construct();
-
-		void setParameters(const std::vector<rtti::ObjectPtr<ParameterFloat>>& parameters);
+		void draw();
 
 		std::string getName() const;
 
@@ -28,7 +43,6 @@ namespace nap
 	public:
 		ResourcePtr<TimelineHolder>						mTimelineHolder;
 	protected:
-		std::vector<const char*>						mParameterNames;
-		std::vector<std::string>						mParameterIDs;
+		TimelineGUIMouseActionData							mMouseActionData;
 	};
 }

@@ -37,8 +37,23 @@ namespace nap
 	}
 
 
+	bool TimelineHolder::load(const std::string& name, utility::ErrorState& errorState)
+	{
+		if (!mTimeline->save(name, errorState))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+
 	bool TimelineHolder::save(const std::string& name, utility::ErrorState& errorState)
 	{
+		if (!mTimeline->load(name, errorState))
+		{
+			return false;
+		}
 
 		return true;
 	}

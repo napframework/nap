@@ -91,6 +91,8 @@ namespace nap
 			{
 				auto* timeline = dynamic_cast<Timeline*>(readObject.get());
 				mDuration = timeline->mDuration;
+				mID = timeline->mID;
+				mName = timeline->mName;
 			}
 
 			// fill the tracks
@@ -100,6 +102,14 @@ namespace nap
 			}
 
 			mReadObjects.emplace_back(std::move(readObject));
+		}
+
+		// init objects
+		// TODO : I don't know if this is the way to do it
+		for(auto& objectPtr : mReadObjects)
+		{
+			if (!objectPtr->init(errorState))
+				return false;
 		}
 
 		return true;

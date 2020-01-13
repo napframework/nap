@@ -15,7 +15,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void TimelineGUI::construct()
+	void TimelineGUI::draw()
 	{
 		//
 		auto& timeline = mTimelineHolder->getTimelineRef();
@@ -53,23 +53,6 @@ namespace nap
 				// push id
 				ImGui::PushID(track->mID.c_str());
 
-				// construct dropdown
-				int currentItemIndex = std::distance(mParameterIDs.cbegin(), std::find(mParameterIDs.cbegin(), mParameterIDs.cend(), track->mParameterID));
-				
-				ImGui::PushItemWidth(150.0f);
-				if (ImGui::Combo(
-					"", // label
-					&currentItemIndex, // current item index
-					&mParameterNames[0], // pointer to name array
-					mParameterNames.size())) // size of name array items
-				{
-					track->mParameterID = mParameterIDs[currentItemIndex];
-				}
-				ImGui::PopItemWidth();
-
-				
-				ImGui::SameLine();
-
 				//
 				const float trackHeight = 100.0f;
 				const float keyframeHandlerHeight = 10.0f;
@@ -78,7 +61,8 @@ namespace nap
 				if (ImGui::BeginChild(
 					track->mID.c_str(), // id
 					ImVec2(timelineWidth, trackHeight + keyframeHandlerHeight), // size
-					false)) // no border
+					false, // no border
+					ImGuiWindowFlags_NoMove )) // window flags
 				{
 					// get child focus
 					bool childHasFocus = windowHasFocus && ImGui::IsWindowFocused();
@@ -93,12 +77,12 @@ namespace nap
 					auto windowTopLeft = ImGui::GetWindowPos();
 
 					// calc beginning of timeline graphic
-					auto timelineTopLeft = ImVec2(windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y);
+					auto trackTopLeft = ImVec2(windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y);
 
 					// draw background of timeline
 					drawList->AddRectFilled(
-						timelineTopLeft, // top left position
-						ImVec2(timelineTopLeft.x + timelineWidth, timelineTopLeft.y + trackHeight), // bottom right position
+						trackTopLeft, // top left position
+						ImVec2(trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight), // bottom right position
 						guicolors::black); // color 
 
 					//
@@ -112,12 +96,74 @@ namespace nap
 
 						// draw keyframe line
 						drawList->AddLine(
-							ImVec2(timelineTopLeft.x + x, timelineTopLeft.y), // top left
-							ImVec2(timelineTopLeft.x + x, timelineTopLeft.y + trackHeight), // bottom right
+							ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
+							ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
 							guicolors::white, // color
 							1.0f); // thickness
 
-						// evaluate curve
+						// draw keyframe value handler
+						drawList->AddCircle(
+							ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
+							5.0f, // radius
+							guicolors::red); // color
+
+						// handle mouse actions for keyframe value
+						if( mMouseActionData.currentAction == TimelineGUIMouseActions::NONE && 
+							ImGui::IsMouseHoveringRect(
+								ImVec2(trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5), // topleft
+								ImVec2(trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5))) // bottomright
+						{
+							drawList->AddCircleFilled(
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
+								5.0f, // radius
+								guicolors::red); // color
+
+							// if we have a click, initiate a mouse action
+							if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
+							{
+								mMouseActionData.mouseWasDown = true;
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+								mMouseActionData.currentAction = TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE;
+								mMouseActionData.currentObject = keyFrame.get();
+							}
+						}
+						
+						// process mouse action for keyframe value
+						if (mMouseActionData.currentAction == TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
+							keyFrame.get() == mMouseActionData.currentObject)
+						{
+							// draw circle filled
+							drawList->AddCircleFilled(
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
+								5.0f, // radius
+								guicolors::red); // color
+
+							// calc delta
+							float deltaY = ImGui::GetMousePos().y - mMouseActionData.previousMousePos.y;
+
+							// translate delta to timeline position
+							float translatedValue = keyFrame->mValue + deltaY / trackHeight;
+
+							// clamp value
+							translatedValue = math::clamp<float>(translatedValue, 0, 1);
+
+							// set value
+							keyFrame->adjustValue(translatedValue);
+
+							//
+							mMouseActionData.previousMousePos = ImGui::GetMousePos();
+
+							// handle release of mouse, stop mouse action
+							if (mMouseActionData.mouseWasDown && ImGui::IsMouseReleased(0))
+							{
+								mMouseActionData.mouseWasDown = false;
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+								mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+								mMouseActionData.currentObject = nullptr;
+							}
+						}
+
+						// draw curve
 						float curveWidth = x - previousKeyFrameX;
 						const int resolution = 20;
 						std::vector<ImVec2> points;
@@ -127,8 +173,8 @@ namespace nap
 							float value = keyFrame->mCurve->evaluate((float)i / resolution);
 
 							points[i] = ImVec2(
-								timelineTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution), 
-								timelineTopLeft.y + value * trackHeight);
+								trackTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution), 
+								trackTopLeft.y + value * trackHeight);
 						}
 
 						// draw points of curve
@@ -140,24 +186,71 @@ namespace nap
 							1.0f, 
 							true);
 
-						// handler box coordinates
-						ImVec2 handlerBoxTopLeft = ImVec2(timelineTopLeft.x + x, timelineTopLeft.y + trackHeight);
-						ImVec2 handlerBoxBottomLeft = ImVec2(timelineTopLeft.x + x + keyframeHandlerHeight, timelineTopLeft.y + trackHeight + keyframeHandlerHeight);
+						// keyframe handler box coordinates
+						ImVec2 handlerBoxTopLeft = ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight);
+						ImVec2 handlerBoxBottomRight = ImVec2(trackTopLeft.x + x + keyframeHandlerHeight, trackTopLeft.y + trackHeight + keyframeHandlerHeight);
 
-						if (ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomLeft))
+						// check if handler is being hovered
+						if ( ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomRight) && 
+							 mMouseActionData.currentAction == TimelineGUIMouseActions::NONE)
 						{
 							drawList->AddRectFilled(
-								handlerBoxTopLeft,
-								handlerBoxBottomLeft,
-								guicolors::white
+								handlerBoxTopLeft, // topleft
+								handlerBoxBottomRight, // bottomright
+								guicolors::white // color
 							);
+
+							// if we have a click, initiate a mouse action
+							if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
+							{
+								mMouseActionData.mouseWasDown = true;
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+								mMouseActionData.currentAction = TimelineGUIMouseActions::DRAGGING_KEYFRAME;
+								mMouseActionData.currentObject = keyFrame.get();
+							}
+						}
+
+						// handle mouse action
+						if (mMouseActionData.currentAction == TimelineGUIMouseActions::DRAGGING_KEYFRAME &&
+							mMouseActionData.currentObject == keyFrame.get())
+						{
+							drawList->AddRectFilled(
+								handlerBoxTopLeft, // topleft
+								handlerBoxBottomRight, // bottom right
+								guicolors::white // color
+							);
+
+							// handle mouse drag
+							if (mMouseActionData.mouseWasDown && ImGui::IsMouseDragging(0))
+							{
+								// calc delta
+								float deltaX = ImGui::GetMousePos().x - mMouseActionData.previousMousePos.x;
+
+								// translate delta to timeline position
+								float timelinepos = keyFrame->mTime + deltaX / stepSize;
+
+								// set keyframe time
+								keyFrame->mTime = timelinepos;
+
+								// set previous mouse pos
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+							}
+
+							// handle release of mouse, stop mouse action
+							if (mMouseActionData.mouseWasDown && ImGui::IsMouseReleased(0))
+							{
+								mMouseActionData.mouseWasDown = false;
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+								mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+								mMouseActionData.currentObject = nullptr;
+							}
 						}
 						else
 						{
 							drawList->AddRect(
-								handlerBoxTopLeft,
-								handlerBoxBottomLeft,
-								guicolors::white
+								handlerBoxTopLeft, // topleft
+								handlerBoxBottomRight, // bottom right
+								guicolors::white // color
 							);
 						}
 
@@ -178,22 +271,6 @@ namespace nap
 
 		// pop id
 		ImGui::PopID();
-	}
-
-
-	void nap::TimelineGUI::setParameters(const std::vector<rtti::ObjectPtr<ParameterFloat>>& parameters)
-	{
-		mParameterIDs.clear();
-		for (const auto& parameter : parameters)
-		{
-			mParameterIDs.emplace_back(parameter->mID);
-		}
-
-		mParameterNames.clear();
-		for (const auto& parameter : mParameterIDs)
-		{
-			mParameterNames.emplace_back(parameter.c_str());
-		}
 	}
 
 

@@ -18,7 +18,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::string									mParameterID;
 		std::vector<ResourcePtr<KeyFrame>>			mKeyFrames;
 	};
 }

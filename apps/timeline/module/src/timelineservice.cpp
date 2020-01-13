@@ -43,12 +43,13 @@ namespace nap
 			ImGui::EndMainMenuBar();
 		}
 
+
 		// construct timeline guis
 		for (const auto& pair : mTimelineToggledMap)
 		{
 			if (pair.second)
 			{
-				mTimelineMap[pair.first]->construct();
+				mTimelineMap[pair.first]->draw();
 			}
 		}
 	}
@@ -64,20 +65,16 @@ namespace nap
 		// fetch all timeline guis
 		auto timelines = getCore().getResourceManager()->getObjects<TimelineGUI>();
 
-		// fetch all parameters
-		auto parameters = getCore().getResourceManager()->getObjects<ParameterFloat>();
-
 		// construct maps
-		mTimelineMap.clear();
-		mTimelineToggledMap.clear();
 		for (const auto& timelineGUI : timelines)
 		{
 			// construct maps
-			mTimelineToggledMap.insert(std::pair<std::string, bool>(timelineGUI->mID, false));
-			mTimelineMap.insert(std::pair<std::string, rtti::ObjectPtr<TimelineGUI>>(timelineGUI->mID, timelineGUI));
+			if (mTimelineToggledMap.find(timelineGUI->mID) == mTimelineToggledMap.end())
+			{
+				mTimelineToggledMap.insert(std::pair<std::string, bool>(timelineGUI->mID, false));
+				mTimelineMap.insert(std::pair<std::string, rtti::ObjectPtr<TimelineGUI>>(timelineGUI->mID, timelineGUI));
+			}
 
-			//
-			timelineGUI->setParameters(parameters);
 		}
 	}
 
