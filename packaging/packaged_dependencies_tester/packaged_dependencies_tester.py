@@ -569,13 +569,12 @@ def build_cwd_project(project_name):
     if sys.platform.startswith('darwin'):
         os.chdir('xcode')
         cmd = 'xcodebuild -configuration %s -jobs %s' % (PROJECT_BUILD_TYPE, cpu_count())
-        
     elif sys.platform.startswith('linux'):
         os.chdir('build')
         cmd = 'make all . -j%s' % cpu_count()
     else:
         os.chdir('msvc64')
-        cmd = 'cmake --build . --target %s --config %s' % (project_name, PROJECT_BUILD_TYPE)
+        cmd = '..\\..\\..\\thirdparty\\cmake\\bin\\cmake --build . --target %s --config %s' % (project_name, PROJECT_BUILD_TYPE)
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)

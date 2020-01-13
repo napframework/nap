@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
 
 include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
 

@@ -20,11 +20,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
+# Add the runtime paths for RTTR & GLEW on macOS
 if(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()    
+    add_macos_rttr_rpath()
+    add_macos_glew_rpath()
 endif()
-
 
 # ======================= UNIT TESTS
 enable_testing()
@@ -87,6 +87,13 @@ if (WIN32)
                   ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
+
+    if(PACKAGE_PDBS)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
+                DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
+                CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE}
+                )
+    endif()            
 elseif(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
     # Add extra modules for RPATH building on macOS, likely related to NAP-225
