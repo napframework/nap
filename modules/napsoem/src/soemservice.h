@@ -6,31 +6,24 @@
 namespace nap
 {
 	/**
-	 * Manages the serial library.
+	 * Manages the soem (simple open ethercat master) library.
 	 */
 	class NAPAPI SOEMService : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
 		/**
-		 *	Default constructor
+		 * Default constructor. This service has no settings associated with it.
 		 */
 		SOEMService(ServiceConfiguration* configuration);
-
-		/**
-		 *	Explicitly frees the serial API
-		 */
 		virtual ~SOEMService() override;
 
 	protected:
 		/**
-		 * Initialize serial related functionality
+		 * Prints all the available network adapters to console.
+		 * @param error contains the error if initialization fails.
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& error) override;
-
-		/**
-		 *	Shuts down all serial related functionality
-		 */
-		virtual void shutdown() override;
 	};
 }
