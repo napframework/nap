@@ -84,15 +84,12 @@ namespace nap
 		// All slaves are operational
 		for (int i = 0; i < mController->getSlaveCount(); i++)
 		{
-			// get the mapped motor index
-			int mapped_idx = mMotorMapping[i];
-
-			// Check if the mapped index doesn't exceed number of slaves
-			if (mapped_idx >= mController->getSlaveCount())
-				continue;
+			// get the input for motor index
+			int input_index = mMotorMapping[i];
 
 			// Update target position
-			mMotorData[i].setTargetPosition(mMotorStepsInt[mapped_idx]);
+			assert(input_index < mMotorStepsInt.size());
+			mMotorData[i].setTargetPosition(mMotorStepsInt[input_index]);
 		}
 
 		// Update position data
@@ -127,26 +124,34 @@ namespace nap
 		// Otherwise we sample the flexblock algorithm location
 		if (mSetStep || mRestart)
 		{
-			for (auto i = 0; i < mSmoothers.size(); i++)
+			std::unordered_set<int> mRestarted;
+			if (mRestart)
 			{
-				if (i < mController->getSlaveCount() &&
-					i < mMotorMapping.size() &&
-					mMotorMapping[i] < mSmoothers.size() && 
-					mRestart)
+				// If a smoother restart is requested, do so for all motors attached to the system
+				// Restarted smoothers do no receive a regular value reset but reset their position to the actual motor position.
+				for (int i = 0; i < mController->getSlaveCount(); i++)
 				{
-					// get the motor position
+					// get the motor position of the requested motor
 					nap::int32 actual_pos = mController->getActualPosition(i);
 
-					// get the mapped motor index, maps to input
-					int mapped_idx = mMotorMapping[i];
+					// map it back to a smoother, so we can override it's current value
+					int smooth_index = mMotorMapping[i];
 
-					mSmoothers[mapped_idx]->setValue(static_cast<float>(actual_pos));
-				}
-				else
-				{
-					mSmoothers[i]->setValue(mMotorInput[i]);
+					// Update the smoother with the current motor value
+					assert(smooth_index < mSmoothers.size());
+					mSmoothers[smooth_index]->setValue(static_cast<float>(actual_pos));
+					mRestarted.emplace(smooth_index);
 				}
 			}
+
+			// Now update all the smoothers based on flexblock input, skip the ones that were restarted.
+			for (int i = 0; i < mSmoothers.size(); i++)
+			{
+				if(mRestarted.find(i) != mRestarted.end())
+					continue;
+				mSmoothers[i]->setValue(mMotorInput[i]);
+			}
+
 			mVelocity = 0.0f;
 			mRestart = false;
 			mSetStep = false;
