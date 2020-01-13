@@ -138,19 +138,20 @@ namespace nap
 		void updateUniforms(const DescriptorSet& descriptorSet);
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(utility::ErrorState& errorState);
+		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
 		SamplerInstance& getOrCreateSamplerInternal(const std::string& name);
 
 	private:
-		MaterialInstanceResource*				mResource;							// Resource this instance is associated with
-		VkDevice								mDevice = nullptr;
-		RenderService*							mRenderService = nullptr;
-		DescriptorSetAllocator*					mDescriptorSetAllocator = nullptr;
-		std::vector<UniformBufferObject>		mUniformBufferObjects;
-		std::vector<SamplerInstance*>			mSamplers;
-		std::vector<VkWriteDescriptorSet>		mSamplerDescriptors;
-		std::vector<VkDescriptorImageInfo>		mSamplerImages;
-		bool									mUniformsDirty = false;
+		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
+		VkDevice								mDevice = nullptr;						// Vulkan device
+		RenderService*							mRenderService = nullptr;				// RenderService
+		DescriptorSetAllocator*					mDescriptorSetAllocator = nullptr;		// Allocator used to acquire Vulkan Descriptor Sets on each update
+		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
+		std::vector<SamplerInstance*>			mSamplers;								// List of all sampler instances, both from Material and MaterialInstance
+		std::vector<VkWriteDescriptorSet>		mSamplerDescriptors;					// List of sampler descriptors, used to update Descriptor Sets
+		std::vector<VkDescriptorImageInfo>		mSamplerImages;							// List of sampler images, used to update Descriptor Sets.
+		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
 	};
 
 	template<class T>

@@ -115,6 +115,7 @@ namespace nap
 		if (existing != nullptr)
 			return *existing;
 
+		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const opengl::UniformStructDeclaration* declaration = nullptr;
 		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader()->getShader().getUBODeclarations();
 		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
@@ -127,31 +128,39 @@ namespace nap
 		}
 		assert(declaration != nullptr);
 
+		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
 		return createRootStruct(*declaration, std::bind(&MaterialInstance::onUniformCreated, this));
 	}
 
 
 	void MaterialInstance::onUniformCreated()
 	{
-		mUniformsDirty = true;
+		// We only store that uniforms have been created. During update() we will update UBO structures. The reason
+		// why we don't do this in place is because we to avoid multiple rebuilds for a single draw.
+		mUniformsCreated = true;
 	}
 
 
+	// This function is called whenever a SamplerInstance changes its texture. We already have VkWriteDescriptorSets
+	// that contain image information that point into the mSampleImages array. The information in VkWriteDescriptorSets
+	// remains static after init, no matter what textures we use, because it is pointing to indices into the mSamplerImages array.
+	// What we need to do here is update the contents of the mSamplerImages array so that it points to correct information
+	// for the texture change. This way, when update() is called, VkUpdateDescriptorSets will use the correct image info.
 	void MaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance)
 	{
-		size_t sampler_image_start_index = mSamplerImages.size();
+		VkSampler vk_sampler = samplerInstance.getSampler();
 		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
 		{
 			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
 
-			for (int index = imageStartIndex; index < sampler_2d_array->getNumElements(); ++index)
+			for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
 			{
 				const Texture2D& texture = sampler_2d_array->getTexture(index);
 
-				VkDescriptorImageInfo& imageInfo = mSamplerImages[index];
+				VkDescriptorImageInfo& imageInfo = mSamplerImages[imageStartIndex + index];
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo.imageView = texture.getImageView();
-				imageInfo.sampler = sampler_2d_array->getSampler();
+				imageInfo.sampler = vk_sampler;
 			}
 		}
 		else
@@ -161,7 +170,7 @@ namespace nap
 			VkDescriptorImageInfo& imageInfo = mSamplerImages[imageStartIndex];
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getImageView();
-			imageInfo.sampler = sampler_2d->getSampler();
+			imageInfo.sampler = vk_sampler;
 		}
 	}
 
@@ -183,6 +192,7 @@ namespace nap
 
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
+		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
 		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
 			UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
@@ -195,6 +205,16 @@ namespace nap
 		}
 	}
 
+
+	void MaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
+	{
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = texture2D.getImageView();
+		imageInfo.sampler = sampler;
+
+		mSamplerImages.push_back(imageInfo);
+	}
 
 	bool MaterialInstance::initSamplers(utility::ErrorState& errorState)
 	{
@@ -210,15 +230,36 @@ namespace nap
 		mSamplerDescriptors.resize(sampler_declarations.size());
 		mSamplerImages.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 		
+		// Samplers are initialized in two steps (somewhat similar to how uniforms are setup):
+		// 1) We create sampler instances based on sampler declarations for all properties in MaterialInstance (so, the ones that are overridden).
+		// 2) We initialize a VkWriteDescriptorSet that contains information that is either pointing to data from MaterialInstance if overridden, 
+		//    otherwise data from the Material. This VkWriteDescriptorSet is used later to update the final DescriptorSet that will be used for 
+		//    rendering. The VkWriteDescriptorSet is not yet complete because the final DescriptorSet is not yet set (it is nullptr). The reason is 
+		//    that the DescriptorSet is acquired before rendering (see comments in update()).
+		//
+		// The VkWriteDescriptorSets require information about the images that are bound in the form of a VkDescriptorImageInfo. Each bound image 
+		// needs such a structure. We build these here as well. Notice also that in the case of arrays, ImageInfo is created for each element in the array.
+		// So imagine that we have a normal sampler, and a sampler array in the shader which has 10 elements. In this case we'd have:
+		// - 2 sampler declarations in the shader, 2 sampler instances and 2 sampler descriptors in MaterialInstance
+		// - 11 elements in the mSamplerImages array
+		// The two sampler descriptors in the mSamplerDescriptors will contain count and offset info into the mSamplerImages array.
+		// 
+		// Notice that most of the information in VkWriteDescriptorSets remains constant: everything regarding the shader layout and the bindings do 
+		// not change. So we build these write descriptor sets up front and only change the information that can change. These are:
+		// - WriteDescriptorSet (which is acquired during update())
+		// - What texture is bound (so: image info)
+		// 
 		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
 			const opengl::SamplerDeclaration& declaration = sampler_declarations[sampler_index];
 			bool is_array = declaration.mNumArrayElements > 1;
 
+			// Check if the sampler is set as override in the MaterialInstance
 			const Sampler* sampler = findSamplerResource(mResource->mSamplers, declaration);
 			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
+				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
 					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerImages.size(), std::placeholders::_1));
@@ -233,38 +274,30 @@ namespace nap
 			}
 			else
 			{
+				// Sampler is not overridden, find it in the Material
 				sampler_instance = material.findSampler(declaration.mName);
 			}
+			mSamplers.push_back(sampler_instance);
 
+			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
 			size_t sampler_image_start_index = mSamplerImages.size();
+			VkSampler vk_sampler = sampler_instance->getSampler();
 			if (is_array)
 			{
+				// Create all VkDescriptorImageInfo for all elements in the array
 				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(sampler_instance);
 
 				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
-				{
-					const Texture2D& texture = sampler_2d_array->getTexture(index);
-
-					VkDescriptorImageInfo imageInfo = {};
-					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					imageInfo.imageView = texture.getImageView();
-					imageInfo.sampler = sampler_instance->getSampler();
-
-					mSamplerImages.push_back(imageInfo);
-				}
+					addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
 			}
 			else
 			{
+				// Create a single VkDescriptorImageInfo for just this element
 				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(sampler_instance);
-
-				VkDescriptorImageInfo imageInfo = {};
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = sampler_2d->getTexture().getImageView();
-				imageInfo.sampler = sampler_instance->getSampler();
-
-				mSamplerImages.push_back(imageInfo);
+				addImageInfo(sampler_2d->getTexture(), vk_sampler);
 			}
 
+			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.
 			VkWriteDescriptorSet& write_descriptor_set = mSamplerDescriptors[sampler_index];
 			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write_descriptor_set.dstSet = nullptr;
@@ -273,8 +306,6 @@ namespace nap
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write_descriptor_set.descriptorCount = mSamplerImages.size() - sampler_image_start_index;
 			write_descriptor_set.pImageInfo = mSamplerImages.data() + sampler_image_start_index;
-
-			mSamplers.push_back(sampler_instance);
 		}
 
 		return true;
@@ -283,6 +314,7 @@ namespace nap
 
 	SamplerInstance& MaterialInstance::getOrCreateSamplerInternal(const std::string& name)
 	{
+		// See if we have an override in MaterialInstance. If so, we can return it
 		SamplerInstance* existing_sampler = findSampler(name);
 		if (existing_sampler != nullptr)
 			return *existing_sampler;
@@ -324,6 +356,11 @@ namespace nap
 
 	void MaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
 	{
+		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
+		// with the actual set that was acquired.
+		// The actual latest images were already set correctly in mSamplerDescriptors during init and when setting
+		// a new texture for a sampler. We just need to call VkUpdateDescriptors with the correct descriptorSet and
+		// latest image info.
 		for (VkWriteDescriptorSet& write_descriptor : mSamplerDescriptors)
 			write_descriptor.dstSet = descriptorSet.mSet;
 
@@ -333,14 +370,31 @@ namespace nap
 
 	VkDescriptorSet MaterialInstance::update()
 	{
-		if (mUniformsDirty)
+		// The UBO contains pointers to all leaf uniform instances. These can be either defines in the material or the 
+		// material instance, depending on whether it's overridden. If new overrides were created between update calls,
+		// we need to patch pointers in the UBO structure to make sure they point to the correct instances.
+		if (mUniformsCreated)
 		{
 			for (UniformBufferObject& ubo : mUniformBufferObjects)
 				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
 
-			mUniformsDirty = false;
+			mUniformsCreated = false;
 		}
 
+		// The DescriptorSet contains information about all UBOs and samplers, along with the buffers that are bound to it.
+		// We acquire a descriptor set that is compatible with our shader. The allocator holds a number of allocated descriptor
+		// sets and we acquire one that is not in use anymore (that is not in any active command buffer). We cannot make assumptions
+		// about the contents of the descriptor sets. The UBO buffers that are bound to it may have different contents than our
+		// MaterialInstance, and the samplers may be bound to different images than those that are currently set in the MaterialInstance.
+		// For this reason, we always fully update uniforms and samplers to make the descriptor set up to date with the MaterialInstance
+		// contents.
+		// The reason why we cannot make any assumptions about the contents of DescriptorSets in the cache is that we can perform multiple
+		// updates & draws of a MaterialInstance within a single frame. How many draws we do for a MaterialInstance is unknown, that is 
+		// up to the client. Because the MaterialInstance state changes *during* a frame for an unknown amount of draws, we 
+		// cannot associate DescriptorSet state as returned from the allocator with the latest MaterialInstance state. One way of looking
+		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
+		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
+		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
 		const DescriptorSet& descriptor_set = mDescriptorSetAllocator->acquire(mUniformBufferObjects, mSamplers);
 
 		updateUniforms(descriptor_set);
@@ -359,11 +413,21 @@ namespace nap
 		Material& material = *resource.mMaterial;
 		const opengl::Shader& shader = material.getShader()->getShader();
 
+		// Here we create UBOs in two parts:
+		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
+		//    this only for the properties in the MaterialInstance (so: the properties that were overridden). We've also already done this
+		//    in the Material, so after this pass we have a hierarchical structure in Material for all properties, and a similar structure
+		//    for the MaterialInstance, but only for the properties that we've overridden.
+		// 2) After pass 1, we create the UBO, which is a non-hierarchical structure that holds pointers to all leaf elements. These leaf
+		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
+		//    Notice that this also means that this structure should be rebuild when a 'new' override is made at runtime. This is handled in
+		//    update() by rebuilding the UBO when a new uniform is created.
 		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(resource.mUniforms, ubo_declaration));
 
+			// Pass 1: create hierarchical structure
 			UniformStructInstance* override_struct = nullptr;
 			if (struct_resource != nullptr)
 			{
@@ -372,16 +436,25 @@ namespace nap
 					return false;
 			}
 
+			// Pass 2: gather leaf uniform instances for a single ubo
 			UniformBufferObject ubo(ubo_declaration);
 			rebuildUBO(ubo, override_struct);
 			mUniformBufferObjects.emplace_back(std::move(ubo));
 		}
 		
-		mUniformsDirty = false;
+		mUniformsCreated = false;
 				
 		if (!initSamplers(errorState))
 			return false;
 
+		// We get/create an allocator that is compatible with the layout of the shader that this material is bound to. Practically this
+		// means a descriptor with:
+		// - Same number of UBOs and samplers
+		// - Same layout bindings
+		// So, any MaterialInstance that is bound to the same shader will be able to allocate from the same DescriptorSetAllocator. It is even
+		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
+		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
+		// to act as 'globally' as possible).
 		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getShader()->getShader().getDescriptorSetLayout());
 
 		return true;
