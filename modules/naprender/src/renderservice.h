@@ -7,6 +7,7 @@
 #include <nopengl.h>
 #include <thread>
 #include <renderablemesh.h>
+#include <rendertarget.h>
 
 // Local Includes
 #include "renderer.h"
