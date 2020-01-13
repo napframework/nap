@@ -36,11 +36,11 @@ namespace nap
 
 		std::string							mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string							mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk
-		ERenderTargetFormat					mOutputFormat = ERenderTargetFormat::RGB8;	///< Property: 'OutputFormat' format of the output
+		ERenderTargetFormat					mOutputFormat = ERenderTargetFormat::RGB8;	///< Property: 'OutputFormat' what elements the fragment shader writes to the target
 
 	private:
 		Renderer*							mRenderer;
-		std::string							mDisplayName;								///< Path to shader on disk
+		std::string							mDisplayName;								///< Filename of shader used as displayname
 		std::unique_ptr<opengl::Shader>		mShader;									///< Shader that is managed by this resource
 	};
 

@@ -43,6 +43,8 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldEntity  = scene->findEntity("World");
 
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -70,7 +72,7 @@ namespace nap
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Update gui and check for gui changes
-		//updateGui();
+		updateGui();
 	}
 
 	
@@ -105,7 +107,7 @@ namespace nap
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), commandBuffer, persp_camera, renderable_comps);
 
 		// Draw gui
-		//mGuiService->draw();
+		mGuiService->draw(commandBuffer);
 
 		// Swap screen buffers
 		mRenderWindow->swap();

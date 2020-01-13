@@ -17,10 +17,10 @@ namespace nap
 {
 	class Material;
 	class MaterialInstance;
-	class UniformLeafInstance;
 	class Renderer;
 	struct DescriptorSet;
 	class DescriptorSetAllocator;
+	class UniformLeafInstance;
 
 	/**
 	 * Blend mode for Materials.
@@ -29,13 +29,12 @@ namespace nap
 	{
 		NotSet = 0,				///< Default value for MaterialInstances, means that the Material's blend mode is used instead
 		Opaque,					///< Regular opaque, similar to (One, Zero) blend
-		AlphaBlend,				///< Transparant object (SrcAlpha, InvSrcAlpha) blend
+		AlphaBlend,				///< Transparent object (SrcAlpha, InvSrcAlpha) blend
 		Additive				///< Additive, (One, One) blend
 	};
 
 	/**
-	 * Determines how to z-buffer is used for reading and writing.
-	 * When inheriting from blend mode
+	 * Determines how the z-buffer is used for reading and writing.
 	 */
 	enum class EDepthMode : int
 	{
@@ -45,21 +44,6 @@ namespace nap
 		ReadOnly,				///< Only read depth
 		WriteOnly,				///< Only write depth
 		NoReadWrite				///< Neither read or write depth
-	};
-
-
-	/**
-	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
-	 * as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
-	 */
-	class NAPAPI MaterialInstanceResource
-	{
-	public:
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
-		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: 
-		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
-		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
-		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
 
 	class UniformBufferObject
@@ -77,11 +61,36 @@ namespace nap
 	};
 
 	/**
-	 * Run time version of a nap::Material. The instance holds overloaded material properties such as
-	 * the uniform shader variables. Use the getOrCreateUniform() functions to create and get access
-	 * to the underlying shader uniforms. The instance is intended to be used as a property in Components. 
-	 * It needs to be initialized based on a MaterialInstanceResource object to fill it's
-	 * runtime data. init() needs to be called from the ComponentInstance's init() function.
+	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
+	 * as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
+	 */
+	class NAPAPI MaterialInstanceResource
+	{
+	public:
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
+		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" that you're overriding
+		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
+		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
+		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
+	};
+
+	/**
+	 * To draw an object with a Material, you need to use a MaterialInstance. MaterialInstance contains the
+	 * runtime data for drawing a Material. MaterialInstance is intended to be used as a property in Components. 
+	 * It needs to be initialized based on a MaterialInstanceResource object to fill it's runtime data. 
+	 * init() needs to be called from the ComponentInstance's init() function.
+	 *
+	 * Multiple MaterialInstances can share a single Material and a single MaterialInstance can override Material 
+	 * properties on a per-instance basis. This means that you can set uniform or texture data on Material level, 
+	 * which means that, as long as the property isn't overridden, you will set it for all MaterialInstances in one
+	 * go. If you set a property on MaterialInstance level, you will set it only for that MaterialInstance.
+	 * 
+	 * It is also possible to set uniform or texture state on a single MaterialInstance multiple times per frame. 
+	 * When multiple draws are performed with the frame, the state at the point of draw will be used.
+	 *
+	 * Performance note: changing the Depth mode or Blend mode frequently on a single MaterialInstance is not recommended,
+	 * as it requires a rebuild of the entire GPU pipeline. If changing it per frame is required, consider using multiple
+	 * MaterialInstance objects and switch between them instead.
 	 */
 	class NAPAPI MaterialInstance : public UniformContainer
 	{
@@ -89,7 +98,7 @@ namespace nap
 	public:
 
 		/**
-		 * For each uniform in mUniforms, creates a mapping.
+		 * Initializes all runtime structures for MaterialInstance.
 		 */
 		bool init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState);
 
@@ -104,13 +113,17 @@ namespace nap
 		EBlendMode getBlendMode() const;
 
 		/**
-		 * Sets the blend mode that is used when rendering an object with this material
+		 * Sets the blend mode that is used when rendering an object with this material. Note that frequently changing
+		 * the blend mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent 
+		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
 		 * @param blendMode the new blend mode
 		 */
 		void setBlendMode(EBlendMode blendMode);
 
-		/**
-		 *	Sets the depth mode used when rendering an object with this material
+		 /**
+		 * Sets the depth mode that is used when rendering an object with this material. Note that frequently changing
+		 * the depth mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent
+		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
 		 * @param depthMode the new depth mode
 		 */
 		void setDepthMode(EDepthMode depthMode);
@@ -122,7 +135,7 @@ namespace nap
 
 		/**
 		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
-		 * to this instance. In order to change a uniform so that it's value is shared among materials, use
+		 * to this instance. In order to change a uniform so that it's value is shared among MaterialInstances, use
 		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform does not 
 		 * match the type that you are trying to create.
 		 * 

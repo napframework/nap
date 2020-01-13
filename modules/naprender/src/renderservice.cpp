@@ -462,9 +462,9 @@ namespace nap
 		return true;
 	}
 
-	VkRenderPass* RenderService::getOrCreateRenderPass(ERenderTargetFormat format)
+	VkRenderPass RenderService::getOrCreateRenderPass(ERenderTargetFormat format)
 	{
-		VkRenderPass* render_pass = nullptr;
+		VkRenderPass render_pass = nullptr;
 		switch (format)
 		{
 		case ERenderTargetFormat::RGBA8:
@@ -472,7 +472,7 @@ namespace nap
 			if (mRenderPassRGBA8 == nullptr)
 				createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8A8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGBA8);
 
-			render_pass = &mRenderPassRGBA8;
+			render_pass = mRenderPassRGBA8;
 		}
 		break;
 		case ERenderTargetFormat::RGB8:
@@ -480,7 +480,7 @@ namespace nap
 			if (mRenderPassRGB8 == nullptr)
 				createRenderPass(mRenderer->getDevice(), VK_FORMAT_B8G8R8_SRGB, mRenderer->getDepthFormat(), mRenderPassRGB8);
 
-			render_pass = &mRenderPassRGB8;
+			render_pass = mRenderPassRGB8;
 		}
 		break;
 		case ERenderTargetFormat::R8:
@@ -488,7 +488,7 @@ namespace nap
 			if (mRenderPassR8 == nullptr)
 				createRenderPass(mRenderer->getDevice(), VK_FORMAT_R8_SRGB, mRenderer->getDepthFormat(), mRenderPassR8);
 
-			render_pass = &mRenderPassR8;
+			render_pass = mRenderPassR8;
 		}
 		break;
 		case ERenderTargetFormat::Depth:
@@ -496,7 +496,7 @@ namespace nap
 			if (mRenderPassDepth == nullptr)
 				createRenderPass(mRenderer->getDevice(), VK_FORMAT_D24_UNORM_S8_UINT, mRenderer->getDepthFormat(), mRenderPassDepth);
 
-			render_pass = &mRenderPassDepth;
+			render_pass = mRenderPassDepth;
 		}
 		break;
 		}
@@ -508,11 +508,11 @@ namespace nap
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
-		VkRenderPass* render_pass = getOrCreateRenderPass(materialInstance.getMaterial()->getShader()->mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial()->getShader()->mOutputFormat);
 
 		VkPipelineLayout layout;
 		VkPipeline pipeline;
-		if (!createGraphicsPipeline(mRenderer->getDevice(), materialInstance, mesh, *render_pass, layout, pipeline, errorState))
+		if (!createGraphicsPipeline(mRenderer->getDevice(), materialInstance, mesh, render_pass, layout, pipeline, errorState))
 			return RenderableMesh();
 
 		return RenderableMesh(mesh, materialInstance, layout, pipeline);
@@ -521,12 +521,12 @@ namespace nap
 
 	void RenderService::recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline)
 	{
-		VkRenderPass* render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial()->getShader()->mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial()->getShader()->mOutputFormat);
 
 		VkPipeline old_pipeline = renderableMesh.getPipeline();
 
 		utility::ErrorState errorState;
-		if (!createGraphicsPipeline(mRenderer->getDevice(), renderableMesh.getMaterialInstance(), renderableMesh.getMesh(), *render_pass, layout, pipeline, errorState))
+		if (!createGraphicsPipeline(mRenderer->getDevice(), renderableMesh.getMaterialInstance(), renderableMesh.getMesh(), render_pass, layout, pipeline, errorState))
 			return;
 
 		mPipelinesToDestroy.push_back({ mCurrentFrameIndex, old_pipeline });

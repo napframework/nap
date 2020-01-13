@@ -270,6 +270,8 @@ namespace nap
 
 		VkDescriptorSet allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors);
 
+		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format);
+		
 	protected:
 		/**
 		* Object creation registration
@@ -354,8 +356,6 @@ namespace nap
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
 		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
-
-		VkRenderPass* getOrCreateRenderPass(ERenderTargetFormat format);
 
 		/**
 		* Helper struct to refcount opengl VAOs.
