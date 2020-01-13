@@ -34,7 +34,6 @@ _Manual Dependency Installation_
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `check_build_environment.bat` afterwards to verify your build environment.
 
 1. Download and install <a href="https://go.microsoft.com/fwlink/?LinkId=532606&clcid=0x409" target="_blank">Visual Studio 2015</a>. This link points to the community edition which can be used for free. Make sure to select `Visual C++` under `programming languages` when installing Visual Studio.
-2. Download and install <a href="http://cmake.org/download" target="_blank">CMake</a>
 
 ## macOS {#setup_build_env_macos}
 
@@ -54,12 +53,6 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 ```    
 xcode-select --install
 ```
-4. Install CMake. 
-  * Download and install <a href="http://cmake.org/download" target="_blank">CMake</a> then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
-```
-export PATH="/Applications/CMake.app/Contents/bin:$PATH"
-```
-  * Alternatively installing via <a href="https://brew.sh/" target="_blank">Homebrew</a> is also possible
 
 ## Linux {#setup_build_env_linux}
 
@@ -83,7 +76,7 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 1. Run the following to install the dependencies via apt:
 ```
-apt-get install build-essential cmake patchelf libglu1-mesa-dev
+apt-get install build-essential patchelf libglu1-mesa-dev
 ```
 
 # Run Your First Demo {#run_demo}
