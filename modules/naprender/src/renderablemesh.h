@@ -2,7 +2,7 @@
 
 // Local includes
 #include "mesh.h"
-#include "material.h"
+#include "materialinstance.h"
 #include "vao.h"
 #include "nap/signalslot.h"
 

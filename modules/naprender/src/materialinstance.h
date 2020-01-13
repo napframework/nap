@@ -7,21 +7,15 @@
 #include <nap/signalslot.h>
 
 // Local includes
-#include "shader.h"
-#include "imagefromfile.h"
-#include "ngpumesh.h"
 #include "uniformcontainer.h"
-#include "rtti/factory.h"
-#include "material.h"
+#include "materialcommon.h"
 
 namespace nap
 {
 	class Material;
-	class MaterialInstance;
 	class Renderer;
 	struct DescriptorSet;
 	class DescriptorSetAllocator;
-	class UniformLeafInstance;
 
 	/**
 	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
