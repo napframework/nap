@@ -4,7 +4,26 @@
 
 namespace nap
 {
-	std::unique_ptr<UniformInstance> createUniformFromDeclaration(const opengl::UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
+	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
+	std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
+	{
+		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
+
+		if (value != nullptr)
+		{
+			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
+			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
+				return nullptr;
+
+			result->set(*typed_resource);
+		}
+
+		return result;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	std::unique_ptr<UniformInstance> UniformStructInstance::createUniformFromDeclaration(const opengl::UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
 		rtti::TypeInfo declaration_type = declaration.get_type();
 
@@ -94,10 +113,147 @@ namespace nap
 		return nullptr;
 	}
 
-	void UniformStructInstance::addUniform(std::unique_ptr<UniformInstance> uniform)
+	bool UniformStructInstance::addUniformRecursive(const opengl::UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState)
 	{
-		mUniforms.emplace_back(std::move(uniform));
+		for (auto& uniform_declaration : structDeclaration.mMembers)
+		{
+			rtti::TypeInfo declaration_type = uniform_declaration->get_type();
+
+			const Uniform* resource = nullptr;
+			if (structResource != nullptr)
+				resource = findUniformStructMember(structResource->mUniforms, *uniform_declaration);
+
+			if (!createDefaults && resource == nullptr)
+				continue;
+
+			if (declaration_type == RTTI_OF(opengl::UniformStructArrayDeclaration))
+			{
+				const UniformStructArray* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
+
+				opengl::UniformStructArrayDeclaration* struct_array_declaration = rtti_cast<opengl::UniformStructArrayDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformStructArrayInstance> struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
+
+				if (!errorState.check(struct_array_resource->mStructs.size() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
+					return false;
+
+				int resource_index = 0;
+				for (auto& declaration_element : struct_array_declaration->mElements)
+				{
+					UniformStruct* struct_resource = nullptr;
+					if (struct_array_resource != nullptr && resource_index < struct_array_resource->mStructs.size())
+						struct_resource = struct_array_resource->mStructs[resource_index++].get();
+
+					std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
+					if (!instance_element->addUniformRecursive(*declaration_element, struct_resource, uniformCreatedCallback, createDefaults, errorState))
+						return false;
+
+					struct_array_instance->addElement(std::move(instance_element));
+				}
+
+				mUniforms.emplace_back(std::move(struct_array_instance));
+			}
+			else if (declaration_type == RTTI_OF(opengl::UniformValueArrayDeclaration))
+			{
+				opengl::UniformValueArrayDeclaration* value_array_declaration = rtti_cast<opengl::UniformValueArrayDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformValueArrayInstance> instance_value_array;
+
+				const UniformValueArray* value_array_resource = rtti_cast<const UniformValueArray>(resource);
+				if (!errorState.check(value_array_resource != nullptr, "Type mismatch between shader type and json type"))
+					return false;
+
+				if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
+				{
+					instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_array_declaration, errorState);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
+				{
+					instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_array_declaration, errorState);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec2)
+				{
+					instance_value_array = createUniformValueInstance<UniformVec2ArrayInstance, UniformVec2Array>(resource, *value_array_declaration, errorState);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
+				{
+					instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_array_declaration, errorState);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
+				{
+					instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_array_declaration, errorState);
+				}
+				else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
+				{
+					instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_array_declaration, errorState);
+				}
+				else
+				{
+					assert(false);
+				}
+
+				if (instance_value_array == nullptr)
+					return false;
+
+				if (!errorState.check(value_array_resource->getCount() == value_array_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+					return false;
+
+				mUniforms.emplace_back(std::move(instance_value_array));
+			}
+			else if (declaration_type == RTTI_OF(opengl::UniformStructDeclaration))
+			{
+				const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(resource);
+
+				opengl::UniformStructDeclaration* struct_declaration = rtti_cast<opengl::UniformStructDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformStructInstance> struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
+				if (!struct_instance->addUniformRecursive(*struct_declaration, struct_resource, uniformCreatedCallback, createDefaults, errorState))
+					return false;
+
+				mUniforms.emplace_back(std::move(struct_instance));
+			}
+			else
+			{
+				opengl::UniformValueDeclaration* value_declaration = rtti_cast<opengl::UniformValueDeclaration>(uniform_declaration.get());
+				std::unique_ptr<UniformValueInstance> value_instance;
+
+				if (value_declaration->mType == opengl::EGLSLType::Int)
+				{
+					value_instance = createUniformValueInstance<UniformIntInstance, UniformInt>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Float)
+				{
+					value_instance = createUniformValueInstance<UniformFloatInstance, UniformFloat>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec2)
+				{
+					value_instance = createUniformValueInstance<UniformVec2Instance, UniformVec2>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec3)
+				{
+					value_instance = createUniformValueInstance<UniformVec3Instance, UniformVec3>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Vec4)
+				{
+					value_instance = createUniformValueInstance<UniformVec4Instance, UniformVec4>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == opengl::EGLSLType::Mat4)
+				{
+					value_instance = createUniformValueInstance<UniformMat4Instance, UniformMat4>(resource, *value_declaration, errorState);
+				}
+				else
+				{
+					assert(false);
+				}
+
+				if (value_instance == nullptr)
+					return false;
+
+				mUniforms.emplace_back(std::move(value_instance));
+			}
+		}
+
+		return true;
 	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 	void UniformStructArrayInstance::addElement(std::unique_ptr<UniformStructInstance> element)
 	{

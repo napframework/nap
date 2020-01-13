@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "rendercomponent.h"
-#include "material.h"
+#include "materialinstance.h"
 #include "renderableglyph.h"
 
 // External Includes

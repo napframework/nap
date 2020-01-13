@@ -101,6 +101,15 @@ namespace nap
 		std::vector<T> mValues;
 	};
 
+		template<class T>
+	const Uniform* findUniformStructMember(const std::vector<T>& members, const opengl::UniformDeclaration& declaration)
+	{
+		for (auto& member : members)
+			if (member->mName == declaration.mName)
+				return member.get();
+
+		return nullptr;
+	}
 
 	using UniformInt = TypedUniformValue<int>;
 	using UniformFloat = TypedUniformValue<float>;

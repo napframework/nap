@@ -3,6 +3,7 @@
 // Local Includes
 #include "rendercomponent.h"
 #include "renderablemesh.h"
+#include "materialinstance.h"
 
 // External Includes
 #include <nap/resourceptr.h>

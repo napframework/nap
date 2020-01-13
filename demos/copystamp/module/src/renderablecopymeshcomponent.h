@@ -7,6 +7,7 @@
 #include <transformcomponent.h>
 #include <color.h>
 #include "uniforminstances.h"
+#include "materialinstance.h"
 
 namespace nap
 {

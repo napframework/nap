@@ -6,6 +6,7 @@
 #include <rendertexture2d.h>
 #include <rendertarget.h>
 #include <planemesh.h>
+#include <materialinstance.h>
 
 namespace nap
 {

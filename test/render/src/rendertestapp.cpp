@@ -40,6 +40,8 @@ namespace nap
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
 //		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 		
+		getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[0]);
+
 //		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
  		mScene						= mResourceManager->findObject<Scene>("Scene");
@@ -244,8 +246,9 @@ namespace nap
 			components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 
-			getCore().getService<IMGuiService>()->draw();
 			*/
+
+			getCore().getService<IMGuiService>()->draw(commandBuffer);
 
 			render_window->swap();
 		}

@@ -17,8 +17,6 @@ namespace nap
 
 	using UniformCreatedCallback = std::function<void()>;
 
-	std::unique_ptr<UniformInstance> NAPAPI createUniformFromDeclaration(const opengl::UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-
 	class NAPAPI UniformInstance
 	{
 		RTTI_ENABLE()
@@ -42,7 +40,6 @@ namespace nap
 		UniformStructInstance& operator=(const UniformStructInstance&) = delete;
 
 		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const { return mUniforms; }
-		void addUniform(std::unique_ptr<UniformInstance> uniform);
 
 		UniformInstance* findUniform(const std::string& name)
 		{
@@ -85,6 +82,13 @@ namespace nap
 		virtual const opengl::UniformDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
+		friend class Material;
+		friend class MaterialInstance;
+		bool addUniformRecursive(const opengl::UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
+
+		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const opengl::UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+
+	private:
 		UniformCreatedCallback mUniformCreatedCallback;
 		const opengl::UniformStructDeclaration& mDeclaration;
 		std::vector<std::unique_ptr<UniformInstance>> mUniforms;
@@ -104,7 +108,6 @@ namespace nap
 		UniformStructArrayInstance& operator=(const UniformStructArrayInstance&) = delete;
 
 		const std::vector<std::unique_ptr<UniformStructInstance>>& getElements() const { return mElements; }
-		void addElement(std::unique_ptr<UniformStructInstance> element);
 
 		UniformStructInstance& getElement(int index)
 		{
@@ -113,6 +116,10 @@ namespace nap
 		}
 
 		virtual const opengl::UniformDeclaration& getDeclaration() const override { return mDeclaration; }
+
+	private:
+		friend class UniformStructInstance;
+		void addElement(std::unique_ptr<UniformStructInstance> element);
 
 	private:
 		const opengl::UniformStructArrayDeclaration&		mDeclaration;
