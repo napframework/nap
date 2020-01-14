@@ -118,9 +118,14 @@ namespace nap
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
 
 		/**
-		 *	Stores the current frame index
+		 * Stores the current frame index
 		 */
 		virtual void onCopy() override;
+
+		/**
+		 * Occurs when the device is closed
+		 */
+		virtual void onClose() override;
 
 	private:
 		std::atomic<int>		mCurrentFrame = 0;				///< Last (Current) captured video frame index

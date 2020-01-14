@@ -167,6 +167,29 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
 			ImGui::Image(*mVideoTexture, { col_width, col_width / ratio_video });
+
+			if (ImGui::Button("Set Streak"))
+			{
+				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+				utility::ErrorState error;
+				if (!video_adapter.changeVideo("streak.mp4", error))
+				{
+					nap::Logger::info(error.toString());
+				}
+				mCurrentVideoFrame = 0;
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Set People"))
+			{
+				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+				utility::ErrorState error;
+				if (!video_adapter.changeVideo("people.mp4", error))
+				{
+					nap::Logger::info(error.toString());
+				}
+				mCurrentVideoFrame = 0;
+			}
 		}
 
 		ImGui::End();

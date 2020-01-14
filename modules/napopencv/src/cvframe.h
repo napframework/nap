@@ -6,11 +6,16 @@
 
 namespace nap
 {
+	// Forward Declares
+	class CVAdapter;
+
 	/**
-	 * Single OpenCV frame that contains one or multiple OpenCV matrices.
-	 * Together the matrices define the content of a frame. A frame can be copied and moved. 
+	 * Single OpenCV frame that contains one or multiple OpenCV matrices and a source. 
+	 * Together the matrices define the content of a frame. A frame can be copied and moved.
+	 * The source is the capture device that created the frame and is optional. 
+	 * A frame has a source when created by one of the nap::CVAdapter objects.
 	 * Note that a frame copy (assignment or construction) does not copy the actual content of the matrices, it only increases the ref count.
-	 * To create a deep copy of a frame, including all the matrices, call CVFrame::deepCopyTo().
+	 * To create a deep copy of a frame, including all the matrices and source, call CVFrame::deepCopyTo().
 	 */
 	class NAPAPI CVFrame final
 	{
@@ -41,6 +46,14 @@ namespace nap
 		CVFrame(int count);
 
 		/**
+		 * Constructs a new frame with the given number of matrices 
+		 * together with the device that created this frame.
+		 * @param count the number of matrices to create.
+		 * @param source the device that created this frame.
+		 */
+		CVFrame(int count, CVAdapter* source);
+
+		/**
 		 * Array subscript overload. Does not perform a bounds check!
 		 * @return the matrix at the given index
 		 */
@@ -61,7 +74,7 @@ namespace nap
 		void copyTo(CVFrame& outFrame) const;
 
 		/**
-		 * Clones this frame including all of it's content.
+		 * Clones this frame including all of it's content and source.
 		 * The default copy operation does not copy the actual content of the matrices, only increases the ref count.
 		 * @return a clone of this frame.
 		 */
@@ -103,5 +116,6 @@ namespace nap
 
 	private:
 		std::vector<cv::UMat> mMatrices;	///< All OpenCV matrices associated with the frame
+		CVAdapter* mSource = nullptr;		///< The source that created this frame.
 	};
 }

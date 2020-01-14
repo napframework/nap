@@ -54,6 +54,7 @@ namespace nap
 
 		// Start capture task
 		mStopCapturing = false;
+		mCaptureFrame = true;
 		mCaptureTask = std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
 		return true;
 	}
@@ -61,17 +62,14 @@ namespace nap
 
 	void CVCaptureDevice::setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
 	{
+		std::lock_guard<std::mutex> lock(mCaptureMutex);
+		auto it = mPropertyMap.find(&adapter);
+		if (it == mPropertyMap.end())
 		{
-			std::lock_guard<std::mutex> lock(mCaptureMutex);
-			auto it = mPropertyMap.find(&adapter);
-			if (it == mPropertyMap.end())
-			{
-				nap::Logger::warn("%s: unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
-				return;
-			}
-			(*it).second[propID] = value;
+			nap::Logger::warn("%s: unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
+			return;
 		}
-		mCaptureCondition.notify_one();
+		(*it).second[propID] = value;
 	}
 
 

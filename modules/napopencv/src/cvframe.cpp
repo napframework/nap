@@ -8,6 +8,7 @@ namespace nap
 	CVFrame::CVFrame(CVFrame&& other)
 	{
 		mMatrices = std::move(other.mMatrices);
+		mSource = std::move(mSource);
 	}
 
 
@@ -17,9 +18,16 @@ namespace nap
 	}
 
 
+	CVFrame::CVFrame(int count, CVAdapter* source) : CVFrame(count)
+	{
+		mSource = source;
+	}
+
+
 	CVFrame& CVFrame::operator=(CVFrame&& other)
 	{
 		mMatrices = std::move(other.mMatrices);
+		mSource = std::move(other.mSource);
 		return *this;
 	}
 
@@ -50,6 +58,7 @@ namespace nap
 		{
 			mMatrices[i].copyTo(outFrame.mMatrices[i]);
 		}
+		outFrame.mSource = mSource;
 	}
 
 

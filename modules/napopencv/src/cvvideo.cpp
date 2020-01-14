@@ -30,16 +30,31 @@ namespace nap
 		if (!error.check(captureDevice.open(mFile, api), "unable to open video file: %s", mFile.c_str()))
 			return false;
 
-		mCurrentFrame = 0;
+		// Reset some internally managed variables
+		mCurrentFrame	= 0;
+		mCaptureFrame	= CVFrame(1, this);
+		mOutputFrame	= CVFrame(1, this);
+
 		return true;
 	}
 
 
 	bool CVVideo::changeVideo(const std::string& video, nap::utility::ErrorState& error)
 	{
+		// Stop capture device
 		CVCaptureDevice& capture_device = getParent();
 		capture_device.stop();
+
+		// Stop this device
+		if (started())
+			this->stop();
+
+		// Now start the device
 		mFile = video;
+		if (!start(error))
+			return false;
+
+		// Start capturing again
 		return capture_device.start(error);
 	}
 
@@ -72,7 +87,6 @@ namespace nap
 	{
 		// Clamp to range and set as property
 		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);
-		nap::Logger::info("requesting frame: %d", req_frame);
 		setProperty(cv::CAP_PROP_POS_FRAMES, static_cast<double>(req_frame));
 	}
 
@@ -106,13 +120,9 @@ namespace nap
 		// Resize frame if required
 		// Otherwise simply copy mat reference (no actual data copy takes place)
 		if (mResize && (mCaptureFrame[0].cols != mSize.x || mCaptureFrame[0].rows != mSize.y))
-		{
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
-		}
 		else
-		{
 			mOutputFrame[0] = mCaptureFrame[0];
-		}
 
 		// Convert to RGB
 		if (mConvertRGB)
@@ -133,6 +143,12 @@ namespace nap
 	void CVVideo::onCopy()
 	{
 		mCurrentFrame = getProperty(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES) - 1;
-		nap::Logger::info("set frame: %d", static_cast<int>(mCurrentFrame));
 	}
+
+
+	void CVVideo::onClose()
+	{
+		mCurrentFrame = 0;
+	}
+
 }

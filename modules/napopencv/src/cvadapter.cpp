@@ -26,8 +26,10 @@ namespace nap
 
 	bool CVAdapter::start(utility::ErrorState& errorState)
 	{
+		mStarted = false;
 		assert(!mCaptureDevice.isOpened());
-		return this->onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
+		mStarted = onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
+		return mStarted;
 	}
 
 
@@ -35,6 +37,7 @@ namespace nap
 	{
 		assert(mCaptureDevice.isOpened());
 		mCaptureDevice.release();
+		mStarted = false;
 		onClose();
 	}
 
