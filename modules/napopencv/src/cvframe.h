@@ -113,6 +113,20 @@ namespace nap
 		 */
 		bool empty() const										{ return mMatrices.empty(); }
 		
+		/**
+		 * @return if this frame has a source.
+		 */
+		bool hasSource() const									{ return mSource != nullptr; }
+
+		/**
+		 * @return the source that created this frame, nullptr when there is no source.
+		 */
+		const CVAdapter* getSource() const						{ return mSource; }
+
+		/**
+		 * @return the source that created this frame, nullptr when there is no source.
+		 */
+		CVAdapter* getSource()									{ return mSource; }
 
 	private:
 		std::vector<cv::UMat> mMatrices;	///< All OpenCV matrices associated with the frame

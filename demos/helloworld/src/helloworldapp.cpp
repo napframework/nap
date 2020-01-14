@@ -110,16 +110,22 @@ namespace nap
 		if (mCameraCaptureDevice->grab(mCamFrame))
 		{
 			mCameraCaptureDevice->capture();
+			if (mCamFrame.getCount() > 0)
+			{
+				//detectFaces(mCamFrame[0]);
+				cv::flip(mCamFrame[0][0], mCamFrame[0][0], 0);
+				cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
+				mCameraTextureOne->update(cpu_mat.data);
+			}
 
-			//detectFaces(mCamFrame[0]);
-			assert(mCamFrame.getCount() == 2);
-			cv::flip(mCamFrame[0][0], mCamFrame[0][0], 0);
-			cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
-			mCameraTextureOne->update(cpu_mat.data);
-
-			cv::flip(mCamFrame[1][0], mCamFrame[1][0], 0);
-			cpu_mat = mCamFrame[1][0].getMat(cv::ACCESS_READ);
-			mCameraTextureTwo->update(cpu_mat.data);
+			if (mCamFrame.getCount() > 1)
+			{
+				//detectFaces(mCamFrame[1]);
+				cv::flip(mCamFrame[1][0], mCamFrame[1][0], 0);
+				cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
+				cpu_mat = mCamFrame[1][0].getMat(cv::ACCESS_READ);
+				mCameraTextureTwo->update(cpu_mat.data);
+			}
 		}
 		
 		if (mVideoCaptureDevice->grab(mVidFrame))

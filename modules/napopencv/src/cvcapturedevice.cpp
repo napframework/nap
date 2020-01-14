@@ -182,6 +182,9 @@ namespace nap
 			if (frame_event.empty())
 				continue;
 
+			// Notify listeners
+			mNewFrame.trigger(frame_event);
+
 			// Deep copy the captured frame to our storage matrix.
 			// This updates the data of our storage container and ensures the same dimensionality.
 			// We need to perform a deep-copy because if we choose to use a shallow copy, 
@@ -200,8 +203,6 @@ namespace nap
 			// Only do this for adapters for which the frame was retrieved successfully. 
 			for (auto& adapter : capture_adapters)
 				adapter->copied();
-
-			// TODO: Send Signal!
 
 			// New frame is available
 			mFrameAvailable = true;

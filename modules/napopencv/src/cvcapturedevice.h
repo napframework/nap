@@ -9,6 +9,7 @@
 #include <nap/device.h>
 #include <nap/numeric.h>
 #include <nap/resourceptr.h>
+#include <nap/signalslot.h>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
 #include <thread>
@@ -77,6 +78,13 @@ namespace nap
 		template<typename T>
 		T& getAdapter(int index);
 
+		/**
+		 * Occurs when a new frame is captured on the background thread.
+		 * Listen to this signal when you want to process frame data on a background thread.
+		 * Use the CVFrameEvent::copyTo() method to duplicate the complete frame content safely.
+		 */
+		nap::Signal<const CVFrameEvent&> mNewFrame;
+
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
 
 	private:
@@ -93,7 +101,7 @@ namespace nap
 		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;
 
 		/**
-		 * Captures new frames.
+		 * Task that captures new frames
 		 */
 		void captureTask();
 
