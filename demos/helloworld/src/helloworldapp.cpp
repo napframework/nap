@@ -46,8 +46,8 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mCameraCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("CameraCaptureDevice");
-		mVideoCaptureDevice = mResourceManager->findObject<nap::CVVideoCapture>("VideoCaptureDevice");
+		mCameraCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("CameraCaptureDevice");
+		mVideoCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("VideoCaptureDevice");
 		mCameraTextureOne = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureOne");
 		mCameraTextureTwo = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureTwo");
 		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
@@ -110,9 +110,8 @@ namespace nap
 		if (mCameraCaptureDevice->grab(mCamFrame))
 		{
 			mCameraCaptureDevice->capture();
-			
-			/*
-			detectFaces(mCamFrame[0]);
+
+			//detectFaces(mCamFrame[0]);
 			assert(mCamFrame.getCount() == 2);
 			cv::flip(mCamFrame[0][0], mCamFrame[0][0], 0);
 			cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
@@ -121,7 +120,6 @@ namespace nap
 			cv::flip(mCamFrame[1][0], mCamFrame[1][0], 0);
 			cpu_mat = mCamFrame[1][0].getMat(cv::ACCESS_READ);
 			mCameraTextureTwo->update(cpu_mat.data);
-			*/
 		}
 		
 		if (mVideoCaptureDevice->grab(mVidFrame))
@@ -160,7 +158,7 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
-			CVVideoAdapter& adapter = mVideoCaptureDevice->getAdapter<CVVideoAdapter>(0);
+			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
 			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
 			{
 				adapter.setFrame(mCurrentVideoFrame);

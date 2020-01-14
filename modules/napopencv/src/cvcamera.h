@@ -36,7 +36,7 @@ namespace nap
 	 * Camera settings can be provided on startup by enabling 'ApplySettings'.
 	 * After startup the camera settings reflect the current state of the hardware.
 	 */
-	class NAPAPI CVCameraAdapter : public CVAdapter
+	class NAPAPI CVCamera : public CVAdapter
 	{
 		RTTI_ENABLE(CVAdapter)
 	public:

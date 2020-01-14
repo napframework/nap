@@ -1,13 +1,13 @@
 // Local Includes
-#include "cvvideocapture.h"
+#include "cvcapturedevice.h"
 
 // External Includes
 #include <nap/logger.h>
 #include <nap/timer.h>
 
 // nap::cvvideocapture run time class definition 
-RTTI_BEGIN_CLASS(nap::CVVideoCapture)
-	RTTI_PROPERTY("Adapters",		&nap::CVVideoCapture::mAdapters,		nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::CVCaptureDevice)
+	RTTI_PROPERTY("Adapters",		&nap::CVCaptureDevice::mAdapters,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,10 +15,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	CVVideoCapture::~CVVideoCapture()			{ }
-
-
-	bool CVVideoCapture::grab(CVFrameEvent& target)
+	bool CVCaptureDevice::grab(CVFrameEvent& target)
 	{
 		// Check if a new frame is available
 		if (!mFrameAvailable)
@@ -34,7 +31,7 @@ namespace nap
 	}
 	
 
-	void CVVideoCapture::capture()
+	void CVCaptureDevice::capture()
 	{
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
@@ -44,7 +41,7 @@ namespace nap
 	}
 
 
-	bool CVVideoCapture::start(utility::ErrorState& errorState)
+	bool CVCaptureDevice::start(utility::ErrorState& errorState)
 	{
 		// Initialize property map
 		mPropertyMap.reserve(mAdapters.size());
@@ -57,12 +54,12 @@ namespace nap
 
 		// Start capture task
 		mStopCapturing = false;
-		mCaptureTask = std::async(std::launch::async, std::bind(&CVVideoCapture::captureTask, this));
+		mCaptureTask = std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
 		return true;
 	}
 
 
-	void CVVideoCapture::setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
+	void CVCaptureDevice::setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
 	{
 		{
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
@@ -78,7 +75,7 @@ namespace nap
 	}
 
 
-	void CVVideoCapture::stop()
+	void CVCaptureDevice::stop()
 	{
 		// Stop capturing thread and notify worker
 		{
@@ -102,7 +99,7 @@ namespace nap
 	}
 
 
-	void CVVideoCapture::captureTask()
+	void CVCaptureDevice::captureTask()
 	{
 		// Wait for playback to be enabled, a new frame request is issued or request to stop is made
 		// Exit loop immediately when a stop is requested. Otherwise process next frame

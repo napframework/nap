@@ -22,13 +22,10 @@ namespace nap
 	 * Base class of all OpenCV video capture devices, including: video files, image sequences, cameras and web-streams.
 	 * Override the various virtual functions to implement an OpenCV capture device.
 	 */
-	class NAPAPI CVVideoCapture : public Device
+	class NAPAPI CVCaptureDevice : public Device
 	{
 		RTTI_ENABLE(Device)
 	public:
-
-		// Stops the device
-		virtual ~CVVideoCapture() override;
 
 		/**
 		 * Starts the capture device.
@@ -109,7 +106,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	const T& nap::CVVideoCapture::getAdapter(int index) const
+	const T& nap::CVCaptureDevice::getAdapter(int index) const
 	{
 		assert(index < mAdapters.size());
 		T* adapter = rtti_cast<T>(mAdapters[index].get());
@@ -119,7 +116,7 @@ namespace nap
 
 
 	template<typename T>
-	T& nap::CVVideoCapture::getAdapter(int index)
+	T& nap::CVCaptureDevice::getAdapter(int index)
 	{
 		assert(index < mAdapters.size());
 		T* adapter = rtti_cast<T>(mAdapters[index].get());

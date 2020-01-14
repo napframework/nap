@@ -1,5 +1,5 @@
 #include "cvadapter.h"
-#include "cvvideocapture.h"
+#include "cvcapturedevice.h"
 
 // nap::cvadapter run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVAdapter)
@@ -51,7 +51,7 @@ namespace nap
 	}
 
 
-	nap::CVVideoCapture& CVAdapter::getParent() const
+	nap::CVCaptureDevice& CVAdapter::getParent() const
 	{
 		assert(mParent != nullptr);
 		return *mParent;

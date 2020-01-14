@@ -15,9 +15,9 @@
 #include <opencv2/objdetect.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
-#include <cvcameraadapter.h>
-#include <cvvideoadapter.h>
-#include <cvvideocapture.h>
+#include <cvcamera.h>
+#include <cvvideo.h>
+#include <cvcapturedevice.h>
 #include <cvframe.h>
 #include <rendertexture2d.h>
 
@@ -93,8 +93,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
-		ObjectPtr<CVVideoCapture> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
-		ObjectPtr<CVVideoCapture> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
+		ObjectPtr<CVCaptureDevice> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
+		ObjectPtr<CVCaptureDevice> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
 		ObjectPtr<RenderTexture2D> mCameraTextureOne = nullptr;			//< Pointer to the texture we need to capture
 		ObjectPtr<RenderTexture2D> mCameraTextureTwo = nullptr;			//< Pointer to the second camera texture
 		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture

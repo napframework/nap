@@ -1,8 +1,8 @@
 {
     "Objects": [
         {
-            "Type": "nap::CVCameraAdapter",
-            "mID": "CameraAdapter",
+            "Type": "nap::CVCamera",
+            "mID": "CameraOne",
             "Codec":"MJPG",
             "Backend": "DirectShow",
             "ShowDialog": true,
@@ -31,8 +31,8 @@
             }
         },        
         {
-            "Type": "nap::CVCameraAdapter",
-            "mID": "CameraAdapterTwo",
+            "Type": "nap::CVCamera",
+            "mID": "CameraTwo",
             "Codec":"MJPG",
             "Backend": "DirectShow",
             "ShowDialog": true,
@@ -61,23 +61,23 @@
             }
         },
         {
-            "Type": "nap::CVVideoCapture",
+            "Type": "nap::CVCaptureDevice",
             "mID": "VideoCaptureDevice",
             "Adapters": [
-                "VideoAdapter"
+                "Video"
             ]
         },
         {
-            "Type": "nap::CVVideoCapture",
+            "Type": "nap::CVCaptureDevice",
             "mID": "CameraCaptureDevice",
             "Adapters": [
-                "CameraAdapter",
-                "CameraAdapterTwo"
+                "CameraOne",
+                "CameraTwo"
             ]
         },
         {
-            "Type": "nap::CVVideoAdapter",
-            "mID": "VideoAdapter",
+            "Type": "nap::CVVideo",
+            "mID": "Video",
             "Backend": "Automatic",
             "ConvertRGB": true,
             "FlipHorizontal": false,

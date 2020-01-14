@@ -15,7 +15,7 @@ namespace nap
 	 * Reads video files and is able to capture frames from the loaded video stream.
 	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
 	 */
-	class NAPAPI CVVideoAdapter : public CVAdapter
+	class NAPAPI CVVideo : public CVAdapter
 	{
 		RTTI_ENABLE(CVAdapter)
 	public:

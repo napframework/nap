@@ -1,5 +1,5 @@
 // Local Includes
-#include "cvcameraadapter.h"
+#include "cvcamera.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -16,19 +16,19 @@ RTTI_BEGIN_STRUCT(nap::CVCameraSettings)
 RTTI_END_STRUCT
 
 // nap::cvcameraadapter run time class definition 
-RTTI_BEGIN_CLASS(nap::CVCameraAdapter)
-	RTTI_PROPERTY("ShowDialog",			&nap::CVCameraAdapter::mShowDialog,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ConvertRGB",			&nap::CVCameraAdapter::mConvertRGB,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCameraAdapter::mFlipHorizontal,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",		&nap::CVCameraAdapter::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DeviceIndex",		&nap::CVCameraAdapter::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Codec",				&nap::CVCameraAdapter::mCodec,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OverrideResolution",	&nap::CVCameraAdapter::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resolution",			&nap::CVCameraAdapter::mResolution,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resize",				&nap::CVCameraAdapter::mResize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",				&nap::CVCameraAdapter::mSize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ApplySettings",		&nap::CVCameraAdapter::mApplySettings,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Settings",			&nap::CVCameraAdapter::mCameraSettings,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::CVCamera)
+	RTTI_PROPERTY("ShowDialog",			&nap::CVCamera::mShowDialog,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ConvertRGB",			&nap::CVCamera::mConvertRGB,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCamera::mFlipHorizontal,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Codec",				&nap::CVCamera::mCodec,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OverrideResolution",	&nap::CVCamera::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resolution",			&nap::CVCamera::mResolution,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resize",				&nap::CVCamera::mResize,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",				&nap::CVCamera::mSize,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ApplySettings",		&nap::CVCamera::mApplySettings,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Settings",			&nap::CVCamera::mCameraSettings,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,25 +50,25 @@ namespace nap
 	}
 
 
-	bool CVCameraAdapter::init(utility::ErrorState& errorState)
+	bool CVCamera::init(utility::ErrorState& errorState)
 	{
 		return CVAdapter::init(errorState);
 	}
 
 
-	int CVCameraAdapter::getWidth() const
+	int CVCamera::getWidth() const
 	{
 		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_WIDTH));
 	}
 
 
-	int CVCameraAdapter::getHeight() const
+	int CVCamera::getHeight() const
 	{
 		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_HEIGHT));
 	}
 
 
-	void CVCameraAdapter::setSettings(const nap::CVCameraSettings& settings)
+	void CVCamera::setSettings(const nap::CVCameraSettings& settings)
 	{
 		setProperty(cv::CAP_PROP_BRIGHTNESS, (double)settings.mBrightness);
 		setProperty(cv::CAP_PROP_CONTRAST, (double)settings.mContrast);
@@ -79,7 +79,7 @@ namespace nap
 	}
 
 
-	void CVCameraAdapter::getSettings(nap::CVCameraSettings& settings)
+	void CVCamera::getSettings(nap::CVCameraSettings& settings)
 	{
 		settings.mAutoExposure	= getProperty(cv::CAP_PROP_AUTO_EXPOSURE) > 0;
 		settings.mBrightness	= getProperty(cv::CAP_PROP_BRIGHTNESS);
@@ -90,7 +90,7 @@ namespace nap
 	}
 
 
-	bool CVCameraAdapter::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
+	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
 		// Open capture device
 		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
@@ -144,7 +144,7 @@ namespace nap
 	}
 
 
-	CVFrame CVCameraAdapter::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
+	CVFrame CVCamera::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{

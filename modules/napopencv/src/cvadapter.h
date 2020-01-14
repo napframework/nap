@@ -12,7 +12,7 @@
 namespace nap
 {
 	// Forward Declares
-	class CVVideoCapture;
+	class CVCaptureDevice;
 
 	/**
 	 * OpenCV capture device interface. Every device is opened on startup and closed on stop. 
@@ -111,11 +111,11 @@ namespace nap
 		/**
 		 * @return video capture device this adapter belongs to
 		 */
-		CVVideoCapture& getParent() const;
+		CVCaptureDevice& getParent() const;
 
 	private:
-		friend class CVVideoCapture;
-		CVVideoCapture*		mParent;							///< The nap parent capture device
+		friend class CVCaptureDevice;
+		CVCaptureDevice*		mParent;							///< The nap parent capture device
 		cv::VideoCapture	mCaptureDevice;						///< The open-cv video capture device
 		bool				mStarted = false;					///< If the video capture device started
 
