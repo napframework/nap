@@ -15,7 +15,7 @@
                 "x": 640,
                 "y": 480
             },
-            "Resize": true,
+            "Resize": false,
             "Size": {
                 "x": 640,
                 "y": 480

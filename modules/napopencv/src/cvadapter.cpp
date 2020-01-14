@@ -11,15 +11,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	CVAdapter::~CVAdapter()			{ }
-
-
-	bool CVAdapter::init(utility::ErrorState& errorState)
-	{
-		return true;
-	}
-
-
 	void CVAdapter::setProperty(cv::VideoCaptureProperties propID, double value)
 	{
 		assert(mParent != nullptr);
@@ -33,25 +24,37 @@ namespace nap
 	}
 
 
+	bool CVAdapter::start(utility::ErrorState& errorState)
+	{
+		assert(!mCaptureDevice.isOpened());
+		return this->onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
+	}
+
+
+	void CVAdapter::stop()
+	{
+		assert(mCaptureDevice.isOpened());
+		mCaptureDevice.release();
+		onClose();
+	}
+
+
+	cv::VideoCapture& CVAdapter::getCaptureDevice()
+	{
+		return mCaptureDevice;
+	}
+
+
+	const cv::VideoCapture& CVAdapter::getCaptureDevice() const
+	{
+		return mCaptureDevice;
+	}
+
+
 	nap::CVVideoCapture& CVAdapter::getParent() const
 	{
 		assert(mParent != nullptr);
 		return *mParent;
-	}
-
-
-	bool CVAdapter::open(nap::utility::ErrorState& error)
-	{
-		assert(!mCaptureDevice.isOpened());
-		return this->onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), error);
-	}
-
-
-	void CVAdapter::close()
-	{
-		if (mCaptureDevice.isOpened())
-			mCaptureDevice.release();
-		onClose();
 	}
 
 

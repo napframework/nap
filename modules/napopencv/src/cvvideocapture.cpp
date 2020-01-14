@@ -53,10 +53,6 @@ namespace nap
 			// Create properties
 			mPropertyMap[adapter.get()] = {};
 			adapter->mParent = this;
-			
-			// Open adapter
-			if (!adapter->open(errorState))
-				return false;
 		}
 
 		// Start capture task
@@ -98,7 +94,6 @@ namespace nap
 		// Notify all adapters
 		for (auto& adapter : mAdapters)
 		{
-			adapter->close();
 			adapter->mParent = nullptr;
 		}
 
@@ -118,7 +113,6 @@ namespace nap
 		bool set_properties = false;
 
 		// Used to calculate framerate over time
-		std::array<double, 20> mTicks;
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
 		SystemTimer timer;
@@ -143,9 +137,7 @@ namespace nap
 				// Copy and clear properties
 				properties = mPropertyMap;
 				for (auto& prop : mPropertyMap)
-				{
 					prop.second.clear();
-				}
 
 				// Reset this flag immediately, ensures new requests are forwarded immediately.
 				mCaptureFrame = false;
@@ -176,15 +168,19 @@ namespace nap
 			// Now retrieve frame (heaviest operation)
 			nap::utility::ErrorState grab_error;
 			frame_event.clear();
-			for (auto it = capture_adapters.begin(); it != capture_adapters.end(); it++)
+			auto it = capture_adapters.begin();
+			while (it != capture_adapters.end())
 			{
+				// If frame capture operation fails, pop the frame and remove capture device
 				frame_event.addFrame((*it)->retrieve(grab_error));
 				if (frame_event.lastFrame().empty())
 				{
 					nap::Logger::error("%s: failed to decode frame", mID.c_str());
 					frame_event.popFrame();
-					capture_adapters.erase(it--);
+					it = capture_adapters.erase(it);
+					continue;
 				}
+				it++;
 			}
 
 			// No frames captured

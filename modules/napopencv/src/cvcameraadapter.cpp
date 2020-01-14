@@ -153,9 +153,7 @@ namespace nap
 		}
 
 		// Resize or perform a weak copy.
-		if (mResize &&
-			mCaptureFrame[0].cols != mSize.x &&
-			mCaptureFrame[0].rows != mSize.y)
+		if (mResize && (mCaptureFrame[0].cols != mSize.x || mCaptureFrame[0].rows != mSize.y))
 		{
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
 		}

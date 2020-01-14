@@ -5,7 +5,7 @@
 #include "cvframe.h"
 
 // External Includes
-#include <nap/resource.h>
+#include <nap/device.h>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -15,24 +15,18 @@ namespace nap
 	class CVVideoCapture;
 
 	/**
-	 * Grabs and processes OpenCV video frames.
+	 * OpenCV capture device interface. Every device is opened on startup and closed on stop. 
+	 * Derive from this class to implement your own OpenCV capture device.
+	 * The device itself does not perform the frame capture operation, this is handled in the background by
+	 * the nap::CVVideoCaptureDevice. That device (a-synchronously) handles the frame grab and retrieve operations.
 	 */
-	class NAPAPI CVAdapter : public Resource
+	class NAPAPI CVAdapter : public Device
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 	public:
-		virtual ~CVAdapter();
-
-		/**
-		 * Initialize this object after de-serialization
-		 * @param errorState contains the error message when initialization fails
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
 		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
-		 * A new frame is queued immediately.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */
@@ -45,6 +39,23 @@ namespace nap
 		 * @return property value, if available.
 		 */
 		double getProperty(cv::VideoCaptureProperties propID) const;
+
+		/**
+		 * @return if the device is currently open and ready for processing.
+		 */
+		bool started() const															{ return mStarted; }
+
+		/**
+		 * Starts the OpenCV capture device. During startup the device is opened.
+		 * @param errorState contains the error if the device can't be started
+		 * @return if the device started
+		 */
+		virtual bool start(utility::ErrorState& errorState) override final;
+
+		/**
+		 * Stops and closes the OpenCV capture device.
+		 */
+		virtual void stop() override final;
 
 		ECVCaptureAPI	mAPIPreference = ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
 
@@ -68,17 +79,16 @@ namespace nap
 
 		/**
 		 * This method decodes and returns the just grabbed frame.
-		 * Needs to be implemented in a derived class.
-		 * Return false when decoding fails, otherwise return true.
-		 * The 'outFrame' should contain the decoded frame on success.
+		 * Needs to be implemented in a derived class. 
+		 * An empty return frame is interpreted as a decoding error by the processing device.
 		 * @param captureDevice the device to capture the frame from.
 		 * @param outFrame contains the new decoded frame
-		 * @return if decoding succeeded.
+		 * @return the decoded frame, return an empty frame on failure.
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) = 0;
 
 		/**
-		 * Called automatically by this device on stop, after the capture device is released.
+		 * Called automatically by this device when stopped, after the device connection is closed.
 		 */
 		virtual void onClose() { }
 
@@ -90,12 +100,12 @@ namespace nap
 		/**
 		 * @return the OpenCV video capture device
 		 */
-		cv::VideoCapture& getCaptureDevice()				{ return mCaptureDevice; }
+		cv::VideoCapture& getCaptureDevice();
 
 		/**
 		 * @return the OpenCV video capture device
 		 */
-		const cv::VideoCapture&	getCaptureDevice() const	{ return mCaptureDevice; }
+		const cv::VideoCapture&	getCaptureDevice() const;
 
 	protected:
 		/**
@@ -105,15 +115,11 @@ namespace nap
 
 	private:
 		friend class CVVideoCapture;
-		CVVideoCapture*		mParent;						///< The nap parent capture device
-		cv::VideoCapture	mCaptureDevice;					///< The open-cv video capture device
-
-		bool open(nap::utility::ErrorState& error);
-		
-		void close();
+		CVVideoCapture*		mParent;							///< The nap parent capture device
+		cv::VideoCapture	mCaptureDevice;						///< The open-cv video capture device
+		bool				mStarted = false;					///< If the video capture device started
 
 		CVFrame retrieve(utility::ErrorState& error);
-
-		void copied()										{ onCopy(); }
+		void copied()											{ onCopy(); }
 	};
 }

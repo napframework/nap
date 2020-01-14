@@ -105,9 +105,7 @@ namespace nap
 
 		// Resize frame if required
 		// Otherwise simply copy mat reference (no actual data copy takes place)
-		if (mResize &&
-			mCaptureFrame[0].cols != mSize.x &&
-			mCaptureFrame[0].rows != mSize.y)
+		if (mResize && (mCaptureFrame[0].cols != mSize.x || mCaptureFrame[0].rows != mSize.y))
 		{
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
 		}
