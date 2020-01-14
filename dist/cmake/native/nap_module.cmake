@@ -9,6 +9,11 @@ else()
     get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 endif(IMPORTING_PROJECT_MODULE) 
 
+# Avoid re-creating target
+if(TARGET ${MODULE_NAME})
+    return()
+endif()
+
 project(${MODULE_NAME})
 
 # Enforce GCC on Linux for now
