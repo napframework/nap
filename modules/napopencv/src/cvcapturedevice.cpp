@@ -73,6 +73,12 @@ namespace nap
 	}
 
 
+	double CVCaptureDevice::getComputeTime() const
+	{
+		return mComputeTime;
+	}
+
+
 	void CVCaptureDevice::stop()
 	{
 		// Stop capturing thread and notify worker
@@ -106,18 +112,10 @@ namespace nap
 		std::unordered_map<CVAdapter*, PropertyMap> properties;
 		std::vector<nap::CVAdapter*> capture_adapters;
 		bool set_properties = false;
-
-		// Used to calculate framerate over time
-		double mTicksum = 0;
-		uint32 mTickIdx = 0;
 		SystemTimer timer;
-		timer.start();
-		int previous_time = 0;
 
 		while(!mStopCapturing)
 		{
-			nap::Logger::info("loop milli: %d", timer.getMillis());
-			timer.reset();
 			{
 				std::unique_lock<std::mutex> lock(mCaptureMutex);
 				mCaptureCondition.wait(lock, [this]()
@@ -140,6 +138,7 @@ namespace nap
 
 			// Apply properties for every adapter and grab next frame
 			// Store adapters that are ready to be captured
+			timer.reset();
 			capture_adapters.clear();
 			for (auto& adapter : properties)
 			{
@@ -206,6 +205,9 @@ namespace nap
 
 			// New frame is available
 			mFrameAvailable = true;
+
+			// Calculate fps
+			mComputeTime = timer.getElapsedTime();
 		}
 	}
 }

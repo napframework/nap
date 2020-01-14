@@ -130,7 +130,7 @@ namespace nap
 		
 		if (mVideoCaptureDevice->grab(mVidFrame))
 		{
-			detectFaces(mVidFrame[0]);
+			//detectFaces(mVidFrame[0]);
 			cv::flip(mVidFrame[0][0], mVidFrame[0][0], 0);
 			cv::Mat cpu_mat = mVidFrame[0][0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);
@@ -149,7 +149,9 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getComputeTime()).c_str());
+		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getComputeTime()).c_str());
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth();

@@ -79,6 +79,13 @@ namespace nap
 		T& getAdapter(int index);
 
 		/**
+		 * Returns the last known capture task compute time in seconds.
+		 * This includes the time it takes to complete the entire process cycle for all the adapters.
+		 * @return capture task compute time.
+		 */
+		double getComputeTime() const;
+
+		/**
 		 * Occurs when a new frame is captured on the background thread.
 		 * Listen to this signal when you want to process frame data on a background thread.
 		 * Use the CVFrameEvent::copyTo() method to duplicate the complete frame content safely.
@@ -91,6 +98,7 @@ namespace nap
 		CVFrameEvent			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
 		bool					mCaptureFrame	= true;			///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
+		std::atomic<double>		mComputeTime = {0.0f};			///< Last known capture task compute time
 
 		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
 		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
