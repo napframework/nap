@@ -396,7 +396,7 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		const DescriptorSet& descriptor_set = mDescriptorSetAllocator->acquire(mUniformBufferObjects, mSamplers);
+		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplers);
 
 		updateUniforms(descriptor_set);
 		updateSamplers(descriptor_set);
@@ -456,7 +456,7 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetAllocator = &mRenderService->getOrCreateDescriptorSetAllocator(getMaterial()->getShader()->getShader().getDescriptorSetLayout());
+		mDescriptorSetCache = &mRenderService->getOrCreateDescriptorSetCache(getMaterial()->getShader()->getShader().getDescriptorSetLayout());
 
 		return true;
 	}

@@ -31,13 +31,7 @@ namespace nap
 	class RenderService;
 	class SceneService;
 	class DescriptorSetCache;
-
-	struct DescriptorPool
-	{
-		VkDescriptorPool	mPool = nullptr;
-		int					mMaxNumSets = 0;
-		int					mCurNumSets = 0;
-	};
+	class DescriptorSetAllocator;
 
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
@@ -232,13 +226,11 @@ namespace nap
 
 		Renderer& getRenderer() { return *mRenderer; }
 
-		DescriptorSetCache& getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout);
+		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
 
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
-
-		VkDescriptorSet allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors);
 
 		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format);
 		
@@ -346,27 +338,26 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
-		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
-		using DescriptorSetAllocatorMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
+		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 
-		VmaAllocator				mVulkanAllocator;
-		RenderState					mRenderState;															//< The latest render state as set by the user
-		ContextSpecificStateMap		mContextSpecificState;													//< The per-context render state
+		VmaAllocator							mVulkanAllocator;
+		RenderState								mRenderState;											//< The latest render state as set by the user
+		ContextSpecificStateMap					mContextSpecificState;									//< The per-context render state
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;			//< Array of per-context GL resources scheduled for destruction
-		VAOMap						mVAOMap;																//< Map from material-mesh combination to opengl VAO
-		WindowList					mWindows;																//< All available windows
-		SceneService*				mSceneService = nullptr;												//< Service that manages all the scenes
+		VAOMap									mVAOMap;												//< Map from material-mesh combination to opengl VAO
+		WindowList								mWindows;												//< All available windows
+		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 
-		DescriptorPoolMap			mDescriptorPools;
-		PipelineList				mPipelinesToDestroy;
+		PipelineList							mPipelinesToDestroy;
 
-		int							mCurrentFrameIndex = 0;
-		DescriptorSetAllocatorMap	mDescriptorSetAllocators;
+		int										mCurrentFrameIndex = 0;
+		DescriptorSetCacheMap					mDescriptorSetCaches;
+		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
-		VkRenderPass				mRenderPassRGBA8 = nullptr;
-		VkRenderPass				mRenderPassRGB8 = nullptr;
-		VkRenderPass				mRenderPassR8 = nullptr;
-		VkRenderPass				mRenderPassDepth = nullptr;
+		VkRenderPass							mRenderPassRGBA8 = nullptr;
+		VkRenderPass							mRenderPassRGB8 = nullptr;
+		VkRenderPass							mRenderPassR8 = nullptr;
+		VkRenderPass							mRenderPassDepth = nullptr;
 	};
 } // nap
 

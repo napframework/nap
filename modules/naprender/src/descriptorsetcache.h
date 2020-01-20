@@ -14,6 +14,7 @@ namespace nap
 	class UniformBufferObject;
 	class SamplerInstance;
 	class RenderService;
+	class DescriptorSetAllocator;
 
 	/** 
 	 * Wrapper around VkBuffer that holds allocation information.
@@ -47,7 +48,7 @@ namespace nap
 	class DescriptorSetCache
 	{
 	public:
-		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout);
+		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator);
 
 		/**
 		 * Acquires a DescriptorSet from the cache (or allocated it if not in the cache). For new DescriptorSets,
@@ -70,9 +71,10 @@ namespace nap
 		using DescriptorSetFrameList = std::array<DescriptorSetList, 2>;
 		
 		RenderService*			mRenderService;
-		VkDescriptorSetLayout	mLayout;				///< The layout that this allocator is allocating DescriptorSets for
-		DescriptorSetList		mFreeList;				///< List of all available Descriptors
-		DescriptorSetFrameList	mUsedList;				///< List of all used Descriptor, by frame index
+		DescriptorSetAllocator* mDescriptorSetAllocator;	///< Allocator that is used to allocate new Descriptors
+		VkDescriptorSetLayout	mLayout;					///< The layout that this cache is managing DescriptorSets for
+		DescriptorSetList		mFreeList;					///< List of all available Descriptors
+		DescriptorSetFrameList	mUsedList;					///< List of all used Descriptor, by frame index
 	};
 
 } // nap

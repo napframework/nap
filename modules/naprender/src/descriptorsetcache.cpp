@@ -1,5 +1,6 @@
 // Local Includes
 #include "descriptorsetcache.h"
+#include "descriptorsetallocator.h"
 #include "renderservice.h"
 
 namespace nap
@@ -21,9 +22,10 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout) :
+	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
 		mRenderService(&renderService),
-		mLayout(layout)
+		mLayout(layout),
+		mDescriptorSetAllocator(&descriptorSetAllocator)
 	{
 	}
 
@@ -45,7 +47,7 @@ namespace nap
 		// Compatible means that it has the same amount of uniform buffers and same amount of samplers.
 		DescriptorSet descriptor_set;
 		descriptor_set.mLayout = mLayout;
-		descriptor_set.mSet = mRenderService->allocateDescriptorSet(mLayout, uniformBufferObjects.size(), samplers.size());
+		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), samplers.size());
 
 		int num_descriptors = uniformBufferObjects.size();
 		std::vector<VkWriteDescriptorSet> ubo_descriptors;

@@ -29,6 +29,7 @@
 #include "planemesh.h"
 #include "spheremesh.h"
 #include "descriptorsetcache.h"
+#include "descriptorsetallocator.h"
 #include "vk_mem_alloc.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
@@ -550,7 +551,7 @@ namespace nap
 			return false;
 		}), mPipelinesToDestroy.end());
 
-		for (auto& kvp : mDescriptorSetAllocators)
+		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
 	}
 
@@ -737,6 +738,8 @@ namespace nap
 
 		mRenderer = std::move(renderer);
 
+		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mRenderer->getDevice());
+
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mRenderer->getPhysicalDevice();
 		allocatorInfo.device = mRenderer->getDevice();
@@ -883,81 +886,15 @@ namespace nap
 		}
 	}
 
-	VkDescriptorSet RenderService::allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
+
+	DescriptorSetCache& RenderService::getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout)
 	{
-		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
-
-		DescriptorPool* free_descriptor_pool = nullptr;
-		DescriptorPoolMap::iterator pos = mDescriptorPools.find(key);
-
-		if (pos != mDescriptorPools.end())
-		{
-			std::vector<DescriptorPool>& pools = pos->second;
-			for (int i = pools.size() - 1; i >= 0; --i)
-			{
-				DescriptorPool& descriptor_pool = pools[i];
-
-				if (descriptor_pool.mCurNumSets < descriptor_pool.mMaxNumSets)
-				{
-					free_descriptor_pool = &descriptor_pool;
-					break;
-				}
-			}
-		}
-	
-		if (free_descriptor_pool == nullptr)
-		{
-			int maxSets = 100;
-
-			std::vector<VkDescriptorPoolSize> pool_sizes;
-			if (numUBODescriptors != 0)
-				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
-
-			if (numSamplerDescriptors != 0)
-				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });
-
-			VkDescriptorPoolCreateInfo poolInfo = {};
-			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			poolInfo.poolSizeCount = pool_sizes.size();
-			poolInfo.pPoolSizes = pool_sizes.data();
-			poolInfo.maxSets = maxSets;
-
-			DescriptorPool new_descriptor_pool;
-			new_descriptor_pool.mCurNumSets = 0;
-			new_descriptor_pool.mMaxNumSets = maxSets;
-
-			VkResult result = vkCreateDescriptorPool(mRenderer->getDevice(), &poolInfo, nullptr, &new_descriptor_pool.mPool);
-			assert(result == VK_SUCCESS);					
-			
-			mDescriptorPools[key].push_back(new_descriptor_pool);
-
-			free_descriptor_pool = &mDescriptorPools[key].back();
-		}
-
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = free_descriptor_pool->mPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &layout;
-
-		VkDescriptorSet descriptor_set = nullptr;
-
-		vkAllocateDescriptorSets(mRenderer->getDevice(), &allocInfo, &descriptor_set);
-		assert(descriptor_set != nullptr);
-
-		++free_descriptor_pool->mCurNumSets;
-
-		return descriptor_set;
-	}
-
-	DescriptorSetCache& RenderService::getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout)
-	{
-		DescriptorSetAllocatorMap::iterator pos = mDescriptorSetAllocators.find(layout);
-		if (pos != mDescriptorSetAllocators.end())
+		DescriptorSetCacheMap::iterator pos = mDescriptorSetCaches.find(layout);
+		if (pos != mDescriptorSetCaches.end())
 			return *pos->second;
 
-		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout);
-		auto inserted = mDescriptorSetAllocators.insert(std::make_pair(layout, std::move(allocator)));
+		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
+		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
 		return *inserted.first->second;
 	}
 
