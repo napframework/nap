@@ -28,6 +28,7 @@
 #include "texture2d.h"
 #include "planemesh.h"
 #include "spheremesh.h"
+#include "descriptorsetcache.h"
 #include "vk_mem_alloc.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
@@ -882,20 +883,6 @@ namespace nap
 		}
 	}
 
-	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation, VmaAllocationInfo& bufferAllocationInfo)
-	{
-		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.size = size;
-		bufferInfo.usage = bufferUsage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocInfo = {};
-		allocInfo.usage = memoryUsage;
-		allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
-	}
-
 	VkDescriptorSet RenderService::allocateDescriptorSet(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
 	{
 		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
@@ -963,82 +950,15 @@ namespace nap
 		return descriptor_set;
 	}
 
-	DescriptorSetAllocator& RenderService::getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout)
+	DescriptorSetCache& RenderService::getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout)
 	{
 		DescriptorSetAllocatorMap::iterator pos = mDescriptorSetAllocators.find(layout);
 		if (pos != mDescriptorSetAllocators.end())
 			return *pos->second;
 
-		std::unique_ptr<DescriptorSetAllocator> allocator = std::make_unique<DescriptorSetAllocator>(*this, layout);
+		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout);
 		auto inserted = mDescriptorSetAllocators.insert(std::make_pair(layout, std::move(allocator)));
 		return *inserted.first->second;
-	}
-
-	DescriptorSetAllocator::DescriptorSetAllocator(RenderService& renderService, VkDescriptorSetLayout layout) :
-		mRenderService(&renderService),
-		mLayout(layout)
-	{
-	}
-
-	const DescriptorSet& DescriptorSetAllocator::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers)
-	{
-		int frame_index = mRenderService->getCurrentFrameIndex();
-		DescriptorSetList& used_list = mUsedList[frame_index];
-		
-		if (!mFreeList.empty())
-		{
-			used_list.splice(used_list.end(), mFreeList, --mFreeList.end());
-			return used_list.back();
-		}
-
-		DescriptorSet descriptor_set;
-		descriptor_set.mLayout = mLayout;
-		descriptor_set.mSet = mRenderService->allocateDescriptorSet(mLayout, uniformBufferObjects.size(), samplers.size());
-
-		int num_descriptors = uniformBufferObjects.size();
-		std::vector<VkWriteDescriptorSet> ubo_descriptors;
-		ubo_descriptors.resize(num_descriptors);
-
-		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
-		descriptor_buffers.resize(num_descriptors);
-
-		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
-		{
-			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
-			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
-
-			DescriptorSetBuffer buffer;
-			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer.mBuffer, buffer.mAllocation, buffer.mAllocationInfo);
-			assert(success);
-
-			descriptor_set.mBuffers.push_back(buffer);
-
-			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
-			bufferInfo.buffer = buffer.mBuffer;
-			bufferInfo.offset = 0;
-			bufferInfo.range = VK_WHOLE_SIZE;
-
-			VkWriteDescriptorSet& ubo_descriptor = ubo_descriptors[ubo_index];
-			ubo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			ubo_descriptor.dstSet = descriptor_set.mSet;
-			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
-			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			ubo_descriptor.descriptorCount = 1;
-			ubo_descriptor.pBufferInfo = &bufferInfo;
-		}
-
-		vkUpdateDescriptorSets(mRenderService->getRenderer().getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
-
-		used_list.emplace_back(std::move(descriptor_set));
-		return used_list.back();
-	}
-
-	void DescriptorSetAllocator::release(int frameIndex)
-	{
-		DescriptorSetList& used_list = mUsedList[frameIndex];
-		mFreeList.splice(mFreeList.end(), used_list);
 	}
 
 } // Renderservice

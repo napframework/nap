@@ -15,7 +15,7 @@ namespace nap
 	class Material;
 	class Renderer;
 	struct DescriptorSet;
-	class DescriptorSetAllocator;
+	class DescriptorSetCache;
 
 	/**
 	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
@@ -146,7 +146,7 @@ namespace nap
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
 		VkDevice								mDevice = nullptr;						// Vulkan device
 		RenderService*							mRenderService = nullptr;				// RenderService
-		DescriptorSetAllocator*					mDescriptorSetAllocator = nullptr;		// Allocator used to acquire Vulkan Descriptor Sets on each update
+		DescriptorSetCache*						mDescriptorSetCache = nullptr;			// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
 		std::vector<SamplerInstance*>			mSamplers;								// List of all sampler instances, both from Material and MaterialInstance
 		std::vector<VkWriteDescriptorSet>		mSamplerDescriptors;					// List of sampler descriptors, used to update Descriptor Sets

@@ -14,7 +14,7 @@ namespace nap
 {
 	class Renderer;
 	struct DescriptorSet;
-	class DescriptorSetAllocator;
+	class DescriptorSetCache;
 
 	/**
 	 * A Material is a resource that acts as an interface to a shader.

@@ -1,0 +1,81 @@
+#pragma once
+
+// Internal includes
+
+// External Includes
+#include <vector>
+#include <list>
+#include <array>
+#include "vulkan/vulkan_core.h"
+#include "vk_mem_alloc.h"
+
+namespace nap
+{
+	class UniformBufferObject;
+	class SamplerInstance;
+	class RenderService;
+
+	/** 
+	 * Wrapper around VkBuffer that holds allocation information.
+	 */
+	struct DescriptorSetBuffer
+	{
+		VkBuffer			mBuffer;
+		VmaAllocation		mAllocation;
+		VmaAllocationInfo	mAllocationInfo;
+	};
+
+	/** 
+	 * Wrapper around VkDescriptorSet that also contains the allocated buffers for a DescriptorSet.
+	 */
+	struct DescriptorSet
+	{
+		VkDescriptorSetLayout				mLayout;
+		VkDescriptorSet						mSet;
+		std::vector<DescriptorSetBuffer>	mBuffers;
+	};
+
+	/** 
+	 * Responsible for caching DescriptorSets and allocating them when the DescriptorSet is not in the cache.
+	 * A DescriptorSetAllocator allocates DescriptorSets for a specific VkDescriptorSetLayout. Any DescriptorSet
+	 * that is returned will be compatible with that VkDescriptorSetLayout.
+	 * Internally it will maintain a freelist of available DescriptorSets. When a VkDescriptorSet is acquired,
+	 * it is marked for use by that frame (the current RenderService frame is used). When a frame is fully  
+	 * completed, release should be called for that frame so that the resources are return to the freelist, to 
+	 * be used by subsequent frames.
+	 */
+	class DescriptorSetCache
+	{
+	public:
+		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout);
+
+		/**
+		 * Acquires a DescriptorSet from the cache (or allocated it if not in the cache). For new DescriptorSets,
+		 * also allocates Buffers for each UBO from the global Vulkan allocator. The result is a DescriptorSet
+		 * that is fully compatible with the DescriptorSetLayout.
+		 * @param uniformBufferObjects The list of UBOs for this DescriptorSet.
+		 * @param samplers The list of samplers for this DescriptorSet
+		 * @return A DescriptorSet that is compatible with the VkDescriptorLayout that was passed upon creation.
+		 */
+		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers);
+
+		/**
+		 * Releases all DescriptorSets to the internal pool for use by other frames. 
+		 * @param frameIndex The frame index that was completed by the render system and for which no resources are in use anymore.
+		 */
+		void release(int frameIndex);
+
+	private:
+		using DescriptorSetList = std::list<DescriptorSet>;
+		using DescriptorSetFrameList = std::array<DescriptorSetList, 2>;
+		
+		RenderService*			mRenderService;
+		VkDescriptorSetLayout	mLayout;				///< The layout that this allocator is allocating DescriptorSets for
+		DescriptorSetList		mFreeList;				///< List of all available Descriptors
+		DescriptorSetFrameList	mUsedList;				///< List of all used Descriptor, by frame index
+	};
+
+} // nap
+
+
+

@@ -30,20 +30,7 @@ namespace nap
 	class RenderWindow;
 	class RenderService;
 	class SceneService;
-
-	struct DescriptorSetBuffer
-	{
-		VkBuffer			mBuffer;
-		VmaAllocation		mAllocation;
-		VmaAllocationInfo	mAllocationInfo;
-	};
-
-	struct DescriptorSet
-	{
-		VkDescriptorSetLayout				mLayout;
-		VkDescriptorSet						mSet;
-		std::vector<DescriptorSetBuffer>	mBuffers;
-	};
+	class DescriptorSetCache;
 
 	struct DescriptorPool
 	{
@@ -60,24 +47,6 @@ namespace nap
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 
 		RendererSettings mSettings;		///< Property: 'Settings' All render settings
-	};
-
-	class DescriptorSetAllocator
-	{
-	public:
-		DescriptorSetAllocator(RenderService& renderService, VkDescriptorSetLayout layout);
-
-		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers);
-		void release(int frameIndex);
-
-	private:
-		using DescriptorSetList = std::list<DescriptorSet>;
-		using DescriptorSetFrameList = std::array<DescriptorSetList, 2>;
-		
-		RenderService*			mRenderService;
-		VkDescriptorSetLayout	mLayout;
-		DescriptorSetList		mFreeList;
-		DescriptorSetFrameList	mUsedList;
 	};
 
 	/**
@@ -263,7 +232,7 @@ namespace nap
 
 		Renderer& getRenderer() { return *mRenderer; }
 
-		DescriptorSetAllocator& getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout);
+		DescriptorSetCache& getOrCreateDescriptorSetAllocator(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
 
@@ -378,7 +347,7 @@ namespace nap
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
-		using DescriptorSetAllocatorMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetAllocator>>;
+		using DescriptorSetAllocatorMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 
 		VmaAllocator				mVulkanAllocator;
 		RenderState					mRenderState;															//< The latest render state as set by the user

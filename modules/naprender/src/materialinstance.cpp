@@ -10,6 +10,7 @@
 #include "renderservice.h"
 #include "nshaderutils.h"
 #include "uniforminstances.h"
+#include "descriptorsetcache.h"
 #include "vk_mem_alloc.h"
 
 
