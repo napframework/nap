@@ -63,6 +63,7 @@
         {
             "Type": "nap::CVCaptureDevice",
             "mID": "VideoCaptureDevice",
+            "AutoCapture":false,
             "Adapters": [
                 "Video"
             ]
@@ -70,6 +71,7 @@
         {
             "Type": "nap::CVCaptureDevice",
             "mID": "CameraCaptureDevice",
+            "AutoCapture":true,
             "Adapters": [
                 "CameraOne",
                 "CameraTwo"
