@@ -8,7 +8,7 @@ namespace nap
 	CVFrame::CVFrame(CVFrame&& other)
 	{
 		mMatrices = std::move(other.mMatrices);
-		mSource = std::move(mSource);
+		mSource = std::move(other.mSource);
 	}
 
 
