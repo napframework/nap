@@ -4,12 +4,14 @@
 #include "cvcaptureapi.h"
 #include "cvevent.h"
 #include "cvadapter.h"
+#include "cvservice.h"
 
 // External Includes
 #include <nap/device.h>
 #include <nap/numeric.h>
 #include <nap/resourceptr.h>
 #include <nap/signalslot.h>
+#include <rtti/factory.h>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
 #include <thread>
@@ -27,6 +29,12 @@ namespace nap
 	{
 		RTTI_ENABLE(Device)
 	public:
+
+		/**
+		 * Constructor
+		 * @param service the service that receives all frame capture events.
+		 */
+		CVCaptureDevice(CVService& service);
 
 		/**
 		 * Starts the capture device.
@@ -90,30 +98,34 @@ namespace nap
 		 * Listen to this signal when you want to process frame data on a background thread.
 		 * Use the CVFrameEvent::copyTo() method to duplicate the complete frame content safely.
 		 */
-		nap::Signal<const CVFrameEvent&> mNewFrame;
+		nap::Signal<const CVFrameEvent&> mFrameCaptured;
 
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
+		bool					mAutoCapture = false;			///< Property: 'AutoCapture' if this device captures new frames automatically
 
 	private:
 		CVFrameEvent			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
-		bool					mCaptureFrame	= true;			///< Proceed to next frame
+		std::atomic<bool>		mCaptureFrame	= { true };		///< Proceed to next frame
 		std::atomic<bool>		mFrameAvailable = { false };	///< If a new frame is captured
 		std::atomic<double>		mComputeTime = {0.0f};			///< Last known capture task compute time
+		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
 
 		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
 		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
-		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
 		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
 
 		using PropertyMap = std::unordered_map<int, double>;
 		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;
 
+		CVService*				mService = nullptr;				///< OpenCV service
+
 		/**
 		 * Task that captures new frames
 		 */
 		void captureTask();
-
 	};
+
+	using CVCaptureDeviceObjectCreator = rtti::ObjectCreator<CVCaptureDevice, CVService>;
 
 
 	//////////////////////////////////////////////////////////////////////////

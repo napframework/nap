@@ -6,7 +6,8 @@
 #include <nap/timer.h>
 
 // nap::cvvideocapture run time class definition 
-RTTI_BEGIN_CLASS(nap::CVCaptureDevice)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
+	RTTI_PROPERTY("AutoCapture",	&nap::CVCaptureDevice::mAutoCapture,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",		&nap::CVCaptureDevice::mAdapters,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -41,8 +42,17 @@ namespace nap
 	}
 
 
+	CVCaptureDevice::CVCaptureDevice(CVService& service)
+	{
+		mService = &service;
+	}
+
+
 	bool CVCaptureDevice::start(utility::ErrorState& errorState)
 	{
+		// Register with service
+		mService->registerCaptureDevice(*this);
+
 		// Initialize property map
 		mPropertyMap.reserve(mAdapters.size());
 		for (auto& adapter : mAdapters)
@@ -100,6 +110,9 @@ namespace nap
 
 		// Clear all properties
 		mPropertyMap.clear();
+
+		// Unregister capture device
+		mService->removeCaptureDevice(*this);
 	}
 
 
@@ -132,7 +145,8 @@ namespace nap
 				for (auto& prop : mPropertyMap)
 					prop.second.clear();
 
-				// Reset this flag immediately, ensures new requests are forwarded immediately.
+				// Don't capture new frame immediately, only do so when 'AutoCapture' is turned on
+				// and no decoding errors have been detected.
 				mCaptureFrame = false;
 			}
 
@@ -182,7 +196,7 @@ namespace nap
 				continue;
 
 			// Notify listeners
-			mNewFrame.trigger(frame_event);
+			mFrameCaptured.trigger(frame_event);
 
 			// Deep copy the captured frame to our storage matrix.
 			// This updates the data of our storage container and ensures the same dimensionality.
@@ -205,9 +219,8 @@ namespace nap
 
 			// New frame is available
 			mFrameAvailable = true;
-
-			// Calculate fps
-			mComputeTime = timer.getElapsedTime();
+			mCaptureFrame	= mAutoCapture;
+			mComputeTime	= timer.getElapsedTime();
 		}
 	}
 }

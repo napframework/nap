@@ -2,15 +2,20 @@
 
 // Nap Includes
 #include <nap/service.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
+	// Forward Declares
+	class CVCaptureDevice;
+	class CVFrameEvent;
+
 	/**
 	 * Initializes the OpenCV library.
 	 */
 	class NAPAPI CVService : public Service
 	{
-		friend class Video;
+		friend class CVCaptureDevice;
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
@@ -40,5 +45,22 @@ namespace nap
 		 *	Object creators associated with video module
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * Registers a cv capture device with the service
+		 */
+		void registerCaptureDevice(CVCaptureDevice& device);
+
+		/**
+		 * Unregisters a cv capture device from the service
+		 */
+		void removeCaptureDevice(CVCaptureDevice& device);
+
+	private:
+		// All the web socket servers currently registered in the system
+		std::vector<CVCaptureDevice*> mCaptureDevices;
+
+		nap::Slot<const CVFrameEvent&> mFrameAvailable			{ this, &CVService::onFrameCaptured };
+		void onFrameCaptured(const CVFrameEvent&);				///< called when a new frame is captured from any of the devices
 	};
 }
