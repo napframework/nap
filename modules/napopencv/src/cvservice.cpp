@@ -66,7 +66,7 @@ namespace nap
 
 			// Consume frame and forward to interested components
 			CVFrameEvent capture_frame;
-			device->grab(capture_frame);
+			device->grab(capture_frame, true);
 			for (auto& component : valid_components)
 			{
 				component->trigger(capture_frame);

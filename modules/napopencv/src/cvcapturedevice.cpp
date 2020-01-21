@@ -16,14 +16,19 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void CVCaptureDevice::grab(CVFrameEvent& target)
+	void CVCaptureDevice::grab(CVFrameEvent& target, bool deepCopy)
 	{
 		// Copy last captured frame using a deep copy.
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		mCaptureMat.copyTo(target);
 		mFrameAvailable = false;
+		if (deepCopy)
+		{
+			mCaptureMat.copyTo(target);
+			return;
+		}
+		target = mCaptureMat;
 	}
 	
 

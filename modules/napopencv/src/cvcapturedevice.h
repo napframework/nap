@@ -53,14 +53,15 @@ namespace nap
 		 */
 		bool newFrame() const;
 
-		/**
-		 * Grabs the last captured frame. The result is copied over into the given target. 
-		 * This call performs a deep copy operation and is thread safe, 
+		/*
+		 * Grabs the last captured frame. The result is copied over into the given target.
+		 * This call performs a (deep) copy operation by default and is thread safe,
+		 * set the 'copy' flag to false when a reference to the last frame is required.
 		 * use newFrame() to figure out if a new frame is available before grabbing it.
 		 * @param target updated to hold the last captured frame data if a new frame is available.
-		 * @return if the target is updated with the contents of a new captured frame.
-		 */
-		void grab(CVFrameEvent& target);
+		 * @param copy if the latest frame contents are copied over into the given target.
+         */
+		void grab(CVFrameEvent& target, bool copy = true);
 
 		/**
 		 * Tells the capture thread to capture the next available frame.

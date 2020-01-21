@@ -57,4 +57,16 @@ namespace nap
 			mFrames[i].copyTo(outEvent[i]);
 		}
 	}
+
+
+	nap::CVFrameEvent CVFrameEvent::clone()
+	{
+		CVFrameEvent clone;
+		clone.reserve(mFrames.size());
+		for (auto& frame : mFrames)
+		{
+			clone.mFrames.emplace_back(frame.clone());
+		}
+		return clone;
+	}
 }

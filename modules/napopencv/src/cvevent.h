@@ -59,6 +59,13 @@ namespace nap
 		void copyTo(CVFrameEvent& outEvent) const;
 
 		/**
+		 * Returns a clone of the frames in this event.
+		 * The default copy operation does not copy the actual content of the frames, only increases the ref count.
+		 * @return a clone of this event
+		 */
+		CVFrameEvent clone();
+
+		/**
 		 * @return number of frames associated with this event
 		 */
 		int getCount() const										{ return static_cast<int>(mFrames.size()); }
