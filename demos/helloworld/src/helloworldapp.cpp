@@ -107,9 +107,11 @@ namespace nap
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
-		if (mCameraCaptureDevice->grab(mCamFrame))
+		if (mCameraCaptureDevice->newFrame())
 		{
+			mCameraCaptureDevice->grab(mCamFrame);
 			mCameraCaptureDevice->capture();
+
 			if (mCamFrame.getCount() > 0)
 			{
 				//detectFaces(mCamFrame[0]);
@@ -128,9 +130,10 @@ namespace nap
 			}
 		}
 		
-		if (mVideoCaptureDevice->grab(mVidFrame))
+		if (mVideoCaptureDevice->newFrame())
 		{
 			//detectFaces(mVidFrame[0]);
+			mVideoCaptureDevice->grab(mVidFrame);
 			cv::flip(mVidFrame[0][0], mVidFrame[0][0], 0);
 			cv::Mat cpu_mat = mVidFrame[0][0].getMat(cv::ACCESS_READ);
 			mVideoTexture->update(cpu_mat.data);

@@ -174,6 +174,6 @@ namespace nap
 		if (mFlipVertical)
 			cv::flip(mOutputFrame[0], mOutputFrame[0], 0);
 
-		return mOutputFrame;
+		return mOutputFrame.clone();
 	}
 }

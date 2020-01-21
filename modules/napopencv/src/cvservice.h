@@ -9,6 +9,7 @@ namespace nap
 	// Forward Declares
 	class CVCaptureDevice;
 	class CVFrameEvent;
+	class CVCaptureComponentInstance;
 
 	/**
 	 * Initializes the OpenCV library.
@@ -16,6 +17,7 @@ namespace nap
 	class NAPAPI CVService : public Service
 	{
 		friend class CVCaptureDevice;
+		friend class CVCaptureComponentInstance;
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
@@ -56,11 +58,21 @@ namespace nap
 		 */
 		void removeCaptureDevice(CVCaptureDevice& device);
 
+		/**
+		 *	Registers a CV capture component
+		 */
+		void registerCaptureComponent(CVCaptureComponentInstance& input);
+
+		/**
+		 *	Removes a CV capture component from the service
+		 */
+		void removeCaptureComponent(CVCaptureComponentInstance& input);
+
 	private:
 		// All the web socket servers currently registered in the system
 		std::vector<CVCaptureDevice*> mCaptureDevices;
 
-		nap::Slot<const CVFrameEvent&> mFrameAvailable			{ this, &CVService::onFrameCaptured };
-		void onFrameCaptured(const CVFrameEvent&);				///< called when a new frame is captured from any of the devices
+		// All the capture components currently registered in the system
+		std::vector<CVCaptureComponentInstance*> mCaptureComponents;
 	};
 }

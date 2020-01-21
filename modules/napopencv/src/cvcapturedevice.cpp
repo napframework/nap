@@ -16,19 +16,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool CVCaptureDevice::grab(CVFrameEvent& target)
+	void CVCaptureDevice::grab(CVFrameEvent& target)
 	{
-		// Check if a new frame is available
-		if (!mFrameAvailable)
-			return false;
-
 		// Copy last captured frame using a deep copy.
 		// Again, the deep copy is necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
 		mCaptureMat.copyTo(target);
 		mFrameAvailable = false;
-		return true;
 	}
 	
 
@@ -113,6 +108,12 @@ namespace nap
 
 		// Unregister capture device
 		mService->removeCaptureDevice(*this);
+	}
+
+
+	bool CVCaptureDevice::newFrame() const
+	{
+		return mFrameAvailable;
 	}
 
 
@@ -209,7 +210,8 @@ namespace nap
 			// more overhead than the copy below.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
-				frame_event.copyTo(mCaptureMat);
+				mCaptureMat = frame_event;
+				mFrameAvailable = true;
 			}
 
 			// Notify adapters that a frame is copied.
@@ -218,7 +220,6 @@ namespace nap
 				adapter->copied();
 
 			// New frame is available
-			mFrameAvailable = true;
 			mCaptureFrame	= mAutoCapture;
 			mComputeTime	= timer.getElapsedTime();
 		}
