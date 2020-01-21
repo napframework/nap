@@ -65,7 +65,11 @@ namespace nap
 	CVFrame CVFrame::clone() const
 	{
 		CVFrame clone;
-		this->copyTo(clone);
+		clone.mMatrices.resize(mMatrices.size());
+		for (auto i = 0; i < mMatrices.size(); i++)
+		{
+			clone[i] = mMatrices[i].clone();
+		}
 		return clone;
 	}
 
