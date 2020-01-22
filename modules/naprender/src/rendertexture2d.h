@@ -6,7 +6,7 @@
 namespace nap
 {
 	/**
-	 * GPU texture resource that it is initially empty
+	 * GPU texture resource that it is initially empty.
 	 * This texture can be declared as a resource together with
 	 * the format to use, width and height.
 	 */
@@ -14,13 +14,18 @@ namespace nap
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
-		enum class EFormat
+		enum class EFormat : int
 		{
-			RGBA8,			///< RGBA8 4 components, 8 bytes per component
-			RGB8,			///< RGB8 3 components, 8 bytes per component
-			R8,				///< R8	1 components, 8 bytes per component
-			Depth			///< Depth Texture used for binding to depth buffer
+			RGBA8 = 4,			///< RGBA8 4 components, 8 bytes per component
+			RGB8  = 3,			///< RGB8 3 components, 8 bytes per component
+			R8	  = 1,			///< R8	1 components, 8 bytes per component
+			Depth = 0			///< Depth Texture used for binding to depth buffer
 		};
+
+		/**
+		 * @return number of channels associated with this render texture
+		 */
+		int getChannelCount();
 
 		/**
 		 * Creates internal texture resource.

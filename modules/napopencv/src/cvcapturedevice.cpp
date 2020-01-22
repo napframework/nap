@@ -7,6 +7,7 @@
 
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
+	RTTI_CONSTRUCTOR(nap::CVService&)
 	RTTI_PROPERTY("AutoCapture",	&nap::CVCaptureDevice::mAutoCapture,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",		&nap::CVCaptureDevice::mAdapters,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -45,6 +46,12 @@ namespace nap
 	CVCaptureDevice::CVCaptureDevice(CVService& service)
 	{
 		mService = &service;
+	}
+
+
+	bool CVCaptureDevice::init(utility::ErrorState& errorState)
+	{
+		return true;
 	}
 
 
@@ -202,7 +209,7 @@ namespace nap
 				continue;
 
 			// Notify listeners
-			mFrameCaptured.trigger(frame_event);
+			frameCaptured.trigger(frame_event);
 
 			// Deep copy the captured frame to our storage matrix.
 			// This updates the data of our storage container and ensures the same dimensionality.

@@ -15,10 +15,10 @@ namespace nap
 	class CVCaptureDevice;
 
 	/**
-	 * OpenCV capture device interface. Every device is opened on startup and closed on stop. 
-	 * Derive from this class to implement your own OpenCV capture device.
-	 * The device itself does not perform the frame capture operation, this is handled in the background by
-	 * the nap::CVVideoCaptureDevice. That device (a-synchronously) handles the frame grab and retrieve operations.
+	 * Interface for a specific type of OpenCV capture device.
+	 * Derive from this class to implement your own OpenCV adapter. The adapter itself does not schedule 
+	 * the frame capture operation, that is handled in the background by the nap::CVCaptureDevice. 
+	 * That device (a-synchronously) handles the frame grab and retrieve operations.
 	 */
 	class NAPAPI CVAdapter : public Device
 	{
@@ -57,24 +57,23 @@ namespace nap
 		 */
 		virtual void stop() override final;
 
-		ECVCaptureAPI	mAPIPreference = ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
-
-	protected:
-
 		/**
 		 * @return number of OpenCV matrices associated with a single frame
 		 */
 		virtual int getMatrixCount() = 0;
 
+		ECVCaptureAPI	mAPIPreference = ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
+
+	protected:
 		/**
-		* Needs to be implemented in a derived class.
-		* Called automatically by this device on startup when the OpenCV capture device needs to be opened.
-		* It is the responsibility of the derived class to open the device in this call and return success or failure.
-		* @param captureDevice handle to the device that needs to be opened.
-		* @param api the preferred backend video capture api
-		* @param error contains the error when the device could not be opened
-		* @return if the device opened correctly
-		*/
+		 * Needs to be implemented in a derived class.
+		 * Called automatically by this device on startup when the OpenCV capture device needs to be opened.
+		 * It is the responsibility of the derived class to open the device in this call and return success or failure.
+		 * @param captureDevice handle to the device that needs to be opened.
+		 * @param api the preferred backend video capture api
+		 * @param error contains the error when the device could not be opened
+		 * @return if the device opened correctly
+		 */
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) = 0;
 
 		/**
@@ -115,7 +114,7 @@ namespace nap
 
 	private:
 		friend class CVCaptureDevice;
-		CVCaptureDevice*		mParent;							///< The nap parent capture device
+		CVCaptureDevice*	mParent;							///< The nap parent capture device
 		cv::VideoCapture	mCaptureDevice;						///< The open-cv video capture device
 		bool				mStarted = false;					///< If the video capture device started
 

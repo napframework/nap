@@ -3,13 +3,13 @@
         {
             "Type": "nap::CVCamera",
             "mID": "CameraOne",
-            "Codec":"MJPG",
             "Backend": "DirectShow",
             "ShowDialog": true,
             "ConvertRGB": true,
             "FlipHorizontal": false,
-            "FlipVertical": false,
+            "FlipVertical": true,
             "DeviceIndex": 0,
+            "Codec": "MJPG",
             "OverrideResolution": false,
             "Resolution": {
                 "x": 640,
@@ -29,17 +29,17 @@
                 "Gain": 1.0,
                 "Exposure": 1.0
             }
-        },        
+        },
         {
             "Type": "nap::CVCamera",
             "mID": "CameraTwo",
-            "Codec":"MJPG",
             "Backend": "DirectShow",
             "ShowDialog": true,
             "ConvertRGB": true,
             "FlipHorizontal": false,
-            "FlipVertical": false,
+            "FlipVertical": true,
             "DeviceIndex": 1,
+            "Codec": "MJPG",
             "OverrideResolution": false,
             "Resolution": {
                 "x": 640,
@@ -62,19 +62,19 @@
         },
         {
             "Type": "nap::CVCaptureDevice",
-            "mID": "VideoCaptureDevice",
-            "AutoCapture":false,
+            "mID": "CameraCaptureDevice",
+            "AutoCapture": true,
             "Adapters": [
-                "Video"
+                "CameraOne",
+                "CameraTwo"
             ]
         },
         {
             "Type": "nap::CVCaptureDevice",
-            "mID": "CameraCaptureDevice",
-            "AutoCapture":true,
+            "mID": "VideoCaptureDevice",
+            "AutoCapture": false,
             "Adapters": [
-                "CameraOne",
-                "CameraTwo"
+                "Video"
             ]
         },
         {
@@ -83,13 +83,54 @@
             "Backend": "Automatic",
             "ConvertRGB": true,
             "FlipHorizontal": false,
-            "FlipVertical": false,
+            "FlipVertical": true,
             "Resize": true,
             "Size": {
                 "x": 640,
                 "y": 360
             },
             "File": "people.mp4"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OpenCV",
+            "Components": [
+                {
+                    "Type": "nap::CVCaptureComponent",
+                    "mID": "CameraCaptureComponent",
+                    "Devices": "CameraCaptureDevice"
+                },
+                {
+                    "Type": "nap::CVCaptureComponent",
+                    "mID": "VideoCaptureComponent",
+                    "Devices": "VideoCaptureDevice"
+                },
+                {
+                    "Type": "nap::CVCaptureToTextureComponent",
+                    "mID": "RenderVideoTextureComponent",
+                    "CaptureComponent": "VideoCaptureComponent",
+                    "RenderTexture": "VideoTexture",
+                    "AdapterIndex": 0,
+                    "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::CVCaptureToTextureComponent",
+                    "mID": "RenderCameraTextureComponentOne",
+                    "CaptureComponent": "CameraCaptureComponent",
+                    "RenderTexture": "CameraTextureOne",
+                    "AdapterIndex": 0,
+                    "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::CVCaptureToTextureComponent",
+                    "mID": "RenderCameraTextureComponentTwo",
+                    "CaptureComponent": "CameraCaptureComponent",
+                    "RenderTexture": "CameraTextureTwo",
+                    "AdapterIndex": 1,
+                    "MatrixIndex": 0
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -474,6 +515,10 @@
                 },
                 {
                     "Entity": "OrthographicCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "OpenCV",
                     "InstanceProperties": []
                 }
             ]

@@ -16,6 +16,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	int RenderTexture2D::getChannelCount()
+	{
+		if (mFormat == EFormat::Depth)
+			return 1;
+		return static_cast<int>(mFormat);
+
+	}
+
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{

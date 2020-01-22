@@ -10,8 +10,10 @@
 namespace nap
 {
 	/**
-	 * Single video frame event. This event occurs when one or more OpenCV video devices capture a new frame.
-	 * This event can contain multiple frames, where every frame is captured at the same point in time.
+	 * Single video frame event. 
+	 * This event occurs when a nap::CVCaptureDevice captures a set of new frames from the adapters registered with it.
+	 * This event can therefore contain multiple CV::Frame objects where every frame is captured at exactly 
+	 * the same point in time by a nap::CVAdapter. Use the '[]' operator to access the content of a frame. 
 	 */
 	class NAPAPI CVFrameEvent : public Event
 	{
@@ -99,7 +101,7 @@ namespace nap
 		/**
 		 * @return the frame at the given index
 		 */
-		const CVFrame& getFrame(int index);
+		const CVFrame& getFrame(int index) const;
 
 		/**
 		 *	Clears all frames

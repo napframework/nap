@@ -12,10 +12,15 @@ namespace nap
 	/**
 	 * Single OpenCV frame that contains one or multiple OpenCV matrices and a source. 
 	 * Together the matrices define the content of a frame. A frame can be copied and moved.
-	 * The source is the capture device that created the frame and is optional. 
-	 * A frame has a source when created by one of the nap::CVAdapter objects.
-	 * Note that a frame copy (assignment or construction) does not copy the actual content of the matrices, it only increases the ref count.
-	 * To create a deep copy of a frame, including all the matrices and source, call CVFrame::deepCopyTo().
+	 * A frame can have a source. Often this is a nap::CVAdapter. 
+	 *
+	 * Note that a frame copy (or assignment) operation does not copy the actual content of the matrices.
+	 * Frames are only a pointer into a block of shared data. The data itself keeps track of the frames that reference it.
+	 * When the reference count of a data container drops to 0 the data is deleted. 
+	 * The default copy or assignment operation is therefore very fast.
+	 *
+	 * To create an actual deep copy of a frame, including all the matrices and source, call 
+	 * CVFrame::deepCopyTo() or CVFrame::clone().
 	 */
 	class NAPAPI CVFrame final
 	{

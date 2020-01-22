@@ -9,7 +9,7 @@
 
 // nap::cvcapturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CVCaptureComponent)
-	RTTI_PROPERTY("Devices", &nap::CVCaptureComponent::mDevices, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Devices", &nap::CVCaptureComponent::mDevice, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::cvcapturecomponentInstance run time class definition 
@@ -33,13 +33,9 @@ namespace nap
 
 	bool CVCaptureComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Copy over all valid devices to receive opencv events from
+		// Copy over capture device
 		nap::CVCaptureComponent* resource = getComponent<nap::CVCaptureComponent>();
-		mDevices.reserve(resource->mDevices.size());
-		for (auto& device : resource->mDevices)
-		{
-			mDevices.emplace(device.get());
-		}
+		mDevice = resource->mDevice.get();
 
 		// Register with service
 		mService = getEntityInstance()->getCore()->getService<CVService>();
@@ -50,9 +46,17 @@ namespace nap
 	}
 
 
-	void CVCaptureComponentInstance::update(double deltaTime)
+	const nap::CVCaptureDevice& CVCaptureComponentInstance::getDevice() const
 	{
+		assert(mDevice != nullptr);
+		return *mDevice;
+	}
 
+
+	nap::CVCaptureDevice& CVCaptureComponentInstance::getDevice()
+	{
+		assert(mDevice != nullptr);
+		return *mDevice;
 	}
 
 

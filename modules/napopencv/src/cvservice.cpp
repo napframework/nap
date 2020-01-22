@@ -46,18 +46,9 @@ namespace nap
 			valid_components.reserve(mCaptureComponents.size());
 			for (auto& component : mCaptureComponents)
 			{
-				// Component accepts frames from every device
-				if (component->mDevices.empty())
-				{
-					valid_components.emplace_back(component);
-					continue;
-				}
-
 				// Component accepts frame from specific device
-				if (component->mDevices.find(device) != component->mDevices.end())
-				{
+				if (component->mDevice == device)
 					valid_components.emplace_back(component);
-				}
 			}
 
 			// No matching components
@@ -66,7 +57,7 @@ namespace nap
 
 			// Consume frame and forward to interested components
 			CVFrameEvent capture_frame;
-			device->grab(capture_frame, true);
+			device->grab(capture_frame, false);
 			for (auto& component : valid_components)
 			{
 				component->trigger(capture_frame);

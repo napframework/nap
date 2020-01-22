@@ -88,10 +88,10 @@ namespace nap
 		bool				mShowDialog = false;			///< Property: 'ShowDialog' if the external camera settings dialog is shown on startup
 
 	protected:
-		virtual int getMatrixCount() override			{ return 1; }
+		virtual int getMatrixCount() override				{ return 1; }
 
 		/**
-		 * Called by the capture device. Opens the video file or image sequence.
+		 * Opens the connection to the camera.
 		 * @param captureDevice device to open
 		 * @param api api back-end to use
 		 * @param error contains the error if the opening operation fails
@@ -100,9 +100,6 @@ namespace nap
 
 		/**
 		 * This method decodes and returns the just grabbed frame.
-		 * Needs to be implemented in a derived class.
-		 * Return false when decoding fails, otherwise return true.
-		 * The 'outFrame' should contain the decoded frame on success.
 		 * @param captureDevice the device to capture the frame from.
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.

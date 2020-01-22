@@ -107,36 +107,6 @@ namespace nap
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
-		if (mCameraCaptureDevice->newFrame())
-		{
-			mCameraCaptureDevice->grab(mCamFrame);
-			if (mCamFrame.getCount() > 0)
-			{
-				//detectFaces(mCamFrame[0]);
-				cv::flip(mCamFrame[0][0], mCamFrame[0][0], 0);
-				cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
-				mCameraTextureOne->update(cpu_mat.data);
-			}
-
-			if (mCamFrame.getCount() > 1)
-			{
-				//detectFaces(mCamFrame[1]);
-				cv::flip(mCamFrame[1][0], mCamFrame[1][0], 0);
-				cv::Mat cpu_mat = mCamFrame[0][0].getMat(cv::ACCESS_READ);
-				cpu_mat = mCamFrame[1][0].getMat(cv::ACCESS_READ);
-				mCameraTextureTwo->update(cpu_mat.data);
-			}
-		}
-		
-		if (mVideoCaptureDevice->newFrame())
-		{
-			mVideoCaptureDevice->grab(mVidFrame);
-			detectFaces(mVidFrame[0]);
-			cv::flip(mVidFrame[0][0], mVidFrame[0][0], 0);
-			cv::Mat cpu_mat = mVidFrame[0][0].getMat(cv::ACCESS_READ);
-			mVideoTexture->update(cpu_mat.data);
-		}
-
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -171,7 +141,6 @@ namespace nap
 			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
 			{
 				adapter.setFrame(mCurrentVideoFrame);
-				mVideoCaptureDevice->capture();
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());

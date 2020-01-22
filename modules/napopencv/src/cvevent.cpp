@@ -42,7 +42,7 @@ namespace nap
 	}
 
 
-	const nap::CVFrame& CVFrameEvent::getFrame(int index)
+	const nap::CVFrame& CVFrameEvent::getFrame(int index) const
 	{
 		assert(index < mFrames.size());
 		return mFrames[index];

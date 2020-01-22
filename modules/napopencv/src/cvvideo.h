@@ -11,15 +11,14 @@
 namespace nap
 {
 	/**
-	 * OpenCV video capture device.
-	 * Reads video files and is able to capture frames from the loaded video stream.
+	 * Captures frames from a video file or image sequence.
 	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
+	 * If you need regular video playback, use the nap::Video object instead.
 	 */
 	class NAPAPI CVVideo : public CVAdapter
 	{
 		RTTI_ENABLE(CVAdapter)
 	public:
-
 		/**
 		 * Initialize this object after de-serialization
 		 * @param errorState contains the error message when initialization fails
@@ -108,9 +107,6 @@ namespace nap
 
 		/**
 		 * This method decodes and returns the just grabbed frame.
-		 * Needs to be implemented in a derived class.
-		 * Return false when decoding fails, otherwise return true.
-		 * The 'outFrame' should contain the decoded frame on success.
 		 * @param captureDevice the device to capture the frame from.
 		 * @param outFrame contains the new decoded frame
 		 * @return if decoding succeeded.

@@ -13,51 +13,68 @@ namespace nap
 	class CVService;
 
 	/**
-	 *	cvcapturecomponent
+	 * Receives frame updates from a nap::CVCaptureDevice on the main application thread.
+	 * The actual capture operation is handled by the nap::CVCaptureDevice on a background thread.
+	 * Register to the 'frameReceived' signal of the nap::CVCaptureComponentInstance to 
+	 * receive frame updates on the main processing thread.
 	 */
 	class NAPAPI CVCaptureComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(CVCaptureComponent, CVCaptureComponentInstance)
 	public:
-		std::vector<ResourcePtr<CVCaptureDevice>> mDevices;		///< Property: 'Devices' the devices this component receives frames from, 0 means all devices
+		ResourcePtr<CVCaptureDevice> mDevice;		///< Property: 'Device' the device this component receives frames from
 	};
 
 
 	/**
-	 * cvcapturecomponentInstance	
-	 */
+	* Receives frame updates from a nap::CVCaptureDevice on the main application thread.
+	* The actual capture operation is handled by the nap::CVCaptureDevice on a background thread.
+	* Register to the 'frameReceived' signal to receive frame updates on the main processing thread.
+	*
+	* Note that the frame that is forwarded to potential listeners is a reference.
+	* Any actual operation on the frame's content will be picked up by other parts of the application
+	* that work with the same frame. This is unfortunately the way OpenCV works. 
+	* To get an actual copy of the content of the frame call FrameEvent::clone(). 
+	* Do this before performing any operation on the frame itself.
+	*/
 	class NAPAPI CVCaptureComponentInstance : public ComponentInstance
 	{
 		friend class CVService;
 		RTTI_ENABLE(ComponentInstance)
 	public:
+		/**
+		 * @param entity the entity this component belongs to.
+		 * @param resource the resource this instance was created from.
+		 */
 		CVCaptureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		virtual ~CVCaptureComponentInstance();
 
 		/**
-		 * Initialize cvcapturecomponentInstance based on the cvcapturecomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the cvcapturecomponentInstance is initialized successfully
+		 * Initializes the capture component instance.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * update cvcapturecomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		Signal<const CVFrameEvent&>			frameReceived;		///< Triggered when the component receives a new opencv frame
 
 		/**
 		 * Returns the signal that is called when a new frame is received.
 		 * @return the frame received signal.
 		 */
 		Signal<const CVFrameEvent&>* getFrameReceived() { return &frameReceived; }
+
+		/**
+		 * @return the capture device this component receives frames from
+		 */
+		const CVCaptureDevice& getDevice() const;
+
+		/**
+		 * @return the capture device this component receives frames from
+		 */
+		CVCaptureDevice& getDevice();
+
+		// The signal that is emitted when a new frame is received
+		Signal<const CVFrameEvent&>			frameReceived;		///< Triggered when the component receives a new opencv frame
 
 	private:
 		/**
@@ -66,7 +83,7 @@ namespace nap
 		 */
 		void trigger(const nap::CVFrameEvent& frameEvent);
 
-		std::unordered_set<CVCaptureDevice*> mDevices;
+		CVCaptureDevice* mDevice;
 		CVService* mService = nullptr;
 	};
 }

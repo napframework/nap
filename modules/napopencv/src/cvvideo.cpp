@@ -88,6 +88,7 @@ namespace nap
 		// Clamp to range and set as property
 		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);
 		setProperty(cv::CAP_PROP_POS_FRAMES, static_cast<double>(req_frame));
+		getParent().capture();
 	}
 
 
