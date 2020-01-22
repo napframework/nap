@@ -51,6 +51,8 @@ namespace nap
 
 	bool CVCaptureDevice::init(utility::ErrorState& errorState)
 	{
+		for (auto& adapter : mAdapters)
+			adapter->mParent = this;
 		return true;
 	}
 
@@ -64,9 +66,14 @@ namespace nap
 		mPropertyMap.reserve(mAdapters.size());
 		for (auto& adapter : mAdapters)
 		{
+			if (!adapter->started())
+			{
+				nap::Logger::error("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
+				continue;
+			}
+
 			// Create properties
 			mPropertyMap[adapter.get()] = {};
-			adapter->mParent = this;
 		}
 
 		// Start capture task
@@ -108,12 +115,6 @@ namespace nap
 		// Wait till exit
 		if (mCaptureTask.valid())
 			mCaptureTask.wait();
-
-		// Notify all adapters
-		for (auto& adapter : mAdapters)
-		{
-			adapter->mParent = nullptr;
-		}
 
 		// Clear all properties
 		mPropertyMap.clear();

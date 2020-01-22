@@ -12,8 +12,12 @@ namespace nap
 {
 	/**
 	 * Captures frames from a video file or image sequence.
+	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
 	 * If you need regular video playback, use the nap::Video object instead.
+	 *
+	 * Add this device to a nap::CVCaptureDevice to capture frames from the video stream, in a background thread.
+	 * Note that this object should only be added once to a nap::CVCaptureDevice!
 	 */
 	class NAPAPI CVVideo : public CVAdapter
 	{

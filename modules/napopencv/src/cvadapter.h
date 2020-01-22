@@ -19,6 +19,7 @@ namespace nap
 	 * Derive from this class to implement your own OpenCV adapter. The adapter itself does not schedule 
 	 * the frame capture operation, that is handled in the background by the nap::CVCaptureDevice. 
 	 * That device (a-synchronously) handles the frame grab and retrieve operations.
+	 * Note that every adapter should only be added once to a specific nap::CVCaptureDevice!
 	 */
 	class NAPAPI CVAdapter : public Device
 	{

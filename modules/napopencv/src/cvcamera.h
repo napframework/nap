@@ -35,6 +35,9 @@ namespace nap
 	 * Otherwise the captured video frame is stored on the CPU.
 	 * Camera settings can be provided on startup by enabling 'ApplySettings'.
 	 * After startup the camera settings reflect the current state of the hardware.
+	 *
+	 * Add this adapter to a nap::CVCaptureDevice to capture the camera stream in a background thread.
+	 * Note that this object should only be added once to a nap::CVCaptureDevice!
 	 */
 	class NAPAPI CVCamera : public CVAdapter
 	{

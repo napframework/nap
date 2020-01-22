@@ -52,7 +52,12 @@ namespace nap
 	void CVCaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frame)
 	{
 		// Ensure indices are within bounds
-		assert(mAdapterIndex < frame.getCount());
+		if (mAdapterIndex >= frame.getCount())
+		{
+			nap::Logger::warn("%s: invalid adapter index, got %d, expected: %d", mID.c_str(),
+				frame.getCount()-1, mAdapterIndex);
+			return;
+		}
 		assert(mMatrixIndex < frame[mAdapterIndex].getCount());
 
 		// Extract frame
