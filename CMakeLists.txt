@@ -138,6 +138,8 @@ add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
 add_subdirectory(apps/flexblock)
 add_subdirectory(apps/flexblock/module)
+add_subdirectory(apps/anima)
+add_subdirectory(apps/anima/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
