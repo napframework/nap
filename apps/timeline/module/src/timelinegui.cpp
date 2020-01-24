@@ -48,19 +48,29 @@ namespace nap
 				timeline.save("test.json", errorState);
 			}
 
+			// get current cursor pos, we will use this to position the track windows
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+
+			// keep track of track count, we will use this to position the track windows
+			int trackCount = 0;
+
 			for (const auto& track : timeline.mTracks)
 			{
 				// push id
 				ImGui::PushID(track->mID.c_str());
 
-				//
+				// define consts
 				const float trackHeight = 100.0f;
 				const float keyframeHandlerHeight = 10.0f;
+
+				// manually set the cursor position before drawing new track window
+				cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + 1 };
+				ImGui::SetCursorPos(cursorPos);
 
 				// begin track
 				if (ImGui::BeginChild(
 					track->mID.c_str(), // id
-					ImVec2(timelineWidth, trackHeight + keyframeHandlerHeight), // size
+					{ timelineWidth, trackHeight + keyframeHandlerHeight }, // size
 					false, // no border
 					ImGuiWindowFlags_NoMove )) // window flags
 				{
@@ -77,15 +87,15 @@ namespace nap
 					auto windowTopLeft = ImGui::GetWindowPos();
 
 					// calc beginning of timeline graphic
-					auto trackTopLeft = ImVec2(windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y);
+					ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
 
 					// draw background of timeline
 					drawList->AddRectFilled(
 						trackTopLeft, // top left position
-						ImVec2(trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight), // bottom right position
+						{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
 						guicolors::black); // color 
 
-					//
+					// keep track of previous position of keyframe
 					float previousKeyFrameX = 0.0f;
 
 					// draw keyframes
@@ -96,15 +106,15 @@ namespace nap
 
 						// draw keyframe value handler
 						drawList->AddCircle(
-							ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
+							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
 							5.0f, // radius
 							guicolors::red); // color
 
 						// handle mouse actions for keyframe value
 						if( ( mMouseActionData.currentAction == TimelineGUIMouseActions::NONE || mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE ) 
 							&& ImGui::IsMouseHoveringRect(
-								ImVec2(trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5), // topleft
-								ImVec2(trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5))) // bottomright
+							{ trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5 }, // topleft
+							{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5 })) // bottomright
 						{
 							drawList->AddCircleFilled(
 								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
@@ -137,7 +147,7 @@ namespace nap
 						{
 							// draw circle filled
 							drawList->AddCircleFilled(
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
 								5.0f, // radius
 								guicolors::red); // color
 
@@ -175,9 +185,9 @@ namespace nap
 						{
 							float value = keyFrame->mCurve->evaluate((float)i / resolution);
 
-							points[i] = ImVec2(
-								trackTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution), 
-								trackTopLeft.y + value * trackHeight);
+							points[i] = {
+								trackTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution),
+								trackTopLeft.y + value * trackHeight };
 						}
 
 						// draw points of curve
@@ -199,8 +209,8 @@ namespace nap
 						{
 							// draw keyframe line thick
 							drawList->AddLine(
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								3.0f); // thickness
 
@@ -223,8 +233,8 @@ namespace nap
 						{
 							// draw keyframe line thick
 							drawList->AddLine(
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								3.0f); // thickness
 
@@ -257,10 +267,10 @@ namespace nap
 						{
 							// draw keyframe line thin
 							drawList->AddLine(
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
-								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
-								1.0f); // thickness
+								1.0f ); // thickness
 
 							// stop hovering
 							if (mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAME)
@@ -278,6 +288,8 @@ namespace nap
 
 				// pop id
 				ImGui::PopID();
+
+				trackCount++;
 			}
 		}
 
