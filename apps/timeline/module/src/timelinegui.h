@@ -48,5 +48,21 @@ namespace nap
 		ResourcePtr<TimelineContainer>						mTimelineContainer;
 	protected:
 		TimelineGUIMouseActionData							mMouseActionData;
+	private:
+
+		void drawTrack(
+			const ResourcePtr<TimelineTrack>& track,
+			ImVec2 &cursorPos,
+			const int trackCount,
+			const float timelineWidth,
+			const float stepSize);
+
+		void drawKeyFrame(
+			const ResourcePtr<KeyFrame> &keyFrame,
+			const float stepSize,
+			ImDrawList* drawList,
+			const ImVec2 &trackTopLeft,
+			const float trackHeight,
+			float &previousKeyFrameX);
 	};
 }
