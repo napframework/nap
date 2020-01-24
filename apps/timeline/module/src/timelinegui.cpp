@@ -18,7 +18,7 @@ namespace nap
 	void TimelineGUI::draw()
 	{
 		//
-		auto& timeline = *mTimelineContainer->mTimeline.get();
+		Timeline& timeline = *mTimelineContainer->mTimeline.get();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -41,7 +41,7 @@ namespace nap
 			// check if window has focus
 			bool windowHasFocus = ImGui::IsWindowFocused();
 
-			//
+			// handle save button
 			if (ImGui::Button("Save"))
 			{
 				utility::ErrorState errorState;
@@ -78,13 +78,13 @@ namespace nap
 					bool childHasFocus = windowHasFocus && ImGui::IsWindowFocused();
 
 					// get window drawlist
-					auto drawList = ImGui::GetWindowDrawList();
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 					// get current imgui cursor position
-					auto cursorPos = ImGui::GetCursorPos();
+					ImVec2 cursorPos = ImGui::GetCursorPos();
 
 					// get window position
-					auto windowTopLeft = ImGui::GetWindowPos();
+					ImVec2 windowTopLeft = ImGui::GetWindowPos();
 
 					// calc beginning of timeline graphic
 					ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
@@ -135,7 +135,8 @@ namespace nap
 						else
 						{
 							// stop hovering
-							if (mMouseActionData.currentAction != TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE && mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE)
+							if (mMouseActionData.currentAction != TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE && 
+								mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE)
 							{
 								mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
 							}
@@ -192,12 +193,12 @@ namespace nap
 
 						// draw points of curve
 						drawList->AddPolyline(
-							&*points.begin(), 
-							points.size(),
-							guicolors::red,
-							false, 
-							1.0f, 
-							true);
+							&*points.begin(), // points array
+							points.size(), // size of points array
+							guicolors::red, // color
+							false, // closed
+							1.0f, // thickness
+							true ); // anti-aliased
 
 						// keyframe handler box coordinates
 						ImVec2 handlerBoxTopLeft = { trackTopLeft.x + x - 5, trackTopLeft.y };
@@ -289,6 +290,7 @@ namespace nap
 				// pop id
 				ImGui::PopID();
 
+				// increment track count
 				trackCount++;
 			}
 		}
