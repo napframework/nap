@@ -43,7 +43,7 @@
             "Timeline": "TimelineHolder_7b76a144"
         },
         {
-            "Type": "nap::TimelineHolder",
+            "Type": "nap::TimelineContainer",
             "mID": "TimelineHolder_7b76a144",
             "Timeline File": "timelines/test.json"
         },

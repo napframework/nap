@@ -1,7 +1,7 @@
 #pragma once
 
 // internal includes
-#include "timelineholder.h"
+#include "timelinecontainer.h"
 
 // external includes
 #include <nap/resource.h>
@@ -15,6 +15,10 @@ namespace nap
 
 	enum TimelineGUIMouseActions
 	{
+		// HOVERING
+		HOVERING_KEYFRAME,
+		HOVERING_KEYFRAMEVALUE,
+		// ACTIONS
 		DRAGGING_KEYFRAME,
 		DRAGGING_KEYFRAMEVALUE,
 		NONE
@@ -41,7 +45,7 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 	public:
-		ResourcePtr<TimelineHolder>						mTimelineHolder;
+		ResourcePtr<TimelineContainer>						mTimelineContainer;
 	protected:
 		TimelineGUIMouseActionData							mMouseActionData;
 	};

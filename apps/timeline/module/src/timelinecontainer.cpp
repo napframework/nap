@@ -1,10 +1,10 @@
 // local includes
-#include "timelineholder.h"
+#include "TimelineContainer.h"
 
 // external includes
 
-RTTI_BEGIN_CLASS(nap::TimelineHolder)
-RTTI_PROPERTY("Timeline File", &nap::TimelineHolder::mTimelineFilePath, nap::rtti::EPropertyMetaData::FileLink)
+RTTI_BEGIN_CLASS(nap::TimelineContainer)
+RTTI_PROPERTY("Timeline File", &nap::TimelineContainer::mTimelineFilePath, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool TimelineHolder::init(utility::ErrorState& errorState)
+	bool TimelineContainer::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
 		{
@@ -37,7 +37,7 @@ namespace nap
 	}
 
 
-	bool TimelineHolder::load(const std::string& name, utility::ErrorState& errorState)
+	bool TimelineContainer::load(const std::string& name, utility::ErrorState& errorState)
 	{
 		if (!mTimeline->save(name, errorState))
 		{
@@ -48,7 +48,7 @@ namespace nap
 	}
 
 
-	bool TimelineHolder::save(const std::string& name, utility::ErrorState& errorState)
+	bool TimelineContainer::save(const std::string& name, utility::ErrorState& errorState)
 	{
 		if (!mTimeline->load(name, errorState))
 		{

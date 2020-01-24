@@ -11,21 +11,32 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	// forward declares
+	class TimelineGUI;
+
 	/**
-	*/
-	class NAPAPI TimelineHolder : public Resource
+	 * TimelineHolder
+	 * TimelineHolder is responsible for instantiating a timeline, and the let it load and or save a show from/to disk
+	 */
+	class NAPAPI TimelineContainer : public Resource
 	{
+		friend class TimelineGUI;
+
 		RTTI_ENABLE(Resource)
 	public:
-		std::string								mTimelineFilePath;
+		// Properties
+		std::string	mTimelineFilePath; ///< The default filepath that the timeline should load on startup
+	public:
+		// Functions
 
+		/**
+		 * 
+		 */
 		bool init(utility::ErrorState& errorState) override;
 
 		bool save(const std::string& name, utility::ErrorState& errorState);
 
 		bool load(const std::string& name, utility::ErrorState& errorState);
-
-		Timeline& getTimelineRef() { return *mTimeline; }
 	protected:
 		std::unique_ptr<Timeline>	mTimeline = nullptr;
 	};

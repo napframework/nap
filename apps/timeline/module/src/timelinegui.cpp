@@ -7,7 +7,7 @@
 #include <imgui/imgui.h>
 
 RTTI_BEGIN_CLASS(nap::TimelineGUI)
-RTTI_PROPERTY("Timeline", &nap::TimelineGUI::mTimelineHolder, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Timeline", &nap::TimelineGUI::mTimelineContainer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@ namespace nap
 	void TimelineGUI::draw()
 	{
 		//
-		auto& timeline = mTimelineHolder->getTimelineRef();
+		auto& timeline = *mTimelineContainer->mTimeline.get();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -94,13 +94,6 @@ namespace nap
 						// position of keyframe
 						float x = keyFrame->mTime * stepSize;
 
-						// draw keyframe line
-						drawList->AddLine(
-							ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
-							ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
-							guicolors::white, // color
-							1.0f); // thickness
-
 						// draw keyframe value handler
 						drawList->AddCircle(
 							ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
@@ -108,8 +101,8 @@ namespace nap
 							guicolors::red); // color
 
 						// handle mouse actions for keyframe value
-						if( mMouseActionData.currentAction == TimelineGUIMouseActions::NONE && 
-							ImGui::IsMouseHoveringRect(
+						if( ( mMouseActionData.currentAction == TimelineGUIMouseActions::NONE || mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE ) 
+							&& ImGui::IsMouseHoveringRect(
 								ImVec2(trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5), // topleft
 								ImVec2(trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5))) // bottomright
 						{
@@ -118,6 +111,8 @@ namespace nap
 								5.0f, // radius
 								guicolors::red); // color
 
+							mMouseActionData.currentAction = TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE;
+
 							// if we have a click, initiate a mouse action
 							if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
 							{
@@ -125,6 +120,14 @@ namespace nap
 								mMouseActionData.previousMousePos = ImGui::GetMousePos();
 								mMouseActionData.currentAction = TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE;
 								mMouseActionData.currentObject = keyFrame.get();
+							}
+						}
+						else
+						{
+							// stop hovering
+							if (mMouseActionData.currentAction != TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE && mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE)
+							{
+								mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
 							}
 						}
 						
@@ -187,18 +190,22 @@ namespace nap
 							true);
 
 						// keyframe handler box coordinates
-						ImVec2 handlerBoxTopLeft = ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight);
-						ImVec2 handlerBoxBottomRight = ImVec2(trackTopLeft.x + x + keyframeHandlerHeight, trackTopLeft.y + trackHeight + keyframeHandlerHeight);
+						ImVec2 handlerBoxTopLeft = { trackTopLeft.x + x - 5, trackTopLeft.y };
+						ImVec2 handlerBoxBottomRight = { trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight };
 
-						// check if handler is being hovered
+						// check if keyframe line is being hovered
 						if ( ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomRight) && 
-							 mMouseActionData.currentAction == TimelineGUIMouseActions::NONE)
+							 ( mMouseActionData.currentAction == TimelineGUIMouseActions::NONE || mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAME ))
 						{
-							drawList->AddRectFilled(
-								handlerBoxTopLeft, // topleft
-								handlerBoxBottomRight, // bottomright
-								guicolors::white // color
-							);
+							// draw keyframe line thick
+							drawList->AddLine(
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								guicolors::white, // color
+								3.0f); // thickness
+
+							//
+							mMouseActionData.currentAction = TimelineGUIMouseActions::HOVERING_KEYFRAME;
 
 							// if we have a click, initiate a mouse action
 							if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
@@ -214,11 +221,12 @@ namespace nap
 						if (mMouseActionData.currentAction == TimelineGUIMouseActions::DRAGGING_KEYFRAME &&
 							mMouseActionData.currentObject == keyFrame.get())
 						{
-							drawList->AddRectFilled(
-								handlerBoxTopLeft, // topleft
-								handlerBoxBottomRight, // bottom right
-								guicolors::white // color
-							);
+							// draw keyframe line thick
+							drawList->AddLine(
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								guicolors::white, // color
+								3.0f); // thickness
 
 							// handle mouse drag
 							if (mMouseActionData.mouseWasDown && ImGui::IsMouseDragging(0))
@@ -247,11 +255,18 @@ namespace nap
 						}
 						else
 						{
-							drawList->AddRect(
-								handlerBoxTopLeft, // topleft
-								handlerBoxBottomRight, // bottom right
-								guicolors::white // color
-							);
+							// draw keyframe line thin
+							drawList->AddLine(
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y), // top left
+								ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight), // bottom right
+								guicolors::white, // color
+								1.0f); // thickness
+
+							// stop hovering
+							if (mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAME)
+							{
+								mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+							}
 						}
 
 						previousKeyFrameX = x;
@@ -276,7 +291,7 @@ namespace nap
 
 	std::string TimelineGUI::getName() const
 	{
-		auto& timeline = mTimelineHolder->getTimelineRef();
+		auto& timeline = *mTimelineContainer->mTimeline.get();
 		return timeline.mName;
 	}
 
