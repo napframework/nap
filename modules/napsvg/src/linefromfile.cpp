@@ -344,7 +344,7 @@ namespace nap
 		uvs_attr.addData(pathUvs.data(), pathUvs.size());
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		shape.setDrawMode(closed ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
 		utility::generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
 
 		mMeshInstance->setNumVertices(mMeshInstance->getNumVertices() + vertex_count);

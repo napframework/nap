@@ -142,7 +142,7 @@ namespace nap
 		mService->clearRenderTarget(mTarget.getTarget());
 
 		// Bind render target
-		mTarget.getTarget().bind();
+		//mTarget.getTarget().bind();
 
 		// Ensure correct render state
 		mService->pushRenderState();
@@ -151,7 +151,7 @@ namespace nap
 		onDraw(renderTarget, commandBuffer, sIdentityMatrix, proj_matrix);
 
 		// Unbind render target
-		mTarget.getTarget().unbind();
+		//mTarget.getTarget().unbind();
 	}
 
 
@@ -200,7 +200,7 @@ namespace nap
 			MeshShape& shape = mesh_instance.getShape(index);
 			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 
-			GLenum draw_mode = getGLMode(shape.getDrawMode());
+			//GLenum draw_mode = getGLMode(shape.getDrawMode());
 			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
 // 			index_buffer.bind();

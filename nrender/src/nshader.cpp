@@ -146,6 +146,7 @@ static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffe
 	return true;
 }
 
+
 VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevice device) 
 {
 	VkShaderModuleCreateInfo createInfo = {};
@@ -262,6 +263,7 @@ namespace opengl
 		}
 	}
 
+
 	VkFormat getFormatFromType(spirv_cross::SPIRType type)
 	{
 		switch (type.basetype)
@@ -287,6 +289,7 @@ namespace opengl
 			return VK_FORMAT_UNDEFINED;
 		}
 	}
+
 
 	bool addUniformsRecursive(UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
 	{
@@ -454,7 +457,7 @@ namespace opengl
 				return false;
 
 			uint32_t location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
-			mShaderAttributes[stage_input.name] = std::make_unique<ShaderVertexAttribute>(stage_input.name, location, format);
+			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, format);
 		}
 
 		std::vector<unsigned int> fragmentShaderData;
@@ -473,6 +476,7 @@ namespace opengl
 
 		return true;
 	}
+
 
 	bool Shader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
 	{
@@ -508,12 +512,4 @@ namespace opengl
 
 		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
 	}
-
-
-	// Destructor for the Shader object which cleans up by detaching the shaders, deleting them
-	// and finally deleting the GLSL program.
-	Shader::~Shader()
-	{
-	}
-
 }

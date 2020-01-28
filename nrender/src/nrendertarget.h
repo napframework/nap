@@ -43,15 +43,6 @@ namespace opengl
 		RenderTarget(const RenderTarget&) = delete;
 		RenderTarget& operator=(const RenderTarget&) = delete;
 
-		/**
-		* Binds the render target so it can be used by subsequent render calls
-		*/
-		virtual bool bind() = 0;
-
-		/**
-		* Unbinds the render target. TODO: decide how to proceeed with unbinding render targets.
-		*/
-		virtual bool unbind() = 0;
 
 		/**
 		* Clears color, depth and stencil depending on flags. Uses ClearColor.

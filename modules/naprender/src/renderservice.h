@@ -4,7 +4,6 @@
 #include <nap/service.h>
 #include <nap/datetime.h>
 #include <windowevent.h>
-#include <nopengl.h>
 #include <thread>
 #include <renderablemesh.h>
 #include <rendertarget.h>

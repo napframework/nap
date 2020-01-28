@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "nshaderutils.h"
+#include "nsamplerdeclaration.h"
 
 // External Includes
 #include <rtti/objectptr.h>

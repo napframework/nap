@@ -152,7 +152,7 @@ namespace opengl
 		return true;
 	}
 
-
+	/*
 	// Binds the render target so it can be used by subsequent render calls
 	bool TextureRenderTarget2D::bind()
 	{
@@ -180,5 +180,5 @@ namespace opengl
 			mDepthTexture->generateMipMaps();
 
 		return true;
-	}
+	}*/
 }

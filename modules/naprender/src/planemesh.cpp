@@ -140,7 +140,7 @@ namespace nap
 		color_attribute.setData(colors.data(), vert_count);
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

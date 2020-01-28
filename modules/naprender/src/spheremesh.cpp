@@ -111,7 +111,7 @@ namespace nap
 		color_attribute.setData(colors.data(), vertex_count);
 		
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);	
+		shape.setDrawMode(EDrawMode::TRIANGLES);	
 		shape.setIndices(indices.data(), index_count);
 
 		return mMeshInstance->init(errorState);

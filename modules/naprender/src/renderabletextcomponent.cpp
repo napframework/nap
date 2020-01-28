@@ -8,7 +8,6 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <nap/logger.h>
-#include <ndrawutils.h>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -173,7 +172,7 @@ namespace nap
 		opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 		// Lines / Fill etc.
-		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
+		//GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
 
 		// Fetch index buffer (holding drawing order
 		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);

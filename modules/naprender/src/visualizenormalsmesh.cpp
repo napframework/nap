@@ -236,7 +236,7 @@ namespace nap
 
 		// Draw normals as lines
 		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(opengl::EDrawMode::LINES);
+		shape.setDrawMode(EDrawMode::LINES);
 
 		// Automatically generate indices
 		utility::generateIndices(shape, vertex_count * 2);

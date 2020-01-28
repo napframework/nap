@@ -1,7 +1,6 @@
 #pragma once
 
 // External Includes
-#include <nshaderutils.h>
 
 // Local Includes
 #include "uniforms.h"

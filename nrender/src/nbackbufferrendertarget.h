@@ -11,16 +11,6 @@ namespace opengl
 	{
 	public:
 		/**
-		* Binds the framebuffer so it can be used by subsequent render calls
-		*/
-		virtual bool bind() override;
-
-		/**
-		* NOP. TODO: decide how to proceed with unbinding render targets
-		*/
-		virtual bool unbind() override { return true; }
-
-		/**
 		* @param size Size of the render target
 		*/
 		void setSize(const glm::ivec2& size) { mSize = size; }

@@ -78,7 +78,7 @@ namespace nap
 
 			// Reserve CPU memory for all the particle geometry necessary to create
 			// We want to draw the mesh as a set of triangles, 2 triangles per particle
-			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			shape.setDrawMode(EDrawMode::TRIANGLES);
 			shape.reserveIndices(1000);
 
 			// Initialize our instance

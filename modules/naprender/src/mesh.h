@@ -18,6 +18,21 @@ namespace nap
 	class Renderer;
 
 	/**
+	* Topology of the mesh
+	*/
+	enum class EDrawMode : uint8_t
+	{
+		POINTS = 1,						///< Interpret the vertex data as single points
+		LINES = 2,						///< Interpret the vertex data as individual lines
+		LINE_STRIP = 3,					///< Interpret the vertex data as a single connected line
+		LINE_LOOP = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
+		TRIANGLES = 5,					///< Interpret the vertex data as a set of triangles
+		TRIANGLE_STRIP = 6,				///< Interpret the vertex data as a strip of triangles
+		TRIANGLE_FAN = 7,				///< Interpret the vertex data as a fan of triangles
+		UNKNOWN = 0,					///< Invalid vertex interpretation
+	};
+
+	/**
 	* Known vertex attribute IDs in the system
 	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
 	*/
@@ -145,15 +160,15 @@ namespace nap
 		* Sets Draw mode for this mesh
 		* @param drawMode: OpenGL draw mode.
 		*/
-		void setDrawMode(opengl::EDrawMode drawMode) { mDrawMode = drawMode; }
+		void setDrawMode(EDrawMode drawMode) { mDrawMode = drawMode; }
 
 		/**
 		* @return Draw mode for this mesh.
 		*/
-		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
+		EDrawMode getDrawMode() const { return mDrawMode; }
 
 	public:
-		opengl::EDrawMode	mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
+		EDrawMode			mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
 		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 

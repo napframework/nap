@@ -39,19 +39,6 @@ namespace opengl
 		bool init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture, nap::utility::ErrorState& errorState);
 
 		/**
-		* Binds the render target so it can be used by subsequent render calls.
-		* @return if the FBO was successfully bound or not
-		*/
-		virtual bool bind() override;
-
-		/**
-		 * Unbinds the render target.
-		 * Note that if the texture supports lods mip-maps are generated automatically.
-		 * @return if unbinding the target succeeded.
-		 */
-		virtual bool unbind() override;
-
-		/**
 		* @return the texture associated with the color channel of this render target
 		*/
 		opengl::Texture2D& getColorTexture()			{ assert(mColorTexture != nullptr);  return *mColorTexture; }

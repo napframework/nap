@@ -5,6 +5,17 @@
 #include "renderservice.h"
 #include "renderer.h"
 
+RTTI_BEGIN_ENUM(nap::EDrawMode)
+	RTTI_ENUM_VALUE(nap::EDrawMode::UNKNOWN,		"Unknown"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::POINTS,			"Points"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LINES,			"Lines"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_STRIP,		"LineStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_LOOP,		"LineLoop"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLES,		"Triangles"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_STRIP,	"TriangleStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_FAN,	"TriangleFan")
+RTTI_END_ENUM
+
 RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::Static,		"Static"),
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicRead,	"DynamicRead"),

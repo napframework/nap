@@ -1,6 +1,5 @@
 // Local Includes
 #include "nindexbuffer.h"
-#include "ngltypes.h"
 
 // External Includes
 #include <assert.h>

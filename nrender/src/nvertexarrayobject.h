@@ -3,7 +3,6 @@
 // Local Includes
 #include "nvertexbuffer.h"
 #include "nindexbuffer.h"
-#include "ndrawutils.h"
 
 // External Includes
 #include <GL/glew.h>

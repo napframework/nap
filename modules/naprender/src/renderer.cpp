@@ -4,7 +4,6 @@
 #include "vulkan/vulkan_core.h"
 
 // External Includes
-#include <nopengl.h>
 #include <utility/errorstate.h>
 
 #include "glslang/Public/ShaderLang.h"

@@ -11,15 +11,15 @@ namespace nap
 		{
 			switch (shape.getDrawMode())
 			{
-			case opengl::EDrawMode::LINE_LOOP:
-			case opengl::EDrawMode::LINE_STRIP:
-			case opengl::EDrawMode::LINES:
-			case opengl::EDrawMode::POINTS:
-			case opengl::EDrawMode::UNKNOWN:
+			case EDrawMode::LINE_LOOP:
+			case EDrawMode::LINE_STRIP:
+			case EDrawMode::LINES:
+			case EDrawMode::POINTS:
+			case EDrawMode::UNKNOWN:
 				return false;
-			case opengl::EDrawMode::TRIANGLES:
-			case opengl::EDrawMode::TRIANGLE_FAN:
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TRIANGLES:
+			case EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TRIANGLE_STRIP:
 				return true;
 			default:
 				assert(false);
@@ -37,22 +37,22 @@ namespace nap
 				const MeshShape& shape = mesh.getShape(shape_index);
 				switch (shape.getDrawMode())
 				{
-				case opengl::EDrawMode::TRIANGLES:
+				case EDrawMode::TRIANGLES:
 				{
 					count += shape.getNumIndices() / 3;
 					break;
 				}
-				case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
-				case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+				case EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+				case EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
 				{
 					count += math::max<int>(shape.getNumIndices() - 2, 0);
 					break;
 				}
-				case opengl::EDrawMode::LINE_LOOP:
-				case opengl::EDrawMode::LINE_STRIP:
-				case opengl::EDrawMode::LINES:
-				case opengl::EDrawMode::POINTS:
-				case opengl::EDrawMode::UNKNOWN:
+				case EDrawMode::LINE_LOOP:
+				case EDrawMode::LINE_STRIP:
+				case EDrawMode::LINES:
+				case EDrawMode::POINTS:
+				case EDrawMode::UNKNOWN:
 					break;
 				default:
 					assert(false);
@@ -77,7 +77,7 @@ namespace nap
 
 			switch (mesh.getDrawMode())
 			{
-			case opengl::EDrawMode::TRIANGLES:
+			case EDrawMode::TRIANGLES:
 			{
 				// Make sure our index is in range
 				assert((number * 3) + 2 < mesh_indices.size());
@@ -89,7 +89,7 @@ namespace nap
 				*(id + 2) = indices[2];
 				break;
 			}
-			case opengl::EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TRIANGLE_FAN:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data();
@@ -98,7 +98,7 @@ namespace nap
 				*(id + number + 2) = indices[2];
 				break;
 			}
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TRIANGLE_STRIP:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data() + number;

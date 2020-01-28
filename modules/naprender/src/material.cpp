@@ -8,7 +8,6 @@
 #include <GL/glew.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
-#include "nshaderutils.h"
 #include "uniforminstances.h"
 #include "vk_mem_alloc.h"
 

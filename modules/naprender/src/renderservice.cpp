@@ -207,17 +207,17 @@ namespace nap
 	{
 		switch (inMesh.getMeshInstance().getShape(0).getDrawMode())
 		{
-		case opengl::EDrawMode::POINTS:
+		case EDrawMode::POINTS:
 			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case opengl::EDrawMode::LINES:
+		case EDrawMode::LINES:
 			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case opengl::EDrawMode::LINE_STRIP:
+		case EDrawMode::LINE_STRIP:
 			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case opengl::EDrawMode::TRIANGLES:
+		case EDrawMode::TRIANGLES:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case opengl::EDrawMode::TRIANGLE_STRIP:
+		case EDrawMode::TRIANGLE_STRIP:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case opengl::EDrawMode::TRIANGLE_FAN:
+		case EDrawMode::TRIANGLE_FAN:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 		default:
 		{
@@ -335,7 +335,7 @@ namespace nap
 		uint32_t shader_attribute_binding = 0;
 		for (auto& kvp : shader.getShader().getAttributes())
 		{
-			const opengl::ShaderVertexAttribute* shader_vertex_attribute = kvp.second.get();
+			const opengl::VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
@@ -710,17 +710,17 @@ namespace nap
 	// Clears the render target.
 	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags)
 	{
-		renderTarget.bind();
+//		renderTarget.bind();
 		renderTarget.clear(flags);
-		renderTarget.unbind();
+	//	renderTarget.unbind();
 	}
 
 
 	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget)
 	{
-		renderTarget.bind();
+		//renderTarget.bind();
 		renderTarget.clear(opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
-		renderTarget.unbind();
+		//renderTarget.unbind();
 	}
 
 
@@ -844,7 +844,7 @@ namespace nap
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
 		for (auto& kvp : material.getShader()->getShader().getAttributes())
 		{
-			const opengl::ShaderVertexAttribute* shader_vertex_attribute = kvp.second.get();
+			const opengl::VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))

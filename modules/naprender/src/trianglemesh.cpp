@@ -66,7 +66,7 @@ namespace nap
 		color_attribute.setData(colors.data(), vertices.size());
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLE_STRIP);
+		shape.setDrawMode(EDrawMode::TRIANGLE_STRIP);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

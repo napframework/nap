@@ -169,7 +169,7 @@ namespace nap
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

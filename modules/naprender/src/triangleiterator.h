@@ -226,7 +226,7 @@ namespace nap
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLES
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLES
 	 */
 	class NAPAPI ShapeTriangleListIterator final : public ShapeTriangleIterator
 	{
@@ -242,7 +242,7 @@ namespace nap
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_FAN
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLE_FAN
 	 */
 	class NAPAPI ShapeTriangleFanIterator final : public ShapeTriangleIterator
 	{
@@ -261,7 +261,7 @@ namespace nap
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_STRIP
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLE_STRIP
 	 */
 	class NAPAPI ShapeTriangleStripIterator final : public ShapeTriangleIterator
 	{

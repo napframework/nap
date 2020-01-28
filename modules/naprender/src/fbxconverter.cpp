@@ -186,7 +186,7 @@ namespace nap
 			mesh_data.mProperties.mShapes.push_back(MeshShape());
 			MeshShape& shape = mesh_data.mProperties.mShapes.back();
 
-			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			shape.setDrawMode(EDrawMode::TRIANGLES);
 
 			MeshShape::IndexList& indices = shape.getIndices();
 			indices.reserve(fbx_mesh->mNumFaces * 3);

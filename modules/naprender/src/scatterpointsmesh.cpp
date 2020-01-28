@@ -125,7 +125,7 @@ namespace nap
 
 		// Draw as points
 		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(opengl::EDrawMode::POINTS);
+		shape.setDrawMode(EDrawMode::POINTS);
 
 		// Automatically generate indices
 		utility::generateIndices(shape, mNumberOfPoints);

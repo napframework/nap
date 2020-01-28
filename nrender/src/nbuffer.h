@@ -7,9 +7,8 @@ namespace opengl
 {
 	/**
 	 * Defines a buffer object on the GPU and acts as a base class for 
-	 * all opengl derived buffer types. This object creation / destruction 
-	 * as well as the internal buffer type. Note that this object does not
-	 * own any of it's data, it only acts as an interface for buffers to the GPU
+	 * all Vulkan derived buffer types. This object creation / destruction 
+	 * as well as the internal buffer type.
 	 */
 	class Buffer
 	{
@@ -30,7 +29,7 @@ namespace opengl
 		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
 
 	private:
-		size_t			mCurCapacity = 0;				// Amount of memory reserved
+		size_t			mCurCapacity = 0;			// Amount of memory reserved
 		size_t			mCurSize = 0;				// defines the number of points in the buffer
 		VkBuffer		mBuffer = nullptr;
 		VkDeviceMemory	mMemory = nullptr;
