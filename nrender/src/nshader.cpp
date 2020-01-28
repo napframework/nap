@@ -1,6 +1,5 @@
 // Local Includes
 #include "nshader.h"
-#include "nglutils.h"
 
 // External Includes
 #include <string>

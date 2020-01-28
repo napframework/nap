@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "glwindow.h"
-#include "vulkan_fwd.h"
+#include "vulkan/vulkan_core.h"
 
 // External Includes
 #include <rtti/rtti.h>

@@ -95,17 +95,20 @@ namespace opengl
 		 */
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
 
+		/**
+		 * @return Vulkan descriptorSetLayout.
+		 */
 		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
 	private:
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
 
 	private:
-		VkShaderModule mVertexModule = nullptr;
-		VkShaderModule mFragmentModule = nullptr;
-		std::vector<UniformBufferObjectDeclaration> mUBODeclarations;
-		SamplerDeclarations							mSamplerDeclarations;
+		VkShaderModule									mVertexModule = nullptr;
+		VkShaderModule									mFragmentModule = nullptr;
+		std::vector<UniformBufferObjectDeclaration>		mUBODeclarations;
+		SamplerDeclarations								mSamplerDeclarations;
 		VertexAttributeDeclarations						mShaderAttributes;					// Shader program vertex attribute inputs
-		VkDescriptorSetLayout						mDescriptorSetLayout = nullptr;
+		VkDescriptorSetLayout							mDescriptorSetLayout = nullptr;
 	};
 }
