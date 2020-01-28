@@ -472,8 +472,6 @@ namespace opengl
 			return false;
 
 		return initLayout(device, errorState);
-
-		return true;
 	}
 
 

@@ -148,7 +148,6 @@ namespace nap
 		RenderService*							mRenderService = nullptr;				// RenderService
 		DescriptorSetCache*						mDescriptorSetCache = nullptr;			// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
-		std::vector<SamplerInstance*>			mSamplers;								// List of all sampler instances, both from Material and MaterialInstance
 		std::vector<VkWriteDescriptorSet>		mSamplerDescriptors;					// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerImages;							// List of sampler images, used to update Descriptor Sets.
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws

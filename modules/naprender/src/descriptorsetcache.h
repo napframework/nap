@@ -58,7 +58,7 @@ namespace nap
 		 * @param samplers The list of samplers for this DescriptorSet
 		 * @return A DescriptorSet that is compatible with the VkDescriptorLayout that was passed upon creation.
 		 */
-		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers);
+		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers);
 
 		/**
 		 * Releases all DescriptorSets to the internal pool for use by other frames. 

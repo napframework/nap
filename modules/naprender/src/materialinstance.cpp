@@ -221,7 +221,6 @@ namespace nap
 	{
 		Material& material = *mResource->mMaterial;
 		const opengl::Shader& shader = material.getShader()->getShader();
-
 		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 
 		int num_sampler_images = 0;
@@ -278,7 +277,6 @@ namespace nap
 				// Sampler is not overridden, find it in the Material
 				sampler_instance = material.findSampler(declaration.mName);
 			}
-			mSamplers.push_back(sampler_instance);
 
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
 			size_t sampler_image_start_index = mSamplerImages.size();
@@ -322,10 +320,10 @@ namespace nap
 
 		SamplerInstance* result = nullptr;
 
+		const opengl::SamplerDeclarations& sampler_declarations = getMaterial()->getShader()->getShader().getSamplerDeclarations();
 		int image_start_index = 0;
-		for (int index = 0; index < mSamplers.size(); ++index)
+		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
-			const opengl::SamplerDeclaration& declaration = mSamplers[index]->getDeclaration();
 			if (declaration.mName == name)
 			{
 				bool is_array = declaration.mNumArrayElements > 1;
@@ -341,7 +339,6 @@ namespace nap
 				assert(initialized);
 
 				result = sampler_instance_override.get();
-				mSamplers[index] = result;
 
 				addSamplerInstance(std::move(sampler_instance_override));
 				break;
@@ -396,7 +393,8 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplers);
+		int num_samplers = getMaterial()->getShader()->getShader().getSamplerDeclarations().size();
+		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, num_samplers);
 
 		updateUniforms(descriptor_set);
 		updateSamplers(descriptor_set);

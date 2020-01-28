@@ -32,7 +32,7 @@ namespace nap
 	}
 
 
-	const DescriptorSet& DescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, const std::vector<SamplerInstance*>& samplers)
+	const DescriptorSet& DescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers)
 	{
 		int frame_index = mRenderService->getCurrentFrameIndex();
 		DescriptorSetList& used_list = mUsedList[frame_index];
@@ -49,7 +49,7 @@ namespace nap
 		// Compatible means that it has the same amount of uniform buffers and same amount of samplers.
 		DescriptorSet descriptor_set;
 		descriptor_set.mLayout = mLayout;
-		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), samplers.size());
+		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), numSamplers);
 
 		int num_descriptors = uniformBufferObjects.size();
 		std::vector<VkWriteDescriptorSet> ubo_descriptors;
