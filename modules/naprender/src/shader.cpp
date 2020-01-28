@@ -50,7 +50,7 @@ namespace nap
 
 
 	// Returns the associated opengl shader
-	opengl::Shader& Shader::getShader()
+	const opengl::Shader& Shader::getShader() const
 	{
 		assert(mShader != nullptr);
 		return *mShader;

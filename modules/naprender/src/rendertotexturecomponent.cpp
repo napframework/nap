@@ -175,7 +175,7 @@ namespace nap
 		//mMaterialInstance.bind();
 
 		// Get the parent material
-		Material* comp_mat = mMaterialInstance.getMaterial();
+		Material& comp_mat = mMaterialInstance.getMaterial();
 
 		// Push matrices
 // 		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mProjectMatrixUniform);
@@ -214,9 +214,9 @@ namespace nap
 	bool RenderToTextureComponentInstance::ensureUniform(const std::string& uniformName, utility::ErrorState& error)
 	{
 		// Same applies for the matrices
-		if (!error.check(mMaterialInstance.getMaterial()->findUniform(uniformName) != nullptr,
+		if (!error.check(mMaterialInstance.getMaterial().findUniform(uniformName) != nullptr,
 			"%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(),
-			mMaterialInstance.getMaterial()->mID.c_str()))
+			mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 		return true;
 	}

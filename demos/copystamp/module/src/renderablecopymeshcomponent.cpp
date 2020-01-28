@@ -149,7 +149,7 @@ namespace nap
 		MeshInstance& mesh_instance = renderableMesh.getMesh().getMeshInstance();
 		opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
 
-		Material& material = *mat_instance.getMaterial();
+		Material& material = mat_instance.getMaterial();
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
 

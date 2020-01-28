@@ -7,6 +7,7 @@
 #include <rendertarget.h>
 #include <planemesh.h>
 #include <materialinstance.h>
+#include "renderablemesh.h"
 
 namespace nap
 {

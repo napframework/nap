@@ -14,8 +14,8 @@ namespace nap
 		mMaterialInstance->pipelineStateChanged.connect(mPipelineStateChangedSlot);
 
 		opengl::GPUMesh& gpu_mesh = mesh.getMeshInstance().getGPUMesh();
-		Material& material = *materialInstance.getMaterial();
-		for (auto& kvp : material.getShader()->getShader().getAttributes())
+		const Material& material = materialInstance.getMaterial();
+		for (auto& kvp : material.getShader().getShader().getAttributes())
 		{
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);

@@ -325,9 +325,9 @@ namespace nap
 
 	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, const IMesh& mesh, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
-		Material& material = *materialInstance.getMaterial();
+		Material& material = materialInstance.getMaterial();
 
-		Shader& shader = *material.getShader();
+		const Shader& shader = material.getShader();
 
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
@@ -339,7 +339,7 @@ namespace nap
 			const opengl::VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
 				return false;
 
 			const opengl::VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
@@ -431,7 +431,7 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getShader()->getShader().getDescriptorSetLayout();
+		VkDescriptorSetLayout set_layout = material.getShader().getShader().getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -511,7 +511,7 @@ namespace nap
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
-		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial()->getShader()->mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial().getShader().mOutputFormat);
 
 		VkPipelineLayout layout;
 		VkPipeline pipeline;
@@ -524,7 +524,7 @@ namespace nap
 
 	void RenderService::recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline)
 	{
-		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial()->getShader()->mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial().getShader().mOutputFormat);
 
 		VkPipeline old_pipeline = renderableMesh.getPipeline();
 

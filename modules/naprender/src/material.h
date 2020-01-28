@@ -54,7 +54,7 @@ namespace nap
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		Shader* getShader() const				{ return mShader.get(); }
+		const Shader& getShader() const			{ return *mShader; }
 
 		/**
 		* @return Blending mode for this material

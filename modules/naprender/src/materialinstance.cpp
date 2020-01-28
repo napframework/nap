@@ -118,7 +118,7 @@ namespace nap
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const opengl::UniformStructDeclaration* declaration = nullptr;
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader()->getShader().getUBODeclarations();
+		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = getMaterial().getShader().getShader().getUBODeclarations();
 		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
@@ -180,7 +180,7 @@ namespace nap
 	{
 		ubo.mUniforms.clear();
 
-		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getMaterial()->findUniform(ubo.mDeclaration->mName));
+		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getMaterial().findUniform(ubo.mDeclaration->mName));
 		assert(base_struct != nullptr);
 
 		buildUniformBufferObjectRecursive(*base_struct, overrideStruct, ubo);
@@ -189,7 +189,7 @@ namespace nap
 
 	void MaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
 	{
-		VkDevice device = getMaterial()->getRenderer().getDevice();
+		VkDevice device = getMaterial().getRenderer().getDevice();
 
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
@@ -220,7 +220,7 @@ namespace nap
 	bool MaterialInstance::initSamplers(utility::ErrorState& errorState)
 	{
 		Material& material = *mResource->mMaterial;
-		const opengl::Shader& shader = material.getShader()->getShader();
+		const opengl::Shader& shader = material.getShader().getShader();
 		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 
 		int num_sampler_images = 0;
@@ -320,7 +320,7 @@ namespace nap
 
 		SamplerInstance* result = nullptr;
 
-		const opengl::SamplerDeclarations& sampler_declarations = getMaterial()->getShader()->getShader().getSamplerDeclarations();
+		const opengl::SamplerDeclarations& sampler_declarations = getMaterial().getShader().getShader().getSamplerDeclarations();
 		int image_start_index = 0;
 		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
 		{
@@ -393,7 +393,7 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		int num_samplers = getMaterial()->getShader()->getShader().getSamplerDeclarations().size();
+		int num_samplers = getMaterial().getShader().getShader().getSamplerDeclarations().size();
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, num_samplers);
 
 		updateUniforms(descriptor_set);
@@ -410,7 +410,7 @@ namespace nap
 		mRenderService = &renderService;
 
 		Material& material = *resource.mMaterial;
-		const opengl::Shader& shader = material.getShader()->getShader();
+		const opengl::Shader& shader = material.getShader().getShader();
 
 		// Here we create UBOs in two parts:
 		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
@@ -454,15 +454,15 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &mRenderService->getOrCreateDescriptorSetCache(getMaterial()->getShader()->getShader().getDescriptorSetLayout());
+		mDescriptorSetCache = &mRenderService->getOrCreateDescriptorSetCache(getMaterial().getShader().getShader().getDescriptorSetLayout());
 
 		return true;
 	}
 
 
-	Material* MaterialInstance::getMaterial() 
+	Material& MaterialInstance::getMaterial() 
 	{ 
-		return mResource->mMaterial.get(); 
+		return *mResource->mMaterial; 
 	}
 
 

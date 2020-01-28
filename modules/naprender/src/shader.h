@@ -32,7 +32,7 @@ namespace nap
 		/**
 		 * @return the opengl shader that can be used for drawing
 		 */
-		opengl::Shader& getShader();
+		const opengl::Shader& getShader() const;
 
 		std::string							mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string							mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk

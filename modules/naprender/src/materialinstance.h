@@ -64,7 +64,7 @@ namespace nap
 		/**
 		* @return material that this instance is overriding.
 		*/
-		Material* getMaterial();
+		Material& getMaterial();
 
 		/**
 		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
