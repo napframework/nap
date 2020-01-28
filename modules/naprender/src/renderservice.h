@@ -2,18 +2,12 @@
 
 // External Includes
 #include <nap/service.h>
-#include <nap/datetime.h>
 #include <windowevent.h>
-#include <thread>
-#include <renderablemesh.h>
 #include <rendertarget.h>
+#include "vk_mem_alloc.h"
 
 // Local Includes
 #include "renderer.h"
-#include "renderstate.h"
-#include "vao.h"
-
-#include "vk_mem_alloc.h"
 
 namespace opengl
 {
@@ -31,6 +25,9 @@ namespace nap
 	class SceneService;
 	class DescriptorSetCache;
 	class DescriptorSetAllocator;
+	class RenderableMesh;
+	class IMesh;
+	class MaterialInstance;
 
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
@@ -48,7 +45,7 @@ namespace nap
 	 * provides an interface to render objects to a specific target (screen or back-buffer).
 	 * Vertex array object management is handled completely by this service. As a user you only work
 	 * with the render interface to render a set of render-able components to a target using a camera.
-	 * The service is shut down automatically on exit, and deatroys all windows and left over resources.
+	 * The service is shut down automatically on exit, and destroys all windows and left over resources.
 	 * When rendering geometry using (most) renderObjects() the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 */
@@ -116,62 +113,9 @@ namespace nap
 		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
-		 * Clears specific parts of the renderTarget using the given flags. 
-		 * The flags can be bitmasked together, for example: EClearFlags::Color | EClearFlags::Color.
-		 * @param renderTarget the opengl target to clear.
-		 * @param flags what parts to clear.
-		 */
-		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
-
-		/**
-		 * Clears all the renderTarget's associated flags (Color, Depth, Stencil)
-		 * @param renderTarget the opengl target to clear
-		 */
-		void clearRenderTarget(opengl::RenderTarget& renderTarget);
-
-		/**
 		 * Shuts down the managed renderer
 		 */
 		virtual void shutdown() override;
-
-		/**
-		 * Changes the polygon draw mode for the next set of draw calls. Updates the render state internally.
-		 * @param mode the polygon mode to use for the next set of draw calls
-		 */
-		void setPolygonMode(opengl::EPolygonMode mode);
-
-		/**
-		 * Returns the global render state that is used for all OpenGL contexts.
-		 * Properties associated with this state (such as the fill mode, point size etc.) are set before rendering a set of objects.
-		 * @return the global render state.
-		 */
-		const RenderState& getRenderState() const																{ return mRenderState; }
-
-		/**
-		 * Sets the global render state. This state is used for all OpenGL contexts and settings are pushed before a render call.
-		 * You can change settings (such as point-size etc.) at runtime, before rendering objects. 
-		 * @param renderState the new state of the renderer to use when rendering objects. 
-		 */
-		void setRenderState(const RenderState& renderState)														{ mRenderState = renderState; }
-
-		/**
-		 * Pushes the global render state to the GPU.
-		 * Note that this is called automatically when rendering objects through the render service using RenderObjects().
-		 * Use this call when implementing your own draw call in a component.
-		 */
-		void pushRenderState();
-
-		/**
-		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
-		 * @param resource: object that is dependent on GL context, that is scheduled for destruction. Notice that ownership is transferred here.
-		 */
-		void queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource);
-
-		/**
- 		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
- 		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
-		 */
-		void destroyGLContextResources(const std::vector<RenderWindow*> renderWindows);
 
 		/**
 		 * Add a new window for the specified resource
@@ -263,35 +207,7 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		/**
-		 *	Performs a flush to ensure all recent opengl commands are processed
-		 */
-		virtual void resourcesLoaded() override;
-
     private:
-		friend class VAOHandle;
-
-		/**
-		 * Called by VAOHandle when copied/instantiated.
-		 */
-		void incrementVAORefCount(const VAOKey& key);
-
-		/**
-		* Called by VAOHandle on destruction, decreases refcount and queues VAO for destruction
-		* if refcount hits zero.
-		*/
-		void decrementVAORefCount(const VAOKey& key);
-
-		/**
-		 * Holds the currently active renderer
-		 */
-		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
-
-		/**
-		 * Updates the current context's render state by using the latest render state as set by the user.
-		 */
-		void updateRenderState();
-
 		/**
 		* Sorts a set of renderable components based on distance to the camera, ie: depth
 		* Note that when the object is of a type mesh it will use the material to sort based on opacity
@@ -307,43 +223,18 @@ namespace nap
 		 */
 		void processEvents();
 
-		/**
-		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
-		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches
-		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
-		* @param material: Material to acquire the VAO for.
-		* @param meshResource: mesh to acquire the VAO for.
-		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
-		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
-		*/
-		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
-
-		/**
-		* Helper struct to refcount opengl VAOs.
-		*/
-		struct RefCountedVAO final
-		{
-			std::unique_ptr<opengl::VertexArrayObject> mObject;
-			int mRefCount = 0;
-		};
-
 		struct PipelineToDestroy
 		{
 			int			mFrameIndex;
 			VkPipeline	mPipeline;
 		};
 
-		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
 		using WindowList = std::vector<RenderWindow*>;
-		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 
+		std::unique_ptr<nap::Renderer>			mRenderer;												//< Holds the currently active renderer
 		VmaAllocator							mVulkanAllocator;
-		RenderState								mRenderState;											//< The latest render state as set by the user
-		ContextSpecificStateMap					mContextSpecificState;									//< The per-context render state
-		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;			//< Array of per-context GL resources scheduled for destruction
-		VAOMap									mVAOMap;												//< Map from material-mesh combination to opengl VAO
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 

@@ -1,7 +1,6 @@
 #pragma once
 
 // Local Includes
-#include "nglutils.h"
 #include "nbuffer.h"
 #include "vulkan/vulkan_core.h"
 

@@ -12,6 +12,8 @@
 #include <GL/glew.h>
 #include <SDL_clipboard.h>
 #include <SDL_syswm.h>
+#include "SDL_mouse.h"
+#include "SDL_keyboard.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)

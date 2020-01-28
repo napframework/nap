@@ -4,6 +4,8 @@
 #include "meshutils.h"
 #include "renderservice.h"
 #include "renderer.h"
+#include "nvertexbuffer.h"
+#include "nindexbuffer.h"
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::UNKNOWN,		"Unknown"),

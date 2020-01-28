@@ -1,15 +1,18 @@
 #pragma once
 
 // Local Includes
-#include "nvertexarrayobject.h"
-#include "nglutils.h"
 #include "vulkan/vulkan_core.h"
 
 // External Includes
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace opengl
 {
+	class VertexAttributeBuffer;
+	class IndexBuffer;
+
 	/**
 	 * Defines the GPU data of a polygonal mesh.
 	 */

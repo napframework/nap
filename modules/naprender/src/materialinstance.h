@@ -8,7 +8,7 @@
 
 // Local includes
 #include "uniformcontainer.h"
-#include "materialcommon.h"
+#include "material.h"
 
 namespace nap
 {

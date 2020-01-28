@@ -2,6 +2,8 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "renderservice.h"
+#include "nuniformdeclarations.h"
+#include "materialcommon.h"
 
 namespace nap
 {

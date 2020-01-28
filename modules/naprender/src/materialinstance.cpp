@@ -1,9 +1,10 @@
 // Local Includes
 #include "materialinstance.h"
-#include "nshader.h"
 #include "mesh.h"
+#include "material.h"
 
 // External includes
+#include "nshader.h"
 #include <nap/logger.h>
 #include <GL/glew.h>
 #include "rtti/rttiutilities.h"

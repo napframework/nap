@@ -1,6 +1,5 @@
 #include "ntexturerendertarget2d.h"
 #include "ntexture2d.h"
-#include "nglutils.h"
 
 // External Includes
 #include <assert.h>
@@ -25,7 +24,6 @@ namespace opengl
 
 		// Generate render target
 		glGenFramebuffers(1, &mFbo);
-		glAssert();
 
 		// Attach color texture
 		if (!attachTexture(GL_COLOR_ATTACHMENT0, *mColorTexture, errorState))
@@ -120,7 +118,6 @@ namespace opengl
 
 		// Bind attachment
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.getTargetType(), texture.getTextureId(), 0);
-		glAssert();
 
 		// Unbind and validate
 		bool success = validate(error);
@@ -133,7 +130,7 @@ namespace opengl
 	{
 		if (!isAllocated())
 		{
-			printMessage(EGLSLMessageType::Error, "unable to unbind render target, buffer is not allocated");
+//			printMessage(EGLSLMessageType::Error, "unable to unbind render target, buffer is not allocated");
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -145,7 +142,7 @@ namespace opengl
 	{
 		if (!isAllocated())
 		{
-			printMessage(EGLSLMessageType::Error, "unable to bind render target, buffer is not allocated");
+//			printMessage(EGLSLMessageType::Error, "unable to bind render target, buffer is not allocated");
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);

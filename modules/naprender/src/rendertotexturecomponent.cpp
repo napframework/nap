@@ -8,6 +8,7 @@
 #include <orthocameracomponent.h>
 #include "rendertarget.h"
 #include "renderservice.h"
+#include "nindexbuffer.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -139,13 +140,13 @@ namespace nap
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		// Clear target
-		mService->clearRenderTarget(mTarget.getTarget());
+		//mService->clearRenderTarget(mTarget.getTarget());
 
 		// Bind render target
 		//mTarget.getTarget().bind();
 
 		// Ensure correct render state
-		mService->pushRenderState();
+		//mService->pushRenderState();
 
 		// Call on draw
 		onDraw(renderTarget, commandBuffer, sIdentityMatrix, proj_matrix);

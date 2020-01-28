@@ -2,10 +2,10 @@
 #include "SDL_vulkan.h"
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
+#include "nsdlgl.h"
 
 // External Includes
 #include <utility/errorstate.h>
-
 #include "glslang/Public/ShaderLang.h"
 
 RTTI_DEFINE_CLASS(nap::Renderer)

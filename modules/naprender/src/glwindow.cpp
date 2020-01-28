@@ -5,8 +5,8 @@
 
 // External includes
 #include <utility/errorstate.h>
-#include <nglutils.h>
 #include "renderer.h"
+#include "nsdlgl.h"
 
 namespace nap
 {

@@ -8,6 +8,7 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <nap/logger.h>
+#include "nindexbuffer.h"
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)

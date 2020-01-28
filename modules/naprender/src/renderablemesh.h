@@ -3,7 +3,6 @@
 // Local includes
 #include "mesh.h"
 #include "materialinstance.h"
-#include "vao.h"
 #include "nap/signalslot.h"
 
 namespace nap

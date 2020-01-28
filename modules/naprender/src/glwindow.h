@@ -1,15 +1,15 @@
 #pragma once
 
 #include "nbackbufferrendertarget.h"
-#include "vulkan/vulkan_core.h"
 #include <rtti/rtti.h>
+#include <nap/numeric.h>
 
 // External Includes
 #include <string.h>
 #include <glm/glm.hpp>
-#include <nsdlgl.h>
-#include <nap/numeric.h>
 #include <utility/dllexport.h>
+#include "SDL_video.h"
+#include "vulkan/vulkan_core.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

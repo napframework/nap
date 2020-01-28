@@ -1,4 +1,6 @@
 #include "ngpumesh.h"
+#include "nvertexbuffer.h"
+#include "nindexbuffer.h"
 #include <assert.h>
 
 namespace opengl

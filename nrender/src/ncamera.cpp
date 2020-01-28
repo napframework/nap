@@ -1,6 +1,5 @@
 // Local Includes
 #include "ncamera.h"
-#include "nglutils.h"
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
@@ -20,7 +19,7 @@ namespace opengl
 		float fov(value);
 		if (fov < 0.0f)
 		{
-			printMessage(EGLSLMessageType::Warning, "invalid camera field of view, can't be negative");
+			//printMessage(EGLSLMessageType::Warning, "invalid camera field of view, can't be negative");
 			fov = 50.0f;
 		}
 
@@ -34,7 +33,7 @@ namespace opengl
 	{
 		if (value <= 0.0f)
 		{
-			printMessage(EGLSLMessageType::Warning, "negative camera aspect ratio specified");
+			//printMessage(EGLSLMessageType::Warning, "negative camera aspect ratio specified");
 		}
 		mAspectRatio = value;
 		updateProjectionMatrix();
@@ -62,12 +61,12 @@ namespace opengl
 	{
 		if (value < 0.0f)
 		{
-			printMessage(EGLSLMessageType::Warning, "negative camera near clipping value specified");
+			//printMessage(EGLSLMessageType::Warning, "negative camera near clipping value specified");
 		}
 
 		if (value > mFarClipPlane)
 		{
-			printMessage(EGLSLMessageType::Warning, "near clipping plane exceeds far clipping plane value");
+			//printMessage(EGLSLMessageType::Warning, "near clipping plane exceeds far clipping plane value");
 		}
 
 		mNearClipPlane = value;
@@ -80,12 +79,12 @@ namespace opengl
 	{
 		if (value < 0.0f)
 		{
-			printMessage(EGLSLMessageType::Warning, "negative camera far clipping value specified");
+			//printMessage(EGLSLMessageType::Warning, "negative camera far clipping value specified");
 		}
 
 		if (value < mNearClipPlane)
 		{
-			printMessage(EGLSLMessageType::Warning, "far clipping plane falls below near clipping plane");
+			//printMessage(EGLSLMessageType::Warning, "far clipping plane falls below near clipping plane");
 		}
 
 		mFarClipPlane = value;

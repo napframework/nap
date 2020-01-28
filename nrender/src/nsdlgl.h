@@ -8,34 +8,11 @@
 namespace opengl
 {
 	/**
-	 * Turn window v-sync on / off
-	 */
-	void enableVSync(bool value);
-
-	/**
 	 * Initializes SDL video system
 	 * Call this before creating any windows or render contexts!
 	 * @return if the system initialized correctly or not
 	 */
 	bool initVideo();
-
-	/**
-	 * Initializes the OpenGL GLEW wrapper
-	 * This call will only succeed when OpenGL has a valid current context
-	 */
-	bool init();
-
-	/**
-	 * Deletes an SDL context
-	 * @param context the context to delete
-	 */
-	void deleteContext(SDL_GLContext context);
-
-	/**
-	 * sDeletes an SDL window
-	 * @param window the window to delete
-	 */
-	void deleteWindow(SDL_Window* window);
 
 	/**
 	 * Sets if the window is resizable or not
@@ -59,17 +36,6 @@ namespace opengl
 	void setWindowTitle(SDL_Window* window, const std::string& name);
 
 	/**
-	 * @return the current opengl context
-	 */
-	SDL_GLContext getCurrentContext();
-
-	/**
-	 * Swap the OpenGL buffers for a window, only works if double-buffering is enabled.
-	 * @param window the window to swap buffers of
-	 */
-	void swap(SDL_Window* window);
-
-	/**
 	 * Makes a window visible.
 	 * @param window pointer to the window to make visible.
 	 * @param show if the window is shown or hidden
@@ -88,33 +54,6 @@ namespace opengl
 	 * @param value if the window is full screen 
 	 */
 	void setFullscreen(SDL_Window* window, bool value);
-
-	/**
-	 * Set up an OpenGL context for rendering into an OpenGL window.
-	 * The context must have been created with a compatible window.
-	 * @param window the window associated with the context
-	 * @param context the context to set up for rendering
-	 */
-	void makeCurrent(SDL_Window* window, SDL_GLContext context);
-
-	/**
-	 * Set an OpenGL window attribute before window creation.
-	 * @param attribute attribute to set
-	 * @param value the value to set the window attribute to
-	 */
-	void setAttribute(SDL_GLattr attribute, int value);
-
-	/**
-	 * @return The value of a window attribute associated with the currently active context.
-	 */
-	int getAttribute(SDL_GLattr attribute);
-
-	/**
-	 * Creates an opengl context associated with the given window
-	 * @param window the window associated with the opengl context
-	 * @return the new OpenGL context
-	 */
-	SDL_GLContext createContext(SDL_Window* window);
 
 	/**
 	 * Returns the size of an OpenGL window
@@ -142,7 +81,7 @@ namespace opengl
      * @return the actual size in pixels of a window
      */
     glm::ivec2 getDrawableWindowSize(SDL_Window* window);
-    
+   
 	/**
 	 * returns the OpenGL window position as pixel coordinates
 	 * @param window the window to get the position for
@@ -166,11 +105,6 @@ namespace opengl
 	 * @ return the last SDL error as a string
 	 */
 	std::string getSDLError();
-
-	/**
-	 * Prints the last SDL error to screen
-	 */
-	void printSDLError();
 
 	/**
 	 * Returns an SDL window based on the given ID

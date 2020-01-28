@@ -1,6 +1,5 @@
 // Local Includes
 #include "nvertexbuffer.h"
-#include "nglutils.h"
 
 // External Includes
 #include <GL/glew.h>

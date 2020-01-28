@@ -1,6 +1,5 @@
 // Local Includes
 #include "ntexture2d.h"
-#include "nglutils.h"
 
 // External Includes
 #include <assert.h>
@@ -107,7 +106,7 @@ namespace opengl
 	 * Uploads the 2D texture data to the GPU
 	 */
 	void Texture2D::setData(const void* data, int pitch)
-	{
+	{/*
 		const void* data_ptr = data;
 
 		// For dynamic write textures, memcpy into FBO and let GPU copy it from there asynchronously
@@ -124,13 +123,11 @@ namespace opengl
 		}
 
 		bind();
-		glAssert();
 
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
 
 		// Upload texture data
 		glTexImage2D(GL_TEXTURE_2D, 0, mSettings.mInternalFormat, mSettings.mWidth, mSettings.mHeight, 0, mSettings.mFormat, mSettings.mType, data_ptr);
-		glAssert();
 
 		unbind();
 
@@ -139,6 +136,7 @@ namespace opengl
 		// Auto generate mipmaps if data is valid and we're dealing with a mipmappable type
 		if(isMipMap(mParameters.minFilter) && data != nullptr)
 			generateMipMaps();		
+			*/
 	}
 
 
@@ -168,7 +166,6 @@ namespace opengl
 		unbind();
 
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-		glAssert();
 	}
 
 
@@ -184,8 +181,6 @@ namespace opengl
 
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-		glAssert();
 	}
 
 } // opengl

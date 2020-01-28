@@ -1,6 +1,5 @@
 // Local Includes
 #include "ntexture.h"
-#include "nglutils.h"
 #include "rtti/typeinfo.h"
 
 // External Includes
@@ -39,7 +38,6 @@ namespace opengl
 
 		// Generate textures
 		glGenTextures(1, &mTextureId);
-		glAssert();
 
 		// Upload texture parameters
 		mParameters = parameters;
@@ -110,7 +108,6 @@ namespace opengl
 
 		// Generate and check for errors
 		glGenerateMipmap(mTargetType);
-		glAssert();
 
 		unbind();
 	}

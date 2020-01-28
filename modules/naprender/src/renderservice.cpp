@@ -31,6 +31,7 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "vk_mem_alloc.h"
+#include "nvertexbuffer.h"
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
@@ -646,23 +647,6 @@ namespace nap
 	}
 
 
-	// Updates the current context's render state by using the latest render state as set by the user.
-	void RenderService::updateRenderState()
-	{
-		opengl::GLContext context = opengl::getCurrentContext();
-		ContextSpecificStateMap::iterator context_state = mContextSpecificState.find(context);
-		if (context_state == mContextSpecificState.end())
-		{
-			mContextSpecificState.emplace(std::make_pair(context, mRenderState));
-			mContextSpecificState[context].force();
-		}
-		else
-		{
-			context_state->second.update(mRenderState);
-		}
-	}
-
-
 	// Renders all available objects to a specific renderTarget.
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
@@ -707,23 +691,6 @@ namespace nap
 	}
 
 
-	// Clears the render target.
-	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags)
-	{
-//		renderTarget.bind();
-		renderTarget.clear(flags);
-	//	renderTarget.unbind();
-	}
-
-
-	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget)
-	{
-		//renderTarget.bind();
-		renderTarget.clear(opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
-		//renderTarget.unbind();
-	}
-
-
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
@@ -763,127 +730,12 @@ namespace nap
 	}
 
 
-	void RenderService::resourcesLoaded()
-	{
-		opengl::flush();
-	}
-
-
-	void RenderService::setPolygonMode(opengl::EPolygonMode mode)
-	{
-		mRenderState.mPolygonMode = mode;
-	}
-
-
-	void RenderService::pushRenderState()
-	{
-		updateRenderState();
-	}
-
-
-	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
-	{
-		if (resource != nullptr)
-			mGLContextResourcesToDestroy.emplace_back(std::move(resource));
-	}
-
-
-	void RenderService::destroyGLContextResources(const std::vector<RenderWindow*> renderWindows)
-	{/*
-		// If there is anything scheduled, destroy
-		if (!mGLContextResourcesToDestroy.empty())
-		{
-			// Destroy resources for primary window
-			getPrimaryWindow().makeCurrent();
-			for (auto& resource : mGLContextResourcesToDestroy)
-				resource->destroy(getPrimaryWindow().getContext());
-
-			// We go over the windows to make the GL context active, and then destroy
-			// the resources for that context
-			for (const rtti::ObjectPtr<RenderWindow>& render_window : renderWindows)
-			{
-				render_window->makeActive();
-				for (auto& resource : mGLContextResourcesToDestroy)
-					resource->destroy(render_window->getWindow()->getContext());
-			}
-			mGLContextResourcesToDestroy.clear();
-		}
-		*/
-	}
-
-
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
 		// If initializing the renderer failed, mRenderer will be null
 		if (mRenderer != nullptr)
 			mRenderer->shutdown();
-	}
-
-	/**
-	 * Two important things to notice in the internal structure for VAOs:
-	 *	1) Internally, a cache of opengl::VertexArrayObjects is created for each mesh-material combination. When retrieving a VAO
-	 *	   for an already known mesh-material combination, the VAO is retrieved from the cache.
-	 *	2) Ownership of the VAO's does not lie in the RenderService: instead it is shared by all clients. To accomplish this, handles
-	 *	   are returned to clients that perform refcounting into the internal RenderService cache. When there are no more references
-	 *	   to a VAO, it is queued for destruction. An important detail to notice is that the RenderService does not store handles
-	 *	   internally, it hands them out when pulling VAOs from the cache or when creating new VAOs.
-	 */
-	VAOHandle RenderService::acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState)
-	{
-		/// Construct a key based on material-mesh, and see if we have a VAO for this combination
-		VAOKey key(material, mesh.getMeshInstance());
-		VAOMap::iterator kvp = mVAOMap.find(key);
-		if (kvp != mVAOMap.end())
-			return VAOHandle(*this, key, kvp->second.mObject.get());
-
-		// VAO was not found for this material-mesh combination, create a new one
-		RefCountedVAO ref_counted_vao;
-		ref_counted_vao.mObject = std::make_unique<opengl::VertexArrayObject>();
-
-		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
-		for (auto& kvp : material.getShader()->getShader().getAttributes())
-		{
-			const opengl::VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-
-			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
-				return VAOHandle();
-
-			const opengl::VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
-			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-				return VAOHandle();
-
-			ref_counted_vao.mObject->addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
-		}
-
-		auto inserted = mVAOMap.emplace(key, std::move(ref_counted_vao));
-
-		return VAOHandle(*this, key, inserted.first->second.mObject.get());
-	}
-
-
-	void RenderService::incrementVAORefCount(const VAOKey& key)
-	{
-		VAOMap::iterator pos = mVAOMap.find(key);
-		assert(pos != mVAOMap.end());
-
-		++pos->second.mRefCount;
-	}
-
-
-	void RenderService::decrementVAORefCount(const VAOKey& key)
-	{
-		VAOMap::iterator pos = mVAOMap.find(key);
-		assert(pos != mVAOMap.end());
-
-		// If this is the last usage of this VAO, queue it for destruction (VAOs need to be destructed per active context,
-		// so we defer destruction)
-		if (--pos->second.mRefCount == 0)
-		{
-			queueResourceForDestruction(std::move(pos->second.mObject));
-			mVAOMap.erase(pos);
-		}
 	}
 
 

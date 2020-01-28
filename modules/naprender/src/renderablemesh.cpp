@@ -1,5 +1,7 @@
 #include "renderablemesh.h"
 #include "renderablemeshcomponent.h"
+#include "nvertexbuffer.h"
+#include "material.h"
 
 namespace nap
 {
