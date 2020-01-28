@@ -1,7 +1,6 @@
 // Local Includes
 #include "renderablemeshcomponent.h"
 #include "mesh.h"
-#include "ncamera.h"
 #include "transformcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
