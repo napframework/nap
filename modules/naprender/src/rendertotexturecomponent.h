@@ -102,6 +102,11 @@ namespace nap
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
 
+		/**
+		 * @return current material used when drawing the mesh.
+		 */
+		MaterialInstance& getMaterialInstance();
+
 	protected:
 		/**
 		* Draws the plane full screen to the currently active render target.
