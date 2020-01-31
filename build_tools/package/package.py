@@ -42,9 +42,8 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     if type(out) is bytes:
         out = out.decode('ascii', 'ignore')
         err = err.decode('ascii', 'ignore')
-    if exception_on_nonzero and proc.returncode != 0:
-        print("Bailing for non zero returncode")
-        raise Exception(proc.returncode)
+    if err:
+        raise Exception(err)
     return out, err
 
 def package(zip_release, 
@@ -187,7 +186,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             else:
                 remove_directory_exit_on_failure(package_path, 'overwriting existing package')
         else:
-            raise Exception("Error: %s already exists" % package_path)
+            raise Exception("Existing package found: %s" % os.path.abspath(package_path))
 
 
 def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols):
