@@ -15,7 +15,7 @@ namespace opengl
 	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
 	 * This object does not manage or owns any data
 	 */
-	class VertexAttributeBuffer : public Buffer
+	class NAPAPI VertexAttributeBuffer : public Buffer
 	{
 	public:
 		VertexAttributeBuffer() = default;

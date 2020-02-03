@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "vulkan/vulkan_core.h"
+#include "utility/dllexport.h"
 
 namespace opengl
 {
@@ -10,7 +11,7 @@ namespace opengl
 	 * all Vulkan derived buffer types. This object creation / destruction 
 	 * as well as the internal buffer type.
 	 */
-	class Buffer
+	class NAPAPI Buffer
 	{
 	public:
 		Buffer() = default;

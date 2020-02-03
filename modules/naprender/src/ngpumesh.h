@@ -1,22 +1,22 @@
 #pragma once
 
 // Local Includes
-#include "vulkan/vulkan_core.h"
+#include "nvertexbuffer.h"
+#include "nindexbuffer.h"
 
 // External Includes
 #include <memory>
 #include <string>
+#include "vulkan/vulkan_core.h"
 #include <unordered_map>
+#include "utility/dllexport.h"
 
 namespace opengl
 {
-	class VertexAttributeBuffer;
-	class IndexBuffer;
-
 	/**
 	 * Defines the GPU data of a polygonal mesh.
 	 */
-	class GPUMesh
+	class NAPAPI GPUMesh
 	{
 	public:
 		GPUMesh() = default;

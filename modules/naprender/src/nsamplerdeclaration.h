@@ -8,7 +8,7 @@
 
 namespace opengl
 {
-	class SamplerDeclaration
+	class NAPAPI SamplerDeclaration
 	{
 		RTTI_ENABLE()
 

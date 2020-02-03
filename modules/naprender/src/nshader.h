@@ -8,8 +8,6 @@
 // External includes
 #include "vulkan/vulkan_core.h"
 #include "utility/errorstate.h"
-
-// External Includes
 #include <string>
 
 namespace opengl
@@ -19,7 +17,7 @@ namespace opengl
 	our application. It allows us to provide filenames for the vertex and
 	fragment shaders, and then creates the shader.
 	*/
-	class Shader
+	class NAPAPI Shader
 	{
 	public:
 		/**
@@ -61,6 +59,9 @@ namespace opengl
 
 		// Default constructor / destructor
 		Shader() = default;
+
+		Shader(const Shader&) = delete;
+		Shader& operator=(const Shader&) = delete;
 
 		/**
 		 * Creates a vertex and fragment shader program
