@@ -83,9 +83,11 @@ namespace nap
 	void CopystampApp::render()
 	{
 		// Activate current window for drawing
-		mRenderWindow->makeActive();
 
-		VkCommandBuffer commandBuffer = mRenderWindow->getWindow()->getCommandBuffer();
+		VkCommandBuffer commandBuffer = mRenderWindow->makeActive();
+		if (commandBuffer == nullptr)
+			return;
+
 		int frame_index = mRenderWindow->getWindow()->getCurrentFrameIndex();
 
 		mRenderService->advanceToFrame(frame_index);

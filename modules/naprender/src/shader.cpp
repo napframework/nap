@@ -169,7 +169,7 @@ VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevic
 }
 
 
-bool compileShader(VkDevice device, const std::string& file, EShLanguage stage, std::vector<unsigned int>& spirv, nap::utility::ErrorState& errorState)
+bool compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& file, EShLanguage stage, std::vector<unsigned int>& spirv, nap::utility::ErrorState& errorState)
 {
 	std::vector<char> shader_source;
 	if (!errorState.check(tryReadFile(file, shader_source), "Unable to read shader file %s", file.c_str()))
@@ -184,22 +184,45 @@ bool compileShader(VkDevice device, const std::string& file, EShLanguage stage, 
 	shader.setAutoMapBindings(false);
 	shader.setAutoMapLocations(false);
 
-	// 110 = Vulkan 1.1
-	int default_version = 110;
-	shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, default_version);
-	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
-	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+	glslang::EShTargetClientVersion target_client_version;
+	glslang::EShTargetLanguageVersion target_language_version;
+
+	// The client/language version must match with the Vulkan device's version
+	if (vulkanVersion >= VK_API_VERSION_1_1)
+	{
+		// For version 1.1 or higher, use Vulkan 1.1 with SPV 1.3
+		target_client_version = glslang::EShTargetVulkan_1_1;
+		target_language_version = glslang::EShTargetSpv_1_3;
+	}
+	else
+	{
+		// For version 1.0, use Vulkan 1.0 with SPV 1.0
+		target_client_version = glslang::EShTargetVulkan_1_0;
+		target_language_version = glslang::EShTargetSpv_1_0;
+	}
+
+	shader.setEnvClient(glslang::EShClientVulkan, target_client_version);
+	shader.setEnvTarget(glslang::EShTargetSpv, target_language_version);
 
 	EShMessages messages = EShMsgDefault;
 	messages = (EShMessages)(messages | EShMsgSpvRules);
 	messages = (EShMessages)(messages | EShMsgVulkanRules);
 
+	// Version number taken from shaderc sources. 110 means "Desktop OpenGL", 100 means "OpenGL ES"
+	int default_version = 110;
 	bool result = shader.parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
 		errorState.fail("Failed to compile shader %s: %s", file.c_str(), shader.getInfoLog());
 		return false;
 	}
+
+	// Even though we're compiling a single shader, we need 'link' it in glslang. This seems to be needed to get glslang to correctly resolve built-in variables such as gl_PerVertex.
+	// Without this call, GlslangToSpv will result in invalid SPIR-V
+	glslang::TProgram program;
+	program.addShader(&shader);
+	if (!errorState.check(program.link(messages) && program.mapIO(), "Failed to link shader program %s: %s", file.c_str(), program.getInfoLog()))
+		return false;
 
 	glslang::SpvOptions spv_options;
 	spv_options.generateDebugInfo = false;
@@ -462,9 +485,10 @@ namespace nap
 		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
 
 		VkDevice device = mRenderer->getDevice();
+		uint32_t deviceVersion = mRenderer->getPhysicalDeviceVersion();
 
 		std::vector<unsigned int> vertexShaderData;
-		if (!compileShader(device, mVertPath, EShLangVertex, vertexShaderData, errorState))
+		if (!compileShader(device, deviceVersion, mVertPath, EShLangVertex, vertexShaderData, errorState))
 			return false;
 
 		mVertexModule = createShaderModule(vertexShaderData, device);
@@ -488,7 +512,7 @@ namespace nap
 		}
 
 		std::vector<unsigned int> fragmentShaderData;
-		if (!compileShader(device, mFragPath, EShLangFragment, fragmentShaderData, errorState))
+		if (!compileShader(device, deviceVersion, mFragPath, EShLangFragment, fragmentShaderData, errorState))
 			return false;
 
 		mFragmentModule = createShaderModule(fragmentShaderData, device);

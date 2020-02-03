@@ -147,20 +147,25 @@ namespace nap
 		/**
 		 * Make this window active
 		 */
-		void makeCurrent();
+		VkCommandBuffer makeCurrent();
 
 		/**
 		 *	Returns the window number
 		 */
 		uint32 getNumber() const;
 
-		VkCommandBuffer	getCommandBuffer();
-
 		int getCurrentFrameIndex() const { return mCurrentFrame; }
+
+	private:
+		bool recreateSwapChain(utility::ErrorState& errorState);
+		
+		bool createSwapChainResources(utility::ErrorState& errorState);
+		void destroySwapChainResources();		
 
 	private:
 		opengl::BackbufferRenderTarget					mBackbuffer;
 
+		Renderer*										mRenderer = nullptr;
 		VkDevice										mDevice = nullptr;
 		VkSurfaceKHR									mSurface = nullptr;
 		VkSwapchainKHR									mSwapchain = nullptr;
@@ -178,7 +183,7 @@ namespace nap
 		VkImageView										mDepthImageView = nullptr;
 		int												mCurrentFrame = 0;
 		uint32_t										mCurrentImageIndex = 0;
-
+		glm::ivec2										mPreviousWindowSize;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 
 		/**

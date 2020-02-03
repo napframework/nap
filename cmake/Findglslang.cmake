@@ -82,8 +82,5 @@ else()
 	endif()				
 endif()		  
 
-message(STATUS ${GLSLANG_LIBS_DEBUG})
-message(STATUS ${GLSLANG_LIBS_RELEASE})
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(glslang REQUIRED_VARS GLSLANG_INCLUDE_DIR GLSLANG_LIBS_DEBUG GLSLANG_LIBS_RELEASE)

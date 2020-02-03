@@ -7,6 +7,7 @@
 // External Includes
 #include <utility/errorstate.h>
 #include "glslang/Public/ShaderLang.h"
+#include "nap/logger.h"
 
 RTTI_DEFINE_CLASS(nap::Renderer)
 
@@ -58,7 +59,7 @@ namespace nap
 		const char* msg,
 		void* userData)
 	{
-		std::cout << "validation layer: " << layerPrefix << ": " << msg << std::endl;
+		Logger::info("Validation Layer [%s]: %s", layerPrefix, msg);
 		return VK_FALSE;
 	}
 
@@ -78,95 +79,77 @@ namespace nap
 	/**
 	*	Sets up the vulkan messaging callback specified above
 	*/
-	bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback)
+	bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
 	{
 		VkDebugReportCallbackCreateInfoEXT createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 		createInfo.pfnCallback = debugCallback;
 
-		if (createDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
-		{
-			std::cout << "unable to create debug report callback extension\n";
+		if (!errorState.check(createDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
 			return false;
-		}
+
 		return true;
 	}
 
 
-	bool getAvailableVulkanLayers(std::vector<std::string>& outLayers)
+	bool getAvailableVulkanLayers(std::vector<std::string>& outLayers, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of available layers
 		// Layers are used for debugging / validation etc / profiling..
 		unsigned int instance_layer_count = 0;
-		VkResult res = vkEnumerateInstanceLayerProperties(&instance_layer_count, NULL);
-		if (res != VK_SUCCESS)
-		{
-			std::cout << "unable to query vulkan instance layer property count\n";
+		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, NULL) == VK_SUCCESS, "Unable to query vulkan instance layer property count"))
 			return false;
-		}
 
-		std::vector<VkLayerProperties> instance_layer_names(instance_layer_count);
-		res = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layer_names.data());
-		if (res != VK_SUCCESS)
-		{
-			std::cout << "unable to retrieve vulkan instance layer names\n";
+		std::vector<VkLayerProperties> instance_layers(instance_layer_count);
+		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers.data()) == VK_SUCCESS, "Unable to retrieve vulkan instance layer names"))
 			return false;
-		}
 
-		// Display layer names and find the ones we specified above
-		std::cout << "found " << instance_layer_count << " instance layers:\n";
-		std::vector<const char*> valid_instance_layer_names;
-		const std::set<std::string>& lookup_layers = getRequestedLayerNames();
-		int count(0);
+		Logger::info("Found %d instance layers:", instance_layer_count);
+		
+		const std::set<std::string>& requested_layers = getRequestedLayerNames();
 		outLayers.clear();
-		for (const auto& name : instance_layer_names)
+		for (int index = 0; index < instance_layers.size(); ++index)
 		{
-			std::cout << count << ": " << name.layerName << ": " << name.description << "\n";
-			auto it = lookup_layers.find(std::string(name.layerName));
-			if (it != lookup_layers.end())
-				outLayers.emplace_back(name.layerName);
-			count++;
+			VkLayerProperties& layer = instance_layers[index];
+			Logger::info("%d: %s: %s", index, layer.layerName, layer.description);
+			
+			if (requested_layers.find(std::string(layer.layerName)) != requested_layers.end())
+				outLayers.emplace_back(layer.layerName);
 		}
 
 		// Print the ones we're enabling
-		std::cout << "\n";
+		Logger::info("");
 		for (const auto& layer : outLayers)
-			std::cout << "applying layer: " << layer.c_str() << "\n";
+			Logger::info("Applying layer: %s", layer.c_str());
+		
 		return true;
 	}
 
 
-	bool getAvailableVulkanExtensions(SDL_Window* window, std::vector<std::string>& outExtensions)
+	bool getAvailableVulkanExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
 		unsigned int ext_count = 0;
-		if (!SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr))
-		{
-			std::cout << "Unable to query the number of Vulkan instance extensions\n";
+		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr), "Unable to query the number of Vulkan instance extensions"))
 			return false;
-		}
 
 		// Use the amount of extensions queried before to retrieve the names of the extensions
 		std::vector<const char*> ext_names(ext_count);
-		if (!SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()))
-		{
-			std::cout << "Unable to query the number of Vulkan instance extension names\n";
+		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()), "Unable to query the number of Vulkan instance extension names"))
 			return false;
-		}
 
 		// Display names
-		std::cout << "found " << ext_count << " Vulkan instance extensions:\n";
+		Logger::info("Found %d Vulkan instance extensions:", ext_count);
 		for (unsigned int i = 0; i < ext_count; i++)
 		{
-			std::cout << i << ": " << ext_names[i] << "\n";
+			Logger::info("%d: %s", i, ext_names[i]);
 			outExtensions.emplace_back(ext_names[i]);
 		}
 
 		// Add debug display extension, we need this to relay debug messages
 		outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-		std::cout << "\n";
 		return true;
 	}
 
@@ -175,7 +158,7 @@ namespace nap
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance)
+	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -199,7 +182,7 @@ namespace nap
 		app_info.applicationVersion = 1;
 		app_info.pEngineName = "NAP";
 		app_info.engineVersion = 1;
-		app_info.apiVersion = VK_API_VERSION_1_0;
+		app_info.apiVersion = api_version;	// Note: this is the *requested* version, which is the version the installed vulkan driver supports. If the device itself does not support this version, a lower version is returned. See selectGPU
 
 		// initialize the VkInstanceCreateInfo structure
 		VkInstanceCreateInfo inst_info = {};
@@ -213,19 +196,20 @@ namespace nap
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
 		// Create vulkan runtime instance
-		std::cout << "initializing Vulkan instance\n\n";
+		Logger::info("Initializing Vulkan instance");
 		VkResult res = vkCreateInstance(&inst_info, NULL, &outInstance);
 		switch (res)
 		{
 		case VK_SUCCESS:
 			break;
 		case VK_ERROR_INCOMPATIBLE_DRIVER:
-			std::cout << "unable to create vulkan instance, cannot find a compatible Vulkan ICD\n";
+			errorState.fail("Unable to create vulkan instance, cannot find a compatible Vulkan driver");
 			return false;
 		default:
-			std::cout << "unable to create Vulkan instance: unknown error\n";
+			errorState.fail("Unable to create Vulkan instance: unknown error");
 			return false;
 		}
+
 		return true;
 	}
 
@@ -236,59 +220,38 @@ namespace nap
 	* @param outDevice the selected physical device (gpu)
 	* @param outQueueFamilyIndex queue command family that can handle graphics commands
 	*/
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, unsigned int& outQueueFamilyIndex)
+	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, uint32_t& outDeviceVersion, unsigned int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
 		vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
-		if (physical_device_count == 0)
-		{
-			std::cout << "No physical devices found\n";
+		if (!errorState.check(physical_device_count != 0, "No physical devices found"))
 			return false;
-		}
 
 		// Now get the devices
 		std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
 		vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data());
 
 		// Show device information
-		std::cout << "found " << physical_device_count << " GPU(s):\n";
-		int count(0);
+		Logger::info("Found %d GPUs:", physical_device_count);
+		
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		for (auto& physical_device : physical_devices)
+		for (int index = 0; index < physical_devices.size(); ++index)
 		{
-			vkGetPhysicalDeviceProperties(physical_device, &(physical_device_properties[count]));
-			std::cout << count << ": " << physical_device_properties[count].deviceName << "\n";
-			count++;
+			VkPhysicalDevice physical_device = physical_devices[index];
+			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
+			vkGetPhysicalDeviceProperties(physical_device, &properties);
+			
+			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 		}
 
-		// Select one if more than 1 is available
-		unsigned int selection_id = 0;
-		if (physical_device_count > 1)
-		{
-			while (true)
-			{
-				std::cout << "select device: ";
-				std::cin >> selection_id;
-				if (selection_id >= physical_device_count || selection_id < 0)
-				{
-					std::cout << "invalid selection, expected a value between 0 and " << physical_device_count - 1 << "\n";
-					continue;
-				}
-				break;
-			}
-		}
-		std::cout << "selected: " << physical_device_properties[selection_id].deviceName << "\n";
-		VkPhysicalDevice selected_device = physical_devices[selection_id];
+		VkPhysicalDevice selected_device = physical_devices[0];
 
 		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
 		unsigned int family_queue_count(0);
 		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, nullptr);
-		if (family_queue_count == 0)
-		{
-			std::cout << "device has no family of queues associated with it\n";
+		if (!errorState.check(family_queue_count != 0, "Device has no family of queues associated with it"))
 			return false;
-		}
 
 		// Extract the properties of all the queue families
 		std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
@@ -305,14 +268,12 @@ namespace nap
 			}
 		}
 
-		if (queue_node_index < 0)
-		{
-			std::cout << "Unable to find a queue command family that accepts graphics commands\n";
+		if (!errorState.check(queue_node_index >= 0, "Unable to find graphics command queue on device"))
 			return false;
-		}
 
 		// Set the output variables
 		outDevice = selected_device;
+		outDeviceVersion = physical_device_properties[0].apiVersion;	// The actual version of the device, which may be different from what we requested in the ApplicationInfo
 		outQueueFamilyIndex = queue_node_index;
 		return true;
 	}
@@ -321,10 +282,7 @@ namespace nap
 	/**
 	*	Creates a logical device
 	*/
-	bool createLogicalDevice(VkPhysicalDevice& physicalDevice,
-		unsigned int queueFamilyIndex,
-		const std::vector<std::string>& layerNames,
-		VkDevice& outDevice)
+	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -334,46 +292,36 @@ namespace nap
 
 		// Get the number of available extensions for our graphics card
 		uint32_t device_property_count(0);
-		if (vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) != VK_SUCCESS)
-		{
-			std::cout << "Unable to acquire device extension property count\n";
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
-		}
-		std::cout << "\nfound " << device_property_count << " device extensions\n";
+
+		Logger::info("Found %d device extensions", device_property_count);
 
 		// Acquire their actual names
 		std::vector<VkExtensionProperties> device_properties(device_property_count);
-		if (vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, device_properties.data()) != VK_SUCCESS)
-		{
-			std::cout << "Unable to acquire device extension property names\n";
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, device_properties.data()) == VK_SUCCESS, "Unable to acquire device extension property names"))
 			return false;
-		}
 
 		// Match names against requested extension
 		std::vector<const char*> device_property_names;
 		const std::set<std::string>& required_extension_names = getRequestedDeviceExtensionNames();
-		int count = 0;
-		for (const auto& ext_property : device_properties)
+		for (int index = 0; index < device_properties.size(); ++index)
 		{
-			std::cout << count << ": " << ext_property.extensionName << "\n";
+			const VkExtensionProperties& ext_property = device_properties[index];
+
+			Logger::info("%d: %s", index, ext_property.extensionName);			
+
 			auto it = required_extension_names.find(std::string(ext_property.extensionName));
 			if (it != required_extension_names.end())
-			{
 				device_property_names.emplace_back(ext_property.extensionName);
-			}
-			count++;
+			
 		}
 
-		// Warn if not all required extensions were found
-		if (required_extension_names.size() != device_property_names.size())
-		{
-			std::cout << "not all required device extensions are supported!\n";
+		if (!errorState.check(required_extension_names.size() == device_property_names.size(), "Unable to find all required extensions"))
 			return false;
-		}
 
-		std::cout << "\n";
 		for (const auto& name : device_property_names)
-			std::cout << "applying device extension: " << name << "\n";
+			Logger::info("Applying device extension %s", name);
 
 		// Create queue information structure used by device based on the previously fetched queue information from the physical device
 		// We create one command processing queue for graphics
@@ -400,12 +348,9 @@ namespace nap
 		create_info.flags = NULL;
 
 		// Finally we're ready to create a new device
-		VkResult res = vkCreateDevice(physicalDevice, &create_info, nullptr, &outDevice);
-		if (res != VK_SUCCESS)
-		{
-			std::cout << "failed to create logical device!\n";
+		if (!errorState.check(vkCreateDevice(physicalDevice, &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
 			return false;
-		}
+
 		return true;
 	}
 
@@ -458,7 +403,7 @@ namespace nap
 		// surface later on.
 		std::vector<std::string> found_extensions;
 		SDL_Window* dummy_window = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-		bool got_extensions = getAvailableVulkanExtensions(dummy_window, found_extensions);
+		bool got_extensions = getAvailableVulkanExtensions(dummy_window, found_extensions, errorState);
 		SDL_DestroyWindow(dummy_window);
 
 		if (!got_extensions)
@@ -466,32 +411,32 @@ namespace nap
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
-		if (!getAvailableVulkanLayers(found_layers))
+		if (!getAvailableVulkanLayers(found_layers, errorState))
 			return false;
 
 		// Warn when not all requested layers could be found
-		if (found_layers.size() != getRequestedLayerNames().size())
-			std::cout << "warning! not all requested layers could be found!\n";
+		if (!errorState.check(found_layers.size() == getRequestedLayerNames().size(), "Not all requested layers were found"))
+			return false;
 
 		// Create Vulkan Instance
-		if (!createVulkanInstance(found_layers, found_extensions, mInstance))
+		if (!createVulkanInstance(found_layers, found_extensions, mInstance, errorState))
 			return false;
 
 		// Vulkan messaging callback
-		setupDebugCallback(mInstance, mDebugCallback);
+		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
-		// Select GPU after succsessful creation of a vulkan instance (jeeeej no global states anymore)
-		if (!selectGPU(mInstance, mPhysicalDevice, mGraphicsQueueIndex))
+		// Select GPU after succsessful creation of a vulkan instance
+		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceVersion, mGraphicsQueueIndex, errorState))
 			return false;
 
 		// Create a logical device that interfaces with the physical device
-		if (!createLogicalDevice(mPhysicalDevice, mGraphicsQueueIndex, found_layers, mDevice))
+		if (!createLogicalDevice(mPhysicalDevice, mGraphicsQueueIndex, found_layers, mDevice, errorState))
 			return false;
 
-		if (!createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool))
+		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create commandpool"))
 			return false;
 
-		if (!findDepthFormat(mPhysicalDevice, mDepthFormat))
+		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
 			return false;
 
 		vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0, &mGraphicsQueue);

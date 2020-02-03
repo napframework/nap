@@ -53,7 +53,7 @@ namespace nap
 		/**
 		 * Makes this window active, calls activate afterwards
 		 */
-		void makeActive()														{ mWindow->makeCurrent(); }
+		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
 
 		/**
          * Returns the width of the window.

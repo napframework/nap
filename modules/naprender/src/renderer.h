@@ -65,9 +65,10 @@ namespace nap
 		void shutdown();
 
 		VkInstance getVulkanInstance () const { return mInstance; }
-		VkPhysicalDevice getPhysicalDevice() { return mPhysicalDevice; }
-		VkDevice getDevice() { return mDevice; }
-		VkCommandPool getCommandPool() { return mCommandPool; }
+		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
+		uint32_t getPhysicalDeviceVersion() const { return mPhysicalDeviceVersion; }
+		VkDevice getDevice() const { return mDevice; }
+		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
 		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
 		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
@@ -77,6 +78,7 @@ namespace nap
 		VkInstance						mInstance = nullptr;
 		VkDebugReportCallbackEXT		mDebugCallback = nullptr;
 		VkPhysicalDevice				mPhysicalDevice = nullptr;
+		uint32_t						mPhysicalDeviceVersion = 0;
 		VkDevice						mDevice = nullptr;
 		VkCommandPool					mCommandPool = nullptr;
 		VkFormat						mDepthFormat;
