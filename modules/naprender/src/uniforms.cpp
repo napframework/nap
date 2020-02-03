@@ -1,5 +1,4 @@
 #include "uniforms.h"
-#include "nglutils.h"
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)

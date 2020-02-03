@@ -2,10 +2,7 @@
 #include "nshader.h"
 
 // External Includes
-#include <string>
 #include <fstream>
-#include <GL/glew.h>
-#include <iostream>
 #include <assert.h>
 #include "utility/stringutils.h"
 #include "spirv_cross/spirv_cross.hpp"
@@ -232,33 +229,33 @@ namespace opengl
 	}
 
 
-	EGLSLType getGLSLType(spirv_cross::SPIRType type)
+	EUniformValueType getGLSLType(spirv_cross::SPIRType type)
 	{
 		switch (type.basetype)
 		{
 		case spirv_cross::SPIRType::Int:
-			return EGLSLType::Int;
+			return EUniformValueType::Int;
 		case spirv_cross::SPIRType::UInt:
-			return EGLSLType::UInt;
+			return EUniformValueType::UInt;
 		case spirv_cross::SPIRType::Float:
 			if (type.vecsize == 1 && type.columns == 1)
-				return EGLSLType::Float;
+				return EUniformValueType::Float;
 			else if (type.vecsize == 2 && type.columns == 1)
-				return EGLSLType::Vec2;
+				return EUniformValueType::Vec2;
 			else if (type.vecsize == 3 && type.columns == 1)
-				return EGLSLType::Vec3;
+				return EUniformValueType::Vec3;
 			else if (type.vecsize == 4 && type.columns == 1)
-				return EGLSLType::Vec4;
+				return EUniformValueType::Vec4;
 			else if (type.vecsize == 2 && type.columns == 2)
-				return EGLSLType::Mat2;
+				return EUniformValueType::Mat2;
 			else if (type.vecsize == 3 && type.columns == 3)
-				return EGLSLType::Mat3;
+				return EUniformValueType::Mat3;
 			else if (type.vecsize == 4 && type.columns == 4)
-				return EGLSLType::Mat4;
+				return EUniformValueType::Mat4;
 			else
-				return EGLSLType::Unknown;
+				return EUniformValueType::Unknown;
 		default:
-			return EGLSLType::Unknown;
+			return EUniformValueType::Unknown;
 		}
 	}
 
@@ -335,8 +332,8 @@ namespace opengl
 				}
 				else
 				{
-					EGLSLType element_type = getGLSLType(member_type);
-					if (!errorState.check(element_type != EGLSLType::Unknown, "Encountered unknown uniform type"))
+					EUniformValueType element_type = getGLSLType(member_type);
+					if (!errorState.check(element_type != EUniformValueType::Unknown, "Encountered unknown uniform type"))
 						return false;
 
 					std::unique_ptr<UniformValueArrayDeclaration> array_declaration = std::make_unique<UniformValueArrayDeclaration>(name, absoluteOffset, member_size, element_type, num_elements);
@@ -357,8 +354,8 @@ namespace opengl
 				}
 				else
 				{
-					EGLSLType value_type = getGLSLType(member_type);
-					if (!errorState.check(value_type != EGLSLType::Unknown, "Encountered unknown uniform type"))
+					EUniformValueType value_type = getGLSLType(member_type);
+					if (!errorState.check(value_type != EUniformValueType::Unknown, "Encountered unknown uniform type"))
 						return false;
 
 					std::unique_ptr<UniformValueDeclaration> value_declaration = std::make_unique<UniformValueDeclaration>(name, absoluteOffset, member_size, value_type);

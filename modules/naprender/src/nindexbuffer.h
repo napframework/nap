@@ -6,7 +6,7 @@
 namespace opengl
 {
 
-	class IndexBuffer : public Buffer
+	class NAPAPI IndexBuffer : public Buffer
 	{
 	public:
 		/**

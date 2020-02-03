@@ -1,9 +1,7 @@
 #include "planemesh.h"
-#include "mesh.h"
 #include "material.h"
 #include <glm/glm.hpp>
 #include "renderservice.h"
-
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)

@@ -2,7 +2,6 @@
 #include "renderableglyph.h"
 
 // External Includes
-#include <nglutils.h>
 #include <mathutils.h>
 #include <ft2build.h>
 #include <bitmap.h>

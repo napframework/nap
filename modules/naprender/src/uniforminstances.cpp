@@ -1,6 +1,5 @@
 #include "uniforminstances.h"
 #include "uniforms.h"
-#include "nglutils.h"
 
 namespace nap
 {
@@ -42,37 +41,37 @@ namespace nap
 		{
 			const opengl::UniformValueArrayDeclaration* value_array_declaration = rtti_cast<const opengl::UniformValueArrayDeclaration>(&declaration);
 
-			if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
+			if (value_array_declaration->mElementType == opengl::EUniformValueType::Int)
 			{
 				std::unique_ptr<UniformIntArrayInstance> array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
+			else if (value_array_declaration->mElementType == opengl::EUniformValueType::Float)
 			{
 				std::unique_ptr<UniformFloatArrayInstance> array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec2)
+			else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec2)
 			{
 				std::unique_ptr<UniformVec2ArrayInstance> array_instance = std::make_unique<UniformVec2ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
+			else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec3)
 			{
 				std::unique_ptr<UniformVec3ArrayInstance> array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
+			else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec4)
 			{
 				std::unique_ptr<UniformVec4ArrayInstance> array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
+			else if (value_array_declaration->mElementType == opengl::EUniformValueType::Mat4)
 			{
 				std::unique_ptr<UniformMat4ArrayInstance> array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
@@ -88,23 +87,23 @@ namespace nap
 		{
 			const opengl::UniformValueDeclaration* value_declaration = rtti_cast<const opengl::UniformValueDeclaration>(&declaration);
 
-			if (value_declaration->mType == opengl::EGLSLType::Int)
+			if (value_declaration->mType == opengl::EUniformValueType::Int)
 			{
 				return std::make_unique<UniformIntInstance>(*value_declaration);
 			}
-			else if (value_declaration->mType == opengl::EGLSLType::Vec2)
+			else if (value_declaration->mType == opengl::EUniformValueType::Vec2)
 			{
 				return std::make_unique<UniformVec2Instance>(*value_declaration);
 			}
-			else if (value_declaration->mType == opengl::EGLSLType::Vec3)
+			else if (value_declaration->mType == opengl::EUniformValueType::Vec3)
 			{
 				return std::make_unique<UniformVec3Instance>(*value_declaration);
 			}
-			else if (value_declaration->mType == opengl::EGLSLType::Vec4)
+			else if (value_declaration->mType == opengl::EUniformValueType::Vec4)
 			{
 				return std::make_unique<UniformVec4Instance>(*value_declaration);
 			}
-			else if (value_declaration->mType == opengl::EGLSLType::Mat4)
+			else if (value_declaration->mType == opengl::EUniformValueType::Mat4)
 			{
 				return std::make_unique<UniformMat4Instance>(*value_declaration);
 			}
@@ -161,27 +160,27 @@ namespace nap
 				if (!errorState.check(value_array_resource != nullptr, "Type mismatch between shader type and json type"))
 					return false;
 
-				if (value_array_declaration->mElementType == opengl::EGLSLType::Int)
+				if (value_array_declaration->mElementType == opengl::EUniformValueType::Int)
 				{
 					instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_array_declaration, errorState);
 				}
-				else if (value_array_declaration->mElementType == opengl::EGLSLType::Float)
+				else if (value_array_declaration->mElementType == opengl::EUniformValueType::Float)
 				{
 					instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_array_declaration, errorState);
 				}
-				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec2)
+				else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec2)
 				{
 					instance_value_array = createUniformValueInstance<UniformVec2ArrayInstance, UniformVec2Array>(resource, *value_array_declaration, errorState);
 				}
-				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec3)
+				else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec3)
 				{
 					instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_array_declaration, errorState);
 				}
-				else if (value_array_declaration->mElementType == opengl::EGLSLType::Vec4)
+				else if (value_array_declaration->mElementType == opengl::EUniformValueType::Vec4)
 				{
 					instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_array_declaration, errorState);
 				}
-				else if (value_array_declaration->mElementType == opengl::EGLSLType::Mat4)
+				else if (value_array_declaration->mElementType == opengl::EUniformValueType::Mat4)
 				{
 					instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_array_declaration, errorState);
 				}
@@ -214,27 +213,27 @@ namespace nap
 				opengl::UniformValueDeclaration* value_declaration = rtti_cast<opengl::UniformValueDeclaration>(uniform_declaration.get());
 				std::unique_ptr<UniformValueInstance> value_instance;
 
-				if (value_declaration->mType == opengl::EGLSLType::Int)
+				if (value_declaration->mType == opengl::EUniformValueType::Int)
 				{
 					value_instance = createUniformValueInstance<UniformIntInstance, UniformInt>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mType == opengl::EGLSLType::Float)
+				else if (value_declaration->mType == opengl::EUniformValueType::Float)
 				{
 					value_instance = createUniformValueInstance<UniformFloatInstance, UniformFloat>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mType == opengl::EGLSLType::Vec2)
+				else if (value_declaration->mType == opengl::EUniformValueType::Vec2)
 				{
 					value_instance = createUniformValueInstance<UniformVec2Instance, UniformVec2>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mType == opengl::EGLSLType::Vec3)
+				else if (value_declaration->mType == opengl::EUniformValueType::Vec3)
 				{
 					value_instance = createUniformValueInstance<UniformVec3Instance, UniformVec3>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mType == opengl::EGLSLType::Vec4)
+				else if (value_declaration->mType == opengl::EUniformValueType::Vec4)
 				{
 					value_instance = createUniformValueInstance<UniformVec4Instance, UniformVec4>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mType == opengl::EGLSLType::Mat4)
+				else if (value_declaration->mType == opengl::EUniformValueType::Mat4)
 				{
 					value_instance = createUniformValueInstance<UniformMat4Instance, UniformMat4>(resource, *value_declaration, errorState);
 				}
