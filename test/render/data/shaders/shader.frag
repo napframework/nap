@@ -1,10 +1,10 @@
 #version 450 core
 
-layout(location=0) in vec3 pass_Uvs;
+in vec3 pass_Uvs;
 
-layout(location=0) out vec4 out_Color;
+out vec4 out_Color;
 
-layout(binding=1) uniform sampler2D	pigTexture;
+uniform sampler2D	pigTexture;
 //layout(binding=1) uniform sampler2D	testTexture;
 
 struct Data
@@ -13,7 +13,7 @@ struct Data
 	int			mTextureIndex;
 };
 
-layout(binding=2) uniform UBO
+uniform UBO
 {
 	Data mData[2];
 }pig;

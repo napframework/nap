@@ -13,7 +13,7 @@
 #include "spirv_cross/spirv_parser.hpp"
 #include "glslang/Public/ShaderLang.h"
 #include "glslang/SPIRV/GlslangToSpv.h"
-
+#include "glslang/MachineIndependent/iomapper.h"
 
 RTTI_BEGIN_CLASS(nap::Shader)
 	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
@@ -24,7 +24,7 @@ RTTI_END_CLASS
 using namespace std; // Include the standard namespace
 
 
-					 // From https://github.com/KhronosGroup/glslang/blob/master/StandAlone/ResourceLimits.cpp
+// From https://github.com/KhronosGroup/glslang/blob/master/StandAlone/ResourceLimits.cpp
 const TBuiltInResource defaultResource =
 {
 	/* .MaxLights = */ 32,
@@ -133,6 +133,57 @@ const TBuiltInResource defaultResource =
 	}
 };
 
+
+/**
+ * The IO Resolver is used by glslang to determine the location/binding numbers when autoMapLocations/autoMapBindings is enabled.
+ *
+ * glslang contains a TDefaultGlslIoResolver which *almost* does what we want:
+ * - It assigns locations to all inputs/outputs
+ * - It correctly matches outputs with inputs based on the name of the input/output
+ * - It does *not* correctly number bindings for our purposes: Vulkan expects the binding for each UBO to be unique across shader stages.
+ *   However, the TDefaultGlslIoResolver follows GLSL semantics, where each type of resource is 'namespaced'. That is, there is a unique numbering for each type (UBOs, samplers, etc).
+ *   This is incorrect for Vulkan, as this causes the bindings to clash.
+ *
+ * glslang also contains a TDefaultIoResolver (not exposed through the headers), which follows Vulkan semantics for the bindings (i.e. each resource gets its unique binding), but
+ * does not correctly map input/output locations.
+ *
+ * So, our 'workaround': we make our own class that derives from TDefaultGlslIoResolver. This gives us the correct input/output mapping behavior.
+ * Then, we override the resolveBinding function to replace the wrong binding numbering behavior from TDefaultGlslIoResolver with the correct one from TDefaultIoResolver.
+ *
+ * The net result is that this allows us to compile GLSL shaders, without bindings/locations, to a valid SPIR-V module with correctly auto-numbered bindings/locations.
+ * This is useful so that less technical users of nap don't have to manually specify bindings/locations in the shader, but can keep working as if it's GLSL.
+ *
+ * Note that it's always possible to manually specify the location/bindings in the shaders; in that case those locations/bindings will simply be used.
+ */
+struct BindingResolver : public glslang::TDefaultGlslIoResolver 
+{
+	BindingResolver(const glslang::TIntermediate& intermediate) : 
+		glslang::TDefaultGlslIoResolver(intermediate) 
+	{
+	}
+
+	int resolveBinding(EShLanguage /*stage*/, glslang::TVarEntryInfo& ent) override 
+	{
+		const glslang::TType& type = ent.symbol->getType();
+		const int set = getLayoutSet(type);
+		// On OpenGL arrays of opaque types take a separate binding for each element
+		int numBindings = intermediate.getSpv().openGl != 0 && type.isSizedArray() ? type.getCumulativeArraySize() : 1;
+		glslang::TResourceType resource = getResourceType(type);
+		if (resource < glslang::EResCount) {
+			if (type.getQualifier().hasBinding()) {
+				return ent.newBinding = reserveSlot(
+					set, getBaseBinding(resource, set) + type.getQualifier().layoutBinding, numBindings);
+			}
+			else if (ent.live && doAutoBindingMapping()) {
+				// find free slot, the caller did make sure it passes all vars with binding
+				// first and now all are passed that do not have a binding and needs one
+				return ent.newBinding = getFreeSlot(set, getBaseBinding(resource, set), numBindings);
+			}
+		}
+		return ent.newBinding = -1;
+	}
+};
+
 static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffer)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -154,7 +205,7 @@ static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffe
 }
 
 
-VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevice device)
+static VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevice device)
 {
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -168,21 +219,20 @@ VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevic
 	return shaderModule;
 }
 
-
-bool compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& file, EShLanguage stage, std::vector<unsigned int>& spirv, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& file, EShLanguage stage, nap::utility::ErrorState& errorState)
 {
 	std::vector<char> shader_source;
 	if (!errorState.check(tryReadFile(file, shader_source), "Unable to read shader file %s", file.c_str()))
-		return false;
+		return nullptr;
 
 	const char* sources[] = { shader_source.data() };
 	int source_sizes[] = { (int)shader_source.size() };
 	const char* file_names[] = { file.data() };
 
-	glslang::TShader shader(stage);
-	shader.setStringsWithLengthsAndNames(sources, source_sizes, file_names, 1);
-	shader.setAutoMapBindings(false);
-	shader.setAutoMapLocations(false);
+	std::unique_ptr<glslang::TShader> shader = std::make_unique<glslang::TShader>(stage);
+	shader->setStringsWithLengthsAndNames(sources, source_sizes, file_names, 1);
+	shader->setAutoMapBindings(true);
+	shader->setAutoMapLocations(true);
 
 	glslang::EShTargetClientVersion target_client_version;
 	glslang::EShTargetLanguageVersion target_language_version;
@@ -201,8 +251,8 @@ bool compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& f
 		target_language_version = glslang::EShTargetSpv_1_0;
 	}
 
-	shader.setEnvClient(glslang::EShClientVulkan, target_client_version);
-	shader.setEnvTarget(glslang::EShTargetSpv, target_language_version);
+	shader->setEnvClient(glslang::EShClientVulkan, target_client_version);
+	shader->setEnvTarget(glslang::EShTargetSpv, target_language_version);
 
 	EShMessages messages = EShMsgDefault;
 	messages = (EShMessages)(messages | EShMsgSpvRules);
@@ -210,18 +260,48 @@ bool compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& f
 
 	// Version number taken from shaderc sources. 110 means "Desktop OpenGL", 100 means "OpenGL ES"
 	int default_version = 110;
-	bool result = shader.parse(&defaultResource, default_version, false, messages);
+	bool result = shader->parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
-		errorState.fail("Failed to compile shader %s: %s", file.c_str(), shader.getInfoLog());
-		return false;
+		errorState.fail("Failed to compile shader %s: %s", file.c_str(), shader->getInfoLog());
+		return nullptr;
 	}
 
-	// Even though we're compiling a single shader, we need 'link' it in glslang. This seems to be needed to get glslang to correctly resolve built-in variables such as gl_PerVertex.
-	// Without this call, GlslangToSpv will result in invalid SPIR-V
+	return shader;
+}
+
+
+static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const std::string& vertexFile, const std::string& fragmentFile, std::vector<unsigned int>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+{
+	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertexFile, EShLangVertex, errorState);
+	if (vertex_shader == nullptr)
+		return false;
+
+	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragmentFile, EShLangFragment, errorState);
+	if (fragment_shader == nullptr)
+		return false;
+
+	EShMessages messages = EShMsgDefault;
+	messages = (EShMessages)(messages | EShMsgSpvRules);
+	messages = (EShMessages)(messages | EShMsgVulkanRules);
+
+	// We need to create a program containing both the vertex & fragment shaders so that bindings are correctly numbered and input/outputs are correctly mapped between the stages.
 	glslang::TProgram program;
-	program.addShader(&shader);
-	if (!errorState.check(program.link(messages) && program.mapIO(), "Failed to link shader program %s: %s", file.c_str(), program.getInfoLog()))
+	program.addShader(vertex_shader.get());
+	program.addShader(fragment_shader.get());
+
+	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
+	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
+	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
+	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+		return false;
+
+	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
+	BindingResolver io_resolver(*program.getIntermediate(EShLangVertex));
+	glslang::TGlslIoMapper io_mapper;
+
+	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
+	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
 		return false;
 
 	glslang::SpvOptions spv_options;
@@ -231,11 +311,23 @@ bool compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& f
 	spv_options.disassemble = false;
 	spv_options.validate = true;
 
-	spv::SpvBuildLogger logger;
-	glslang::GlslangToSpv(*shader.getIntermediate(), spirv, &logger, &spv_options);
+	// Generate the SPIR-V for the vertex shader
+	{
+		spv::SpvBuildLogger logger;
+		glslang::GlslangToSpv(*program.getIntermediate(EShLangVertex), vertexSPIRV, &logger, &spv_options);
 
-	if (!errorState.check(!spirv.empty(), "Failed to compile shader %s: %s", file.c_str(), logger.getAllMessages().c_str()))
-		return false;
+		if (!errorState.check(!vertexSPIRV.empty(), "Failed to compile vertex shader: %s", logger.getAllMessages().c_str()))
+			return false;
+	}
+
+	// Generate the SPIR-V for the fragment shader
+	{
+		spv::SpvBuildLogger logger;
+		glslang::GlslangToSpv(*program.getIntermediate(EShLangFragment), fragmentSPIRV, &logger, &spv_options);
+
+		if (!errorState.check(!fragmentSPIRV.empty(), "Failed to compile fragment shader: %s", logger.getAllMessages().c_str()))
+			return false;
+	}
 
 	return true;
 }
@@ -487,15 +579,24 @@ namespace nap
 		VkDevice device = mRenderer->getDevice();
 		uint32_t deviceVersion = mRenderer->getPhysicalDeviceVersion();
 
-		std::vector<unsigned int> vertexShaderData;
-		if (!compileShader(device, deviceVersion, mVertPath, EShLangVertex, vertexShaderData, errorState))
+		// Compile vertex & fragment shader into program and get resulting SPIR-V
+		std::vector<unsigned int> vertex_shader_spirv;
+		std::vector<unsigned int> fragment_shader_spirv;
+		if (!compileProgram(device, deviceVersion, mVertPath, mFragPath, vertex_shader_spirv, fragment_shader_spirv, errorState))
 			return false;
 
-		mVertexModule = createShaderModule(vertexShaderData, device);
+		// Create vertex shader module
+		mVertexModule = createShaderModule(vertex_shader_spirv, device);
 		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", mVertPath.c_str()))
 			return false;
 
-		spirv_cross::Compiler vertex_shader_compiler(vertexShaderData.data(), vertexShaderData.size());
+		// Create fragment shader module
+		mFragmentModule = createShaderModule(fragment_shader_spirv, device);
+		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", mFragPath.c_str()))
+			return false;
+
+		// Extract vertex shader uniforms & inputs
+		spirv_cross::Compiler vertex_shader_compiler(vertex_shader_spirv.data(), vertex_shader_spirv.size());
 		if (!parseUniforms(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
@@ -510,21 +611,13 @@ namespace nap
 			uint32_t location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
 			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, format);
 		}
-
-		std::vector<unsigned int> fragmentShaderData;
-		if (!compileShader(device, deviceVersion, mFragPath, EShLangFragment, fragmentShaderData, errorState))
-			return false;
-
-		mFragmentModule = createShaderModule(fragmentShaderData, device);
-		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", mFragPath.c_str()))
-			return false;
-
-		spirv_cross::Compiler fragment_shader_compiler(fragmentShaderData.data(), fragmentShaderData.size());
+		
+		// Extract fragment shader uniforms
+		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		return initLayout(device, errorState);
-
 	}
 
 
