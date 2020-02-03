@@ -1,6 +1,6 @@
 #version 450 core
 
-layout(binding=0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
@@ -8,14 +8,14 @@ layout(binding=0) uniform nap
 } mvp;
 
 // Input Vertex Attributes
-layout(location=0) in vec3 in_Position;
-layout(location=1) in vec3 in_Normals;
+in vec3 in_Position;
+in vec3 in_Normals;
 
 // Output to fragment shader
-layout(location=0) out vec3 passNormals;				//< Vertex normal
-layout(location=1) out mat4 passModelMatrix;			//< Matrix to transform vertex from object to world space
-layout(location=5) out vec3 passVert;					//< Vertex position in object space 
-layout(location=6) out vec3 passPosition;				//< vertex world space position
+out vec3 passNormals;				//< Vertex normal
+out mat4 passModelMatrix;			//< Matrix to transform vertex from object to world space
+out vec3 passVert;					//< Vertex position in object space 
+out vec3 passPosition;				//< vertex world space position
 
 void main(void)
 {

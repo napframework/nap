@@ -1,10 +1,10 @@
 #version 450 core
 
 // vertex shader input 
-layout(location=0) in vec3 passNormals;										// Normals
-layout(location=1) in mat4 passModelMatrix;									// Matrix
-layout(location=5) in vec3 passVert;										// The vertex position
-layout(location=6) in vec3 passPosition;									//< frag world space position 
+in vec3 passNormals;									// Normals
+in mat4 passModelMatrix;								// Matrix
+in vec3 passVert;										// The vertex position
+in vec3 passPosition;									//< frag world space position 
 
 // Point light structure
 struct PointLight
@@ -13,7 +13,7 @@ struct PointLight
 	vec3 		mIntensity;
 };
 
-layout(binding=1) uniform UBO
+uniform UBO
 {
 	// uniform inputs
 	uniform vec3		cameraLocation;							// World Space location of the camera
@@ -27,7 +27,7 @@ const float			shininess = 4.0;						// Specular angle shininess
 const float			specularIntensity = 0.5;				// Amount of added specular
 
 // output
-layout(location=0) out vec4 out_Color;
+out vec4 out_Color;
 
 
 vec3 computeLightContribution(int lightIndex, vec3 color)
