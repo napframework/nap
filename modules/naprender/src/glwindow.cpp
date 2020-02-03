@@ -7,6 +7,7 @@
 #include <utility/errorstate.h>
 #include "renderer.h"
 #include "nsdlgl.h"
+#include "nap/logger.h"
 
 namespace nap
 {
@@ -41,22 +42,16 @@ namespace nap
 	/**
 	*	Creates the vulkan surface that is rendered to by the device using SDL
 	*/
-	static bool createSurface(SDL_Window* window, VkInstance instance, VkPhysicalDevice gpu, uint32_t graphicsFamilyQueueIndex, VkSurfaceKHR& outSurface)
+	static bool createSurface(SDL_Window* window, VkInstance instance, VkPhysicalDevice gpu, uint32_t graphicsFamilyQueueIndex, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		if (!SDL_Vulkan_CreateSurface(window, instance, &outSurface))
-		{
-			std::cout << "Unable to create Vulkan compatible surface using SDL\n";
+		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface), "Unable to create Vulkan compatible surface using SDL"))
 			return false;
-		}
 
 		// Make sure the surface is compatible with the queue family and gpu
 		VkBool32 supported = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(gpu, graphicsFamilyQueueIndex, outSurface, &supported);
-		if (!supported)
-		{
-			std::cout << "Surface is not supported by physical device!\n";
+		if (!errorState.check(supported, "Surface is not supported by physical device"))
 			return false;
-		}
 
 		return true;
 	}
@@ -64,13 +59,11 @@ namespace nap
 	/**
 	* Obtain the surface properties that are required for the creation of the swap chain
 	*/
-	bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities)
+	bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
 	{
-		if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) != VK_SUCCESS)
-		{
-			std::cout << "unable to acquire surface capabilities\n";
+		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
 			return false;
-		}
+
 		return true;
 	}
 
@@ -78,28 +71,22 @@ namespace nap
 	* @return if the present modes could be queried and ioMode is set
 	* @param outMode the mode that is requested, will contain FIFO when requested mode is not available
 	*/
-	bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR& ioMode)
+	bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR& ioMode, utility::ErrorState& errorState)
 	{
 		uint32_t mode_count(0);
-		if (vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) != VK_SUCCESS)
-		{
-			std::cout << "unable to query present mode count for physical device\n";
+		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) == VK_SUCCESS, "Unable to query present mode count for physical device"))
 			return false;
-		}
 
 		std::vector<VkPresentModeKHR> available_modes(mode_count);
-		if (vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, available_modes.data()) != VK_SUCCESS)
-		{
-			std::cout << "unable to query the various present modes for physical device\n";
+		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, available_modes.data()) == VK_SUCCESS, "Unable to query the various present modes for physical device"))
 			return false;
-		}
 
 		for (auto& mode : available_modes)
 		{
 			if (mode == ioMode)
 				return true;
 		}
-		std::cout << "unable to obtain preferred display mode, fallback to FIFO\n";
+
 		ioMode = VK_PRESENT_MODE_FIFO_KHR;
 		return true;
 	}
@@ -142,7 +129,7 @@ namespace nap
 	* If so constructs a ImageUsageFlags bitmask that is returned in outUsage
 	* @return if the surface supports all the previously defined bits
 	*/
-	bool getImageUsage(const VkSurfaceCapabilitiesKHR& capabilities, VkImageUsageFlags& outUsage)
+	bool getImageUsage(const VkSurfaceCapabilitiesKHR& capabilities, VkImageUsageFlags& outUsage, utility::ErrorState& errorState)
 	{
 		const std::vector<VkImageUsageFlags>& desired_usages { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT };
 		assert(desired_usages.size() > 0);
@@ -153,11 +140,8 @@ namespace nap
 		for (const auto& desired_usage : desired_usages)
 		{
 			VkImageUsageFlags image_usage = desired_usage & capabilities.supportedUsageFlags;
-			if (image_usage != desired_usage)
-			{
-				std::cout << "unsupported image usage flag: " << desired_usage << "\n";
+			if (!errorState.check(image_usage == desired_usage, "Unsupported image usage flag: %d", desired_usage))
 				return false;
-			}
 
 			// Add bit if found as supported color
 			outUsage = (outUsage | desired_usage);
@@ -175,28 +159,21 @@ namespace nap
 		if (capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 			return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
-		std::cout << "unsupported surface transform: " << VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 		return capabilities.currentTransform;
 	}
 
 	/**
 	* @return the most appropriate color space based on the globals provided above
 	*/
-	bool getFormat(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceFormatKHR& outFormat)
+	bool getFormat(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceFormatKHR& outFormat, utility::ErrorState& errorState)
 	{
 		unsigned int count(0);
-		if (vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, nullptr) != VK_SUCCESS)
-		{
-			std::cout << "unable to query number of supported surface formats";
+		if (!errorState.check(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, nullptr) == VK_SUCCESS, "Unable to query number of supported surface formats"))
 			return false;
-		}
 
 		std::vector<VkSurfaceFormatKHR> found_formats(count);
-		if (vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, found_formats.data()) != VK_SUCCESS)
-		{
-			std::cout << "unable to query all supported surface formats\n";
+		if (!errorState.check(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, found_formats.data()) == VK_SUCCESS, "Unable to query all supported surface formats"))
 			return false;
-		}
 
 		// This means there are no restrictions on the supported format.
 		// Preference would work
@@ -225,14 +202,14 @@ namespace nap
 				}
 
 				// No matching color space, pick first one
-				std::cout << "warning: no matching color space found, picking first available one\n!";
+				Logger::info("Warning: no matching color space found, picking first available one");
 				outFormat.colorSpace = found_formats[0].colorSpace;
 				return true;
 			}
 		}
 
 		// No matching formats found
-		std::cout << "warning: no matching color format found, picking first available one\n";
+		Logger::info("Warning: no matching color space found, picking first available one");
 		outFormat = found_formats[0];
 		return true;
 	}
@@ -241,16 +218,16 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat)
+	static bool createSwapChain(glm::ivec2 windowSize, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get properties of surface, necessary for creation of swap-chain
 		VkSurfaceCapabilitiesKHR surface_properties;
-		if (!getSurfaceProperties(physicalDevice, surface, surface_properties))
+		if (!getSurfaceProperties(physicalDevice, surface, surface_properties, errorState))
 			return false;
 
 		// Get the image presentation mode (synced, immediate etc.)
 		VkPresentModeKHR presentation_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-		if (!getPresentationMode(surface, physicalDevice, presentation_mode))
+		if (!getPresentationMode(surface, physicalDevice, presentation_mode, errorState))
 			return false;
 
 		// Get other swap chain related features
@@ -261,7 +238,7 @@ namespace nap
 
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
-		if (!getImageUsage(surface_properties, usage_flags))
+		if (!getImageUsage(surface_properties, usage_flags, errorState))
 			return false;
 
 		// Get the transform, falls back on current transform when transform is not supported
@@ -269,11 +246,8 @@ namespace nap
 
 		// Get swapchain image format
 		VkSurfaceFormatKHR image_format;
-		if (!getFormat(physicalDevice, surface, image_format))
+		if (!getFormat(physicalDevice, surface, image_format, errorState))
 			return false;
-
-		// Old swap chain
-		VkSwapchainKHR old_swap_chain = outSwapChain;
 
 		// Populate swapchain creation info
 		VkSwapchainCreateInfoKHR swap_info;
@@ -296,22 +270,11 @@ namespace nap
 		swap_info.oldSwapchain = NULL;
 		swap_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 
-		// Destroy old swap chain
-		if (old_swap_chain != VK_NULL_HANDLE)
-		{
-			vkDestroySwapchainKHR(device, old_swap_chain, nullptr);
-			old_swap_chain = VK_NULL_HANDLE;
-		}
-
 		// Create new one
-		if (vkCreateSwapchainKHR(device, &swap_info, nullptr, &old_swap_chain) != VK_SUCCESS)
-		{
-			std::cout << "unable to create swap chain\n";
+		if (!errorState.check(vkCreateSwapchainKHR(device, &swap_info, nullptr, &outSwapChain) == VK_SUCCESS, "Unable to create swap chain"))
 			return false;
-		}
 
 		// Store handle
-		outSwapChain = old_swap_chain;
 		outSwapChainFormat = image_format.format;
 		return true;
 	}
@@ -319,27 +282,21 @@ namespace nap
 	/**
 	*	Returns the handles of all the images in a swap chain, result is stored in outImageHandles
 	*/
-	bool getSwapChainImageHandles(VkDevice device, VkSwapchainKHR chain, std::vector<VkImage>& outImageHandles)
+	bool getSwapChainImageHandles(VkDevice device, VkSwapchainKHR chain, std::vector<VkImage>& outImageHandles, utility::ErrorState& errorState)
 	{
 		unsigned int image_count(0);
-		VkResult res = vkGetSwapchainImagesKHR(device, chain, &image_count, nullptr);
-		if (res != VK_SUCCESS)
-		{
-			std::cout << "unable to get number of images in swap chain\n";
+		if (!errorState.check(vkGetSwapchainImagesKHR(device, chain, &image_count, nullptr) == VK_SUCCESS, "Unable to get number of images in swap chain"))
 			return false;
-		}
 
 		outImageHandles.clear();
 		outImageHandles.resize(image_count);
-		if (vkGetSwapchainImagesKHR(device, chain, &image_count, outImageHandles.data()) != VK_SUCCESS)
-		{
-			std::cout << "unable to get image handles from swap chain\n";
+		if (!errorState.check(vkGetSwapchainImagesKHR(device, chain, &image_count, outImageHandles.data()) == VK_SUCCESS, "Unable to get image handles from swap chain"))
 			return false;
-		}
+		
 		return true;
 	}
 
-	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass)
+	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = swapChainImageFormat;
@@ -393,10 +350,10 @@ namespace nap
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		return vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS;
+		return errorState.check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 	}
 
-	static bool createImageViews(VkDevice device, std::vector<VkImageView>& swapChainImageViews, const std::vector<VkImage>& swapChainImages, VkFormat swapChainFormat)
+	static bool createImageViews(VkDevice device, std::vector<VkImageView>& swapChainImageViews, const std::vector<VkImage>& swapChainImages, VkFormat swapChainFormat, utility::ErrorState& errorState)
 	{
 		swapChainImageViews.resize(swapChainImages.size());
 
@@ -417,20 +374,19 @@ namespace nap
 			createInfo.subresourceRange.baseArrayLayer = 0;
 			createInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
+			if (!errorState.check(vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) == VK_SUCCESS, "Failed to create image view"))
 				return false;
 		}
 
 		return true;
 	}
 
-	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& swapChainImageViews, VkImageView depthImageView, VkRenderPass renderPass, VkExtent2D extent)
+	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& swapChainImageViews, VkImageView depthImageView, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
 	{
 		framebuffers.resize(swapChainImageViews.size());
 
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-
 			std::array<VkImageView, 2> attachments = {
 				swapChainImageViews[i],
 				depthImageView
@@ -445,7 +401,7 @@ namespace nap
 			framebufferInfo.height = extent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
+			if (!errorState.check(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
 				return false;
 		}
 
@@ -453,7 +409,7 @@ namespace nap
 	}
 
 
-	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int inNumCommandBuffers) 
+	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int inNumCommandBuffers, utility::ErrorState& errorState) 
 	{
 		commandBuffers.resize(inNumCommandBuffers);
 
@@ -463,10 +419,10 @@ namespace nap
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-		return vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS;
+		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers");
 	}
 
-	bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, std::vector<VkFence>& inFlightFences, int numFramesInFlight)
+	bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, std::vector<VkFence>& inFlightFences, int numFramesInFlight, utility::ErrorState& errorState)
 	{
 		imageAvailableSemaphores.resize(numFramesInFlight);
 		renderFinishedSemaphores.resize(numFramesInFlight);
@@ -479,10 +435,11 @@ namespace nap
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < numFramesInFlight; i++) {
-			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-				vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+		for (size_t i = 0; i < numFramesInFlight; i++) 
+		{
+			if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) == VK_SUCCESS &&
+								  vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS &&
+								  vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS, "Failed to create sync objects"))
 			{
 				return false;
 			}
@@ -527,7 +484,7 @@ namespace nap
 		return -1;
 	}
 
-	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -544,14 +501,14 @@ namespace nap
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+		if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
 			return false;
 
 		VkMemoryRequirements memRequirements;
 		vkGetImageMemoryRequirements(device, image, &memRequirements);
 
 		uint32_t mem_type_index = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-		if (mem_type_index == -1)
+		if (!errorState.check(mem_type_index != -1, "Failed to find memory type for image"))
 			return false;
 
 		VkMemoryAllocateInfo allocInfo = {};
@@ -559,14 +516,16 @@ namespace nap
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = mem_type_index;
 
-		if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "Failed to allocate memory for image"))
 			return false;
 
-		vkBindImageMemory(device, image, imageMemory, 0);
+		if (!errorState.check(vkBindImageMemory(device, image, imageMemory, 0) == VK_SUCCESS, "Failed to bind memory for image"))
+			return false;
+
 		return true;
 	}
 
-	bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& imageView) 
+	bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& imageView, utility::ErrorState& errorState) 
 	{
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -579,18 +538,18 @@ namespace nap
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+		if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &imageView) == VK_SUCCESS, "Failed to create image view"))
 			return false;
 
 		return true;
 	}
 
-	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView)
+	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
 	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory))
+		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
 			return false;
 
-		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView))
+		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView, errorState))
 			return false;
 
 		return true;
@@ -622,10 +581,77 @@ namespace nap
 			hideWindow();
 	}
 
+	bool GLWindow::recreateSwapChain(utility::ErrorState& errorState)
+	{
+		destroySwapChainResources();
+		return createSwapChainResources(errorState);
+	}
+
+	bool GLWindow::createSwapChainResources(utility::ErrorState& errorState)
+	{
+		VkFormat swapchainFormat;
+		VkExtent2D swapchainExtent;
+		if (!createSwapChain(getSize(), mSurface, mRenderer->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, swapchainFormat, errorState))
+			return false;
+
+		// Get image handles from swap chain
+		std::vector<VkImage> chain_images;
+		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
+			return false;
+
+		if (!createRenderPass(mDevice, swapchainFormat, mRenderer->getDepthFormat(), mRenderPass, errorState))
+			return false;
+
+		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, swapchainFormat, errorState))
+			return false;
+
+		if (!createDepthBuffer(mRenderer->getPhysicalDevice(), mDevice, swapchainExtent, mRenderer->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+			return false;
+
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
+			return false;
+
+		return true;
+	}
+
+	void GLWindow::destroySwapChainResources()
+	{
+		if (mSwapchain == nullptr)
+			return;
+		
+		VkResult result = vkDeviceWaitIdle(mDevice);
+		assert(result == VK_SUCCESS);
+
+		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
+			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+
+		mSwapChainFramebuffers.clear();
+
+		vkDestroyImageView(mDevice, mDepthImageView, nullptr);
+		mDepthImageView = nullptr;
+
+		vkDestroyImage(mDevice, mDepthImage, nullptr);
+		mDepthImage = nullptr;
+
+		vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
+		mDepthImageMemory = nullptr;
+
+		for (VkImageView image_view : mSwapChainImageViews)
+			vkDestroyImageView(mDevice, image_view, nullptr);
+
+		mSwapChainImageViews.clear();
+
+		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+		mRenderPass = nullptr;
+
+		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+		mSwapchain = nullptr;
+	}
 
 	// Creates a window with an associated OpenGL context
 	bool GLWindow::init(const RenderWindowSettings& settings, Renderer& renderer, nap::utility::ErrorState& errorState)
 	{
+		mRenderer = &renderer;
 		mDevice = renderer.getDevice();
 		mGraphicsQueue = renderer.getGraphicsQueue();
 
@@ -635,43 +661,25 @@ namespace nap
 			return false;
 
 		setSize(glm::vec2(settings.width, settings.height));
+		mPreviousWindowSize = glm::ivec2(settings.width, settings.height);
 
 		VkPhysicalDevice physicalDevice = renderer.getPhysicalDevice();
 
-		if (!createSurface(mWindow, renderer.getVulkanInstance(), physicalDevice, renderer.getGraphicsQueueIndex(), mSurface))
+		if (!createSurface(mWindow, renderer.getVulkanInstance(), physicalDevice, renderer.getGraphicsQueueIndex(), mSurface, errorState))
 			return false;
 
-		VkFormat swapchainFormat;
-		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, physicalDevice, mDevice, mSwapchain, swapchainExtent, swapchainFormat))
-			return false;
-
-		// Get image handles from swap chain
-		std::vector<VkImage> chain_images;
-		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images))
-			return false;
-
-		if (!createRenderPass(mDevice, swapchainFormat, renderer.getDepthFormat(), mRenderPass))
-			return false;
-
-		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, swapchainFormat))
-			return false;
-
-		if (!createDepthBuffer(physicalDevice, mDevice, swapchainExtent, renderer.getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView))
-			return false;
-
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent))
+		if (!createSwapChainResources(errorState))
 			return false;
 
 		const int maxFramesInFlight = 2;
-		if (!createCommandBuffers(mDevice, renderer.getCommandPool(), mCommandBuffers, maxFramesInFlight))
+		if (!createCommandBuffers(mDevice, renderer.getCommandPool(), mCommandBuffers, maxFramesInFlight, errorState))
 			return false;
 
-		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight))
+		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight, errorState))
 			return false;
 
 		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
-		if (presentQueueIndex == -1)
+		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
 			return false;
 
 		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);
@@ -753,18 +761,48 @@ namespace nap
 		opengl::showWindow(mWindow, false);
 	}
 
-	VkCommandBuffer	GLWindow::getCommandBuffer()
-	{
-		return mCommandBuffers[mCurrentFrame];
-	}
 
 	// Make this window's context current 
-	void GLWindow::makeCurrent()
+	VkCommandBuffer GLWindow::makeCurrent()
 	{
+		glm::ivec2 window_size = opengl::getWindowSize(mWindow);
+		uint32_t window_state = SDL_GetWindowFlags(mWindow);
+
+		// Check if the window has a zero size. Note that in the case where the window is minimized, it seems SDL still reports
+		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
+		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
+		//
+		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
+		bool is_zero_size_window = window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0;
+		if (is_zero_size_window)
+			return nullptr;		
+
+		// When the window size has changed, we need to recreate the swapchain.
+		//
+		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches 
+		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about 
+		// resources still being used / device lost error messages. Since our main loop is single threaded, and Window events are processed before update/render, we just deal with resizes here,
+		// before we start rendering to the window. It is not possible for the window size to change *during* rendering (because, single threaded), so this keeps it simple.
+		if (window_size != mPreviousWindowSize)
+		{
+			utility::ErrorState errorState;
+			if (!recreateSwapChain(errorState))
+			{
+				Logger::info("Failed to recreate swapchain: %s", errorState.toString().c_str());
+				return nullptr;
+			}
+			mPreviousWindowSize = window_size;
+		}
+
+		// Wait for the previous frame to finish. Note that we do this *after* the previous checks, otherwise this would lead to a hang in the zero-sized-window-case. This is because makeCurrent
+		// will still be getting called, but nobody is presenting frames, so the fence will never be signaled, leading to an infinite wait.
 		vkWaitForFences(mDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
 		vkResetFences(mDevice, 1, &mInFlightFences[mCurrentFrame]);
 
-		vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mCurrentImageIndex);
+		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
+		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mCurrentImageIndex);
+		assert(result == VK_SUCCESS);
 
 		VkCommandBuffer commandBuffer = mCommandBuffers[mCurrentFrame];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
@@ -775,8 +813,6 @@ namespace nap
 		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
-
-		glm::ivec2 window_size = getSize();
 
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -795,6 +831,8 @@ namespace nap
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		return commandBuffer;
 	}
 
 
@@ -825,9 +863,8 @@ namespace nap
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mCurrentFrame]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to submit draw command buffer!");
-		}
+		VkResult result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mCurrentFrame]);
+		assert(result == VK_SUCCESS);
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -841,7 +878,10 @@ namespace nap
 
 		presentInfo.pImageIndices = &mCurrentImageIndex;
 
-		vkQueuePresentKHR(mPresentQueue, &presentInfo);
+		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
+		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
+		result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
+		assert(result == VK_SUCCESS);
 
 		mCurrentFrame = (mCurrentFrame + 1) % mCommandBuffers.size();
 	}

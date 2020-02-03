@@ -1,6 +1,5 @@
 #include "uniforminstances.h"
 #include "uniforms.h"
-#include "nglutils.h"
 
 namespace nap
 {

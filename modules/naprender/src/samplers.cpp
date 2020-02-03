@@ -1,5 +1,4 @@
 #include "uniforms.h"
-#include "nglutils.h"
 #include "imagefromfile.h"
 #include "samplers.h"
 

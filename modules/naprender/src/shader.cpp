@@ -42,7 +42,7 @@ namespace nap
 		mShader = std::make_unique<opengl::Shader>();
 
 		// Initialize the shader
-		if (!mShader->init(mRenderer->getDevice(), mVertPath, mFragPath, errorState))
+		if (!mShader->init(mRenderer->getDevice(), mRenderer->getPhysicalDeviceVersion(), mVertPath, mFragPath, errorState))
 			return false;
 
 		return true;

@@ -197,60 +197,61 @@ namespace nap
 
 			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
 			color.setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
-
 			
-			render_window->makeActive();
-			VkCommandBuffer commandBuffer = render_window->getWindow()->getCommandBuffer();
-			int frame_index = render_window->getWindow()->getCurrentFrameIndex();
+			VkCommandBuffer commandBuffer = render_window->makeActive();
+			if (commandBuffer != nullptr)
+			{
+				int frame_index = render_window->getWindow()->getCurrentFrameIndex();
 
-			mRenderService->advanceToFrame(frame_index);
+				mRenderService->advanceToFrame(frame_index);
 
-			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
-			
-			glm::mat4 identity = glm::mat4(1.0f);
+				opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 
-			transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
-			transform_component.update(identity);
-			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+				glm::mat4 identity = glm::mat4(1.0f);
 
- 			transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
-			transform_component.update(identity);
- 			mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
+				transform_component.update(identity);
+				mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
-			/*
-			// Render output texture to plane
-			std::vector<RenderableComponentInstance*> components_to_render;
-			components_to_render.push_back(&mPlaneEntity->getComponent<RenderableMeshComponentInstance>());
-			components_to_render.push_back(&mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>());
-			
-			MaterialInstance& plane_material = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-			plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
-			plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
-			plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
-			plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-			
-			nap::MaterialInstance& rotating_plane_material = mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-			rotating_plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
-			rotating_plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
-			rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
-			rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-			
-			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
-			backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-			mRenderService->clearRenderTarget(backbuffer);
-			mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
-			
-			// Render sphere using split camera with custom projection matrix
-			mSplitCameraEntity->getComponent<PerspCameraComponentInstance>().setGridLocation(0, 0);
-			components_to_render.clear();
-			components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
-			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
+				transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
+				transform_component.update(identity);
+				mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
-			*/
+				/*
+				// Render output texture to plane
+				std::vector<RenderableComponentInstance*> components_to_render;
+				components_to_render.push_back(&mPlaneEntity->getComponent<RenderableMeshComponentInstance>());
+				components_to_render.push_back(&mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>());
 
-			getCore().getService<IMGuiService>()->draw(commandBuffer);
+				MaterialInstance& plane_material = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+				plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
+				plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
+				plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
+				plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-			render_window->swap();
+				nap::MaterialInstance& rotating_plane_material = mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+				rotating_plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
+				rotating_plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
+				rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
+				rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+
+				opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
+				backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+				mRenderService->clearRenderTarget(backbuffer);
+				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+
+				// Render sphere using split camera with custom projection matrix
+				mSplitCameraEntity->getComponent<PerspCameraComponentInstance>().setGridLocation(0, 0);
+				components_to_render.clear();
+				components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
+				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
+
+				*/
+
+				getCore().getService<IMGuiService>()->draw(commandBuffer);
+
+				render_window->swap();
+			}
 		}
 	 
 		/*

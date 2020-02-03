@@ -68,7 +68,7 @@ namespace opengl
 		 * @param vsFile the vertex shader file on disk
 		 * @param fsFile the vertex shader file on disk
 		 */
-		bool init(VkDevice device, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState);
+		bool init(VkDevice device, uint32_t vulkanVersion, const std::string& vsFile, const std::string& fsFile, nap::utility::ErrorState& errorState);
 
 		/**
 		 * @return all vertex shader attributes
