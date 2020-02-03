@@ -553,13 +553,13 @@ namespace nap
 
 
 	Shader::Shader() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 
 	}
 
 	Shader::Shader(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 
 	}
@@ -576,8 +576,8 @@ namespace nap
 		// Set display name
 		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
 
-		VkDevice device = mRenderer->getDevice();
-		uint32_t deviceVersion = mRenderer->getPhysicalDeviceVersion();
+		VkDevice device = mRenderService->getDevice();
+		uint32_t deviceVersion = mRenderService->getPhysicalDeviceVersion();
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<unsigned int> vertex_shader_spirv;

@@ -10,7 +10,7 @@
 // External Includes
 #include <entity.h>
 #include <nap/core.h>
-#include "nindexbuffer.h"
+#include "indexbuffer.h"
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)

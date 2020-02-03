@@ -45,18 +45,20 @@ namespace nap
 	{
 	}
 
+
 	UniformStructDeclaration::~UniformStructDeclaration()
 	{
 	}
 
-// 	const UniformDeclaration* UniformStructDeclaration::findMember(const std::string& name) const
-// 	{
-// 		for (auto& member : mMembers)
-// 			if (member->mName == name)
-// 				return member.get();
-// 
-// 		return nullptr;
-// 	}
+
+	const UniformDeclaration* UniformStructDeclaration::findMember(const std::string& name) const
+	{
+		for (auto& member : mMembers)
+			if (member->mName == name)
+				return member.get();
+
+		return nullptr;
+	}
 
 
 	UniformStructDeclaration::UniformStructDeclaration(UniformStructDeclaration&& inRHS) :
@@ -64,6 +66,7 @@ namespace nap
 		mMembers(std::move(inRHS.mMembers))
 	{
 	}
+
 
 	UniformStructDeclaration& UniformStructDeclaration::operator=(UniformStructDeclaration&& inRHS)
 	{
@@ -97,12 +100,14 @@ namespace nap
 	{
 	}
 
+
 	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS) :
 		UniformStructDeclaration(std::move(inRHS)),
 		mBinding(inRHS.mBinding),
 		mStage(inRHS.mStage)
 	{
 	}
+
 
 	UniformBufferObjectDeclaration& UniformBufferObjectDeclaration::operator=(UniformBufferObjectDeclaration&& inRHS)
 	{

@@ -18,18 +18,18 @@ RTTI_END_CLASS
 namespace nap
 {
 	SphereMesh::SphereMesh() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 	}
 
 	SphereMesh::SphereMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec3> normals;
@@ -99,6 +99,7 @@ namespace nap
 		}
 
 		mMeshInstance->setNumVertices(vertex_count);
+		mMeshInstance->setDrawMode(EDrawMode::TRIANGLES);
 
 		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
@@ -111,7 +112,6 @@ namespace nap
 		color_attribute.setData(colors.data(), vertex_count);
 		
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLES);	
 		shape.setIndices(indices.data(), index_count);
 
 		return mMeshInstance->init(errorState);

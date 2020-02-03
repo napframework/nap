@@ -330,16 +330,16 @@ namespace nap
 		SDL_SetClipboardText(text);
 	}
 
-	VkCommandBuffer beginSingleTimeCommands(Renderer& renderer)
+	VkCommandBuffer beginSingleTimeCommands(RenderService& renderService)
 	{
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = renderer.getCommandPool();
+		allocInfo.commandPool = renderService.getCommandPool();
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(renderer.getDevice(), &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(renderService.getDevice(), &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -350,7 +350,7 @@ namespace nap
 		return commandBuffer;
 	}
 
-	void endSingleTimeCommands(Renderer& renderer, VkCommandBuffer commandBuffer)
+	void endSingleTimeCommands(RenderService& renderService, VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -359,10 +359,10 @@ namespace nap
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(renderer.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(renderer.getGraphicsQueue());
+		vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(renderService.getGraphicsQueue());
 
-		vkFreeCommandBuffers(renderer.getDevice(), renderer.getCommandPool(), 1, &commandBuffer);
+		vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
 	}
 
 
@@ -389,9 +389,9 @@ namespace nap
 	 * Creates font texture GPU resources
 	 * TODO: Implement using own render objects
 	 */
-	bool createFontsTexture(Renderer& renderer)
+	bool createFontsTexture(RenderService& renderService)
 	{
-		VkCommandBuffer command_buffer = beginSingleTimeCommands(renderer);
+		VkCommandBuffer command_buffer = beginSingleTimeCommands(renderService);
 
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -538,7 +538,7 @@ namespace nap
 		// Store our identifier
 		io.Fonts->TexID = (void *)(intptr_t)g_FontImage;
 
-		endSingleTimeCommands(renderer, command_buffer);
+		endSingleTimeCommands(renderService, command_buffer);
 
 		invalidateFontUploadObjects();
 
@@ -985,12 +985,12 @@ namespace nap
 	bool IMGuiService::init(utility::ErrorState& error)
 	{
 		// Get our renderer
-		mRenderer = getCore().getService<nap::RenderService>();
-		assert(mRenderer != nullptr);
+		mRenderService = getCore().getService<nap::RenderService>();
+		assert(mRenderService != nullptr);
 	
-		g_Gpu = mRenderer->getRenderer().getPhysicalDevice();
-		g_Device = mRenderer->getRenderer().getDevice();
-		g_RenderPass = mRenderer->getOrCreateRenderPass(ERenderTargetFormat::RGBA8);	
+		g_Gpu = mRenderService->getPhysicalDevice();
+		g_Device = mRenderService->getDevice();
+		g_RenderPass = mRenderService->getOrCreateRenderPass(ERenderTargetFormat::RGBA8);
 		
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 
@@ -1041,7 +1041,7 @@ namespace nap
 		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.0f, &font_config);
 
 		createDeviceObjects();
-		createFontsTexture(mRenderer->getRenderer());
+		createFontsTexture(*mRenderService);
 
 		// Set primary window to be default
 //		setGuiWindow(mRenderer->getPrimaryWindow().getNativeWindow());

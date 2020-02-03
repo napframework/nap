@@ -17,11 +17,11 @@ namespace nap
 	static constexpr int triCount = 6 * 2;						//< Total number of box triangles
 
 	BoxMesh::BoxMesh() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 	}
 	BoxMesh::BoxMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
@@ -44,7 +44,7 @@ namespace nap
 	void BoxMesh::setup()
 	{
 		// Create mesh instance
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		// Compute box and construct mesh
 		mBox = math::Box(mSize.x, mSize.y, mSize.z, mPosition);
@@ -160,6 +160,7 @@ namespace nap
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
+		mesh.setDrawMode(EDrawMode::TRIANGLES);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);
@@ -169,7 +170,6 @@ namespace nap
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

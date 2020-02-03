@@ -187,8 +187,7 @@ namespace nap
 
 	void MaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
 	{
-		VkDevice device = getMaterial().getRenderer().getDevice();
-
+		VkDevice device = mRenderService->getDevice();
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
 		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
@@ -404,7 +403,7 @@ namespace nap
 	bool MaterialInstance::init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		mDevice = renderService.getRenderer().getDevice();
+		mDevice = renderService.getDevice();
 		mRenderService = &renderService;
 
 		Material& material = *resource.mMaterial;

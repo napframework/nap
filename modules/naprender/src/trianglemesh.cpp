@@ -11,7 +11,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	TriangleMesh::TriangleMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
@@ -28,7 +28,7 @@ namespace nap
 	bool TriangleMesh::setup(utility::ErrorState& error)
 	{
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 		constructTriangle(*mMeshInstance);
 
 		return true;
@@ -60,13 +60,13 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());
+		mesh.setDrawMode(EDrawMode::TRIANGLE_STRIP);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());
 		color_attribute.setData(colors.data(), vertices.size());
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLE_STRIP);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

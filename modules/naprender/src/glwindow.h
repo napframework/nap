@@ -23,7 +23,7 @@ namespace nap
 
 	// Forward Declares
 	class GLWindow;
-	class Renderer;
+	class RenderService;
 
 	/**
 	* Holds all window launch settings
@@ -56,7 +56,7 @@ namespace nap
 	class NAPAPI GLWindow final
 	{
 		RTTI_ENABLE()
-		friend class Renderer;
+		friend class RenderService;
 	public:
 
 		GLWindow();
@@ -68,7 +68,7 @@ namespace nap
 		GLWindow(const GLWindow& other) = delete;
 		GLWindow& operator=(const GLWindow& other) = delete;
 
-		bool init(const RenderWindowSettings& settings, Renderer& renderer, utility::ErrorState& errorState);
+		bool init(const RenderWindowSettings& settings, RenderService& renderService, utility::ErrorState& errorState);
 
 		/**
 		* @return the hardware window handle, nullptr if undefined
@@ -165,7 +165,7 @@ namespace nap
 	private:
 		opengl::BackbufferRenderTarget					mBackbuffer;
 
-		Renderer*										mRenderer = nullptr;
+		RenderService*									mRenderService = nullptr;
 		VkDevice										mDevice = nullptr;
 		VkSurfaceKHR									mSurface = nullptr;
 		VkSwapchainKHR									mSwapchain = nullptr;

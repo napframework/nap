@@ -141,7 +141,7 @@ namespace nap
 	}
 
 	Texture2D::Texture2D(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
@@ -305,16 +305,16 @@ namespace nap
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VkCommandBuffer beginSingleTimeCommands(Renderer& renderer) 
+		VkCommandBuffer beginSingleTimeCommands(RenderService& renderService) 
 		{
 			VkCommandBufferAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			allocInfo.commandPool = renderer.getCommandPool();
+			allocInfo.commandPool = renderService.getCommandPool();
 			allocInfo.commandBufferCount = 1;
 
 			VkCommandBuffer commandBuffer;
-			vkAllocateCommandBuffers(renderer.getDevice(), &allocInfo, &commandBuffer);
+			vkAllocateCommandBuffers(renderService.getDevice(), &allocInfo, &commandBuffer);
 
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -325,7 +325,7 @@ namespace nap
 			return commandBuffer;
 		}
 
-		void endSingleTimeCommands(Renderer& renderer, VkCommandBuffer commandBuffer) 
+		void endSingleTimeCommands(RenderService& renderService, VkCommandBuffer commandBuffer) 
 		{
 			vkEndCommandBuffer(commandBuffer);
 
@@ -334,15 +334,15 @@ namespace nap
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &commandBuffer;
 
-			vkQueueSubmit(renderer.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-			vkQueueWaitIdle(renderer.getGraphicsQueue());
+			vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+			vkQueueWaitIdle(renderService.getGraphicsQueue());
 
-			vkFreeCommandBuffers(renderer.getDevice(), renderer.getCommandPool(), 1, &commandBuffer);
+			vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
 		}
 
-		void transitionImageLayout(Renderer& renderer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) 
+		void transitionImageLayout(RenderService& renderService, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) 
 		{
-			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderer);
+			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderService);
 
 			VkImageMemoryBarrier barrier = {};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -390,11 +390,12 @@ namespace nap
 				1, &barrier
 			);
 
-			endSingleTimeCommands(renderer, commandBuffer);
+			endSingleTimeCommands(renderService, commandBuffer);
 		}
 
-		void copyBufferToImage(Renderer& renderer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderer);
+		void copyBufferToImage(RenderService& renderService, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
+		{
+			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderService);
 
 			VkBufferImageCopy region = {};
 			region.bufferOffset = 0;
@@ -413,7 +414,7 @@ namespace nap
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-			endSingleTimeCommands(renderer, commandBuffer);
+			endSingleTimeCommands(renderService, commandBuffer);
 		}
 
 		bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageView& imageView, utility::ErrorState& errorState) 
@@ -440,8 +441,8 @@ namespace nap
 	{
 		assert(!bitmap.empty());
 
-		VkDevice device = mRenderer->getDevice();
-		VkPhysicalDevice physicalDevice = mRenderer->getPhysicalDevice();
+		VkDevice device = mRenderService->getDevice();
+		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
 		VkDeviceSize imageSize = getNumComponents(bitmap.getChannels()) * getComponentSize(bitmap.getDataType()) * bitmap.getWidth() * bitmap.getHeight();
 		
@@ -451,7 +452,7 @@ namespace nap
 			return false;
 
 		void* data;
-		vkMapMemory(mRenderer->getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(mRenderService->getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, bitmap.getData(), static_cast<size_t>(imageSize));
 		vkUnmapMemory(device, stagingBufferMemory);
 
@@ -462,9 +463,9 @@ namespace nap
 		if (!createImage(device, physicalDevice, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mTextureImage, mTextureImageMemory, errorState))
 			return false;
 
-		transitionImageLayout(*mRenderer, mTextureImage, texture_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(*mRenderer, stagingBuffer, mTextureImage, static_cast<uint32_t>(bitmap.getWidth()), static_cast<uint32_t>(bitmap.getHeight()));
-		transitionImageLayout(*mRenderer, mTextureImage, texture_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		copyBufferToImage(*mRenderService, stagingBuffer, mTextureImage, static_cast<uint32_t>(bitmap.getWidth()), static_cast<uint32_t>(bitmap.getHeight()));
+		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);

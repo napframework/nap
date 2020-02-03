@@ -13,7 +13,6 @@ namespace nap
 {
 	class Bitmap;
 	class RenderService;
-	class Renderer;
 
 	/**
 	 *	Texture min filter
@@ -160,7 +159,7 @@ namespace nap
 
 	private:
 		friend class RenderTarget;
-		Renderer*					mRenderer = nullptr;
+		RenderService*				mRenderService = nullptr;
 		VkImage						mTextureImage = nullptr;
 		VkDeviceMemory				mTextureImageMemory = nullptr;
 		opengl::Texture2D			mTexture;			///< Internal opengl texture

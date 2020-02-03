@@ -1,11 +1,11 @@
 // Local includes
 #include "glwindow.h"
+#include "renderservice.h"
 #include "SDL_vulkan.h"
 #include "vulkan/vulkan.h"
 
 // External includes
 #include <utility/errorstate.h>
-#include "renderer.h"
 #include "sdlhelpers.h"
 #include "nap/logger.h"
 
@@ -591,7 +591,7 @@ namespace nap
 	{
 		VkFormat swapchainFormat;
 		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, mRenderer->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, swapchainFormat, errorState))
+		if (!createSwapChain(getSize(), mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, swapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -599,13 +599,13 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, swapchainFormat, mRenderer->getDepthFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, swapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
 			return false;
 
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, swapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderer->getPhysicalDevice(), mDevice, swapchainExtent, mRenderer->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
 			return false;
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
@@ -648,11 +648,11 @@ namespace nap
 		mSwapchain = nullptr;
 	}
 
-	bool GLWindow::init(const RenderWindowSettings& settings, Renderer& renderer, nap::utility::ErrorState& errorState)
+	bool GLWindow::init(const RenderWindowSettings& settings, RenderService& renderService, nap::utility::ErrorState& errorState)
 	{
-		mRenderer = &renderer;
-		mDevice = renderer.getDevice();
-		mGraphicsQueue = renderer.getGraphicsQueue();
+		mRenderService = &renderService;
+		mDevice = renderService.getDevice();
+		mGraphicsQueue = renderService.getGraphicsQueue();
 
 		// create the window
 		mWindow = createSDLWindow(settings, errorState);
@@ -662,16 +662,16 @@ namespace nap
 		setSize(glm::vec2(settings.width, settings.height));
 		mPreviousWindowSize = glm::ivec2(settings.width, settings.height);
 
-		VkPhysicalDevice physicalDevice = renderer.getPhysicalDevice();
+		VkPhysicalDevice physicalDevice = renderService.getPhysicalDevice();
 
-		if (!createSurface(mWindow, renderer.getVulkanInstance(), physicalDevice, renderer.getGraphicsQueueIndex(), mSurface, errorState))
+		if (!createSurface(mWindow, renderService.getVulkanInstance(), physicalDevice, renderService.getGraphicsQueueIndex(), mSurface, errorState))
 			return false;
 
 		if (!createSwapChainResources(errorState))
 			return false;
 
 		const int maxFramesInFlight = 2;
-		if (!createCommandBuffers(mDevice, renderer.getCommandPool(), mCommandBuffers, maxFramesInFlight, errorState))
+		if (!createCommandBuffers(mDevice, renderService.getCommandPool(), mCommandBuffers, maxFramesInFlight, errorState))
 			return false;
 
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight, errorState))

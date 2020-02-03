@@ -6,9 +6,6 @@
 #include <rendertarget.h>
 #include "vk_mem_alloc.h"
 
-// Local Includes
-#include "renderer.h"
-
 namespace opengl
 {
 	class RenderTarget;
@@ -17,7 +14,6 @@ namespace opengl
 namespace nap
 {
 	// Forward Declares
-	class TransformComponentInstance;
 	class CameraComponentInstance;
 	class RenderableComponentInstance;
 	class RenderWindow;
@@ -28,6 +24,17 @@ namespace nap
 	class RenderableMesh;
 	class IMesh;
 	class MaterialInstance;
+	class GLWindow;
+
+	class RendererSettings
+	{
+	public:
+		bool mDoubleBuffer = true;            ///< Property: 'DoubleBuffer' Enables / Disabled double buffering
+		bool mEnableMultiSampling = true;    ///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
+		int  mMultiSamples = 4;                ///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
+		bool mEnableHighDPIMode = true;        ///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
+	};
+
 
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
@@ -167,8 +174,6 @@ namespace nap
 
 		void advanceToFrame(int frameIndex);
 
-		Renderer& getRenderer() { return *mRenderer; }
-
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
@@ -177,6 +182,15 @@ namespace nap
 
 		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format);
 		
+		VkInstance getVulkanInstance() const { return mInstance; }
+		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
+		uint32_t getPhysicalDeviceVersion() const { return mPhysicalDeviceVersion; }
+		VkDevice getDevice() const { return mDevice; }
+		VkCommandPool getCommandPool() const { return mCommandPool; }
+		VkFormat getDepthFormat() const { return mDepthFormat; }
+		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
+		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
+
 	protected:
 		/**
 		* Object creation registration
@@ -233,7 +247,6 @@ namespace nap
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 
-		std::unique_ptr<nap::Renderer>			mRenderer;												//< Holds the currently active renderer
 		VmaAllocator							mVulkanAllocator;
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
@@ -248,6 +261,17 @@ namespace nap
 		VkRenderPass							mRenderPassRGB8 = nullptr;
 		VkRenderPass							mRenderPassR8 = nullptr;
 		VkRenderPass							mRenderPassDepth = nullptr;
+
+		RendererSettings						mSettings;
+		VkInstance								mInstance = nullptr;
+		VkDebugReportCallbackEXT				mDebugCallback = nullptr;
+		VkPhysicalDevice						mPhysicalDevice = nullptr;
+		uint32_t								mPhysicalDeviceVersion = 0;
+		VkDevice								mDevice = nullptr;
+		VkCommandPool							mCommandPool = nullptr;
+		VkFormat								mDepthFormat;
+		unsigned int							mGraphicsQueueIndex = -1;
+		VkQueue									mGraphicsQueue = nullptr;
 	};
 } // nap
 

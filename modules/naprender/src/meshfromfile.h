@@ -35,7 +35,7 @@ namespace nap
 		EMeshDataUsage	mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' specifies the way the mesh is used, allows the driver to optimize memory if necessary
 
 	private:
-		Renderer*							mRenderer;
+		RenderService*						mRenderService;
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 	};
 

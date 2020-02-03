@@ -48,7 +48,7 @@ namespace nap
 		EUniformValueType	mType;
 	};
 
-	class UniformStructDeclaration : public UniformDeclaration
+	class NAPAPI UniformStructDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
 
@@ -63,15 +63,7 @@ namespace nap
 		UniformStructDeclaration(UniformStructDeclaration&& inRHS);
 		UniformStructDeclaration& operator=(UniformStructDeclaration&& inRHS);
 
-//		const UniformDeclaration* findMember(const std::string& name) const;
-		const UniformDeclaration* findMember(const std::string& name) const
-		{
-			for (auto& member : mMembers)
-				if (member->mName == name)
-					return member.get();
-
-			return nullptr;
-		}
+		const UniformDeclaration* findMember(const std::string& name) const;
 
 		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;
 	};

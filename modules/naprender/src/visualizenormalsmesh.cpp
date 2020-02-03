@@ -233,10 +233,10 @@ namespace nap
 
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
+		mMeshInstance->setDrawMode(EDrawMode::LINES);
 
 		// Draw normals as lines
 		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(EDrawMode::LINES);
 
 		// Automatically generate indices
 		utility::generateIndices(shape, vertex_count * 2);

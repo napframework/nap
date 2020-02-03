@@ -58,7 +58,7 @@ namespace nap
 		int			mColumns = 1;										///< Property: 'Columns' number of columns
 
 	private:
-		Renderer* mRenderer;
+		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Rect mRect;
 

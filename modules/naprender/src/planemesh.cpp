@@ -14,11 +14,11 @@ RTTI_END_CLASS
 namespace nap
 {
 	PlaneMesh::PlaneMesh() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 	}
 	PlaneMesh::PlaneMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
@@ -47,7 +47,7 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect
@@ -130,6 +130,7 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
+		mesh.setDrawMode(EDrawMode::TRIANGLES);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);
@@ -138,7 +139,6 @@ namespace nap
 		color_attribute.setData(colors.data(), vert_count);
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

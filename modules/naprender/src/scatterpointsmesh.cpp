@@ -23,13 +23,7 @@ namespace nap
 			return false;
 
 		// Make sure the reference mesh contains triangles
-		bool contains_triangles = false;
-		for (int i = 0; i < mReferenceMesh->getMeshInstance().getNumShapes(); i++)
-		{
-			if (utility::isTriangleMesh(mReferenceMesh->getMeshInstance().getShape(i)))
-				contains_triangles = true;
-		}
-
+		bool contains_triangles = utility::isTriangleMesh(mReferenceMesh->getMeshInstance());
 		if (!errorState.check(contains_triangles, "reference mesh doesn't contain any triangles: %s", this->mID.c_str()))
 			return false;
 
@@ -65,6 +59,7 @@ namespace nap
 	{
 		assert(mMeshInstance != nullptr);
 		mMeshInstance->setNumVertices(mNumberOfPoints);
+		mMeshInstance->setDrawMode(EDrawMode::POINTS);
 
 		// Create position attribute
 		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
@@ -123,11 +118,8 @@ namespace nap
 		// Set number of vertices
 		mMeshInstance->setNumVertices(mNumberOfPoints);
 
-		// Draw as points
-		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(EDrawMode::POINTS);
-
 		// Automatically generate indices
+		MeshShape& shape = mMeshInstance->getShape(0);
 		utility::generateIndices(shape, mNumberOfPoints);
 
 		return true;

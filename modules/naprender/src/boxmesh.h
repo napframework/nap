@@ -8,7 +8,7 @@
 
 namespace nap
 {
-	class Renderer;
+	class RenderService;
 
 	/**
 	 * Predefined box mesh. Contains per face UV coordinates, color information and normals.
@@ -66,7 +66,7 @@ namespace nap
 		void constructBox(const math::Box& box, nap::MeshInstance& mesh);
 
 	private:
-		Renderer* mRenderer;
+		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};

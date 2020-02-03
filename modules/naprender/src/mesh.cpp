@@ -3,7 +3,6 @@
 #include <rtti/rttiutilities.h>
 #include "meshutils.h"
 #include "renderservice.h"
-#include "renderer.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 
@@ -25,13 +24,13 @@ RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::MeshShape)
-	RTTI_PROPERTY("DrawMode",		&nap::MeshShape::mDrawMode,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",			&nap::RTTIMeshProperties::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DrawMode",		&nap::RTTIMeshProperties::mDrawMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
@@ -69,8 +68,8 @@ namespace nap
 	
 	//////////////////////////////////////////////////////////////////////////
 
-	MeshInstance::MeshInstance(Renderer* renderer) :
-		mRenderer(renderer)
+	MeshInstance::MeshInstance(RenderService* renderService) :
+		mRenderService(renderService)
 	{
 	}
 
@@ -137,8 +136,6 @@ namespace nap
 			MeshShape& dest_shape = mProperties.mShapes[index];
 
 			assert(source_shape.getNumIndices() != 0);
-
-			dest_shape.setDrawMode(source_shape.getDrawMode());
 			dest_shape.setIndices(source_shape.getIndices().data(), source_shape.getIndices().size());
 		}
 	}
@@ -174,13 +171,13 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			vertex_attr_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
 		}
 
 		return true;
@@ -195,7 +192,7 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		gpu_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
 		return true;
 	}
 
@@ -208,7 +205,7 @@ namespace nap
 	}
 
 	Mesh::Mesh(RenderService& renderService) :
-		mMeshInstance(&renderService.getRenderer())
+		mMeshInstance(&renderService)
 	{
 	}
 
