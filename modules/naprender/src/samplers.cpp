@@ -23,7 +23,7 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	SamplerInstance::SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback) :
+	SamplerInstance::SamplerInstance(VkDevice device, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback) :
 		mDeclaration(&declaration),
 		mDevice(device),
 		mSamplerChangedCallback(samplerChangedCallback)
@@ -52,7 +52,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DInstance::Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback) :
+	Sampler2DInstance::Sampler2DInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback) :
 		SamplerInstance(device, declaration, samplerChangedCallback)
 	{
 		if (sampler2D != nullptr)
@@ -67,7 +67,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
+	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
 		SamplerInstance(device, declaration, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)

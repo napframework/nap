@@ -37,7 +37,7 @@ namespace nap
 		return *instance;
 	}
 
-	UniformStructInstance& UniformContainer::createRootStruct(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
+	UniformStructInstance& UniformContainer::createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
 		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
 		UniformStructInstance* result = instance.get();

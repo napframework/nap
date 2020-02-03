@@ -13,14 +13,14 @@ namespace nap
 	{
 		mMaterialInstance->pipelineStateChanged.connect(mPipelineStateChangedSlot);
 
-		opengl::GPUMesh& gpu_mesh = mesh.getMeshInstance().getGPUMesh();
+		GPUMesh& gpu_mesh = mesh.getMeshInstance().getGPUMesh();
 		const Material& material = materialInstance.getMaterial();
-		for (auto& kvp : material.getShader().getShader().getAttributes())
+		for (auto& kvp : material.getShader().getAttributes())
 		{
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			opengl::VertexAttributeBuffer& vertex_buffer = gpu_mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			VertexAttributeBuffer& vertex_buffer = gpu_mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
 			mVertexBuffers.push_back(vertex_buffer.getBuffer());
 			mVertexBufferOffsets.push_back(0);
 		}

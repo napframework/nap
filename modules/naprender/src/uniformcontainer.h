@@ -51,7 +51,7 @@ namespace nap
 		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
-		UniformStructInstance& createRootStruct(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		UniformStructInstance& createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:

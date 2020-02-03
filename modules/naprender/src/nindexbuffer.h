@@ -3,10 +3,10 @@
 #include "nbuffer.h"
 #include <vector>
 
-namespace opengl
+namespace nap
 {
 
-	class NAPAPI IndexBuffer : public Buffer
+	class NAPAPI IndexBuffer : public GPUBuffer
 	{
 	public:
 		/**

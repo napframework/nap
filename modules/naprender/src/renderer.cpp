@@ -443,7 +443,7 @@ namespace nap
 
 	bool Renderer::init(const RendererSettings& rendererSettings, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
+		if (!errorState.check(SDL::initVideo(), "Failed to init SDL"))
 			return false;
 
 		if (!errorState.check(ShInitialize() != 0, "Failed to initialize shader compiler"))
@@ -534,6 +534,6 @@ namespace nap
 	// Closes all opengl systems
 	void Renderer::shutdown()
 	{
-		opengl::shutdown();
+		SDL::shutdownVideo();
 	}
 }

@@ -52,9 +52,6 @@ namespace nap
 
 
 	/**
-	 * An OpenGL Accelerated Render Window. 
-	 * This is a low level construct and a member of the RenderWindow resource.
-	 * Declare that resource to create an OpenGL accelerated render window.
 	 */
 	class NAPAPI GLWindow final
 	{

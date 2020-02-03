@@ -21,7 +21,7 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
-		virtual const opengl::UniformDeclaration& getDeclaration() const = 0;
+		virtual const UniformDeclaration& getDeclaration() const = 0;
 	};
 
 	class NAPAPI UniformStructInstance : public UniformInstance
@@ -29,7 +29,7 @@ namespace nap
 		RTTI_ENABLE(UniformInstance)
 
 	public:
-		UniformStructInstance(const opengl::UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
+		UniformStructInstance(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
 			mUniformCreatedCallback(uniformCreatedCallback),
 			mDeclaration(declaration)
 		{
@@ -62,7 +62,7 @@ namespace nap
 				return *rtti_cast<T>(instance);
 			}
 
-			const opengl::UniformDeclaration* declaration = mDeclaration.findMember(name);
+			const UniformDeclaration* declaration = mDeclaration.findMember(name);
 			assert(declaration != nullptr);
 
 			std::unique_ptr<UniformInstance> new_instance = createUniformFromDeclaration(*declaration, mUniformCreatedCallback);
@@ -78,18 +78,18 @@ namespace nap
 			return *result;
 		}
 
-		virtual const opengl::UniformDeclaration& getDeclaration() const override { return mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
 		friend class Material;
 		friend class MaterialInstance;
-		bool addUniformRecursive(const opengl::UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
+		bool addUniformRecursive(const UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
 
-		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const opengl::UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 
 	private:
 		UniformCreatedCallback mUniformCreatedCallback;
-		const opengl::UniformStructDeclaration& mDeclaration;
+		const UniformStructDeclaration& mDeclaration;
 		std::vector<std::unique_ptr<UniformInstance>> mUniforms;
 	};
 
@@ -98,7 +98,7 @@ namespace nap
 		RTTI_ENABLE(UniformInstance)
 
 	public:
-		UniformStructArrayInstance(const opengl::UniformStructArrayDeclaration& declaration) :
+		UniformStructArrayInstance(const UniformStructArrayDeclaration& declaration) :
 			mDeclaration(declaration)
 		{
 		}
@@ -114,14 +114,14 @@ namespace nap
 			return *mElements[index];
 		}
 
-		virtual const opengl::UniformDeclaration& getDeclaration() const override { return mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
 		friend class UniformStructInstance;
 		void addElement(std::unique_ptr<UniformStructInstance> element);
 
 	private:
-		const opengl::UniformStructArrayDeclaration&		mDeclaration;
+		const UniformStructArrayDeclaration&		mDeclaration;
 		std::vector<std::unique_ptr<UniformStructInstance>> mElements;
 	};
 
@@ -138,15 +138,15 @@ namespace nap
 		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
-		UniformValueInstance(const opengl::UniformValueDeclaration& declaration) :
+		UniformValueInstance(const UniformValueDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 		}
 
-		virtual const opengl::UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 	protected:
-		const opengl::UniformValueDeclaration*	mDeclaration = nullptr;
+		const UniformValueDeclaration*	mDeclaration = nullptr;
 	};
 
 	template<class T>
@@ -155,7 +155,7 @@ namespace nap
 		RTTI_ENABLE(UniformValueInstance)
 
 	public:
-		TypedUniformValueInstance(const opengl::UniformValueDeclaration& declaration) :
+		TypedUniformValueInstance(const UniformValueDeclaration& declaration) :
 			UniformValueInstance(declaration)
 		{
 		}
@@ -189,15 +189,15 @@ namespace nap
 		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
-		UniformValueArrayInstance(const opengl::UniformValueArrayDeclaration& declaration) :
+		UniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 		}
 
-		virtual const opengl::UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 	protected:
-		const opengl::UniformValueArrayDeclaration* mDeclaration;
+		const UniformValueArrayDeclaration* mDeclaration;
 	};
 
 	template<typename T>
@@ -206,7 +206,7 @@ namespace nap
 		RTTI_ENABLE(UniformValueArrayInstance)
 
 	public:
-		TypedUniformValueArrayInstance(const opengl::UniformValueArrayDeclaration& declaration) :
+		TypedUniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
 			UniformValueArrayInstance(declaration)
 		{
 		}

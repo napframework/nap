@@ -1,11 +1,13 @@
 #pragma once
 
 // External Includes
-#include <nshader.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include "rtti/factory.h"
 #include "rendertarget.h"
+#include "nvertexattributedeclaration.h"
+#include "nsamplerdeclaration.h"
+#include "nuniformdeclarations.h"
 
 namespace nap
 {
@@ -21,6 +23,43 @@ namespace nap
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE(Resource)
 	public:
+
+		/**
+		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+		*/
+		struct VertexAttributeIDs
+		{
+			/**
+			* @return Default position shader vertex attribute name: "in_Position"
+			*/
+			static const std::string getPositionVertexAttr();
+
+			/**
+			* @return Default normal shader vertex attribute name: "in_Normals"
+			*/
+			static const std::string getNormalVertexAttr();
+
+			/**
+			* @return Default UV shader vertex attribute name: "in_UV#"
+			*/
+			static const std::string getUVVertexAttr(int uvChannel);
+
+			/**
+			* @return Default color shader vertex attribute name: "in_Color#"
+			*/
+			static const std::string getColorVertexAttr(int colorChannel);
+
+			/**
+			* @return Default tangent shader vertex attribute name: "in_Tangent"
+			*/
+			static const std::string getTangentVertexAttr();
+
+			/**
+			* @return Default bi-tangent shader vertex attribute name: "in_Bitangent"
+			*/
+			static const std::string getBitangentVertexAttr();
+		};
+
 		Shader();
 		Shader(RenderService& renderService);
 
@@ -30,18 +69,52 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * @return the opengl shader that can be used for drawing
-		 */
-		const opengl::Shader& getShader() const;
+		* @return all vertex shader attributes
+		*/
+		const VertexAttributeDeclarations& getAttributes() const { return mShaderAttributes; }
 
-		std::string							mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
-		std::string							mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk
-		ERenderTargetFormat					mOutputFormat = ERenderTargetFormat::RGB8;	///< Property: 'OutputFormat' what elements the fragment shader writes to the target
+		/**
+		* @return all uniform shader attributes
+		*/
+		const SamplerDeclarations& getSamplerDeclarations() const { return mSamplerDeclarations; }
+
+		/**
+		* @return all UniformBufferObject declarations.
+		*/
+		const std::vector<UniformBufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
+
+		/**
+		* @return Vulkan vertex module.
+		*/
+		VkShaderModule getVertexModule() const { return mVertexModule; }
+
+		/**
+		* @return Vulkan fragment module.
+		*/
+		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+
+		/**
+		* @return Vulkan descriptorSetLayout.
+		*/
+		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+
+		std::string										mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
+		std::string										mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk
+		ERenderTargetFormat								mOutputFormat = ERenderTargetFormat::RGB8;	///< Property: 'OutputFormat' what elements the fragment shader writes to the target
 
 	private:
-		Renderer*							mRenderer;
-		std::string							mDisplayName;								///< Filename of shader used as displayname
-		std::unique_ptr<opengl::Shader>		mShader;									///< Shader that is managed by this resource
+		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
+
+	private:
+		Renderer*										mRenderer;
+		std::string										mDisplayName;								///< Filename of shader used as displayname
+
+		VkShaderModule									mVertexModule = nullptr;
+		VkShaderModule									mFragmentModule = nullptr;
+		std::vector<UniformBufferObjectDeclaration>		mUBODeclarations;
+		SamplerDeclarations								mSamplerDeclarations;
+		VertexAttributeDeclarations						mShaderAttributes;					// Shader program vertex attribute inputs
+		VkDescriptorSetLayout							mDescriptorSetLayout = nullptr;
 	};
 
 

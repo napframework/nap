@@ -6,7 +6,7 @@
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
 
-namespace opengl
+namespace nap
 {
 	/**
 	* Represents an Vulkan vertex shader attribute
@@ -32,9 +32,9 @@ namespace opengl
 namespace std
 {
 	template<>
-	struct hash<opengl::VertexAttributeDeclaration>
+	struct hash<nap::VertexAttributeDeclaration>
 	{
-		size_t operator()(const opengl::VertexAttributeDeclaration &k) const
+		size_t operator()(const nap::VertexAttributeDeclaration &k) const
 		{
 			return hash<std::string>()(k.mName);
 		}

@@ -62,7 +62,7 @@ namespace nap
 		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
 		{
 			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
-			const opengl::UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+			const UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
 
 			DescriptorSetBuffer buffer;
 			utility::ErrorState error_state;

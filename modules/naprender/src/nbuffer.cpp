@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <string.h>
 
-namespace opengl
+namespace nap
 {
 	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
@@ -24,7 +24,7 @@ namespace opengl
 
 
 	// Uploads the data block to the GPU
-	void Buffer::setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage)
+	void GPUBuffer::setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage)
 	{
 		// TODO: handle 'usage': dynamic/state
 		// TODO: handle reallocation of buffer

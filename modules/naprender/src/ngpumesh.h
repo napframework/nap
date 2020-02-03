@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include "utility/dllexport.h"
 
-namespace opengl
+namespace nap
 {
 	/**
 	 * Defines the GPU data of a polygonal mesh.

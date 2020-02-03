@@ -6,7 +6,7 @@
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
 
-namespace opengl
+namespace nap
 {
 	/**
 	* All available shader uniform types

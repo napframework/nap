@@ -1,13 +1,9 @@
 #pragma once
 
-namespace opengl
-{
-	class UniformBufferObjectDeclaration;
-}
-
 namespace nap
 {
 	class UniformLeafInstance;
+	class UniformBufferObjectDeclaration;
 
 	/**
 	 * Blend mode for Materials.
@@ -38,12 +34,12 @@ namespace nap
 	public:
 		using UniformList = std::vector<const UniformLeafInstance*>;
 
-		UniformBufferObject(const opengl::UniformBufferObjectDeclaration& declaration) :
+		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 		}
 
-		const opengl::UniformBufferObjectDeclaration*	mDeclaration;
-		UniformList										mUniforms;
+		const UniformBufferObjectDeclaration*	mDeclaration;
+		UniformList								mUniforms;
 	};
 }

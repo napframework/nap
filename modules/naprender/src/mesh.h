@@ -158,7 +158,7 @@ namespace nap
 
 		/**
 		* Sets Draw mode for this mesh
-		* @param drawMode: OpenGL draw mode.
+		* @param drawMode: draw mode.
 		*/
 		void setDrawMode(EDrawMode drawMode) { mDrawMode = drawMode; }
 
@@ -200,7 +200,7 @@ namespace nap
 
 	/**
 	 * Represents a runtime version of a mesh. MeshInstance holds CPU data and can convert this data to 
-	 * an opengl::GPUMesh. 
+	 * an GPUMesh. 
 	 * A MeshInstance can be created in two ways:
 	 *		1) Manually allocate a MeshInstance object, add attributes to it, and call the regular init() on it. 
 	 *		   This is useful for creation of procedural meshes.
@@ -240,9 +240,9 @@ namespace nap
 		void copyMeshProperties(RTTIMeshProperties& meshProperties);
 
 		/**
-		 * @return the opengl mesh that can be drawn to screen or buffer
+		 * @return the mesh that can be drawn to screen or buffer
 		 */
-		opengl::GPUMesh& getGPUMesh() const;
+		GPUMesh& getGPUMesh() const;
 
 		/**
 		 * Finds vertex attribute.
@@ -363,7 +363,7 @@ namespace nap
 	private:
 		Renderer*												mRenderer;
 		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
-		std::unique_ptr<opengl::GPUMesh>						mGPUMesh;			///< GPU mesh
+		std::unique_ptr<GPUMesh>								mGPUMesh;			///< GPU mesh
 	};
 
 

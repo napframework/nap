@@ -4,25 +4,25 @@
 #include "vulkan/vulkan_core.h"
 #include "utility/dllexport.h"
 
-namespace opengl
+namespace nap
 {
 	/**
 	 * Defines a buffer object on the GPU and acts as a base class for 
 	 * all Vulkan derived buffer types. This object creation / destruction 
 	 * as well as the internal buffer type.
 	 */
-	class NAPAPI Buffer
+	class NAPAPI GPUBuffer
 	{
 	public:
-		Buffer() = default;
+		GPUBuffer() = default;
 		/**
 		 * Default destructor
 		 */
-		virtual ~Buffer() {}
+		virtual ~GPUBuffer() {}
 
 		// Don't allow copy, TODO: implement copy
-		Buffer(const Buffer& other) = delete;
-		Buffer& operator=(const Buffer& other) = delete;
+		GPUBuffer(const GPUBuffer& other) = delete;
+		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
 		VkBuffer getBuffer() const { return mBuffer; }
 

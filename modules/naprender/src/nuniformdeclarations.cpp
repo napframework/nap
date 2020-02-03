@@ -1,26 +1,26 @@
 // Local Includes
 #include "nuniformdeclarations.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformValueDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformStructDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformStructArrayDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructArrayDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformValueArrayDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueArrayDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(opengl::UniformBufferObjectDeclaration)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformBufferObjectDeclaration)
 RTTI_END_CLASS
 
 
-namespace opengl
+namespace nap
 {
 	UniformDeclaration::UniformDeclaration(const std::string& name, int offset, int size) :
 		mName(name),

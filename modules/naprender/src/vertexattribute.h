@@ -3,7 +3,6 @@
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include <glm/glm.hpp>
-#include <GL/glew.h>
 #include "vulkan/vulkan_core.h"
 
 namespace nap

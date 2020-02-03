@@ -80,7 +80,7 @@ namespace nap
 
 
 	// Returns associated mesh
-	opengl::GPUMesh& MeshInstance::getGPUMesh() const
+	GPUMesh& MeshInstance::getGPUMesh() const
 	{
 		assert(mGPUMesh != nullptr);
 		return *mGPUMesh;
@@ -105,7 +105,7 @@ namespace nap
 			break;
 		}*/
 
-		mGPUMesh = std::make_unique<opengl::GPUMesh>();
+		mGPUMesh = std::make_unique<GPUMesh>();
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 
@@ -173,7 +173,7 @@ namespace nap
 		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
+			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
 			vertex_attr_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
@@ -189,7 +189,7 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		opengl::VertexAttributeBuffer& gpu_buffer = mGPUMesh->getVertexAttributeBuffer(attribute.mAttributeID);
+		VertexAttributeBuffer& gpu_buffer = mGPUMesh->getVertexAttributeBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{

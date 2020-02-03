@@ -193,13 +193,13 @@ namespace nap
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		// Draw all shapes associated with the mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
 			MeshShape& shape = mesh_instance.getShape(index);
-			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 
 			//GLenum draw_mode = getGLMode(shape.getDrawMode());
 			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());

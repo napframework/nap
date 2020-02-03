@@ -4,9 +4,7 @@
 #include "material.h"
 
 // External includes
-#include "nshader.h"
 #include <nap/logger.h>
-#include <GL/glew.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
 #include "uniforminstances.h"
@@ -40,7 +38,7 @@ namespace nap
 
 
 	template<class T>
-	const Sampler* findSamplerResource(const std::vector<T>& samplers, const opengl::SamplerDeclaration& declaration)
+	const Sampler* findSamplerResource(const std::vector<T>& samplers, const SamplerDeclaration& declaration)
 	{
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
@@ -117,9 +115,9 @@ namespace nap
 			return *existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const opengl::UniformStructDeclaration* declaration = nullptr;
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = getMaterial().getShader().getShader().getUBODeclarations();
-		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const UniformStructDeclaration* declaration = nullptr;
+		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = getMaterial().getShader().getUBODeclarations();
+		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
 			{
@@ -220,11 +218,11 @@ namespace nap
 	bool MaterialInstance::initSamplers(utility::ErrorState& errorState)
 	{
 		Material& material = *mResource->mMaterial;
-		const opengl::Shader& shader = material.getShader().getShader();
-		const opengl::SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
+		const Shader& shader = material.getShader();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 
 		int num_sampler_images = 0;
-		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
+		for (const SamplerDeclaration& declaration : sampler_declarations)
 			num_sampler_images += declaration.mNumArrayElements;
 
 		mSamplerDescriptors.resize(sampler_declarations.size());
@@ -251,7 +249,7 @@ namespace nap
 		// 
 		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
-			const opengl::SamplerDeclaration& declaration = sampler_declarations[sampler_index];
+			const SamplerDeclaration& declaration = sampler_declarations[sampler_index];
 			bool is_array = declaration.mNumArrayElements > 1;
 
 			// Check if the sampler is set as override in the MaterialInstance
@@ -320,9 +318,9 @@ namespace nap
 
 		SamplerInstance* result = nullptr;
 
-		const opengl::SamplerDeclarations& sampler_declarations = getMaterial().getShader().getShader().getSamplerDeclarations();
+		const SamplerDeclarations& sampler_declarations = getMaterial().getShader().getSamplerDeclarations();
 		int image_start_index = 0;
-		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
+		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
 			if (declaration.mName == name)
 			{
@@ -393,7 +391,7 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		int num_samplers = getMaterial().getShader().getShader().getSamplerDeclarations().size();
+		int num_samplers = getMaterial().getShader().getSamplerDeclarations().size();
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, num_samplers);
 
 		updateUniforms(descriptor_set);
@@ -410,7 +408,7 @@ namespace nap
 		mRenderService = &renderService;
 
 		Material& material = *resource.mMaterial;
-		const opengl::Shader& shader = material.getShader().getShader();
+		const Shader& shader = material.getShader();
 
 		// Here we create UBOs in two parts:
 		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
@@ -421,8 +419,8 @@ namespace nap
 		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
 		//    Notice that this also means that this structure should be rebuild when a 'new' override is made at runtime. This is handled in
 		//    update() by rebuilding the UBO when a new uniform is created.
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
-		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
+		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(resource.mUniforms, ubo_declaration));
 
@@ -454,7 +452,7 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &mRenderService->getOrCreateDescriptorSetCache(getMaterial().getShader().getShader().getDescriptorSetLayout());
+		mDescriptorSetCache = &mRenderService->getOrCreateDescriptorSetCache(getMaterial().getShader().getDescriptorSetLayout());
 
 		return true;
 	}

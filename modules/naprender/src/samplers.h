@@ -48,11 +48,11 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
-		SamplerInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
+		SamplerInstance(VkDevice device, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
 
 		bool init(utility::ErrorState& errorState);
 
-		const opengl::SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
+		const SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
 		VkSampler getSampler() const { return mSampler; }
 
 	protected:
@@ -60,7 +60,7 @@ namespace nap
 
 	private:
 		VkDevice							mDevice;
-		const opengl::SamplerDeclaration*	mDeclaration = nullptr;
+		const SamplerDeclaration*	mDeclaration = nullptr;
 		VkSampler							mSampler = nullptr;
 		SamplerChangedCallback				mSamplerChangedCallback;
 	};
@@ -83,7 +83,7 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
+		Sampler2DInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
@@ -131,7 +131,7 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DArrayInstance(VkDevice device, const opengl::SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
+		Sampler2DArrayInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
 
 		int getNumElements() const { return mTextures.size(); }
 

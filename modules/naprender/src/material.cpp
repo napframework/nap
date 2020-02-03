@@ -1,11 +1,9 @@
 // Local Includes
 #include "material.h"
-#include "nshader.h"
 #include "mesh.h"
 
 // External includes
 #include <nap/logger.h>
-#include <GL/glew.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
 #include "uniforminstances.h"
@@ -83,8 +81,8 @@ namespace nap
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
-		const std::vector<opengl::UniformBufferObjectDeclaration>& ubo_declarations = mShader->getShader().getUBODeclarations();
-		for (const opengl::UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = mShader->getUBODeclarations();
+		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
@@ -93,10 +91,10 @@ namespace nap
 				return false;
 		}
 
-		const opengl::SamplerDeclarations& sampler_declarations = mShader->getShader().getSamplerDeclarations();
-		for (const opengl::SamplerDeclaration& declaration : sampler_declarations)
+		const SamplerDeclarations& sampler_declarations = mShader->getSamplerDeclarations();
+		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
-			if (!errorState.check(declaration.mType == opengl::SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
+			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
 				return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
@@ -141,16 +139,16 @@ namespace nap
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ VertexAttributeIDs::getPositionName(),		opengl::Shader::VertexAttributeIDs::getPositionVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getNormalName(),		opengl::Shader::VertexAttributeIDs::getNormalVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getTangentName(),		opengl::Shader::VertexAttributeIDs::getTangentVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getBitangentName(),	opengl::Shader::VertexAttributeIDs::getBitangentVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getPositionName(),		Shader::VertexAttributeIDs::getPositionVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getNormalName(),		Shader::VertexAttributeIDs::getNormalVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getTangentName(),		Shader::VertexAttributeIDs::getTangentVertexAttr() });
+			bindings.push_back({ VertexAttributeIDs::getBitangentName(),	Shader::VertexAttributeIDs::getBitangentVertexAttr() });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)
 			{
-				bindings.push_back({ VertexAttributeIDs::GetColorName(channel), opengl::Shader::VertexAttributeIDs::getColorVertexAttr(channel) });
-				bindings.push_back({ VertexAttributeIDs::getUVName(channel),	opengl::Shader::VertexAttributeIDs::getUVVertexAttr(channel) });
+				bindings.push_back({ VertexAttributeIDs::GetColorName(channel), Shader::VertexAttributeIDs::getColorVertexAttr(channel) });
+				bindings.push_back({ VertexAttributeIDs::getUVName(channel),	Shader::VertexAttributeIDs::getUVVertexAttr(channel) });
 			}
 		}
 		return bindings;

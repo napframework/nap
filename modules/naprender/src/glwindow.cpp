@@ -13,7 +13,7 @@ namespace nap
 	/**
 	* createWindow
 	*
-	* Creates a new opengl window using the parameters specified
+	* Creates a new window using the parameters specified
 	* @return: the create window, nullptr if not successful
 	*/
 	static SDL_Window* createSDLWindow(const RenderWindowSettings& settings, nap::utility::ErrorState& errorState)
@@ -32,7 +32,7 @@ namespace nap
 													settings.height,
 													options);
 
-		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", opengl::getSDLError().c_str()))
+		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
 			return nullptr;
 
 		return new_window;
@@ -612,10 +612,10 @@ namespace nap
 	void GLWindow::applySettings(const RenderWindowSettings& settings)
 	{
 		setSize(glm::vec2(settings.width, settings.height));
-		opengl::setWindowPosition(mWindow, glm::vec2(settings.x, settings.y));
-		opengl::setWindowResizable(mWindow, settings.resizable);
-		opengl::setWindowBordered(mWindow, !settings.borderless);
-		opengl::setWindowTitle(mWindow, settings.title);
+		SDL::setWindowPosition(mWindow, glm::vec2(settings.x, settings.y));
+		SDL::setWindowResizable(mWindow, settings.resizable);
+		SDL::setWindowBordered(mWindow, !settings.borderless);
+		SDL::setWindowTitle(mWindow, settings.title);
 		if (settings.visible)
 			showWindow();
 		else
@@ -623,7 +623,6 @@ namespace nap
 	}
 
 
-	// Creates a window with an associated OpenGL context
 	bool GLWindow::init(const RenderWindowSettings& settings, Renderer& renderer, nap::utility::ErrorState& errorState)
 	{
 		mDevice = renderer.getDevice();
@@ -680,7 +679,7 @@ namespace nap
 	}
 
 
-	// Returns the actual opengl window
+	// Returns the actual SDL window
 	SDL_Window* GLWindow::getNativeWindow() const
 	{
 		return mWindow;
@@ -702,55 +701,55 @@ namespace nap
 	// Set window title
 	void GLWindow::setTitle(const std::string& title)
 	{
-		opengl::setWindowTitle(mWindow, title);
+		SDL::setWindowTitle(mWindow, title);
 	}
 
 
-	// Set opengl window position
+	// Set window position
 	void GLWindow::setPosition(const glm::ivec2& position)
 	{
-		opengl::setWindowPosition(mWindow, position);
+		SDL::setWindowPosition(mWindow, position);
 	}
 
 
-	// Set opengl window size 
+	// Set window size 
 	void GLWindow::setSize(const glm::ivec2& size)
 	{
 		// Set set of window
-		opengl::setWindowSize(mWindow, size);
+		SDL::setWindowSize(mWindow, size);
         
         // Backbuffer can have more pixels than the represented window (OSX / Retina)
         // Get pixel size accordingly
-        mBackbuffer.setSize(opengl::getDrawableWindowSize(mWindow));
+        mBackbuffer.setSize(SDL::getDrawableWindowSize(mWindow));
 	}
 
 
 	// Get the window size
 	const glm::ivec2 GLWindow::getSize() const
 	{
-		return opengl::getWindowSize(mWindow);
+		return SDL::getWindowSize(mWindow);
 	}
 
 
 	// Makes the window go full screen
 	void GLWindow::setFullScreen(bool value)
 	{
-		opengl::setFullscreen(mWindow, value);
+		SDL::setFullscreen(mWindow, value);
 	}
 
 
-	// Show opengl window
+	// Show window
 	void GLWindow::showWindow()
 	{
-		opengl::showWindow(mWindow, true);
-		opengl::raiseWindow(mWindow);
+		SDL::showWindow(mWindow, true);
+		SDL::raiseWindow(mWindow);
 	}
 
 
-	// Hide opengl window
+	// Hide window
 	void GLWindow::hideWindow()
 	{
-		opengl::showWindow(mWindow, false);
+		SDL::showWindow(mWindow, false);
 	}
 
 	VkCommandBuffer	GLWindow::getCommandBuffer()
@@ -798,7 +797,7 @@ namespace nap
 	}
 
 
-	// Swap OpenGL buffers
+	// Swap buffers
 	void GLWindow::swap()
 	{
 		VkCommandBuffer commandBuffer = mCommandBuffers[mCurrentFrame];
@@ -851,13 +850,13 @@ namespace nap
 	// The window number
 	nap::uint32 GLWindow::getNumber() const
 	{
-		return opengl::getWindowId(getNativeWindow());
+		return SDL::getWindowId(getNativeWindow());
 	}
 
 
 	glm::ivec2 GLWindow::getPosition()
 	{
-		return opengl::getWindowPosition(mWindow);
+		return SDL::getWindowPosition(mWindow);
 	}
 
 }

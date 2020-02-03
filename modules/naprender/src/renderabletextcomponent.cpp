@@ -170,13 +170,13 @@ namespace nap
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
 
 		// GPU mesh representation of plane
-		opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+		GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 		// Lines / Fill etc.
 		//GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
 
 		// Fetch index buffer (holding drawing order
-		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
+		const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
 		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 		nap::utility::ErrorState error;
 

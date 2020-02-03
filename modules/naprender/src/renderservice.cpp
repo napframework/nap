@@ -334,29 +334,29 @@ namespace nap
 
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
 		uint32_t shader_attribute_binding = 0;
-		for (auto& kvp : shader.getShader().getAttributes())
+		for (auto& kvp : shader.getAttributes())
 		{
-			const opengl::VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
+			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
 				return false;
 
-			const opengl::VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			const VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return false;
 
 			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return false;
 
-			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)opengl::getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
+			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
 			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
 			shader_attribute_binding++;
 		}
 
-		VkShaderModule vertShaderModule = shader.getShader().getVertexModule();
-		VkShaderModule fragShaderModule = shader.getShader().getFragmentModule();
+		VkShaderModule vertShaderModule = shader.getVertexModule();
+		VkShaderModule fragShaderModule = shader.getFragmentModule();
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -431,7 +431,7 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getShader().getShader().getDescriptorSetLayout();
+		VkDescriptorSetLayout set_layout = material.getShader().getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

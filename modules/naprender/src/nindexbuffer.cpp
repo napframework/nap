@@ -4,7 +4,7 @@
 // External Includes
 #include <assert.h>
 
-namespace opengl
+namespace nap
 {
 	// Uploads the data block to the GPU
 	void IndexBuffer::setData(VkPhysicalDevice physicalDevice, VkDevice device, const std::vector<unsigned int>& indices)

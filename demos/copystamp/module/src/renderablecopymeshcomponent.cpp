@@ -147,7 +147,7 @@ namespace nap
 
 		// Gather draw info
 		MeshInstance& mesh_instance = renderableMesh.getMesh().getMeshInstance();
-		opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		Material& material = mat_instance.getMaterial();
 
@@ -167,7 +167,7 @@ namespace nap
 
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
@@ -220,7 +220,7 @@ namespace nap
 			MeshInstance& mesh_instance = render_mesh.getMesh().getMeshInstance();
 
 			// GPU mesh representation of mesh to copy
-			opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+			GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 			// Calculate model matrix
 			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);

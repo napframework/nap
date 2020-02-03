@@ -2,11 +2,10 @@
 #include "nvertexbuffer.h"
 
 // External Includes
-#include <GL/glew.h>
 #include "vulkan/vulkan.h"
 #include <assert.h>
 
-namespace opengl
+namespace nap
 {
 
 

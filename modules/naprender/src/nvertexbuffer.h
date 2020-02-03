@@ -5,17 +5,16 @@
 #include "vulkan/vulkan_core.h"
 
 // External Includes
-//#include <GL/glew.h>
 #include <stdint.h>
 
-namespace opengl
+namespace nap
 {
 	/**
 	 * Defines a vertex buffer on the GPU that is associated with a single set of vertex data
 	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
 	 * This object does not manage or owns any data
 	 */
-	class NAPAPI VertexAttributeBuffer : public Buffer
+	class NAPAPI VertexAttributeBuffer : public GPUBuffer
 	{
 	public:
 		VertexAttributeBuffer() = default;

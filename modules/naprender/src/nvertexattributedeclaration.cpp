@@ -1,7 +1,7 @@
 // Local Includes
 #include "nvertexattributedeclaration.h"
 
-namespace opengl
+namespace nap
 {
 	// Constructor
 	VertexAttributeDeclaration::VertexAttributeDeclaration(const std::string& name, int location, VkFormat format) :

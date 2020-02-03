@@ -3,7 +3,7 @@
 #include "nindexbuffer.h"
 #include <assert.h>
 
-namespace opengl
+namespace nap
 {
 	void GPUMesh::addVertexAttribute(const std::string& id, VkFormat format)
 	{
@@ -29,7 +29,7 @@ namespace opengl
 	}
 
 
-	opengl::IndexBuffer& GPUMesh::getOrCreateIndexBuffer(int index)
+	IndexBuffer& GPUMesh::getOrCreateIndexBuffer(int index)
 	{
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
@@ -41,7 +41,7 @@ namespace opengl
 	}
 
 
-	const opengl::IndexBuffer& GPUMesh::getIndexBuffer(int index) const
+	const IndexBuffer& GPUMesh::getIndexBuffer(int index) const
 	{
 		return *mIndexBuffers[index];
 	}
