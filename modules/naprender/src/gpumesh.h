@@ -1,8 +1,8 @@
 #pragma once
 
 // Local Includes
-#include "nvertexbuffer.h"
-#include "nindexbuffer.h"
+#include "vertexbuffer.h"
+#include "indexbuffer.h"
 
 // External Includes
 #include <memory>

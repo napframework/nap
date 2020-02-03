@@ -1,5 +1,5 @@
 // Local Includes
-#include "nsdlgl.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <assert.h>

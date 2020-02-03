@@ -1,5 +1,5 @@
 // Local Includes
-#include "nvertexattributedeclaration.h"
+#include "vertexattributedeclaration.h"
 
 namespace nap
 {

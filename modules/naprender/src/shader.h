@@ -5,9 +5,9 @@
 #include <nap/resource.h>
 #include "rtti/factory.h"
 #include "rendertarget.h"
-#include "nvertexattributedeclaration.h"
-#include "nsamplerdeclaration.h"
-#include "nuniformdeclarations.h"
+#include "vertexattributedeclaration.h"
+#include "samplerdeclaration.h"
+#include "uniformdeclarations.h"
 
 namespace nap
 {

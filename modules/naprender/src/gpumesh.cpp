@@ -1,6 +1,4 @@
-#include "ngpumesh.h"
-#include "nvertexbuffer.h"
-#include "nindexbuffer.h"
+#include "gpumesh.h"
 #include <assert.h>
 
 namespace nap

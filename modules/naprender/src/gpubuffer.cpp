@@ -1,5 +1,5 @@
 // Local Includes
-#include "nbuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include "vulkan/vulkan.h"

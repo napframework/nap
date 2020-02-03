@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "nuniformdeclarations.h"
+#include "uniformdeclarations.h"
 
 // External Includes
 #include <rtti/objectptr.h>

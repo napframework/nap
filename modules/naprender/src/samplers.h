@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "nsamplerdeclaration.h"
+#include "samplerdeclaration.h"
 
 // External Includes
 #include <rtti/objectptr.h>

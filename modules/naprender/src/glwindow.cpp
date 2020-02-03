@@ -6,7 +6,7 @@
 // External includes
 #include <utility/errorstate.h>
 #include "renderer.h"
-#include "nsdlgl.h"
+#include "sdlhelpers.h"
 #include "nap/logger.h"
 
 namespace nap

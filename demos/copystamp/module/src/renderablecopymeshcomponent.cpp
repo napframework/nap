@@ -6,7 +6,7 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
-#include "nindexbuffer.h"
+#include "indexbuffer.h"
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)

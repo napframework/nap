@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "nbuffer.h"
+#include "gpubuffer.h"
 #include "vulkan/vulkan_core.h"
 
 // External Includes

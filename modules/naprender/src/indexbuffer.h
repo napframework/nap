@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nbuffer.h"
+#include "gpubuffer.h"
 #include <vector>
 
 namespace nap

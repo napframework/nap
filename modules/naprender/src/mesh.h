@@ -4,7 +4,7 @@
 #include "vertexattribute.h"
 
 // External includes
-#include <ngpumesh.h>
+#include <gpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
 #include <rtti/object.h>

@@ -1,5 +1,5 @@
 // Local Includes
-#include "nuniformdeclarations.h"
+#include "uniformdeclarations.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformDeclaration)
 RTTI_END_CLASS

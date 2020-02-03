@@ -1,5 +1,5 @@
 // Local Includes
-#include "nvertexbuffer.h"
+#include "vertexbuffer.h"
 
 // External Includes
 #include "vulkan/vulkan.h"
