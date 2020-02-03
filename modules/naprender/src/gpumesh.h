@@ -19,7 +19,7 @@ namespace nap
 	class NAPAPI GPUMesh
 	{
 	public:
-		GPUMesh() = default;
+		GPUMesh(VmaAllocator vmaAllocator);
 
 		// Default destructor
 		virtual ~GPUMesh() = default;
@@ -62,8 +62,8 @@ namespace nap
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-
 		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexAttributeBuffer>>;
+		VmaAllocator								mVmaAllocator;
 		AttributeMap								mAttributes;		///< Map from vertex attribute ID to buffer
 		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;		///< Index buffers
 	};

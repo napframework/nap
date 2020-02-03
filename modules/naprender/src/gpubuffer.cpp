@@ -8,18 +8,9 @@
 
 namespace nap
 {
-	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	GPUBuffer::GPUBuffer(VmaAllocator vmaAllocator) :
+		mVmaAllocator(vmaAllocator)
 	{
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		return -1;
 	}
 
 
@@ -31,54 +22,28 @@ namespace nap
 		// TODO: handle growing of buffer
 		// TODO: destroy buffers
 
-
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = elementSize * numVertices;
-		bufferInfo.usage = usage;// VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		int size = elementSize * numVertices;
+		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = size;
+		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(device, &bufferInfo, nullptr, &mBuffer) != VK_SUCCESS)
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		allocInfo.flags = 0;
+
+		VkResult result = vmaCreateBuffer(mVmaAllocator, &bufferInfo, &allocInfo, &mBuffer, &mAllocation, &mAllocationInfo);
+		if (result != VK_SUCCESS)
 		{
 			// TODO: error handling
 			return;
 		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, mBuffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		if (vkAllocateMemory(device, &allocInfo, nullptr, &mMemory) != VK_SUCCESS)
-		{
-			// TODO: error handling
-			return;
-		}
-
-		vkBindBufferMemory(device, mBuffer, mMemory, 0);
 
 		void* mapped_memory;
-		vkMapMemory(device, mMemory, 0, bufferInfo.size, 0, &mapped_memory);
-		memcpy(mapped_memory, data, (size_t)bufferInfo.size);
-		vkUnmapMemory(device, mMemory);
-		/*
-		assert(reservedNumVertices >= numVertices);
-		bind();
+		if (vmaMapMemory(mVmaAllocator, mAllocation, &mapped_memory) != VK_SUCCESS)
+			return;
 
-		mCurSize = getGLTypeSize(mType) * mNumComponents * numVertices;
-		if (mCurSize > mCurCapacity)
-		{
-		mCurCapacity = getGLTypeSize(mType) * mNumComponents * reservedNumVertices;
-		glBufferData(getBufferType(), mCurCapacity, nullptr, mUsage);
-		}
-
-		glBufferSubData(getBufferType(), 0, mCurSize, data);
-		glAssert();
-		unbind();
-		*/
+		memcpy(mapped_memory, data, size);
+		vmaUnmapMemory(mVmaAllocator, mAllocation);
 	}
-
-} // opengl
+}

@@ -104,7 +104,7 @@ namespace nap
 			break;
 		}*/
 
-		mGPUMesh = std::make_unique<GPUMesh>();
+		mGPUMesh = std::make_unique<GPUMesh>(mRenderService->getVulkanAllocator());
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 

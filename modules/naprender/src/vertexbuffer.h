@@ -17,9 +17,7 @@ namespace nap
 	class NAPAPI VertexAttributeBuffer : public GPUBuffer
 	{
 	public:
-		VertexAttributeBuffer() = default;
-
-		VertexAttributeBuffer(VkFormat inFormat);
+		VertexAttributeBuffer(VmaAllocator vmaAllocator, VkFormat inFormat);
 
 		VkFormat getFormat() const { return mFormat; }
 

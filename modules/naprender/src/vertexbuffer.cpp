@@ -37,7 +37,8 @@ namespace nap
 		return -1;
 	}
 
-	VertexAttributeBuffer::VertexAttributeBuffer(VkFormat inFormat) :
+	VertexAttributeBuffer::VertexAttributeBuffer(VmaAllocator vmaAllocator, VkFormat inFormat) :
+		GPUBuffer(vmaAllocator),
 		mFormat(inFormat),
 		mVertexSize(getVertexSize(inFormat))
 	{

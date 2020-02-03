@@ -3,6 +3,7 @@
 // Local Includes
 #include "vulkan/vulkan_core.h"
 #include "utility/dllexport.h"
+#include "vk_mem_alloc.h"
 
 namespace nap
 {
@@ -14,13 +15,12 @@ namespace nap
 	class NAPAPI GPUBuffer
 	{
 	public:
-		GPUBuffer() = default;
+		GPUBuffer(VmaAllocator vmaAllocator);
 		/**
 		 * Default destructor
 		 */
 		virtual ~GPUBuffer() {}
 
-		// Don't allow copy, TODO: implement copy
 		GPUBuffer(const GPUBuffer& other) = delete;
 		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
@@ -30,10 +30,12 @@ namespace nap
 		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
 
 	private:
-		size_t			mCurCapacity = 0;			// Amount of memory reserved
-		size_t			mCurSize = 0;				// defines the number of points in the buffer
-		VkBuffer		mBuffer = nullptr;
-		VkDeviceMemory	mMemory = nullptr;
+		VmaAllocator		mVmaAllocator;
+		VmaAllocation		mAllocation;
+		VmaAllocationInfo	mAllocationInfo;
+		VkBuffer			mBuffer;
+		size_t				mCurCapacity = 0;			// Amount of memory reserved
+		size_t				mCurSize = 0;				// defines the number of points in the buffer
 	};
 
 } // opengl

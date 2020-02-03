@@ -6,6 +6,11 @@
 
 namespace nap
 {
+	IndexBuffer::IndexBuffer(VmaAllocator vmaAllocator) :
+		GPUBuffer(vmaAllocator)
+	{
+	}
+
 	// Uploads the data block to the GPU
 	void IndexBuffer::setData(VkPhysicalDevice physicalDevice, VkDevice device, const std::vector<unsigned int>& indices)
 	{
