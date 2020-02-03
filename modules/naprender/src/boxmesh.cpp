@@ -160,6 +160,7 @@ namespace nap
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
+		mesh.setDrawMode(EDrawMode::TRIANGLES);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);
@@ -169,7 +170,6 @@ namespace nap
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

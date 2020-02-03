@@ -60,13 +60,13 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());
+		mesh.setDrawMode(EDrawMode::TRIANGLE_STRIP);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());
 		color_attribute.setData(colors.data(), vertices.size());
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLE_STRIP);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

@@ -130,6 +130,7 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
+		mesh.setDrawMode(EDrawMode::TRIANGLES);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);
@@ -138,7 +139,6 @@ namespace nap
 		color_attribute.setData(colors.data(), vert_count);
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

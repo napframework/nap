@@ -104,6 +104,7 @@ namespace nap
 				return false;
 
 			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
+			mesh_data.mProperties.mDrawMode = EDrawMode::TRIANGLES;
 
 			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 
@@ -185,8 +186,6 @@ namespace nap
 
 			mesh_data.mProperties.mShapes.push_back(MeshShape());
 			MeshShape& shape = mesh_data.mProperties.mShapes.back();
-
-			shape.setDrawMode(EDrawMode::TRIANGLES);
 
 			MeshShape::IndexList& indices = shape.getIndices();
 			indices.reserve(fbx_mesh->mNumFaces * 3);

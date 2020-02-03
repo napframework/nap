@@ -24,13 +24,13 @@ RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::MeshShape)
-	RTTI_PROPERTY("DrawMode",		&nap::MeshShape::mDrawMode,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",			&nap::RTTIMeshProperties::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DrawMode",		&nap::RTTIMeshProperties::mDrawMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
@@ -136,8 +136,6 @@ namespace nap
 			MeshShape& dest_shape = mProperties.mShapes[index];
 
 			assert(source_shape.getNumIndices() != 0);
-
-			dest_shape.setDrawMode(source_shape.getDrawMode());
 			dest_shape.setIndices(source_shape.getIndices().data(), source_shape.getIndices().size());
 		}
 	}

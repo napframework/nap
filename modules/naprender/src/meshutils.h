@@ -16,7 +16,7 @@ namespace nap
 		* @param shape the mesh shape to check.
 		* @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 		*/
-		bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
+		bool NAPAPI isTriangleMesh(const nap::MeshInstance& meshInstance);
 
 		/**
 		* @return the number of triangles associated with a mesh
@@ -40,7 +40,7 @@ namespace nap
 		* @param indices the new indices
 		* @return if the triangle indices are valid
 		*/
-		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, const std::array<int, 3>& indices);
+		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
 		* Computes the bounding box of a mesh using its associated position data

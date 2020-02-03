@@ -155,19 +155,7 @@ namespace nap
 		*/
 		void addIndex(int index) { mIndices.push_back(index); }
 
-		/**
-		* Sets Draw mode for this mesh
-		* @param drawMode: draw mode.
-		*/
-		void setDrawMode(EDrawMode drawMode) { mDrawMode = drawMode; }
-
-		/**
-		* @return Draw mode for this mesh.
-		*/
-		EDrawMode getDrawMode() const { return mDrawMode; }
-
 	public:
-		EDrawMode			mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
 		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
@@ -189,6 +177,7 @@ namespace nap
 
 		int						mNumVertices;						///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -306,6 +295,16 @@ namespace nap
 		 * @return The number of shapes contained in this mesh
 		 */
 		int getNumShapes() const												{ return mProperties.mShapes.size(); }
+
+		/**
+		* @return Set the topology of this mesh (triangle list, strip, lines etc).
+		*/
+		void setDrawMode(EDrawMode mode)										{ mProperties.mDrawMode = mode; }
+
+		/**
+		 * @return The topology of this mesh (triangle list, strip, lines etc).
+		 */
+		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
 
 		/**
 		 * Get the shape at the specified index

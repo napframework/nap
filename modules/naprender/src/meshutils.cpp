@@ -7,9 +7,9 @@ namespace nap
 {
 	namespace utility
 	{
-		bool isTriangleMesh(const MeshShape& shape)
+		bool isTriangleMesh(const MeshInstance& meshInstance)
 		{
-			switch (shape.getDrawMode())
+			switch (meshInstance.getDrawMode())
 			{
 			case EDrawMode::LINE_LOOP:
 			case EDrawMode::LINE_STRIP:
@@ -35,7 +35,7 @@ namespace nap
 			for (int shape_index = 0; shape_index < mesh.getNumShapes(); ++shape_index)
 			{
 				const MeshShape& shape = mesh.getShape(shape_index);
-				switch (shape.getDrawMode())
+				switch (mesh.getDrawMode())
 				{
 				case EDrawMode::TRIANGLES:
 				{
@@ -70,12 +70,12 @@ namespace nap
 		}
 
 
-		void  setTriangleIndices(MeshShape& mesh, int number, const std::array<int, 3>& indices)
+		void  setTriangleIndices(MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices)
 		{
 			// Copy triangle index over
 			MeshShape::IndexList& mesh_indices = mesh.getIndices();
 
-			switch (mesh.getDrawMode())
+			switch (drawMode)
 			{
 			case EDrawMode::TRIANGLES:
 			{
@@ -186,7 +186,7 @@ namespace nap
 				std::swap(indices[0], indices[2]);
 
 				int shapeIndex = triangle.getShapeIndex();
-				setTriangleIndices(mesh.getShape(shapeIndex), triangle.getTriangleIndex(), indices);
+				setTriangleIndices(mesh.getShape(shapeIndex), mesh.getDrawMode(), triangle.getTriangleIndex(), indices);
 			}
 		}
 

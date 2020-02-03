@@ -167,9 +167,9 @@ namespace nap
 		// Upsample line
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
+		mMeshInstance->setDrawMode(mClosed ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(mClosed ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
 		utility::generateIndices(shape, p_count);
 
 		// Initialize line
@@ -233,9 +233,9 @@ namespace nap
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
+		mMeshInstance->setDrawMode(EDrawMode::LINE_LOOP);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(EDrawMode::LINE_LOOP);
 		utility::generateIndices(shape, 4);
 
 		// Initialize line
@@ -260,9 +260,9 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
+		mMeshInstance->setDrawMode(EDrawMode::LINE_LOOP);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(EDrawMode::LINE_LOOP);		
 		utility::generateIndices(shape, mSegments);		
 
 		// Initialize line
@@ -297,9 +297,9 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
+		mMeshInstance->setDrawMode(EDrawMode::LINE_LOOP);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(EDrawMode::LINE_LOOP);
 		utility::generateIndices(shape, 6);
 
 		return mMeshInstance->init(errorState);
@@ -333,9 +333,9 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(3);
+		mMeshInstance->setDrawMode(EDrawMode::LINE_LOOP);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(EDrawMode::LINE_LOOP);
 		utility::generateIndices(shape, 3);
 
 		return mMeshInstance->init(errorState);
@@ -392,7 +392,7 @@ namespace nap
 
 	bool PolyLine::isClosed() const
 	{
-		EDrawMode mode = getMeshInstance().getShape(0).getDrawMode();
+		EDrawMode mode = getMeshInstance().getDrawMode();
 		assert(mode == EDrawMode::LINE_LOOP || mode == EDrawMode::LINE_STRIP);
 		return mode == EDrawMode::LINE_LOOP;
 	}

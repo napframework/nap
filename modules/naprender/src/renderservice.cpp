@@ -589,7 +589,7 @@ namespace nap
 
 	VkPrimitiveTopology getTopology(const IMesh& inMesh)
 	{
-		switch (inMesh.getMeshInstance().getShape(0).getDrawMode())
+		switch (inMesh.getMeshInstance().getDrawMode())
 		{
 		case EDrawMode::POINTS:
 			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
