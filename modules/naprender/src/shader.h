@@ -11,7 +11,6 @@
 
 namespace nap
 {
-	class Renderer;
 	class RenderService;
 
 	/**
@@ -106,7 +105,7 @@ namespace nap
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
 
 	private:
-		Renderer*										mRenderer;
+		RenderService*									mRenderService;
 		std::string										mDisplayName;								///< Filename of shader used as displayname
 
 		VkShaderModule									mVertexModule = nullptr;

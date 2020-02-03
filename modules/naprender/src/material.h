@@ -12,7 +12,6 @@
 
 namespace nap
 {
-	class Renderer;
 	struct DescriptorSet;
 	class DescriptorSetCache;
 
@@ -77,8 +76,6 @@ namespace nap
 		*/
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
-		Renderer& getRenderer() { return *mRenderer; }
-
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 
@@ -91,7 +88,7 @@ namespace nap
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
-		Renderer*									mRenderer = nullptr;
+		RenderService*								mRenderService = nullptr;
 	};
 
 	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;

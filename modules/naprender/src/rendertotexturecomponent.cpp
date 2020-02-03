@@ -8,7 +8,7 @@
 #include <orthocameracomponent.h>
 #include "rendertarget.h"
 #include "renderservice.h"
-#include "nindexbuffer.h"
+#include "indexbuffer.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)

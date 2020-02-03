@@ -7,6 +7,12 @@
 #include <window.h>
 #include <utility/dllexport.h>
 #include <rect.h>
+#include "glwindow.h"
+
+namespace opengl
+{
+	class BackbufferRenderTarget;
+}
 
 namespace nap
 {

@@ -3,7 +3,6 @@
 #include <rtti/rttiutilities.h>
 #include "meshutils.h"
 #include "renderservice.h"
-#include "renderer.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 
@@ -69,8 +68,8 @@ namespace nap
 	
 	//////////////////////////////////////////////////////////////////////////
 
-	MeshInstance::MeshInstance(Renderer* renderer) :
-		mRenderer(renderer)
+	MeshInstance::MeshInstance(RenderService* renderService) :
+		mRenderService(renderService)
 	{
 	}
 
@@ -174,13 +173,13 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			vertex_attr_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
 		}
 
 		return true;
@@ -195,7 +194,7 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(mRenderer->getPhysicalDevice(), mRenderer->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		gpu_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
 		return true;
 	}
 
@@ -208,7 +207,7 @@ namespace nap
 	}
 
 	Mesh::Mesh(RenderService& renderService) :
-		mMeshInstance(&renderService.getRenderer())
+		mMeshInstance(&renderService)
 	{
 	}
 

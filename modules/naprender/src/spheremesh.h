@@ -37,7 +37,7 @@ namespace nap
 		float mSectors	= 50.0f;	///< Property: 'Sectors' number of sectors
 
 	private:
-		Renderer* mRenderer;
+		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 	};
 

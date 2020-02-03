@@ -461,13 +461,13 @@ namespace nap
 
 
 	Shader::Shader() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 
 	}
 
 	Shader::Shader(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 
 	}
@@ -484,8 +484,8 @@ namespace nap
 		// Set display name
 		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
 
-		VkDevice device = mRenderer->getDevice();
-		uint32_t deviceVersion = mRenderer->getPhysicalDeviceVersion();
+		VkDevice device = mRenderService->getDevice();
+		uint32_t deviceVersion = mRenderService->getPhysicalDeviceVersion();
 
 		std::vector<unsigned int> vertexShaderData;
 		if (!compileShader(device, deviceVersion, mVertPath, EShLangVertex, vertexShaderData, errorState))

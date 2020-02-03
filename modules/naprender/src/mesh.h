@@ -15,7 +15,6 @@
 namespace nap
 {
 	class RenderService;
-	class Renderer;
 
 	/**
 	* Topology of the mesh
@@ -220,7 +219,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		MeshInstance(Renderer* renderer);
+		MeshInstance(RenderService* renderService);
 
 		// destructor
 		virtual ~MeshInstance();
@@ -361,7 +360,7 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
-		Renderer*												mRenderer;
+		RenderService*											mRenderService;
 		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
 		std::unique_ptr<GPUMesh>								mGPUMesh;			///< GPU mesh
 	};

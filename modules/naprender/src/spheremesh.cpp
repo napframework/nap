@@ -18,18 +18,18 @@ RTTI_END_CLASS
 namespace nap
 {
 	SphereMesh::SphereMesh() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 	}
 
 	SphereMesh::SphereMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec3> normals;

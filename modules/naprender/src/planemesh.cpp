@@ -14,11 +14,11 @@ RTTI_END_CLASS
 namespace nap
 {
 	PlaneMesh::PlaneMesh() :
-		mRenderer(nullptr)
+		mRenderService(nullptr)
 	{
 	}
 	PlaneMesh::PlaneMesh(RenderService& renderService) :
-		mRenderer(&renderService.getRenderer())
+		mRenderService(&renderService)
 	{
 	}
 
@@ -47,7 +47,7 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderer);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect

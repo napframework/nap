@@ -86,7 +86,7 @@ namespace nap
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
 
-		vkUpdateDescriptorSets(mRenderService->getRenderer().getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
+		vkUpdateDescriptorSets(mRenderService->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 
 		used_list.emplace_back(std::move(descriptor_set));
 		return used_list.back();
