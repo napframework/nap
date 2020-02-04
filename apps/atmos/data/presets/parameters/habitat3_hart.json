@@ -8,9 +8,9 @@
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Mesh",
                     "Name": "",
-                    "Value": 0,
+                    "Value": 1,
                     "Minimum": 0,
-                    "Maximum": 0
+                    "Maximum": 11
                 },
                 {
                     "Type": "nap::ParameterInt",
@@ -32,15 +32,15 @@
                     "Type": "nap::ParameterInt",
                     "mID": "Selected Video",
                     "Name": "",
-                    "Value": 0,
+                    "Value": 13,
                     "Minimum": 0,
-                    "Maximum": 0
+                    "Maximum": 18
                 },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "Rotation Speed",
                     "Name": "",
-                    "Value": 0.0,
+                    "Value": -0.0010000000474974514,
                     "Minimum": -0.10000000149011612,
                     "Maximum": 0.10000000149011612
                 }
@@ -50,18 +50,6 @@
                     "Type": "nap::ParameterGroup",
                     "mID": "Camera",
                     "Parameters": [
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "Camera Position",
-                            "Name": "",
-                            "Value": {
-                                "x": 35.423282623291019,
-                                "y": -10.59659481048584,
-                                "z": -6.317930221557617
-                            },
-                            "Minimum": -300.0,
-                            "Maximum": 300.0
-                        },
                         {
                             "Type": "nap::ParameterControlMethod",
                             "mID": "Camera Mode",
@@ -159,7 +147,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Video Mask Contrast",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 2.1710000038146974,
                             "Minimum": 0.0,
                             "Maximum": 2.5
                         },
@@ -167,7 +155,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Video Blend Value",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.8280000686645508,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -209,7 +197,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Video Scale",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 3.6540002822875978,
                             "Minimum": 0.009999999776482582,
                             "Maximum": 200.0
                         },
@@ -247,7 +235,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Light Intensity",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 1.2020000219345093,
                             "Minimum": 0.000009999999747378752,
                             "Maximum": 2.0
                         },
@@ -255,7 +243,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Ambient Intensity",
                             "Name": "",
-                            "Value": 0.5,
+                            "Value": 0.5730000138282776,
                             "Minimum": 0.000009999999747378752,
                             "Maximum": 1.0
                         },
@@ -298,7 +286,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Hair Specular Intensity",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.5220000147819519,
                             "Minimum": 0.000009999999747378752,
                             "Maximum": 2.0
                         },
@@ -306,7 +294,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Hair Shininess",
                             "Name": "",
-                            "Value": 20.0,
+                            "Value": 43.68600082397461,
                             "Minimum": 1.0,
                             "Maximum": 100.0
                         },
@@ -314,7 +302,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Hair Length",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.6680000424385071,
                             "Minimum": 9.999999974752428e-7,
                             "Maximum": 10.0
                         },
@@ -338,7 +326,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Hair Direction",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -365,7 +353,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Mesh Specular Color Blend",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -373,7 +361,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Mesh Specular Intensity",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.1340000033378601,
                             "Minimum": 0.000009999999747378752,
                             "Maximum": 2.0
                         },
@@ -396,7 +384,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Wind Speed",
                             "Name": "",
-                            "Value": 0.25,
+                            "Value": 1.311000108718872,
                             "Minimum": 0.0,
                             "Maximum": 2.5
                         },
@@ -404,7 +392,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Wind Influence",
                             "Name": "",
-                            "Value": 0.6000000238418579,
+                            "Value": 0.8890000581741333,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -412,7 +400,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Wind Frequency",
                             "Name": "",
-                            "Value": 10.0,
+                            "Value": 1.721000075340271,
                             "Minimum": 0.0,
                             "Maximum": 50.0
                         },
@@ -420,7 +408,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Wind Random",
                             "Name": "",
-                            "Value": 0.15000000596046449,
+                            "Value": 0.02200000174343586,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -465,7 +453,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Min",
                             "Name": "",
-                            "Value": 0.75,
+                            "Value": 0.8770000338554382,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -473,7 +461,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Max",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.6780000329017639,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -489,7 +477,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Influence",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }

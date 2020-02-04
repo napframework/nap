@@ -10,7 +10,8 @@ RTTI_BEGIN_CLASS(nap::SelectPathComponent)
 	RTTI_PROPERTY("Renderer",			&nap::SelectPathComponent::mPathRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Controller",			&nap::SelectPathComponent::mPathController,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathPosition",		&nap::SelectPathComponent::mPathPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PathRotation",		&nap::SelectPathComponent::mPathRotation,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathAxis",			&nap::SelectPathComponent::mPathAxis,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathAngle",			&nap::SelectPathComponent::mPathAngle,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathScale",			&nap::SelectPathComponent::mPathScale,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathUniformScale",	&nap::SelectPathComponent::mPathUniformScale,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -57,16 +58,21 @@ namespace nap
 
 		// Update path when index changes
 		resource->mIndex->valueChanged.connect(mPathIndexChangedSlot);
-		resource->mPathRotation->valueChanged.connect(mPathRotationChangedSlot);
+		resource->mPathAxis->valueChanged.connect(mPathAxisChangedSlot);
+		resource->mPathAngle->valueChanged.connect(mPathAngleChangedSlot);
 		resource->mPathPosition->valueChanged.connect(mPathPositionChangedSlot);
 		resource->mPathScale->valueChanged.connect(mPathScaleChangedSlot);
 		resource->mPathUniformScale->valueChanged.connect(mPathUniformScaleChangedSlot);
+
+		// Store angle related values because they are both required to calculate quaternion
+		mPathAxisParam  = resource->mPathAxis.get();
+		mPathAngleParam = resource->mPathAngle.get();
 
 		// Select path based on current index
 		selectPath(resource->mIndex->mValue);
 
 		// Update transforms based on new values
-		updateRotation(resource->mPathRotation->mValue);
+		updatePathAxis(resource->mPathAxis->mValue);
 		updatePosition(resource->mPathPosition->mValue);
 		updateScale(resource->mPathScale->mValue);
 		updateUniformScale(resource->mPathUniformScale->mValue);
@@ -89,9 +95,15 @@ namespace nap
 	}
 
 
-	void SelectPathComponentInstance::updateRotation(glm::vec3 eulerAngles)
+	void SelectPathComponentInstance::updatePathAxis(glm::vec3 eulerAngles)
 	{
-		mPathTransForm->setRotate(math::eulerToQuat(math::radians(eulerAngles)));
+		mPathTransForm->setRotate(glm::angleAxis(math::radians(mPathAngleParam->mValue), glm::normalize(eulerAngles)));
+	}
+
+
+	void SelectPathComponentInstance::updatePathAngle(float angle)
+	{
+		mPathTransForm->setRotate(glm::angleAxis(math::radians(angle), glm::normalize(mPathAxisParam->mValue)));
 	}
 
 

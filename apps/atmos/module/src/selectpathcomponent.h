@@ -30,7 +30,8 @@ namespace nap
 		nap::ComponentPtr<nap::FollowPathController>	mPathController;
 		ResourcePtr<ParameterInt>						mIndex = 0;
 		ResourcePtr<ParameterVec3>						mPathPosition;
-		ResourcePtr<ParameterVec3>						mPathRotation;
+		ResourcePtr<ParameterVec3>						mPathAxis;
+		ResourcePtr<ParameterFloat>						mPathAngle;
 		ResourcePtr<ParameterVec3>						mPathScale;
 		ResourcePtr<ParameterFloat>						mPathUniformScale;
 
@@ -78,15 +79,20 @@ namespace nap
 		RenderableMesh* mCurrentPath = nullptr;
 		TransformComponentInstance* mPathTransForm = nullptr;
 
-		void updateRotation(glm::vec3 eulerAngles);
+		void updatePathAxis(glm::vec3 eulerAngles);
+		void updatePathAngle(float angle);
 		void updatePosition(glm::vec3 position);
 		void updateScale(glm::vec3 scale);
 		void updateUniformScale(float value);
 
 		nap::Slot<int> mPathIndexChangedSlot			= { this, &SelectPathComponentInstance::selectPath };
-		nap::Slot<glm::vec3> mPathRotationChangedSlot	= { this, &SelectPathComponentInstance::updateRotation };
+		nap::Slot<glm::vec3> mPathAxisChangedSlot		= { this, &SelectPathComponentInstance::updatePathAxis };
+		nap::Slot<float> mPathAngleChangedSlot			= { this, &SelectPathComponentInstance::updatePathAngle };
 		nap::Slot<glm::vec3> mPathPositionChangedSlot	= { this, &SelectPathComponentInstance::updatePosition };
 		nap::Slot<glm::vec3> mPathScaleChangedSlot		= { this, &SelectPathComponentInstance::updateScale };
 		nap::Slot<float> mPathUniformScaleChangedSlot	= { this, &SelectPathComponentInstance::updateUniformScale };
+
+		nap::ParameterVec3* mPathAxisParam = nullptr;
+		nap::ParameterFloat* mPathAngleParam = nullptr;
 	};
 }

@@ -189,7 +189,8 @@
                     "Renderer": "./RenderableLine",
                     "Controller": "../../CameraEntity/FollowPathController",
                     "PathPosition": "PathPosition",
-                    "PathRotation": "PathRotation",
+                    "PathAxis": "PathAxis",
+                    "PathAngle": "PathAngle",
                     "PathScale": "PathScale",
                     "PathUniformScale": "PathUniformScale"
                 }
@@ -279,7 +280,8 @@
                         "WitkoraalPoints",
                         "ZeesterPoints",
                         "MandrilPoints",
-                        "BoomkoraalPoints"
+                        "BoomkoraalPoints",
+                        "heleensteen_2"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -476,7 +478,28 @@
                     "Type": "nap::SelectVideoComponent",
                     "mID": "nap::SelectVideoComponent",
                     "Videos": [
-                        "Video1"
+                        "Video1",
+                        "waterfalles2",
+                        "boomwater",
+                        "doodshoofd",
+                        "statue",
+                        "stof",
+                        "watercoral",
+                        "watercoral2",
+                        "waterfalles",
+                        "treevierkant",
+                        "cave1",
+                        "drip",
+                        "geulwater",
+                        "geulwater2",
+                        "grotgroot",
+                        "rain",
+                        "bosgoed",
+                        "mos_2",
+                        "Newtree",
+                        "cavetunne",
+                        "lightflare1",
+                        "Strobe"
                     ],
                     "Index": "Selected Video"
                 }
@@ -1166,7 +1189,7 @@
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
-        {
+                {
             "Type": "nap::MeshFromFile",
             "mID": "BoomkoraalMesh",
             "Path": "boomkoraal.mesh",
@@ -1184,7 +1207,7 @@
             "Path": "meteoriet.mesh",
             "Usage": "Static"
         },
-                {
+        {
             "Type": "nap::MeshFromFile",
             "mID": "OlieSteenMesh",
             "Path": "oliesteen.mesh",
@@ -1236,6 +1259,12 @@
             "Type": "nap::MeshFromFile",
             "mID": "ZeesterMesh",
             "Path": "zeester.mesh",
+            "Usage": "Static"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "heleensteen",
+            "Path": "heleenhiressteen.mesh",
             "Usage": "Static"
         },
         {
@@ -1785,16 +1814,24 @@
                         },
                         {
                             "Type": "nap::ParameterVec3",
-                            "mID": "PathRotation",
-                            "Name": "Path Rotation",
+                            "mID": "PathAxis",
+                            "Name": "Path Axis",
                             "Value": {
-                                "x": 90.0,
+                                "x": 1.0,
                                 "y": 0.0,
                                 "z": 0.0
                             },
-                            "Clamp": false,
+                            "Clamp": true,
                             "Minimum": 0.0,
                             "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathAngle",
+                            "Name": "Path Angle",
+                            "Value": 90.0,
+                            "Minimum": 0.0,
+                            "Maximum": 360.0
                         },
                         {
                             "Type": "nap::ParameterVec3",
@@ -1962,7 +1999,7 @@
             "Type": "nap::ScatterPointsMesh",
             "mID": "BoomkoraalPoints",
             "ReferenceMesh": "BoomkoraalMesh",
-            "PointCount": 1000000
+            "PointCount": 3000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
@@ -1974,61 +2011,67 @@
             "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 1000000
+            "PointCount": 3000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "OlieSteenPoints",
             "ReferenceMesh": "OlieSteenMesh",
-            "PointCount": 1000000
+            "PointCount": 3000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "PyrietPoints",
             "ReferenceMesh": "PyrietMesh",
-            "PointCount": 1000000
+            "PointCount": 3000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "RozeSteenPoints",
             "ReferenceMesh": "RozeSteenMesh",
-            "PointCount": 1000000
+            "PointCount": 3000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "SchorsKoraalPoints",
             "ReferenceMesh": "SchorsKoraalMesh",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "SloveniePoints",
             "ReferenceMesh": "SlovenieSteen",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "SteenPoints",
             "ReferenceMesh": "SteenMesh",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "TransparantPoints",
             "ReferenceMesh": "TransparantSteen",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "WitkoraalPoints",
             "ReferenceMesh": "WitkoraalMesh",
-            "PointCount": 1000000
+            "PointCount": 2000000
         },
         {
             "Type": "nap::ScatterPointsMesh",
             "mID": "ZeesterPoints",
             "ReferenceMesh": "ZeesterMesh",
-            "PointCount": 1000000
+            "PointCount": 2000000
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "heleensteen_2",
+            "ReferenceMesh": "heleensteen",
+            "PointCount": 2000000
         },
         {
             "Type": "nap::Scene",
@@ -2074,8 +2117,183 @@
         },
         {
             "Type": "nap::Video",
+            "mID": "Newtree",
+            "Path": "video/used/tree_new.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Strobe",
+            "Path": "video/used/flikker.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "Video",
+            "Path": "video/used/2kdoodshoofd.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
             "mID": "Video1",
             "Path": "streak.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "boomwater",
+            "Path": "video/used/2kboomwater.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "bosgoed",
+            "Path": "video/used/newTREE.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "cave1",
+            "Path": "video/used/newCAVE.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "cavetunne",
+            "Path": "video/used/cave_tunnel.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "doodshoofd",
+            "Path": "video/used/2kdoodshoofd.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "drip",
+            "Path": "video/used/newDRIP.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "geulwater",
+            "Path": "video/used/newgeul.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "geulwater2",
+            "Path": "video/used/newGEUL2.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "grotgroot",
+            "Path": "video/used/newGROT.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "lightflare1",
+            "Path": "video/used/1lightflare2.mov",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "mos",
+            "Path": "video/used/newMOS.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "mos_2",
+            "Path": "video/used/new_mos.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "rain",
+            "Path": "video/used/newRAIN.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "reflexwater",
+            "Path": "video/used/111water_reflex.mov",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "statue",
+            "Path": "video/used/2kstatue.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "stof",
+            "Path": "video/used/2kstof.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "treevierkant",
+            "Path": "video/used/TREE_hab_1.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "watercoral",
+            "Path": "video/used/2kwatercoral.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "watercoral2",
+            "Path": "video/used/2kwatercoral2.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "waterfalles",
+            "Path": "video/used/2kwaterfallen.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "waterfalles2",
+            "Path": "video/used/2kwaterfallen2.mp4",
+            "Loop": false,
+            "Speed": 1.0
+        },
+        {
+            "Type": "nap::Video",
+            "mID": "waterflow",
+            "Path": "video/used/newWAVEBLUE.mp4",
             "Loop": false,
             "Speed": 1.0
         },
