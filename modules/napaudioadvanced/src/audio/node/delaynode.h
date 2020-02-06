@@ -22,7 +22,7 @@ namespace nap
         public:
             DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8);
             
-            InputPin input; /**< The audio input receiving the signal to be delayed. */
+            InputPin input = { this }; /**< The audio input receiving the signal to be delayed. */
             OutputPin output = { this }; /**< The audio output with the processed signal. */
             
             /**

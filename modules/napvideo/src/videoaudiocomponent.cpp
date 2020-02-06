@@ -26,7 +26,7 @@ namespace nap
         {
             auto resource = getComponent<VideoAudioComponent>();
             auto audioService = &getAudioService();
-            mNode = audioService->makeSafe<VideoNode>(audioService->getNodeManager(), *resource->mVideo, resource->mChannelCount);
+            mNode = audioService->getNodeManager().makeSafe<VideoNode>(audioService->getNodeManager(), *resource->mVideo, resource->mChannelCount);
             return true;
         }
         

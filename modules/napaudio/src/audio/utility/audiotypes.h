@@ -113,6 +113,14 @@ namespace nap
          */
         using DiscreteTimeValue = long;
         
+        
+        /**
+         * Mode to calculate a ramp from one value to another in a certain amount of steps
+         */
+        enum RampMode { Linear, Exponential };
+        
+
+        
     }
     
 }

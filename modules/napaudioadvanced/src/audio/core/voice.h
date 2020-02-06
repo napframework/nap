@@ -24,13 +24,13 @@ namespace nap
             RTTI_ENABLE(Graph)
             
         public:
-            Voice(AudioService& audioService) : Graph(audioService)  { }
+            Voice() : Graph()  { }
             
             /**
              * Points to an envelope within the graph that controls the amplitude of a single audio event processed by the voice.
              * When the voice is played this envelope will be triggered. When it has finished it emits a signal that will cause the voice to be disconnected and enter idle state again.
              */
-            ResourcePtr<Envelope> mEnvelope;
+            ResourcePtr<Envelope> mEnvelope = nullptr;
             
         private:
         };
@@ -46,7 +46,7 @@ namespace nap
             friend class PolyphonicObjectInstance;
             
         public:
-            bool init(Voice& resource, utility::ErrorState& errorState);
+            bool init(Voice& resource, NodeManager& nodeManager, utility::ErrorState& errorState);
             
             /**
              * @return: the envelope controlling the overall amplitude of the voice
@@ -57,7 +57,7 @@ namespace nap
              * @return: the envelope controlling the overall amplitude of the voice
              */
             const EnvelopeInstance& getEnvelope() const { return *mEnvelope; }
-            
+
             /**
              * Starts playback of the voice by triggering the envelope
              */
@@ -77,6 +77,16 @@ namespace nap
              * @return: when the voice is busy, the time the voice started playing
              */
             DiscreteTimeValue getStartTime() const { return mStartTime; }
+
+            /**
+             * Signal that is emitted when the voice has finished playing.
+             */
+            nap::Signal<VoiceInstance&> finishedSignal;
+            
+            /**
+             * Function to retrieve the @finishedSignal using RTTR
+             */
+            nap::Signal<VoiceInstance&>* getFinishedSignal() { return &finishedSignal; }
             
         private:
             // Used internally by PolyphincObjectInstance to try to reserve the voice for usage
@@ -84,18 +94,16 @@ namespace nap
             void free();
             
             // Responds to the signal emitted by the envelope generator of the main envelope by emitting the finishedSignal.
-            Slot<EnvelopeGenerator&> envelopeFinishedSlot = { this, &VoiceInstance::envelopeFinished };
-            void envelopeFinished(EnvelopeGenerator&);
-            nap::Signal<VoiceInstance&> finishedSignal;
+            Slot<EnvelopeNode&> envelopeFinishedSlot = {this, &VoiceInstance::envelopeFinished };
+            void envelopeFinished(EnvelopeNode&);
 
             EnvelopeInstance* mEnvelope = nullptr;
             std::atomic<bool> mBusy = { false };
             DiscreteTimeValue mStartTime = 0;
+            
+            // This set caches the channels of the output mixer of the polyphonic object that this voice is connected to before it was started to play. When playing is done the polyphonic object will take care of disconnecting the voice from these channels.
+            std::vector<int> mConnectedToChannels = { };
         };
-        
-        
-        using VoiceObjectCreator = rtti::ObjectCreator<Voice, AudioService>;
-
         
     }
     

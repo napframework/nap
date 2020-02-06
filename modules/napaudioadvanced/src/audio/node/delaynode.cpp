@@ -22,39 +22,57 @@ namespace nap
         
         DelayNode::DelayNode(NodeManager& manager, int delayLineSize) : Node(manager), mDelay(delayLineSize)
         {
-            mTime.setStepCount(manager.getSamplesPerMillisecond());
-            mDryWet.setStepCount(manager.getSamplesPerMillisecond());
+            mTime.setStepCount(manager.getSamplesPerMillisecond() * 10);
+            mDryWet.setStepCount(manager.getSamplesPerMillisecond() * 10);
         }
         
         
         void DelayNode::setTime(TimeValue value, TimeValue rampTime)
         {
-            mTime.setValue(int(value * getNodeManager().getSamplesPerMillisecond()));
+//            mTime.setStepCount(rampTime * getNodeManager().getSamplesPerMillisecond());
+            mTime.setValue(value * getNodeManager().getSamplesPerMillisecond());
         }
         
         
         void DelayNode::setDryWet(ControllerValue value, TimeValue rampTime)
         {
+//            mDryWet.setStepCount(rampTime * getNodeManager().getSamplesPerMillisecond());
             mDryWet.setValue(value);
         }
 
 
         void DelayNode::process()
         {
-            auto& inputBuffer = *input.pull();
+            auto inputBuffer = input.pull();
             auto& outputBuffer = getOutputBuffer(output);
             auto feedback = mFeedback.load();
             SampleValue delayedSample = 0;
             
-            for (auto i = 0; i < outputBuffer.size(); ++i)
+            if (inputBuffer)
             {
-                if (mTime.isRamping())
-                    delayedSample = mDelay.readInterpolating(mTime.getNextValue());
-                else
-                    delayedSample = mDelay.read(mTime.getNextValue());
-                
-                mDelay.write(inputBuffer[i] + delayedSample * feedback);
-                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet.getNextValue());
+                for (auto i = 0; i < outputBuffer.size(); ++i)
+                {
+                    if (mTime.isRamping())
+                        delayedSample = mDelay.readInterpolating(mTime.getNextValue());
+                    else
+                        delayedSample = mDelay.read(mTime.getNextValue());
+                    
+                    mDelay.write((*inputBuffer)[i] + delayedSample * feedback);
+                    outputBuffer[i] = lerp((*inputBuffer)[i], delayedSample, mDryWet.getNextValue());
+                }
+            }
+            else {
+                // process with 0 input
+                for (auto i = 0; i < outputBuffer.size(); ++i)
+                {
+                    if (mTime.isRamping())
+                        delayedSample = mDelay.readInterpolating(mTime.getNextValue());
+                    else
+                        delayedSample = mDelay.read(mTime.getNextValue());
+                    
+                    mDelay.write(0.f + delayedSample * feedback);
+                    outputBuffer[i] = lerp(0.f, delayedSample, mDryWet.getNextValue());
+                }
             }
         }
 

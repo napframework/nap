@@ -17,14 +17,13 @@ namespace nap
         
         StereoPannerNode::StereoPannerNode(NodeManager& manager) : Node(manager)
         {
-            setPanning(mNewPanning);
+            equalPowerPan<ControllerValue>(mPanning, mLeftGain, mRightGain);
         }
         
         
         void StereoPannerNode::setPanning(ControllerValue value)
         {
-            mPanning = value;
-            equalPowerPan<ControllerValue>(mPanning, mLeftGain, mRightGain);
+            mNewPanning = value;
         }
         
         
@@ -32,7 +31,10 @@ namespace nap
         {
             auto newPanning = mNewPanning.load();
             if (newPanning != mPanning)
-                setPanning(newPanning);
+            {
+                mPanning = newPanning;
+                equalPowerPan<ControllerValue>(mPanning, mLeftGain, mRightGain);
+            }
             
             auto& leftInputBuffer = *leftInput.pull();
             auto& rightInputBuffer = *rightInput.pull();

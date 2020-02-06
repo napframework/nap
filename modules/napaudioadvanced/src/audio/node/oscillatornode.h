@@ -11,6 +11,7 @@ namespace nap
 {
     namespace audio
     {
+        
         /**
          * A wavetable that can be used as waveform data for an oscillator.
          * Contains a buffer with one cycle of samples for a periodic waveform.
@@ -40,8 +41,7 @@ namespace nap
             inline SampleValue operator[](long index) const;
             
             /**
-             * Read from the waveform at a certain index between 0 and getSize()
-			 * @param index waveform index
+             * Read from the waveform at a certain index between 0 and @getSize()
              */
             inline SampleValue interpolate(double index) const;
             
@@ -63,11 +63,13 @@ namespace nap
             RTTI_ENABLE(Node)
             
         public:
+            OscillatorNode(NodeManager& manager);
+
             /**
-             * Constructor takes the waveform of the oscillator
+             * Constructor takes the waveform of the oscillator.
              */
-            OscillatorNode(NodeManager& aManager, SafePtr<WaveTable> aWave);
-            
+            OscillatorNode(NodeManager& aManager, SafePtr<WaveTable> wave);
+
             /**
              * Set the frequency in Hz
              */
@@ -84,11 +86,12 @@ namespace nap
             void setPhase(ControllerValue phaseOffset);
             
             /**
-             * Set a new waveform for the oscillator
+             * Set the waveform for the oscillator.
+             * Has to be called after construction and before usage.
              */
-            void setWave(SafePtr<WaveTable>& aWave);
+            void setWave(SafePtr<WaveTable> aWave);
             
-            InputPin fmInput; ///< Input pin to control frequency modulation.
+            InputPin fmInput = { this }; ///< Input pin to control frequency modulation.
             OutputPin output = { this }; ///< Audio output pin.
 
         private:

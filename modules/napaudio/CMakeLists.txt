@@ -24,6 +24,8 @@ module_json_to_cmake()
 set(LIBRARIES napcore portaudio libsndfile libmpg123)
 if(APPLE)
     list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
+elseif(UNIX)
+    list(APPEND LIBRARIES atomic)
 endif()
 
 set(INCLUDES src ${PORTAUDIO_INCLUDE_DIR} ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR})

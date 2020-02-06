@@ -35,6 +35,12 @@ namespace nap
              * The audio object that is wrapped by this component
              */
             ResourcePtr<AudioObject> mObject;
+            
+            /**
+             * Pointers to audio components whose audio objects can be linked to from within this component
+             */
+            std::vector<ComponentPtr<AudioComponent>> mLinks;
+            
         };
 
         
@@ -53,7 +59,7 @@ namespace nap
 
             // Derived from AudioComponentBaseInstance
             int getChannelCount() const override { return mObject->getChannelCount(); }
-            virtual OutputPin& getOutputForChannel(int channel) override { return mObject->getOutputForChannel(channel); }
+            virtual OutputPin* getOutputForChannel(int channel) override { return mObject->getOutputForChannel(channel); }
             /**
              * Returns the wrapped audio object
              */
