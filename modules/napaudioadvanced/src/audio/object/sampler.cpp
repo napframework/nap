@@ -122,12 +122,13 @@ namespace nap
             
             bufferLooper->start(mSamplerEntries[samplerEntryIndex]);
             envelope.setEnvelopeData(mEnvelopeData);
+
             mPolyphonicInstance->play(voice, duration);
             
             return voice;
         }
-        
-        
+
+
         void SamplerInstance::stop(VoiceInstance* voice, TimeValue release)
         {
             auto& envelope = voice->getEnvelope();

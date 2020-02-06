@@ -56,6 +56,23 @@ namespace nap
             mEnvelope->trigger(duration);
             mStartTime = getNodeManager().getSampleTime();
         }
+
+
+        /**
+         * Triggers a section of the envelope of the voice.
+         * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
+         * @param startSegment: the start segment of the envelope section to be played
+         * @param endSegment: the end segment of the envelope section to be played
+         * @param startValue: the startValue of the line when the section is triggered.
+         * @param totalDuration: if this value is greater than the total of all durations of segments that have durationRelative = false
+         the resting time wille be divided over the segments with durationRelative = true, using their duration values as denominator.
+         */
+        void VoiceInstance::playSection(int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
+        {
+            mEnvelope->triggerSection(startSegment, endSegment, startValue, totalDuration);
+            mStartTime = getNodeManager().getSampleTime();
+        }
+
         
         
         void VoiceInstance::stop(TimeValue rampTime)

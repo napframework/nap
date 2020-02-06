@@ -84,18 +84,19 @@ namespace nap
                 return;
 
             voice->play(duration);
-
-            // We cache the channel numbers of the output mixer that the voice will be connected to within the voice object.
-            // We do that here already and not in the enqueued task to avoid allocations on the audio thread.
-            voice->mConnectedToChannels.clear();
-            for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput()->getChannelCount()); ++channel)
-                voice->mConnectedToChannels.emplace_back(channel);
-
-            mNodeManager->enqueueTask([&, voice](){
-                for (auto i = 0; i < voice->mConnectedToChannels.size(); ++i)
-                    mMixNodes[voice->mConnectedToChannels[i]]->inputs.connect(*voice->getOutput()->getOutputForChannel(i));
-            });
+            connectVoice(voice);
         }
+
+
+        void PolyphonicObjectInstance::playSection(VoiceInstance* voice, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
+        {
+            if (!voice)
+                return;
+
+            voice->playSection(startSegment, endSegment, startValue, totalDuration);
+            connectVoice(voice);
+        }
+
 
 
         void PolyphonicObjectInstance::playOnChannels(VoiceInstance* voice, std::vector<unsigned int> channels, TimeValue duration)
@@ -165,6 +166,22 @@ namespace nap
             }
             voice.free();            
         }
+
+
+        void PolyphonicObjectInstance::connectVoice(VoiceInstance* voice)
+        {
+            // We cache the channel numbers of the output mixer that the voice will be connected to within the voice object.
+            // We do that here already and not in the enqueued task to avoid allocations on the audio thread.
+            voice->mConnectedToChannels.clear();
+            for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput()->getChannelCount()); ++channel)
+                voice->mConnectedToChannels.emplace_back(channel);
+
+            mNodeManager->enqueueTask([&, voice](){
+                for (auto i = 0; i < voice->mConnectedToChannels.size(); ++i)
+                    mMixNodes[voice->mConnectedToChannels[i]]->inputs.connect(*voice->getOutput()->getOutputForChannel(i));
+            });
+        }
+
 
 
     }

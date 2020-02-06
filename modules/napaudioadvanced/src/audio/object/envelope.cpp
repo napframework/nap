@@ -21,6 +21,12 @@ namespace nap
 
         std::unique_ptr<AudioObjectInstance> Envelope::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
+            if (mEqualPowerTable == nullptr)
+            {
+                errorState.fail("No equal power table provided");
+                return nullptr;
+            }
+
             auto instance = std::make_unique<EnvelopeInstance>();
             if (!instance->init(mSegments, mAutoTrigger, nodeManager, mEqualPowerTable->getTable(), errorState))
                 return nullptr;

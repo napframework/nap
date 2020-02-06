@@ -62,7 +62,12 @@ namespace nap
              * Starts playback of the voice by triggering the envelope
              */
             void play(TimeValue duration = 0);
-            
+
+            /**
+             * Starts playback of the voice by triggering a section of the envelope
+             */
+            void playSection(int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+
             /**
              * Stops playback of the voice by forcing the envelope to fade out
              */

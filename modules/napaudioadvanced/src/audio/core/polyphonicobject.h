@@ -86,7 +86,13 @@ namespace nap
              * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
              */
             void play(VoiceInstance* voice, TimeValue duration = 0);
-            
+
+            /**
+             * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
+             * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
+             */
+            void playSection(VoiceInstance* voice, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+
             /**
              * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
              * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
@@ -106,6 +112,8 @@ namespace nap
             int getBusyVoiceCount() const;
             
         private:
+            void connectVoice(VoiceInstance* voice);
+
             Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
