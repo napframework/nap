@@ -2,20 +2,22 @@
 
 // Local Includes
 #include "yoctosensor.h"
-#include "parametermapping.h"
+#include "parametersimple.h"
 
 // External Includes
 #include <component.h>
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
 	class ApplySensorComponentInstance;
 
 	/**
-	 *	applysensorcomponent
+	 * Maps the output of a sensor to a selected parameter.
+	 * Smoothing is applied on the input of the sensor data.
 	 */
 	class NAPAPI ApplySensorComponent : public Component
 	{
@@ -24,20 +26,29 @@ namespace nap
 	public:
 
 		/**
-		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		* @param components the components this object depends on
-		*/
+		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
+		 * @param components the components this object depends on
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		bool mEnabled = true;											///< Property: 'Enabled' if the component forwards sensor data to the selected parameter
+		/**
+		 * Updates available range of parameters to select from
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		ResourcePtr<ParameterBool> mEnabled;							///< Property: 'Enabled' if events are forwarded											///< Property: 'Enabled' if the component forwards sensor data to the selected parameter
 		ResourcePtr<BaseYoctoSensor> mSensor;							///< Property: 'Sensor' the sensor to read and apply
-		std::vector<ResourcePtr<ParameterMapping>> mParameters;			///< Property: 'Parameters' the parameter that you want to influence
+		std::vector<ResourcePtr<ParameterFloat>> mParameters;			///< Property: 'Parameters' the parameter that you want to influence
+		ResourcePtr<ParameterVec2> mInputRange;							///< Property: 'InputRange' sensor input range
+		ResourcePtr<ParameterVec2> mOutputRange;						///< Property: 'OutputRange' applied parameter output range
 		ResourcePtr<ParameterInt> mSelection;							///< Property: 'Index' Selection
+		ResourcePtr<ParameterFloat> mSmoothTime;						///< Property: 'SmoothTime' smoothing time applied to sensor input in seconds
 	};
 
 
 	/**
-	 * applysensorcomponentInstance	
+	 * Maps the output of a sensor to a selected parameter.
+	 * Smoothing is applied on the input of the sensor data.
 	 */
 	class NAPAPI ApplySensorComponentInstance : public ComponentInstance
 	{
@@ -67,10 +78,14 @@ namespace nap
 
 	private:
 		BaseYoctoSensor* mSensor = nullptr;
-		std::vector<ParameterMapping*> mParameters;
+		std::vector<ParameterFloat*> mParameters;
 		int mCurrentIndex = 0;
-		ParameterMapping* mCurrentParameter;
+		ParameterFloat* mCurrentParameter;
 		nap::Slot<int> mIndexChangedSlot		= { this, &ApplySensorComponentInstance::selectParameter };
-		bool mEnabled = true;
+		ParameterBool* mEnabled = nullptr;
+		ParameterVec2* mInputRange = nullptr;
+		ParameterVec2* mOutputRange = nullptr;
+		ParameterFloat* mSmoothTime = nullptr;
+		math::FloatSmoothOperator mSmoother = { 0.0f, 0.1f };
 	};
 }

@@ -138,24 +138,15 @@
                 {
                     "Type": "nap::ApplySensorComponent",
                     "mID": "ApplyRangeSensorComponent",
+                    "Enabled": "RangeSensorEnable",
                     "Sensor": "RangeSensor",
                     "Parameters": [
-                        {
-                            "Type": "nap::ParameterMapping",
-                            "mID": "RangeMapFOV",
-                            "Map": true,
-                            "Parameter": "Camera FOV",
-                            "InputRange": {
-                                "x": 0.0,
-                                "y": 500.0
-                            },
-                            "OutputRange": {
-                                "x": 40.0,
-                                "y": 90.0
-                            }
-                        }
+                        "Camera FOV"
                     ],
-                    "Index": "SensorTarget"
+                    "InputRange": "RangeSensorMin",
+                    "OutputRange": "RangeSensorMax",
+                    "Index": "RangeSensorTarget",
+                    "SmoothTime": "RangeSensorSmoothTIme"
                 }
             ],
             "Children": []
@@ -1868,15 +1859,53 @@
                 },
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "Sensor",
+                    "mID": "Range Sensor",
                     "Parameters": [
                         {
+                            "Type": "nap::ParameterBool",
+                            "mID": "RangeSensorEnable",
+                            "Name": "Enable",
+                            "Value": true
+                        },
+                        {
                             "Type": "nap::ParameterInt",
-                            "mID": "SensorTarget",
-                            "Name": "Sensor Target",
+                            "mID": "RangeSensorTarget",
+                            "Name": "Effect",
                             "Value": 0,
                             "Minimum": 0,
                             "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "RangeSensorMin",
+                            "Name": "Input Range",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 500.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "RangeSensorMax",
+                            "Name": "Output Range",
+                            "Value": {
+                                "x": 40.0,
+                                "y": 90.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "RangeSensorSmoothTIme",
+                            "Name": "Smooth Time",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
                         }
                     ],
                     "Groups": []
