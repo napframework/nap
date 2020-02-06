@@ -18,6 +18,7 @@ namespace nap
             void stopAllLayers(TimeValue release);
             void replaceLayers(std::set<int> samplerEntrieIndices, TimeValue attack, TimeValue release);
             void play(int samplerEntryIndex, TimeValue attack, TimeValue sustain, TimeValue release);
+            std::set<int> getLayers();
 
         private:
             SamplerInstance& mSampler;

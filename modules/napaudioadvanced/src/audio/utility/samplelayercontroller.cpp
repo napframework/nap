@@ -82,6 +82,15 @@ namespace nap
         }
 
 
+        std::set<int> SampleLayerController::getLayers()
+        {
+            std::set<int> result;
+            for (auto& pair : mLayerVoices)
+                result.emplace(pair.first);
+            return result;
+        }
+
+
     }
 
 }
