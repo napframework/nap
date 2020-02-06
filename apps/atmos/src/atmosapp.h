@@ -15,6 +15,9 @@
 #include <rendertarget.h>
 #include <yoctosensor.h>
 
+//ruud noobing:
+#include <selectpresetcomponent.h>
+
 namespace nap
 {
 	using namespace rtti;
@@ -59,6 +62,11 @@ namespace nap
 		 */
 		int shutdown() override;
 
+		/**
+		*	loads a preset
+		*/
+		void loadPreset(int presetIndex);
+
 	private:
 		// Nap Services
 		RenderService*		mRenderService = nullptr;					//< Render Service that handles render calls
@@ -66,12 +74,15 @@ namespace nap
 		SceneService*		mSceneService = nullptr;					//< Manages all the objects in the scene
 		InputService*		mInputService = nullptr;					//< Input service for processing input
 		IMGuiService*		mGuiService = nullptr;						//< Gui service
+		ParameterService*	mParameterService = nullptr;
 
 		// Objects
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 		ObjectPtr<RenderTarget>		mVideoTarget  = nullptr;			//< Pointer to the video render target
 
 		// Entities
+		ObjectPtr<EntityInstance>		mUniverseEntity = nullptr;		///< Pointer to the universe entity
+
 		ObjectPtr<EntityInstance>		mCameraEntity		= nullptr;		///< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>		mWorldEntity		= nullptr;		///< Pointer to the world entity
 		ObjectPtr<EntityInstance>		mScanEntity			= nullptr;		///< Pointer to the scan entity (living under the world)

@@ -164,6 +164,7 @@ namespace nap
 			mFirstPersonController->disable();
 			mOrbitController->disable();
 			mPathController->enable();
+			break;
 		}
 		default:
 			assert(false);

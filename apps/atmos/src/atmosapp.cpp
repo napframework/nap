@@ -2,6 +2,7 @@
 
 // Nap includes
 #include <nap/core.h>
+#include <parameterservice.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
 #include <orthocameracomponent.h>
@@ -30,6 +31,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mParameterService = getCore().getService<nap::ParameterService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -48,12 +50,14 @@ namespace nap
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+	
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mScanEntity = scene->findEntity("ScanEntity");
 		mVideoEntity = scene->findEntity("VideoPlaneEntity");
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 		mLineEntity = scene->findEntity("LineEntity");
+		mUniverseEntity = scene->findEntity("UniverseEntity");
 
 		// Get yocto sensors
 		mRangeSensor = mResourceManager->findObject("RangeSensor");
@@ -178,10 +182,26 @@ namespace nap
 			{
 				mGui->toggleVisibility();
 			}
+
+			if (press_event->mKey == nap::EKeyCode::KEY_1)
+			{
+				loadPreset(0);
+			}
+
+			if (press_event->mKey == nap::EKeyCode::KEY_2)
+			{
+				loadPreset(1);
+			}
 		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
+	void AtmosApp::loadPreset(int index) 
+	{
+		nap::SelectPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SelectPresetComponentInstance>();
+		presetSelector.selectPreset(index);
+	}
 
 	int AtmosApp::shutdown()
 	{
