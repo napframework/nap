@@ -133,6 +133,35 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "InputEntity",
+            "Components": [
+                {
+                    "Type": "nap::ApplySensorComponent",
+                    "mID": "ApplyRangeSensorComponent",
+                    "Sensor": "RangeSensor",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterMapping",
+                            "mID": "RangeMapFOV",
+                            "Map": true,
+                            "Parameter": "Camera FOV",
+                            "InputRange": {
+                                "x": 0.0,
+                                "y": 500.0
+                            },
+                            "OutputRange": {
+                                "x": 40.0,
+                                "y": 90.0
+                            }
+                        }
+                    ],
+                    "Index": "SensorTarget"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "LineEntity",
             "Components": [
                 {
@@ -269,19 +298,7 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "MeteorietPoints",
-                        "SteenPoints",
-                        "OlieSteenPoints",
-                        "PyrietPoints",
-                        "RozeSteenPoints",
-                        "SchorsKoraalPoints",
-                        "SloveniePoints",
-                        "TransparantPoints",
-                        "WitkoraalPoints",
-                        "ZeesterPoints",
-                        "MandrilPoints",
-                        "BoomkoraalPoints",
-                        "heleensteen_2"
+                        "MeteorietPoints"
                     ],
                     "ScanMeshComponent": "./ScanRenderableMesh",
                     "NormalsMeshComponent": "./ScanNormalRenderableMesh",
@@ -1189,82 +1206,10 @@
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
-                {
-            "Type": "nap::MeshFromFile",
-            "mID": "BoomkoraalMesh",
-            "Path": "boomkoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "MandrilMesh",
-            "Path": "mandril.mesh",
-            "Usage": "Static"
-        },
         {
             "Type": "nap::MeshFromFile",
             "mID": "MeteorietMesh",
             "Path": "meteoriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "OlieSteenMesh",
-            "Path": "oliesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "PyrietMesh",
-            "Path": "pyriet.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "RozeSteenMesh",
-            "Path": "rozesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "SchorsKoraalMesh",
-            "Path": "schorskoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "SlovenieSteen",
-            "Path": "steenslovenie.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "SteenMesh",
-            "Path": "heleenhiressteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "TransparantSteen",
-            "Path": "transparantesteen.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "WitkoraalMesh",
-            "Path": "witkoraal.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "ZeesterMesh",
-            "Path": "zeester.mesh",
-            "Usage": "Static"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "heleensteen",
-            "Path": "heleenhiressteen.mesh",
             "Usage": "Static"
         },
         {
@@ -1866,9 +1811,9 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "PathCamSpeed",
                             "Name": "Follow Speed",
-                            "Value": 0.01,
+                            "Value": 0.009999999776482582,
                             "Minimum": 0.0,
-                            "Maximum": 0.05
+                            "Maximum": 0.05000000074505806
                         },
                         {
                             "Type": "nap::ParameterVec3",
@@ -1917,6 +1862,21 @@
                             "Value": 0.10000000149011612,
                             "Minimum": 0.0,
                             "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Sensor",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "SensorTarget",
+                            "Name": "Sensor Target",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
                         }
                     ],
                     "Groups": []
@@ -1997,81 +1957,9 @@
         },
         {
             "Type": "nap::ScatterPointsMesh",
-            "mID": "BoomkoraalPoints",
-            "ReferenceMesh": "BoomkoraalMesh",
-            "PointCount": 3000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "MandrilPoints",
-            "ReferenceMesh": "MandrilMesh",
-            "PointCount": 1000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
             "mID": "MeteorietPoints",
             "ReferenceMesh": "MeteorietMesh",
-            "PointCount": 3000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "OlieSteenPoints",
-            "ReferenceMesh": "OlieSteenMesh",
-            "PointCount": 3000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "PyrietPoints",
-            "ReferenceMesh": "PyrietMesh",
-            "PointCount": 3000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "RozeSteenPoints",
-            "ReferenceMesh": "RozeSteenMesh",
-            "PointCount": 3000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "SchorsKoraalPoints",
-            "ReferenceMesh": "SchorsKoraalMesh",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "SloveniePoints",
-            "ReferenceMesh": "SlovenieSteen",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "SteenPoints",
-            "ReferenceMesh": "SteenMesh",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "TransparantPoints",
-            "ReferenceMesh": "TransparantSteen",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "WitkoraalPoints",
-            "ReferenceMesh": "WitkoraalMesh",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "ZeesterPoints",
-            "ReferenceMesh": "ZeesterMesh",
-            "PointCount": 2000000
-        },
-        {
-            "Type": "nap::ScatterPointsMesh",
-            "mID": "heleensteen_2",
-            "ReferenceMesh": "heleensteen",
-            "PointCount": 2000000
+            "PointCount": 1000000
         },
         {
             "Type": "nap::Scene",
@@ -2087,6 +1975,10 @@
                 },
                 {
                     "Entity": "VideoEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "InputEntity",
                     "InstanceProperties": []
                 }
             ]
@@ -2330,7 +2222,7 @@
             "DelayTime": 100,
             "Retries": 20,
             "Log": false,
-            "BufferSize": 10
+            "BufferSize": 1
         }
     ]
 }

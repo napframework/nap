@@ -96,7 +96,6 @@ namespace nap
 
 			// Read current value
 			float sensor_value = static_cast<float>(sensor->get_currentValue());
-			logMessage(utility::stringFormat("%.2f", sensor_value));
 
 			// Compute actual value to store
 			mValue = compute(sensor_value);
