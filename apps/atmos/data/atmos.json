@@ -133,26 +133,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "InputEntity",
-            "Components": [
-                {
-                    "Type": "nap::ApplySensorComponent",
-                    "mID": "ApplyRangeSensorComponent",
-                    "Enabled": "RangeSensorEnable",
-                    "Sensor": "RangeSensor",
-                    "Parameters": [
-                        "Camera FOV"
-                    ],
-                    "InputRange": "RangeSensorMin",
-                    "OutputRange": "RangeSensorMax",
-                    "Index": "RangeSensorTarget",
-                    "SmoothTime": "RangeSensorSmoothTIme"
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "LineEntity",
             "Components": [
                 {
@@ -380,6 +360,37 @@
                     "FogMax": "Fog Max",
                     "FogPower": "Fog Power",
                     "FogInfluence": "Fog Influence"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SensorEntity",
+            "Components": [
+                {
+                    "Type": "nap::ApplySensorComponent",
+                    "mID": "ApplyRangeSensorComponent",
+                    "Enabled": "RangeSensorEnable",
+                    "Sensor": "RangeSensor",
+                    "Parameters": [
+                        "Camera FOV"
+                    ],
+                    "InputRange": "RangeSensorMin",
+                    "OutputRange": "RangeSensorMax",
+                    "Index": "RangeSensorTarget",
+                    "SmoothTime": "RangeSensorSmoothTIme"
+                },
+                {
+                    "Type": "nap::ApplySensorComponent",
+                    "mID": "ApplyProximitySensorComponent",
+                    "Enabled": "ProximitySensorEnable",
+                    "Sensor": "ProximitySensor",
+                    "Parameters": [],
+                    "InputRange": "ProximitySensorMin",
+                    "OutputRange": "ProximitySensorMax",
+                    "Index": "ProximitySensorTarget",
+                    "SmoothTime": "ProximitySensorSmoothTIme"
                 }
             ],
             "Children": []
@@ -1864,13 +1875,13 @@
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "RangeSensorEnable",
-                            "Name": "Enable",
+                            "Name": "Range Enable",
                             "Value": true
                         },
                         {
                             "Type": "nap::ParameterInt",
                             "mID": "RangeSensorTarget",
-                            "Name": "Effect",
+                            "Name": "Range Effect",
                             "Value": 0,
                             "Minimum": 0,
                             "Maximum": 1
@@ -1878,7 +1889,7 @@
                         {
                             "Type": "nap::ParameterVec2",
                             "mID": "RangeSensorMin",
-                            "Name": "Input Range",
+                            "Name": "Range Input",
                             "Value": {
                                 "x": 0.0,
                                 "y": 500.0
@@ -1890,7 +1901,7 @@
                         {
                             "Type": "nap::ParameterVec2",
                             "mID": "RangeSensorMax",
-                            "Name": "Output Range",
+                            "Name": "Range Output",
                             "Value": {
                                 "x": 40.0,
                                 "y": 90.0
@@ -1902,7 +1913,60 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "RangeSensorSmoothTIme",
-                            "Name": "Smooth Time",
+                            "Name": "Range Smooth Time",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Proximity Sensor",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "ProximitySensorEnable",
+                            "Name": "Proximity Enable",
+                            "Value": true
+                        },
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "ProximitySensorTarget",
+                            "Name": "Proximity Effect",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "ProximitySensorMin",
+                            "Name": "Proximity Input",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "ProximitySensorMax",
+                            "Name": "Proximity Output",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ProximitySensorSmoothTIme",
+                            "Name": "Proximity Smooth Time",
                             "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 10.0
@@ -2007,7 +2071,7 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "InputEntity",
+                    "Entity": "SensorEntity",
                     "InstanceProperties": []
                 }
             ]
