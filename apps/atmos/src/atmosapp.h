@@ -78,6 +78,8 @@ namespace nap
 		ObjectPtr<EntityInstance>		mLineEntity			= nullptr;		///< Pointer to the cam path entity
 		ObjectPtr<EntityInstance>		mVideoEntity		= nullptr;		///< Pointer to the video entity
 		ObjectPtr<EntityInstance>		mVideoCameraEntity	= nullptr;		///< Pointer to the camera that renders the video
+		ObjectPtr<EntityInstance>		mSensorEntity		= nullptr;		///< Pointer to the sensor entity that handles sensory input		
+		
 		ObjectPtr<YoctoRangeSensor>		mRangeSensor		= nullptr;		///< Yoctopuce range sensor
 		ObjectPtr<YoctoProximitySensor> mProximitySensor	= nullptr;		///< Yoctopuce proximity sensor
 

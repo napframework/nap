@@ -54,6 +54,7 @@ namespace nap
 		mVideoEntity = scene->findEntity("VideoPlaneEntity");
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 		mLineEntity = scene->findEntity("LineEntity");
+		mSensorEntity = scene->findEntity("SensorEntity");
 
 		// Get yocto sensors
 		mRangeSensor = mResourceManager->findObject("RangeSensor");
@@ -79,7 +80,7 @@ namespace nap
 		nap::DefaultInputRouter input_router;
 		
 		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
+		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get(), mSensorEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Upate GUI

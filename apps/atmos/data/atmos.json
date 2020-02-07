@@ -391,6 +391,16 @@
                     "OutputRange": "ProximitySensorMax",
                     "Index": "ProximitySensorTarget",
                     "SmoothTime": "ProximitySensorSmoothTIme"
+                },
+                {
+                    "Type": "nap::TouchInputComponent",
+                    "mID": "ApplyTouchComponent",
+                    "Parameter": "PathCamRotation",
+                    "Speed": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "TouchInputComponent"
                 }
             ],
             "Children": []
