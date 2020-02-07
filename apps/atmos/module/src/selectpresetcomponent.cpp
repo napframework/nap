@@ -71,7 +71,6 @@ namespace nap
 		//this fails miserably:
 		//if (mCurrentPreset != mPresets[resource->mPresetIndex])
 		//		selectPreset(resource->mPresetIndex);
-
 		return true;
 	}
 
@@ -174,9 +173,6 @@ namespace nap
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 
 		//fog settings
-	
-		mFogGroup;
-
 		mCurrentColor = resourceManager->findObject<ParameterRGBColorFloat>("Fog Color").get()->mValue;
 		double fogPower = resourceManager->findObject<ParameterFloat>("Fog Power").get()->mValue;
 		double fogInfluence = resourceManager->findObject<ParameterFloat>("Fog Influence").get()->mValue;
@@ -187,7 +183,7 @@ namespace nap
 		mPresetSwitchAnimationState = REVEAL_NEXT;
 		mAnimationTime = 0;
 
-		//TODO fix...	
+		//TODO fix..somehow these values become the fade to black settings....WHY
 		/*
 		mFogSettingsStart = glm::vec4(fogMin,
 			fogMax,
