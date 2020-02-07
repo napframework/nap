@@ -385,7 +385,8 @@
                             0.0,
                             0.0
                         ]
-                    }
+                    },
+                    "AnimationDuration": 4.0
                 }
             ],
             "Children": []
@@ -1954,6 +1955,14 @@
                                         "Type": "nap::PointerInstancePropertyValue",
                                         "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
                                         "Value": "Background Color"
+                                    }
+                                },
+                                {
+                                    "Path": "AnimationDuration",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_933d924d",
+                                        "Value": 1.0
                                     }
                                 }
                             ]

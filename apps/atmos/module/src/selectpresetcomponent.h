@@ -26,14 +26,15 @@ namespace nap
 		DECLARE_COMPONENT(SelectPresetComponent, SelectPresetComponentInstance)
 	public:
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
+		
+		//NOT USED NOW, BEcause using update material directly
 		ResourcePtr<ParameterRGBColorFloat> mFogColor;
 		ResourcePtr<ParameterRGBColorFloat> mBackgroundColor;
-
 
 		int								mPresetIndex = 0;
 		std::vector<std::string>		mPresets;
 		RGBColorFloat					mFadeColor;
-		float							mFadeDurationInSeconds;
+		float							mAnimationDuration;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -91,20 +92,30 @@ namespace nap
 
 		int mPresetIndex;
 		ParameterService* mParameterService;
+		ParameterGroup* mPresetGroup;
+		nap::rtti::ObjectPtr<EntityInstance> mScanEntity;
+
 		std::vector<std::string> mPresets;
 
 		float mAnimationDuration;
 		float mAnimationTime;
 		RGBColorFloat mFadeColor;
 		RGBColorFloat mCurrentColor;
+		glm::vec4 mFogSettingsStart;
+		glm::vec4 mFogSettingsEnd;
 
 		/**
 		* updatePresetSwitchAnimation SelectPresetComponentInstance. This is called in the update loop
 		* @param deltaTime the delta time
 		*/
 		void updatePresetSwitchAnimation(double deltaTime);
-		void FadeToFadeColor(float fadeProgress);
-
-		RGBColorFloat LerpColors(RGBColorFloat color1, RGBColorFloat color2, float lerpValue);
+		
+		
+		//TODO comments:
+		void fadeToFadeColor(float fadeProgress);
+		RGBColorFloat lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, float lerpValue);
+		void updateFogColor(RGBColorFloat& color);
+		void updateFogSettings(float lerpValue);
+		void startRevealAnimation();
 	};
 }

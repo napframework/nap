@@ -116,6 +116,21 @@ namespace nap
 
 		RGBColorFloat	mFogColor			= { 0.0f, 0.0f, 0.0f };
 
+
+
+		/**
+		* getFogSettings updatematerialcomponentInstance. This is called by NAP core automatically
+		* @param deltaTime time in between frames in seconds
+		*/
+		glm::vec4 getFogSettings();
+
+		/**
+		* fogFade updatematerialcomponentInstance. fades the main fog values from start to end
+		* @param start the fog values to lerp from
+		* @param end the fog values to lerp to
+		*/
+		void fogFade(glm::vec4& start, glm::vec4& end, float lerpAmount);
+
 	private:
 		UpdateMaterialComponent* mUpdateMaterialResource;
 

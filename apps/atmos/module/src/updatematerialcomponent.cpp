@@ -138,6 +138,23 @@ namespace nap
 		return true;
 	}
 
+	glm::vec4 UpdateMaterialComponentInstance::getFogSettings() 
+	{
+		return glm::vec4(mUpdateMaterialResource->mFogMin->mValue,
+			mUpdateMaterialResource->mFogMax->mValue,
+			mUpdateMaterialResource->mFogPower->mValue,
+			mUpdateMaterialResource->mFogInfluence->mValue
+		);
+	}
+
+	void UpdateMaterialComponentInstance::fogFade(glm::vec4& start, glm::vec4& end, float lerpAmount)
+	{
+		glm::vec4 result = nap::math::lerp(start, end, lerpAmount);
+		mUpdateMaterialResource->mFogMin->setValue(result.x);
+		mUpdateMaterialResource->mFogMax->setValue(result.y);
+		mUpdateMaterialResource->mFogPower->setValue(result.z);
+		mUpdateMaterialResource->mFogInfluence->setValue(result.a);
+	}
 
 	void UpdateMaterialComponentInstance::update(double deltaTime)
 	{
