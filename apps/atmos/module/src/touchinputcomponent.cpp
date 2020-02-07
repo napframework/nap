@@ -2,11 +2,14 @@
 
 // External Includes
 #include <entity.h>
+#include <glm/glm.hpp>
 
 // nap::touchinputcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::TouchInputComponent)
+	RTTI_PROPERTY("Enabled",	&nap::TouchInputComponent::mEnabled,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Parameter",	&nap::TouchInputComponent::mParameter,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Speed",		&nap::TouchInputComponent::mSpeed,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SmoothTime",	&nap::TouchInputComponent::mSmoothTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::touchinputcomponentInstance run time class definition 
@@ -34,13 +37,14 @@ namespace nap
 		// Copy members
 		TouchInputComponent* resource = getComponent<TouchInputComponent>();
 		mParameter = resource->mParameter.get();
-		mSpeed = resource->mSpeed;
+		mSpeed = resource->mSpeed.get();
+		mSmoothTime = resource->mSmoothTime.get();
+		mEnabled = resource->mEnabled.get();
 
 		// Connect pointer move slots
 		pointer_component->pressed.connect(std::bind(&TouchInputComponentInstance::onMouseDown, this, std::placeholders::_1));
 		pointer_component->moved.connect(std::bind(&TouchInputComponentInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&TouchInputComponentInstance::onMouseUp, this, std::placeholders::_1));
-
 
 		return true;
 	}
@@ -48,13 +52,21 @@ namespace nap
 
 	void TouchInputComponentInstance::update(double deltaTime)
 	{
+		// Skip when disabled
+		if (!mEnabled->mValue)
+			return;
 
+		mSmoother.mSmoothTime = mSmoothTime->mValue;
+
+		// TODO: Reset target when parameter / preset is loaded.
+		glm::vec2 updated_value = mSmoother.update(mTarget, deltaTime);
+		mParameter->setValue(updated_value);
 	}
 
 
 	void TouchInputComponentInstance::onMouseDown(const PointerPressEvent& pointerPressEvent)
 	{
-		if (!mEnabled)
+		if (!mEnabled->mValue)
 			return;
 		mPressed = true;
 	}
@@ -62,19 +74,20 @@ namespace nap
 
 	void TouchInputComponentInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
 	{
-		if (!mEnabled || !mPressed)
+		if (!mEnabled->mValue || !mPressed)
 			return;
 
 		// Get parameter value and add new pointer value
-		glm::vec2 param_value = mParameter->mValue;
-		param_value += glm::vec2(pointerMoveEvent.mRelY, pointerMoveEvent.mRelX) * mSpeed;
-		mParameter->setValue(param_value);
+		// Clamp because we want to keep in range here
+		mTarget += glm::vec2(pointerMoveEvent.mRelX, pointerMoveEvent.mRelY) * mSpeed->mValue;
+		mTarget.x = math::clamp<float>(mTarget.x, mParameter->mMinimum, mParameter->mMaximum);
+		mTarget.y = math::clamp<float>(mTarget.y, mParameter->mMinimum, mParameter->mMaximum);
 	}
 
 
 	void TouchInputComponentInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
-		if (!mEnabled)
+		if (!mEnabled->mValue)
 			return;
 		mPressed = false;
 	}

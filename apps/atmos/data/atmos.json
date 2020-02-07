@@ -395,8 +395,10 @@
                 {
                     "Type": "nap::TouchInputComponent",
                     "mID": "ApplyTouchComponent",
+                    "Enabled": "TouchEnabled",
                     "Parameter": "PathCamRotation",
-                    "Speed": 0.10000000149011612
+                    "Speed": "TouchSensorSpeed",
+                    "SmoothTime": "TouchSmoothTime"
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -1849,8 +1851,8 @@
                                 "y": 0.0
                             },
                             "Clamp": true,
-                            "Minimum": -90.0,
-                            "Maximum": 90.0
+                            "Minimum": -70.0,
+                            "Maximum": 70.0
                         }
                     ],
                     "Groups": []
@@ -1978,6 +1980,35 @@
                             "mID": "ProximitySensorSmoothTIme",
                             "Name": "Proximity Smooth Time",
                             "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Touch Sensor",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "TouchEnabled",
+                            "Name": "Enable Touch",
+                            "Value": false
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "TouchSensorSpeed",
+                            "Name": "Touch Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "TouchSmoothTime",
+                            "Name": "Touch Smooth Time",
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         }

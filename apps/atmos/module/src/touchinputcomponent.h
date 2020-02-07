@@ -5,6 +5,7 @@
 #include <nap/resourceptr.h>
 #include <parametervec.h>
 #include <parameternumeric.h>
+#include <parametersimple.h>
 #include <smoothdamp.h>
 
 namespace nap
@@ -12,7 +13,7 @@ namespace nap
 	class TouchInputComponentInstance;
 
 	/**
-	 *	touchinputcomponent
+	 * Maps touch / mouse input to a vec2 parameter
 	 */
 	class NAPAPI TouchInputComponent : public Component
 	{
@@ -27,12 +28,14 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ResourcePtr<ParameterVec2>	mParameter;			///< Property: 'Parameter' parameter to map
-		float mSpeed = 1.0f;							///< Property: 'Speed' movement speed
+		ResourcePtr<ParameterBool>	mEnabled;			///< Property: 'Enabled' if this component forwards touch input
+		ResourcePtr<ParameterFloat> mSpeed;				///< Property: 'Speed' movement speed
+		ResourcePtr<ParameterFloat> mSmoothTime;		///< Property: 'SmoothTime' smooth time
 	};
 
 
 	/**
-	 * touchinputcomponentInstance	
+	 * Maps touch / mouse input to a vec2 parameter
 	 */
 	class NAPAPI TouchInputComponentInstance : public ComponentInstance
 	{
@@ -55,11 +58,6 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		/**
-		 * Enable forwarding of events
-		 */
-		void enable(bool value)							{ mEnabled = value; }
-
 	private:
 		/**
 		 * Handler for mouse down events
@@ -78,7 +76,10 @@ namespace nap
 
 		bool mPressed = false;
 		ParameterVec2* mParameter = nullptr;
-		float mSpeed = 1.0f;
-		bool mEnabled = true;
+		ParameterFloat* mSpeed = nullptr;
+		ParameterBool* mEnabled = nullptr;
+		ParameterFloat* mSmoothTime = nullptr;
+		math::Vec2SmoothOperator mSmoother = { {0,0}, 1.0f };
+		glm::vec2 mTarget = { 0,0 };
 	};
 }

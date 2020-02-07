@@ -117,8 +117,8 @@ namespace nap
 
 		// Apply rotation to tangent based on given rotation values
 		glm::mat4 rotationMat(1); // Creates a identity matrix
-		rotationMat = glm::rotate(rotationMat, glm::radians(mRotation.x), line_normal);
-		rotationMat = glm::rotate(rotationMat, glm::radians(mRotation.y), up_vec);
+		rotationMat = glm::rotate(rotationMat, glm::radians(mRotation.y), line_normal);
+		rotationMat = glm::rotate(rotationMat, glm::radians(mRotation.x), up_vec);
 		rotationMat = glm::rotate(rotationMat, glm::radians(mRotation.z), tangent);
 		tangent = rotationMat * glm::vec4(tangent,0.0f);
 
