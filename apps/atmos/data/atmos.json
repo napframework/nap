@@ -1957,6 +1957,30 @@
                                         "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
                                         "Value": "Background Color"
                                     }
+                                },
+                                {
+                                    "Path": "FadeColor/Values/0",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_aaa50b42",
+                                        "Value": 1.0
+                                    }
+                                },
+                                {
+                                    "Path": "FadeColor/Values/1",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_a6f9cfea",
+                                        "Value": 1.0
+                                    }
+                                },
+                                {
+                                    "Path": "FadeColor/Values/2",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_a1b95246",
+                                        "Value": 1.0
+                                    }
                                 }
                             ]
                         }
