@@ -398,7 +398,9 @@
                     "Enabled": "TouchEnabled",
                     "Parameter": "PathCamRotation",
                     "Speed": "TouchSensorSpeed",
-                    "SmoothTime": "TouchSmoothTime"
+                    "SmoothTime": "TouchSmoothTime",
+                    "Center": "TouchCenterPoint",
+                    "Bounds": "TouchBounds"
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -2011,6 +2013,30 @@
                             "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "TouchCenterPoint",
+                            "Name": "Touch Center Point",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "TouchBounds",
+                            "Name": "Touch Bounds",
+                            "Value": {
+                                "x": -20.0,
+                                "y": 20.0
+                            },
+                            "Clamp": true,
+                            "Minimum": -70.0,
+                            "Maximum": 70.0
                         }
                     ],
                     "Groups": []

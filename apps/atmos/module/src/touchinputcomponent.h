@@ -31,6 +31,8 @@ namespace nap
 		ResourcePtr<ParameterBool>	mEnabled;			///< Property: 'Enabled' if this component forwards touch input
 		ResourcePtr<ParameterFloat> mSpeed;				///< Property: 'Speed' movement speed
 		ResourcePtr<ParameterFloat> mSmoothTime;		///< Property: 'SmoothTime' smooth time
+		ResourcePtr<ParameterVec2>	mCenterPoint;		///< Property: 'Center' camera center point
+		ResourcePtr<ParameterVec2>	mBounds;			///< Property: 'Bounds' camera bounds
 	};
 
 
@@ -80,6 +82,8 @@ namespace nap
 		ParameterBool* mEnabled = nullptr;
 		ParameterFloat* mSmoothTime = nullptr;
 		math::Vec2SmoothOperator mSmoother = { {0,0}, 1.0f };
+		ParameterVec2* mCenterPoint = nullptr;
+		ParameterVec2* mBounds = nullptr;
 		glm::vec2 mTarget = { 0,0 };
 	};
 }
