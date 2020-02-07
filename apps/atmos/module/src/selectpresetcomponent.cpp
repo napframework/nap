@@ -12,7 +12,8 @@
 RTTI_BEGIN_CLASS(nap::SelectPresetComponent)
 	// Put additional properties here
 	RTTI_PROPERTY("PresetParameterGroup", &nap::SelectPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
-	
+	RTTI_PROPERTY("FogParameterGroup", &nap::SelectPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
+
 	//now controlling update material directly..
 	RTTI_PROPERTY("FogColor", &nap::SelectPresetComponent::mFogColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BackgroundColor", &nap::SelectPresetComponent::mBackgroundColor, nap::rtti::EPropertyMetaData::Required)
@@ -45,9 +46,11 @@ namespace nap
 		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
 	
 		mPresetGroup = resource->mPresetParameterGroup.get();
+		mFogGroup = resource->mFogParameterGroup.get();
+		
 		mParameterService = this->getEntityInstance()->getCore()->getService<nap::ParameterService>();
 		std::vector<std::string> availablePresets = mParameterService->getPresets(*mPresetGroup);
-	
+
 		mFadeColor = resource->mFadeColor;
 		mAnimationDuration = resource->mAnimationDuration;
 
@@ -64,6 +67,10 @@ namespace nap
 
 			mPresets.push_back(preset);
 		}
+
+		//this fails miserably:
+		//if (mCurrentPreset != mPresets[resource->mPresetIndex])
+		//		selectPreset(resource->mPresetIndex);
 
 		return true;
 	}
@@ -104,7 +111,10 @@ namespace nap
 	void SelectPresetComponentInstance::loadPreset(const std::string& presetPath)
 	{
 		nap::Logger::debug("loading preset: %s...", presetPath);
+		mCurrentPreset = presetPath;
 
+		mParameterService->presetLoaded.connect(mPresetLoaded);
+	
 		utility::ErrorState presetLoadError;
 		if (!mParameterService->loadPreset(*mPresetGroup, presetPath, presetLoadError))
 		{
@@ -136,11 +146,10 @@ namespace nap
 			break;
 		case nap::LOAD_NEXT:
 			mPresetSwitchAnimationState = WAIT_FOR_LOAD;
-			loadPreset(mNextPreset);	
+			loadPreset(mNextPreset);
 			break;
 		case  nap::WAIT_FOR_LOAD:
-			//TODO check for change in load status to start reveal...
-			//startRevealAnimation();
+			//waiting on preset loaded to come back
 			break;
 		case nap::REVEAL_NEXT:
 			mAnimationTime = mAnimationTime + deltaTime;
@@ -164,12 +173,32 @@ namespace nap
 		mScanEntity = scene->findEntity("ScanEntity");
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 
-		//changing the current fog color to that of the new scene...no idea if this works
-		mCurrentColor = up_mat_comp.mFogColor;
+		//fog settings
+		mCurrentColor = resourceManager->findObject<ParameterRGBColorFloat>("Fog Color").get()->mValue;
+		double fogPower = resourceManager->findObject<ParameterFloat>("Fog Power").get()->mValue;
+		double fogInfluence = resourceManager->findObject<ParameterFloat>("Fog Influence").get()->mValue;
+		double fogMin = resourceManager->findObject<ParameterFloat>("Fog Min").get()->mValue;
+		double fogMax = resourceManager->findObject<ParameterFloat>("Fog Max").get()->mValue;
+
 		fadeToFadeColor(1);
 		mPresetSwitchAnimationState = REVEAL_NEXT;
 		mAnimationTime = 0;
-		mFogSettingsStart = up_mat_comp.getFogSettings();
+
+		//TODO 
+		/*
+		mFogSettingsStart = glm::vec4(fogMin,
+			fogMax,
+			fogPower,
+			fogInfluence);
+			*/
+
+		//temporary:.....
+		mFogSettingsStart = glm::vec4(0.75,
+			2,
+			1,
+			2);
+
+
 		mFogSettingsEnd = glm::vec4(0, 1, 0, 1);
 	}
 
@@ -178,14 +207,7 @@ namespace nap
 			fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
 
 			RGBColorFloat color = lerpColors(mCurrentColor, mFadeColor, fadeProgress);
-
-			//this is how I did it before:
-			//nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
-			//resource->mFogColor->setValue(color);
-			//resource->mBackgroundColor->setValue(color);
-
-			//this more direct way is how I do it now:
-			//updateFogColor(color);
+			updateFogColor(color);
 			updateFogSettings(fadeProgress);
 	}
 
@@ -199,6 +221,11 @@ namespace nap
 	{
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 		up_mat_comp.fogFade(mFogSettingsStart, mFogSettingsEnd, lerpValue);
+	}
+
+	void SelectPresetComponentInstance::onPresetLoaded(std::string& presetFile)
+	{
+		startRevealAnimation();
 	}
 
 	RGBColorFloat SelectPresetComponentInstance::lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, double lerpValue)

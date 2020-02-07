@@ -138,6 +138,8 @@ namespace nap
 		return true;
 	}
 
+
+
 	glm::vec4 UpdateMaterialComponentInstance::getFogSettings() 
 	{
 		return glm::vec4(mUpdateMaterialResource->mFogMin->mValue,

@@ -27,6 +27,7 @@ namespace nap
 		DECLARE_COMPONENT(SelectPresetComponent, SelectPresetComponentInstance)
 	public:
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
+		ResourcePtr<ParameterGroup> mFogParameterGroup;
 		
 		//NOT USED NOW, BEcause using update material directly
 		ResourcePtr<ParameterRGBColorFloat> mFogColor;
@@ -89,11 +90,14 @@ namespace nap
 
 	private:
 		PresetSwitchAnimationState mPresetSwitchAnimationState = PresetSwitchAnimationState::NONE;
+		std::string mCurrentPreset;
 		std::string mNextPreset;
 
 		int mPresetIndex;
 		ParameterService* mParameterService;
 		ParameterGroup* mPresetGroup;
+		ParameterGroup* mFogGroup;
+
 		nap::rtti::ObjectPtr<EntityInstance> mScanEntity;
 
 		std::vector<std::string> mPresets;
@@ -118,5 +122,8 @@ namespace nap
 		void updateFogColor(RGBColorFloat& color);
 		void updateFogSettings(double lerpValue);
 		void startRevealAnimation();
+		void onPresetLoaded(std::string& presetFile);
+
+		nap::Slot<std::string> mPresetLoaded = { this, &SelectPresetComponentInstance::onPresetLoaded };
 	};
 }

@@ -372,6 +372,7 @@
                     "Type": "nap::SelectPresetComponent",
                     "mID": "nap::SelectPresetComponent_575622cc",
                     "PresetParameterGroup": "Parameters",
+                    "FogParameterGroup": "Fog",
                     "FogColor": "Fog Color",
                     "BackgroundColor": "Background Color",
                     "PresetIndex": 0,
@@ -1955,14 +1956,6 @@
                                         "Type": "nap::PointerInstancePropertyValue",
                                         "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
                                         "Value": "Background Color"
-                                    }
-                                },
-                                {
-                                    "Path": "AnimationDuration",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "instanceProp_float_933d924d",
-                                        "Value": 1.0
                                     }
                                 }
                             ]
