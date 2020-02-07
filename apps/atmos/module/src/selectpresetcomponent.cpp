@@ -135,11 +135,11 @@ namespace nap
 				mPresetSwitchAnimationState = LOAD_NEXT;
 			break;
 		case nap::LOAD_NEXT:
-			loadPreset(mNextPreset);
-			mPresetSwitchAnimationState = NONE;
-
-
-			//TODO where to test for new scene loaded?
+			mPresetSwitchAnimationState = WAIT_FOR_LOAD;
+			loadPreset(mNextPreset);	
+			break;
+		case  nap::WAIT_FOR_LOAD:
+			//TODO check for change in load status to start reveal...
 			//startRevealAnimation();
 			break;
 		case nap::REVEAL_NEXT:
@@ -164,18 +164,19 @@ namespace nap
 		mScanEntity = scene->findEntity("ScanEntity");
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 
-
 		//changing the current fog color to that of the new scene...no idea if this works
 		mCurrentColor = up_mat_comp.mFogColor;
 		fadeToFadeColor(1);
 		mPresetSwitchAnimationState = REVEAL_NEXT;
 		mAnimationTime = 0;
 		mFogSettingsStart = up_mat_comp.getFogSettings();
-		mFogSettingsEnd = glm::vec4(0, 1, 0, 1); //have to find correct values
+		mFogSettingsEnd = glm::vec4(0, 1, 0, 1);
 	}
 
-	void SelectPresetComponentInstance::fadeToFadeColor(float fadeProgress) 
+	void SelectPresetComponentInstance::fadeToFadeColor(double fadeProgress) 
 	{
+			fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
+
 			RGBColorFloat color = lerpColors(mCurrentColor, mFadeColor, fadeProgress);
 
 			//this is how I did it before:
@@ -184,7 +185,7 @@ namespace nap
 			//resource->mBackgroundColor->setValue(color);
 
 			//this more direct way is how I do it now:
-			updateFogColor(color);
+			//updateFogColor(color);
 			updateFogSettings(fadeProgress);
 	}
 
@@ -194,13 +195,13 @@ namespace nap
 		up_mat_comp.mFogColor = color;
 	}
 
-	void SelectPresetComponentInstance::updateFogSettings(float lerpValue)
+	void SelectPresetComponentInstance::updateFogSettings(double lerpValue)
 	{
 		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
 		up_mat_comp.fogFade(mFogSettingsStart, mFogSettingsEnd, lerpValue);
 	}
 
-	RGBColorFloat SelectPresetComponentInstance::lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, float lerpValue)
+	RGBColorFloat SelectPresetComponentInstance::lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, double lerpValue)
 	{
 		glm::vec3 colorResultVec = nap::math::lerp<glm::vec3>(color1.toVec3(), color2.toVec3(), lerpValue);
 		return RGBColorFloat(colorResultVec.r, colorResultVec.g, colorResultVec.b);;

@@ -11,7 +11,8 @@ namespace nap
 	enum PresetSwitchAnimationState {
 		NONE,
 		FADE_OUT_CURRENT,
-		LOAD_NEXT, 
+		LOAD_NEXT,
+		WAIT_FOR_LOAD,
 		REVEAL_NEXT
 	};
 
@@ -112,10 +113,10 @@ namespace nap
 		
 		
 		//TODO comments:
-		void fadeToFadeColor(float fadeProgress);
-		RGBColorFloat lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, float lerpValue);
+		void fadeToFadeColor(double fadeProgress);
+		RGBColorFloat lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, double lerpValue);
 		void updateFogColor(RGBColorFloat& color);
-		void updateFogSettings(float lerpValue);
+		void updateFogSettings(double lerpValue);
 		void startRevealAnimation();
 	};
 }
