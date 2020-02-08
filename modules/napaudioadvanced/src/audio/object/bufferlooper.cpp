@@ -14,6 +14,7 @@ RTTI_BEGIN_CLASS(nap::audio::BufferLooper)
     RTTI_PROPERTY("Settings", &nap::audio::BufferLooper::mSettings, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("ChannelCount", &nap::audio::BufferLooper::mChannelCount, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("AutoPlay", &nap::audio::BufferLooper::mAutoPlay, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("EqualPowerTable", &nap::audio::BufferLooper::mEqualPowerTable, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -25,7 +26,7 @@ namespace nap
         std::unique_ptr<AudioObjectInstance> BufferLooper::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             auto instance = std::make_unique<BufferLooperInstance>();
-            if (!instance->init(mSettings, mChannelCount, mAutoPlay, nodeManager, errorState))
+            if (!instance->init(mSettings, mEqualPowerTable, mChannelCount, mAutoPlay, nodeManager, errorState))
                 return nullptr;
             
             return std::move(instance);
@@ -83,7 +84,7 @@ namespace nap
         }
 
 
-        bool BufferLooperInstance::init(BufferLooper::Settings& settings, int channelCount, bool autoPlay, NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool BufferLooperInstance::init(BufferLooper::Settings& settings, ResourcePtr<EqualPowerTable> equalPowerTable, int channelCount, bool autoPlay, NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             mSettings = settings;
             
@@ -128,6 +129,7 @@ namespace nap
             mEnvelope->mSegments.emplace_back(sustain);
             mEnvelope->mSegments.emplace_back(decay);
             mEnvelope->mAutoTrigger = false;
+            mEnvelope->mEqualPowerTable = equalPowerTable;
             if (!mEnvelope->init(errorState))
             {
                 errorState.fail("Failed to initialize BufferLooper " + getName());

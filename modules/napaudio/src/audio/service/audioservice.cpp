@@ -87,6 +87,7 @@ namespace nap
         {
             factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
             factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
+            factory.addObjectCreator(std::make_unique<MultiAudioFileResourceObjectCreator>(*this));
         }
 
         

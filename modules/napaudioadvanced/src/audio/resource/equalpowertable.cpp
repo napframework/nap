@@ -1,6 +1,7 @@
 #include "equalpowertable.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::EqualPowerTable)
+        RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
         RTTI_PROPERTY("Size", &nap::audio::EqualPowerTable::mSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

@@ -4,6 +4,7 @@ RTTI_BEGIN_CLASS(nap::audio::Sampler)
     RTTI_PROPERTY("SamplerEntries", &nap::audio::Sampler::mSampleEntries, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("EnvelopeData", &nap::audio::Sampler::mEnvelopeData, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("ChannelCount", &nap::audio::Sampler::mChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("EqualPowerTable", &nap::audio::Sampler::mEqualPowerTable, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::audio::SamplerInstance)
@@ -29,14 +30,14 @@ namespace nap
         std::unique_ptr<AudioObjectInstance> Sampler::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             auto instance = std::make_unique<SamplerInstance>();
-            if (!instance->init(mSampleEntries, mEnvelopeData, mChannelCount, nodeManager, errorState))
+            if (!instance->init(mSampleEntries, mEqualPowerTable, mEnvelopeData, mChannelCount, nodeManager, errorState))
                 return nullptr;
             
             return std::move(instance);
         }
 
         
-        bool SamplerInstance::init(Sampler::SamplerEntries& samplerEntries, EnvelopeNode::Envelope& envelopeData, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool SamplerInstance::init(Sampler::SamplerEntries& samplerEntries, ResourcePtr<EqualPowerTable> equalPowerTable, EnvelopeNode::Envelope& envelopeData, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             mSamplerEntries = samplerEntries;
             mEnvelopeData = envelopeData;
@@ -51,6 +52,7 @@ namespace nap
             if (!mSamplerEntries.empty())
                 mBufferLooper->mSettings = mSamplerEntries[0];
             mBufferLooper->mChannelCount = channelCount;
+            mBufferLooper->mEqualPowerTable = equalPowerTable;
             if (!mBufferLooper->init(errorState))
             {
                 errorState.fail("Failed to initialize BufferLooper");
@@ -62,6 +64,7 @@ namespace nap
             mEnvelope->mID = "Envelope";
             mEnvelope->mSegments = mEnvelopeData;
             mEnvelope->mAutoTrigger = false;
+            mEnvelope->mEqualPowerTable = equalPowerTable;
             if (!mEnvelope->init(errorState))
             {
                 errorState.fail("Failed to initialize Sampler " + getName());
@@ -103,8 +106,13 @@ namespace nap
                 errorState.fail("Failed to initialize Sampler " + getName());
                 return false;
             }
-            
+
             mPolyphonicInstance = mPolyphonic->instantiate<PolyphonicObjectInstance>(nodeManager, errorState);
+            if (mPolyphonicInstance == nullptr)
+            {
+                errorState.fail("Failed to instantiate polyphonic.");
+                return false;
+            }
             
             return true;
         }

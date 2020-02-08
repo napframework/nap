@@ -19,6 +19,8 @@ namespace nap
          */
         class NAPAPI EqualPowerTable : public Resource
         {
+            RTTI_ENABLE(Resource)
+
         public:
             EqualPowerTable(NodeManager& nodeManager) : mNodeManager(&nodeManager) {  }
 

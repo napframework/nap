@@ -39,12 +39,12 @@ namespace nap
         {
             RTTI_ENABLE(AudioBufferResource)
         public:
-            class NAPAPI PathResource : public Resource
-            {
-                RTTI_ENABLE(Resource)
-            public:
-                std::string mAudioFilePath = "";
-            };
+//            class NAPAPI PathResource : public Resource
+//            {
+//                RTTI_ENABLE(Resource)
+//            public:
+//                std::string mAudioFilePath = "";
+//            };
             
         public:
             MultiAudioFileResource(AudioService& service) : AudioBufferResource(service) { }

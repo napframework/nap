@@ -49,6 +49,7 @@ namespace nap
             Settings mSettings;                                         ///< property: 'Settings' All the playback settings
             int mChannelCount = 1;                                      ///< property: 'ChannelCount' Number of channels
             bool mAutoPlay = true;                                      ///< property: 'AutoPlay' Indicates wether playback will be started on init
+            ResourcePtr<EqualPowerTable> mEqualPowerTable;              ///< property: 'EqualPowerTable'
             
         private:
             std::unique_ptr<AudioObjectInstance> createInstance(NodeManager& nodeManager, utility::ErrorState& errorState) override;
@@ -64,7 +65,7 @@ namespace nap
             BufferLooperInstance() : AudioObjectInstance() { }
             BufferLooperInstance(const std::string& name) : AudioObjectInstance(name) { }
 
-            bool init(BufferLooper::Settings& settings, int channelCount, bool autoPlay, NodeManager& nodeManager, utility::ErrorState& errorState);
+            bool init(BufferLooper::Settings& settings, ResourcePtr<EqualPowerTable> equalPowerTable, int channelCount, bool autoPlay, NodeManager& nodeManager, utility::ErrorState& errorState);
             OutputPin* getOutputForChannel(int channel) override { return mPolyphonicInstance->getOutputForChannel(channel); }
             int getChannelCount() const override { return mPolyphonicInstance->getChannelCount(); }
 

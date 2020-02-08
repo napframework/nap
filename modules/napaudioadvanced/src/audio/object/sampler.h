@@ -21,8 +21,9 @@ namespace nap
             bool init(utility::ErrorState& errorState) override;
             
             SamplerEntries mSampleEntries;                              ///< property: 'SampleEntries' Default set of different playback settings
-            EnvelopeNode::Envelope mEnvelopeData;                  ///< property: 'Envelope' Default envelope settings
+            EnvelopeNode::Envelope mEnvelopeData;                       ///< property: 'Envelope' Default envelope settings
             int mChannelCount = 1;                                      ///< property: 'ChannelCount' Number of channels
+            ResourcePtr<EqualPowerTable> mEqualPowerTable = nullptr;    ///< property: 'EqualPowerTable'
             
         private:
             std::unique_ptr<AudioObjectInstance> createInstance(NodeManager& nodeManager, utility::ErrorState& errorState) override;
@@ -46,7 +47,7 @@ namespace nap
              * @param errorState contains error information if the init() fails
              * @return true on success
              */
-            bool init(Sampler::SamplerEntries& sampleEntries, EnvelopeNode::Envelope& envelopeData, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
+            bool init(Sampler::SamplerEntries& sampleEntries, ResourcePtr<EqualPowerTable> equalPowerTable, EnvelopeNode::Envelope& envelopeData, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
 
             // Inhrited from AudioObjectInstance
             OutputPin* getOutputForChannel(int channel) override { return mPolyphonicInstance->getOutputForChannel(channel); }

@@ -13,6 +13,7 @@ RTTI_ENUM_VALUE(nap::audio::AudioFileDescriptor::Mode::READWRITE, "ReadWrite")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileIO)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
     RTTI_PROPERTY("Path", &nap::audio::AudioFileIO::mPath, nap::rtti::EPropertyMetaData::FileLink)
     RTTI_PROPERTY("Mode", &nap::audio::AudioFileIO::mMode, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("ChannelCount", &nap::audio::AudioFileIO::mChannelCount, nap::rtti::EPropertyMetaData::Default)
