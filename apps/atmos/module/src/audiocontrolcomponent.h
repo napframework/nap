@@ -27,8 +27,9 @@ namespace nap
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { }
 
         ComponentPtr<audio::AudioComponent> mAudioComponent; ///< Property: "AudioComponent"
-        ResourcePtr<ParameterInt> mLayer1 = nullptr; ///< Property: "Layer1"
-        ResourcePtr<ParameterInt> mLayer2 = nullptr; ///< Property: "Layer2"
+        ResourcePtr<ParameterInt> mLayer1 = nullptr; ///< Property: 'Layer1'
+        ResourcePtr<ParameterInt> mLayer2 = nullptr; ///< Property: 'Layer2'
+        ResourcePtr<ParameterFloat> mCrossFadeTime = nullptr; ///< Property: 'CrossFadeTime'
     };
 
 
@@ -51,6 +52,7 @@ namespace nap
         // Pointers to parameters
         ParameterInt* mLayer1 = nullptr;
         ParameterInt* mLayer2 = nullptr;
+        ParameterFloat* mCrossFadeTime = nullptr;
 
     private:
         Slot<int> mLayerChangedSlot = { this, &AudioControlComponentInstance::layerChanged };

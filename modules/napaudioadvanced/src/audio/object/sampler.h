@@ -23,6 +23,7 @@ namespace nap
             SamplerEntries mSampleEntries;                              ///< property: 'SampleEntries' Default set of different playback settings
             EnvelopeNode::Envelope mEnvelopeData;                       ///< property: 'Envelope' Default envelope settings
             int mChannelCount = 1;                                      ///< property: 'ChannelCount' Number of channels
+            int mVoiceCount = 10;                                       ///< property: 'VoiceCount' Number of voices in the pool.
             ResourcePtr<EqualPowerTable> mEqualPowerTable = nullptr;    ///< property: 'EqualPowerTable'
             
         private:
@@ -47,7 +48,7 @@ namespace nap
              * @param errorState contains error information if the init() fails
              * @return true on success
              */
-            bool init(Sampler::SamplerEntries& sampleEntries, ResourcePtr<EqualPowerTable> equalPowerTable, EnvelopeNode::Envelope& envelopeData, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
+            bool init(Sampler::SamplerEntries& sampleEntries, ResourcePtr<EqualPowerTable> equalPowerTable, EnvelopeNode::Envelope& envelopeData, int channelCount, int voiceCount, NodeManager& nodeManager, utility::ErrorState& errorState);
 
             // Inhrited from AudioObjectInstance
             OutputPin* getOutputForChannel(int channel) override { return mPolyphonicInstance->getOutputForChannel(channel); }

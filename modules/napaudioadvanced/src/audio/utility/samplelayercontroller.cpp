@@ -13,6 +13,7 @@ namespace nap
 
         void SampleLayerController::startLayer(int samplerEntryIndex, TimeValue attack)
         {
+            // If the layer is already playing, exit
             if (mLayerVoices.find(samplerEntryIndex) != mLayerVoices.end())
                 return;
 

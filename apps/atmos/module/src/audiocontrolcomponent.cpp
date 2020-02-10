@@ -7,6 +7,7 @@ RTTI_BEGIN_CLASS(nap::AudioControlComponent)
     RTTI_PROPERTY("AudioComponent", &nap::AudioControlComponent::mAudioComponent,			nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Layer1", &nap::AudioControlComponent::mLayer1, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Layer2", &nap::AudioControlComponent::mLayer2, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("CrossFadeTime", &nap::AudioControlComponent::mCrossFadeTime, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioControlComponentInstance)
@@ -43,6 +44,7 @@ namespace nap
         mLayer2 = component->mLayer2.get();
         mLayer2->setRange(-1, sampler->getSamplerEntries().size() - 1);
         mLayer2->valueChanged.connect(mLayerChangedSlot);
+        mCrossFadeTime = component->mCrossFadeTime.get();
 
         return true;
     }
@@ -56,7 +58,7 @@ namespace nap
             samplerEntries.emplace(mLayer1->mValue);
         if (mLayer2->mValue > -1)
             samplerEntries.emplace(mLayer2->mValue);
-        mLayerController->replaceLayers({ mLayer1->mValue, mLayer2->mValue }, 5000, 5000);
+        mLayerController->replaceLayers(samplerEntries, mCrossFadeTime->mValue, mCrossFadeTime->mValue);
     }
 
 

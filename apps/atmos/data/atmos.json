@@ -44,7 +44,8 @@
                     "mID": "nap::AudioControlComponent_bb6e3b8d",
                     "AudioComponent": "./nap::audio::AudioComponent_ec7cdb54",
                     "Layer1": "AudioLayer1",
-                    "Layer2": "AudioLayer2"
+                    "Layer2": "AudioLayer2",
+                    "CrossFadeTime": ""
                 }
             ],
             "Children": []
@@ -1938,6 +1939,14 @@
                             "Value": -1,
                             "Minimum": -1,
                             "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "CrossFadeTime",
+                            "Name": "Crossfade Time",
+                            "Value": 5000.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10000.0
                         }
                     ],
                     "Groups": []
@@ -2106,7 +2115,21 @@
                 },
                 {
                     "Entity": "AudioEntity",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./nap::AudioControlComponent_bb6e3b8d",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "CrossFadeTime",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_000075-048310-000388-002614",
+                                        "Value": "CrossFadeTime"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
@@ -2210,6 +2233,7 @@
                     ],
                     "EnvelopeData": [],
                     "ChannelCount": 4,
+                    "VoiceCount": 10,
                     "EqualPowerTable": "EqualPowerTable"
                 }
             ],
