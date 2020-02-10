@@ -8,6 +8,7 @@
 #include <nap/numeric.h>
 #include "rtti/factory.h"
 #include "vulkan/vulkan_core.h"
+#include "vk_mem_alloc.h"
 
 namespace nap
 {
@@ -161,7 +162,8 @@ namespace nap
 		friend class RenderTarget;
 		RenderService*				mRenderService = nullptr;
 		VkImage						mTextureImage = nullptr;
-		VkDeviceMemory				mTextureImageMemory = nullptr;
+ 		VmaAllocation				mTextureAllocation = nullptr;
+ 		VmaAllocationInfo			mTextureAllocationInfo;
 		opengl::Texture2D			mTexture;			///< Internal opengl texture
 		VkImageView					mTextureView;
 	};

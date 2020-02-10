@@ -155,82 +155,30 @@ namespace nap
 
 	namespace 
 	{
-		uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+		bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 		{
-			VkPhysicalDeviceMemoryProperties memProperties;
-			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+			VkImageCreateInfo image_info = {};
+			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			image_info.imageType = VK_IMAGE_TYPE_2D;
+			image_info.extent.width = width;
+			image_info.extent.height = height;
+			image_info.extent.depth = 1;
+			image_info.mipLevels = 1;
+			image_info.arrayLayers = 1;
+			image_info.format = format;
+			image_info.tiling = tiling;
+			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			image_info.usage = usage;
+			image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-				if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-					return i;
-				}
-			}
+			VmaAllocationCreateInfo alloc_info = {};
+			alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+			alloc_info.flags = 0;
 
-			return -1;
+			return vmaCreateImage(vmaAllocator, &image_info, &alloc_info, &image, &allocation, &allocationInfo) == VK_SUCCESS;
 		}
 
-		bool createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, utility::ErrorState& errorState)
-		{
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = size;
-			bufferInfo.usage = usage;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			if (!errorState.check(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "could not create buffer"))
-				return false;
-
-			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-
-			if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Could not allocate memory for buffer"))
-				return false;
-
-			if (!errorState.check(vkBindBufferMemory(device, buffer, bufferMemory, 0) == VK_SUCCESS, "Coult not bind buffer memory"))
-				return false;
-
-			return true;
-		}
-
-		bool createImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
-		{
-			VkImageCreateInfo imageInfo = {};
-			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			imageInfo.imageType = VK_IMAGE_TYPE_2D;
-			imageInfo.extent.width = width;
-			imageInfo.extent.height = height;
-			imageInfo.extent.depth = 1;
-			imageInfo.mipLevels = 1;
-			imageInfo.arrayLayers = 1;
-			imageInfo.format = format;
-			imageInfo.tiling = tiling;
-			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			imageInfo.usage = usage;
-			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
-				return false;
-
-			VkMemoryRequirements memRequirements;
-			vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-
-			if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "Failed to allocate image memory"))
-				return false;
-
-			vkBindImageMemory(device, image, imageMemory, 0);
-			return true;
-		}
 
 	VkFormat getTextureFormat(const Bitmap& bitmap)
 		{
@@ -446,29 +394,43 @@ namespace nap
 
 		VkDeviceSize imageSize = getNumComponents(bitmap.getChannels()) * getComponentSize(bitmap.getDataType()) * bitmap.getWidth() * bitmap.getHeight();
 		
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+
 		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		if (!createBuffer(device, physicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, errorState))
+		VmaAllocation allocation;
+		VmaAllocationInfo allocationInfo;
+
+		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = imageSize;
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		allocInfo.flags = 0;
+
+		if (!errorState.check(vmaCreateBuffer(vulkan_allocator, &bufferInfo, &allocInfo, &stagingBuffer, &allocation, &allocationInfo) == VK_SUCCESS, "Could not allocate buffer for texture"))
 			return false;
 
-		void* data;
-		vkMapMemory(mRenderService->getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, bitmap.getData(), static_cast<size_t>(imageSize));
-		vkUnmapMemory(device, stagingBufferMemory);
+		void* mapped_memory;
+		if (!errorState.check(vmaMapMemory(vulkan_allocator, allocation, &mapped_memory) == VK_SUCCESS, "Unable to map memory to update texture contents"))
+			return false;
+
+		memcpy(mapped_memory, bitmap.getData(), static_cast<size_t>(imageSize));
+		vmaUnmapMemory(vulkan_allocator, allocation);
 
 		VkFormat texture_format = getTextureFormat(bitmap);
 		if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 			return false;
 
-		if (!createImage(device, physicalDevice, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mTextureImage, mTextureImageMemory, errorState))
+		if (!createImage(vulkan_allocator, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mTextureImage, mTextureAllocation, mTextureAllocationInfo, errorState))
 			return false;
 
 		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		copyBufferToImage(*mRenderService, stagingBuffer, mTextureImage, static_cast<uint32_t>(bitmap.getWidth()), static_cast<uint32_t>(bitmap.getHeight()));
 		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		vmaDestroyBuffer(vulkan_allocator, stagingBuffer, allocation);
 
 		if (!createImageView(device, mTextureImage, texture_format, mTextureView, errorState))
 			return false;
