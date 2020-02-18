@@ -5,10 +5,11 @@
 #include <parameternumeric.h>
 #include <parameterservice.h>
 #include <parametercolor.h>
+#include "updatematerialcomponent.h"
 
 namespace nap
 {
-	enum PresetSwitchAnimationState {
+	enum PresetSwitchTransitionState {
 		NONE,
 		FADE_OUT_CURRENT,
 		LOAD_NEXT,
@@ -76,30 +77,19 @@ namespace nap
 		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
 		* @param presetIndex index of the preset
 		*/
-		void selectPreset(int presetIndex);
-		
-		/**
-		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
-		* @param presetName the name of the preset
-		*/
-		void selectPreset(const std::string& presetName);
-
-		void loadPreset(const std::string& presetName);
-
-		std::string getCurrentPreset();
+		void selectPresetByIndex(int presetIndex);
 
 	private:
-		PresetSwitchAnimationState mPresetSwitchAnimationState = PresetSwitchAnimationState::NONE;
+		PresetSwitchTransitionState mPresetSwitchAnimationState = PresetSwitchTransitionState::NONE;
 		std::string mCurrentPreset;
 		std::string mNextPreset;
-
-		int mPresetIndex;
+		
 		ParameterService* mParameterService;
-		ParameterGroup* mPresetGroup;
-		ParameterGroup* mFogGroup;
-
-		nap::rtti::ObjectPtr<EntityInstance> mScanEntity;
-
+		ResourcePtr<ParameterGroup> mPresetGroup;
+		ResourcePtr<ParameterRGBColorFloat> mFogColor;
+		ResourcePtr<ParameterGroup> mFogGroup;
+		
+		int mPresetIndex;
 		std::vector<std::string> mPresets;
 
 		float mAnimationDuration;
@@ -110,18 +100,30 @@ namespace nap
 		glm::vec4 mFogSettingsEnd;
 
 		/**
+		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
+		* @param presetName the name of the preset
+		*/
+		void transitionToPreset(const std::string& presetName);
+
+
+		void loadPreset(const std::string& presetName);
+
+		/**
 		* updatePresetSwitchAnimation SelectPresetComponentInstance. This is called in the update loop
 		* @param deltaTime the delta time
 		*/
 		void updatePresetSwitchAnimation(double deltaTime);
-		
-		
+			
 		//TODO comments:
-		void fadeToFadeColor(double fadeProgress);
-		RGBColorFloat lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, double lerpValue);
-		void updateFogColor(RGBColorFloat& color);
-		void updateFogSettings(double lerpValue);
-		void startRevealAnimation();
+		void updateFogFade(double fadeProgress);
+	
+		RGBColorFloat& getFogColor();
+		void setFogColor(RGBColorFloat& color);
+
+		glm::vec4 getFogSettings();
+		void setFogSettings(glm::vec4& fogSettings);
+
+		void startTransition(const PresetSwitchTransitionState& presetSwitchTransitionState);
 		void onPresetLoaded(std::string& presetFile);
 
 		nap::Slot<std::string> mPresetLoaded = { this, &SelectPresetComponentInstance::onPresetLoaded };

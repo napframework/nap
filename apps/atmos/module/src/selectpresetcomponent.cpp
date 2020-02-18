@@ -1,5 +1,5 @@
 #include "SelectPresetComponent.h"
-#include "updatematerialcomponent.h"
+
 
 #include <nap/logger.h>
 #include <entity.h>
@@ -10,15 +10,12 @@
 
 // nap::SelectPresetComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectPresetComponent)
-	// Put additional properties here
 	RTTI_PROPERTY("PresetParameterGroup", &nap::SelectPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FogParameterGroup", &nap::SelectPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
-
-	//now controlling update material directly..
 	RTTI_PROPERTY("FogColor", &nap::SelectPresetComponent::mFogColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BackgroundColor", &nap::SelectPresetComponent::mBackgroundColor, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PresetIndex",	&nap::SelectPresetComponent::mPresetIndex,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Presets",		&nap::SelectPresetComponent::mPresets,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PresetIndex", &nap::SelectPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Presets", &nap::SelectPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FadeColor", &nap::SelectPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("AnimationDuration", &nap::SelectPresetComponent::mAnimationDuration, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -45,9 +42,12 @@ namespace nap
 		
 		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
 	
-		mPresetGroup = resource->mPresetParameterGroup.get();
-		mFogGroup = resource->mFogParameterGroup.get();
-		
+		mPresetGroup = resource->mPresetParameterGroup;
+
+		mFogColor = resource->mFogColor;
+		mFogGroup = resource->mFogParameterGroup;
+		mPresetIndex = -1;
+
 		mParameterService = this->getEntityInstance()->getCore()->getService<nap::ParameterService>();
 		std::vector<std::string> availablePresets = mParameterService->getPresets(*mPresetGroup);
 
@@ -68,50 +68,32 @@ namespace nap
 			mPresets.push_back(preset);
 		}
 
-		//this fails miserably:
-		//if (mCurrentPreset != mPresets[resource->mPresetIndex])
-		//		selectPreset(resource->mPresetIndex);
 		return true;
 	}
 
-	std::string SelectPresetComponentInstance::getCurrentPreset() 
-	{
-		return mPresets[mPresetIndex];
-	}
-
-	void SelectPresetComponentInstance::selectPreset(int index)
+	void SelectPresetComponentInstance::selectPresetByIndex(int index)
 	{
 		if (index >= 0 && index < mPresets.size())
 		{
-			std::string preset = mPresets[index];
-			selectPreset(preset);
+			nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
+			resource->mPresetIndex = index;
 		}
 		else {
 			//ERROR here?
+			assert(0);
 		}
 	}
 
-	void SelectPresetComponentInstance::selectPreset(const std::string& presetPath)
+	void SelectPresetComponentInstance::transitionToPreset(const std::string& presetPath)
 	{
 		mNextPreset = presetPath;
-
-		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
-		nap::rtti::ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
-		mScanEntity = scene->findEntity("ScanEntity");
-		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
-		
-		mCurrentColor = up_mat_comp.mFogColor;
-		mFogSettingsStart = up_mat_comp.getFogSettings();
-		mFogSettingsEnd = glm::vec4(0, 1, 0, 1); 
-		mAnimationTime = 0;
-		mPresetSwitchAnimationState = FADE_OUT_CURRENT;
+		startTransition(PresetSwitchTransitionState::FADE_OUT_CURRENT);
 	}
 
 	void SelectPresetComponentInstance::loadPreset(const std::string& presetPath)
 	{
 		nap::Logger::debug("loading preset: %s...", presetPath);
 		mCurrentPreset = presetPath;
-
 		mParameterService->presetLoaded.connect(mPresetLoaded);
 	
 		utility::ErrorState presetLoadError;
@@ -123,15 +105,19 @@ namespace nap
 
 	void SelectPresetComponentInstance::update(double deltaTime)
 	{
+		if (mPresetIndex != getComponent<SelectPresetComponent>()->mPresetIndex)
+		{
+			mPresetIndex = getComponent<SelectPresetComponent>()->mPresetIndex;
+			std::string presetName = mPresets[mPresetIndex];
+			transitionToPreset(presetName);
+		}
+
 		updatePresetSwitchAnimation(deltaTime);
 	}
-
 
 	void SelectPresetComponentInstance::updatePresetSwitchAnimation(double deltaTime) 
 	{
 		float lerpProgress = 0;
-		nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
-
 		switch (mPresetSwitchAnimationState)
 		{
 		case nap::NONE:
@@ -139,7 +125,8 @@ namespace nap
 		case nap::FADE_OUT_CURRENT:
 			mAnimationTime = mAnimationTime + deltaTime;
 			lerpProgress = mAnimationTime / mAnimationDuration;
-			fadeToFadeColor(lerpProgress);
+			updateFogFade(lerpProgress);
+
 			if (mAnimationTime >= mAnimationDuration)
 				mPresetSwitchAnimationState = LOAD_NEXT;
 			break;
@@ -148,13 +135,13 @@ namespace nap
 			loadPreset(mNextPreset);
 			break;
 		case  nap::WAIT_FOR_LOAD:
-			//waiting on preset loaded to come back
+			//waiting on preset loaded to come back. load is blocking so we never get here...
 			break;
 		case nap::REVEAL_NEXT:
 			mAnimationTime = mAnimationTime + deltaTime;
 			lerpProgress = mAnimationTime / mAnimationDuration;
 			lerpProgress = 1.0 - lerpProgress;
-			fadeToFadeColor(lerpProgress);
+			updateFogFade(lerpProgress);
 
 			if (mAnimationTime >= mAnimationDuration)
 				mPresetSwitchAnimationState = NONE;
@@ -164,72 +151,58 @@ namespace nap
 		}
 	}
 
-	void SelectPresetComponentInstance::startRevealAnimation() 
-	{
-		// did this in init before but entity wasn't available yet...
-		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
-		nap::rtti::ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
-		mScanEntity = scene->findEntity("ScanEntity");
-		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
+	void SelectPresetComponentInstance::startTransition(const PresetSwitchTransitionState& presetSwitchTransitionState) {
+		
+		if (mPresetSwitchAnimationState == presetSwitchTransitionState)
+			return;
 
-		//fog settings
-		mCurrentColor = resourceManager->findObject<ParameterRGBColorFloat>("Fog Color").get()->mValue;
-		double fogPower = resourceManager->findObject<ParameterFloat>("Fog Power").get()->mValue;
-		double fogInfluence = resourceManager->findObject<ParameterFloat>("Fog Influence").get()->mValue;
-		double fogMin = resourceManager->findObject<ParameterFloat>("Fog Min").get()->mValue;
-		double fogMax = resourceManager->findObject<ParameterFloat>("Fog Max").get()->mValue;
-
-		fadeToFadeColor(1);
-		mPresetSwitchAnimationState = REVEAL_NEXT;
-		mAnimationTime = 0;
-
-		//TODO fix..somehow these values become the fade to black settings....WHY
-		/*
-		mFogSettingsStart = glm::vec4(fogMin,
-			fogMax,
-			fogPower,
-			fogInfluence);
-		*/	
-
-		//temporary:.....
-		mFogSettingsStart = glm::vec4(0.75,
-			2,
-			1,
-			2);
-			
+		mPresetSwitchAnimationState = presetSwitchTransitionState;
+		mCurrentColor = getFogColor();
+		mFogSettingsStart = getFogSettings();
 		mFogSettingsEnd = glm::vec4(0, 1, 0, 1);
+		mAnimationTime = 0;
 	}
 
-	void SelectPresetComponentInstance::fadeToFadeColor(double fadeProgress) 
+	void SelectPresetComponentInstance::updateFogFade(double fadeProgress) 
 	{
-			fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
+		fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
 
-			RGBColorFloat color = lerpColors(mCurrentColor, mFadeColor, fadeProgress);
-			updateFogColor(color);
-			updateFogSettings(fadeProgress);
+		glm::vec3 colorVec = nap::math::lerp<glm::vec3>(mCurrentColor.toVec3(), mFadeColor.toVec3(), fadeProgress);
+		setFogColor(RGBColorFloat(colorVec.r, colorVec.g, colorVec.b));
+
+		glm::vec4 fogSettings = nap::math::lerp(mFogSettingsStart, mFogSettingsEnd, fadeProgress);
+		setFogSettings(fogSettings);
 	}
 
-	void SelectPresetComponentInstance::updateFogColor(RGBColorFloat& color)
+	RGBColorFloat& SelectPresetComponentInstance::getFogColor()
 	{
-		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
-		up_mat_comp.mFogColor = color;
+		return mFogColor->mValue;
 	}
 
-	void SelectPresetComponentInstance::updateFogSettings(double lerpValue)
+	void SelectPresetComponentInstance::setFogColor(RGBColorFloat& color)
+	{	
+		mFogColor->setValue(color);
+	}
+
+	void SelectPresetComponentInstance::setFogSettings(glm::vec4& fogSettings)
 	{
-		nap::UpdateMaterialComponentInstance& up_mat_comp = mScanEntity->getComponent<UpdateMaterialComponentInstance>();
-		up_mat_comp.fogFade(mFogSettingsStart, mFogSettingsEnd, lerpValue);
+		((ParameterFloat*)mFogGroup->mParameters[3]->get_ptr())->setValue(fogSettings[0]); //fog min
+		((ParameterFloat*)mFogGroup->mParameters[4]->get_ptr())->setValue(fogSettings[1]); //fog max
+		((ParameterFloat*)mFogGroup->mParameters[5]->get_ptr())->setValue(fogSettings[2]); //fog influence
+		((ParameterFloat*)mFogGroup->mParameters[6]->get_ptr())->setValue(fogSettings[3]); //fog power
+	}
+
+	glm::vec4 SelectPresetComponentInstance::getFogSettings()
+	{
+		return glm::vec4(((ParameterFloat*)mFogGroup->mParameters[3]->get_ptr())->mValue,   //fog min
+			((ParameterFloat*)mFogGroup->mParameters[4]->get_ptr())->mValue,				//fog max
+			((ParameterFloat*)mFogGroup->mParameters[5]->get_ptr())->mValue,				//fog influence
+			((ParameterFloat*)mFogGroup->mParameters[6]->get_ptr())->mValue);				//fog power
 	}
 
 	void SelectPresetComponentInstance::onPresetLoaded(std::string& presetFile)
 	{
-		startRevealAnimation();
+		//reveal the next preset:
+		startTransition(PresetSwitchTransitionState::REVEAL_NEXT);
 	}
-
-	RGBColorFloat SelectPresetComponentInstance::lerpColors(RGBColorFloat& color1, RGBColorFloat& color2, double lerpValue)
-	{
-		glm::vec3 colorResultVec = nap::math::lerp<glm::vec3>(color1.toVec3(), color2.toVec3(), lerpValue);
-		return RGBColorFloat(colorResultVec.r, colorResultVec.g, colorResultVec.b);;
-	}
-
 }

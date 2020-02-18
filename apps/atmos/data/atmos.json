@@ -377,8 +377,8 @@
                     "BackgroundColor": "Background Color",
                     "PresetIndex": 0,
                     "Presets": [
-                        "darkness.json",
-                        "darkstar.json"
+                        "test.json",
+                        "test2.json"
                     ],
                     "FadeColor": {
                         "Values": [

@@ -37,6 +37,8 @@ namespace nap
 		ComponentPtr<SelectImageComponent> mSingleImageSelectComponent = nullptr;		///< Property: "SingleImageSelectComponent
 		ComponentPtr<TransformComponent> mCameraTransformComponent = nullptr;			///< Property: "CameraTransformComponent"
 
+
+
 		ResourcePtr<ParameterFloat>				mPremultValue;
 		ResourcePtr<ParameterFloat>				mColorTexMix;
 		ResourcePtr<ParameterFloat>				mDiffuseColorMix;
@@ -119,17 +121,16 @@ namespace nap
 
 
 		/**
-		* getFogSettings updatematerialcomponentInstance. This is called by NAP core automatically
+		* getFogSettings updatematerialcomponentInstance. 
 		* @param deltaTime time in between frames in seconds
 		*/
 		glm::vec4 getFogSettings();
 
 		/**
-		* fogFade updatematerialcomponentInstance. fades the main fog values from start to end
-		* @param start the fog values to lerp from
-		* @param end the fog values to lerp to
+		* setFogSettings updatematerialcomponentInstance
+		* @param fogSettings x = Fog Min, y = Fog Max, z = Fog Power, a = Fog Influence  
 		*/
-		void fogFade(glm::vec4& start, glm::vec4& end, float lerpAmount);
+		void setFogSettings(glm::vec4& fogSettings);
 
 	private:
 		UpdateMaterialComponent* mUpdateMaterialResource;

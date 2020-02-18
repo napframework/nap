@@ -10,7 +10,7 @@
                     "Name": "",
                     "Value": 0,
                     "Minimum": 0,
-                    "Maximum": 11
+                    "Maximum": 1
                 },
                 {
                     "Type": "nap::ParameterInt",
@@ -43,6 +43,14 @@
                     "Value": 0.0,
                     "Minimum": -0.10000000149011612,
                     "Maximum": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Selected Path",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1
                 }
             ],
             "Groups": [
@@ -55,22 +63,6 @@
                             "mID": "Camera Mode",
                             "Name": "",
                             "Value": "Orbit"
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "Camera Movement Speed",
-                            "Name": "",
-                            "Value": 0.10000000149011612,
-                            "Minimum": 0.0,
-                            "Maximum": 0.25
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "Camera Rotation Speed",
-                            "Name": "",
-                            "Value": 0.10000000149011612,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -117,9 +109,9 @@
                             "Name": "",
                             "Value": {
                                 "Values": [
-                                    0.0,
-                                    0.0,
-                                    0.0
+                                    0.01982058398425579,
+                                    0.9513888955116272,
+                                    0.01982058398425579
                                 ]
                             }
                         },
@@ -129,9 +121,9 @@
                             "Name": "",
                             "Value": {
                                 "Values": [
-                                    0.0,
-                                    0.0,
-                                    0.0
+                                    0.9375,
+                                    0.013020839542150498,
+                                    0.013020839542150498
                                 ]
                             }
                         },
@@ -139,7 +131,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Premult Blend Value",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.9140000343322754,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -155,7 +147,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Diffuse Blend Value",
                             "Name": "",
-                            "Value": 1.0,
+                            "Value": 0.6960000395774841,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -163,7 +155,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Video Mask Value",
                             "Name": "",
-                            "Value": 0.0,
+                            "Value": 0.9140000343322754,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -171,7 +163,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Video Mask Contrast",
                             "Name": "",
-                            "Value": 1.0540000200271607,
+                            "Value": 1.9900001287460328,
                             "Minimum": 0.0,
                             "Maximum": 2.5
                         },
@@ -480,7 +472,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Min",
                             "Name": "",
-                            "Value": 0.5200000405311585,
+                            "Value": 0.75,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -488,7 +480,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Max",
                             "Name": "",
-                            "Value": 0.8870000243186951,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -496,7 +488,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "Fog Power",
                             "Name": "",
-                            "Value": 2.0,
+                            "Value": 1.0,
                             "Minimum": 0.009999999776482582,
                             "Maximum": 4.0
                         },
@@ -516,16 +508,140 @@
                     "mID": "Rendering",
                     "Parameters": [
                         {
-                            "Type": "nap::ParameterPolygonMode",
-                            "mID": "Render Mode",
-                            "Name": "",
-                            "Value": "Fill"
+                            "Type": "nap::ParameterBool",
+                            "mID": "RenderPath",
+                            "Name": "Display Path",
+                            "Value": true
                         },
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "Use Transparency",
                             "Name": "",
                             "Value": false
+                        },
+                        {
+                            "Type": "nap::ParameterPolygonMode",
+                            "mID": "Render Mode",
+                            "Name": "",
+                            "Value": "Fill"
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Path",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathPosition",
+                            "Name": "Path Position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": -10.0,
+                                "z": 0.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathRotation",
+                            "Name": "Path Rotation",
+                            "Value": {
+                                "x": 90.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathScale",
+                            "Name": "Path Scale",
+                            "Value": {
+                                "x": 20.0,
+                                "y": 20.0,
+                                "z": 20.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathUniformScale",
+                            "Name": "Path Uniform Scale",
+                            "Value": 2.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathCamPosition",
+                            "Name": "Follow Position",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PathCamSpeed",
+                            "Name": "Follow Speed",
+                            "Value": 0.009999999776482582,
+                            "Minimum": 0.0,
+                            "Maximum": 0.05000000074505806
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "PathCamOffset",
+                            "Name": "Camera Path Offset",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 1.0,
+                                "z": 0.0
+                            },
+                            "Clamp": true,
+                            "Minimum": -5.0,
+                            "Maximum": 5.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "PathCamRotation",
+                            "Name": "Camera Path Rotation",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Clamp": true,
+                            "Minimum": -90.0,
+                            "Maximum": 90.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "First Person",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FPSMovementSpeed",
+                            "Name": "FPS Movement Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 0.25
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FPSRotationSpeed",
+                            "Name": "FPS Rotation Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []

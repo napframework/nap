@@ -200,7 +200,7 @@ namespace nap
 	void AtmosApp::loadPreset(int index) 
 	{
 		nap::SelectPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SelectPresetComponentInstance>();
-		presetSelector.selectPreset(index);
+		presetSelector.selectPresetByIndex(index);
 	}
 
 	int AtmosApp::shutdown()
