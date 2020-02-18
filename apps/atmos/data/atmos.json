@@ -374,7 +374,6 @@
                     "PresetParameterGroup": "Parameters",
                     "FogParameterGroup": "Fog",
                     "FogColor": "Fog Color",
-                    "BackgroundColor": "Background Color",
                     "PresetIndex": 0,
                     "Presets": [
                         "test.json",
@@ -1950,14 +1949,6 @@
                         {
                             "TargetComponent": "./nap::SelectPresetComponent_575622cc",
                             "TargetAttributes": [
-                                {
-                                    "Path": "BackgroundColor",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
-                                        "Value": "Background Color"
-                                    }
-                                },
                                 {
                                     "Path": "FadeColor/Values/0",
                                     "Value": {

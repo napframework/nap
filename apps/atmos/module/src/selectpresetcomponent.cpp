@@ -1,6 +1,5 @@
 #include "SelectPresetComponent.h"
 
-
 #include <nap/logger.h>
 #include <entity.h>
 #include <nap/core.h>
@@ -13,7 +12,6 @@ RTTI_BEGIN_CLASS(nap::SelectPresetComponent)
 	RTTI_PROPERTY("PresetParameterGroup", &nap::SelectPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FogParameterGroup", &nap::SelectPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FogColor", &nap::SelectPresetComponent::mFogColor, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BackgroundColor", &nap::SelectPresetComponent::mBackgroundColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex", &nap::SelectPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Presets", &nap::SelectPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FadeColor", &nap::SelectPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
@@ -77,6 +75,7 @@ namespace nap
 		{
 			nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
 			resource->mPresetIndex = index;
+			nap::Logger::debug("preset index: %i...", resource->mPresetIndex);
 		}
 		else {
 			//ERROR here?
@@ -93,7 +92,6 @@ namespace nap
 	void SelectPresetComponentInstance::loadPreset(const std::string& presetPath)
 	{
 		nap::Logger::debug("loading preset: %s...", presetPath);
-		mCurrentPreset = presetPath;
 		mParameterService->presetLoaded.connect(mPresetLoaded);
 	
 		utility::ErrorState presetLoadError;
@@ -112,17 +110,17 @@ namespace nap
 			transitionToPreset(presetName);
 		}
 
-		updatePresetSwitchAnimation(deltaTime);
+		updatePresetTransition(deltaTime);
 	}
 
-	void SelectPresetComponentInstance::updatePresetSwitchAnimation(double deltaTime) 
+	void SelectPresetComponentInstance::updatePresetTransition(double deltaTime)
 	{
 		float lerpProgress = 0;
 		switch (mPresetSwitchAnimationState)
 		{
-		case nap::NONE:
+		case NONE:
 			break;
-		case nap::FADE_OUT_CURRENT:
+		case PresetSwitchTransitionState::FADE_OUT_CURRENT:
 			mAnimationTime = mAnimationTime + deltaTime;
 			lerpProgress = mAnimationTime / mAnimationDuration;
 			updateFogFade(lerpProgress);
@@ -130,14 +128,14 @@ namespace nap
 			if (mAnimationTime >= mAnimationDuration)
 				mPresetSwitchAnimationState = LOAD_NEXT;
 			break;
-		case nap::LOAD_NEXT:
+		case PresetSwitchTransitionState::LOAD_NEXT:
 			mPresetSwitchAnimationState = WAIT_FOR_LOAD;
 			loadPreset(mNextPreset);
 			break;
-		case  nap::WAIT_FOR_LOAD:
+		case  PresetSwitchTransitionState::WAIT_FOR_LOAD:
 			//waiting on preset loaded to come back. load is blocking so we never get here...
 			break;
-		case nap::REVEAL_NEXT:
+		case PresetSwitchTransitionState::REVEAL_NEXT:
 			mAnimationTime = mAnimationTime + deltaTime;
 			lerpProgress = mAnimationTime / mAnimationDuration;
 			lerpProgress = 1.0 - lerpProgress;
@@ -161,6 +159,14 @@ namespace nap
 		mFogSettingsStart = getFogSettings();
 		mFogSettingsEnd = glm::vec4(0, 1, 0, 1);
 		mAnimationTime = 0;
+
+		switch (mPresetSwitchAnimationState) {
+			case FADE_OUT_CURRENT:
+				fadeOutTransitionStarted(mAnimationDuration);
+				break;
+			case REVEAL_NEXT:
+				revealTransitionStarted(mAnimationDuration);
+		}
 	}
 
 	void SelectPresetComponentInstance::updateFogFade(double fadeProgress) 
@@ -186,6 +192,8 @@ namespace nap
 
 	void SelectPresetComponentInstance::setFogSettings(glm::vec4& fogSettings)
 	{
+		//improvement: could reference individual parameters instead of group for clarity and error sensitivity
+
 		((ParameterFloat*)mFogGroup->mParameters[3]->get_ptr())->setValue(fogSettings[0]); //fog min
 		((ParameterFloat*)mFogGroup->mParameters[4]->get_ptr())->setValue(fogSettings[1]); //fog max
 		((ParameterFloat*)mFogGroup->mParameters[5]->get_ptr())->setValue(fogSettings[2]); //fog influence
@@ -193,7 +201,9 @@ namespace nap
 	}
 
 	glm::vec4 SelectPresetComponentInstance::getFogSettings()
-	{
+	{	
+		//improvement: could reference individual parameters instead of group for clarity and error sensitivity
+		
 		return glm::vec4(((ParameterFloat*)mFogGroup->mParameters[3]->get_ptr())->mValue,   //fog min
 			((ParameterFloat*)mFogGroup->mParameters[4]->get_ptr())->mValue,				//fog max
 			((ParameterFloat*)mFogGroup->mParameters[5]->get_ptr())->mValue,				//fog influence
@@ -202,7 +212,6 @@ namespace nap
 
 	void SelectPresetComponentInstance::onPresetLoaded(std::string& presetFile)
 	{
-		//reveal the next preset:
 		startTransition(PresetSwitchTransitionState::REVEAL_NEXT);
 	}
 }

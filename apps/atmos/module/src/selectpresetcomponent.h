@@ -9,14 +9,6 @@
 
 namespace nap
 {
-	enum PresetSwitchTransitionState {
-		NONE,
-		FADE_OUT_CURRENT,
-		LOAD_NEXT,
-		WAIT_FOR_LOAD,
-		REVEAL_NEXT
-	};
-
 	class SelectPresetComponentInstance;
 
 	/**
@@ -29,10 +21,7 @@ namespace nap
 	public:
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
 		ResourcePtr<ParameterGroup> mFogParameterGroup;
-		
-		//NOT USED NOW, BEcause using update material directly
 		ResourcePtr<ParameterRGBColorFloat> mFogColor;
-		ResourcePtr<ParameterRGBColorFloat> mBackgroundColor;
 
 		int								mPresetIndex = 0;
 		std::vector<std::string>		mPresets;
@@ -57,8 +46,6 @@ namespace nap
 		SelectPresetComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
-	
-
 		/**
 		 * Initialize SelectPresetComponentInstance based on the SelectPresetComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -79,19 +66,27 @@ namespace nap
 		*/
 		void selectPresetByIndex(int presetIndex);
 
+		/**
+		* fadeOutTransitionStarted is fired when fade out transition starts. the float parameter is the duration of the fade.
+		*/
+		nap::Signal<float> fadeOutTransitionStarted;
+		
+		/**
+		* revealTransitionStarted is fired when reveal transition starts. the float parameter is the duration of the fade.
+		*/
+		nap::Signal<float> revealTransitionStarted;
 	private:
-		PresetSwitchTransitionState mPresetSwitchAnimationState = PresetSwitchTransitionState::NONE;
-		std::string mCurrentPreset;
-		std::string mNextPreset;
 		
-		ParameterService* mParameterService;
-		ResourcePtr<ParameterGroup> mPresetGroup;
-		ResourcePtr<ParameterRGBColorFloat> mFogColor;
-		ResourcePtr<ParameterGroup> mFogGroup;
-		
-		int mPresetIndex;
-		std::vector<std::string> mPresets;
+		enum PresetSwitchTransitionState {
+			NONE,
+			FADE_OUT_CURRENT,
+			LOAD_NEXT,
+			WAIT_FOR_LOAD,
+			REVEAL_NEXT
+		};
 
+		//Transition state:
+		PresetSwitchTransitionState mPresetSwitchAnimationState = PresetSwitchTransitionState::NONE;
 		float mAnimationDuration;
 		float mAnimationTime;
 		RGBColorFloat mFadeColor;
@@ -99,33 +94,82 @@ namespace nap
 		glm::vec4 mFogSettingsStart;
 		glm::vec4 mFogSettingsEnd;
 
+		//fog parameters
+		ResourcePtr<ParameterRGBColorFloat> mFogColor;
+		ResourcePtr<ParameterGroup> mFogGroup;
+
+		//preset parameters
+		ParameterService* mParameterService;
+		ResourcePtr<ParameterGroup> mPresetGroup;
+
+		int mPresetIndex;
+		std::string mNextPreset;
+		std::vector<std::string> mPresets;
+
+
 		/**
-		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
+		* transitionToPreset SelectPresetComponentInstance. starts the preset transition
 		* @param presetName the name of the preset
 		*/
 		void transitionToPreset(const std::string& presetName);
 
-
+		/**
+		* loadPreset SelectPresetComponentInstance. loads the new preset into the parameter service effectively switching the scene
+		* @param presetName the name of the preset
+		*/
 		void loadPreset(const std::string& presetName);
 
 		/**
-		* updatePresetSwitchAnimation SelectPresetComponentInstance. This is called in the update loop
+		* updatePresetTransition SelectPresetComponentInstance. updates the transition according to the state of mPresetSwitchAnimationState
 		* @param deltaTime the delta time
 		*/
-		void updatePresetSwitchAnimation(double deltaTime);
+		void updatePresetTransition(double deltaTime);
 			
-		//TODO comments:
+		/**
+		* updateFogFade SelectPresetComponentInstance. lerps the fog values between mFogSettingsStart and mFogSettingsEnd
+		* @param fadeProgress the progress of the fade between 0 to 1.
+		*/
 		void updateFogFade(double fadeProgress);
 	
+		/**
+		* getFogColor SelectPresetComponentInstance.
+		* @return fog color parameter value
+		*/
 		RGBColorFloat& getFogColor();
+		
+		/**
+		* updateFogFade SelectPresetComponentInstance. 
+		* @param color color for the fog color parameter
+		*/
 		void setFogColor(RGBColorFloat& color);
 
+		/**
+		* getFogSettings SelectPresetComponentInstance. retrieve 
+		* @return subset of the fogSettings in glm::vec4. x = Fog Min, y = Fog Max, z = Fog Power, a = Fog Influence
+		*/
 		glm::vec4 getFogSettings();
+
+		/**
+		* setFogSettings SelectPresetComponentInstance. sets a subset of the fog parameter settings for the fade
+		* @param fogSettings x = Fog Min, y = Fog Max, z = Fog Power, a = Fog Influence
+		*/
 		void setFogSettings(glm::vec4& fogSettings);
 
+		/**
+		* startTransition SelectPresetComponentInstance. initializes the Fade and Reveal transition
+		* @param presetSwitchTransitionState valid values are FADE_OUT_CURRENT and REVEAL_NEXT
+		*/
 		void startTransition(const PresetSwitchTransitionState& presetSwitchTransitionState);
+		
+		/**
+		* onPresetLoaded SelectPresetComponentInstance. called when a preset is loaded, will start the reveal animation.
+		* @param presetFile the name of the preset file that has been loaded.
+		*/
 		void onPresetLoaded(std::string& presetFile);
 
+		/**
+		* listens to preset loaded event in ParameterService
+		*/
 		nap::Slot<std::string> mPresetLoaded = { this, &SelectPresetComponentInstance::onPresetLoaded };
 	};
 }

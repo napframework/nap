@@ -118,20 +118,6 @@ namespace nap
 
 		RGBColorFloat	mFogColor			= { 0.0f, 0.0f, 0.0f };
 
-
-
-		/**
-		* getFogSettings updatematerialcomponentInstance. 
-		* @param deltaTime time in between frames in seconds
-		*/
-		glm::vec4 getFogSettings();
-
-		/**
-		* setFogSettings updatematerialcomponentInstance
-		* @param fogSettings x = Fog Min, y = Fog Max, z = Fog Power, a = Fog Influence  
-		*/
-		void setFogSettings(glm::vec4& fogSettings);
-
 	private:
 		UpdateMaterialComponent* mUpdateMaterialResource;
 

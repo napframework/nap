@@ -31,7 +31,6 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-		mParameterService = getCore().getService<nap::ParameterService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -57,7 +56,9 @@ namespace nap
 		mVideoEntity = scene->findEntity("VideoPlaneEntity");
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 		mLineEntity = scene->findEntity("LineEntity");
-		mUniverseEntity = scene->findEntity("UniverseEntity");
+
+		//holds the preset selector component (better name for this entity?)
+		mUniverseEntity = scene->findEntity("UniverseEntity"); 
 
 		// Get yocto sensors
 		mRangeSensor = mResourceManager->findObject("RangeSensor");
@@ -183,24 +184,21 @@ namespace nap
 				mGui->toggleVisibility();
 			}
 
+			//demo functionality for the preset selector: 
 			if (press_event->mKey == nap::EKeyCode::KEY_1)
 			{
-				loadPreset(0);
+				nap::SelectPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SelectPresetComponentInstance>();
+				presetSelector.selectPresetByIndex(0);
 			}
 
 			if (press_event->mKey == nap::EKeyCode::KEY_2)
 			{
-				loadPreset(1);
+				nap::SelectPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SelectPresetComponentInstance>();
+				presetSelector.selectPresetByIndex(1);
 			}
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	void AtmosApp::loadPreset(int index) 
-	{
-		nap::SelectPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SelectPresetComponentInstance>();
-		presetSelector.selectPresetByIndex(index);
 	}
 
 	int AtmosApp::shutdown()

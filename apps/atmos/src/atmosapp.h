@@ -62,11 +62,6 @@ namespace nap
 		 */
 		int shutdown() override;
 
-		/**
-		*	loads a preset
-		*/
-		void loadPreset(int presetIndex);
-
 	private:
 		// Nap Services
 		RenderService*		mRenderService = nullptr;					//< Render Service that handles render calls
@@ -74,7 +69,6 @@ namespace nap
 		SceneService*		mSceneService = nullptr;					//< Manages all the objects in the scene
 		InputService*		mInputService = nullptr;					//< Input service for processing input
 		IMGuiService*		mGuiService = nullptr;						//< Gui service
-		ParameterService*	mParameterService = nullptr;
 
 		// Objects
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
