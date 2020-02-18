@@ -21,8 +21,7 @@ namespace nap
 	public:
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
 		ResourcePtr<ParameterGroup> mFogParameterGroup;
-		ResourcePtr<ParameterRGBColorFloat> mFogColor;
-
+	
 		int								mPresetIndex = 0;
 		std::vector<std::string>		mPresets;
 		RGBColorFloat					mFadeColor;
@@ -95,7 +94,6 @@ namespace nap
 		glm::vec4 mFogSettingsEnd;
 
 		//fog parameters
-		ResourcePtr<ParameterRGBColorFloat> mFogColor;
 		ResourcePtr<ParameterGroup> mFogGroup;
 
 		//preset parameters

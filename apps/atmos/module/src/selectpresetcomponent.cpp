@@ -11,7 +11,6 @@
 RTTI_BEGIN_CLASS(nap::SelectPresetComponent)
 	RTTI_PROPERTY("PresetParameterGroup", &nap::SelectPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FogParameterGroup", &nap::SelectPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FogColor", &nap::SelectPresetComponent::mFogColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex", &nap::SelectPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Presets", &nap::SelectPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FadeColor", &nap::SelectPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
@@ -41,8 +40,6 @@ namespace nap
 		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
 	
 		mPresetGroup = resource->mPresetParameterGroup;
-
-		mFogColor = resource->mFogColor;
 		mFogGroup = resource->mFogParameterGroup;
 		mPresetIndex = -1;
 
@@ -182,17 +179,19 @@ namespace nap
 
 	RGBColorFloat& SelectPresetComponentInstance::getFogColor()
 	{
-		return mFogColor->mValue;
+		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
+		return ((ParameterRGBColorFloat*)mFogGroup->mParameters[1]->get_ptr())->mValue;
 	}
 
 	void SelectPresetComponentInstance::setFogColor(RGBColorFloat& color)
 	{	
-		mFogColor->setValue(color);
+		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
+		((ParameterRGBColorFloat*)mFogGroup->mParameters[1]->get_ptr())->setValue(color);
 	}
 
 	void SelectPresetComponentInstance::setFogSettings(glm::vec4& fogSettings)
 	{
-		//improvement: could reference individual parameters instead of group for clarity and error sensitivity
+		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
 
 		((ParameterFloat*)mFogGroup->mParameters[3]->get_ptr())->setValue(fogSettings[0]); //fog min
 		((ParameterFloat*)mFogGroup->mParameters[4]->get_ptr())->setValue(fogSettings[1]); //fog max
