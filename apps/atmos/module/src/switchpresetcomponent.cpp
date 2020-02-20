@@ -1,4 +1,4 @@
-#include "selectpresetcomponent.h"
+#include "switchpresetcomponent.h"
 
 #include <nap/logger.h>
 #include <entity.h>
@@ -7,18 +7,18 @@
 #include <nap/resourcemanager.h>
 #include <scene.h>
 
-// nap::SelectPresetComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::SelectPresetComponent)
-	RTTI_PROPERTY("PresetParameterGroup", &nap::SelectPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FogParameterGroup", &nap::SelectPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PresetIndex", &nap::SelectPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Presets", &nap::SelectPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FadeColor", &nap::SelectPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AnimationDuration", &nap::SelectPresetComponent::mAnimationDuration, nap::rtti::EPropertyMetaData::Required)
+// nap::SwitchPresetComponent run time class definition
+RTTI_BEGIN_CLASS(nap::SwitchPresetComponent)
+	RTTI_PROPERTY("PresetParameterGroup", &nap::SwitchPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FogParameterGroup", &nap::SwitchPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PresetIndex", &nap::SwitchPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Presets", &nap::SwitchPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FadeColor", &nap::SwitchPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AnimationDuration", &nap::SwitchPresetComponent::mAnimationDuration, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-// nap::SelectPresetComponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SelectPresetComponentInstance)
+// nap::SwitchPresetComponentInstance run time class definition
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SwitchPresetComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -27,15 +27,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void SelectPresetComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void SwitchPresetComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 
 	}
 
 
-	bool SelectPresetComponentInstance::init(utility::ErrorState& errorState)
+	bool SwitchPresetComponentInstance::init(utility::ErrorState& errorState)
 	{
-		nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
+		nap::SwitchPresetComponent* resource = getComponent<SwitchPresetComponent>();
 		
 		ResourceManager* resourceManager = this->getEntityInstance()->getCore()->getResourceManager();
 	
@@ -64,30 +64,31 @@ namespace nap
 			mPresets.push_back(preset);
 		}
 
+		selectPresetByIndex(resource->mPresetIndex); // Force a transition to the index specified in the resource on initialization
+
 		return true;
 	}
 
-	void SelectPresetComponentInstance::selectPresetByIndex(int index)
+	void SwitchPresetComponentInstance::selectPresetByIndex(unsigned int index)
 	{
-		if (index >= 0 && index < mPresets.size())
-		{
-			nap::SelectPresetComponent* resource = getComponent<SelectPresetComponent>();
-			resource->mPresetIndex = index;
-			nap::Logger::debug("preset index: %i...", resource->mPresetIndex);
-		}
-		else {
-			//ERROR here?
-			assert(0);
-		}
+	    assert(index < mPresets.size());
+
+	    if (mPresetIndex != index)
+        {
+	        mPresetIndex = index;
+            nap::Logger::debug("preset index: %i...", mPresetIndex);
+            std::string presetName = mPresets[mPresetIndex];
+            transitionToPreset(presetName);
+        }
 	}
 
-	void SelectPresetComponentInstance::transitionToPreset(const std::string& presetPath)
+	void SwitchPresetComponentInstance::transitionToPreset(const std::string& presetPath)
 	{
 		mNextPreset = presetPath;
 		startTransition(PresetSwitchTransitionState::FADE_OUT_CURRENT);
 	}
 
-	void SelectPresetComponentInstance::loadPreset(const std::string& presetPath)
+	void SwitchPresetComponentInstance::loadPreset(const std::string& presetPath)
 	{
 		nap::Logger::debug("loading preset: %s...", presetPath.c_str());
 		mParameterService->presetLoaded.connect(mPresetLoaded);
@@ -99,19 +100,12 @@ namespace nap
 		}
 	}
 
-	void SelectPresetComponentInstance::update(double deltaTime)
+	void SwitchPresetComponentInstance::update(double deltaTime)
 	{
-		if (mPresetIndex != getComponent<SelectPresetComponent>()->mPresetIndex)
-		{
-			mPresetIndex = getComponent<SelectPresetComponent>()->mPresetIndex;
-			std::string presetName = mPresets[mPresetIndex];
-			transitionToPreset(presetName);
-		}
-
-		updatePresetTransition(deltaTime);
+        updatePresetTransition(deltaTime);
 	}
 
-	void SelectPresetComponentInstance::updatePresetTransition(double deltaTime)
+	void SwitchPresetComponentInstance::updatePresetTransition(double deltaTime)
 	{
 		float lerpProgress = 0;
 		switch (mPresetSwitchAnimationState)
@@ -147,7 +141,7 @@ namespace nap
 		}
 	}
 
-	void SelectPresetComponentInstance::startTransition(const PresetSwitchTransitionState& presetSwitchTransitionState) {
+	void SwitchPresetComponentInstance::startTransition(const PresetSwitchTransitionState& presetSwitchTransitionState) {
 		
 		if (mPresetSwitchAnimationState == presetSwitchTransitionState)
 			return;
@@ -167,7 +161,7 @@ namespace nap
 		}
 	}
 
-	void SelectPresetComponentInstance::updateFogFade(double fadeProgress) 
+	void SwitchPresetComponentInstance::updateFogFade(double fadeProgress)
 	{
 		fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
 
@@ -179,19 +173,19 @@ namespace nap
 		setFogSettings(fogSettings);
 	}
 
-	RGBColorFloat& SelectPresetComponentInstance::getFogColor()
+	RGBColorFloat& SwitchPresetComponentInstance::getFogColor()
 	{
 		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
 		return ((ParameterRGBColorFloat*)mFogGroup->mParameters[1]->get_ptr())->mValue;
 	}
 
-	void SelectPresetComponentInstance::setFogColor(RGBColorFloat& color)
+	void SwitchPresetComponentInstance::setFogColor(RGBColorFloat& color)
 	{	
 		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
 		((ParameterRGBColorFloat*)mFogGroup->mParameters[1]->get_ptr())->setValue(color);
 	}
 
-	void SelectPresetComponentInstance::setFogSettings(glm::vec4& fogSettings)
+	void SwitchPresetComponentInstance::setFogSettings(glm::vec4& fogSettings)
 	{
 		//improvement: could reference individual parameters instead of group for clarity and error sensitivity..
 
@@ -201,7 +195,7 @@ namespace nap
 		((ParameterFloat*)mFogGroup->mParameters[6]->get_ptr())->setValue(fogSettings[3]); //fog power
 	}
 
-	glm::vec4 SelectPresetComponentInstance::getFogSettings()
+	glm::vec4 SwitchPresetComponentInstance::getFogSettings()
 	{	
 		//improvement: could reference individual parameters instead of group for clarity and error sensitivity
 		
@@ -211,7 +205,7 @@ namespace nap
 			((ParameterFloat*)mFogGroup->mParameters[6]->get_ptr())->mValue);				//fog power
 	}
 
-	void SelectPresetComponentInstance::onPresetLoaded(const std::string& presetFile)
+	void SwitchPresetComponentInstance::onPresetLoaded(const std::string& presetFile)
 	{
 		startTransition(PresetSwitchTransitionState::REVEAL_NEXT);
 	}

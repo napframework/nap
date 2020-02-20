@@ -16,7 +16,7 @@
 #include <yoctosensor.h>
 
 //ruud noobing:
-#include <selectpresetcomponent.h>
+#include <switchpresetcomponent.h>
 
 namespace nap
 {

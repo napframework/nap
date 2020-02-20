@@ -9,15 +9,15 @@
 
 namespace nap
 {
-	class SelectPresetComponentInstance;
+	class SwitchPresetComponentInstance;
 
 	/**
 	 *	SelectPresetComponent
 	 */
-	class NAPAPI SelectPresetComponent : public Component
+	class NAPAPI SwitchPresetComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(SelectPresetComponent, SelectPresetComponentInstance)
+		DECLARE_COMPONENT(SelectPresetComponent, SwitchPresetComponentInstance)
 	public:
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
 		ResourcePtr<ParameterGroup> mFogParameterGroup;
@@ -38,11 +38,11 @@ namespace nap
 	/**
 	 * SelectPresetComponentInstance	
 	 */
-	class NAPAPI SelectPresetComponentInstance : public ComponentInstance
+	class NAPAPI SwitchPresetComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		SelectPresetComponentInstance(EntityInstance& entity, Component& resource) :
+		SwitchPresetComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
@@ -63,7 +63,7 @@ namespace nap
 		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
 		* @param presetIndex index of the preset
 		*/
-		void selectPresetByIndex(int presetIndex);
+		void selectPresetByIndex(unsigned int presetIndex);
 
 		/**
 		* fadeOutTransitionStarted is fired when fade out transition starts. the float parameter is the duration of the fade.
@@ -169,6 +169,6 @@ namespace nap
 		/**
 		* listens to preset loaded event in ParameterService
 		*/
-		nap::Slot<std::string> mPresetLoaded = { this, &SelectPresetComponentInstance::onPresetLoaded };
+		nap::Slot<std::string> mPresetLoaded = { this, &SwitchPresetComponentInstance::onPresetLoaded };
 	};
 }
