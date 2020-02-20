@@ -12,7 +12,6 @@ RTTI_BEGIN_CLASS(nap::SwitchPresetComponent)
 	RTTI_PROPERTY("PresetParameterGroup", &nap::SwitchPresetComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FogParameterGroup", &nap::SwitchPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex", &nap::SwitchPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Presets", &nap::SwitchPresetComponent::mPresets, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FadeColor", &nap::SwitchPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("AnimationDuration", &nap::SwitchPresetComponent::mAnimationDuration, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -44,25 +43,13 @@ namespace nap
 		mPresetIndex = -1;
 
 		mParameterService = this->getEntityInstance()->getCore()->getService<nap::ParameterService>();
-		std::vector<std::string> availablePresets = mParameterService->getPresets(*mPresetGroup);
+		mPresets = mParameterService->getPresets(*mPresetGroup);
 
 		mFadeColor = resource->mFadeColor;
 		mAnimationDuration = resource->mAnimationDuration;
 
-		if (!errorState.check(availablePresets.size() > 0, "No presets available"))
+		if (!errorState.check(mPresets.size() > 0, "No presets available"))
 			return false;
-
-		if (!errorState.check(resource->mPresets.size() > 0, "No presets defined"))
-			return false;
-
-		for (auto& preset : resource->mPresets)
-		{
-		    auto it = std::find(availablePresets.begin(), availablePresets.end(), preset);
-			if (!errorState.check(it != availablePresets.end(), "preset %s does not exist", preset.c_str()))
-				return false;
-
-			mPresets.push_back(preset);
-		}
 
 		selectPresetByIndex(resource->mPresetIndex); // Force a transition to the index specified in the resource on initialization
 

@@ -22,8 +22,7 @@ namespace nap
 		ResourcePtr<ParameterGroup> mPresetParameterGroup;
 		ResourcePtr<ParameterGroup> mFogParameterGroup;
 	
-		int								mPresetIndex = 0;
-		std::vector<std::string>		mPresets;
+		int								mPresetIndex = 1;
 		RGBColorFloat					mFadeColor;
 		float							mAnimationDuration;
 
