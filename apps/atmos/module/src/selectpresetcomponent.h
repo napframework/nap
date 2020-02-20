@@ -74,6 +74,7 @@ namespace nap
 		* revealTransitionStarted is fired when reveal transition starts. the float parameter is the duration of the fade.
 		*/
 		nap::Signal<float> revealTransitionStarted;
+
 	private:
 		
 		enum PresetSwitchTransitionState {
@@ -163,7 +164,7 @@ namespace nap
 		* onPresetLoaded SelectPresetComponentInstance. called when a preset is loaded, will start the reveal animation.
 		* @param presetFile the name of the preset file that has been loaded.
 		*/
-		void onPresetLoaded(std::string& presetFile);
+		void onPresetLoaded(const std::string& presetFile);
 
 		/**
 		* listens to preset loaded event in ParameterService

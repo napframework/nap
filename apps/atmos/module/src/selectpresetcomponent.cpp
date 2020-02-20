@@ -1,4 +1,4 @@
-#include "SelectPresetComponent.h"
+#include "selectpresetcomponent.h"
 
 #include <nap/logger.h>
 #include <entity.h>
@@ -55,9 +55,10 @@ namespace nap
 		if (!errorState.check(resource->mPresets.size() > 0, "No presets defined"))
 			return false;
 
-		for (const auto& preset : resource->mPresets)
+		for (auto& preset : resource->mPresets)
 		{
-			if (!errorState.check(std::find(availablePresets.begin(), availablePresets.end(), preset) != availablePresets.end(), "preset %s does not exist", preset))
+		    auto it = std::find(availablePresets.begin(), availablePresets.end(), preset);
+			if (!errorState.check(it != availablePresets.end(), "preset %s does not exist", preset.c_str()))
 				return false;
 
 			mPresets.push_back(preset);
@@ -88,7 +89,7 @@ namespace nap
 
 	void SelectPresetComponentInstance::loadPreset(const std::string& presetPath)
 	{
-		nap::Logger::debug("loading preset: %s...", presetPath);
+		nap::Logger::debug("loading preset: %s...", presetPath.c_str());
 		mParameterService->presetLoaded.connect(mPresetLoaded);
 	
 		utility::ErrorState presetLoadError;
@@ -171,7 +172,8 @@ namespace nap
 		fadeProgress = nap::math::clamp(fadeProgress, 0.0, 1.0);
 
 		glm::vec3 colorVec = nap::math::lerp<glm::vec3>(mCurrentColor.toVec3(), mFadeColor.toVec3(), fadeProgress);
-		setFogColor(RGBColorFloat(colorVec.r, colorVec.g, colorVec.b));
+		RGBColorFloat color = RGBColorFloat(colorVec.r, colorVec.g, colorVec.b);
+		setFogColor(color);
 
 		glm::vec4 fogSettings = nap::math::lerp(mFogSettingsStart, mFogSettingsEnd, fadeProgress);
 		setFogSettings(fogSettings);
@@ -209,7 +211,7 @@ namespace nap
 			((ParameterFloat*)mFogGroup->mParameters[6]->get_ptr())->mValue);				//fog power
 	}
 
-	void SelectPresetComponentInstance::onPresetLoaded(std::string& presetFile)
+	void SelectPresetComponentInstance::onPresetLoaded(const std::string& presetFile)
 	{
 		startTransition(PresetSwitchTransitionState::REVEAL_NEXT);
 	}
