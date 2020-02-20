@@ -381,20 +381,20 @@
                             0.0
                         ]
                     },
-                    "AnimationDuration": 4.0
+                    "AnimationDuration": 2.0
                 },
                 {
                     "Type": "nap::PresetControlComponent",
-                    "mID": "nap::PresetControlComponent_308dce11",
+                    "mID": "PresetControlComponent",
                     "PresetParameterGroup": "Parameters",
                     "Presets": [
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
+                        "ok.json",
+                        "focus.json",
+                        "ass.json",
+                        "trippy.json",
+                        "lalacam.json"
                     ],
-                    "AverageDuration": 0.0,
+                    "AverageDuration": 5.0,
                     "DurationDeviation": 0.0,
                     "RandomizeSequence": false
                 }
@@ -1955,74 +1955,7 @@
                 },
                 {
                     "Entity": "UniverseEntity",
-                    "InstanceProperties": [
-                        {
-                            "TargetComponent": "./nap::PresetControlComponent_308dce11",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "AverageDuration",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "instanceProp_float_1058df9d",
-                                        "Value": 5.0
-                                    }
-                                },
-                                {
-                                    "Path": "Presets/0",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_017d4313",
-                                        "Value": "ok.json"
-                                    }
-                                },
-                                {
-                                    "Path": "Presets/1",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_b9b73543",
-                                        "Value": "focus.json"
-                                    }
-                                },
-                                {
-                                    "Path": "Presets/2",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_7fd891db",
-                                        "Value": "ass.json"
-                                    }
-                                },
-                                {
-                                    "Path": "Presets/3",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_62739247",
-                                        "Value": "trippy.json"
-                                    }
-                                },
-                                {
-                                    "Path": "Presets/4",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_66c22e2c",
-                                        "Value": "lalacam.json"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./SwitchPresetComponent",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "AnimationDuration",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "instanceProp_float_0d2b782b",
-                                        "Value": 1.0
-                                    }
-                                }
-                            ]
-                        }
-                    ]
+                    "InstanceProperties": []
                 }
             ]
         },
