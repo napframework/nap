@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <nap/resourceptr.h>
 #include <parameter.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
