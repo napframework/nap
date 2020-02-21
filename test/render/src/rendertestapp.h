@@ -84,7 +84,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
 		
 		rtti::ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
-		rtti::ObjectPtr<Scene>		mScene;
+		rtti::ObjectPtr<Scene>			mScene;
 		rtti::ObjectPtr<EntityInstance>	mPigEntity;				//< Pig entity
 		rtti::ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity

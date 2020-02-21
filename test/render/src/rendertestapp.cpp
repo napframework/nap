@@ -36,7 +36,7 @@ namespace nap
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;
 		}
-		
+			
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
 //		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 		
@@ -197,25 +197,20 @@ namespace nap
 
 			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
 			color.setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
-			
-			VkCommandBuffer commandBuffer = render_window->makeActive();
-			if (commandBuffer != nullptr)
+
+			if (mRenderService->beginRendering(*render_window))
 			{
-				int frame_index = render_window->getWindow()->getCurrentFrameIndex();
-
-				mRenderService->advanceToFrame(frame_index);
-
 				opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 
 				glm::mat4 identity = glm::mat4(1.0f);
 
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
-				mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
 				transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
-				mRenderService->renderObjects(backbuffer, commandBuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
+				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 
 				/*
 				// Render output texture to plane
@@ -248,9 +243,9 @@ namespace nap
 
 				*/
 
-				getCore().getService<IMGuiService>()->draw(commandBuffer);
+				getCore().getService<IMGuiService>()->draw(mRenderService->getCurrentCommandBuffer());
 
-				render_window->swap();
+				mRenderService->endRendering();
 			}
 		}
 	 
