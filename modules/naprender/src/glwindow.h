@@ -149,6 +149,8 @@ namespace nap
 		 */
 		VkCommandBuffer makeCurrent();
 
+		void beginRenderPass();
+
 		/**
 		 *	Returns the window number
 		 */

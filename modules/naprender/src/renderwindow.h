@@ -61,6 +61,8 @@ namespace nap
 		 */
 		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
 
+		void beginRenderPass() { mWindow->beginRenderPass(); }
+
 		/**
          * Returns the width of the window.
          * Note that on high DPI monitors this is not the same as the pixel count.

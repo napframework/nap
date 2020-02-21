@@ -80,6 +80,9 @@ namespace nap
 		// Default destructor
 		virtual ~RenderService();
 
+		bool beginRendering(RenderWindow& renderWindow);
+		void endRendering();
+
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
@@ -88,7 +91,7 @@ namespace nap
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
 		* Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -97,7 +100,7 @@ namespace nap
 		* @param camera the camera used for rendering all the available components
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -107,7 +110,7 @@ namespace nap
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Renders a specific set of objects to a specific renderTarget.
@@ -117,7 +120,7 @@ namespace nap
 		* @param comps the components to render to renderTarget
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		 * Shuts down the managed renderer
@@ -170,15 +173,16 @@ namespace nap
 		*/
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline);
+		void requestTextureUpdate(Texture2D& texture);
 
-		void advanceToFrame(int frameIndex);
+		void recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline);
 
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
 
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
+		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
 
 		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format);
 		
@@ -237,6 +241,9 @@ namespace nap
 		 */
 		void processEvents();
 
+		void advanceToFrame(int frameIndex);
+
+
 		struct PipelineToDestroy
 		{
 			int			mFrameIndex;
@@ -246,14 +253,20 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
+		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
 
 		VmaAllocator							mVulkanAllocator;
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
+		
+		TexturesToUpdateSet						mTexturesToUpdate;
 
 		PipelineList							mPipelinesToDestroy;
 
 		int										mCurrentFrameIndex = 0;
+		VkCommandBuffer							mCurrentCommandBuffer = nullptr;
+		RenderWindow*							mCurrentRenderWindow = nullptr;
+
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 

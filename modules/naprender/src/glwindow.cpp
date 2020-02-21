@@ -813,6 +813,13 @@ namespace nap
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
+		return commandBuffer;
+	}
+
+	void GLWindow::beginRenderPass()
+	{
+		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
+
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
@@ -829,9 +836,7 @@ namespace nap
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
-		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		return commandBuffer;
+		vkCmdBeginRenderPass(mCommandBuffers[mCurrentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
 

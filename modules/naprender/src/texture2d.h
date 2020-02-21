@@ -9,6 +9,7 @@
 #include "rtti/factory.h"
 #include "vulkan/vulkan_core.h"
 #include "vk_mem_alloc.h"
+#include "nap/signalslot.h"
 
 namespace nap
 {
@@ -50,6 +51,7 @@ namespace nap
 		EWrapMode	mWrapHorizontal = EWrapMode::ClampToEdge;			///< Property: 'WarpHorizontal'	horizontal wrap mode
 		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -107,6 +109,8 @@ namespace nap
 		 */
 		void update(const Bitmap& bitmap);
 
+		void upload(VkCommandBuffer commandBuffer);
+
 		/**
 		 * Converts the CPU data that is passed in to the GPU. The internal Bitmap remains untouched. 
 		 * @param data Pointer to the CPU data.
@@ -141,7 +145,9 @@ namespace nap
 		*/
 		void endGetData(Bitmap& bitmap);
 
-		VkImageView getImageView() const { return mTextureView; }
+		VkImageView getImageView() const;
+
+		nap::Signal<const Texture2D&> changed;
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
@@ -160,12 +166,34 @@ namespace nap
 
 	private:
 		friend class RenderTarget;
+
+		struct StagingBuffer
+		{
+			VkBuffer					mStagingBuffer;
+			VmaAllocation				mStagingBufferAllocation;
+			VmaAllocationInfo			mStagingBufferAllocationInfo;
+		};
+
+		struct ImageData
+		{
+			VkImage						mTextureImage = nullptr;
+			VkImageView					mTextureView;
+			VmaAllocation				mTextureAllocation = nullptr;
+			VmaAllocationInfo			mTextureAllocationInfo;
+			VkImageLayout				mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		};
+
+		using ImageDataArray = std::array<ImageData, 2>;
+		using StagingBufferArray = std::array<StagingBuffer, 3>;
+
 		RenderService*				mRenderService = nullptr;
-		VkImage						mTextureImage = nullptr;
- 		VmaAllocation				mTextureAllocation = nullptr;
- 		VmaAllocationInfo			mTextureAllocationInfo;
-		opengl::Texture2D			mTexture;			///< Internal opengl texture
-		VkImageView					mTextureView;
+		opengl::Texture2D			mTexture;
+		std::vector<uint8_t>		mTextureData;
+		ImageDataArray				mImageData;
+		StagingBufferArray			mStagingBuffers;
+		int							mCurrentStagingBufferIndex = -1;
+		int							mCurrentImageIndex = -1;
+		glm::ivec2					mImageSize;
 	};
 
 	using Texture2DCreator = rtti::ObjectCreator<Texture2D, RenderService>;

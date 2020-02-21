@@ -957,14 +957,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
-		renderObjects(renderTarget, commandBuffer, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -985,7 +985,7 @@ namespace nap
 		}
 
 		// Render these objects
-		renderObjects(renderTarget, commandBuffer, camera, render_comps, sortFunction);
+		renderObjects(renderTarget, camera, render_comps, sortFunction);
 	}
 
 
@@ -1031,19 +1031,19 @@ namespace nap
 
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
-		renderObjects(renderTarget, commandBuffer, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
+		assert(mCurrentCommandBuffer != nullptr);	// BeginRendering is not called if this assert is fired	
+
 		// Sort objects to render
 		std::vector<RenderableComponentInstance*> components_to_render = comps;
 		sortFunction(components_to_render, camera);
-
-		//renderTarget.bind();
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
@@ -1067,10 +1067,8 @@ namespace nap
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
-			comp->draw(renderTarget, commandBuffer, view_matrix, projection_matrix);
+			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
 		}
-
-		//renderTarget.unbind();
 	}
 
 
@@ -1147,6 +1145,38 @@ namespace nap
 	}
 
 
+	bool RenderService::beginRendering(RenderWindow& renderWindow)
+	{
+		assert(mCurrentCommandBuffer == nullptr);
+		assert(mCurrentRenderWindow == nullptr);
+
+		mCurrentCommandBuffer = renderWindow.makeActive();
+		if (mCurrentCommandBuffer == nullptr)
+			return false;
+
+		mCurrentRenderWindow = &renderWindow;
+		int frame_index = renderWindow.getWindow()->getCurrentFrameIndex();
+		advanceToFrame(frame_index);
+
+		for (Texture2D* texture : mTexturesToUpdate)
+			texture->upload(mCurrentCommandBuffer);
+
+		mTexturesToUpdate.clear();
+		renderWindow.beginRenderPass();
+		return true;
+	}
+
+	void RenderService::endRendering()
+	{
+		assert(mCurrentCommandBuffer != nullptr);
+		assert(mCurrentRenderWindow != nullptr);
+
+		mCurrentRenderWindow->swap();
+
+		mCurrentCommandBuffer = nullptr;
+		mCurrentRenderWindow = nullptr;
+	}
+
 	void RenderService::preUpdate(double deltaTime)
 	{
 		//	getPrimaryWindow().makeCurrent();
@@ -1175,6 +1205,12 @@ namespace nap
 		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
 		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
 		return *inserted.first->second;
+	}
+
+
+	void RenderService::requestTextureUpdate(Texture2D& texture)
+	{
+		mTexturesToUpdate.insert(&texture);
 	}
 
 } // Renderservice

@@ -253,45 +253,8 @@ namespace nap
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VkCommandBuffer beginSingleTimeCommands(RenderService& renderService) 
+		void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) 
 		{
-			VkCommandBufferAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			allocInfo.commandPool = renderService.getCommandPool();
-			allocInfo.commandBufferCount = 1;
-
-			VkCommandBuffer commandBuffer;
-			vkAllocateCommandBuffers(renderService.getDevice(), &allocInfo, &commandBuffer);
-
-			VkCommandBufferBeginInfo beginInfo = {};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-			vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-			return commandBuffer;
-		}
-
-		void endSingleTimeCommands(RenderService& renderService, VkCommandBuffer commandBuffer) 
-		{
-			vkEndCommandBuffer(commandBuffer);
-
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &commandBuffer;
-
-			vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-			vkQueueWaitIdle(renderService.getGraphicsQueue());
-
-			vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
-		}
-
-		void transitionImageLayout(RenderService& renderService, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) 
-		{
-			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderService);
-
 			VkImageMemoryBarrier barrier = {};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			barrier.oldLayout = oldLayout;
@@ -324,6 +287,14 @@ namespace nap
 				sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 				destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			}
+			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+			{
+				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+				sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			}
 			else 
 			{
 				throw std::invalid_argument("unsupported layout transition!");
@@ -337,14 +308,10 @@ namespace nap
 				0, nullptr,
 				1, &barrier
 			);
-
-			endSingleTimeCommands(renderService, commandBuffer);
 		}
 
-		void copyBufferToImage(RenderService& renderService, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
+		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
 		{
-			VkCommandBuffer commandBuffer = beginSingleTimeCommands(renderService);
-
 			VkBufferImageCopy region = {};
 			region.bufferOffset = 0;
 			region.bufferRowLength = 0;
@@ -361,8 +328,6 @@ namespace nap
 			};
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-			endSingleTimeCommands(renderService, commandBuffer);
 		}
 
 		bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageView& imageView, utility::ErrorState& errorState) 
@@ -396,48 +361,63 @@ namespace nap
 		
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
-		VkBuffer stagingBuffer;
-		VmaAllocation allocation;
-		VmaAllocationInfo allocationInfo;
+		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
+		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
+		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
+		// 
+		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
+		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
+		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
+		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
+		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
+		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
+		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
+		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
+		// frame will just overwrite the same staging buffer.
+		//
+		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
+		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
+		// called, which moves the index one place ahead. 
+		for (int index = 0; index < mStagingBuffers.size(); ++index)
+		{
+			StagingBuffer& imageBuffer = mStagingBuffers[index];
 
-		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.size = imageSize;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+			bufferInfo.size = imageSize;
+			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VmaAllocationCreateInfo allocInfo = {};
-		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-		allocInfo.flags = 0;
+			VmaAllocationCreateInfo allocInfo = {};
+			allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+			allocInfo.flags = 0;
 
-		if (!errorState.check(vmaCreateBuffer(vulkan_allocator, &bufferInfo, &allocInfo, &stagingBuffer, &allocation, &allocationInfo) == VK_SUCCESS, "Could not allocate buffer for texture"))
-			return false;
+			if (!errorState.check(vmaCreateBuffer(vulkan_allocator, &bufferInfo, &allocInfo, &imageBuffer.mStagingBuffer, &imageBuffer.mStagingBufferAllocation, &imageBuffer.mStagingBufferAllocationInfo) == VK_SUCCESS, "Could not allocate buffer for texture"))
+				return false;
+		}
 
-		void* mapped_memory;
-		if (!errorState.check(vmaMapMemory(vulkan_allocator, allocation, &mapped_memory) == VK_SUCCESS, "Unable to map memory to update texture contents"))
-			return false;
+		// We create images and imageviews for the amount of frame in flight
+		for (int index = 0; index < mImageData.size(); ++index)
+		{
+			ImageData& imageData = mImageData[index];
+			VkFormat texture_format = getTextureFormat(bitmap);
+			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
+				return false;
 
-		memcpy(mapped_memory, bitmap.getData(), static_cast<size_t>(imageSize));
-		vmaUnmapMemory(vulkan_allocator, allocation);
+			if (!createImage(vulkan_allocator, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
+				return false;
 
-		VkFormat texture_format = getTextureFormat(bitmap);
-		if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
-			return false;
+			if (!createImageView(device, imageData.mTextureImage, texture_format, imageData.mTextureView, errorState))
+				return false;
+		}
 
-		if (!createImage(vulkan_allocator, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mTextureImage, mTextureAllocation, mTextureAllocationInfo, errorState))
-			return false;
+		mCurrentImageIndex = 0;
+		mCurrentStagingBufferIndex = 0;
+		mImageSize = glm::ivec2(bitmap.getWidth(), bitmap.getHeight());
 
-		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(*mRenderService, stagingBuffer, mTextureImage, static_cast<uint32_t>(bitmap.getWidth()), static_cast<uint32_t>(bitmap.getHeight()));
-		transitionImageLayout(*mRenderService, mTextureImage, texture_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		vmaDestroyBuffer(vulkan_allocator, stagingBuffer, allocation);
-
-		if (!createImageView(device, mTextureImage, texture_format, mTextureView, errorState))
-			return false;
+		update(bitmap);
 
 		return true;
 	}
-
 
 	const glm::vec2 Texture2D::getSize() const
 	{
@@ -456,15 +436,56 @@ namespace nap
 		return static_cast<int>(mTexture.getSettings().mHeight);
 	}
 
+
 	void Texture2D::update(const Bitmap& bitmap)
 	{
-		update(bitmap.getData());
+		assert(bitmap.getWidth() == mImageSize.x && bitmap.getHeight() == mImageSize.y);
+
+		// We use a staging buffer that is guaranteed to be free
+		assert(mCurrentStagingBufferIndex != -1);
+		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+
+		// Update the staging buffer using the Bitmap contents
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+		VkDeviceSize imageSize = getNumComponents(bitmap.getChannels()) * getComponentSize(bitmap.getDataType()) * bitmap.getWidth() * bitmap.getHeight();
+
+		void* mapped_memory;
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
+		assert(result == VK_SUCCESS);
+
+		memcpy(mapped_memory, bitmap.getData(), static_cast<size_t>(imageSize));
+		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
+
+		// Notify the RenderService that it should upload the texture contents during rendering
+		mRenderService->requestTextureUpdate(*this);
+	}
+
+
+	void Texture2D::upload(VkCommandBuffer commandBuffer)
+	{
+		assert(mCurrentStagingBufferIndex != -1);
+		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
+		
+		mCurrentImageIndex = (mCurrentImageIndex + 1) % mImageData.size();
+		ImageData& imageData = mImageData[mCurrentImageIndex];
+
+		transitionImageLayout(commandBuffer, imageData.mTextureImage, imageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mImageSize.x, mImageSize.y);
+		transitionImageLayout(commandBuffer, imageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		// We store the last image layout, which is used as input for a subsequent upload
+		imageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	
+		// Notify listeners such as Samplers, so that they can use another ImageView for this texture.
+		changed(*this);
 	}
 
 
 	void Texture2D::update(const void* data, int pitch)
 	{
-		mTexture.setData(data, pitch);
+		assert(false);
+		//mTexture.setData(data, pitch);
 	}
 
 
@@ -480,6 +501,13 @@ namespace nap
 	nap::uint Texture2D::getHandle() const
 	{
 		return getTexture().getTextureId();
+	}
+
+
+	VkImageView Texture2D::getImageView() const
+	 { 
+		assert(mCurrentImageIndex != -1);
+		return mImageData[mCurrentImageIndex].mTextureView; 
 	}
 
 

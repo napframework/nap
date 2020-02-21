@@ -7,6 +7,7 @@
 #include <rtti/objectptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -59,10 +60,10 @@ namespace nap
 		void raiseChanged() { mSamplerChangedCallback(*this); }
 
 	private:
-		VkDevice							mDevice;
-		const SamplerDeclaration*	mDeclaration = nullptr;
-		VkSampler							mSampler = nullptr;
-		SamplerChangedCallback				mSamplerChangedCallback;
+		VkDevice						mDevice;
+		const SamplerDeclaration*		mDeclaration = nullptr;
+		VkSampler						mSampler = nullptr;
+		SamplerChangedCallback			mSamplerChangedCallback;
 	};
 
 	/**
@@ -92,7 +93,11 @@ namespace nap
 		const Texture2D& getTexture() const { return *mTexture2D; }
 
 	private:
-		rtti::ObjectPtr<Texture2D>				mTexture2D;
+		void onTextureChanged(const Texture2D&);
+
+	private:
+		Slot<const Texture2D&>			mTextureChangedSlot = { this, &Sampler2DInstance::onTextureChanged };
+		rtti::ObjectPtr<Texture2D>		mTexture2D;
 	};
 
 

@@ -84,13 +84,8 @@ namespace nap
 	{
 		// Activate current window for drawing
 
-		VkCommandBuffer commandBuffer = mRenderWindow->makeActive();
-		if (commandBuffer == nullptr)
+		if (!mRenderService->beginRendering(*mRenderWindow))
 			return;
-
-		int frame_index = mRenderWindow->getWindow()->getCurrentFrameIndex();
-
-		mRenderService->advanceToFrame(frame_index);
 
 		// Get perspective camera
 		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
@@ -106,13 +101,12 @@ namespace nap
 		
 		// Render all copied meshes
 		std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), commandBuffer, persp_camera, renderable_comps);
+		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
 
 		// Draw gui
-		mGuiService->draw(commandBuffer);
+		mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+		mRenderService->endRendering();
 	}
 	
 
