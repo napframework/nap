@@ -6,15 +6,12 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-
-namespace opengl
-{
-	struct Texture2DSettings;
-}
+#include "surfaceformats.h"
 
 namespace nap
 {
 	class Texture2D;
+	struct Texture2DSettings;
 
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object.
@@ -29,39 +26,18 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 *	Supported bitmap data types
-		 */
-		enum class EDataType : int
-		{
-			BYTE		= 0,	///< 08 bit bitmap
-			USHORT		= 1,	///< 16 bit bitmap
-			FLOAT		= 2		///< 32 bit bitmap
-		};
-
-		/**
-		 *	Supported bitmap color types
-		 */
-		enum class EChannels : int
-		{
-			R			= 0,	///< R red component
-			RGB			= 1,	///< RGB red, green and blue component
-			RGBA		= 2,	///< RGBA red, green, blue and alpha component
-			BGR			= 3,	///< BGR blue, green and red component
-			BGRA		= 4		///< BGRA blue, green, red and alpha component
-		};
 
 		virtual ~Bitmap();
 
 		/**
 		 * @return The datatype of a pixel in this bitmap
 		 */
-		EDataType getDataType() const { return mType; }
+		ESurfaceDataType getDataType() const { return mType; }
 
 		/**
 		 * @return The channel type of a pixel in this bitmap
 		 */
-		EChannels getChannels() const { return mChannels; }
+		ESurfaceChannels getChannels() const { return mChannels; }
 
 		/**
 		* The bitmap is initialized using it's associated properties. This means
@@ -86,7 +62,7 @@ namespace nap
 		 * Memory is allocated but the GPU pixel data is NOT copied over
 		 * @param settings the settings used to initialize this texture.
 		 */
-		void initFromTexture(const opengl::Texture2DSettings& settings);
+		void initFromTexture(const Texture2DSettings& settings);
 
 		/**
 		 * @return the type of color associated with this bitmap
@@ -300,8 +276,8 @@ namespace nap
 		 */
 		int mWidth					= 512;						///< property: width of the bitmap in pixels
 		int mHeight					= 512;						///< property: height of the bitmap in pixels
-		EDataType mType				= EDataType::BYTE;			///< property Type: data type of the pixels in the bitmap
-		EChannels mChannels			= EChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
+		ESurfaceDataType mType				= ESurfaceDataType::BYTE;			///< property Type: data type of the pixels in the bitmap
+		ESurfaceChannels mChannels			= ESurfaceChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
 
 	private:
 		/**
@@ -508,13 +484,13 @@ namespace nap
 		Type* pixel_data = getPixelData<Type>(x, y);
 		switch (mChannels)
 		{
-		case EChannels::BGRA:
+		case ESurfaceChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case EChannels::RGBA:
+		case ESurfaceChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -547,15 +523,15 @@ namespace nap
 		Type* pixel_data = getPixelData<Type>(x, y);
 		switch (mChannels)
 		{
-		case EChannels::BGR:
-		case EChannels::BGRA:
+		case ESurfaceChannels::BGR:
+		case ESurfaceChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case EChannels::RGB:
-		case EChannels::RGBA:
+		case ESurfaceChannels::RGB:
+		case ESurfaceChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -586,8 +562,8 @@ namespace nap
 		int idx = static_cast<int>(channel);
 		switch (mChannels)
 		{
-			case EChannels::BGR:
-			case EChannels::BGRA:
+			case ESurfaceChannels::BGR:
+			case ESurfaceChannels::BGRA:
 			{
 				idx = channel == EColorChannel::Red  ? 2 : 
 					  channel == EColorChannel::Blue ? 0 : idx;
@@ -694,24 +670,3 @@ namespace nap
 	}
 }
 
-namespace std
-{
-	template <>
-	struct hash<nap::Bitmap::EChannels>
-	{
-		size_t operator()(const nap::Bitmap::EChannels& v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
-
-
-	template <>
-	struct hash<nap::Bitmap::EDataType>
-	{
-		size_t operator()(const nap::Bitmap::EDataType& v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
-}

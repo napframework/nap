@@ -39,7 +39,8 @@ namespace opengl
 
 	const glm::ivec2 TextureRenderTarget2D::getSize() const
 	{
-		return glm::ivec2(mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
+		return glm::ivec2();
+		//return glm::ivec2(mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
 	}
 
 

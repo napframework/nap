@@ -11,20 +11,6 @@
 
 #undef BYTE
 
-RTTI_BEGIN_ENUM(nap::Bitmap::EChannels)
-	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::R,			"R"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::RGB,		"RGB"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::RGBA,		"RGBA"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::BGR,		"BGR"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EChannels::BGRA,		"BGRA")
-RTTI_END_ENUM
-
-RTTI_BEGIN_ENUM(nap::Bitmap::EDataType)
-	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::BYTE,		"Byte"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::USHORT,		"Short"),
-	RTTI_ENUM_VALUE(nap::Bitmap::EDataType::FLOAT,		"Float")
-RTTI_END_ENUM
-
 // nap::bitmap run time class definition 
 RTTI_BEGIN_CLASS(nap::Bitmap)
 	RTTI_PROPERTY("Width",		&nap::Bitmap::mWidth,			nap::rtti::EPropertyMetaData::Default)
@@ -191,17 +177,17 @@ namespace nap
 		switch (fi_bitmap_type)
 		{
 		case FIT_BITMAP:
-			mType = Bitmap::EDataType::BYTE;
+			mType = ESurfaceDataType::BYTE;
 			break;
 		case FIT_UINT16:
 		case FIT_RGB16:
 		case FIT_RGBA16:
-			mType = Bitmap::EDataType::USHORT;
+			mType = ESurfaceDataType::USHORT;
 			break;
 		case FIT_FLOAT:
 		case FIT_RGBF:
 		case FIT_RGBAF:
-			mType = Bitmap::EDataType::FLOAT;
+			mType = ESurfaceDataType::FLOAT;
 			break;
 		default:
 			errorState.fail("Can't load bitmap from file; unknown pixel format");
@@ -227,10 +213,10 @@ namespace nap
 		switch (fi_bitmap_color_type)
 		{
 		case FIC_MINISBLACK:
-			mChannels = EChannels::R;
+			mChannels = ESurfaceChannels::R;
 			break;
 		case FIC_RGBALPHA:
-			mChannels = swap ? EChannels::BGRA : EChannels::RGBA;
+			mChannels = swap ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
 			break;
 		default:
 			errorState.fail("Can't load bitmap from file; unknown pixel format");
@@ -289,47 +275,13 @@ namespace nap
 	}
 
 
-	void Bitmap::initFromTexture(const opengl::Texture2DSettings& settings)
+	void Bitmap::initFromTexture(const Texture2DSettings& settings)
 	{
 		mWidth = settings.mWidth;
 		mHeight = settings.mHeight;
-
-		switch (settings.mType)
-		{
-		case GL_UNSIGNED_BYTE:
-			mType = EDataType::BYTE;
-			break;
-		case GL_FLOAT:
-			mType = EDataType::FLOAT;
-			break;
-		case GL_UNSIGNED_SHORT:
-			mType = EDataType::USHORT;
-			break;
-		default:
-			assert(false);
-		}
-
-		switch (settings.mFormat)
-		{
-		case GL_RED:
-			mChannels = EChannels::R;
-			break;
-		case GL_RGB:
-			mChannels = EChannels::RGB;
-			break;
-		case GL_RGBA:
-			mChannels = EChannels::RGBA;
-			break;
-		case GL_BGR:
-			mChannels = EChannels::BGR;
-			break;
-		case GL_BGRA:
-			mChannels = EChannels::BGRA;
-			break;
-		default:
-			assert(false);
-		}
-
+		mType = settings.mDataType;
+		mChannels = settings.mChannels;
+		
 		updatePixelFormat();
 
 		uint64_t size = getSizeInBytes();
@@ -348,17 +300,17 @@ namespace nap
 		BaseColor* rvalue = nullptr;
 		switch (mType)
 		{
-		case EDataType::BYTE:
+		case ESurfaceDataType::BYTE:
 		{
 			rvalue = createColor<uint8>(*this);
 			break;
 		}
-		case EDataType::FLOAT:
+		case ESurfaceDataType::FLOAT:
 		{
 			rvalue = createColor<float>(*this);
 			break;
 		}
-		case EDataType::USHORT:
+		case ESurfaceDataType::USHORT:
 		{
 			rvalue = createColor<uint16>(*this);
 			break;
@@ -376,17 +328,17 @@ namespace nap
 	{
 		switch (mType)
 		{
-		case EDataType::BYTE:
+		case ESurfaceDataType::BYTE:
 		{
 			fill<uint8>(x, y, *this, outPixel);
 			break;
 		}
-		case EDataType::FLOAT:
+		case ESurfaceDataType::FLOAT:
 		{
 			fill<float>(x, y, *this, outPixel);
 			break;
 		}
-		case EDataType::USHORT:
+		case ESurfaceDataType::USHORT:
 		{
 			fill<uint16>(x, y, *this, outPixel);
 			break;
@@ -402,17 +354,17 @@ namespace nap
 	{
 		switch (mType)
 		{
-		case EDataType::BYTE:
+		case ESurfaceDataType::BYTE:
 		{
 			setPixelData<uint8>(x, y, color);
 			break;
 		}
-		case EDataType::FLOAT:
+		case ESurfaceDataType::FLOAT:
 		{
 			setPixelData<float>(x, y, color);
 			break;
 		}
-		case EDataType::USHORT:
+		case ESurfaceDataType::USHORT:
 		{
 			setPixelData<uint16>(x, y, color);
 			break;
@@ -428,28 +380,28 @@ namespace nap
 	{
 		switch (mType)
 		{
-		case EDataType::BYTE:
+		case ESurfaceDataType::BYTE:
 			mChannelSize = sizeof(unsigned char);
 			break;
-		case EDataType::FLOAT:
+		case ESurfaceDataType::FLOAT:
 			mChannelSize = sizeof(float);
 			break;
-		case EDataType::USHORT:
+		case ESurfaceDataType::USHORT:
 			mChannelSize = sizeof(uint16_t);
 			break;
 		}
 
 		switch (mChannels)
 		{
-		case EChannels::R:
+		case ESurfaceChannels::R:
 			mNumChannels = 1;
 			break;
-		case EChannels::RGB:
-		case EChannels::BGR:
+		case ESurfaceChannels::RGB:
+		case ESurfaceChannels::BGR:
 			mNumChannels = 3;
 			break;
-		case EChannels::RGBA:
-		case EChannels::BGRA:
+		case ESurfaceChannels::RGBA:
+		case ESurfaceChannels::BGRA:
 			mNumChannels = 4;
 			break;
 		}

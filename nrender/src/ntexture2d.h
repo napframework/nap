@@ -5,25 +5,6 @@
 namespace opengl
 {
 	/**
-	* Texture2Dsettings
-	*
-	* Data associated with a 2d texture
-	*/
-	struct Texture2DSettings
-	{
-	public:
-		GLint	mInternalFormat = GL_RGB;				//< Specifies the number of color components in the texture
-		GLsizei mWidth			= 0;					//< Specifies the width of the texture
-		GLsizei mHeight			= 0;					//< Specifies the height of the texture
-		GLenum	mFormat			= GL_BGR;				//< Specifies the format of the pixel data
-		GLenum	mType			= GL_UNSIGNED_BYTE;		//< Data type of the pixel data (GL_UNSIGNED_BYTE etc..)
-
-		bool isValid() const { return mWidth != 0 && mHeight != 0; }
-		bool operator==(const Texture2DSettings& other) const { return mInternalFormat == other.mInternalFormat && mWidth == other.mWidth && mHeight == other.mHeight && mFormat == other.mFormat && mType == other.mType; }
-		bool operator!=(const Texture2DSettings& other) const { return !(*this == other); }
-	};
-
-	/**
 	 * Texture2D
 	 *
 	 * Represents a 2 dimensional texture on the GPU
@@ -34,12 +15,12 @@ namespace opengl
 		// Default constructor
 		Texture2D();
 
-		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters, ETextureUsage usage);
+		void init(/*const Texture2DSettings& textureSettings,*/ const TextureParameters& parameters, ETextureUsage usage);
 
 		/**
 		 * @return Texture2D settings object
 		 */
-		const Texture2DSettings& getSettings() const { return mSettings; }
+		//const Texture2DSettings& getSettings() const { return mSettings; }
 
 		/**
 		 * setData
@@ -79,7 +60,7 @@ namespace opengl
 		void asyncEndGetData(void* target, uint64_t sizeInBytes);
 
 	private:
-		Texture2DSettings	mSettings;		// Settings object
+		//Texture2DSettings	mSettings;		// Settings object
 		GLuint				mPBO;			// Pixel buffer object used to read/write texture data if usage is DynamicRead or DynamicWrite
 		ETextureUsage		mUsage;			// Usage of the texture
 	};

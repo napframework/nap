@@ -17,36 +17,31 @@ namespace nap
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{
-		opengl::Texture2DSettings settings;
+		Texture2DSettings settings;
 		settings.mWidth = mWidth;
 		settings.mHeight = mHeight;
+		settings.mDataType = ESurfaceDataType::BYTE;
 
 		switch (mFormat)
 		{
 		case ERenderTargetFormat::RGBA8:
-			settings.mFormat			= GL_RGBA;
-			settings.mInternalFormat 	= GL_RGBA8;
-			settings.mType				= GL_UNSIGNED_BYTE;
+			settings.mChannels = ESurfaceChannels::RGBA;
 			break;
 		case ERenderTargetFormat::RGB8:
-			settings.mFormat			= GL_RGB;
-			settings.mInternalFormat 	= GL_RGB8;
-			settings.mType				= GL_UNSIGNED_BYTE;
+			settings.mChannels = ESurfaceChannels::RGB;
 			break;
 		case ERenderTargetFormat::R8:
-			settings.mFormat			= GL_RED;
-			settings.mInternalFormat 	= GL_R8;
-			settings.mType				= GL_UNSIGNED_BYTE;
+			settings.mChannels = ESurfaceChannels::R;
 			break;
 		case ERenderTargetFormat::Depth:
-			settings.mFormat			= GL_DEPTH_COMPONENT;
-			settings.mInternalFormat 	= GL_DEPTH_COMPONENT;
-			settings.mType				= GL_FLOAT;
+			assert(false);
+// 			settings.mFormat			= GL_DEPTH_COMPONENT;
+// 			settings.mInternalFormat 	= GL_DEPTH_COMPONENT;
+// 			settings.mType				= GL_FLOAT;
 			break;
 		}
 
-		initTexture(settings);
-		return true;
+		return initTexture(settings, errorState);
 	}
 
 }

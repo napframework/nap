@@ -2,11 +2,6 @@
 
 #include "utility/dllexport.h"
 
-namespace opengl
-{
-	struct Texture2DSettings;
-}
-
 namespace nap
 {	
 	// Forward Declares
@@ -15,6 +10,7 @@ namespace nap
 		class ErrorState;
 	}
 	class Bitmap;
+	struct Texture2DSettings;
 
 	/**
 	 * Creates matching opengl texture settings based on the properties of a bitmap
@@ -24,5 +20,5 @@ namespace nap
 	 * @param errorState contains the error when no settings could be derived from the bitmap
 	 * @return if the opengl texture settings could be constructed successfully
 	 */
-	NAPAPI bool	getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	NAPAPI bool	getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 }

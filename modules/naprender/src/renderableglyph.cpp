@@ -51,13 +51,13 @@ namespace nap
 		getTextureParameters(mTexture.mParameters, mSize);
 
 		// Initialize texture
-		opengl::Texture2DSettings settings;
+		Texture2DSettings settings;
 		settings.mWidth  = mSize.x;
 		settings.mHeight = mSize.y;
-		settings.mType = GL_UNSIGNED_BYTE;
-		settings.mInternalFormat = GL_RED;
-		settings.mFormat = GL_RED;
-		mTexture.initTexture(settings);
+		settings.mDataType = ESurfaceDataType::BYTE;
+		settings.mChannels = ESurfaceChannels::R;
+		if (!mTexture.initTexture(settings, errorCode))
+			return false;
 
 		// Upload glyph bitmap data
 		mTexture.update(bitmap_glyph->bitmap.buffer, bitmap_glyph->bitmap.pitch);

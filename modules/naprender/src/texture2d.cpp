@@ -103,19 +103,19 @@ static void convertTextureParameters(const nap::TextureParameters& input, opengl
 namespace nap
 {
 	// Returns number of components each texel has in this format
-	static int getNumComponents(Bitmap::EChannels channels)
+	static int getNumComponents(ESurfaceChannels channels)
 	{
 		switch (channels)
 		{
-		case Bitmap::EChannels::R:
+		case ESurfaceChannels::R:
 			return 1;
 
-		case Bitmap::EChannels::RGB:
-		case Bitmap::EChannels::BGR:
+		case ESurfaceChannels::RGB:
+		case ESurfaceChannels::BGR:
 			return 3;
 
-		case Bitmap::EChannels::RGBA:
-		case Bitmap::EChannels::BGRA:
+		case ESurfaceChannels::RGBA:
+		case ESurfaceChannels::BGRA:
 			return 4;
 		}
 
@@ -124,15 +124,15 @@ namespace nap
 	}
 
 	// Returns What the size in bytes is of a component type
-	static int getComponentSize(Bitmap::EDataType type)
+	static int getComponentSize(ESurfaceDataType type)
 	{
 		switch (type)
 		{
-		case Bitmap::EDataType::BYTE:
+		case ESurfaceDataType::BYTE:
 			return 1;
-		case Bitmap::EDataType::USHORT:
+		case ESurfaceDataType::USHORT:
 			return 2;
-		case Bitmap::EDataType::FLOAT:
+		case ESurfaceDataType::FLOAT:
 			return 4;
 		}
 
@@ -143,14 +143,6 @@ namespace nap
 	Texture2D::Texture2D(RenderService& renderService) :
 		mRenderService(&renderService)
 	{
-	}
-
-	void Texture2D::initTexture(const opengl::Texture2DSettings& settings)
-	{
-		// Create the texture with the associated settings
-		opengl::TextureParameters gl_params;
-		convertTextureParameters(mParameters, gl_params);
-		mTexture.init(settings, gl_params, mUsage);
 	}
 
 	namespace 
@@ -180,71 +172,71 @@ namespace nap
 		}
 
 
-	VkFormat getTextureFormat(const Bitmap& bitmap)
+		VkFormat getTextureFormat(ESurfaceChannels channels, ESurfaceDataType dataType)
 		{
-			switch (bitmap.getChannels())
+			switch (channels)
 			{
-			case Bitmap::EChannels::R:
+			case ESurfaceChannels::R:
 				{
-					switch (bitmap.getDataType())
+					switch (dataType)
 					{
-					case nap::Bitmap::EDataType::BYTE:
+					case nap::ESurfaceDataType::BYTE:
 						return VK_FORMAT_R8_SRGB;
-					case nap::Bitmap::EDataType::FLOAT:
+					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_R32_SFLOAT;
-					case nap::Bitmap::EDataType::USHORT:
+					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_R16_UNORM;
 					}
 					break;
 				}
-			case Bitmap::EChannels::RGB:
+			case ESurfaceChannels::RGB:
 				{
-					switch (bitmap.getDataType())
+					switch (dataType)
 					{
-					case nap::Bitmap::EDataType::BYTE:
+					case nap::ESurfaceDataType::BYTE:
 						return VK_FORMAT_R8G8B8_SRGB;
-					case nap::Bitmap::EDataType::FLOAT:
+					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_R32G32B32_SFLOAT;
-					case nap::Bitmap::EDataType::USHORT:
+					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_R16G16B16_UNORM;
 					}
 					break;
 				}
-			case Bitmap::EChannels::BGR:
+			case ESurfaceChannels::BGR:
 				{
-					switch (bitmap.getDataType())
+					switch (dataType)
 					{
-					case nap::Bitmap::EDataType::BYTE:
+					case nap::ESurfaceDataType::BYTE:
 						return VK_FORMAT_B8G8R8_SRGB;
-					case nap::Bitmap::EDataType::FLOAT:
+					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_UNDEFINED;
-					case nap::Bitmap::EDataType::USHORT:
+					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_UNDEFINED;
 					}
 					break;
 				}
-			case Bitmap::EChannels::RGBA:
+			case ESurfaceChannels::RGBA:
 				{
-					switch (bitmap.getDataType())
+					switch (dataType)
 					{
-					case nap::Bitmap::EDataType::BYTE:
+					case nap::ESurfaceDataType::BYTE:
 						return VK_FORMAT_R8G8B8A8_SRGB;
-					case nap::Bitmap::EDataType::FLOAT:
+					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_R32G32B32A32_SFLOAT;
-					case nap::Bitmap::EDataType::USHORT:
+					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_R16G16B16A16_UNORM;
 					}
 					break;
 				}
-			case Bitmap::EChannels::BGRA:
+			case ESurfaceChannels::BGRA:
 				{
-					switch (bitmap.getDataType())
+					switch (dataType)
 					{
-					case nap::Bitmap::EDataType::BYTE:
+					case nap::ESurfaceDataType::BYTE:
 						return VK_FORMAT_B8G8R8A8_SRGB;
-					case nap::Bitmap::EDataType::FLOAT:
+					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_UNDEFINED;
-					case nap::Bitmap::EDataType::USHORT:
+					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_UNDEFINED;
 					}
 					break;
@@ -350,15 +342,13 @@ namespace nap
 		}
 	}	
 
-	bool Texture2D::initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState)
+	bool Texture2D::initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState)
 	{
-		assert(!bitmap.empty());
-
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
-		VkDeviceSize imageSize = getNumComponents(bitmap.getChannels()) * getComponentSize(bitmap.getDataType()) * bitmap.getWidth() * bitmap.getHeight();
-		
+		VkDeviceSize imageSize = getNumComponents(settings.mChannels) * getComponentSize(settings.mDataType) * settings.mWidth * settings.mHeight;
+
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -378,6 +368,7 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
+		mStagingBuffers.resize(mUsage == opengl::ETextureUsage::Static || mUsage == opengl::ETextureUsage::DynamicWrite ? 1 : 3);
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			StagingBuffer& imageBuffer = mStagingBuffers[index];
@@ -396,14 +387,15 @@ namespace nap
 		}
 
 		// We create images and imageviews for the amount of frame in flight
+		mImageData.resize(mUsage == opengl::ETextureUsage::Static || mUsage == opengl::ETextureUsage::DynamicWrite ? 1 : 2);
 		for (int index = 0; index < mImageData.size(); ++index)
 		{
 			ImageData& imageData = mImageData[index];
-			VkFormat texture_format = getTextureFormat(bitmap);
+			VkFormat texture_format = getTextureFormat(settings.mChannels, settings.mDataType);
 			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 				return false;
 
-			if (!createImage(vulkan_allocator, bitmap.getWidth(), bitmap.getHeight(), texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
+			if (!createImage(vulkan_allocator, settings.mWidth, settings.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
 				return false;
 
 			if (!createImageView(device, imageData.mTextureImage, texture_format, imageData.mTextureView, errorState))
@@ -412,7 +404,22 @@ namespace nap
 
 		mCurrentImageIndex = 0;
 		mCurrentStagingBufferIndex = 0;
-		mImageSize = glm::ivec2(bitmap.getWidth(), bitmap.getHeight());
+		mImageSize = glm::ivec2(settings.mWidth, settings.mHeight);
+		return true;
+	}
+
+	bool Texture2D::initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState)
+	{
+		assert(!bitmap.empty());
+
+		Texture2DSettings settings;
+		settings.mChannels	= bitmap.getChannels();
+		settings.mDataType	= bitmap.getDataType();
+		settings.mWidth		= bitmap.getWidth();
+		settings.mHeight	= bitmap.getHeight();
+
+		if (!initTexture(settings, errorState))
+			return false;
 
 		update(bitmap);
 
@@ -421,24 +428,26 @@ namespace nap
 
 	const glm::vec2 Texture2D::getSize() const
 	{
-		return glm::vec2(mTexture.getSettings().mWidth, mTexture.getSettings().mHeight);
+		return glm::vec2(mImageSize.x, mImageSize.y);
 	}
 
 
 	int Texture2D::getWidth() const
 	{
-		return static_cast<int>(mTexture.getSettings().mWidth);
+		return mImageSize.x;
 	}
 
 
 	int Texture2D::getHeight() const
 	{
-		return static_cast<int>(mTexture.getSettings().mHeight);
+		return mImageSize.y;
 	}
 
 
 	void Texture2D::update(const Bitmap& bitmap)
 	{
+		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
+		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
 		assert(bitmap.getWidth() == mImageSize.x && bitmap.getHeight() == mImageSize.y);
 
 		// We use a staging buffer that is guaranteed to be free
@@ -467,6 +476,8 @@ namespace nap
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 		
+		// We must pre-increment the image index, because mCurrentImageIndex is used here and later in getImageView.
+		// We cannot bump the index between upload and getImageView.
 		mCurrentImageIndex = (mCurrentImageIndex + 1) % mImageData.size();
 		ImageData& imageData = mImageData[mCurrentImageIndex];
 
@@ -491,10 +502,10 @@ namespace nap
 
 	void Texture2D::getData(Bitmap& bitmap)
 	{
-		if (bitmap.empty())
-			bitmap.initFromTexture(mTexture.getSettings());
-
-		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+// 		if (bitmap.empty())
+// 			bitmap.initFromTexture(mTexture.getSettings());
+// 
+// 		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
 	}
 
 
@@ -513,15 +524,15 @@ namespace nap
 
 	void Texture2D::startGetData()
 	{
-		getTexture().asyncStartGetData();
+		//getTexture().asyncStartGetData();
 	}
 
 
 	void Texture2D::endGetData(Bitmap& bitmap)
 	{
-		if (bitmap.empty())
-			bitmap.initFromTexture(mTexture.getSettings());
-
-		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+// 		if (bitmap.empty())
+// 			bitmap.initFromTexture(mTexture.getSettings());
+// 
+// 		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
 	}
 }

@@ -10,6 +10,7 @@
 #include "vulkan/vulkan_core.h"
 #include "vk_mem_alloc.h"
 #include "nap/signalslot.h"
+#include "surfaceformats.h"
 
 namespace nap
 {
@@ -52,6 +53,23 @@ namespace nap
 		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
 
+	/**
+	* Texture2Dsettings
+	*
+	* Data associated with a 2d texture
+	*/
+	struct Texture2DSettings
+	{
+	public:
+		uint32_t			mWidth	  = 0;					//< Specifies the width of the texture
+		uint32_t			mHeight	  = 0;					//< Specifies the height of the texture
+		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;
+		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGR;
+
+		bool isValid() const { return mWidth != 0 && mHeight != 0; }
+		bool operator==(const Texture2DSettings& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
+		bool operator!=(const Texture2DSettings& other) const { return !(*this == other); }
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -71,7 +89,7 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		void initTexture(const opengl::Texture2DSettings& settings);
+		bool initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState);
 
 		/**
 		 * Initializes the GPU texture using the settings associated with the incoming bitmap
@@ -183,14 +201,14 @@ namespace nap
 			VkImageLayout				mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		};
 
-		using ImageDataArray = std::array<ImageData, 2>;
-		using StagingBufferArray = std::array<StagingBuffer, 3>;
+		using ImageDataList = std::vector<ImageData>;
+		using StagingBufferList = std::vector<StagingBuffer>;
 
 		RenderService*				mRenderService = nullptr;
 		opengl::Texture2D			mTexture;
 		std::vector<uint8_t>		mTextureData;
-		ImageDataArray				mImageData;
-		StagingBufferArray			mStagingBuffers;
+		ImageDataList				mImageData;
+		StagingBufferList			mStagingBuffers;
 		int							mCurrentStagingBufferIndex = -1;
 		int							mCurrentImageIndex = -1;
 		glm::ivec2					mImageSize;

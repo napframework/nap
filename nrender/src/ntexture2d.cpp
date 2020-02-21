@@ -90,9 +90,9 @@ namespace opengl
 	}
 
 
-	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters, ETextureUsage usage) 
+	void Texture2D::init(/*const Texture2DSettings& settings,*/ const TextureParameters& parameters, ETextureUsage usage) 
 	{
-		mSettings = settings;
+		//mSettings = settings;
 		mUsage = usage;
 
 		Texture::init(parameters);
@@ -142,45 +142,46 @@ namespace opengl
 
 	int Texture2D::getDataSize() const
 	{
-		return getNumComponents(mSettings.mFormat) * getComponentSize(mSettings.mType) * mSettings.mWidth * mSettings.mHeight;
+		return 0;
+		//return getNumComponents(mSettings.mFormat) * getComponentSize(mSettings.mType) * mSettings.mWidth * mSettings.mHeight;
 	}
 
 
 	void Texture2D::getData(void* target, uint64_t sizeInBytes)
 	{
-		assert(sizeInBytes >= getDataSize());
-
-		bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, target);
-		unbind();
+// 		assert(sizeInBytes >= getDataSize());
+// 
+// 		bind();
+// 		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, target);
+// 		unbind();
 	}
 
 	void Texture2D::asyncStartGetData()
 	{
-		assert(mUsage == ETextureUsage::DynamicRead);
-
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
-		
-		bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, 0);
-		unbind();
-
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+// 		assert(mUsage == ETextureUsage::DynamicRead);
+// 
+// 		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+// 		
+// 		bind();
+// 		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.mFormat, mSettings.mType, 0);
+// 		unbind();
+// 
+// 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	}
 
 
 	void Texture2D::asyncEndGetData(void* target, uint64_t sizeInBytes)
 	{
-		assert(mUsage == ETextureUsage::DynamicRead);
-		assert(sizeInBytes >= getDataSize());
-
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
-
-		void* buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-		memcpy(target, buffer, getDataSize());
-
-		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+// 		assert(mUsage == ETextureUsage::DynamicRead);
+// 		assert(sizeInBytes >= getDataSize());
+// 
+// 		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+// 
+// 		void* buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+// 		memcpy(target, buffer, getDataSize());
+// 
+// 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+// 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	}
 
 } // opengl
