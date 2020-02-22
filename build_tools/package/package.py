@@ -748,7 +748,7 @@ if __name__ == '__main__':
 
     # If we're packaging a single Naivi app make sure it exists
     if args.include_single_naivi_app:
-        path = os.path.join(os.path.dirname(os.path.realpath(__file__)), APPS_SOURCE_DIR, args.include_single_naivi_app)
+        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_naivi_app)
         if not os.path.exists(path):
             raise Exception("Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
 
