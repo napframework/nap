@@ -60,6 +60,12 @@ namespace nap
 			}
 		}
 
+		// Sort
+		std::sort(presets.begin(), presets.end(), [](std::string a, std::string b)
+		{
+			return a < b;
+		});
+
 		return presets;
 	}
 

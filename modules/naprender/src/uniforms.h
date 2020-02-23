@@ -189,6 +189,34 @@ namespace nap
 
 
 	/**
+	 * Represents a single vec2 value that can be pushed to a shader uniform.
+	 */
+	class NAPAPI UniformVec2 : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value integer value to set.
+		*/
+		void setValue(const glm::vec2& value)	{ mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return integer GLSL type.
+		*/
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec2; }
+
+		glm::vec2 mValue;			///< Data storage
+	};
+
+
+	/**
 	 * Represents a single vec3 value that can be pushed to a shader uniform.
 	 */
 	class NAPAPI UniformVec3 : public UniformValue
@@ -383,6 +411,47 @@ namespace nap
 		virtual int getCount() const override { return mValues.size(); }
 
 		std::vector<float> mValues;			///< Data storage
+	};
+
+
+	/**
+	* Stores an array of vec2 data and is capable of updating the vec2 uniform in the shader.
+	* Number of elements must be equal or lower than the number of elements declared in the shader.
+	*/
+	class NAPAPI UniformVec2Array : public UniformValueArray
+	{
+		RTTI_ENABLE(UniformValueArray)
+	public:
+
+		UniformVec2Array() = default;
+
+		/**
+		* Constructor to ensure the array has the correct size to match the shader
+		*/
+		UniformVec2Array(int inSize) :
+			mValues(inSize)
+		{
+		}
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return vec4 GLSL type.
+		*/
+		virtual opengl::EGLSLType getGLSLType() const override { return opengl::EGLSLType::Vec3; }
+
+		/**
+		* Retrieve the number of elements in this array
+		*
+		* @return The number of elements in this array
+		*/
+		virtual int getCount() const override { return mValues.size(); }
+
+		std::vector<glm::vec2> mValues;		///< Data storage
 	};
 
 
