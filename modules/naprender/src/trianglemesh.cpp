@@ -3,15 +3,17 @@
 #include "material.h"
 #include <glm/glm.hpp>
 #include "renderservice.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::TriangleMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	TriangleMesh::TriangleMesh(RenderService& renderService) :
-		mRenderService(&renderService)
+	TriangleMesh::TriangleMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

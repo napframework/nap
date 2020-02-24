@@ -5,9 +5,11 @@
 
 // External Includes
 #include <nap/logger.h>
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::MeshFromFile)
 	RTTI_PROPERTY_FILELINK("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",	&nap::MeshFromFile::mUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -18,10 +20,12 @@ namespace nap
 	{
 	}
 
-	MeshFromFile::MeshFromFile(RenderService& renderService) :
-		mRenderService(&renderService)
+
+	MeshFromFile::MeshFromFile(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
+
 
 	bool MeshFromFile::init(utility::ErrorState& errorState)
 	{

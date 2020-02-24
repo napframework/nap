@@ -5,6 +5,8 @@
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * Predefined sphere mesh
 	 */
@@ -14,7 +16,7 @@ namespace nap
 
 	public:
 		SphereMesh();
-		SphereMesh(RenderService& renderService);
+		SphereMesh(Core& core);
 
 		/**
  		 * Load the mesh
@@ -40,6 +42,4 @@ namespace nap
 		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 	};
-
-	using SphereMeshCreator = rtti::ObjectCreator<SphereMesh, RenderService>;
 }

@@ -16,9 +16,9 @@ namespace nap
 		RTTI_ENABLE(Image)
 	public:
 		// Constructor
-		ImageFromFile(RenderService& renderService, const std::string& imgPath);
+		ImageFromFile(Core& core, const std::string& imgPath);
 
-		ImageFromFile(RenderService& renderService);
+		ImageFromFile(Core& core);
 
 		// Default Constructor
 		ImageFromFile() = default;
@@ -36,6 +36,4 @@ namespace nap
 		std::string				mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
 		bool					mCompressed = false;					///< Property: 'Compressed' If the image on the GPU is compressed
 	};
-
-	using ImageFromFileCreator = rtti::ObjectCreator<ImageFromFile, RenderService>;
 }

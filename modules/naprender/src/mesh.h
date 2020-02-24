@@ -15,6 +15,7 @@
 namespace nap
 {
 	class RenderService;
+	class Core;
 
 	/**
 	* Topology of the mesh
@@ -394,7 +395,7 @@ namespace nap
 	public:
 
 		Mesh();
-		Mesh(RenderService& renderService);
+		Mesh(Core& core);
 
 		/**
 		 * Initialized the mesh instance.
@@ -517,5 +518,4 @@ namespace nap
 		return *attribute;
 	}
 
-	using MeshCreator = rtti::ObjectCreator<Mesh, RenderService>;
 } // nap

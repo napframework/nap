@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * Predefined rectangular mesh with a specific size centered at the origin on the xy axis. 
 	 * When there is no size given the mesh is a uniform 1m2. The UV coordinates are always 0-1
@@ -18,7 +20,7 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		PlaneMesh();
-		PlaneMesh(RenderService& renderService);
+		PlaneMesh(Core& core);
 
 		/**
 		 * Sets up and initializes the plane as a mesh based on the provided parameters.
@@ -69,6 +71,4 @@ namespace nap
 		 */
 		void constructPlane(const math::Rect& planeRect, nap::MeshInstance& mesh);
 	};
-
-	using PlaneMeshCreator = rtti::ObjectCreator<PlaneMesh, RenderService>;
 }

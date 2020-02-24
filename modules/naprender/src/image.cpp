@@ -1,11 +1,14 @@
 #include "image.h"
+#include "nap/core.h"
 
-RTTI_DEFINE_CLASS(nap::Image)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Image)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
 namespace nap
 {
-	Image::Image(RenderService& renderService) :
-		Texture2D(renderService)
+	Image::Image(Core& core) :
+		Texture2D(core)
 	{
 	}
 

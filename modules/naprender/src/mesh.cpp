@@ -5,6 +5,7 @@
 #include "renderservice.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::UNKNOWN,		"Unknown"),
@@ -36,6 +37,7 @@ RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 RTTI_END_CLASS	
 
 RTTI_BEGIN_CLASS(nap::Mesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Properties",		&nap::Mesh::mProperties,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -204,8 +206,8 @@ namespace nap
 	{
 	}
 
-	Mesh::Mesh(RenderService& renderService) :
-		mMeshInstance(&renderService)
+	Mesh::Mesh(Core& core) :
+		mMeshInstance(core.getService<RenderService>())
 	{
 	}
 

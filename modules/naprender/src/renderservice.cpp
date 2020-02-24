@@ -420,20 +420,6 @@ namespace nap
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
-		factory.addObjectCreator(std::make_unique<MeshCreator>(*this));
-		factory.addObjectCreator(std::make_unique<BoxMeshCreator>(*this));
-		factory.addObjectCreator(std::make_unique<PlaneMeshCreator>(*this));
-		factory.addObjectCreator(std::make_unique<SphereMeshCreator>(*this));
-		factory.addObjectCreator(std::make_unique<TriangleMeshCreator>(*this));
-		factory.addObjectCreator(std::make_unique<MeshFromFileCreator>(*this));
-		factory.addObjectCreator(std::make_unique<ShaderCreator>(*this));
-		factory.addObjectCreator(std::make_unique<MaterialCreator>(*this));
-
-		factory.addObjectCreator(std::make_unique<Texture2DCreator>(*this));
-		factory.addObjectCreator(std::make_unique<ImageCreator>(*this));
-		factory.addObjectCreator(std::make_unique<ImageFromFileCreator>(*this));
-		factory.addObjectCreator(std::make_unique<RenderTexture2DCreator>(*this));
 	}
 
 

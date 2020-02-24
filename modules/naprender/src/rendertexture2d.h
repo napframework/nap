@@ -6,6 +6,8 @@
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * GPU texture resource that it is initially empty
 	 * This texture can be declared as a resource together with
@@ -16,7 +18,7 @@ namespace nap
 		RTTI_ENABLE(Texture2D)
 	public:
 		RenderTexture2D() = default;
-		RenderTexture2D(RenderService& renderService);
+		RenderTexture2D(Core& renderService);
 
 		/**
 		 * Creates internal texture resource.
@@ -29,6 +31,4 @@ namespace nap
 		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
 		ERenderTargetFormat	mFormat = ERenderTargetFormat::RGB8;		///< Property: 'Format' format of the texture
 	};
-
-	using RenderTexture2DCreator = rtti::ObjectCreator<RenderTexture2D, RenderService>;
 }

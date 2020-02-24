@@ -1,7 +1,9 @@
 #include "renderwindow.h"
 #include <windowevent.h>
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::RenderWindow)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,	nap::rtti::EPropertyMetaData::Default)
@@ -13,8 +15,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	RenderWindow::RenderWindow(RenderService& renderService) :
-		mRenderService(&renderService)
+	RenderWindow::RenderWindow(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

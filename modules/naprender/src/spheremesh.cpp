@@ -8,8 +8,10 @@
 #include <cmath>
 #include <meshutils.h>
 #include "renderservice.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::SphereMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rings",		&nap::SphereMesh::mRings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sectors",	&nap::SphereMesh::mSectors, nap::rtti::EPropertyMetaData::Default)
@@ -22,8 +24,8 @@ namespace nap
 	{
 	}
 
-	SphereMesh::SphereMesh(RenderService& renderService) :
-		mRenderService(&renderService)
+	SphereMesh::SphereMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

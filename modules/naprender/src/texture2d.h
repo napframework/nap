@@ -16,6 +16,7 @@ namespace nap
 {
 	class Bitmap;
 	class RenderService;
+	class Core;
 
 	/**
 	 *	Texture min filter
@@ -83,7 +84,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D() = default;
-		Texture2D(RenderService& renderService);
+		Texture2D(Core& core);
 
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.
@@ -213,8 +214,6 @@ namespace nap
 		int							mCurrentImageIndex = -1;
 		glm::ivec2					mImageSize;
 	};
-
-	using Texture2DCreator = rtti::ObjectCreator<Texture2D, RenderService>;
 }
 
 //////////////////////////////////////////////////////////////////////////

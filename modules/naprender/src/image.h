@@ -25,7 +25,7 @@ namespace nap
 		using Texture2D::endGetData;
 
 		Image() = default;
-		Image(RenderService& renderService);
+		Image(Core& core);
 
 		/**
 		 * @return CPU data for this texture in the form of a Bitmap. The Bitmap can be empty if this is a GPU-only texture.
@@ -62,7 +62,5 @@ namespace nap
 	private:
 		Bitmap		mBitmap;			///< The CPU image representation
 	};
-
-	using ImageCreator = rtti::ObjectCreator<Image, RenderService>;
 }
 

@@ -8,6 +8,7 @@
 #include "renderservice.h"
 #include "uniforminstances.h"
 #include "vk_mem_alloc.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
@@ -33,6 +34,7 @@ RTTI_END_STRUCT
 
 
 RTTI_BEGIN_CLASS(nap::Material)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
@@ -47,8 +49,8 @@ namespace nap
 	// Material
 	//////////////////////////////////////////////////////////////////////////
 
-	Material::Material(RenderService& renderService) :
-		mRenderService(&renderService)
+	Material::Material(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

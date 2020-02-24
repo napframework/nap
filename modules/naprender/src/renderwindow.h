@@ -16,6 +16,8 @@ namespace opengl
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * 3D render window resource that can be declared in json.
 	 * This resource offers an interface to change window settings and manages
@@ -39,7 +41,7 @@ namespace nap
 		 * This constructor is called when creating the render window using the resource manager
 		 * Every render window needs to be aware of it's render service
 		 */
-		RenderWindow(RenderService& renderService);
+		RenderWindow(Core& core);
 
 		/**
 		 * Creates window, connects to resize event.
@@ -202,36 +204,5 @@ namespace nap
 		RenderService*							mRenderService	= nullptr;						// Render service
 		std::shared_ptr<GLWindow>				mWindow			= nullptr;						// Actual OpenGL hardware window
 		bool									mFullscreen		= false;						// If the window is full screen or not
-	};
-
-
-	/**
-	* Factory for creating WindowResources. The factory is responsible for passing the RenderService
-	* to the WindowResource on construction.
-	*/
-	class RenderWindowResourceCreator : public rtti::IObjectCreator
-	{
-	public:
-		RenderWindowResourceCreator(RenderService& renderService) :
-			mRenderService(renderService) { }
-
-		/**
-		* @return Type of WindowResource
-		*/
-		rtti::TypeInfo getTypeToCreate() const override
-		{
-			return RTTI_OF(RenderWindow);
-		}
-
-		/**
-		* @return Creates a WindowResource
-		*/
-		virtual rtti::Object* create() override
-		{
-			return new RenderWindow(mRenderService);
-		}
-
-	private:
-		RenderService& mRenderService;
 	};
 }

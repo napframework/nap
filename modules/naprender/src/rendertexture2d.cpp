@@ -1,6 +1,8 @@
 #include "rendertexture2d.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::RenderTexture2D)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width",	&nap::RenderTexture2D::mWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height", &nap::RenderTexture2D::mHeight, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Format", &nap::RenderTexture2D::mFormat, nap::rtti::EPropertyMetaData::Required)
@@ -9,8 +11,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	RenderTexture2D::RenderTexture2D(RenderService& renderService) :
-		Texture2D(renderService)
+	RenderTexture2D::RenderTexture2D(Core& core) :
+		Texture2D(core)
 	{
 	}
 

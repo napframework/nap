@@ -1,8 +1,10 @@
 #include "boxmesh.h"
 #include "renderservice.h"
+#include "nap/core.h"
 
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS(nap::BoxMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -20,8 +22,8 @@ namespace nap
 		mRenderService(nullptr)
 	{
 	}
-	BoxMesh::BoxMesh(RenderService& renderService) :
-		mRenderService(&renderService)
+	BoxMesh::BoxMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

@@ -20,7 +20,7 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		BoxMesh();
-		BoxMesh(RenderService& renderService);
+		BoxMesh(Core& core);
 
 		virtual ~BoxMesh();
 
@@ -70,6 +70,4 @@ namespace nap
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};
-
-	using BoxMeshCreator = rtti::ObjectCreator<BoxMesh, RenderService>;
 }

@@ -13,9 +13,14 @@ namespace nap
 	{
 		CreatorMap::iterator creator = mCreators.find(typeInfo);
 		if (creator == mCreators.end())
-			return typeInfo.create<Object>();
+			return createDefaultObject(typeInfo);
 
 		return creator->second->create();
+	}
+
+	rtti::Object* rtti::Factory::createDefaultObject(rtti::TypeInfo typeInfo)
+	{
+		return typeInfo.create<Object>();
 	}
 
 	bool rtti::Factory::canCreate(rtti::TypeInfo typeInfo) const

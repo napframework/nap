@@ -12,6 +12,7 @@
 namespace nap
 {
 	class RenderService;
+	class Core;
 
 	/**
 	 * Resource that loads and compiles a shader from disk using the provided vertex and fragment shader paths.
@@ -60,7 +61,7 @@ namespace nap
 		};
 
 		Shader();
-		Shader(RenderService& renderService);
+		Shader(Core& core);
 
 		/**
 		 * Creates and inits opengl shader.
@@ -115,8 +116,5 @@ namespace nap
 		VertexAttributeDeclarations						mShaderAttributes;					// Shader program vertex attribute inputs
 		VkDescriptorSetLayout							mDescriptorSetLayout = nullptr;
 	};
-
-
-	using ShaderCreator = rtti::ObjectCreator<Shader, RenderService>;
 }
 

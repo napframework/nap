@@ -14,6 +14,7 @@ namespace nap
 {
 	struct DescriptorSet;
 	class DescriptorSetCache;
+	class Core;
 
 	/**
 	 * A Material is a resource that acts as an interface to a shader.
@@ -27,7 +28,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		Material() = default;
-		Material(RenderService& renderService);
+		Material(Core& core);
 
 		/**
 		 * Binding between mesh vertex attr and shader vertex attr
@@ -90,6 +91,4 @@ namespace nap
 
 		RenderService*								mRenderService = nullptr;
 	};
-
-	using MaterialCreator = rtti::ObjectCreator<Material, RenderService>;
 }

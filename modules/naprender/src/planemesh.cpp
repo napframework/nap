@@ -2,8 +2,10 @@
 #include "material.h"
 #include <glm/glm.hpp>
 #include "renderservice.h"
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rows",		&nap::PlaneMesh::mRows,		nap::rtti::EPropertyMetaData::Default)
@@ -17,8 +19,8 @@ namespace nap
 		mRenderService(nullptr)
 	{
 	}
-	PlaneMesh::PlaneMesh(RenderService& renderService) :
-		mRenderService(&renderService)
+	PlaneMesh::PlaneMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

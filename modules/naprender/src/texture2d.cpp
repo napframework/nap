@@ -2,6 +2,7 @@
 #include "bitmap.h"
 #include "bitmaputils.h"
 #include "renderservice.h"
+#include "nap\core.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
 	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
@@ -28,6 +29,7 @@ RTTI_BEGIN_CLASS(nap::TextureParameters)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Parameters", 	&nap::Texture2D::mParameters,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -140,8 +142,8 @@ namespace nap
 		return 0;
 	}
 
-	Texture2D::Texture2D(RenderService& renderService) :
-		mRenderService(&renderService)
+	Texture2D::Texture2D(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
 	}
 

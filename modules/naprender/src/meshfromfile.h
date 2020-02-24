@@ -4,6 +4,7 @@
 
 namespace nap
 {
+	class Core;
 	/**
 	 * Represent a mesh that is loaded from a binary file. 
 	 * A MeshInstance is loaded from binary file that is stored internally.
@@ -14,7 +15,7 @@ namespace nap
 	
 	public:
 		MeshFromFile();
-		MeshFromFile(RenderService& renderService);
+		MeshFromFile(Core& core);
 
 		/**
  		 * Loads model from file.
@@ -38,7 +39,5 @@ namespace nap
 		RenderService*						mRenderService;
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 	};
-
-	using MeshFromFileCreator = rtti::ObjectCreator<MeshFromFile, RenderService>;
 }
 

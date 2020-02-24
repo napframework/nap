@@ -11,6 +11,7 @@
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
 #include <nap/device.h>
+#include <nap/corefactory.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -180,7 +181,7 @@ namespace nap
 
 	ResourceManager::ResourceManager(nap::Core& core) :
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
-		mFactory(std::make_unique<Factory>()),
+		mFactory(std::make_unique<CoreFactory>(core)),
 		mCore(core)
 	{
 	}
