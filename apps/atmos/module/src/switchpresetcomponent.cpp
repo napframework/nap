@@ -141,10 +141,16 @@ namespace nap
 
 		switch (mPresetSwitchAnimationState) {
 			case FADE_OUT_CURRENT:
+				updateFogFade(0);
 				fadeOutTransitionStarted(mAnimationDuration);
 				break;
 			case REVEAL_NEXT:
+				updateFogFade(1);
 				revealTransitionStarted(mAnimationDuration);
+				break;
+			default:
+				nap::Logger::error("startTransition - Only FADE_OUT_CURRENT and START_REVEAL states are supported");
+				break;
 		}
 	}
 
