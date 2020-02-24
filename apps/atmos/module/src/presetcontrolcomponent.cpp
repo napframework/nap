@@ -13,6 +13,7 @@ RTTI_BEGIN_CLASS(nap::PresetControlComponent)
     RTTI_PROPERTY("AverageDuration", &nap::PresetControlComponent::mAverageDuration, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("DurationDeviation", &nap::PresetControlComponent::mDurationDeviation, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("RandomizeSequence", &nap::PresetControlComponent::mRandomizeSequence, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Enabled", &nap::PresetControlComponent::mEnabled, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PresetControlComponentInstance)
@@ -56,11 +57,13 @@ namespace nap
         mAverageDuration = resource->mAverageDuration;
         mDurationDeviation = resource->mDurationDeviation;
         mRandomizeSequence = resource->mRandomizeSequence;
+        mEnabled = resource->mEnabled;
 
         mCurrentPresetDuration = mAverageDuration;
         mCurrentPresetElapsedTime = 0;
         mCurrentPresetIndex = 0;
-        mSwitchPresetComponent->selectPresetByIndex(mPresets[mCurrentPresetIndex]);
+        if (mEnabled)
+            mSwitchPresetComponent->selectPresetByIndex(mPresets[mCurrentPresetIndex]);
 
         return true;
     }
@@ -68,11 +71,12 @@ namespace nap
 
     void PresetControlComponentInstance::update(double deltaTime)
     {
+        if (!mEnabled)
+            return;
+
         mCurrentPresetElapsedTime += deltaTime;
         if (mCurrentPresetElapsedTime >= mCurrentPresetDuration)
-        {
             nextPreset();
-        }
     }
 
 
