@@ -380,23 +380,34 @@
                             0.0,
                             0.0
                         ]
-                    },
-                    "AnimationDuration": 2.0
+                    }
                 },
                 {
                     "Type": "nap::PresetControlComponent",
                     "mID": "PresetControlComponent",
                     "PresetParameterGroup": "Parameters",
                     "Presets": [
-                        "ok.json",
-                        "focus.json",
-                        "ass.json",
-                        "trippy.json",
-                        "lalacam.json"
+                        {
+                            "Preset": "focus.json",
+                            "AverageDuration": 5.0,
+                            "DurationDeviation": 0.0,
+                            "TransitionTime": 3.0
+                        },
+                        {
+                            "Preset": "trippy.json",
+                            "AverageDuration": 0.5,
+                            "DurationDeviation": 0.0,
+                            "TransitionTime": 0.10000000149011612
+                        },
+                        {
+                            "Preset": "lalacam.json",
+                            "AverageDuration": 5.0,
+                            "DurationDeviation": 0.0,
+                            "TransitionTime": 3.0
+                        }
                     ],
-                    "AverageDuration": 5.0,
-                    "DurationDeviation": 0.0,
-                    "RandomizeSequence": false
+                    "RandomizeSequence": true,
+                    "Enabled": true
                 }
             ],
             "Children": []

@@ -13,7 +13,6 @@ RTTI_BEGIN_CLASS(nap::SwitchPresetComponent)
 	RTTI_PROPERTY("FogParameterGroup", &nap::SwitchPresetComponent::mFogParameterGroup, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex", &nap::SwitchPresetComponent::mPresetIndex, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FadeColor", &nap::SwitchPresetComponent::mFadeColor, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AnimationDuration", &nap::SwitchPresetComponent::mAnimationDuration, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::SwitchPresetComponentInstance run time class definition
@@ -46,17 +45,16 @@ namespace nap
 		mPresets = mParameterService->getPresets(*mPresetGroup);
 
 		mFadeColor = resource->mFadeColor;
-		mAnimationDuration = resource->mAnimationDuration;
 
 		if (!errorState.check(mPresets.size() > 0, "No presets available"))
 			return false;
 
-		selectPresetByIndex(resource->mPresetIndex); // Force a transition to the index specified in the resource on initialization
+		selectPresetByIndex(resource->mPresetIndex, 0); // Force a transition to the index specified in the resource on initialization
 
 		return true;
 	}
 
-	void SwitchPresetComponentInstance::selectPresetByIndex(unsigned int index)
+	void SwitchPresetComponentInstance::selectPresetByIndex(unsigned int index, float animationDuration)
 	{
 	    assert(index < mPresets.size());
 
@@ -65,13 +63,14 @@ namespace nap
 	        mPresetIndex = index;
             nap::Logger::debug("preset index: %i...", mPresetIndex);
             std::string presetName = mPresets[mPresetIndex];
-            transitionToPreset(presetName);
+            transitionToPreset(presetName, animationDuration);
         }
 	}
 
-	void SwitchPresetComponentInstance::transitionToPreset(const std::string& presetPath)
+	void SwitchPresetComponentInstance::transitionToPreset(const std::string& presetPath, float animationDuration)
 	{
 		mNextPreset = presetPath;
+		mAnimationDuration = animationDuration;
 		startTransition(PresetSwitchTransitionState::FADE_OUT_CURRENT);
 	}
 

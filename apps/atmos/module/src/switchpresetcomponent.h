@@ -24,7 +24,6 @@ namespace nap
 	
 		int								mPresetIndex = 1;
 		RGBColorFloat					mFadeColor;
-		float							mAnimationDuration;
 
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -61,8 +60,9 @@ namespace nap
 		/**
 		* selectPreset SelectPresetComponentInstance. Switch between presets with a nice fog fade
 		* @param presetIndex index of the preset
+		* @param animationDuration duration of the transition in seconds
 		*/
-		void selectPresetByIndex(unsigned int presetIndex);
+		void selectPresetByIndex(unsigned int presetIndex, float animationDuration);
 
 		/**
 		* fadeOutTransitionStarted is fired when fade out transition starts. the float parameter is the duration of the fade.
@@ -109,7 +109,7 @@ namespace nap
 		* transitionToPreset SelectPresetComponentInstance. starts the preset transition
 		* @param presetName the name of the preset
 		*/
-		void transitionToPreset(const std::string& presetName);
+		void transitionToPreset(const std::string& presetName, float animationDuration);
 
 		/**
 		* loadPreset SelectPresetComponentInstance. loads the new preset into the parameter service effectively switching the scene

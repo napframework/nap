@@ -185,17 +185,17 @@ namespace nap
 			}
 
 			//demo functionality for the preset selector: 
-			if (press_event->mKey == nap::EKeyCode::KEY_1)
-			{
-				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
-				presetSelector.selectPresetByIndex(0);
-			}
+//			if (press_event->mKey == nap::EKeyCode::KEY_1)
+//			{
+//				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
+//				presetSelector.selectPresetByIndex(0);
+//			}
 
-			if (press_event->mKey == nap::EKeyCode::KEY_2)
-			{
-				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
-				presetSelector.selectPresetByIndex(1);
-			}
+//			if (press_event->mKey == nap::EKeyCode::KEY_2)
+//			{
+//				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
+//				presetSelector.selectPresetByIndex(1);
+//			}
 		}
 
 		mInputService->addEvent(std::move(inputEvent));

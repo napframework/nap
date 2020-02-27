@@ -9,7 +9,7 @@ namespace nap
 
     class SwitchPresetComponentInstance;
     class PresetControlComponentInstance;
-    
+
 
     /**
      * Component that automatically selects presets on the SwitchPresetComponent
@@ -22,15 +22,22 @@ namespace nap
         DECLARE_COMPONENT(PresetControlComponent, PresetControlComponentInstance)
         
     public:
+        struct PresetInfo
+        {
+            std::string mPreset = "";
+            float mAverageDuration = 5.f;
+            float mDurationDeviation = 0.f;
+            float mTransitionTime = 3.f;
+        };
+
+    public:
         PresetControlComponent() : Component() { }
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
         ResourcePtr<ParameterGroup> mPresetParameterGroup = nullptr; // The parametergroup that contains the preset
-        std::vector<std::string> mPresets;  // The selection preset files that will be sequenced
-        float mAverageDuration = 0;         // Average duration of each preset in the cycle
-        float mDurationDeviation = 0;       // Random deviation of duration of each preset
-        bool mRandomizeSequence = false;    // Indicates wether the order of the cycle of presets will be shuffled
-        bool mEnabled = false;              // True to enable the preset cycle
+        std::vector<PresetInfo> mPresets;
+        bool mRandomizeSequence = false;        // Indicates wether the order of the cycle of presets will be shuffled
+        bool mEnabled = false;                  // True to enable the preset cycle
 
     private:
     };
@@ -52,16 +59,29 @@ namespace nap
          * Checks wether it is time to switch to the next preset and tells the @SwitchPresetComponent to switch.
          */
         void update(double deltaTime) override;
+        
+    private:
+        struct PresetInfo
+        {
+            PresetInfo(int index) { mPresetIndex = index; }
+            PresetInfo(int index, const PresetControlComponent::PresetInfo& resource);
+            int mPresetIndex = 0;
+            float mAverageDuration = 5.f;
+            float mDurationDeviation = 0.f;
+            float mTransitionTime = 3.f;
+        };
 
     private:
         // Selects the next preset in the sequence
         void nextPreset();
 
+        // Permutes a list of presets. Helper method.
+        void permute(std::vector<PresetControlComponentInstance::PresetInfo*>& list);
+        
         SwitchPresetComponentInstance* mSwitchPresetComponent = nullptr;
-        std::vector<int> mPresets;
+        std::vector<PresetInfo> mPresets;
+        std::vector<PresetInfo*> mPermutedPresets;
         int mCurrentPresetIndex = -1;
-        float mAverageDuration = 0;
-        float mDurationDeviation = 0;
         float mCurrentPresetDuration = 0;
         float mCurrentPresetElapsedTime = 0;
         bool mRandomizeSequence = false;
