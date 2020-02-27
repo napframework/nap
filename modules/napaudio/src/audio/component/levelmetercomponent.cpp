@@ -33,6 +33,7 @@ namespace nap
         {
             mResource = getComponent<LevelMeterComponent>();
             mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
+            auto& nodeManager = mAudioService->getNodeManager();
             
             mCenterFrequency = mResource->mCenterFrequency;
             mBandWidth = mResource->mBandWidth;
@@ -41,19 +42,19 @@ namespace nap
             if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
                 return false;
             
-            mMeter = mAudioService->makeSafe<LevelMeterNode>(mAudioService->getNodeManager());
+            mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager);
                 
             if (mResource->mFilterInput)
             {
-                mFilter = mAudioService->makeSafe<FilterNode>(mAudioService->getNodeManager());
+                mFilter = nodeManager.makeSafe<FilterNode>(nodeManager);
                 mFilter->setMode(FilterNode::EMode::BandPass);
                 mFilter->setFrequency(mResource->mCenterFrequency);
                 mFilter->setGain(mResource->mFilterGain);
-                mFilter->audioInput.connect(mInput->getOutputForChannel(mResource->mChannel));
+                mFilter->audioInput.connect(*mInput->getOutputForChannel(mResource->mChannel));
                 mMeter->input.connect(mFilter->audioOutput);
             }
             else {
-                mMeter->input.connect(mInput->getOutputForChannel(mResource->mChannel));
+                mMeter->input.connect(*mInput->getOutputForChannel(mResource->mChannel));
             }
             
             return true;
@@ -110,11 +111,11 @@ namespace nap
             auto inputPtr = &input;
             if (mResource->mFilterInput)
                 mAudioService->enqueueTask([&, inputPtr](){
-                    mFilter->audioInput.connect(inputPtr->getOutputForChannel(mResource->mChannel));
+                    mFilter->audioInput.connect(*inputPtr->getOutputForChannel(mResource->mChannel));
                 });
             else
                 mAudioService->enqueueTask([&, inputPtr](){
-                    mMeter->input.connect(inputPtr->getOutputForChannel(mResource->mChannel));
+                    mMeter->input.connect(*inputPtr->getOutputForChannel(mResource->mChannel));
                 });
         }
         

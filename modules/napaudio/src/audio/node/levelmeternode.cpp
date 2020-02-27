@@ -19,23 +19,42 @@ namespace nap {
     
     namespace audio {
         
-        LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize)
-            : Node(nodeManager)
+        LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize, bool rootProcess)
+            : Node(nodeManager), mRootProcess(rootProcess)
         {
             mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * analysisWindowSize);
-            getNodeManager().registerRootNode(*this);
+            if (rootProcess)
+                getNodeManager().registerRootProcess(*this);
         }
         
         
         LevelMeterNode::~LevelMeterNode()
         {
-            getNodeManager().unregisterRootNode(*this);
+            if (mRootProcess)
+                getNodeManager().unregisterRootProcess(*this);
+        }
+        
+        
+        float LevelMeterNode::getLevel()
+        {
+            if (mDirty.check())
+            {
+                switch (mType) {
+                    case PEAK:
+                        mValue = calculatePeak();
+                        break;
+                        
+                    default:
+                        mValue = calculateRms();
+                        break;
+                }
+            }
+            return mValue;
         }
         
         
         void LevelMeterNode::process()
         {
-            auto type = mType.load();
             auto inputBuffer = input.pull();
             
             if (inputBuffer == nullptr)
@@ -47,15 +66,7 @@ namespace nap {
                 if (mIndex == mBuffer.size())
                 {
                     mIndex = 0;
-                    switch (type) {
-                        case PEAK:
-                            mValue = calculatePeak();
-                            break;
-                            
-                        default:
-                            mValue = calculateRms();
-                            break;
-                    }
+                    mDirty.set();
                 }
             }
         }

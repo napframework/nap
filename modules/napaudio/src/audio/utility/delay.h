@@ -27,14 +27,13 @@ namespace nap
             void write(SampleValue sample);
             
             /**
-             * Read a sample from the delay line at the given time.
-			 * Samples behind the write position and does not interpolate.
-             * @param time sample time.
+             * Read a sample from the delay line at @time samples behind the write position.
+             * Non interpolating.
              */
             SampleValue read(unsigned int time);
             
             /**
-             * Same as read() but with interpolation between samples
+             * Same as @read() but with interpolation between samples
              */
             SampleValue readInterpolating(float sampleTime);
             
@@ -49,7 +48,7 @@ namespace nap
             unsigned int getMaxDelay() { return mBuffer.size(); }
             
             /**
-             * Operator to read from the delay line without interpolation at index before the write position
+             * Operator to read from the delay line without interpolation at @index before the write position
              */
             inline SampleValue operator[](unsigned int index)
             {

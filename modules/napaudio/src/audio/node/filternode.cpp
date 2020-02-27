@@ -35,18 +35,31 @@ namespace nap
             if (mIsDirty.check())
                 update();
             
-            auto& inputBuffer = *audioInput.pull();
+            auto inputBuffer = audioInput.pull();
             auto& outputBuffer = getOutputBuffer(audioOutput);
             
-            for (auto i = 0; i < outputBuffer.size(); ++i)
+            if (inputBuffer)
             {
-                mInput.write(inputBuffer[i]);
-                auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) - b2 * mOutput.read(1);
-                
-                mOutput.write(temp);
-                outputBuffer[i] = temp;
+                for (auto i = 0; i < outputBuffer.size(); ++i)
+                {
+                    mInput.write((*inputBuffer)[i]);
+                    auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) - b2 * mOutput.read(1);
+                    
+                    mOutput.write(temp);
+                    outputBuffer[i] = temp;
+                }
             }
-
+            else {
+                // process with 0 input
+                for (auto i = 0; i < outputBuffer.size(); ++i)
+                {
+                    mInput.write(0);
+                    auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) - b2 * mOutput.read(1);
+                    
+                    mOutput.write(temp);
+                    outputBuffer[i] = temp;
+                }
+            }
         }
         
         

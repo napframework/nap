@@ -11,7 +11,6 @@
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
-    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::SafePtr<nap::audio::WaveTable>&)
     RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
     RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhase)
@@ -95,9 +94,16 @@ namespace nap
         
 // --- Oscillator --- //
 
-        OscillatorNode::OscillatorNode(NodeManager& manager, SafePtr<WaveTable> aWave) :
-            Node(manager),
-            mWave(aWave)
+
+        OscillatorNode::OscillatorNode(NodeManager& manager) : Node(manager)
+        {
+            mFrequency.setStepCount(getNodeManager().getSamplesPerMillisecond());
+            mAmplitude.setStepCount(getNodeManager().getSamplesPerMillisecond());
+        }
+
+
+        OscillatorNode::OscillatorNode(NodeManager& manager, SafePtr<WaveTable> wave) :
+            Node(manager), mWave(wave)
         {
             mStep = mWave->getSize() / getNodeManager().getSampleRate();
             mFrequency.setStepCount(getNodeManager().getSamplesPerMillisecond());
@@ -109,7 +115,14 @@ namespace nap
         {
             auto& outputBuffer = getOutputBuffer(output);
             SampleBuffer* fmInputBuffer = fmInput.pull();
-            
+
+            if (mWave == nullptr)
+            {
+                for (auto i = 0; i < getBufferSize(); ++i)
+                    outputBuffer[i] = 0.f;
+                return;
+            }
+
             auto waveSize = mWave->getSize();
             auto step = mStep.load();
             auto phaseOffset = mPhaseOffset.load();
@@ -148,7 +161,7 @@ namespace nap
         }
         
         
-        void OscillatorNode::setWave(SafePtr<WaveTable>& wave)
+        void OscillatorNode::setWave(SafePtr<WaveTable> wave)
         {
             mWave = wave;
             mStep = mWave->getSize() / getNodeManager().getSampleRate();

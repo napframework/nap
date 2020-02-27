@@ -16,6 +16,42 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "AudioEntity",
+            "Components": [
+                {
+                    "Type": "nap::audio::AudioComponent",
+                    "mID": "nap::audio::AudioComponent_ec7cdb54",
+                    "Object": {
+                        "Type": "nap::audio::GraphObject",
+                        "mID": "GraphObject_688dc489",
+                        "Graph": "AudioGraph"
+                    },
+                    "Links": []
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent_e93df18d",
+                    "Input": "./nap::audio::AudioComponent_ec7cdb54",
+                    "Routing": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "Type": "nap::AudioControlComponent",
+                    "mID": "nap::AudioControlComponent_bb6e3b8d",
+                    "AudioComponent": "./nap::audio::AudioComponent_ec7cdb54",
+                    "Layer1": "AudioLayer1",
+                    "Layer2": "AudioLayer2",
+                    "CrossFadeTime": ""
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
                 {
@@ -1861,6 +1897,37 @@
                         }
                     ],
                     "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Audio",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "AudioLayer1",
+                            "Name": "Layer1",
+                            "Value": -1,
+                            "Minimum": -1,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "AudioLayer2",
+                            "Name": "Layer2",
+                            "Value": -1,
+                            "Minimum": -1,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "CrossFadeTime",
+                            "Name": "Crossfade Time",
+                            "Value": 5000.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10000.0
+                        }
+                    ],
+                    "Groups": []
                 }
             ]
         },
@@ -1965,8 +2032,14 @@
                     "InstanceProperties": []
                 },
                 {
+
                     "Entity": "UniverseEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "AudioEntity",
+                    "InstanceProperties": [
+                    ]
                 }
             ]
         },
@@ -2035,6 +2108,61 @@
             "Retries": 20,
             "Log": false,
             "BufferSize": 10
+        },
+        {
+            "Type": "nap::audio::EqualPowerTable",
+            "mID": "EqualPowerTable",
+            "Size": 256
+        },
+        {
+            "Type": "nap::audio::Graph",
+            "mID": "AudioGraph",
+            "Objects": [
+                {
+                    "Type": "nap::audio::Sampler",
+                    "mID": "Sampler",
+                    "SamplerEntries": [
+                        {
+                            "Buffer": "CaveWorldAudio",
+                            "Loop": true,
+                            "Start": 0.0,
+                            "LoopStart": 10000.0,
+                            "LoopEnd": 230000.0,
+                            "Transpose": 0.0,
+                            "CrossFadeTime": 4000.0
+                        },
+                        {
+                            "Buffer": "TrailerAudio",
+                            "Loop": true,
+                            "Start": 0.0,
+                            "LoopStart": 5000.0,
+                            "LoopEnd": 120000.0,
+                            "Transpose": 0.0,
+                            "CrossFadeTime": 4000.0
+                        }
+                    ],
+                    "EnvelopeData": [],
+                    "ChannelCount": 4,
+                    "VoiceCount": 10,
+                    "EqualPowerTable": "EqualPowerTable"
+                }
+            ],
+            "Output": "Sampler",
+            "Input": ""
+        },
+        {
+            "Type": "nap::audio::MultiAudioFileResource",
+            "mID": "CaveWorldAudio",
+            "AudioFilePaths": [
+                "audio/caveworld.mp3"
+            ]
+        },
+        {
+            "Type": "nap::audio::MultiAudioFileResource",
+            "mID": "TrailerAudio",
+            "AudioFilePaths": [
+                "audio/habitattrailer8.mp3"
+            ]
         }
     ]
 }

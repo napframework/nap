@@ -28,12 +28,12 @@ namespace nap
             /**
              * Left channel of the stereo input signal
              */
-            InputPin leftInput;
+            InputPin leftInput = { this };
             
             /**
              * Right channel of the stereo input signal
              */
-            InputPin rightInput;
+            InputPin rightInput = { this };
             
             /**
              * Left channel of the stereo output signal

@@ -18,11 +18,7 @@ source_group("utility" src/audio/utility/*.*)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-if (APPLE)
-    set(LIBRARIES napcore)
-else()
-    set(LIBRARIES napcore)
-endif()
+set(LIBRARIES napcore)
 
 set(INCLUDES src)
 
@@ -38,11 +34,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
-# # Package into platform release
-#  if(APPLE)
-#     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-#     set(MACOS_EXTRA_RPATH_RELEASE "../../../../thirdparty/portaudio/lib")
-#     list(APPEND MACOS_EXTRA_RPATH_RELEASE "../../../../thirdparty/libsndfile/lib")
-#     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
-# endif()
-# package_module()
+# Package into platform release
+if(APPLE)
+     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
+     list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
+endif()
+package_module()

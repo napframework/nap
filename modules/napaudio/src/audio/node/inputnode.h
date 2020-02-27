@@ -15,7 +15,7 @@ namespace nap
         
         /**
          * This node outputs the audio input that is received from the node system's external input, typically an audio interface.
-         * Input from the input channel can be pulled from the audio output plug.
+         * Input from channel @inputChannel can be pulled from @audioOutput plug.
          */
         class NAPAPI InputNode final : public Node
         {
@@ -43,6 +43,11 @@ namespace nap
              * @return: the channel from which this node receives input.
              */
             int getInputChannel() const { return mInputChannel; }
+            
+            /**
+             * @return: the number of input channels currently present int the audio service to be selected using @getInputChannel.
+             */
+            int getAvailableInputChannelCount();
             
         private:
             void process() override;

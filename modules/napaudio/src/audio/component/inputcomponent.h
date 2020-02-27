@@ -15,12 +15,13 @@ namespace nap
     
     namespace audio
     {
-		// Forward Declares
+    
         class AudioInputComponentInstance;
+        
         
         /**
          * Component to receive audio input from the audio interface.
-         * Can be used as input to an OutpuComponent of LevelMeterComponent.
+         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
         class NAPAPI AudioInputComponent : public AudioComponentBase
         {
@@ -40,7 +41,7 @@ namespace nap
         
         /**
          * Instance of component to receive audio input from the audio interface.
-         * Can be used as input to an OutpuComponent of LevelMeterComponent.
+         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
         class NAPAPI AudioInputComponentInstance : public AudioComponentBaseInstance
         {
@@ -53,7 +54,7 @@ namespace nap
             
             // Inherited from AudioComponentBaseInstance
             int getChannelCount() const override { return mGainNodes.size(); }
-            OutputPin& getOutputForChannel(int channel) override { return mGainNodes[channel]->audioOutput; }
+            OutputPin* getOutputForChannel(int channel) override { return &mGainNodes[channel]->audioOutput; }
             
             /**
              * Set the input gain factor of the input signal.
