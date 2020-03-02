@@ -17,7 +17,7 @@ namespace nap
 	class ParameterBlendComponentInstance;
 
 	/**
-	 * Smoothly blends a set of parameters over time based towards a given preset.
+	 * Smoothly blends a set of parameters over time towards a given preset.
 	 * The parameters that are blended are defined by the 'BlendGroup'.
 	 * The preset index controls the preset to sample the parameters from.
 	 *
@@ -44,7 +44,7 @@ namespace nap
 
 	/**
 	 * Runtime part of the parameter blend component.
-	 * Smoothly blends a set of parameters over time based towards a given preset.
+	 * Smoothly blends a set of parameters over time towards a given preset.
 	 * The parameters that are blended are defined by the 'BlendGroup' of the resource.
 	 * The preset index controls the preset to sample the parameters from.
 	 *
