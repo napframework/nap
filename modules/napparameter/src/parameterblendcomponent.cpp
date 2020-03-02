@@ -208,7 +208,7 @@ namespace nap
 			return;
 
 		// Get de-serialized result for preset
-		assert(index < mPresets.size());
+		assert(index < mPresetGroups.size());
 		ParameterGroup& preset_group = *(mPresetGroups[index]);
 
 		// Now update every blender, where for every blender a matching target is found
