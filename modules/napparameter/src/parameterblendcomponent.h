@@ -114,6 +114,11 @@ namespace nap
 		 */
 		bool reload(nap::utility::ErrorState& error);
 
+		/**
+		 * @return if there are any presets to blend
+		 */
+		bool hasPresets() const													{ return !(mPresets.empty()); }
+
 	private:
 		ParameterBlendGroup* mBlendParameters = nullptr;						///< Parameters that are blended over time
 		ParameterInt* mPresetIndex = nullptr;									///< Current preset blend index

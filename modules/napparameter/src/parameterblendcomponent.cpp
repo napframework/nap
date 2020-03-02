@@ -113,7 +113,13 @@ namespace nap
 
 	bool ParameterBlendComponentInstance::reload(nap::utility::ErrorState& error)
 	{
-		return sourcePresets(error);
+		// First source presets from disk
+		if (!sourcePresets(error))
+			return false;
+
+		// Since target parameters changed, update blenders to point to current preset
+		changePreset(mPresetIndex->mValue);
+		return true;
 	}
 
 
