@@ -8,7 +8,9 @@
 namespace nap
 {
 	/**
-	 * A group of Parameters that are automatically blended over time.
+	 * Represents a group of parameters that can be blended over time by a nap::ParameterBlendComponent
+	 * All given parameters need to be part of the root group, either as a direct sibling or 
+	 * contained within a group that is part of the root group.
 	 */
 	class NAPAPI ParameterBlendGroup : public Resource
 	{
@@ -17,12 +19,14 @@ namespace nap
 		virtual ~ParameterBlendGroup();
 
 		/**
-		 * Initialize this object after de-serialization
+		 * Ensures that every parameter specified in the 'Parameters' property is part of the 'RootGroup'.
+		 * Either as a direct sibling or contained within a group that is part of the root group.
 		 * @param errorState contains the error message when initialization fails
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of all parameters considered to blend
-		nap::ResourcePtr<ParameterGroup> mParameterGroup = nullptr;				///< Property: 'ParameterGroup' group all the blend parameters belong to
+		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' group all the blend parameters belong to
 	};
 }

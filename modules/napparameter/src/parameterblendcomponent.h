@@ -13,12 +13,21 @@
 
 namespace nap
 {
+	// Forward Declares
 	class ParameterBlendComponentInstance;
 
 	/**
-	 * Blends a set of parameters over time based on a given index.
-	 * The parameters that are blended are defined by the 'BlendParameterGroup'.
+	 * Smoothly blends a set of parameters over time based towards a given preset.
+	 * The parameters that are blended are defined by the 'BlendGroup'.
 	 * The preset index controls the preset to sample the parameters from.
+	 *
+	 * Note that the 'PresetBlendTime' and 'PresetIndex' parameter links 
+	 * should not be part of the 'BlendGroup'.
+	 *
+	 * A blender needs to be available for every parameter that is blended.
+	 * The system issues a warning on initialization when there is no blender available for a specific parameter.
+	 * By default float, double, vec2, vec3 and color parameters are supported.
+	 * If a preset does not contain a specific parameter a warning is issued.
 	 */
 	class NAPAPI ParameterBlendComponent : public Component
 	{
@@ -26,13 +35,7 @@ namespace nap
 		DECLARE_COMPONENT(ParameterBlendComponent, ParameterBlendComponentInstance)
 	public:
 
-		/**
-		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		 * @param components the components this object depends on
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
-		nap::ResourcePtr<ParameterBlendGroup> mBlendParameters = nullptr;		///< Property: 'Parameters' all the parameters to blend over time
+		nap::ResourcePtr<ParameterBlendGroup> mBlendGroup = nullptr;			///< Property: 'BlendGroup' all the parameters to blend over time
 		nap::ResourcePtr<ParameterInt>	mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
 		nap::ResourcePtr<ParameterFloat> mPresetBlendTime = nullptr;			///< Property: 'PresetBlendTime' time it takes to blend parameters (seconds)
 		bool mEnableBlending = false;											///< Property: 'If blending is enabled or not
@@ -40,9 +43,16 @@ namespace nap
 
 
 	/**
-	 * Blends a set of parameters over time based on a given index.
-	 * The parameters that are blended are defined by the 'BlendParameterGroup'.
+	 * Runtime part of the parameter blend component.
+	 * Smoothly blends a set of parameters over time based towards a given preset.
+	 * The parameters that are blended are defined by the 'BlendGroup' of the resource.
 	 * The preset index controls the preset to sample the parameters from.
+	 *
+	 * A blender needs to be available for every parameter that is blended.
+	 * The system issues a warning on initialization when there is no blender available for a specific parameter.
+	 * By default float, double, vec2, vec3 and color parameters are supported.
+	 * If a preset does not contain a specific parameter a warning is issued.
+	 * 
 	 */
 	class NAPAPI ParameterBlendComponentInstance : public ComponentInstance
 	{
@@ -55,16 +65,17 @@ namespace nap
 		~ParameterBlendComponentInstance();
 
 		/**
-		 * Initialize blendparameterscomponentInstance based on the blendparameterscomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the blendparameterscomponentInstance is initialized successfully
+		 * Initializes the component.
+		 * All presets associated with the 'RootGroup' of the 'BlendGroup' are sourced from disk.
+		 * A blender is created for every parameter and stored for future use on update.
+		 * @param errorState contains the error message if initialization fails.
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update blendparameterscomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
+		 * Blends the parameter values.
+		 * @param deltaTime time in between frames in seconds.
 		 */
 		virtual void update(double deltaTime) override;
 
@@ -92,30 +103,34 @@ namespace nap
 		float getBlendValue();
 
 		/**
-		 * @return all the presets that can be blended.
+		 * @return the names of all the presets that can be blended.
 		 */
 		const std::vector<std::string>& getPresets() const						{ return mPresets; }
 
 		/**
-		 * Reloads all the presets
+		 * Reloads all the presets from disk.
+		 * @param error contains the error if reloading fails.
+		 * @return if reloading the presets succeeded.
 		 */
 		bool reload(nap::utility::ErrorState& error);
 
 	private:
-		ParameterBlendGroup* mBlendParameters = nullptr;
-		ParameterInt* mPresetIndex = nullptr;
-		ParameterFloat* mPresetBlendTime = nullptr;
-		bool mEnableBlending = false;
-		ParameterService* mParameterService = nullptr;
+		ParameterBlendGroup* mBlendParameters = nullptr;						///< Parameters that are blended over time
+		ParameterInt* mPresetIndex = nullptr;									///< Current preset blend index
+		ParameterFloat* mPresetBlendTime = nullptr;								///< Current blend time in seconds
+		bool mEnableBlending = false;											///< Blending toggle
+		ParameterService* mParameterService = nullptr;							///< The parameter service
 		std::vector<std::string> mPresets;										///< All available preset names
 		std::vector<std::unique_ptr<rtti::DeserializeResult>> mPresetData;		///< All available preset data 
 		std::vector<ParameterGroup*> mPresetGroups;								///< Cached preset groups
 		std::vector<std::unique_ptr<BaseParameterBlender>> mBlenders;			///< Individual parameter blenders
-		double mElapsedTime = 0.0;
-		bool mBlending = false;
+		double mElapsedTime = 0.0;												///< Current elapsed time in seconds
+		bool mBlending = false;													///< If the component is currently blending values
 
 		/**
 		 * Sources all the presets from disk.
+		 * @param error contains the error if sourcing fails.
+		 * @return if sourcing succeeded.
 		 */
 		bool sourcePresets(nap::utility::ErrorState& error);
 
@@ -123,6 +138,8 @@ namespace nap
 		 * Creates a blender for every parameter in the blend group, if a blender is available.
 		 * Parameters that do not have a blender available for their type are ignored. 
 		 * A warning is issued.
+		 * @param error contains the error if the operation fails.
+		 * @return if the operation succeeded.
 		 */
 		bool createBlenders(nap::utility::ErrorState& error);
 

@@ -12,7 +12,7 @@
 // nap::blendparameterscomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ParameterBlendComponent)
 	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Parameters",			&nap::ParameterBlendComponent::mBlendParameters,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -27,12 +27,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void ParameterBlendComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-
-	}
-
-
 	ParameterBlendComponentInstance::~ParameterBlendComponentInstance()
 	{
 		mBlenders.clear();
@@ -54,7 +48,7 @@ namespace nap
 		// Copy resources
 		mPresetIndex = resource->mPresetIndex.get();
 		mPresetBlendTime = resource->mPresetBlendTime.get();
-		mBlendParameters = resource->mBlendParameters.get();
+		mBlendParameters = resource->mBlendGroup.get();
 		mEnableBlending = resource->mEnableBlending;
 
 		// Source presets
@@ -125,7 +119,7 @@ namespace nap
 
 	bool ParameterBlendComponentInstance::sourcePresets(utility::ErrorState& error)
 	{
-		std::vector<std::string> presets = mParameterService->getPresets(*(mBlendParameters->mParameterGroup));
+		std::vector<std::string> presets = mParameterService->getPresets(*(mBlendParameters->mRootGroup));
 
 		mPresetGroups.clear();
 		mPresetGroups.reserve(presets.size());
@@ -141,7 +135,7 @@ namespace nap
 		for (const auto& preset : presets)
 		{
 			// Get path to preset
-			std::string preset_path = mParameterService->getPresetPath(mBlendParameters->mParameterGroup->mID, preset);
+			std::string preset_path = mParameterService->getPresetPath(mBlendParameters->mRootGroup->mID, preset);
 
 			// Create object that will hold de-serialization results
 			std::unique_ptr<rtti::DeserializeResult> deserialize_result = std::make_unique<rtti::DeserializeResult>();
@@ -158,7 +152,7 @@ namespace nap
 			bool preset_group_found = false;
 			for (auto& object : deserialize_result->mReadObjects)
 			{
-				if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == mBlendParameters->mParameterGroup->mID)
+				if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == mBlendParameters->mRootGroup->mID)
 				{
 					// Valid entry, add as valid preset
 					mPresetData.emplace_back(std::move(deserialize_result));
@@ -175,7 +169,7 @@ namespace nap
 
 			nap::Logger::warn("%s: No parameter group with id: %s found in preset: %s",
 				getComponent<ParameterBlendComponent>()->mID.c_str(),
-				mBlendParameters->mParameterGroup->mID.c_str(), preset.c_str());
+				mBlendParameters->mRootGroup->mID.c_str(), preset.c_str());
 		}
 
 		// Update range
