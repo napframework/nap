@@ -3,6 +3,7 @@
 #include <rtti/rtti.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <parametercolor.h>
 
 namespace nap
 {
@@ -182,13 +183,18 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported parameter blenders
+	// Type declarations for all supported (out of the box) parameter blenders
 	//////////////////////////////////////////////////////////////////////////
 
 	using ParameterFloatBlender		= ParameterBlender<ParameterFloat, float>;
 	using ParameterDoubleBlender	= ParameterBlender<ParameterDouble, double>;
 	using ParameterVec2Blender		= ParameterBlender<ParameterVec2, glm::vec2>;
 	using ParameterVec3Blender		= ParameterBlender<ParameterVec3, glm::vec3>;
+	using ParameterRGBAFloatBlender = ParameterBlender<ParameterRGBAColorFloat, RGBAColorFloat>;
+	using ParameterRGBFloatBlender	= ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>;
+	using ParameterRGBA8Blender		= ParameterBlender<ParameterRGBAColor8, RGBAColor8>;
+	using ParameterRGB8Blender		= ParameterBlender<ParameterRGBColor8, RGBColor8>;
+
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -243,4 +249,16 @@ namespace nap
 		const ParamType& source = getParameter<ParamType>();
 		this->mSourceValue = source.mValue;
 	}
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBAColorFloat, RGBAColorFloat>::onBlend(float value);
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>::onBlend(float value);
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBAColor8, RGBAColor8>::onBlend(float value);
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBColor8, RGBColor8>::onBlend(float value);
 }

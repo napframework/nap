@@ -20,6 +20,22 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterVec3Blender)
 	RTTI_CONSTRUCTOR(nap::Parameter&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGBAFloatBlender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGBFloatBlender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGBA8Blender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGB8Blender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
 namespace nap
 {
 	/**
@@ -27,10 +43,15 @@ namespace nap
 	 */
 	static std::unordered_map<rtti::TypeInfo, rtti::TypeInfo> sBlendMap
 	{
-		{ RTTI_OF(ParameterFloat),			RTTI_OF(ParameterFloatBlender)  },
-		{ RTTI_OF(ParameterDouble),			RTTI_OF(ParameterDoubleBlender) },
-		{ RTTI_OF(ParameterVec2),			RTTI_OF(ParameterVec2Blender)	},
-		{ RTTI_OF(ParameterVec3),			RTTI_OF(ParameterVec3Blender)	}
+		{ RTTI_OF(ParameterFloat),			RTTI_OF(ParameterFloatBlender)		},
+		{ RTTI_OF(ParameterDouble),			RTTI_OF(ParameterDoubleBlender)		},
+		{ RTTI_OF(ParameterVec2),			RTTI_OF(ParameterVec2Blender)		},
+		{ RTTI_OF(ParameterVec3),			RTTI_OF(ParameterVec3Blender)		},
+		{ RTTI_OF(ParameterVec3),           RTTI_OF(ParameterVec3Blender)		},
+		{ RTTI_OF(ParameterRGBAColorFloat),	RTTI_OF(ParameterRGBAFloatBlender)	},
+		{ RTTI_OF(ParameterRGBColorFloat),	RTTI_OF(ParameterRGBFloatBlender)	},
+		{ RTTI_OF(ParameterRGBAColor8),		RTTI_OF(ParameterRGBA8Blender)		},
+		{ RTTI_OF(ParameterRGBColor8),		RTTI_OF(ParameterRGB8Blender)		}
 	};
 
 
@@ -129,5 +150,41 @@ namespace nap
 	{
 		assert(mParameter != nullptr); 
 		return *mParameter;
+	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBAColorFloat, RGBAColorFloat>::onBlend(float value)
+	{
+		glm::vec4 lval = math::lerp<glm::vec4>(mSourceValue.toVec4(), getTarget<ParameterRGBAColorFloat>().mValue.toVec4(), value);
+		RGBAColorFloat nval(lval.x, lval.y, lval.z, lval.w);
+		getParameter<ParameterRGBAColorFloat>().setValue(nval);
+	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>::onBlend(float value)
+	{
+		glm::vec3 lval = math::lerp<glm::vec3>(mSourceValue.toVec3(), getTarget<ParameterRGBColorFloat>().mValue.toVec3(), value);
+		RGBColorFloat nval(lval.x, lval.y, lval.z);
+		getParameter<ParameterRGBColorFloat>().setValue(nval);
+	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBAColor8, RGBAColor8>::onBlend(float value)
+	{
+		glm::vec4 lval = math::lerp<glm::vec4>(mSourceValue.toVec4(), getTarget<ParameterRGBAColor8>().mValue.toVec4(), value);
+		RGBAColor8 nval(lval.x, lval.y, lval.z, lval.w);
+		getParameter<ParameterRGBAColor8>().setValue(nval);
+	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterRGBColor8, RGBColor8>::onBlend(float value)
+	{
+		glm::vec3 lval = math::lerp<glm::vec3>(mSourceValue.toVec3(), getTarget<ParameterRGBColor8>().mValue.toVec3(), value);
+		RGBColor8 nval(lval.x, lval.y, lval.z);
+		getParameter<ParameterRGBColor8>().setValue(nval);
 	}
 }
