@@ -3,6 +3,6 @@
         "mod_napscene",
         "mod_napfont",
         "mod_napinput",
-        "mod_napparameter"
+        "mod_napcolor"
     ]
 }

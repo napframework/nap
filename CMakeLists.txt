@@ -204,6 +204,7 @@ add_subdirectory(modules/napserial)
 add_subdirectory(modules/napwebsocket)
 add_subdirectory(modules/napapiwebsocket)
 add_subdirectory(modules/napsoem)
+add_subdirectory(modules/napcolor)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
