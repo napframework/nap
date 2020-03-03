@@ -30,3 +30,9 @@ copy_module_json_to_bin()
 
 # Package into platform release
 package_module()
+
+# Install for fbxconverter
+if (WIN32)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+            CONFIGURATIONS Release)
+endif()
