@@ -4,4 +4,4 @@ if(NOT TARGET glm)
     find_package(glm REQUIRED)
 endif()
 
-add_include_to_interface_target(mod_napscene ${GLM_INCLUDE_DIRS})
+add_include_to_interface_target(mod_napcolor ${GLM_INCLUDE_DIRS})
