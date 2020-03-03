@@ -26,7 +26,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of all parameters considered to blend
-		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' group all the blend parameters belong to
+		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of all parameters that are blended
+		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' the group all the 'Parameters' belong to
 	};
 }
