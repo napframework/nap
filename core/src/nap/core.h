@@ -66,12 +66,16 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error);
 
+		/**
+		 * Loads all modules in to the core environment and creates all the associated services
+		 * @param error contains the error code when initialization fails
+		 * @param projectInfo indicates if the engine is being run for a non-project use, eg. running Napkin
+		 * @return if initialization succeeded
+		 */
 		bool initializeEngine(utility::ErrorState& error, const ProjectInfo& projectInfo);
 
 		/**
@@ -200,7 +204,7 @@ namespace nap
 		* Helper function that creates all the services that are found in the various modules
 		* Note that a module does not need to define a service, only if it has been defined
 		* this call will try to create it.
-	 	*/
+		*/
 		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
 
 		/**

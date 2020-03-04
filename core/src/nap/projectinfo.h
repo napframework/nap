@@ -36,6 +36,9 @@ namespace nap
 		 */
 		bool load(const std::string& filename, utility::ErrorState& err);
 
+		/**
+		 * @return Absolute path of this project's data directory
+		 */
 		std::string dataDirectory() const;
 	};
 
