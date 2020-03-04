@@ -31,6 +31,11 @@ namespace nap
 		 */
 		void setValue(const T& value);
 
+		/**
+		 * @return const reference to value
+		 */
+		const T& getValue() const;
+
 	public:
 		T			mValue;				///< Property: 'Value' the value of this parameter
 		Signal<T>	valueChanged;		///< Signal that's raised when the value of this parameter changes
@@ -64,6 +69,12 @@ namespace nap
 			mValue = value;
 			valueChanged(mValue);
 		}
+	}
+
+	template<typename T>
+	const T& nap::ParameterSimple<T>::getValue() const
+	{
+		return mValue;
 	}
 }
 

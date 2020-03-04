@@ -1,6 +1,6 @@
 {
     "title": "BlobTrace",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "default_data": "data/blobtrace.json",
     "modules": [
         "mod_napapp",

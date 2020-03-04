@@ -1,6 +1,6 @@
 {
     "title": "AudioPlayback",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "modules": [
         "mod_napapp",
         "mod_napaudio",

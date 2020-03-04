@@ -157,6 +157,12 @@ namespace nap
 	}
 
 
+	nap::MaterialInstance& RenderToTextureComponentInstance::getMaterialInstance()
+	{
+		return mMaterialInstance;
+	}
+
+
 	void RenderToTextureComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo

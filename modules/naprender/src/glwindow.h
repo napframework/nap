@@ -157,6 +157,20 @@ namespace nap
 		void makeCurrent();
 
 		/**
+		 * Clears specific parts of the renderTarget using the given flags.
+		 * The flags can be bitmasked together, for example: EClearFlags::Color | EClearFlags::Color.
+		 * @param renderTarget the opengl target to clear.
+		 * @param flags what parts to clear.
+		 */
+		void clear(opengl::EClearFlags flags);
+
+		/**
+		 * Clears all the renderTarget's associated flags (Color, Depth, Stencil)
+		 * @param renderTarget the opengl target to clear
+		 */
+		void clear();
+
+		/**
 		 *	Returns the window number
 		 */
 		uint32 getNumber() const;
