@@ -1,11 +1,7 @@
 #pragma once
 
 // External Includes
-#include <iostream>
 #include <utility/dllexport.h>
-
-// Local Includes
-#include "logger.h"
 
 namespace nap
 {
