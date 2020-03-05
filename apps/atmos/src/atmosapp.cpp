@@ -2,6 +2,7 @@
 
 // Nap includes
 #include <nap/core.h>
+#include <parameterservice.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
 #include <orthocameracomponent.h>
@@ -48,6 +49,7 @@ namespace nap
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+	
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mWorldEntity = scene->findEntity("WorldEntity");
 		mScanEntity = scene->findEntity("ScanEntity");
@@ -55,6 +57,9 @@ namespace nap
 		mVideoCameraEntity = scene->findEntity("VideoCameraEntity");
 		mLineEntity = scene->findEntity("LineEntity");
 		mSensorEntity = scene->findEntity("SensorEntity");
+
+		//holds the preset selector component (better name for this entity?)
+		mUniverseEntity = scene->findEntity("UniverseEntity"); 
 
 		// Get yocto sensors
 		mRangeSensor = mResourceManager->findObject("RangeSensor");
@@ -179,10 +184,23 @@ namespace nap
 			{
 				mGui->toggleVisibility();
 			}
+
+			//demo functionality for the preset selector: 
+//			if (press_event->mKey == nap::EKeyCode::KEY_1)
+//			{
+//				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
+//				presetSelector.selectPresetByIndex(0);
+//			}
+
+//			if (press_event->mKey == nap::EKeyCode::KEY_2)
+//			{
+//				nap::SwitchPresetComponentInstance& presetSelector = mUniverseEntity->getComponent <nap::SwitchPresetComponentInstance>();
+//				presetSelector.selectPresetByIndex(1);
+//			}
 		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
-
 
 	int AtmosApp::shutdown()
 	{

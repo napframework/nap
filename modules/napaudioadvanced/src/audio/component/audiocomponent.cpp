@@ -12,6 +12,7 @@
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioComponent)
     RTTI_PROPERTY("Object", &nap::audio::AudioComponent::mObject, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_PROPERTY("Links", &nap::audio::AudioComponent::mLinks, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioComponentInstance)
@@ -29,9 +30,12 @@ namespace nap
         bool AudioComponentInstance::init(utility::ErrorState& errorState)
         {
             AudioComponent* resource = getComponent<AudioComponent>();
-            mObject = std::move(resource->mObject->instantiate(getAudioService(), errorState));
+            mObject = std::move(resource->mObject->instantiate<AudioObjectInstance>(getAudioService().getNodeManager(), errorState));
             if (!mObject)
+            {
+                errorState.fail("Failed to instantiate audio object in AudioComponent");
                 return false;
+            }
             
             return true;
         }

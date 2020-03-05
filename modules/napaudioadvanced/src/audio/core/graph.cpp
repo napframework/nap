@@ -8,14 +8,14 @@
 
 
 // RTTI
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::Graph)
-    RTTI_CONSTRUCTOR(nap::audio::AudioService&)
+RTTI_BEGIN_CLASS(nap::audio::Graph)
     RTTI_PROPERTY("Objects", &nap::audio::Graph::mObjects, nap::rtti::EPropertyMetaData::Embedded)
     RTTI_PROPERTY("Output", &nap::audio::Graph::mOutput, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Input", &nap::audio::Graph::mInput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GraphInstance)
-    RTTI_FUNCTION("getObject", &nap::audio::GraphInstance::getObject)
+RTTI_BEGIN_CLASS(nap::audio::GraphInstance)
+    RTTI_FUNCTION("getObject", &nap::audio::GraphInstance::getObjectNonTyped)
 RTTI_END_CLASS
 
 
@@ -84,9 +84,9 @@ namespace nap
         };
 
         
-        bool GraphInstance::init(Graph& resource, utility::ErrorState& errorState)
+        bool GraphInstance::init(Graph& resource, NodeManager& nodeManager, utility::ErrorState& errorState)
         {
-            mResource = &resource;
+            mNodeManager = &nodeManager;
             
             // Build object graph as utility to sort all the audio object resources in dependency order
             std::vector<AudioObject*> objects;
@@ -107,7 +107,7 @@ namespace nap
             {
                 // Create instance and initialize
                 auto objectResource = node->mItem.mObject;
-                auto instance = objectResource->instantiate(resource.getAudioService(), errorState);
+                auto instance = objectResource->instantiate<AudioObjectInstance>(nodeManager, errorState);
                 
                 if (instance == nullptr)
                 {
@@ -115,28 +115,61 @@ namespace nap
                     return false;
                 }
                 
-                if (objectResource == resource.mOutput.get())
-                    mOutput = instance.get();
                 mObjects.emplace_back(std::move(instance));
             }
-            
+                        
+            mOutput = getObject<AudioObjectInstance>(resource.mOutput->mID);
             if (mOutput == nullptr)
             {
-                errorState.fail("%s Graph output not found within the graph.", resource.mID.c_str());
+                errorState.fail("Output not found: %s", resource.mOutput->mID.c_str());
                 return false;
+            }
+            
+            if (resource.mInput != nullptr)
+            {
+                mInput = getObject<AudioObjectInstance>(resource.mInput->mID);
+                if (mInput == nullptr)
+                {
+                    errorState.fail("Input not found: %s", resource.mInput->mID.c_str());
+                    return false;
+                }
             }
             
             return true;
         }
         
         
-        AudioObjectInstance* GraphInstance::getObject(const std::string &mID)
+        AudioObjectInstance* GraphInstance::getObjectNonTyped(const std::string &name)
         {
             for (auto& object : mObjects)
-                if (object->getResource().mID == mID)
+                if (object->getName() == name)
                     return object.get();
             return nullptr;
         }
+        
+        
+        AudioObjectInstance& GraphInstance::addObject(std::unique_ptr<AudioObjectInstance> object)
+        {
+            mObjects.emplace_back(std::move(object));
+            return *mObjects.back();
+        }
+        
+        
+        AudioObjectInstance& GraphInstance::addInput(std::unique_ptr<AudioObjectInstance> object)
+        {
+            mInput = object.get();
+            mObjects.emplace_back(std::move(object));
+            return *mObjects.back();
+        }
+        
+        
+        AudioObjectInstance& GraphInstance::addOutput(std::unique_ptr<AudioObjectInstance> object)
+        {
+            mOutput = object.get();
+            mObjects.emplace_back(std::move(object));
+            return *mObjects.back();
+        }
+
         
     }
     

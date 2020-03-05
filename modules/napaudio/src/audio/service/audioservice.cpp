@@ -58,7 +58,7 @@ namespace nap
 
 
         AudioService::AudioService(ServiceConfiguration* configuration) : 
-			Service(configuration)
+			Service(configuration), mNodeManager(mDeletionQueue)
         {
             // Initialize mpg123 library
             mpg123_init();
@@ -73,6 +73,11 @@ namespace nap
 			Pa_CloseStream(mStream);
 			mStream = nullptr;
 
+            auto error = Pa_Terminate();
+            if (error != paNoError)
+                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+            Logger::info("Portaudio terminated");
+
             // Uninitialize mpg123 library
             mpg123_exit();
         }
@@ -82,6 +87,7 @@ namespace nap
         {
             factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
             factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
+            factory.addObjectCreator(std::make_unique<MultiAudioFileResourceObjectCreator>(*this));
         }
 
         
@@ -113,78 +119,60 @@ namespace nap
 				return false;
 			}
             
-            auto hostApiIndex = -1;
             if (configuration->mHostApi.empty())
-                hostApiIndex = Pa_GetDefaultHostApi();
+                mHostApiIndex = Pa_GetDefaultHostApi();
             else
-                hostApiIndex = getHostApiIndex(configuration->mHostApi);
-            if (hostApiIndex < 0)
+                mHostApiIndex = getHostApiIndex(configuration->mHostApi);
+            if (mHostApiIndex < 0)
             {
                 errorState.fail("Audio host API not found: %s", configuration->mHostApi.c_str());
                 return false;
             }
 
-            auto inputDeviceIndex = -1;
             if (configuration->mInputDevice.empty())
-                inputDeviceIndex = Pa_GetDefaultInputDevice();
+                mInputDeviceIndex = Pa_GetDefaultInputDevice();
             else
-                inputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mInputDevice);
-            
-			// Ensure the input index is valid
-			if (inputDeviceIndex < 0)
+                mInputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mInputDevice);
+            if (mInputDeviceIndex < 0)
             {
                 errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
                 return false;
             }
 
-            auto outputDeviceIndex = -1;
             if (configuration->mOutputDevice.empty())
-                outputDeviceIndex = Pa_GetDefaultOutputDevice();
+                mOutputDeviceIndex = Pa_GetDefaultOutputDevice();
             else
-                outputDeviceIndex = getDeviceIndex(hostApiIndex, configuration->mOutputDevice);
-            
-			// Ensure the output index is valid
-			if (outputDeviceIndex < 0)
+                mOutputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
+            if (mOutputDeviceIndex < 0)
             {
                 errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
                 return false;
             }
 
-			// Ensure requested number of input and output channels is available
-            if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, errorState))
+            if (!checkChannelCounts(mInputDeviceIndex, mOutputDeviceIndex, errorState))
                 return false;
             
 			PaStreamParameters inputParameters;
-			inputParameters.device = inputDeviceIndex;
+			inputParameters.device = mInputDeviceIndex;
 			inputParameters.channelCount = mInputChannelCount;
 			inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
 			inputParameters.suggestedLatency = 0;
 			inputParameters.hostApiSpecificStreamInfo = nullptr;
 
 			PaStreamParameters outputParameters;
-			outputParameters.device = outputDeviceIndex;
+			outputParameters.device = mOutputDeviceIndex;
 			outputParameters.channelCount = mOutputChannelCount;
 			outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
 			outputParameters.suggestedLatency = 0;
 			outputParameters.hostApiSpecificStreamInfo = nullptr;
             
-			// Setup input parameters
             PaStreamParameters* inputParamsPtr = nullptr;
-			if (mInputChannelCount > 0)
-			{
-				assert(inputDeviceIndex >= 0);
-				inputParamsPtr = &inputParameters;
-			}
-
-			// Setup output parameters
+            if (mInputDeviceIndex >= 0)
+                inputParamsPtr = &inputParameters;
             PaStreamParameters* outputParamsPtr = nullptr;
-			if (mOutputChannelCount > 0)
-			{
-				assert(outputDeviceIndex >= 0);
-				outputParamsPtr = &outputParameters;
-			}
+            if (mOutputDeviceIndex >= 0)
+                outputParamsPtr = &outputParameters;
             
-			// Open stream
 			error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, configuration->mSampleRate, configuration->mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
@@ -313,15 +301,6 @@ namespace nap
         }
 
 
-		void AudioService::shutdown()
-		{
-			auto error = Pa_Terminate();
-			if (error != paNoError)
-				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-			Logger::info("Portaudio terminated");
-		}
-        
-        
         void AudioService::onAudioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
             // process the node manager
@@ -416,12 +395,6 @@ namespace nap
                     mOutputChannelCount = configuration->mOutputChannelCount;
             }
             
-			// One input channel must be specified
-			if (mOutputChannelCount == 0 && mInputChannelCount == 0)
-			{
-				errorState.fail("AudioService: No input or output channel selected");
-				return false;
-			}
 
             return true;
         }

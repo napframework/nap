@@ -58,7 +58,7 @@ namespace nap
 			 * @param channel index of the output channel.
 			 * @return the output pin associated with the given channel.
 			 */
-            OutputPin& getOutputForChannel(int channel) override	{ return mNode->getOutput(channel); }
+            OutputPin* getOutputForChannel(int channel) override	{ return &mNode->getOutput(channel); }
 
             /**
 			 * @param video the audio-video source.

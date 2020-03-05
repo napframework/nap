@@ -34,7 +34,7 @@ namespace nap
             /**
              * The input to be filtered
              */
-            InputPin audioInput;
+            InputPin audioInput = { this };
             
             /**
              * Outputs the filtered signal

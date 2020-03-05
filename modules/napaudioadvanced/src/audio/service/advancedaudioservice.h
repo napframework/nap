@@ -21,6 +21,7 @@ namespace nap
             
         public:
             AdvancedAudioService(ServiceConfiguration* configuration);
+            ~AdvancedAudioService();
             
             /**
              * Register specific object creators

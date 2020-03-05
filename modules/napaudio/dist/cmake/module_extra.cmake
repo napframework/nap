@@ -16,32 +16,37 @@ if(NOT TARGET moodycamel)
 endif()
 add_include_to_interface_target(mod_napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 
+if(NOT TARGET portaudio)
+    find_package(portaudio REQUIRED)
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${PORTAUDIO_INCLUDE_DIR})
+
 if(WIN32)
     # Add post-build step to set copy mpg123 to bin on Win64
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} 
+                       COMMAND ${CMAKE_COMMAND}
                                -E copy
                                $<TARGET_FILE:mpg123>
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>
                        )
 
     # Copy libsndfile to bin post-build on Win64
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} 
+                       COMMAND ${CMAKE_COMMAND}
                                -E copy
                                ${THIRDPARTY_DIR}/libsndfile/bin/libsndfile-1.dll
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>
                        )
 
     # Copy portaudio to bin post-build on Win64
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} 
+                       COMMAND ${CMAKE_COMMAND}
                                -E copy
                                ${THIRDPARTY_DIR}/portaudio/bin/portaudio_x64.dll
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>
                        )
 elseif(UNIX)
     # Install mpg123 lib into packaged app
@@ -50,7 +55,7 @@ elseif(UNIX)
 
     # Install portaudio lib into packaged app
     file(GLOB PORTAUDIO_DYLIBS ${THIRDPARTY_DIR}/portaudio/lib/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${PORTAUDIO_DYLIBS} DESTINATION lib)    
+    install(FILES ${PORTAUDIO_DYLIBS} DESTINATION lib)
 
     # Install libsndfile into packaged app
     file(GLOB SNDFILE_DYLIBS ${THIRDPARTY_DIR}/libsndfile/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)

@@ -8,6 +8,8 @@
         "mod_napcameracontrol",
         "mod_napyoctopuce",
 		"mod_napparameter",
-        "mod_napsvg"
+        "mod_napsvg",
+        "mod_napaudio",
+        "mod_napaudioadvanced"
     ]
 }

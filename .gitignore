@@ -9,6 +9,7 @@ build.sh
 xcode/*
 codeblocks/*
 cmake-build-debug/*
+cmake-build-release/*
 core/Debug/
 vs/
 modules/napof/Debug/

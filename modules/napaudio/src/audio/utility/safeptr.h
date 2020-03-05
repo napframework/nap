@@ -21,10 +21,10 @@ namespace nap
 
         
         /**
-         * The DeletionQueue holds the data that was previously owned by smart-pointers before they went out of scope.
+         * The DeletionQueue holds the data that was previously owned by @SafeOwner smart-pointers before they went out of scope.
          * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the object.
          * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object held by the queue will be cleared as well.
-         * By making use of the DeletionQueue in combination with SafeOwner and SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
+         * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
          */
         class DeletionQueue final
         {
@@ -40,9 +40,8 @@ namespace nap
             }
             
             /**
-             * This method is used by SafeOwner to dispose it's data when it goes out of scope.
+             * This method is used by @SafeOwner to dispose it's data when it goes out of scope.
              * The disposed data will be kept by the DeletionQueue and will be destructed and freed on the next call of clear().
-			 * @param ownerData the data to dispose of
              */
             template <typename T>
             void enqueue(typename SafeOwner<T>::Data* ownerData)
@@ -97,7 +96,7 @@ namespace nap
             
         protected:
             /**
-             * Transfer ownership of the object in source to this. Source will be pointing to nothing.
+             * Transfer ownership of the object in @source to this. Source will be pointing to nothing.
              * If we are currently holding any object it will be deleted safely using the DeletionQueue.
              */
             void assign(SafeOwnerBase& source)
@@ -164,7 +163,7 @@ namespace nap
             }
             
             /**
-             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the DeletionQueue, from which it will be deleted on a safe moment.
+             * The destructor of the SafeOwner base class. Instead of letting the managed object destruct itself it is thrown into the @DeletionQueue, from which it will be deleted on a safe moment.
              */
             ~SafeOwner()
             {
@@ -339,12 +338,7 @@ namespace nap
         
 
         /**
-         * A SafePtr points to an object that is owned by a SafeOwner somewhere. 
-		 * When the owner goes out of scope and the pointed object will be moved into the DeletionQueue,
-		 * the SafePtr will return true when checked if it equals nullptr. 
-		 * However: the object it points to can still be used and safely accessed using the * and -> operators and the get() method until the next time the DeletionQueue is cleared. 
-		 * This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, 
-		 * as long as you check if the SafePtr is not nullptr before use.
+         * A SafePtr points to an object that is owned by a @SafeOwner somewhere. When the owner goes out of scope and the pointed object will be moved into the @DeletionQueue the SafePtr will return true when checked if it equals nullptr. However the object it points to can still be used and safely accessed using the * and -> operators and the @get() method until the next time the @DeletionQueue is cleared. This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, as long as you check if the SafePtr != nullptr before use.
          */
         template <typename T>
         class SafePtr final : public SafePtrBase
@@ -356,7 +350,7 @@ namespace nap
             SafePtr() = default;
             
             /**
-             * Constructs a SafePtr pointing to an object owned by a SafeOwner.
+             * Constructs a SafePtr pointing to an object owned by a @SafeOwner.
              */
             SafePtr(SafeOwner<T>& owner)
             {
@@ -512,7 +506,8 @@ namespace nap
                 mOwnerData = static_cast<typename SafeOwner<T>::Data*>(ownerData);
                 
                 // Register with the list of SafePtrs pointing to the new target
-                mOwnerData->mPointers.emplace(this);
+                if (mOwnerData != nullptr)
+                    mOwnerData->mPointers.emplace(this);
             }
             
             typename SafeOwner<T>::Data* mOwnerData = nullptr; ///< The data pointed to by this SafePtr, managed by @SafeOwner or by the @DeletionQueue.

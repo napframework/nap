@@ -5,9 +5,9 @@
 #include <nap/resource.h>
 
 // Audio includes
-#include <audio/core/audionode.h>
+#include <audio/core/audionodemanager.h>
+#include <audio/core/multichannel.h>
 #include <audio/utility/safeptr.h>
-#include <audio/service/audioservice.h>
 
 namespace nap
 {
@@ -22,36 +22,31 @@ namespace nap
         /**
          * Instance of a object that generates audio output for one or more channels
          */
-        class NAPAPI AudioObjectInstance : public rtti::Object
+        class NAPAPI AudioObjectInstance : public IMultiChannelInput, public IMultiChannelOutput
         {
             RTTI_ENABLE()
+            friend class AudioObject;
             
         public:
-            AudioObjectInstance(AudioObject& resource) : mResource(resource) { }
+            AudioObjectInstance() = default;
+            AudioObjectInstance(const std::string& name) : mName(name) { }
+
+            AudioObjectInstance(const AudioObjectInstance&) = delete;
+            AudioObjectInstance& operator=(const AudioObjectInstance&) = delete;
+
+            /**
+             * If multichannel input is implemented for this object it returns its input interface, otherwise nullptr.
+             */
+            IMultiChannelInput* getInput() { return dynamic_cast<IMultiChannelInput*>(this); }
             
             /**
-             * This method has to be overwritten by all descendants to initialize the instance.
-             * Normally it will create all the Nodes owned by this instance and connect them.
+             * If this object is instantiated from a resource this returns the mID of the resource.
+             * Otherwise it returns an empty string.
              */
-            virtual bool init(AudioService& service, utility::ErrorState& errorState) = 0;
-            
-            /**
-             * This method has to be overwritten to return the output pin corresponding to a given output channel of the object.
-             */
-            virtual OutputPin& getOutputForChannel(int channel) = 0;
-            
-            /**
-             * This method has to be overwritten to return the number of channels of audio this object outputs.
-             */
-            virtual int getChannelCount() const = 0;
-            
-            /**
-             * @return: the resource this instance is created from.
-             */
-            AudioObject& getResource() { return mResource; }
+            const std::string& getName() const { return mName; }
             
         private:
-            AudioObject& mResource;
+            std::string mName = ""; // This is the mID of the resource that spawned the object. If the object has not been spawned by a resource this string remains empty.
         };
         
         
@@ -61,7 +56,7 @@ namespace nap
          * AudioObjects can be linked together to build a more complex DSP system in a Graph.
          * AudioObject is a resource that can be instantiated.
          */
-        class AudioObject : public Resource
+        class NAPAPI AudioObject : public Resource
         {
             RTTI_ENABLE(Resource)
             
@@ -76,71 +71,32 @@ namespace nap
             /**
              * This method spawns an instance of this resource.
              */
-            std::unique_ptr<AudioObjectInstance> instantiate(AudioService& service, utility::ErrorState& errorState);
+            template <typename T>
+            std::unique_ptr<T> instantiate(NodeManager& nodeManager, utility::ErrorState& errorState);
             
         private:
             /**
              * This methods need to be overwritten by all descendants to return an instance of this resource.
              */
-            virtual std::unique_ptr<AudioObjectInstance> createInstance() { return nullptr; }
+            virtual std::unique_ptr<AudioObjectInstance> createInstance(NodeManager& nodeManager, utility::ErrorState& errorState) = 0;
             
             AudioObjectInstance* mInstance = nullptr;
         };
         
-    
         
-        /**
-         * Base class for audio objects that contain a number of nodes of the same type, typically for performing multichannel processing.
-         */
-        class NAPAPI MultiChannelObject : public AudioObject
+        template <typename T>
+        std::unique_ptr<T> AudioObject::instantiate(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
-            RTTI_ENABLE(AudioObject)
-            
-            friend class MultiChannelObjectInstance;
-            
-        public:
-            MultiChannelObject() = default;
-            
-            std::unique_ptr<AudioObjectInstance> createInstance() override;
-            
-        private:
-            /**
-             * This factory method has to be implemented by descendants to create a DSP Node for a certain channel.
-             */
-            virtual SafeOwner<Node> createNode(int channel, AudioService& service) = 0;
-            
-            /**
-             * This method has to be overwritten by descendants to return the number of nodes/channels that the instance of this object will own.
-             */
-            virtual int getChannelCount() const = 0;
-        };
+            auto instance = createInstance(nodeManager, errorState);
+            if (instance == nullptr)
+                return nullptr;
+            instance->mName = mID;
+            mInstance = instance.release();
+            return std::unique_ptr<T>(rtti_cast<T>(mInstance));
+        }
+        
+        
 
-        
-        
-        /**
-         * Instance of a MultiChannelObject. In most cases only the MultiChannelObject has to be overwritten to create your own MultiChannelObject type while this instance class can be left untouched.
-         */
-        class NAPAPI MultiChannelObjectInstance : public AudioObjectInstance
-        {
-            RTTI_ENABLE(AudioObjectInstance)
-            
-        public:
-            MultiChannelObjectInstance(MultiChannelObject& resource) : AudioObjectInstance(resource) { }
-            
-            bool init(AudioService& service, utility::ErrorState& errorState) override;
-            
-            OutputPin& getOutputForChannel(int channel) override { return *(*mNodes[channel]->getOutputs().begin()); }
-            int getChannelCount() const override { return mNodes.size(); }
-            
-            /**
-             * Returns a raw pointer to the DSP node for the specified channel.
-             */
-            Node* getChannel(int channel);
-            
-        private:
-            std::vector<SafeOwner<Node>> mNodes;
-        };
-                
     }
         
 }

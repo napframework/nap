@@ -15,6 +15,9 @@
 #include <rendertarget.h>
 #include <yoctosensor.h>
 
+//ruud noobing:
+#include <switchpresetcomponent.h>
+
 namespace nap
 {
 	using namespace rtti;
@@ -72,6 +75,8 @@ namespace nap
 		ObjectPtr<RenderTarget>		mVideoTarget  = nullptr;			//< Pointer to the video render target
 
 		// Entities
+		ObjectPtr<EntityInstance>		mUniverseEntity = nullptr;		///< Pointer to the universe entity
+
 		ObjectPtr<EntityInstance>		mCameraEntity		= nullptr;		///< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>		mWorldEntity		= nullptr;		///< Pointer to the world entity
 		ObjectPtr<EntityInstance>		mScanEntity			= nullptr;		///< Pointer to the scan entity (living under the world)

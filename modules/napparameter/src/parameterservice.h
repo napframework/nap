@@ -83,7 +83,7 @@ namespace nap
 		/**
          * Signal that is emitted when a preset is loaded
          */
-		nap::Signal<> presetLoaded;
+		nap::Signal<std::string> presetLoaded;
 
 
 		/**

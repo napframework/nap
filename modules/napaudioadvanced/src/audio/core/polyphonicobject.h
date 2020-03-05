@@ -30,7 +30,7 @@ namespace nap
             
         public:
             PolyphonicObject() : AudioObject() { }
-            
+
             /**
              * This points to the voice graph resource defining the patch for a single voice in the polyphonic system.
              */
@@ -47,8 +47,14 @@ namespace nap
              */
             bool mVoiceStealing = true;
             
+            /**
+             * The number of channels that the object outputs.
+             * Beware that this dos not to be equal to the number of channels of the voice, as it is possible to play a voice on a specific set of output channels of the polyphonic object. See also @PolyphonicObjectInstance::playOnChannels().
+             */
+            int mChannelCount = 1;
+            
         private:
-            std::unique_ptr<AudioObjectInstance> createInstance() override;
+            std::unique_ptr<AudioObjectInstance> createInstance(NodeManager& nodeManager, utility::ErrorState& errorState) override;
         };
 
         
@@ -60,10 +66,13 @@ namespace nap
             RTTI_ENABLE(AudioObjectInstance)
             
         public:
-            PolyphonicObjectInstance(PolyphonicObject& resource) : AudioObjectInstance(resource) { }
-            
+            PolyphonicObjectInstance() : AudioObjectInstance() { }
+            PolyphonicObjectInstance(const std::string& name) : AudioObjectInstance(name) { }
+
             // Initialize the object
-            bool init(AudioService& audioService, utility::ErrorState& errorState) override;
+            bool init(Voice& voice, int voiceCount, bool voiceStealing, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
+            OutputPin* getOutputForChannel(int channel) override;
+            int getChannelCount() const override;
             
             /**
              * Returns the first voice in the pool that is not being used (Voice::isBusy() == false) for playback.
@@ -77,12 +86,25 @@ namespace nap
              * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
              */
             void play(VoiceInstance* voice, TimeValue duration = 0);
+
+            /**
+             * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
+             * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
+             */
+            void playSection(VoiceInstance* voice, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+
+            /**
+             * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
+             * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
+             * As opposed to @play() this method connects the voice to the specified @channels of this polyphic object's output mixer.
+             */
+            void playOnChannels(VoiceInstance* voice, std::vector<unsigned int> channels, TimeValue duration = 0);
             
             /**
              * Stops playing the voice by telling it to fade out it's envelope
              * Once the envelope is faded out this will trigger the voice to be disconnected from this object's mixers
              */
-            void stop(VoiceInstance* voice);
+            void stop(VoiceInstance* voice, TimeValue fadeOutTime = 0);
             
             /**
              * Counts the number of voices that are currently playing.
@@ -90,16 +112,16 @@ namespace nap
             int getBusyVoiceCount() const;
             
         private:
-            OutputPin& getOutputForChannel(int channel) override;
-            int getChannelCount() const override;
-            
+            void connectVoice(VoiceInstance* voice);
+
             Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
             std::vector<SafeOwner<MixNode>> mMixNodes;
             
-            AudioService* mAudioService = nullptr;
+            NodeManager* mNodeManager = nullptr;
+            bool mVoiceStealing = true;
         };
         
     }

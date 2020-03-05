@@ -138,7 +138,6 @@ namespace nap
 		return true;
 	}
 
-
 	void UpdateMaterialComponentInstance::update(double deltaTime)
 	{
 		MaterialInstance& sm = mScanMeshComponent->getMaterialInstance();

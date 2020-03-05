@@ -37,6 +37,8 @@ namespace nap
 		ComponentPtr<SelectImageComponent> mSingleImageSelectComponent = nullptr;		///< Property: "SingleImageSelectComponent
 		ComponentPtr<TransformComponent> mCameraTransformComponent = nullptr;			///< Property: "CameraTransformComponent"
 
+
+
 		ResourcePtr<ParameterFloat>				mPremultValue;
 		ResourcePtr<ParameterFloat>				mColorTexMix;
 		ResourcePtr<ParameterFloat>				mDiffuseColorMix;

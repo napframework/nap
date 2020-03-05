@@ -18,7 +18,6 @@ namespace nap
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);
             auto inputBuffers = inputs.pull();
-            auto gain = mGain.load();
             
             for (auto& inputBuffer : inputBuffers)
                 if (inputBuffer == nullptr)
@@ -30,11 +29,19 @@ namespace nap
             
             for (auto i = 0; i < outputBuffer.size(); ++i)
             {
-                outputBuffer[i] = gain;
+                outputBuffer[i] = mGain.getNextValue();
                 for (auto& inputBuffer : inputBuffers)
                     outputBuffer[i] *= (*inputBuffer)[i];
             }
         }
+        
+        
+        void GainNode::setGain(ControllerValue gain, TimeValue smoothTime)
+        {
+            mGain.setStepCount(smoothTime * getNodeManager().getSamplesPerMillisecond());
+            mGain.setValue(gain);
+        }
+
         
     }
     

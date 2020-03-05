@@ -101,6 +101,8 @@ create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 if(IMPORTING_PROJECT_MODULE)
     set(MODULE_FOLDER_NAME ProjectModule)
+    # Ensure not still declared for dependent module search
+    unset(IMPORTING_PROJECT_MODULE)
 else()
     set(MODULE_FOLDER_NAME UserModules)
 endif()
