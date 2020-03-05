@@ -101,7 +101,7 @@ namespace nap
             mPolyphonic->mVoice = mVoice.get();
             mPolyphonic->mChannelCount = channelCount;
             mPolyphonic->mVoiceCount = voiceCount;
-            mPolyphonic->mVoiceStealing = true;
+            mPolyphonic->mVoiceStealing = false;
             if (!mPolyphonic->init(errorState))
             {
                 errorState.fail("Failed to initialize Sampler " + getName());
@@ -140,8 +140,10 @@ namespace nap
 
         void SamplerInstance::stop(VoiceInstance* voice, TimeValue release)
         {
+            auto bufferLooper = voice->getObject<BufferLooperInstance>("BufferLooper");
             auto& envelope = voice->getEnvelope();
             envelope.stop(release);
+            bufferLooper->stop();
         }
 
         

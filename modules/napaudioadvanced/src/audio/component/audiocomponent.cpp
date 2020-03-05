@@ -32,7 +32,10 @@ namespace nap
             AudioComponent* resource = getComponent<AudioComponent>();
             mObject = std::move(resource->mObject->instantiate<AudioObjectInstance>(getAudioService().getNodeManager(), errorState));
             if (!mObject)
+            {
+                errorState.fail("Failed to instantiate audio object in AudioComponent");
                 return false;
+            }
             
             return true;
         }

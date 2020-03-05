@@ -42,10 +42,7 @@
                 {
                     "Type": "nap::AudioControlComponent",
                     "mID": "nap::AudioControlComponent_bb6e3b8d",
-                    "AudioComponent": "./nap::audio::AudioComponent_ec7cdb54",
-                    "Layer1": "AudioLayer1",
-                    "Layer2": "AudioLayer2",
-                    "CrossFadeTime": ""
+                    "AudioComponent": "./nap::audio::AudioComponent_ec7cdb54"
                 }
             ],
             "Children": []
@@ -421,25 +418,38 @@
                 {
                     "Type": "nap::PresetControlComponent",
                     "mID": "PresetControlComponent",
+                    "AudioControlComponent": "../AudioEntity/nap::AudioControlComponent_bb6e3b8d",
                     "PresetParameterGroup": "Parameters",
                     "Presets": [
                         {
                             "Preset": "focus.json",
                             "AverageDuration": 5.0,
                             "DurationDeviation": 0.0,
-                            "TransitionTime": 3.0
+                            "TransitionTime": 1.0,
+                            "AudioLayers": [
+                                0
+                            ],
+                            "AudioCrossFadeTime": 0.5
                         },
                         {
                             "Preset": "trippy.json",
-                            "AverageDuration": 0.5,
+                            "AverageDuration": 5.0,
                             "DurationDeviation": 0.0,
-                            "TransitionTime": 0.10000000149011612
+                            "TransitionTime": 1.0,
+                            "AudioLayers": [
+                                1
+                            ],
+                            "AudioCrossFadeTime": 0.5
                         },
                         {
                             "Preset": "lalacam.json",
                             "AverageDuration": 5.0,
                             "DurationDeviation": 0.0,
-                            "TransitionTime": 3.0
+                            "TransitionTime": 1.0,
+                            "AudioLayers": [
+                                0
+                            ],
+                            "AudioCrossFadeTime": 0.5
                         }
                     ],
                     "RandomizeSequence": true,
@@ -1897,37 +1907,6 @@
                         }
                     ],
                     "Groups": []
-                },
-                {
-                    "Type": "nap::ParameterGroup",
-                    "mID": "Audio",
-                    "Parameters": [
-                        {
-                            "Type": "nap::ParameterInt",
-                            "mID": "AudioLayer1",
-                            "Name": "Layer1",
-                            "Value": -1,
-                            "Minimum": -1,
-                            "Maximum": 1
-                        },
-                        {
-                            "Type": "nap::ParameterInt",
-                            "mID": "AudioLayer2",
-                            "Name": "Layer2",
-                            "Value": -1,
-                            "Minimum": -1,
-                            "Maximum": 1
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "CrossFadeTime",
-                            "Name": "Crossfade Time",
-                            "Value": 5000.0,
-                            "Minimum": 0.0,
-                            "Maximum": 10000.0
-                        }
-                    ],
-                    "Groups": []
                 }
             ]
         },
@@ -2032,14 +2011,12 @@
                     "InstanceProperties": []
                 },
                 {
-
                     "Entity": "UniverseEntity",
                     "InstanceProperties": []
                 },
                 {
                     "Entity": "AudioEntity",
-                    "InstanceProperties": [
-                    ]
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -2123,22 +2100,22 @@
                     "mID": "Sampler",
                     "SamplerEntries": [
                         {
-                            "Buffer": "CaveWorldAudio",
+                            "Buffer": "HangAudio",
                             "Loop": true,
                             "Start": 0.0,
-                            "LoopStart": 10000.0,
-                            "LoopEnd": 230000.0,
+                            "LoopStart": 1000.0,
+                            "LoopEnd": 5000.0,
                             "Transpose": 0.0,
-                            "CrossFadeTime": 4000.0
+                            "CrossFadeTime": 1000.0
                         },
                         {
-                            "Buffer": "TrailerAudio",
+                            "Buffer": "HangAudio",
                             "Loop": true,
                             "Start": 0.0,
-                            "LoopStart": 5000.0,
-                            "LoopEnd": 120000.0,
-                            "Transpose": 0.0,
-                            "CrossFadeTime": 4000.0
+                            "LoopStart": 1000.0,
+                            "LoopEnd": 4000.0,
+                            "Transpose": -2.0,
+                            "CrossFadeTime": 1000.0
                         }
                     ],
                     "EnvelopeData": [],
@@ -2155,6 +2132,20 @@
             "mID": "CaveWorldAudio",
             "AudioFilePaths": [
                 "audio/caveworld.mp3"
+            ]
+        },
+        {
+            "Type": "nap::audio::MultiAudioFileResource",
+            "mID": "HangAudio",
+            "AudioFilePaths": [
+                "audio/hang.mp3"
+            ]
+        },
+        {
+            "Type": "nap::audio::MultiAudioFileResource",
+            "mID": "TestAudio",
+            "AudioFilePaths": [
+                "audio/testtone.wav"
             ]
         },
         {

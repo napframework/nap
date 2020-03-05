@@ -3,6 +3,9 @@
 // Nap includes
 #include <component.h>
 #include <parameter.h>
+#include <componentptr.h>
+
+#include <audiocontrolcomponent.h>
 
 namespace nap
 {
@@ -22,20 +25,24 @@ namespace nap
         DECLARE_COMPONENT(PresetControlComponent, PresetControlComponentInstance)
         
     public:
+        // Metadata about one preset in the sequence
         struct PresetInfo
         {
-            std::string mPreset = "";
-            float mAverageDuration = 5.f;
-            float mDurationDeviation = 0.f;
-            float mTransitionTime = 3.f;
+            std::string mPreset = "";           // name of the json preset file
+            float mAverageDuration = 5.f;       // average duration of the reset in the sequence in seconds
+            float mDurationDeviation = 0.f;     // random deviation of the preset duration in seconds
+            float mTransitionTime = 3.f;        // duration of the video fade into this preset in seconds
+            std::vector<int> mAudioLayers;      // audio layers playing under this preset
+            float mAudioCrossFadeTime = 3.f;    // crossfade time of the audio layers during the transition to this preset.
         };
 
     public:
         PresetControlComponent() : Component() { }
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
+        ComponentPtr<AudioControlComponent> mAudioControlComponent = nullptr;
         ResourcePtr<ParameterGroup> mPresetParameterGroup = nullptr; // The parametergroup that contains the preset
-        std::vector<PresetInfo> mPresets;
+        std::vector<PresetInfo> mPresets;       // List of presets in the sequence accompanied by meta data
         bool mRandomizeSequence = false;        // Indicates wether the order of the cycle of presets will be shuffled
         bool mEnabled = false;                  // True to enable the preset cycle
 
@@ -69,6 +76,8 @@ namespace nap
             float mAverageDuration = 5.f;
             float mDurationDeviation = 0.f;
             float mTransitionTime = 3.f;
+            std::vector<int> mAudioLayers;
+            float mAudioCrossFadeTime = 3.f;
         };
 
     private:
@@ -79,6 +88,7 @@ namespace nap
         void permute(std::vector<PresetControlComponentInstance::PresetInfo*>& list);
         
         SwitchPresetComponentInstance* mSwitchPresetComponent = nullptr;
+        ComponentInstancePtr<AudioControlComponent> mAudioControlComponent = { this, &PresetControlComponent::mAudioControlComponent };
         std::vector<PresetInfo> mPresets;
         std::vector<PresetInfo*> mPermutedPresets;
         int mCurrentPresetIndex = -1;

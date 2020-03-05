@@ -27,9 +27,6 @@ namespace nap
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { }
 
         ComponentPtr<audio::AudioComponent> mAudioComponent; ///< Property: "AudioComponent"
-        ResourcePtr<ParameterInt> mLayer1 = nullptr; ///< Property: 'Layer1'
-        ResourcePtr<ParameterInt> mLayer2 = nullptr; ///< Property: 'Layer2'
-        ResourcePtr<ParameterFloat> mCrossFadeTime = nullptr; ///< Property: 'CrossFadeTime'
     };
 
 
@@ -46,18 +43,12 @@ namespace nap
         // Inherited from ComponentInstance
         bool init(utility::ErrorState& errorState) override;
 
+        void replaceLayers(const std::vector<int>& samplerEntries, audio::TimeValue crossFadeTime);
+
         // Component links
         ComponentInstancePtr<audio::AudioComponent> mAudioComponent = { this, &AudioControlComponent::mAudioComponent };
 
-        // Pointers to parameters
-        ParameterInt* mLayer1 = nullptr;
-        ParameterInt* mLayer2 = nullptr;
-        ParameterFloat* mCrossFadeTime = nullptr;
-
     private:
-        Slot<int> mLayerChangedSlot = { this, &AudioControlComponentInstance::layerChanged };
-        void layerChanged(int);
-
         std::unique_ptr<audio::SampleLayerController> mLayerController = nullptr;
     };
 

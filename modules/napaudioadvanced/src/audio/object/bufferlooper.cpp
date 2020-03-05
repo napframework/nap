@@ -165,7 +165,7 @@ namespace nap
             mPolyphonic->mVoice = mVoice.get();
             mPolyphonic->mChannelCount = channelCount;
             mPolyphonic->mVoiceCount = 2;
-            mPolyphonic->mVoiceStealing = false;
+            mPolyphonic->mVoiceStealing = true;
             if (!mPolyphonic->init(errorState))
             {
                 errorState.fail("Failed to initialize BufferLooper " + getName());

@@ -21,6 +21,7 @@ namespace nap
             envelope.resize(1);
             envelope[0].mTranslate = true;
             envelope[0].mDestination = 1.f;
+            envelope[0].mDuration = attack;
             auto voice = mSampler.play(samplerEntryIndex, 0);
             mLayerVoices[samplerEntryIndex] = voice;
         }
@@ -66,9 +67,7 @@ namespace nap
         {
             for (auto& samplerEntryIndex : samplerEntryIndices)
             {
-                auto it = mLayerVoices.find(samplerEntryIndex);
-                if (it == mLayerVoices.end())
-                    startLayer(samplerEntryIndex, attack);
+                startLayer(samplerEntryIndex, attack);
             }
 
             std::set<int> toBeStopped;
