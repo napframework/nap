@@ -444,6 +444,36 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "UniverseEntity",
+            "Components": [
+                {
+                    "Type": "nap::SwitchPresetComponent",
+                    "mID": "SwitchPresetComponent",
+                    "PresetParameterGroup": "Parameters",
+                    "FogParameterGroup": "Fog",
+                    "PresetIndex": 0,
+                    "FadeColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::PresetControlComponent",
+                    "mID": "PresetControlComponent",
+                    "AudioControlComponent": "../AudioEntity/nap::AudioControlComponent_bb6e3b8d",
+                    "PresetParameterGroup": "Parameters",
+                    "Presets": [],
+                    "RandomizeSequence": true,
+                    "Enabled": false
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "VideoCameraEntity",
             "Components": [
                 {
@@ -2174,6 +2204,7 @@
                     "Entity": "SensorEntity",
                     "InstanceProperties": []
                 },
+                {
                     "Entity": "UniverseEntity",
                     "InstanceProperties": []
                 },
