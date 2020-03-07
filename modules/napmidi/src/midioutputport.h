@@ -1,14 +1,22 @@
 #pragma once
 
-#include <utility/dllexport.h>
-#include <RtMidi.h>
-#include <nap/device.h>
+// Local Includes
 #include "midiservice.h"
 
-namespace nap {
+// External Includes
+#include <utility/dllexport.h>
+#include <nap/device.h>
+
+// Forward Declares
+class RtMidiOut;
+
+namespace nap 
+{
     
     /**
-     * Opens and manages a midi output port that midi messages can be sent to.
+     * Opens a midi output port that midi messages can be sent to.
+	 * Ports are identified by name and assigned a number when opened.
+	 * Failure to find and open the midi port is allowed when 'AllowFailure' is set to true.
      */
     class NAPAPI MidiOutputPort : public Device
     {
@@ -16,9 +24,10 @@ namespace nap {
     public:
         MidiOutputPort() = default;
         MidiOutputPort(MidiService& service);
-        
+		virtual ~MidiOutputPort() override;
+
         /**
-         * Starts the midi output port.
+         * Opens the midi output port.
 		 * @param errorState contains the reason why the port could not be opened.
 		 * @return if the midi output port opened successfully.
          */
@@ -45,10 +54,11 @@ namespace nap {
          */
         int getPortNumber() const;
 
+		bool mAllowFailure = false;			///< Property: "AllowFailure" failure to find and open port is allowed on startup when set to true.
 		std::string mPortName = "";			///< Property: 'Port' The name of the port that midi messages will be sent through.
 
     private:
-        RtMidiOut					mMidiOut;
+        std::unique_ptr<RtMidiOut>	mMidiOut = nullptr;
         MidiService*				mService = nullptr;
         std::vector<unsigned char>	mOutputData;
         int							mPortNumber = -1;

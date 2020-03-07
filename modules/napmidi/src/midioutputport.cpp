@@ -1,47 +1,73 @@
+// Local Includes
 #include "midioutputport.h"
-
 #include "midievent.h"
 
+// External Includes
 #include <nap/logger.h>
+#include <RtMidi.h>
 
 RTTI_BEGIN_CLASS(nap::MidiOutputPort)
-    RTTI_PROPERTY("Port", &nap::MidiOutputPort::mPortName, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowFailure",	&nap::MidiOutputPort::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Port",			&nap::MidiOutputPort::mPortName,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
 {
     
     
-    MidiOutputPort::MidiOutputPort(MidiService& service) : 
-		mService(&service)
+    MidiOutputPort::MidiOutputPort(MidiService& service) : mService(&service)
     {
+		mMidiOut = std::make_unique<RtMidiOut>();
     }
-    
-    
-    bool MidiOutputPort::start(utility::ErrorState& errorState)
+
+
+	MidiOutputPort::~MidiOutputPort()
+	{
+		mMidiOut.reset(nullptr);
+	}
+
+
+	bool MidiOutputPort::start(utility::ErrorState& errorState)
     {
-        try 
+		// Find and try to open port
+		mPortNumber = mService->getOutputPortNumber(mPortName);
+		if (mPortNumber >= 0)
 		{
-            mPortNumber = mService->getOutputPortNumber(mPortName);
-            if (mPortNumber < 0)
-            {
-                errorState.fail("Midi output port not found: " + mPortName);
-                return false;
-            }
-            mMidiOut.openPort(mPortNumber);
-            return true;
-        }
-        catch(RtMidiError& error) 
+			try
+			{
+				mMidiOut->openPort(mPortNumber);
+			}
+			catch (RtMidiError& error)
+			{
+				if (!mAllowFailure)
+				{
+					errorState.fail("%s: %s", mID.c_str(), error.getMessage().c_str());
+					return false;
+				}
+				nap::Logger::error("%s: %s", mID.c_str(), error.getMessage().c_str());
+			}
+		}
+		else
 		{
-            errorState.fail(error.getMessage());
-            return false;
-        }
+			std::string error_msg = utility::stringFormat("%s: Midi output port not found: %s", mID.c_str(), mPortName.c_str());
+			if (!mAllowFailure)
+			{
+				errorState.fail(error_msg);
+				return false;
+			}
+			nap::Logger::error(error_msg);
+		}
+		
+		return true;
     }
     
 
 	void MidiOutputPort::stop()
 	{
-		mMidiOut.closePort();
+		if (mMidiOut->isPortOpen())
+		{
+			mMidiOut->closePort();
+		}
 	}
     
 
@@ -53,14 +79,18 @@ namespace nap
 
 	void MidiOutputPort::sendEvent(const MidiEvent& event)
     {
+		// Skip when port is not open
+		if (!mMidiOut->isPortOpen())
+			return;
+
         mOutputData = event.getData();
         try 
 		{
-            mMidiOut.sendMessage(&mOutputData);
+            mMidiOut->sendMessage(&mOutputData);
         }
         catch(RtMidiError& error) 
 		{
-            nap::Logger::fatal(error.getMessage());
+            nap::Logger::error("%s: %s", mID.c_str(), error.getMessage().c_str());
         }
     }
 
