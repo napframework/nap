@@ -142,8 +142,5 @@ namespace nap
         result.emplace_back(mNumber);
         result.emplace_back(mValue);
         return result;
-    }
-
-
-    
+    }   
 }
