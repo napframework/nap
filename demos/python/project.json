@@ -5,8 +5,5 @@
         "mod_napapp",
         "mod_nappython",
         "mod_napimgui"
-    ],
-    "modulepaths": [
-        "../../lib/Clang-Debug-x86_64"
     ]
 }

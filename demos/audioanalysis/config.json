@@ -1,0 +1,12 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "AudioServiceConfiguration",
+			"SampleRate" : 44100,
+			"InputChannelCount" : 1,
+			"OutputChannelCount" : 2,
+			"AllowChannelCountFailure": "True"
+        }
+	]
+}
