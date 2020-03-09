@@ -5,7 +5,6 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include <atomic>
 #include <nap/numeric.h>
 
 namespace nap

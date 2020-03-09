@@ -9,7 +9,6 @@
 
 // External Includes
 #include <nap/device.h>
-#include <nap/numeric.h>
 #include <nap/resourceptr.h>
 #include <nap/signalslot.h>
 #include <rtti/factory.h>
@@ -18,7 +17,6 @@
 #include <thread>
 #include <future>
 #include <atomic>
-#include <glm/glm.hpp>
 
 namespace nap
 {
