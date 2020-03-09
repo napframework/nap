@@ -257,9 +257,11 @@ namespace nap
 			for (auto& adapter : capture_adapters)
 				adapter->copied();
 
-			// New frame is available
-			mCaptureFrame	= mAutoCapture;
+			// Set capture compute time and if we want to capture a new frame immediately.
+			// This is either the case when auto-capture is turned on or during the capture
+			// process someone called capture()
 			mComputeTime	= timer.getElapsedTime();
+			mCaptureFrame	= mAutoCapture || mCaptureFrame;
 		}
 	}
 
