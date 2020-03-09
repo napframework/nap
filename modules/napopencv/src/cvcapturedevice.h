@@ -126,8 +126,17 @@ namespace nap
 		bool hasErrors() const												{ return mHasErrors; }
 
 		/**
+		 * Returns all errors currently associated with the given adapter.
+		 * Only call this when hasErrors() returns true. 
+		 * This call asserts when the adapter isn't part of this capture device as defined by the 'Adapters' property.
+		 * @param adapter adapter to get errors for.
+		 * @return all errors associated with the given adapter.
+		 */
+		CVCaptureErrorMap getErrors(const CVAdapter& adapter) const;
+
+		/**
 		 * Returns all errors currently associated with this capture device, thread safe.
-		 * Use this to after hasErrors() returns true to figure out what error occurred. 
+		 * Only call this when hasErrors() returns true. 
 		 * @return all errors associated with this capture device
 		 */
 		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> getErrors() const;
@@ -140,8 +149,9 @@ namespace nap
 		 */
 		nap::Signal<const CVFrameEvent&> frameCaptured;
 
-		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;					///< Property: 'Adapters' all the video capture adapters.								{ }
+		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;					///< Property: 'Adapters' all the video capture adapters.							
 		bool					mAutoCapture = false;						///< Property: 'AutoCapture' if this device captures new frames automatically.
+		bool					mAllowConnectionFailure = false;			///< Property: 'AllowConnectionFailure' if failure to connect is allowed on startup.
 
 	private:
 		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame
@@ -155,7 +165,7 @@ namespace nap
 		std::condition_variable	mCaptureCondition;							///< Used for telling the polling task to continue
 
 		using PropertyMap = std::unordered_map<int, double>;			
-		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;			///< All properties to set for the given adapter
+		std::unordered_map<CVAdapter*, PropertyMap> mAdapterMap;			///< All properties to set for the given adapter
 
 		std::atomic<bool>		mHasErrors = { false };						///< If any errors are associated with this device
 		mutable std::mutex		mErrorMutex;								///< Mutex associated with setting / getting errors

@@ -8,8 +8,9 @@
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
 	RTTI_CONSTRUCTOR(nap::CVService&)
-	RTTI_PROPERTY("AutoCapture",	&nap::CVCaptureDevice::mAutoCapture,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Adapters",		&nap::CVCaptureDevice::mAdapters,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AutoCapture",				&nap::CVCaptureDevice::mAutoCapture,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowConnectionFailure",		&nap::CVCaptureDevice::mAllowConnectionFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapters",					&nap::CVCaptureDevice::mAdapters,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -19,8 +20,8 @@ namespace nap
 {
 	void CVCaptureDevice::grab(CVFrameEvent& target, bool deepCopy)
 	{
-		// Copy last captured frame using a deep copy.
-		// Again, the deep copy is necessary because a weak copy allows
+		// Copy last captured frame using a deep copy if requested.
+		// The deep copy might be necessary because a weak copy allows
 		// for the data to be updated by the capture loop whilst still processing on another thread.
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
 		mFrameAvailable = false;
@@ -63,7 +64,7 @@ namespace nap
 		mService->registerCaptureDevice(*this);
 
 		// Initialize property and error map
-		mPropertyMap.reserve(mAdapters.size());
+		mAdapterMap.reserve(mAdapters.size());
 		mErrorMap.reserve(mAdapters.size());
 		
 		// Start and on success add adapter for capturing
@@ -72,14 +73,23 @@ namespace nap
 			mErrorMap[adapter.get()] = {};
 			if (!adapter->started())
 			{
-				std::string error = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
-				setError(*adapter, CVCaptureError::OpenError, error);
-				nap::Logger::warn(error);
+				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
+				if (!mAllowConnectionFailure)
+				{
+					errorState.fail(msg);
+					return false;
+				}
+
+				// Set and log error
+				setError(*adapter, CVCaptureError::OpenError, msg);
+				nap::Logger::warn(msg);
+
+				// Discard adapter as valid capture device
 				continue;
 			}
 
 			// Create properties
-			mPropertyMap[adapter.get()] = {};
+			mAdapterMap[adapter.get()] = {};
 		}
 
 		// Start capture task
@@ -93,8 +103,8 @@ namespace nap
 	void CVCaptureDevice::setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
 	{
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		auto it = mPropertyMap.find(&adapter);
-		if (it == mPropertyMap.end())
+		auto it = mAdapterMap.find(&adapter);
+		if (it == mAdapterMap.end())
 		{
 			nap::Logger::warn("%s: unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
 			return;
@@ -116,6 +126,15 @@ namespace nap
 	}
 
 
+	nap::CVCaptureErrorMap CVCaptureDevice::getErrors(const CVAdapter& adapter) const
+	{
+		std::lock_guard<std::mutex> lock(mErrorMutex);
+		auto it = mErrorMap.find(&adapter);
+		assert(it != mErrorMap.end());
+		return it->second;
+	}
+
+
 	void CVCaptureDevice::stop()
 	{
 		// Stop capturing thread and notify worker
@@ -130,7 +149,7 @@ namespace nap
 			mCaptureTask.wait();
 
 		// Clear all properties
-		mPropertyMap.clear();
+		mAdapterMap.clear();
 
 		// Clear all errors
 		mErrorMap.clear();
@@ -172,11 +191,9 @@ namespace nap
 					break;
 
 				// Copy and clear properties
-				properties = mPropertyMap;
-				for (auto& prop : mPropertyMap)
-				{
+				properties = mAdapterMap;
+				for (auto& prop : mAdapterMap)
 					prop.second.clear();
-				}
 
 				// Don't capture new frame immediately, only do so when 'AutoCapture' is turned on
 				// and no decoding errors have been detected.

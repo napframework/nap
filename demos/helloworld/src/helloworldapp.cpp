@@ -169,6 +169,34 @@ namespace nap
 				mCurrentVideoFrame = 0;
 			}
 		}
+		if (ImGui::CollapsingHeader("Capture Errors"))
+		{
+			if (mCameraCaptureDevice->hasErrors())
+			{
+				std::unordered_map<const CVAdapter*, CVCaptureErrorMap> errors;
+				errors = mCameraCaptureDevice->getErrors();
+				for (auto& adapter : errors)
+				{
+					// No errors associated with adapter
+					if (adapter.second.empty())
+					{
+						ImGui::Text(utility::stringFormat("%s: no errors", adapter.first->mID.c_str()).c_str());
+						continue;
+					}
+
+					// Errors associated with adapter
+					for (auto& error : adapter.second)
+					{
+						ImGui::Text(error.second.c_str());
+					}
+				}
+			}
+			else
+			{
+				ImGui::Text(utility::stringFormat("%s: no errors", mCameraCaptureDevice->mID.c_str()).c_str());
+			}
+		}
+
 
 		ImGui::End();
 	}
