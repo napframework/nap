@@ -9,7 +9,6 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
 	RTTI_CONSTRUCTOR(nap::CVService&)
 	RTTI_PROPERTY("AutoCapture",				&nap::CVCaptureDevice::mAutoCapture,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowConnectionFailure",		&nap::CVCaptureDevice::mAllowConnectionFailure,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapters",					&nap::CVCaptureDevice::mAdapters,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -73,14 +72,8 @@ namespace nap
 			mErrorMap[adapter.get()] = {};
 			if (!adapter->started())
 			{
-				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
-				if (!mAllowConnectionFailure)
-				{
-					errorState.fail(msg);
-					return false;
-				}
-
 				// Set and log error
+				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
 				setError(*adapter, CVCaptureError::OpenError, msg);
 				nap::Logger::warn(msg);
 

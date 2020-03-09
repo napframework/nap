@@ -94,7 +94,7 @@ namespace nap
 	{
 		// Open capture device
 		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
-			"unable to open video capture device: %d", mDeviceIndex))
+			"Unable to open video capture device: %d", mDeviceIndex))
 			return false;
 
 		// Set codec
@@ -102,14 +102,14 @@ namespace nap
 		{
 			if (mCodec.length() != 4)
 			{
-				error.fail("invalid codec, requires exactly 4 characters, for example: 'MJPG'");
+				error.fail("Invalid codec, requires exactly 4 characters, for example: 'MJPG'");
 				return false;
 			}
 
 			int codec_id = cv::VideoWriter::fourcc(mCodec[0], mCodec[1], mCodec[2], mCodec[3]);
 			if (!captureDevice.set(cv::CAP_PROP_FOURCC, codec_id))
 			{
-				error.fail("unsupported codec: %s", mCodec.c_str());
+				error.fail("Unsupported codec: %s", mCodec.c_str());
 				return false;
 			}
 		}
@@ -119,19 +119,19 @@ namespace nap
 		{
 			if (!captureDevice.set(cv::CAP_PROP_FRAME_WIDTH, static_cast<double>(mResolution.x)))
 			{
-				error.fail("unable to set video capture frame width to: %d", mResolution.x);
+				error.fail("Unable to set video capture frame width to: %d", mResolution.x);
 				return false;
 			}
 
 			if (!captureDevice.set(cv::CAP_PROP_FRAME_HEIGHT, static_cast<double>(mResolution.y)))
 			{
-				error.fail("unable to set video capture frame height to: %d", mResolution.y);
+				error.fail("Unable to set video capture frame height to: %d", mResolution.y);
 				return false;
 			}
 		}
 
 		if (mShowDialog && !captureDevice.set(cv::CAP_PROP_SETTINGS, 0.0))
-			nap::Logger::warn("unable to show camera settings dialog");
+			nap::Logger::warn("Unable to show camera settings dialog");
 
 		// Apply camera settings if requested
 		utility::ErrorState paramError;
@@ -152,7 +152,7 @@ namespace nap
 	{
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
-			error.fail("%s: no new frame available", mID.c_str());
+			error.fail("%s: No new frame available", mID.c_str());
 			return CVFrame();
 		}
 

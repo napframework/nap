@@ -12,7 +12,11 @@ namespace nap
 	class CVCaptureComponentInstance;
 
 	/**
-	 * Initializes the OpenCV library.
+	 * Manages the OpenCV library and is responsible for grabbing and forwarding frame data to capture components.
+	 * Frames are only grabbed automatically when a frame is made available by a CVCaptureDevice and
+	 * if a CVFrameCaptureComponent is interested in data from a capture device. If no capture component
+	 * is interested in data from a capture device the frame will not be grabbed and decoded, saving potential
+	 * compute cycles.
 	 */
 	class NAPAPI CVService : public Service
 	{
@@ -39,7 +43,11 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * Updates all registered video resources
+		 * Grabs and forwards frame data to capture components.
+		 * Frames are only grabbed when a frame is made available by a CVCaptureDevice and
+		 * if a CVFrameCaptureComponent is interested in data from a capture device. If no capture component
+		 * is interested in data from a capture device the frame will not be grabbed and decoded, saving potential
+		 * compute cycles.
 		 */
 		virtual void update(double deltaTime) override;
 

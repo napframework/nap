@@ -34,7 +34,10 @@ namespace nap
 
 	void CVService::update(double deltaTime)
 	{
-		// Iterate over every device
+		// Iterate over every capture device, if any capture component
+		// is interested in frames from a particular capture device grab that 
+		// frame when new and forward to that component. By default no deep
+		// copy operation is performed, components should handle the copy themselves.
 		for (auto& device : mCaptureDevices)
 		{
 			// Check if a new frame is available
