@@ -240,9 +240,9 @@ namespace nap
 		return true;
 	}
 
-	void Bitmap::initFromTexture(const SurfaceDescriptor& settings)
+	void Bitmap::initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor)
 	{
-		mSurfaceDescriptor = settings;
+		mSurfaceDescriptor = surfaceDescriptor;
 
 		updatePixelFormat();
 

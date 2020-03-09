@@ -287,12 +287,12 @@ namespace nap
 	{
 	}
 
-	bool Texture2D::init(const SurfaceDescriptor& settings, bool compressed, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
 	{
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
-		mImageSizeInBytes = settings.getSizeInBytes();
+		mImageSizeInBytes = descriptor.getSizeInBytes();
 
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
@@ -336,11 +336,11 @@ namespace nap
 		for (int index = 0; index < mImageData.size(); ++index)
 		{
 			ImageData& imageData = mImageData[index];
-			VkFormat texture_format = getTextureFormat(settings.mChannels, settings.mDataType, settings.mColorSpace);
+			VkFormat texture_format = getTextureFormat(descriptor.mChannels, descriptor.mDataType, descriptor.mColorSpace);
 			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 				return false;
 
-			if (!createImage(vulkan_allocator, settings.mWidth, settings.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
+			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
 				return false;
 
 			if (!createImageView(device, imageData.mTextureImage, texture_format, imageData.mTextureView, errorState))
@@ -349,7 +349,7 @@ namespace nap
 
 		mCurrentImageIndex = 0;
 		mCurrentStagingBufferIndex = 0;
-		mSettings = settings;
+		mDescriptor = descriptor;
 
 		return true;
 	}
@@ -363,13 +363,13 @@ namespace nap
 
 	int Texture2D::getWidth() const
 	{
-		return mSettings.mWidth;
+		return mDescriptor.mWidth;
 	}
 
 
 	int Texture2D::getHeight() const
 	{
-		return mSettings.mHeight;
+		return mDescriptor.mHeight;
 	}
 
 	void Texture2D::upload(VkCommandBuffer commandBuffer)
@@ -384,7 +384,7 @@ namespace nap
 		ImageData& imageData = mImageData[mCurrentImageIndex];
 
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, imageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mSettings.mWidth, mSettings.mHeight);
+		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// We store the last image layout, which is used as input for a subsequent upload
@@ -403,7 +403,7 @@ namespace nap
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
 		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
-		assert(mSettings.mWidth == width && mSettings.mHeight == height);
+		assert(mDescriptor.mWidth == width && mDescriptor.mHeight == height);
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);
@@ -416,7 +416,7 @@ namespace nap
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
-		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mSettings.getPitch(), mSettings.mChannels, mSettings.mWidth, mSettings.mHeight);
+		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
 
 		//memcpy(mapped_memory, data, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);

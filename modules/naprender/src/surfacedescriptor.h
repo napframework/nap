@@ -49,8 +49,8 @@ namespace nap
 		int getWidth() const { return mWidth; }
 		int getHeight() const { return mHeight; }
 		int getPitch() const;
-		int getNumComponents() const;
-		int getComponentSize() const;
+		int getNumChannels() const;
+		int getChannelSize() const;
 		int getBytesPerPixel() const;
 		uint64_t getSizeInBytes() const;
 		ESurfaceDataType getDataType() const { return mDataType; }

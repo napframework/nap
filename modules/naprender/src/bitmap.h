@@ -30,16 +30,6 @@ namespace nap
 		virtual ~Bitmap();
 
 		/**
-		 * @return The datatype of a pixel in this bitmap
-		 */
-		ESurfaceDataType getDataType() const { return mSurfaceDescriptor.getDataType(); }
-
-		/**
-		 * @return The channel type of a pixel in this bitmap
-		 */
-		ESurfaceChannels getChannels() const { return mSurfaceDescriptor.getChannels(); }
-
-		/**
 		* The bitmap is initialized using it's associated properties. This means
 		* memory is allocated based on the width, height, number of channels and type
 		* of the bitmap. Failing to call init will leave the underlying bitmap empty.
@@ -62,7 +52,7 @@ namespace nap
 		 * Memory is allocated but the GPU pixel data is NOT copied over
 		 * @param settings the settings used to initialize this texture.
 		 */
-		void initFromTexture(const SurfaceDescriptor& settings);
+		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
 		 * @return the type of color associated with this bitmap
@@ -88,7 +78,7 @@ namespace nap
 		/**
 		 *	@return number of color channels associated with this bitmap
 		 */
-		int getNumberOfChannels() const										{ return mSurfaceDescriptor.getNumComponents(); }
+		int getNumberOfChannels() const										{ return mSurfaceDescriptor.getNumChannels(); }
 
 		/**
 		 * @return a pointer to the underlying data in memory
@@ -289,7 +279,7 @@ namespace nap
 		template<typename T>
 		T* getPixelData(unsigned int x, unsigned int y) const
 		{
-			assert(sizeof(T) == mSurfaceDescriptor.getComponentSize());
+			assert(sizeof(T) == mSurfaceDescriptor.getChannelSize());
 			if (x >= mSurfaceDescriptor.getWidth() || y >= mSurfaceDescriptor.getHeight())
 				return nullptr;
 
@@ -467,7 +457,7 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
 	{
-		assert(mSurfaceDescriptor.getNumComponents() >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
 //		assert(mBitmap.hasData());
 
@@ -506,7 +496,7 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
 	{
-		assert(mSurfaceDescriptor.getNumComponents() >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
 //		assert(mBitmap.hasData());
 
@@ -545,7 +535,7 @@ namespace nap
 	void nap::Bitmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
 	{
 		assert(outValue.getValueType() == RTTI_OF(Type));
-		assert(static_cast<int>(channel) < mSurfaceDescriptor.getNumComponents());
+		assert(static_cast<int>(channel) < mSurfaceDescriptor.getNumChannels());
 
 		int idx = static_cast<int>(channel);
 		switch (mSurfaceDescriptor.getChannels())

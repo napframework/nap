@@ -39,7 +39,7 @@ namespace nap
 	}
 
 	// Returns number of components each texel has in this format
-	int SurfaceDescriptor::getNumComponents() const
+	int SurfaceDescriptor::getNumChannels() const
 	{
 		switch (mChannels)
 		{
@@ -56,7 +56,7 @@ namespace nap
 	}
 
 	// Returns What the size in bytes is of a component type
-	int SurfaceDescriptor::getComponentSize() const
+	int SurfaceDescriptor::getChannelSize() const
 	{
 		switch (mDataType)
 		{
@@ -79,7 +79,7 @@ namespace nap
 
 	int SurfaceDescriptor::getBytesPerPixel() const
 	{
-		return getComponentSize() * getNumComponents();
+		return getChannelSize() * getNumChannels();
 	}
 
 	uint64_t SurfaceDescriptor::getSizeInBytes() const

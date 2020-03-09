@@ -71,7 +71,7 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& settings, bool compressed, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
 
 		/**
 		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
@@ -180,7 +180,7 @@ namespace nap
 		int							mCurrentStagingBufferIndex = -1;
 		int							mCurrentImageIndex = -1;
 		size_t						mImageSizeInBytes = -1;
-		SurfaceDescriptor			mSettings;
+		SurfaceDescriptor			mDescriptor;
 	};
 }
 
