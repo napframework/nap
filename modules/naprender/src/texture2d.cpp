@@ -138,6 +138,59 @@ namespace nap
 		return 0;
 	}
 
+	void copyImageData(const uint8_t* source, unsigned int sourcePitch, ESurfaceChannels sourceChannels,
+		uint8_t* target, unsigned int targetPitch, ESurfaceChannels targetChannels,
+		int width, int height)
+	{
+		assert(targetPitch <= sourcePitch);
+
+		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
+		if (targetPitch == sourcePitch)
+		{
+			memcpy(target, source, sourcePitch * height);
+		}
+		else if (sourceChannels == targetChannels)
+		{
+			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
+			const uint8_t* source_line = source;
+			uint8_t* target_line = target;
+
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(target_line, source_line, targetPitch);
+				source_line += sourcePitch;
+				target_line += targetPitch;
+			}
+		}
+		else
+		{
+			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
+			const uint8_t* source_line = source;
+			uint8_t* target_line = target;
+
+			// Get the amount of bytes every pixel occupies
+			int source_stride = sourcePitch / width;
+			int target_stride = targetPitch / width;
+
+			for (int y = 0; y < height; ++y)
+			{
+				const uint8_t* source_loc = source_line;
+				uint8_t* target_loc = target_line;
+				for (int x = 0; x < width; ++x)
+				{
+					memcpy(target_loc, source_loc, target_stride);
+					target_loc += target_stride;
+					source_loc += source_stride;
+				}
+
+				source_line += sourcePitch;
+				target_line += targetPitch;
+			}
+		}		
+	}
+
+
+
 	Texture2D::Texture2D(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
@@ -325,6 +378,11 @@ namespace nap
 		return getNumComponents(channels) * getComponentSize(dataType) * width * height;
 	}	
 
+	int Texture2DSettings::getPitch() const
+	{
+		return mWidth * getNumComponents(mChannels) * getComponentSize(mDataType);
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 
 	bool Texture2D::initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState)
@@ -389,7 +447,8 @@ namespace nap
 
 		mCurrentImageIndex = 0;
 		mCurrentStagingBufferIndex = 0;
-		mImageDimensions = glm::ivec2(settings.mWidth, settings.mHeight);
+		mSettings = settings;
+
 		return true;
 	}
 
@@ -414,19 +473,19 @@ namespace nap
 
 	const glm::vec2 Texture2D::getSize() const
 	{
-		return glm::vec2(mImageDimensions.x, mImageDimensions.y);
+		return glm::vec2(getWidth(), getHeight());
 	}
 
 
 	int Texture2D::getWidth() const
 	{
-		return mImageDimensions.x;
+		return mSettings.mWidth;
 	}
 
 
 	int Texture2D::getHeight() const
 	{
-		return mImageDimensions.y;
+		return mSettings.mHeight;
 	}
 
 
@@ -434,7 +493,7 @@ namespace nap
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
 		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
-		assert(bitmap.getWidth() == mImageDimensions.x && bitmap.getHeight() == mImageDimensions.y);
+		assert(bitmap.getWidth() == mSettings.mWidth && bitmap.getHeight() == mSettings.mHeight);
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);
@@ -468,7 +527,7 @@ namespace nap
 		ImageData& imageData = mImageData[mCurrentImageIndex];
 
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, imageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mImageDimensions.x, mImageDimensions.y);
+		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mSettings.mWidth, mSettings.mHeight);
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// We store the last image layout, which is used as input for a subsequent upload
@@ -479,10 +538,12 @@ namespace nap
 	}
 
 
-	void Texture2D::update(const void* data, int pitch)
+	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
 		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+		assert(mSettings.mWidth == width && mSettings.mHeight == height);
+
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);
@@ -495,7 +556,9 @@ namespace nap
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
-		memcpy(mapped_memory, data, mImageSizeInBytes);
+		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mSettings.getPitch(), mSettings.mChannels, mSettings.mWidth, mSettings.mHeight);
+
+		//memcpy(mapped_memory, data, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering

@@ -1130,9 +1130,9 @@ namespace nap
 		uv_default_data.resize(uvWidth * uvHeight);
 		std::memset(uv_default_data.data(), 127, uv_default_data.size());
 
-		mYTexture->update(y_default_data.data());
-		mUTexture->update(uv_default_data.data());
-		mVTexture->update(uv_default_data.data());
+		mYTexture->update(y_default_data.data(), mYTexture->getWidth(), mYTexture->getHeight(), mYTexture->getWidth(), ESurfaceChannels::R);
+		mUTexture->update(uv_default_data.data(), mUTexture->getWidth(), mUTexture->getHeight(), mUTexture->getWidth(), ESurfaceChannels::R);
+		mVTexture->update(uv_default_data.data(), mVTexture->getWidth(), mVTexture->getHeight(), mVTexture->getWidth(), ESurfaceChannels::R);
 	}
 
 
@@ -1823,9 +1823,9 @@ namespace nap
 		}
 
 		// Copy data into texture
-		mYTexture->update(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
-		mUTexture->update(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
-		mVTexture->update(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
+		mYTexture->update(cur_frame.mFrame->data[0], mYTexture->getWidth(), mYTexture->getHeight(), cur_frame.mFrame->linesize[0], ESurfaceChannels::R);
+		mUTexture->update(cur_frame.mFrame->data[1], mUTexture->getWidth(), mUTexture->getHeight(), cur_frame.mFrame->linesize[1], ESurfaceChannels::R);
+		mVTexture->update(cur_frame.mFrame->data[2], mVTexture->getWidth(), mVTexture->getHeight(), cur_frame.mFrame->linesize[2], ESurfaceChannels::R);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		cur_frame.free();

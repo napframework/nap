@@ -68,6 +68,8 @@ namespace nap
 		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Specifies the channels and their order
 		EColorSpace			mColorSpace = EColorSpace::sRGB;			///< Specifies linear or SRGB space. Only applicable to BYTE datatypes
 
+		int getPitch() const;
+
 		uint64_t getSizeInBytes() const { return getSizeInBytes(mWidth, mHeight, mChannels, mDataType); }
 		static uint64_t getSizeInBytes(uint32_t width, uint32_t height, ESurfaceChannels channels, ESurfaceDataType dataType);
 
@@ -139,7 +141,7 @@ namespace nap
 		 * @param data Pointer to the CPU data.
 		 * @param pitch Length of a row of bytes in the input data.
 		 */
-		void update(const void* data, int pitch = 0);
+		void update(const void* data, int width, int height, int pitch, ESurfaceChannels channels);
 
 		/**
 		 * Blocking call to retrieve GPU texture data that is stored in this texture
@@ -217,7 +219,7 @@ namespace nap
 		int							mCurrentStagingBufferIndex = -1;
 		int							mCurrentImageIndex = -1;
 		size_t						mImageSizeInBytes = -1;
-		glm::ivec2					mImageDimensions;
+		Texture2DSettings			mSettings;
 	};
 }
 

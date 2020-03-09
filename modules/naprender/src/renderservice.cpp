@@ -1066,7 +1066,7 @@ namespace nap
 		std::vector<uint8_t> empty_texture_data;
 		empty_texture_data.resize(settings.getSizeInBytes());
 
-		mEmptyTexture->update(empty_texture_data.data());
+		mEmptyTexture->update(empty_texture_data.data(), settings.mWidth, settings.mHeight, settings.getPitch(), settings.mChannels);
 
 		return true;
 	}

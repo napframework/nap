@@ -60,7 +60,7 @@ namespace nap
 			return false;
 
 		// Upload glyph bitmap data
-		mTexture.update(bitmap_glyph->bitmap.buffer, bitmap_glyph->bitmap.pitch);
+		//mTexture.update(bitmap_glyph->bitmap.buffer, bitmap_glyph->bitmap.pitch);
 
 		// Clean up bitmap data
 		FT_Done_Glyph(bitmap);
