@@ -59,6 +59,14 @@ namespace nap
 		virtual void stop() override final;
 
 		/**
+		 * Restarts the OpenCV capture device. 
+		 * Other adapters (associated with the same capture device) are restarted as well.
+		 * @param error contains the error if the restart procedure fails.
+		 * @return if the restart procedure succeeded.
+		 */
+		bool restart(utility::ErrorState& error);
+
+		/**
 		 * @return number of OpenCV matrices associated with a single frame
 		 */
 		virtual int getMatrixCount() = 0;

@@ -123,6 +123,13 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getComputeTime()).c_str());
 		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getComputeTime()).c_str());
+		if (ImGui::Button("Reconnect Camera"))
+		{
+			nap::utility::ErrorState error;
+			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
+			camera_one->reconnect(error);
+		}
+		
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{
 			float col_width = ImGui::GetContentRegionAvailWidth();

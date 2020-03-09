@@ -29,7 +29,7 @@ namespace nap
 
 
 	/**
-	 * Captures a video stream from a web cam or other peripheral video capture device.
+	 * Captures a video stream from a connected video capture device.
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * Otherwise the captured video frame is stored on the CPU.
 	 * Camera settings can be provided on startup by enabling 'ApplySettings'.
@@ -75,6 +75,14 @@ namespace nap
 		 * @return the current camera settings.
 		 */
 		void getSettings(nap::CVCameraSettings& settings);
+
+		/**
+		 * Reconnect the camera.
+		 * Other adapters (associated with the same capture device) are restarted as well.
+		 * @param error contains the error if connection fails.
+		 * @return if connection succeeded
+		 */
+		bool reconnect(utility::ErrorState& error);
 
 		std::string			mCodec = "";					///< Property: 'Codec' optional video capture codec, for example: 'MJPG' or 'H264'. Leaving this empty defaults to regular codec. 
 		bool				mConvertRGB = true;				///< Property: 'ConvertRGB' if the frame is converted into RGB

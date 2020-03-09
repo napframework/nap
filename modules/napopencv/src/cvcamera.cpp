@@ -1,5 +1,6 @@
 // Local Includes
 #include "cvcamera.h"
+#include "cvcapturedevice.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -90,6 +91,12 @@ namespace nap
 	}
 
 
+	bool CVCamera::reconnect(utility::ErrorState& error)
+	{
+		return restart(error);
+	}
+
+
 	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
 		// Open capture device
@@ -142,7 +149,7 @@ namespace nap
 
 		// Reset frame states
 		mCaptureFrame = CVFrame(1, this);
-		mOutputFrame = CVFrame(1, this);
+		mOutputFrame  = CVFrame(1, this);
 
 		return true;
 	}

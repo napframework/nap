@@ -31,7 +31,7 @@ namespace nap
 
 		/**
 		 * Changes the video. Note that this call stops the parent device processing loop.
-		 * The other capture devices associated with the parent (such as a video etc.) are restarted as well.
+		 * Other adapters (associated with the same capture device) are restarted as well.
 		 * @param file new video file to load
 		 * @return if the video loaded successfully. 
 		 */

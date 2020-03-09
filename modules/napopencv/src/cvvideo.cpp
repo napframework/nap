@@ -41,21 +41,8 @@ namespace nap
 
 	bool CVVideo::changeVideo(const std::string& video, nap::utility::ErrorState& error)
 	{
-		// Stop capture device
-		CVCaptureDevice& capture_device = getParent();
-		capture_device.stop();
-
-		// Stop this device
-		if (started())
-			this->stop();
-
-		// Now start the device
 		mFile = video;
-		if (!start(error))
-			return false;
-
-		// Start capturing again
-		return capture_device.start(error);
+		return restart(error);
 	}
 
 

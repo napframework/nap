@@ -42,6 +42,24 @@ namespace nap
 	}
 
 
+	bool CVAdapter::restart(utility::ErrorState& error)
+	{
+		// Stop capture device
+		CVCaptureDevice& capture_device = getParent();
+		capture_device.stop();
+
+		// Stop this device
+		if (started())
+			this->stop();
+
+		if (!start(error))
+			return false;
+
+		// Start capturing again
+		return capture_device.start(error);
+	}
+
+
 	cv::VideoCapture& CVAdapter::getCaptureDevice()
 	{
 		return mCaptureDevice;
