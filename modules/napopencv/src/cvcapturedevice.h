@@ -28,6 +28,9 @@ namespace nap
 	 * To receive frame events on the main thread use a nap::CVCaptureComponent and listen to the 'frameReceived' signal.
 	 * Frames are automatically forwarded to the right component based on the nap::CVCaptureComponent 'Device' property.
 	 * Listen to the 'frameCaptured' signal of this device to receive new frame events from the processing (background) thread directly.
+	 *
+	 * The capture task is paused when during a capture operation an error occurs. 
+	 * Call capture() to force a new frame capture operation if required.
 	 */
 	class NAPAPI CVCaptureDevice : public Device
 	{
@@ -138,6 +141,11 @@ namespace nap
 		 * @return all errors associated with this capture device
 		 */
 		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> getErrors() const;
+
+		/**
+		 * Clears all errors
+		 */
+		void clearErrors();
 
 		/**
 		 * Occurs when a new frame is captured on the background thread.

@@ -128,6 +128,13 @@ namespace nap
 	}
 
 
+	void CVCaptureDevice::clearErrors()
+	{
+		std::lock_guard<std::mutex> lock(mErrorMutex);
+		mErrorMap.clear();
+	}
+
+
 	void CVCaptureDevice::stop()
 	{
 		// Stop capturing thread and notify worker
