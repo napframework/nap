@@ -127,7 +127,9 @@ namespace nap
 		{
 			nap::utility::ErrorState error;
 			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
+			CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
 			camera_one->reconnect(error);
+			camera_two->reconnect(error);
 		}
 		
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
@@ -181,18 +183,18 @@ namespace nap
 			if (mCameraCaptureDevice->hasErrors())
 			{
 				std::unordered_map<const CVAdapter*, CVCaptureErrorMap> errors;
-				errors = mCameraCaptureDevice->getErrors();
-				for (auto& adapter : errors)
+				for (auto& adapter : mCameraCaptureDevice->mAdapters)
 				{
 					// No errors associated with adapter
-					if (adapter.second.empty())
+					CVCaptureErrorMap errors = adapter->getErrors();
+					if (errors.empty())
 					{
-						ImGui::Text(utility::stringFormat("%s: no errors", adapter.first->mID.c_str()).c_str());
+						ImGui::Text(utility::stringFormat("%s: no errors", adapter->mID.c_str()).c_str());
 						continue;
 					}
 
 					// Errors associated with adapter
-					for (auto& error : adapter.second)
+					for (auto error : errors)
 					{
 						ImGui::Text(error.second.c_str());
 					}

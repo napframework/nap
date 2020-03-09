@@ -122,13 +122,14 @@ namespace nap
 		double getComputeTime() const;
 
 		/**
+		 * Global check to see if any errors are associated with this capture device.
 		 * @return if any error is associated with this capture device.
 		 */
 		bool hasErrors() const												{ return mHasErrors; }
 
 		/**
 		 * Returns all errors currently associated with the given adapter.
-		 * Only call this when hasErrors() returns true. 
+		 * Only call this when hasErrors() returned true. 
 		 * This call asserts when the adapter isn't part of this capture device as defined by the 'Adapters' property.
 		 * @param adapter adapter to get errors for.
 		 * @return all errors associated with the given adapter.
@@ -143,7 +144,7 @@ namespace nap
 		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> getErrors() const;
 
 		/**
-		 * Clears all errors
+		 * Clears all errors of all adapters.
 		 */
 		void clearErrors();
 

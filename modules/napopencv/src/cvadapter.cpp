@@ -24,6 +24,24 @@ namespace nap
 	}
 
 
+	nap::CVCaptureErrorMap CVAdapter::getErrors() const
+	{
+		assert(mParent != nullptr);
+		return mParent->getErrors(*this);
+	}
+
+
+	bool CVAdapter::hasErrors(CVCaptureErrorMap& outErrors)
+	{
+		// First check if there's a global error
+		assert(mParent != nullptr);
+		if (!mParent->hasErrors())
+			return false;
+
+		// Now check if there's an adapter specific error
+		return mParent->getErrors(*this).empty();
+	}
+
 	bool CVAdapter::start(utility::ErrorState& errorState)
 	{
 		mStarted = false;

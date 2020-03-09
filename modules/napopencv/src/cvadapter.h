@@ -3,6 +3,7 @@
 // Local Includes
 #include "cvcaptureapi.h"
 #include "cvframe.h"
+#include "cvcaptureerror.h"
 
 // External Includes
 #include <nap/device.h>
@@ -42,19 +43,33 @@ namespace nap
 		double getProperty(cv::VideoCaptureProperties propID) const;
 
 		/**
+		 * Returns all errors associated with this adapter.
+		 * Only call this when hasErrors() returned true.
+		 * @return all errors associated with this adapter.
+		 */
+		CVCaptureErrorMap getErrors() const;
+
+		/**
+		 * Checks if any errors are associated with this adapter.
+		 * @param outErrors contains the errors if any errors are associated with this adapter
+		 * @return if any errors are associated with this adapter
+		 */
+		bool hasErrors(CVCaptureErrorMap& outErrors);
+
+		/**
 		 * @return if the device is currently open and ready for processing.
 		 */
 		bool started() const															{ return mStarted; }
 
 		/**
-		 * Starts the OpenCV capture device. During startup the device is opened.
+		 * Opens the OpenCV capture device.
 		 * @param errorState contains the error if the device can't be started
 		 * @return if the device started
 		 */
 		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
-		 * Stops and closes the OpenCV capture device.
+		 * Closes the OpenCV capture device.
 		 */
 		virtual void stop() override final;
 
