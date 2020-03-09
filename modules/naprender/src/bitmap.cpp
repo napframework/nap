@@ -1,7 +1,6 @@
 #include "bitmap.h"
 
 // External includes
-#include <bitmaputils.h>
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
 #include <texture2d.h>

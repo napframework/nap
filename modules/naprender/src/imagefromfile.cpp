@@ -1,6 +1,5 @@
 // Local Includes
 #include "imagefromfile.h"
-#include "bitmaputils.h"
 
 // External Includes
 #include <nap/logger.h>

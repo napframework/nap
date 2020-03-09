@@ -1,6 +1,5 @@
 #include "texture2d.h"
 #include "bitmap.h"
-#include "bitmaputils.h"
 #include "renderservice.h"
 #include "nap/core.h"
 #include "copyimagedata.h"

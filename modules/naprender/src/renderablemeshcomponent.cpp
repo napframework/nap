@@ -145,7 +145,9 @@ namespace nap
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 
-		if (mClipRect.hasWidth() && mClipRect.hasHeight())
+		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
+		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
+		if (has_clip_rect)
 		{
 			VkRect2D rect;
 			rect.offset.x = mClipRect.getMin().x;
@@ -160,6 +162,16 @@ namespace nap
 			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
+		}
+
+		if (has_clip_rect)
+		{
+			VkRect2D rect;
+			rect.offset.x = 0;
+			rect.offset.y = 0;
+			rect.extent.width = renderTarget.getSize().x;
+			rect.extent.height = renderTarget.getSize().y;
+			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 	}
 

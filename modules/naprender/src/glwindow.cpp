@@ -837,6 +837,13 @@ namespace nap
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(mCommandBuffers[mCurrentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkRect2D rect;
+		rect.offset.x = 0;
+		rect.offset.y = 0;
+		rect.extent.width = window_size.x;
+		rect.extent.height = window_size.y;
+		vkCmdSetScissor(mCommandBuffers[mCurrentFrame], 0, 1, &rect);
 	}
 
 
