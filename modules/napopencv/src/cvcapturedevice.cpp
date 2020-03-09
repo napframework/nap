@@ -62,13 +62,19 @@ namespace nap
 		// Register with service
 		mService->registerCaptureDevice(*this);
 
-		// Initialize property map
+		// Initialize property and error map
 		mPropertyMap.reserve(mAdapters.size());
+		mErrorMap.reserve(mAdapters.size());
+		
+		// Start and on success add adapter for capturing
 		for (auto& adapter : mAdapters)
 		{
+			mErrorMap[adapter.get()] = {};
 			if (!adapter->started())
 			{
-				nap::Logger::error("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
+				std::string error = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
+				setError(*adapter, CVCaptureError::OpenError, error);
+				nap::Logger::warn(error);
 				continue;
 			}
 
@@ -103,6 +109,13 @@ namespace nap
 	}
 
 
+	std::unordered_map<const CVAdapter*, nap::CVCaptureErrorMap> CVCaptureDevice::getErrors() const
+	{
+		std::lock_guard<std::mutex> lock(mErrorMutex);
+		return mErrorMap;
+	}
+
+
 	void CVCaptureDevice::stop()
 	{
 		// Stop capturing thread and notify worker
@@ -118,6 +131,10 @@ namespace nap
 
 		// Clear all properties
 		mPropertyMap.clear();
+
+		// Clear all errors
+		mErrorMap.clear();
+		mHasErrors = false;
 
 		// Unregister capture device
 		mService->removeCaptureDevice(*this);
@@ -157,7 +174,9 @@ namespace nap
 				// Copy and clear properties
 				properties = mPropertyMap;
 				for (auto& prop : mPropertyMap)
+				{
 					prop.second.clear();
+				}
 
 				// Don't capture new frame immediately, only do so when 'AutoCapture' is turned on
 				// and no decoding errors have been detected.
@@ -175,13 +194,15 @@ namespace nap
 				{
 					if (!cur_adapter->getCaptureDevice().set(prop.first, prop.second))
 					{
-						nap::Logger::warn("%s unable to set property: %s to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
+						std::string msg = utility::stringFormat("%s unable to set property: %s to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
+						setError(*cur_adapter, CVCaptureError::PropertyError, msg);
 					}
 				}
 				
 				if (!cur_adapter->getCaptureDevice().grab())
 				{
-					nap::Logger::warn("%s: failed to grab frame from %s. Device disconnected or end of stream.", mID.c_str(), cur_adapter->mID.c_str());
+					std::string msg = utility::stringFormat("%s: failed to grab frame from %s. Device disconnected or end of stream.", mID.c_str(), cur_adapter->mID.c_str());
+					setError(*cur_adapter, CVCaptureError::GrabError, msg);
 					continue;
 				}
 				capture_adapters.emplace_back(cur_adapter);
@@ -197,7 +218,8 @@ namespace nap
 				frame_event.addFrame((*it)->retrieve(grab_error));
 				if (frame_event.lastFrame().empty())
 				{
-					nap::Logger::error("%s: failed to decode frame", mID.c_str());
+					std::string msg = utility::stringFormat("%s: failed to decode frame", mID.c_str());
+					setError(**it, CVCaptureError::DecodeError, msg);
 					frame_event.popFrame();
 					it = capture_adapters.erase(it);
 					continue;
@@ -212,15 +234,8 @@ namespace nap
 			// Notify listeners
 			frameCaptured.trigger(frame_event);
 
-			// Deep copy the captured frame to our storage matrix.
-			// This updates the data of our storage container and ensures the same dimensionality.
-			// We need to perform a deep-copy because if we choose to use a shallow copy, 
-			// by the time the frame is grabbed the data 'mCaptureMat' points to could have changed, 
-			// as it references the same data as in the event. And the process loop already started.
-			// Performing a deep_copy ensures that when the data is grabbed it will contain the latest full processed frame.
-			//
-			// Alternatively, we could make the capture variable local to this loop, but that creates
-			// more overhead than the copy below.
+			// Copy the frame, note that this performs a shallow copy of the frame instead of a deep copy.
+			// It is therefore important that the capture device returns a clone of the last capture.
 			{
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				mCaptureMat = frame_event;
@@ -236,5 +251,15 @@ namespace nap
 			mCaptureFrame	= mAutoCapture;
 			mComputeTime	= timer.getElapsedTime();
 		}
+	}
+
+
+	void CVCaptureDevice::setError(const CVAdapter& adapter, CVCaptureError error, const std::string& msg)
+	{
+		{
+			std::lock_guard<std::mutex> lock(mErrorMutex);
+			mErrorMap[&adapter][error] = msg;
+		}
+		mHasErrors = true;
 	}
 }

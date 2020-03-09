@@ -5,6 +5,7 @@
 #include "cvevent.h"
 #include "cvadapter.h"
 #include "cvservice.h"
+#include "cvcaptureerror.h"
 
 // External Includes
 #include <nap/device.h>
@@ -120,6 +121,18 @@ namespace nap
 		double getComputeTime() const;
 
 		/**
+		 * @return if any error is associated with this capture device.
+		 */
+		bool hasErrors() const												{ return mHasErrors; }
+
+		/**
+		 * Returns all errors currently associated with this capture device, thread safe.
+		 * Use this to after hasErrors() returns true to figure out what error occurred. 
+		 * @return all errors associated with this capture device
+		 */
+		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> getErrors() const;
+
+		/**
 		 * Occurs when a new frame is captured on the background thread.
 		 * Listen to this signal when you want to process frame data on a background thread.
 		 * Use the CVFrameEvent::copyTo() or CVFrameEvent::clone() method to duplicate 
@@ -127,29 +140,41 @@ namespace nap
 		 */
 		nap::Signal<const CVFrameEvent&> frameCaptured;
 
-		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;		///< Property: 'Adapters' all the video capture adapters.								{ }
-		bool					mAutoCapture = false;			///< Property: 'AutoCapture' if this device captures new frames automatically.
+		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;					///< Property: 'Adapters' all the video capture adapters.								{ }
+		bool					mAutoCapture = false;						///< Property: 'AutoCapture' if this device captures new frames automatically.
 
 	private:
-		CVFrameEvent			mCaptureMat;					///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>		mCaptureFrame	= { true };		///< Proceed to next frame
-		std::atomic<double>		mComputeTime = {0.0f};			///< Last known capture task compute time
-		bool					mStopCapturing = false;			///< Signals the capture thread to stop capturing video
-		bool					mFrameAvailable = false;		///< If a new frame is captured
+		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame
+		std::atomic<bool>		mCaptureFrame	= { true };					///< Proceed to next frame
+		std::atomic<double>		mComputeTime	= { 0.0f };					///< Last known capture task compute time
+		bool					mStopCapturing	= false;					///< Signals the capture thread to stop capturing video
+		bool					mFrameAvailable = false;					///< If a new frame is captured
 
-		std::future<void>		mCaptureTask;					///< The thread that monitor the read thread
-		std::mutex				mCaptureMutex;					///< The mutex that safe guards the capture thread
-		std::condition_variable	mCaptureCondition;				///< Used for telling the polling task to continue
+		std::future<void>		mCaptureTask;								///< The thread that monitor the read thread
+		std::mutex				mCaptureMutex;								///< The mutex that safe guards the capture thread
+		std::condition_variable	mCaptureCondition;							///< Used for telling the polling task to continue
 
-		using PropertyMap = std::unordered_map<int, double>;
-		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;
+		using PropertyMap = std::unordered_map<int, double>;			
+		std::unordered_map<CVAdapter*, PropertyMap> mPropertyMap;			///< All properties to set for the given adapter
 
-		CVService*				mService = nullptr;				///< OpenCV service
+		std::atomic<bool>		mHasErrors = { false };						///< If any errors are associated with this device
+		mutable std::mutex		mErrorMutex;								///< Mutex associated with setting / getting errors
+		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> mErrorMap;	///< All errors associated with a specific adapter
+
+		CVService*				mService = nullptr;							///< OpenCV service
 
 		/**
 		 * Task that captures new frames
 		 */
 		void captureTask();
+
+		/**
+		 * Sets an error for the given adapter
+		 * @param adapter adapter associated with the error
+		 * @param error the error code
+		 * @param msg error message
+		 */
+		void setError(const CVAdapter& adapter, CVCaptureError error, const std::string& msg);
 	};
 
 	using CVCaptureDeviceObjectCreator = rtti::ObjectCreator<CVCaptureDevice, CVService>;
