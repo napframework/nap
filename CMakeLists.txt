@@ -138,6 +138,8 @@ add_subdirectory(apps/emography)
 add_subdirectory(apps/emography/module)
 add_subdirectory(apps/flexblock)
 add_subdirectory(apps/flexblock/module)
+add_subdirectory(apps/anima)
+add_subdirectory(apps/anima/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -202,6 +204,8 @@ add_subdirectory(modules/napserial)
 add_subdirectory(modules/napwebsocket)
 add_subdirectory(modules/napapiwebsocket)
 add_subdirectory(modules/napopencv)
+add_subdirectory(modules/napsoem)
+add_subdirectory(modules/napcolor)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

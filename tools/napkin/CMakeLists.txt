@@ -32,7 +32,7 @@ set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_nap
 
 # This is the superset of modules that we want to have available to Napkin to run against; just a handy
 # way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES} mod_napinput mod_napparameter)
+set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES} mod_napinput mod_napcolor)
 
 add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
 

@@ -25,12 +25,8 @@ namespace nap
 	class NAPAPI OSCInputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(OSCInputComponent, OSCInputComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(OSCInputComponentInstance);
-		}
-
 		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded.
 	};
 

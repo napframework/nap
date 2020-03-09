@@ -659,10 +659,10 @@ namespace nap
 	{
 		return
 		{
-			(float)(RGBColor<T>::mValues[0]),
-			(float)(RGBColor<T>::mValues[1]),
-			(float)(RGBColor<T>::mValues[2]),
-			(float)(RGBColor<T>::mValues[3])
+			(float)(RGBAColor<T>::mValues[0]),
+			(float)(RGBAColor<T>::mValues[1]),
+			(float)(RGBAColor<T>::mValues[2]),
+			(float)(RGBAColor<T>::mValues[3])
 		};
 	}
 }
