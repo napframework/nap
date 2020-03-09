@@ -75,7 +75,6 @@ namespace nap
 				// Set and log error
 				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
 				setError(*adapter, CVCaptureError::OpenError, msg);
-				nap::Logger::warn(msg);
 
 				// Discard adapter as valid capture device
 				continue;

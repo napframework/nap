@@ -30,8 +30,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Changes the video. Note that this call stops the parent device processing loop.
-		 * Other adapters (associated with the same capture device) are restarted as well.
+		 * Changes the video and restarts the background capture process.
 		 * @param file new video file to load
 		 * @return if the video loaded successfully. 
 		 */

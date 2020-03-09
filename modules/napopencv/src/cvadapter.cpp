@@ -70,11 +70,11 @@ namespace nap
 		if (started())
 			this->stop();
 
-		if (!start(error))
-			return false;
+		// Start the device
+		bool opened = start(error);
 
 		// Start capturing again
-		return capture_device.start(error);
+		return (opened && capture_device.start(error));
 	}
 
 

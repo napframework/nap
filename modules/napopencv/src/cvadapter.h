@@ -74,8 +74,7 @@ namespace nap
 		virtual void stop() override final;
 
 		/**
-		 * Restarts the OpenCV capture device. 
-		 * Other adapters (associated with the same capture device) are restarted as well.
+		 * Re-opens the OpenCV capture device and restarts the background capture process.
 		 * @param error contains the error if the restart procedure fails.
 		 * @return if the restart procedure succeeded.
 		 */
