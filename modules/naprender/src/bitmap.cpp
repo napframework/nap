@@ -5,6 +5,7 @@
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
 #include <texture2d.h>
+#include "copyimagedata.h"
 
 // External includes
 #include <FreeImage.h>
@@ -13,10 +14,7 @@
 
 // nap::bitmap run time class definition 
 RTTI_BEGIN_CLASS(nap::Bitmap)
-	RTTI_PROPERTY("Width",		&nap::Bitmap::mWidth,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",		&nap::Bitmap::mHeight,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Channels",	&nap::Bitmap::mChannels,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ColorType",	&nap::Bitmap::mType,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Settings",	&nap::Bitmap::mSurfaceDescriptor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::BitmapFromFile)
@@ -142,7 +140,7 @@ namespace nap
 
 	bool Bitmap::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for bitmap"))
+		if (!errorState.check(getWidth() > 0 && getHeight() > 0, "Invalid size specified for bitmap"))
 			return false;
 
 		updatePixelFormat();
@@ -174,20 +172,21 @@ namespace nap
 		// Get associated bitmap type for free image type
 		FREE_IMAGE_TYPE fi_bitmap_type = FreeImage_GetImageType(fi_bitmap);
 
+		ESurfaceDataType data_type;
 		switch (fi_bitmap_type)
 		{
 		case FIT_BITMAP:
-			mType = ESurfaceDataType::BYTE;
+			data_type = ESurfaceDataType::BYTE;
 			break;
 		case FIT_UINT16:
 		case FIT_RGB16:
 		case FIT_RGBA16:
-			mType = ESurfaceDataType::USHORT;
+			data_type = ESurfaceDataType::USHORT;
 			break;
 		case FIT_FLOAT:
 		case FIT_RGBF:
 		case FIT_RGBAF:
-			mType = ESurfaceDataType::FLOAT;
+			data_type = ESurfaceDataType::FLOAT;
 			break;
 		default:
 			errorState.fail("Can't load bitmap from file; unknown pixel format");
@@ -207,16 +206,17 @@ namespace nap
 
 		// If we're dealing with an rgb or rgba map and a bitmap
 		// The endian of the loaded free image map becomes important
-		// If so we might have to swap the red and blue channels regarding the interal color representation
+		// If so we might have to swap the red and blue channels regarding the internal color representation
 		bool swap = (fi_bitmap_type == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
 
+		ESurfaceChannels channels;
 		switch (fi_bitmap_color_type)
 		{
 		case FIC_MINISBLACK:
-			mChannels = ESurfaceChannels::R;
+			channels = ESurfaceChannels::R;
 			break;
 		case FIC_RGBALPHA:
-			mChannels = swap ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
+			channels = swap ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
 			break;
 		default:
 			errorState.fail("Can't load bitmap from file; unknown pixel format");
@@ -224,64 +224,26 @@ namespace nap
 			return false;
 		}
 
-		mWidth = FreeImage_GetWidth(fi_bitmap);
-		mHeight = FreeImage_GetHeight(fi_bitmap);
+		int width = FreeImage_GetWidth(fi_bitmap);
+		int height = FreeImage_GetHeight(fi_bitmap);
+
+		mSurfaceDescriptor = SurfaceDescriptor(width, height, data_type, channels);
 
 		updatePixelFormat();
 
 		mData.resize(getSizeInBytes());
-		setData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap));
+
+		copyImageData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap), channels, mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), getWidth(), getHeight());
 
 		FreeImage_Unload(fi_bitmap);
 
 		return true;
 	}
 
-	void Bitmap::setData(uint8_t* source, unsigned int sourcePitch)
+	void Bitmap::initFromTexture(const SurfaceDescriptor& settings)
 	{
-		unsigned int target_pitch = mWidth * mChannelSize * mNumChannels;
-		assert(target_pitch <= sourcePitch);
+		mSurfaceDescriptor = settings;
 
-		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
-		if (target_pitch == sourcePitch)
-		{
-			memcpy(mData.data(), source, getSizeInBytes());
-			return;
-		}
-
-		// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
-		uint8_t* source_line = (uint8_t*)source;
-		uint8_t* target_line = (uint8_t*)mData.data();
-
-		// Get the amount of bytes every pixel occupies
-		int source_stride = sourcePitch / mWidth;
-		int target_stride = target_pitch / mWidth;
-
-		for (int y = 0; y < mHeight; ++y) 
-		{
-			uint8_t* source_loc = source_line;
-			uint8_t* target_loc = target_line;
-			for (int x = 0; x < mWidth; ++x)
-			{
-				memcpy(target_loc, source_loc, target_stride);
-				target_loc += target_stride;
-				source_loc += source_stride;
-			}
-
-			//memcpy(dest_line, source_line, dest_pitch);
-			source_line += sourcePitch;
-			target_line += target_pitch;
-		}
-	}
-
-
-	void Bitmap::initFromTexture(const Texture2DSettings& settings)
-	{
-		mWidth = settings.mWidth;
-		mHeight = settings.mHeight;
-		mType = settings.mDataType;
-		mChannels = settings.mChannels;
-		
 		updatePixelFormat();
 
 		uint64_t size = getSizeInBytes();
@@ -291,14 +253,14 @@ namespace nap
 
 	size_t Bitmap::getSizeInBytes() const
 	{
-		return mWidth * mHeight * mNumChannels * mChannelSize;
+		return mSurfaceDescriptor.getSizeInBytes();
 	}
 
 
 	std::unique_ptr<nap::BaseColor> Bitmap::makePixel() const
 	{
 		BaseColor* rvalue = nullptr;
-		switch (mType)
+		switch (mSurfaceDescriptor.getDataType())
 		{
 		case ESurfaceDataType::BYTE:
 		{
@@ -326,7 +288,7 @@ namespace nap
 
 	void Bitmap::getPixel(int x, int y, BaseColor& outPixel) const
 	{
-		switch (mType)
+		switch (mSurfaceDescriptor.getDataType())
 		{
 		case ESurfaceDataType::BYTE:
 		{
@@ -352,7 +314,7 @@ namespace nap
 
 	void Bitmap::setPixel(int x, int y, const BaseColor& color)
 	{
-		switch (mType)
+		switch (mSurfaceDescriptor.getDataType())
 		{
 		case ESurfaceDataType::BYTE:
 		{
@@ -378,30 +340,6 @@ namespace nap
 
 	void Bitmap::updatePixelFormat()
 	{
-		switch (mType)
-		{
-		case ESurfaceDataType::BYTE:
-			mChannelSize = sizeof(unsigned char);
-			break;
-		case ESurfaceDataType::FLOAT:
-			mChannelSize = sizeof(float);
-			break;
-		case ESurfaceDataType::USHORT:
-			mChannelSize = sizeof(uint16_t);
-			break;
-		}
-
-		switch (mChannels)
-		{
-		case ESurfaceChannels::R:
-			mNumChannels = 1;
-			break;
-		case ESurfaceChannels::RGBA:
-		case ESurfaceChannels::BGRA:
-			mNumChannels = 4;
-			break;
-		}
-
 		std::unique_ptr<BaseColor> temp_clr = makePixel();
 		mColorType = temp_clr->get_type().get_raw_type();
 		mValueType = temp_clr->getValueType();

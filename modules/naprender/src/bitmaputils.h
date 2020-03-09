@@ -10,7 +10,7 @@ namespace nap
 		class ErrorState;
 	}
 	class Bitmap;
-	struct Texture2DSettings;
+	struct SurfaceDescriptor;
 
 	/**
 	 * Creates matching opengl texture settings based on the properties of a bitmap
@@ -20,5 +20,5 @@ namespace nap
 	 * @param errorState contains the error when no settings could be derived from the bitmap
 	 * @return if the opengl texture settings could be constructed successfully
 	 */
-	NAPAPI bool	getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	NAPAPI bool	getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, SurfaceDescriptor& settings, nap::utility::ErrorState& errorState); 
 }

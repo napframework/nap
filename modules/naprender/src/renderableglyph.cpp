@@ -51,12 +51,12 @@ namespace nap
 		getTextureParameters(mTexture.mParameters, mSize);
 
 		// Initialize texture
-		Texture2DSettings settings;
+		SurfaceDescriptor settings;
 		settings.mWidth  = mSize.x;
 		settings.mHeight = mSize.y;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
-		if (!mTexture.initTexture(settings, errorCode))
+		if (!mTexture.init(settings, false, errorCode))
 			return false;
 
 		// Upload glyph bitmap data

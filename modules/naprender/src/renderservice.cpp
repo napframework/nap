@@ -1054,13 +1054,13 @@ namespace nap
 
 	bool RenderService::initEmptyTexture(nap::utility::ErrorState& errorState)
 	{
-		Texture2DSettings settings;
+		SurfaceDescriptor settings;
 		settings.mWidth = 16;
 		settings.mHeight = 16;
 		settings.mChannels = ESurfaceChannels::RGBA;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		if (!mEmptyTexture->initTexture(settings, errorState))
+		if (!mEmptyTexture->init(settings, false, errorState))
 			return false;
 
 		std::vector<uint8_t> empty_texture_data;

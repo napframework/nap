@@ -10,7 +10,7 @@ namespace nap
 	// Returns the associated OpenGL system type based on the Bitmap's data type
 	GLenum getGLType(ESurfaceDataType type)
 	{
-		switch (type)
+		switch (type) 
 		{
 		case ESurfaceDataType::BYTE:
 			return GL_UNSIGNED_BYTE;
@@ -25,7 +25,7 @@ namespace nap
 	}
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
+	bool getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, SurfaceDescriptor& settings, nap::utility::ErrorState& errorState)
 	{
 		assert(false);
 		return false;

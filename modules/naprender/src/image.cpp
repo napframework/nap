@@ -15,7 +15,7 @@ namespace nap
 	void Image::update()
 	{
 		assert(!mBitmap.empty());
-		update(mBitmap);
+		update(mBitmap.getData(), mBitmap.mSurfaceDescriptor);
 	}
 
 

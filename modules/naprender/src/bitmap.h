@@ -6,12 +6,12 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-#include "surfaceformats.h"
+#include "surfacedescriptor.h"
 
 namespace nap
 {
 	class Texture2D;
-	struct Texture2DSettings;
+	struct SurfaceDescriptor;
 
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object.
@@ -32,12 +32,12 @@ namespace nap
 		/**
 		 * @return The datatype of a pixel in this bitmap
 		 */
-		ESurfaceDataType getDataType() const { return mType; }
+		ESurfaceDataType getDataType() const { return mSurfaceDescriptor.getDataType(); }
 
 		/**
 		 * @return The channel type of a pixel in this bitmap
 		 */
-		ESurfaceChannels getChannels() const { return mChannels; }
+		ESurfaceChannels getChannels() const { return mSurfaceDescriptor.getChannels(); }
 
 		/**
 		* The bitmap is initialized using it's associated properties. This means
@@ -62,7 +62,7 @@ namespace nap
 		 * Memory is allocated but the GPU pixel data is NOT copied over
 		 * @param settings the settings used to initialize this texture.
 		 */
-		void initFromTexture(const Texture2DSettings& settings);
+		void initFromTexture(const SurfaceDescriptor& settings);
 
 		/**
 		 * @return the type of color associated with this bitmap
@@ -78,17 +78,17 @@ namespace nap
 		/**
 		 * @return the width of the bitmap, 0 when not initialized
 		 */
-		int getWidth() const												{ return mWidth; }
+		int getWidth() const												{ return mSurfaceDescriptor.getWidth(); }
 
 		/**
 		 *	@return the height of the bitmap, 0 when not initialized
 		 */
-		int getHeight() const												{ return mHeight; }
+		int getHeight() const												{ return mSurfaceDescriptor.getHeight(); }
  
 		/**
 		 *	@return number of color channels associated with this bitmap
 		 */
-		int getNumberOfChannels() const										{ return mNumChannels; }
+		int getNumberOfChannels() const										{ return mSurfaceDescriptor.getNumComponents(); }
 
 		/**
 		 * @return a pointer to the underlying data in memory
@@ -274,11 +274,8 @@ namespace nap
 		 * These properties are read when initializing the bitmap as a resource
 		 * These properties are set  when initializing the bitmap from file or texture
 		 */
-		int mWidth					= 512;						///< property: width of the bitmap in pixels
-		int mHeight					= 512;						///< property: height of the bitmap in pixels
-		ESurfaceDataType mType		= ESurfaceDataType::BYTE;	///< property Type: data type of the pixels in the bitmap
-		ESurfaceChannels mChannels	= ESurfaceChannels::RGBA;	///< property Channels: number and ordering of the channels in the bitmap
-		
+		SurfaceDescriptor		mSurfaceDescriptor;
+
 	private:
 		/**
 		 * In order to avoid doing lookups from enum to pixel size, channel count in inner loops, we cache this data internally.
@@ -287,22 +284,17 @@ namespace nap
 		void updatePixelFormat();
 
 		/**
-		 * Copy data from source with the specified pitch to the internal buffer. Used to initialize from a FreeImage file.
-		 */
-		void setData(uint8_t* source, unsigned int sourcePitch);
-
-		/**
 		 * Get a pointer to the data of the specified pixel
 		 */
 		template<typename T>
 		T* getPixelData(unsigned int x, unsigned int y) const
 		{
-			assert(sizeof(T) == mChannelSize);
-			if (x >= mWidth || y >= mHeight)
+			assert(sizeof(T) == mSurfaceDescriptor.getComponentSize());
+			if (x >= mSurfaceDescriptor.getWidth() || y >= mSurfaceDescriptor.getHeight())
 				return nullptr;
 
 			// Get index in to array offset by number of channels (pixel level)
-			unsigned int offset = ((y * mWidth) + x) * mNumChannels * mChannelSize;
+			unsigned int offset = ((y * mSurfaceDescriptor.getWidth()) + x) * mSurfaceDescriptor.getBytesPerPixel();
 
 			// Update offset (pixel * num_channels * data_size)
 			unsigned char* data_ptr = (unsigned char*)(mData.data()) + offset;
@@ -392,9 +384,7 @@ namespace nap
 		rtti::TypeInfo mValueType = rtti::TypeInfo::empty();	///< Contained value type of the color (byte, float etc.)
 
 	private:
-		std::vector<uint8_t> mData;
-		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when updatePixelFormat is called.
-		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when updatePixelFormat is called.
+		std::vector<uint8_t>	mData;
 	};
 
 	/**
@@ -477,12 +467,12 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
 	{
-		assert(mNumChannels >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumComponents() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
 //		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
 		case ESurfaceChannels::BGRA:
 		{
@@ -516,12 +506,12 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
 	{
-		assert(mNumChannels >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumComponents() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
 //		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
 		case ESurfaceChannels::BGRA:
 		{
@@ -555,10 +545,10 @@ namespace nap
 	void nap::Bitmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
 	{
 		assert(outValue.getValueType() == RTTI_OF(Type));
-		assert(static_cast<int>(channel) < mNumChannels);
+		assert(static_cast<int>(channel) < mSurfaceDescriptor.getNumComponents());
 
 		int idx = static_cast<int>(channel);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
 			case ESurfaceChannels::BGRA:
 			{

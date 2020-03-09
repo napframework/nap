@@ -20,7 +20,7 @@ namespace nap
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{
-		Texture2DSettings settings;
+		SurfaceDescriptor settings;
 		settings.mWidth = mWidth;
 		settings.mHeight = mHeight;
 		settings.mDataType = ESurfaceDataType::BYTE;
@@ -43,7 +43,7 @@ namespace nap
 			break;
 		}
 
-		return initTexture(settings, errorState);
+		return Texture2D::init(settings, false, errorState);
 	}
 
 }

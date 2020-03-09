@@ -2,7 +2,8 @@
 #include "bitmap.h"
 #include "bitmaputils.h"
 #include "renderservice.h"
-#include "nap\core.h"
+#include "nap/core.h"
+#include "copyimagedata.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
 	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
@@ -104,98 +105,6 @@ static void convertTextureParameters(const nap::TextureParameters& input, opengl
 
 namespace nap
 {
-	// Returns number of components each texel has in this format
-	static int getNumComponents(ESurfaceChannels channels)
-	{
-		switch (channels)
-		{
-		case ESurfaceChannels::R:
-			return 1;
-
-		case ESurfaceChannels::RGBA:
-		case ESurfaceChannels::BGRA:
-			return 4;
-		}
-
-		assert(false);
-		return 0;
-	}
-
-	// Returns What the size in bytes is of a component type
-	static int getComponentSize(ESurfaceDataType type)
-	{
-		switch (type)
-		{
-		case ESurfaceDataType::BYTE:
-			return 1;
-		case ESurfaceDataType::USHORT:
-			return 2;
-		case ESurfaceDataType::FLOAT:
-			return 4;
-		}
-
-		assert(false);
-		return 0;
-	}
-
-	void copyImageData(const uint8_t* source, unsigned int sourcePitch, ESurfaceChannels sourceChannels,
-		uint8_t* target, unsigned int targetPitch, ESurfaceChannels targetChannels,
-		int width, int height)
-	{
-		assert(targetPitch <= sourcePitch);
-
-		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
-		if (targetPitch == sourcePitch)
-		{
-			memcpy(target, source, sourcePitch * height);
-		}
-		else if (sourceChannels == targetChannels)
-		{
-			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
-			const uint8_t* source_line = source;
-			uint8_t* target_line = target;
-
-			for (int y = 0; y < height; ++y)
-			{
-				memcpy(target_line, source_line, targetPitch);
-				source_line += sourcePitch;
-				target_line += targetPitch;
-			}
-		}
-		else
-		{
-			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
-			const uint8_t* source_line = source;
-			uint8_t* target_line = target;
-
-			// Get the amount of bytes every pixel occupies
-			int source_stride = sourcePitch / width;
-			int target_stride = targetPitch / width;
-
-			for (int y = 0; y < height; ++y)
-			{
-				const uint8_t* source_loc = source_line;
-				uint8_t* target_loc = target_line;
-				for (int x = 0; x < width; ++x)
-				{
-					memcpy(target_loc, source_loc, target_stride);
-					target_loc += target_stride;
-					source_loc += source_stride;
-				}
-
-				source_line += sourcePitch;
-				target_line += targetPitch;
-			}
-		}		
-	}
-
-
-
-	Texture2D::Texture2D(Core& core) :
-		mRenderService(core.getService<RenderService>())
-	{
-	}
-
 	namespace 
 	{
 		bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
@@ -373,19 +282,12 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	uint64_t Texture2DSettings::getSizeInBytes(uint32_t width, uint32_t height, ESurfaceChannels channels, ESurfaceDataType dataType)
+	Texture2D::Texture2D(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{
-		return getNumComponents(channels) * getComponentSize(dataType) * width * height;
-	}	
-
-	int Texture2DSettings::getPitch() const
-	{
-		return mWidth * getNumComponents(mChannels) * getComponentSize(mDataType);
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-
-	bool Texture2D::initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& settings, bool compressed, utility::ErrorState& errorState)
 	{
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
@@ -452,24 +354,6 @@ namespace nap
 		return true;
 	}
 
-	bool Texture2D::initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState)
-	{
-		assert(!bitmap.empty());
-
-		Texture2DSettings settings;
-		settings.mChannels		= bitmap.getChannels();
-		settings.mDataType		= bitmap.getDataType();
-		settings.mColorSpace	= EColorSpace::sRGB;
-		settings.mWidth			= bitmap.getWidth();
-		settings.mHeight		= bitmap.getHeight();
-
-		if (!initTexture(settings, errorState))
-			return false;
-
-		update(bitmap);
-
-		return true;
-	}
 
 	const glm::vec2 Texture2D::getSize() const
 	{
@@ -487,33 +371,6 @@ namespace nap
 	{
 		return mSettings.mHeight;
 	}
-
-
-	void Texture2D::update(const Bitmap& bitmap)
-	{
-		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
-		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
-		assert(bitmap.getWidth() == mSettings.mWidth && bitmap.getHeight() == mSettings.mHeight);
-
-		// We use a staging buffer that is guaranteed to be free
-		assert(mCurrentStagingBufferIndex != -1);
-		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
-
-		// Update the staging buffer using the Bitmap contents
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
-		VkDeviceSize imageSize = Texture2DSettings::getSizeInBytes(bitmap.getWidth(), bitmap.getHeight(), bitmap.getChannels(), bitmap.getDataType());
-
-		void* mapped_memory;
-		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
-		assert(result == VK_SUCCESS);
-
-		memcpy(mapped_memory, bitmap.getData(), static_cast<size_t>(imageSize));
-		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
-
-		// Notify the RenderService that it should upload the texture contents during rendering
-		mRenderService->requestTextureUpdate(*this);
-	}
-
 
 	void Texture2D::upload(VkCommandBuffer commandBuffer)
 	{
@@ -537,13 +394,16 @@ namespace nap
 		changed(*this);
 	}
 
+	void Texture2D::update(const void* data, const SurfaceDescriptor& surfaceDescriptor)
+	{
+		update(data, surfaceDescriptor.getWidth(), surfaceDescriptor.getHeight(), surfaceDescriptor.getPitch(), surfaceDescriptor.getChannels());
+	}
 
 	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
 		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
 		assert(mSettings.mWidth == width && mSettings.mHeight == height);
-
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);

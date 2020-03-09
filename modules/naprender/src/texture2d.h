@@ -10,7 +10,7 @@
 #include "vulkan/vulkan_core.h"
 #include "vk_mem_alloc.h"
 #include "nap/signalslot.h"
-#include "surfaceformats.h"
+#include "surfacedescriptor.h"
 
 namespace nap
 {
@@ -54,35 +54,10 @@ namespace nap
 		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
 
-	/**
-	* Texture2Dsettings
-	*
-	* Data associated with a 2d texture
-	*/
-	struct Texture2DSettings
-	{
-	public:
-		uint32_t			mWidth	  = 0;								///< Specifies the width of the texture
-		uint32_t			mHeight	  = 0;								///< Specifies the height of the texture
-		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;	///< Specifies the amount of bytes in a single channel
-		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Specifies the channels and their order
-		EColorSpace			mColorSpace = EColorSpace::sRGB;			///< Specifies linear or SRGB space. Only applicable to BYTE datatypes
-
-		int getPitch() const;
-
-		uint64_t getSizeInBytes() const { return getSizeInBytes(mWidth, mHeight, mChannels, mDataType); }
-		static uint64_t getSizeInBytes(uint32_t width, uint32_t height, ESurfaceChannels channels, ESurfaceDataType dataType);
-
-		bool isValid() const { return mWidth != 0 && mHeight != 0; }
-		bool operator==(const Texture2DSettings& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
-		bool operator!=(const Texture2DSettings& other) const { return !(*this == other); }
-	};
-
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * GPU representation of a 2D bitmap. This is the base class for all 2D textures.
-	 * Classes should derive from Texture2D and call either initTexture (for a GPU-only texture) or initFromBitmap (for a CPU & GPU texture).
 	 * This class does not own any CPU data but offers an interface to up and download texture data from and in to a bitmap
 	 */
 	class NAPAPI Texture2D : public Resource
@@ -96,16 +71,7 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState);
-
-		/**
-		 * Initializes the GPU texture using the settings associated with the incoming bitmap
-		 * @param bitmap the cpu pixel data used to initialize this texture with
-		 * @param compressed Whether a compressed GPU texture should be created.
-		 * @param errorState Contains error information if the function returns false;
-		 * @return True on success, false on failure.
-		 */
-		bool initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& settings, bool compressed, utility::ErrorState& errorState);
 
 		/**
 		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
@@ -127,13 +93,6 @@ namespace nap
 		 */
 		int getHeight() const;
 
-		/**
-		 * Converts the CPU data from the Bitmap that is passed in to the GPU. The internal Bitmap remains untouched. 
-		 * The bitmap should contain valid data and not be empty.
-		 * @param bitmap CPU data to convert to GPU.
-		 */
-		void update(const Bitmap& bitmap);
-
 		void upload(VkCommandBuffer commandBuffer);
 
 		/**
@@ -142,6 +101,8 @@ namespace nap
 		 * @param pitch Length of a row of bytes in the input data.
 		 */
 		void update(const void* data, int width, int height, int pitch, ESurfaceChannels channels);
+
+		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
 		 * Blocking call to retrieve GPU texture data that is stored in this texture
@@ -219,7 +180,7 @@ namespace nap
 		int							mCurrentStagingBufferIndex = -1;
 		int							mCurrentImageIndex = -1;
 		size_t						mImageSizeInBytes = -1;
-		Texture2DSettings			mSettings;
+		SurfaceDescriptor			mSettings;
 	};
 }
 
