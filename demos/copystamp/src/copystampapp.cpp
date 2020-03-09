@@ -96,7 +96,7 @@ namespace nap
 		// Set camera location in the shader that draws all the meshes.
 		// The camera location is used for the light computation.
 		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
-		UniformVec3Instance& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform("UBO").getOrCreateUniform<UniformVec3Instance>("cameraLocation");
+		UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 		
 		// Render all copied meshes

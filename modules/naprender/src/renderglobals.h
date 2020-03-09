@@ -9,6 +9,11 @@
 namespace nap
 {
 	/**
+	 * GLSL uniform attribute name for root nap struct
+	 */
+	NAPAPI extern const std::string napStructUniform;
+
+	/**
 	 * GLSL uniform attribute name for projection matrix
 	 */
 	NAPAPI extern const std::string projectionMatrixUniform;

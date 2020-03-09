@@ -257,7 +257,7 @@ namespace nap
 		int source_stride = sourcePitch / mWidth;
 		int target_stride = target_pitch / mWidth;
 
-		for (int y = 0; y < mHeight; ++y)
+		for (int y = 0; y < mHeight; ++y) 
 		{
 			uint8_t* source_loc = source_line;
 			uint8_t* target_loc = target_line;
@@ -395,10 +395,6 @@ namespace nap
 		{
 		case ESurfaceChannels::R:
 			mNumChannels = 1;
-			break;
-		case ESurfaceChannels::RGB:
-		case ESurfaceChannels::BGR:
-			mNumChannels = 3;
 			break;
 		case ESurfaceChannels::RGBA:
 		case ESurfaceChannels::BGRA:

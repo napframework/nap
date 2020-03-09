@@ -100,17 +100,24 @@ namespace nap
 		// Bind material
 		MaterialInstance& mat_instance = getMaterialInstance();
 
-		// Set projection uniform in shader
-		UniformMat4Instance& projectionUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
-		projectionUniform.setValue(projectionMatrix);
+		UniformStructInstance* nap_uniform = mat_instance.getOrCreateUniform(napStructUniform);
+		if (nap_uniform != nullptr)
+		{
+			// Set projection uniform in shader
+			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+			if (projection_uniform != nullptr)
+				projection_uniform->setValue(projectionMatrix);
 
-		// Set view uniform in shader
-		UniformMat4Instance& viewUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
-		viewUniform.setValue(viewMatrix);
+			// Set view uniform in shader
+			UniformMat4Instance* view_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+			if (view_uniform != nullptr)
+				view_uniform->setValue(viewMatrix);
 
-		// Set model matrix uniform in shader
-		UniformMat4Instance& modelUniform = mat_instance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
-		modelUniform.setValue(model_matrix);
+			// Set model matrix uniform in shader
+			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+			if (model_uniform != nullptr)
+				model_uniform->setValue(model_matrix);
+		}
 
 		VkDescriptorSet descriptor_set = mat_instance.update();
 

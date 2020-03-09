@@ -108,11 +108,11 @@ namespace nap
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformStructInstance& MaterialInstance::getOrCreateUniform(const std::string& name)
+	UniformStructInstance* MaterialInstance::getOrCreateUniform(const std::string& name)
 	{
 		UniformStructInstance* existing = findUniform(name);
 		if (existing != nullptr)
-			return *existing;
+			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const UniformStructDeclaration* declaration = nullptr;
@@ -125,10 +125,12 @@ namespace nap
 				break;
 			}
 		}
-		assert(declaration != nullptr);
+
+		if (declaration == nullptr)
+			return nullptr;
 
 		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
-		return createRootStruct(*declaration, std::bind(&MaterialInstance::onUniformCreated, this));
+		return &createRootStruct(*declaration, std::bind(&MaterialInstance::onUniformCreated, this));
 	}
 
 
@@ -227,6 +229,8 @@ namespace nap
 		mSamplerDescriptors.resize(sampler_declarations.size());
 		mSamplerImages.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 		
+		Texture2D& emptyTexture = mRenderService->getEmptyTexture();
+
 		// Samplers are initialized in two steps (somewhat similar to how uniforms are setup):
 		// 1) We create sampler instances based on sampler declarations for all properties in MaterialInstance (so, the ones that are overridden).
 		// 2) We initialize a VkWriteDescriptorSet that contains information that is either pointing to data from MaterialInstance if overridden, 
@@ -284,13 +288,22 @@ namespace nap
 				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(sampler_instance);
 
 				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
-					addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
+				{
+					if (sampler_2d_array->hasTexture(index))
+						addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
+					else
+						addImageInfo(emptyTexture, vk_sampler);
+				}
 			}
 			else
 			{
 				// Create a single VkDescriptorImageInfo for just this element
 				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(sampler_instance);
-				addImageInfo(sampler_2d->getTexture(), vk_sampler);
+				
+				if (sampler_2d->hasTexture())
+					addImageInfo(sampler_2d->getTexture(), vk_sampler);
+				else
+					addImageInfo(emptyTexture, vk_sampler);
 			}
 
 			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.

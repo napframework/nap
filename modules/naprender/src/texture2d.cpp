@@ -112,10 +112,6 @@ namespace nap
 		case ESurfaceChannels::R:
 			return 1;
 
-		case ESurfaceChannels::RGB:
-		case ESurfaceChannels::BGR:
-			return 3;
-
 		case ESurfaceChannels::RGBA:
 		case ESurfaceChannels::BGRA:
 			return 4;
@@ -170,11 +166,15 @@ namespace nap
 			alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 			alloc_info.flags = 0;
 
-			return vmaCreateImage(vmaAllocator, &image_info, &alloc_info, &image, &allocation, &allocationInfo) == VK_SUCCESS;
+			VkResult result = vmaCreateImage(vmaAllocator, &image_info, &alloc_info, &image, &allocation, &allocationInfo);
+			if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
+				return false;
+
+			return true;
 		}
 
 
-		VkFormat getTextureFormat(ESurfaceChannels channels, ESurfaceDataType dataType)
+		VkFormat getTextureFormat(ESurfaceChannels channels, ESurfaceDataType dataType, EColorSpace colorSpace)
 		{
 			switch (channels)
 			{
@@ -183,37 +183,11 @@ namespace nap
 					switch (dataType)
 					{
 					case nap::ESurfaceDataType::BYTE:
-						return VK_FORMAT_R8_SRGB;
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
 					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_R32_SFLOAT;
 					case nap::ESurfaceDataType::USHORT:
 						return VK_FORMAT_R16_UNORM;
-					}
-					break;
-				}
-			case ESurfaceChannels::RGB:
-				{
-					switch (dataType)
-					{
-					case nap::ESurfaceDataType::BYTE:
-						return VK_FORMAT_R8G8B8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32G32B32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16G16B16_UNORM;
-					}
-					break;
-				}
-			case ESurfaceChannels::BGR:
-				{
-					switch (dataType)
-					{
-					case nap::ESurfaceDataType::BYTE:
-						return VK_FORMAT_B8G8R8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_UNDEFINED;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_UNDEFINED;
 					}
 					break;
 				}
@@ -222,7 +196,7 @@ namespace nap
 					switch (dataType)
 					{
 					case nap::ESurfaceDataType::BYTE:
-						return VK_FORMAT_R8G8B8A8_SRGB;
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
 					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_R32G32B32A32_SFLOAT;
 					case nap::ESurfaceDataType::USHORT:
@@ -235,7 +209,7 @@ namespace nap
 					switch (dataType)
 					{
 					case nap::ESurfaceDataType::BYTE:
-						return VK_FORMAT_B8G8R8A8_SRGB;
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
 					case nap::ESurfaceDataType::FLOAT:
 						return VK_FORMAT_UNDEFINED;
 					case nap::ESurfaceDataType::USHORT:
@@ -344,12 +318,21 @@ namespace nap
 		}
 	}	
 
+	//////////////////////////////////////////////////////////////////////////
+
+	uint64_t Texture2DSettings::getSizeInBytes(uint32_t width, uint32_t height, ESurfaceChannels channels, ESurfaceDataType dataType)
+	{
+		return getNumComponents(channels) * getComponentSize(dataType) * width * height;
+	}	
+
+	//////////////////////////////////////////////////////////////////////////
+
 	bool Texture2D::initTexture(const Texture2DSettings& settings, utility::ErrorState& errorState)
 	{
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
-		VkDeviceSize imageSize = getNumComponents(settings.mChannels) * getComponentSize(settings.mDataType) * settings.mWidth * settings.mHeight;
+		mImageSizeInBytes = settings.getSizeInBytes();
 
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
@@ -370,13 +353,13 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
-		mStagingBuffers.resize(mUsage == opengl::ETextureUsage::Static || mUsage == opengl::ETextureUsage::DynamicWrite ? 1 : 3);
+		mStagingBuffers.resize(mUsage == opengl::ETextureUsage::DynamicWrite ? 3 : 1);
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			StagingBuffer& imageBuffer = mStagingBuffers[index];
 
 			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = imageSize;
+			bufferInfo.size = mImageSizeInBytes;
 			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -389,11 +372,11 @@ namespace nap
 		}
 
 		// We create images and imageviews for the amount of frame in flight
-		mImageData.resize(mUsage == opengl::ETextureUsage::Static || mUsage == opengl::ETextureUsage::DynamicWrite ? 1 : 2);
+		mImageData.resize(mUsage == opengl::ETextureUsage::DynamicWrite ? 2 : 1);
 		for (int index = 0; index < mImageData.size(); ++index)
 		{
 			ImageData& imageData = mImageData[index];
-			VkFormat texture_format = getTextureFormat(settings.mChannels, settings.mDataType);
+			VkFormat texture_format = getTextureFormat(settings.mChannels, settings.mDataType, settings.mColorSpace);
 			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 				return false;
 
@@ -406,7 +389,7 @@ namespace nap
 
 		mCurrentImageIndex = 0;
 		mCurrentStagingBufferIndex = 0;
-		mImageSize = glm::ivec2(settings.mWidth, settings.mHeight);
+		mImageDimensions = glm::ivec2(settings.mWidth, settings.mHeight);
 		return true;
 	}
 
@@ -415,10 +398,11 @@ namespace nap
 		assert(!bitmap.empty());
 
 		Texture2DSettings settings;
-		settings.mChannels	= bitmap.getChannels();
-		settings.mDataType	= bitmap.getDataType();
-		settings.mWidth		= bitmap.getWidth();
-		settings.mHeight	= bitmap.getHeight();
+		settings.mChannels		= bitmap.getChannels();
+		settings.mDataType		= bitmap.getDataType();
+		settings.mColorSpace	= EColorSpace::sRGB;
+		settings.mWidth			= bitmap.getWidth();
+		settings.mHeight		= bitmap.getHeight();
 
 		if (!initTexture(settings, errorState))
 			return false;
@@ -430,19 +414,19 @@ namespace nap
 
 	const glm::vec2 Texture2D::getSize() const
 	{
-		return glm::vec2(mImageSize.x, mImageSize.y);
+		return glm::vec2(mImageDimensions.x, mImageDimensions.y);
 	}
 
 
 	int Texture2D::getWidth() const
 	{
-		return mImageSize.x;
+		return mImageDimensions.x;
 	}
 
 
 	int Texture2D::getHeight() const
 	{
-		return mImageSize.y;
+		return mImageDimensions.y;
 	}
 
 
@@ -450,7 +434,7 @@ namespace nap
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
 		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
-		assert(bitmap.getWidth() == mImageSize.x && bitmap.getHeight() == mImageSize.y);
+		assert(bitmap.getWidth() == mImageDimensions.x && bitmap.getHeight() == mImageDimensions.y);
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);
@@ -458,7 +442,7 @@ namespace nap
 
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
-		VkDeviceSize imageSize = getNumComponents(bitmap.getChannels()) * getComponentSize(bitmap.getDataType()) * bitmap.getWidth() * bitmap.getHeight();
+		VkDeviceSize imageSize = Texture2DSettings::getSizeInBytes(bitmap.getWidth(), bitmap.getHeight(), bitmap.getChannels(), bitmap.getDataType());
 
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
@@ -484,7 +468,7 @@ namespace nap
 		ImageData& imageData = mImageData[mCurrentImageIndex];
 
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, imageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mImageSize.x, mImageSize.y);
+		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mImageDimensions.x, mImageDimensions.y);
 		transitionImageLayout(commandBuffer, imageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// We store the last image layout, which is used as input for a subsequent upload
@@ -497,8 +481,25 @@ namespace nap
 
 	void Texture2D::update(const void* data, int pitch)
 	{
-		assert(false);
-		//mTexture.setData(data, pitch);
+		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
+		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+
+		// We use a staging buffer that is guaranteed to be free
+		assert(mCurrentStagingBufferIndex != -1);
+		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+
+		// Update the staging buffer using the Bitmap contents
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+
+		void* mapped_memory;
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
+		assert(result == VK_SUCCESS);
+
+		memcpy(mapped_memory, data, mImageSizeInBytes);
+		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
+
+		// Notify the RenderService that it should upload the texture contents during rendering
+		mRenderService->requestTextureUpdate(*this);
 	}
 
 

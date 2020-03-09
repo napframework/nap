@@ -4,9 +4,12 @@
 #include <fbxconverter.h>
 #include <meshutils.h>
 #include <triangleiterator.h>
+#include "nap/core.h"
+#include "renderservice.h"
 
 // nap::videomesh run time class definition 
-RTTI_BEGIN_CLASS(nap::VideoMeshFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -15,13 +18,18 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	VideoMeshFromFile::VideoMeshFromFile(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{
+	}
+
 	VideoMeshFromFile::~VideoMeshFromFile()			{ }
 
 
 	bool VideoMeshFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load our mesh
-		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
+		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(*mRenderService, mPath, errorState);
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 

@@ -276,9 +276,9 @@ namespace nap
 		 */
 		int mWidth					= 512;						///< property: width of the bitmap in pixels
 		int mHeight					= 512;						///< property: height of the bitmap in pixels
-		ESurfaceDataType mType				= ESurfaceDataType::BYTE;			///< property Type: data type of the pixels in the bitmap
-		ESurfaceChannels mChannels			= ESurfaceChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
-
+		ESurfaceDataType mType		= ESurfaceDataType::BYTE;	///< property Type: data type of the pixels in the bitmap
+		ESurfaceChannels mChannels	= ESurfaceChannels::RGBA;	///< property Channels: number and ordering of the channels in the bitmap
+		
 	private:
 		/**
 		 * In order to avoid doing lookups from enum to pixel size, channel count in inner loops, we cache this data internally.
@@ -523,14 +523,12 @@ namespace nap
 		Type* pixel_data = getPixelData<Type>(x, y);
 		switch (mChannels)
 		{
-		case ESurfaceChannels::BGR:
 		case ESurfaceChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case ESurfaceChannels::RGB:
 		case ESurfaceChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
@@ -562,7 +560,6 @@ namespace nap
 		int idx = static_cast<int>(channel);
 		switch (mChannels)
 		{
-			case ESurfaceChannels::BGR:
 			case ESurfaceChannels::BGRA:
 			{
 				idx = channel == EColorChannel::Red  ? 2 : 

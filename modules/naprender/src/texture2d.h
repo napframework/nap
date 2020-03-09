@@ -62,10 +62,14 @@ namespace nap
 	struct Texture2DSettings
 	{
 	public:
-		uint32_t			mWidth	  = 0;					//< Specifies the width of the texture
-		uint32_t			mHeight	  = 0;					//< Specifies the height of the texture
-		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;
-		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGR;
+		uint32_t			mWidth	  = 0;								///< Specifies the width of the texture
+		uint32_t			mHeight	  = 0;								///< Specifies the height of the texture
+		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;	///< Specifies the amount of bytes in a single channel
+		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Specifies the channels and their order
+		EColorSpace			mColorSpace = EColorSpace::sRGB;			///< Specifies linear or SRGB space. Only applicable to BYTE datatypes
+
+		uint64_t getSizeInBytes() const { return getSizeInBytes(mWidth, mHeight, mChannels, mDataType); }
+		static uint64_t getSizeInBytes(uint32_t width, uint32_t height, ESurfaceChannels channels, ESurfaceDataType dataType);
 
 		bool isValid() const { return mWidth != 0 && mHeight != 0; }
 		bool operator==(const Texture2DSettings& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
@@ -212,7 +216,8 @@ namespace nap
 		StagingBufferList			mStagingBuffers;
 		int							mCurrentStagingBufferIndex = -1;
 		int							mCurrentImageIndex = -1;
-		glm::ivec2					mImageSize;
+		size_t						mImageSizeInBytes = -1;
+		glm::ivec2					mImageDimensions;
 	};
 }
 

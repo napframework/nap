@@ -1070,27 +1070,33 @@ namespace nap
 		parameters.mMinFilter = EFilterMode::Linear;
 		parameters.mMaxFilter = EFilterMode::Linear;
 
-		mYTexture = std::make_unique<RenderTexture2D>();
+		mYTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mYTexture->mWidth = yWidth;
 		mYTexture->mHeight = yHeight;
 		mYTexture->mFormat = ERenderTargetFormat::R8;
 		mYTexture->mParameters = parameters;
+		mYTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mYTexture->mColorSpace = EColorSpace::Linear;
 		if (!mYTexture->init(errorState))
 			return false;
 
-		mUTexture = std::make_unique<RenderTexture2D>();
+		mUTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mUTexture->mWidth = uvWidth;
 		mUTexture->mHeight = uvHeight;
 		mUTexture->mFormat = ERenderTargetFormat::R8;
 		mUTexture->mParameters = parameters;
+		mUTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mUTexture->mColorSpace = EColorSpace::Linear;
 		if (!mUTexture->init(errorState))
 			return false;
 
-		mVTexture = std::make_unique<RenderTexture2D>();
+		mVTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mVTexture->mWidth = uvWidth;
 		mVTexture->mHeight = uvHeight;
 		mVTexture->mFormat = ERenderTargetFormat::R8;
 		mVTexture->mParameters = parameters;
+		mVTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mVTexture->mColorSpace = EColorSpace::Linear;
 		if (!mVTexture->init(errorState))
 			return false;
 

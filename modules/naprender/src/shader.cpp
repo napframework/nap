@@ -20,7 +20,7 @@ RTTI_BEGIN_CLASS(nap::Shader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("mFragShader", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
-	RTTI_PROPERTY("OutputFormat", &nap::Shader::mOutputFormat, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OutputFormat", &nap::Shader::mOutputFormat, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace

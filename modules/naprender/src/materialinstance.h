@@ -113,7 +113,7 @@ namespace nap
 		 * @param name: the name of the uniform as it is in the shader.
 		 * @return reference to the uniform that was found or created.
 		 */
-		UniformStructInstance& getOrCreateUniform(const std::string& name);
+		UniformStructInstance* getOrCreateUniform(const std::string& name);
 
 		template<class T>
 		T& getOrCreateSampler(const std::string& name);

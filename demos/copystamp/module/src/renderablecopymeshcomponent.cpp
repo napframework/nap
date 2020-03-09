@@ -60,12 +60,12 @@ namespace nap
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
-		mColorUniform = &mMaterialInstance.getOrCreateUniform("UBO").getOrCreateUniform<UniformVec3Instance>("meshColor");
+		mColorUniform = mMaterialInstance.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("meshColor");
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("projectionMatrix");
-		mViewUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("viewMatrix");
-		mModelUniform = &mMaterialInstance.getOrCreateUniform("nap").getOrCreateUniform<UniformMat4Instance>("modelMatrix");
+		mProjectionUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("projectionMatrix");
+		mViewUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("viewMatrix");
+		mModelUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("modelMatrix");
 
 		// Ensure there's at least 1 mesh to copy
 		if (!errorState.check(!(resource->mCopyMeshes.empty()), 

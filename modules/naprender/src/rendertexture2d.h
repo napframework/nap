@@ -17,7 +17,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
-		RenderTexture2D() = default;
 		RenderTexture2D(Core& renderService);
 
 		/**
@@ -27,8 +26,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int		mWidth  = 0;					///< Property: 'Width' width of the texture in texels
-		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
-		ERenderTargetFormat	mFormat = ERenderTargetFormat::RGB8;		///< Property: 'Format' format of the texture
+		int					mWidth		= 0;							///< Property: 'Width' width of the texture in texels
+		int					mHeight		= 0;							///< Property: 'Height' of the texture, in texels
+		ERenderTargetFormat	mFormat		= ERenderTargetFormat::RGBA8;	///< Property: 'Format' format of the texture
+		EColorSpace			mColorSpace	= EColorSpace::sRGB;			///< Property: 'ColorSpace' colorspace of the texture
 	};
 }

@@ -25,6 +25,7 @@ namespace nap
 	class IMesh;
 	class MaterialInstance;
 	class GLWindow;
+	class Texture2D;
 
 	class RendererSettings
 	{
@@ -195,6 +196,8 @@ namespace nap
 		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
 		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
 
+		Texture2D& getEmptyTexture() const { return *mEmptyTexture; }
+
 	protected:
 		/**
 		* Object creation registration
@@ -243,6 +246,7 @@ namespace nap
 
 		void advanceToFrame(int frameIndex);
 
+		bool initEmptyTexture(nap::utility::ErrorState& errorState);
 
 		struct PipelineToDestroy
 		{
@@ -259,6 +263,7 @@ namespace nap
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 		
+		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TexturesToUpdateSet						mTexturesToUpdate;
 
 		PipelineList							mPipelinesToDestroy;
@@ -271,7 +276,6 @@ namespace nap
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
 		VkRenderPass							mRenderPassRGBA8 = nullptr;
-		VkRenderPass							mRenderPassRGB8 = nullptr;
 		VkRenderPass							mRenderPassR8 = nullptr;
 		VkRenderPass							mRenderPassDepth = nullptr;
 

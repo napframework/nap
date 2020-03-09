@@ -63,10 +63,9 @@ namespace nap
 
 		// Set the texture on the material
 		MaterialInstance& video_material = mVideoMesh->getMaterialInstance();
-		video_material.getOrCreateUniform<Sampler2D>("yTexture").setTexture(mCurrentVideo->getYTexture());
-		video_material.getOrCreateUniform<Sampler2D>("uTexture").setTexture(mCurrentVideo->getUTexture());
-		video_material.getOrCreateUniform<Sampler2D>("vTexture").setTexture(mCurrentVideo->getVTexture());
-
+		video_material.getOrCreateSampler<Sampler2DInstance>("yTexture").setTexture(mCurrentVideo->getYTexture());
+		video_material.getOrCreateSampler<Sampler2DInstance>("uTexture").setTexture(mCurrentVideo->getUTexture());
+		video_material.getOrCreateSampler<Sampler2DInstance>("vTexture").setTexture(mCurrentVideo->getVTexture());
 	}
 
 

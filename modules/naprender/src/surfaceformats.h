@@ -20,10 +20,14 @@ namespace nap
 	enum class ESurfaceChannels : int
 	{
 		R			= 0,	///< R red component
-		RGB			= 1,	///< RGB red, green and blue component
-		RGBA		= 2,	///< RGBA red, green, blue and alpha component
-		BGR			= 3,	///< BGR blue, green and red component
-		BGRA		= 4		///< BGRA blue, green, red and alpha component
+		RGBA		= 1,	///< RGBA red, green, blue and alpha component
+		BGRA		= 2		///< BGRA blue, green, red and alpha component
+	};
+
+	enum class EColorSpace : int
+	{
+		Linear,				///< Linear color space
+		sRGB				///< Non-linear, sRGB color space
 	};
 }
 
@@ -47,4 +51,14 @@ namespace std
 			return hash<int>()(static_cast<int>(v));
 		}
 	};
+
+	template <>
+	struct hash<nap::EColorSpace>
+	{
+		size_t operator()(const nap::EColorSpace& v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
+
 }

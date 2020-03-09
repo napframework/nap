@@ -8,6 +8,7 @@
 #include <planemesh.h>
 #include <materialinstance.h>
 #include "renderablemesh.h"
+#include "entity.h"
 
 namespace nap
 {
@@ -54,7 +55,10 @@ namespace nap
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
 		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)									{ }
+			RenderableComponentInstance(entity, resource),
+			mDepthTexture(*entity.getCore())
+		{
+		}
 
 		virtual ~RenderToTextureComponentInstance();
 

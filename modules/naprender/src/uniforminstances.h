@@ -53,17 +53,28 @@ namespace nap
 		}
 
 		template<typename T>
-		T& getOrCreateUniform(const std::string& name)
+		T* findUniform(const std::string& name)
+		{
+			UniformInstance* instance = findUniform(name);
+			if (instance != nullptr)
+				return rtti_cast<T>(instance);
+
+			return nullptr;
+		}
+
+		template<typename T>
+		T* getOrCreateUniform(const std::string& name)
 		{
 			UniformInstance* instance = findUniform(name);
 			if (instance != nullptr)
 			{
 				assert(instance->get_type().is_derived_from<T>());
-				return *rtti_cast<T>(instance);
+				return rtti_cast<T>(instance);
 			}
 
 			const UniformDeclaration* declaration = mDeclaration.findMember(name);
-			assert(declaration != nullptr);
+			if (declaration == nullptr)
+				return nullptr;
 
 			std::unique_ptr<UniformInstance> new_instance = createUniformFromDeclaration(*declaration, mUniformCreatedCallback);
 			
@@ -75,7 +86,7 @@ namespace nap
 			if (mUniformCreatedCallback)
 				mUniformCreatedCallback();
 
-			return *result;
+			return result;
 		}
 
 		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }

@@ -24,48 +24,6 @@ namespace nap
 		return GL_INVALID_ENUM;
 	}
 
-
-	// the GL associated internal format associated with the BitmapColorType
-	GLint getGLInternalFormat(ESurfaceChannels type, bool compressed /*= true*/)
-	{
-		switch (type)
-		{
-		case ESurfaceChannels::R:
-			return compressed ? GL_COMPRESSED_RED_RGTC1_EXT : GL_RED;
-		case ESurfaceChannels::RGB:
-		case ESurfaceChannels::BGR:
-			return compressed ? GL_COMPRESSED_RGB_S3TC_DXT1_EXT : GL_RGB;
-		case ESurfaceChannels::RGBA:
-		case ESurfaceChannels::BGRA:
-			return compressed ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : GL_RGBA;
-		}
-		assert(false);
-		return -1;
-	}
-
-
-	// Returns the GL associated format associated with the bitmap's color type
-	GLenum getGLFormat(ESurfaceChannels type)
-	{
-		switch (type)
-		{
-		case ESurfaceChannels::R:
-			return GL_RED;
-		case ESurfaceChannels::RGB:
-			return GL_RGB;
-		case ESurfaceChannels::RGBA:
-			return GL_RGBA;
-		case ESurfaceChannels::BGR:
-			return GL_BGR;
-		case ESurfaceChannels::BGRA:
-			return GL_BGRA;
-		}
-
-		assert(false);
-		return GL_INVALID_ENUM;
-	}
-
-
 	// Populates a Texture2D object with settings matching the bitmap
 	bool getTextureSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{

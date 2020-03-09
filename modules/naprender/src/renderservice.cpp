@@ -839,38 +839,32 @@ namespace nap
 		VkRenderPass render_pass = nullptr;
 		switch (format)
 		{
-		case ERenderTargetFormat::RGBA8:
-		{
-			if (mRenderPassRGBA8 == nullptr)
-				createRenderPass(mDevice, VK_FORMAT_B8G8R8A8_SRGB, mDepthFormat, mRenderPassRGBA8);
+			case ERenderTargetFormat::RGBA8:
+			{
+				if (mRenderPassRGBA8 == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_B8G8R8A8_SRGB, mDepthFormat, mRenderPassRGBA8);
 
-			render_pass = mRenderPassRGBA8;
-		}
-		break;
-		case ERenderTargetFormat::RGB8:
-		{
-			if (mRenderPassRGB8 == nullptr)
-				createRenderPass(mDevice, VK_FORMAT_B8G8R8_SRGB, mDepthFormat, mRenderPassRGB8);
+				render_pass = mRenderPassRGBA8;
+			}
+			break;
 
-			render_pass = mRenderPassRGB8;
-		}
-		break;
-		case ERenderTargetFormat::R8:
-		{
-			if (mRenderPassR8 == nullptr)
-				createRenderPass(mDevice, VK_FORMAT_R8_SRGB, mDepthFormat, mRenderPassR8);
+			case ERenderTargetFormat::R8:
+			{
+				if (mRenderPassR8 == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_R8_SRGB, mDepthFormat, mRenderPassR8);
 
-			render_pass = mRenderPassR8;
-		}
-		break;
-		case ERenderTargetFormat::Depth:
-		{
-			if (mRenderPassDepth == nullptr)
-				createRenderPass(mDevice, VK_FORMAT_D24_UNORM_S8_UINT, mDepthFormat, mRenderPassDepth);
+				render_pass = mRenderPassR8;
+			}
+			break;
 
-			render_pass = mRenderPassDepth;
-		}
-		break;
+			case ERenderTargetFormat::Depth:
+			{
+				if (mRenderPassDepth == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_D24_UNORM_S8_UINT, mDepthFormat, mRenderPassDepth);
+
+				render_pass = mRenderPassDepth;
+			}
+			break;
 		}
 
 		assert(render_pass != nullptr);
@@ -1058,6 +1052,26 @@ namespace nap
 	}
 
 
+	bool RenderService::initEmptyTexture(nap::utility::ErrorState& errorState)
+	{
+		Texture2DSettings settings;
+		settings.mWidth = 16;
+		settings.mHeight = 16;
+		settings.mChannels = ESurfaceChannels::RGBA;
+		settings.mDataType = ESurfaceDataType::BYTE;
+		mEmptyTexture = std::make_unique<Texture2D>(getCore());
+		if (!mEmptyTexture->initTexture(settings, errorState))
+			return false;
+
+		std::vector<uint8_t> empty_texture_data;
+		empty_texture_data.resize(settings.getSizeInBytes());
+
+		mEmptyTexture->update(empty_texture_data.data());
+
+		return true;
+	}
+
+
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
@@ -1127,6 +1141,9 @@ namespace nap
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
 
+		if (!initEmptyTexture(errorState))
+			return false;
+
 		return true;
 	}
 
@@ -1149,6 +1166,7 @@ namespace nap
 
 		mTexturesToUpdate.clear();
 		renderWindow.beginRenderPass();
+
 		return true;
 	}
 

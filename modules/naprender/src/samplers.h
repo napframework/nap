@@ -57,7 +57,7 @@ namespace nap
 		VkSampler getSampler() const { return mSampler; }
 
 	protected:
-		void raiseChanged() { mSamplerChangedCallback(*this); }
+		void raiseChanged() { if (mSamplerChangedCallback) mSamplerChangedCallback(*this); }
 
 	private:
 		VkDevice						mDevice;
@@ -90,6 +90,8 @@ namespace nap
 		* @param texture The texture resource to set for this uniform.
 		*/
 		void setTexture(Texture2D& texture);
+
+		bool hasTexture() const { return mTexture2D != nullptr; }
 		const Texture2D& getTexture() const { return *mTexture2D; }
 
 	private:
@@ -140,6 +142,7 @@ namespace nap
 
 		int getNumElements() const { return mTextures.size(); }
 
+		bool hasTexture(int index) const { return mTextures[index] != nullptr; }
 		const Texture2D& getTexture(int index) const { return *mTextures[index]; }
 		void setTexture(int index, Texture2D& texture);
 

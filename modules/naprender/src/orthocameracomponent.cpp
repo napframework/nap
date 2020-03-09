@@ -32,6 +32,20 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	// Create an orthographic matrix in Vulkan clip space. X: [left: -1, right: 1], Y[top: 1, bottom: -1], Z: [near: 0, far: 1].
+	glm::mat4x4 createVulkanOrthoMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
+	{
+		glm::mat4x4 Result(1);
+		Result[0][0] = static_cast<float>(2) / (right - left);
+		Result[1][1] = static_cast<float>(2) / (bottom - top);
+		Result[3][0] = -(right + left) / (right - left);
+		Result[3][1] = -(top + bottom) / (bottom - top);
+		Result[2][2] = -static_cast<float>(1) / (zFar - zNear);
+		Result[3][2] = -zNear / (zFar - zNear);
+
+		return Result;
+	}
+
 	// Hook up attribute changes
 	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity, Component& resource) :
 		CameraComponentInstance(entity, resource)
@@ -89,7 +103,7 @@ namespace nap
 				{
 					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
 					glm::ivec2 render_target_size = getRenderTargetSize();
-					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = createVulkanOrthoMatrix(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 				case EOrthoCameraMode::CorrectAspectRatio:
@@ -99,12 +113,12 @@ namespace nap
 					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
 					float top_plane = mProperties.mTopPlane * aspect_ratio;
 					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
-					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = createVulkanOrthoMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 				case EOrthoCameraMode::Custom:
 				{
-					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = createVulkanOrthoMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 			}
