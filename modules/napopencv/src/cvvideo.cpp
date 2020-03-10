@@ -84,11 +84,9 @@ namespace nap
 
 	void CVVideo::setFrame(int frame)
 	{
-		if (!started())
-		{
-			nap::Logger::warn("%s: capture device not running", mID.c_str());
+		// Bail if we're not open
+		if (!isOpen())
 			return;
-		}
 
 		// Clamp to range and set as property
 		int req_frame = nap::math::clamp<int>(frame, 0, geFrameCount() - 1);

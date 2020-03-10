@@ -14,19 +14,23 @@ namespace nap
 	bool CVAdapter::init(utility::ErrorState& errorState)
 	{
 		mCaptureDevice.setExceptionMode(false);
+		return true;
 	}
 
 
 	void CVAdapter::setProperty(cv::VideoCaptureProperties propID, double value)
 	{
-		assert(mParent != nullptr);
-		mParent->setProperty(*this, propID, value);
+		if (isOpen())
+		{
+			assert(mParent != nullptr);
+			mParent->setProperty(*this, propID, value);
+		}
 	}
 
 
 	double CVAdapter::getProperty(cv::VideoCaptureProperties propID) const
 	{
-		return mCaptureDevice.get(propID);
+		return isOpen() ? mCaptureDevice.get(propID) : -1.0;
 	}
 
 
@@ -48,39 +52,32 @@ namespace nap
 		return mParent->getErrors(*this).empty();
 	}
 
-	bool CVAdapter::start(utility::ErrorState& errorState)
+
+	bool CVAdapter::isOpen() const
 	{
-		mStarted = false;
-		assert(!mCaptureDevice.isOpened());
-		mStarted = onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
-		return mStarted;
+		return mCaptureDevice.isOpened();
 	}
 
 
-	void CVAdapter::stop()
+	bool CVAdapter::open(utility::ErrorState& errorState)
+	{
+		assert(!mCaptureDevice.isOpened());
+		return onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
+	}
+
+
+	void CVAdapter::close()
 	{
 		assert(mCaptureDevice.isOpened());
 		mCaptureDevice.release();
-		mStarted = false;
 		onClose();
 	}
 
 
 	bool CVAdapter::restart(utility::ErrorState& error)
 	{
-		// Stop capture device
-		CVCaptureDevice& capture_device = getParent();
-		capture_device.stop();
-
-		// Stop this device
-		if (started())
-			this->stop();
-
-		// Start the device
-		bool opened = start(error);
-
-		// Start capturing again
-		return (opened && capture_device.start(error));
+		assert(mParent != nullptr);
+		return mParent->restart(*this, error);
 	}
 
 
@@ -107,5 +104,4 @@ namespace nap
 	{
 		return this->onRetrieve(mCaptureDevice, error);
 	}
-
 }

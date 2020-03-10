@@ -122,8 +122,8 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getComputeTime()).c_str());
-		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getComputeTime()).c_str());
+		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
+		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getCaptureTime()).c_str());
 
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{

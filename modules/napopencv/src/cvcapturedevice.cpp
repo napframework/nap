@@ -63,40 +63,62 @@ namespace nap
 		mService->registerCaptureDevice(*this);
 
 		// Initialize property and error map
-		mAdapterMap.reserve(mAdapters.size());
+		mCaptureMap.reserve(mAdapters.size());
 		mErrorMap.reserve(mAdapters.size());
 		
 		// Start and on success add adapter for capturing
 		for (auto& adapter : mAdapters)
 		{
 			mErrorMap[adapter.get()] = {};
-			if (!adapter->started())
+			if (!adapter->open(errorState))
 			{
 				// Set and log error
 				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
 				setError(*adapter, CVCaptureError::OpenError, msg);
+				nap::Logger::warn(msg);
 
 				// Discard adapter as valid capture device
 				continue;
 			}
 
 			// Create properties
-			mAdapterMap[adapter.get()] = {};
+			mCaptureMap[adapter.get()] = {};
 		}
 
 		// Start capture task
-		mStopCapturing = false;
-		mCaptureFrame = true;
-		mCaptureTask = std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
+		startCapture();
 		return true;
+	}
+
+
+	void CVCaptureDevice::stop()
+	{
+		// Stop capture task
+		stopCapture();
+
+		// Close all open adapters
+		mCaptureMap.clear();
+		for (auto& adapter : mAdapters)
+		{
+			if (!(adapter->isOpen()))
+				continue;
+			adapter->close();
+		}
+
+		// Clear all errors
+		mErrorMap.clear();
+		mHasErrors = false;
+
+		// Unregister capture device
+		mService->removeCaptureDevice(*this);
 	}
 
 
 	void CVCaptureDevice::setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value)
 	{
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
-		auto it = mAdapterMap.find(&adapter);
-		if (it == mAdapterMap.end())
+		auto it = mCaptureMap.find(&adapter);
+		if (it == mCaptureMap.end())
 		{
 			nap::Logger::warn("%s: Unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
 			return;
@@ -105,9 +127,59 @@ namespace nap
 	}
 
 
-	double CVCaptureDevice::getComputeTime() const
+	double CVCaptureDevice::getCaptureTime() const
 	{
 		return mComputeTime;
+	}
+
+
+	bool CVCaptureDevice::restart(nap::CVAdapter& adapter, utility::ErrorState& error)
+	{
+		// Check if adapter is managed by this capture device
+		auto found_adapter = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
+		{
+			return it == &adapter;
+		});
+
+		if (found_adapter == mAdapters.end())
+		{
+			error.fail("%s: Not managed by capture device: %s", adapter.mID.c_str(), mID.c_str());
+			return false;
+		}
+
+		// Stop capture task
+		stopCapture();
+
+		// Get reference to adapter and close when open
+		CVAdapter* curr_adapter = found_adapter->get();
+		if (curr_adapter->isOpen())
+			curr_adapter->close();
+
+		// Try to open and when opened, reset errors and state
+		// On failure to open, erase as capture candidate
+		bool opened = curr_adapter->open(error);
+		if (!opened)
+		{
+			std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), curr_adapter->mID.c_str());
+			setError(*curr_adapter, CVCaptureError::OpenError, msg);
+
+			// Erase from adapter capture map
+			auto adapter_it = mCaptureMap.find(curr_adapter);
+			if (adapter_it != mCaptureMap.end())
+			{
+				mCaptureMap.erase(adapter_it);
+			}
+		}
+		else
+		{
+			// Reset entry for maps
+			mErrorMap[curr_adapter] = {};
+			mCaptureMap[curr_adapter] = {};
+		}
+
+		// Start capture thread and return if device is opened.
+		startCapture();
+		return opened;
 	}
 
 
@@ -134,10 +206,25 @@ namespace nap
 	}
 
 
-	void CVCaptureDevice::stop()
+	bool CVCaptureDevice::newFrame() const
 	{
-		// Stop capturing thread and notify worker
+		return mFrameAvailable;
+	}
+
+
+	void CVCaptureDevice::startCapture()
+	{
+		// Start capture
+		mStopCapturing = false;
+		mCaptureFrame = true;
+		mCaptureTask = std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
+	}
+
+
+	void CVCaptureDevice::stopCapture()
+	{
 		{
+			// Stop capturing thread and notify worker
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
 			mStopCapturing = true;
 		}
@@ -146,22 +233,6 @@ namespace nap
 		// Wait till exit
 		if (mCaptureTask.valid())
 			mCaptureTask.wait();
-
-		// Clear all properties
-		mAdapterMap.clear();
-
-		// Clear all errors
-		mErrorMap.clear();
-		mHasErrors = false;
-
-		// Unregister capture device
-		mService->removeCaptureDevice(*this);
-	}
-
-
-	bool CVCaptureDevice::newFrame() const
-	{
-		return mFrameAvailable;
 	}
 
 
@@ -190,8 +261,8 @@ namespace nap
 					break;
 
 				// Copy and clear properties
-				properties = mAdapterMap;
-				for (auto& prop : mAdapterMap)
+				properties = mCaptureMap;
+				for (auto& prop : mCaptureMap)
 					prop.second.clear();
 
 				// Don't capture new frame immediately, only do so when 'AutoCapture' is turned on

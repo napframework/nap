@@ -16,15 +16,16 @@ namespace nap
 	class CVCaptureDevice;
 
 	/**
-	 * Interface for a specific type of OpenCV capture device.
+	 * Interface for a specific type of OpenCV capture device (camera, video, network stream etc).
 	 * Derive from this class to implement your own OpenCV adapter. The adapter itself does not schedule 
-	 * the frame capture operation, that is handled in the background by the nap::CVCaptureDevice. 
+	 * the frame capture operation, that is handled in the background by the nap::CVCaptureDevice.
 	 * That device (a-synchronously) handles the frame grab and retrieve operations.
+	 * The capture device also opens the adapter on startup and closes it when stopped.
 	 * Note that every adapter should only be added once to a specific nap::CVCaptureDevice!
 	 */
-	class NAPAPI CVAdapter : public Device
+	class NAPAPI CVAdapter : public Resource
 	{
-		RTTI_ENABLE(Device)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Initializes the OpenCV Adapter
@@ -36,6 +37,9 @@ namespace nap
 		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
+		 * This call has no effect when the adapter is not open.
+		 * It is not guaranteed that the property can be set,
+		 * this depends completely on the interface exposed by the hardware.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */
@@ -44,8 +48,10 @@ namespace nap
 		/**
 		 * Get an OpenCV camera device property. Property is read immediately.
 		 * Note that depending on your hardware this call can be slow!
+		 * It is not guaranteed that the property can be read, 
+		 * this depends completely on the interface exposed by the hardware.
 		 * @param propID the property to get.
-		 * @return property value, if available.
+		 * @return property value if available. -1 if adapter is not open.
 		 */
 		double getProperty(cv::VideoCaptureProperties propID) const;
 
@@ -66,19 +72,7 @@ namespace nap
 		/**
 		 * @return if the device is currently open and ready for processing.
 		 */
-		bool started() const															{ return mStarted; }
-
-		/**
-		 * Opens the OpenCV capture device.
-		 * @param errorState contains the error if the device can't be started
-		 * @return if the device started
-		 */
-		virtual bool start(utility::ErrorState& errorState) override final;
-
-		/**
-		 * Closes the OpenCV capture device.
-		 */
-		virtual void stop() override final;
+		bool isOpen() const;
 
 		/**
 		 * Re-opens the OpenCV capture device and restarts the background capture process.
@@ -97,14 +91,18 @@ namespace nap
 	protected:
 		/**
 		 * Needs to be implemented in a derived class.
-		 * Called automatically by this device on startup when the OpenCV capture device needs to be opened.
-		 * It is the responsibility of the derived class to open the device in this call and return success or failure.
+		 * Called automatically by the nap::CVCaptureDevice on startup, before capture.
 		 * @param captureDevice handle to the device that needs to be opened.
 		 * @param api the preferred backend video capture api
 		 * @param error contains the error when the device could not be opened
 		 * @return if the device opened correctly
 		 */
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) = 0;
+
+		/**
+		 * Called automatically by this device when stopped, after the device connection is closed.
+		 */
+		virtual void onClose() { }
 
 		/**
 		 * This method decodes and returns the just grabbed frame.
@@ -117,14 +115,9 @@ namespace nap
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) = 0;
 
 		/**
-		 * Called automatically by this device when stopped, after the device connection is closed.
+		 * Called right after the frame is stored. Can be implemented in a derived class.
 		 */
-		virtual void onClose() { }
-
-		/**
-		 * Called right after the frame is stored.
-		 */
-		virtual void onCopy() { }
+		virtual void onCopy()										{ }
 
 		/**
 		 * @return the OpenCV video capture device
@@ -136,19 +129,39 @@ namespace nap
 		 */
 		const cv::VideoCapture&	getCaptureDevice() const;
 
-	protected:
 		/**
-		 * @return video capture device this adapter belongs to
+		 * @return the video capture device this adapter belongs to.
 		 */
 		CVCaptureDevice& getParent() const;
 
 	private:
 		friend class CVCaptureDevice;
-		CVCaptureDevice*	mParent;							///< The nap parent capture device
-		cv::VideoCapture	mCaptureDevice;						///< The open-cv video capture device
-		bool				mStarted = false;					///< If the video capture device started
 
+		/**
+		 * Called by the CVCaptureDevice, opens the OpenCV capture device, 
+		 * @param errorState contains the error if the device can't be opened
+		 * @return if the device opened
+		 */
+		virtual bool open(utility::ErrorState& errorState) final;
+
+		/**
+		 * Called by the CVCaptureDevice, closes the OpenCV capture device,
+		 */
+		virtual void close() final;
+
+		/**
+		 * Called by the capture device to retrieve recently grabbed frame.
+		 * @param error contains the error if the operation fails
+		 * @return new frame, empty if operation fails.
+		 */
 		CVFrame retrieve(utility::ErrorState& error);
+
+		/**
+		 * Called by the capture device after successful grab and retrieve.
+		 */
 		void copied()											{ onCopy(); }
+
+		CVCaptureDevice*	mParent;				///< The nap parent capture device
+		cv::VideoCapture	mCaptureDevice;			///< The open-cv video capture device
 	};
 }

@@ -57,7 +57,7 @@ namespace nap
 		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
-		 * Stops the capture device.
+		 * Stops the capture device. Cancels background capture operation.
 		 */
 		virtual void stop() override final;
 
@@ -119,7 +119,7 @@ namespace nap
 		 * This includes the time it takes to complete the entire process cycle for all the adapters.
 		 * @return capture task compute time.
 		 */
-		double getComputeTime() const;
+		double getCaptureTime() const;
 
 		/**
 		 * Global check to see if any errors are associated with this capture device.
@@ -149,6 +149,17 @@ namespace nap
 		void clearErrors();
 
 		/**
+		 * Restarts a specific adapter by closing it and opening it again.
+		 * The given adapter needs to be managed by this capture device.
+		 * Before the adapter is closed the background capture process is stopped.
+		 * After attempting to open the adapter the background capture process is started again
+		 * @param adapter the adapter to restart
+		 * @param error contains the error if the adapter can't be restarted
+		 * @return if the adapter restarted correctly
+		 */
+		bool restart(nap::CVAdapter& adapter, utility::ErrorState& error);
+
+		/**
 		 * Occurs when a new frame is captured on the background thread.
 		 * Listen to this signal when you want to process frame data on a background thread.
 		 * Use the CVFrameEvent::copyTo() or CVFrameEvent::clone() method to duplicate 
@@ -171,13 +182,23 @@ namespace nap
 		std::condition_variable	mCaptureCondition;							///< Used for telling the polling task to continue
 
 		using PropertyMap = std::unordered_map<int, double>;			
-		std::unordered_map<CVAdapter*, PropertyMap> mAdapterMap;			///< All properties to set for the given adapter
+		std::unordered_map<CVAdapter*, PropertyMap> mCaptureMap;			///< All properties to set for the given adapter
 
 		std::atomic<bool>		mHasErrors = { false };						///< If any errors are associated with this device
 		mutable std::mutex		mErrorMutex;								///< Mutex associated with setting / getting errors
 		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> mErrorMap;	///< All errors associated with a specific adapter
 
 		CVService*				mService = nullptr;							///< OpenCV service
+
+		/**
+		 * Starts the background capture task
+		 */
+		void startCapture();
+
+		/**
+		 * Stops the background capture task
+		 */
+		void stopCapture();
 
 		/**
 		 * Task that captures new frames
