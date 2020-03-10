@@ -70,19 +70,17 @@ namespace nap
 		for (auto& adapter : mAdapters)
 		{
 			mErrorMap[adapter.get()] = {};
-			if (!adapter->open(errorState))
+			if (adapter->open(errorState))
 			{
-				// Set and log error
-				std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), adapter->mID.c_str());
-				setError(*adapter, CVCaptureError::OpenError, msg);
-				nap::Logger::warn(msg);
-
-				// Discard adapter as valid capture device
+				// Create properties
+				mCaptureMap[adapter.get()] = {};
 				continue;
 			}
 
-			// Create properties
-			mCaptureMap[adapter.get()] = {};
+			// Set and log error
+			errorState.fail("%s: Adapter: %s could not be opened", mID.c_str(), adapter->mID.c_str());
+			setError(*adapter, CVCaptureError::OpenError, errorState.toString());
+			nap::Logger::warn(errorState.toString());
 		}
 
 		// Start capture task
@@ -154,14 +152,16 @@ namespace nap
 		CVAdapter* curr_adapter = found_adapter->get();
 		if (curr_adapter->isOpen())
 			curr_adapter->close();
+		mErrorMap[curr_adapter] = {};
 
 		// Try to open and when opened, reset errors and state
 		// On failure to open, erase as capture candidate
 		bool opened = curr_adapter->open(error);
 		if (!opened)
 		{
-			std::string msg = utility::stringFormat("%s: Adapter: %s did not start", mID.c_str(), curr_adapter->mID.c_str());
-			setError(*curr_adapter, CVCaptureError::OpenError, msg);
+			// Log error
+			error.fail("%s: Adapter: %s could not be opened", mID.c_str(), curr_adapter->mID.c_str());
+			setError(*curr_adapter, CVCaptureError::OpenError, error.toString());
 
 			// Erase from adapter capture map
 			auto adapter_it = mCaptureMap.find(curr_adapter);
@@ -172,8 +172,7 @@ namespace nap
 		}
 		else
 		{
-			// Reset entry for maps
-			mErrorMap[curr_adapter] = {};
+			// Add as valid entry for capturing
 			mCaptureMap[curr_adapter] = {};
 		}
 
