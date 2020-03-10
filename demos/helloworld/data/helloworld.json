@@ -78,6 +78,14 @@
             ]
         },
         {
+            "Type": "nap::CVCaptureDevice",
+            "mID": "StreamCaptureDevice",
+            "AutoCapture": true,
+            "Adapters": [
+                "Stream"
+            ]
+        },
+        {
             "Type": "nap::CVVideo",
             "mID": "Video",
             "Backend": "Automatic",
@@ -92,6 +100,20 @@
             "File": "people.mp4"
         },
         {
+            "Type": "nap::CVWebStream",
+            "mID": "Stream",
+            "Backend": "Automatic",
+            "ConvertRGB": true,
+            "FlipHorizontal": false,
+            "FlipVertical": true,
+            "Resize": true,
+            "Size": {
+                "x": 640,
+                "y": 480
+            },
+            "Link": "http://192.168.0.38:8080"
+        },
+        {
             "Type": "nap::Entity",
             "mID": "OpenCV",
             "Components": [
@@ -104,6 +126,11 @@
                     "Type": "nap::CVCaptureComponent",
                     "mID": "VideoCaptureComponent",
                     "Devices": "VideoCaptureDevice"
+                },
+                {
+                    "Type": "nap::CVCaptureComponent",
+                    "mID": "StreamCaptureComponent",
+                    "Devices": "StreamCaptureDevice"
                 },
                 {
                     "Type": "nap::CVCaptureToTextureComponent",
@@ -127,6 +154,14 @@
                     "CaptureComponent": "CameraCaptureComponent",
                     "RenderTexture": "CameraTextureTwo",
                     "AdapterIndex": 1,
+                    "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::CVCaptureToTextureComponent",
+                    "mID": "RenderStreamToTextureComponent",
+                    "CaptureComponent": "StreamCaptureComponent",
+                    "RenderTexture": "StreamTexture",
+                    "AdapterIndex": 0,
                     "MatrixIndex": 0
                 }
             ],
@@ -479,6 +514,21 @@
             "Usage": "Static",
             "Width": 640,
             "Height": 360,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "StreamTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 10
+            },
+            "Usage": "Static",
+            "Width": 640,
+            "Height": 480,
             "Format": "RGB8"
         },
         {

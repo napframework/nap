@@ -50,14 +50,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Returns frame width in pixels.
-		 * @return frame width in pixels.
+		 * Returns capture frame width in pixels.
+		 * @return capture frame width in pixels.
 		 */
 		int getWidth() const;
 
 		/**
-		 * Returns frame height in pixels.
-		 * @return frame height in pixels.
+		 * Returns capture frame height in pixels.
+		 * @return capture frame height in pixels.
 		 */
 		int getHeight() const;
 

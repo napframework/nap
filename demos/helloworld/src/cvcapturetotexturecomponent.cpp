@@ -84,25 +84,6 @@ namespace nap
 				cv_frame[mMatrixIndex].rows);
 			return;
 		}
-
-		// Ensure depth is the same
-		int cv_depth = cv_frame[mMatrixIndex].depth();
-		if (mRenderTexture->mFormat == RenderTexture2D::EFormat::Depth)
-		{
-			if (cv_depth != CV_32F)
-			{
-				nap::Logger::warn("%s: invalid bit depth, expected: 32 bit float", mID.c_str());
-				return;
-			}
-		}
-		else
-		{
-			if (cv_depth != CV_8U)
-			{
-				nap::Logger::warn("%s: invalid bit depth, expected: 8 bit unsigned", mID.c_str());
-				return;
-			}
-		}
 		
 		// Update texture
 		cv::Mat cpu_mat = cv_frame[mMatrixIndex].getMat(cv::ACCESS_READ);

@@ -157,7 +157,7 @@ namespace nap
 		nap::Signal<const CVFrameEvent&> frameCaptured;
 
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;					///< Property: 'Adapters' all the video capture adapters.							
-		bool					mAutoCapture = false;						///< Property: 'AutoCapture' if this device captures new frames automatically.
+		bool					mAutoCapture = true;						///< Property: 'AutoCapture' if this device captures new frames automatically.
 
 	private:
 		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame

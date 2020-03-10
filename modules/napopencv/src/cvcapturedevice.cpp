@@ -98,7 +98,7 @@ namespace nap
 		auto it = mAdapterMap.find(&adapter);
 		if (it == mAdapterMap.end())
 		{
-			nap::Logger::warn("%s: unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
+			nap::Logger::warn("%s: Unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
 			return;
 		}
 		(*it).second[propID] = value;
@@ -210,14 +210,14 @@ namespace nap
 				{
 					if (!cur_adapter->getCaptureDevice().set(prop.first, prop.second))
 					{
-						std::string msg = utility::stringFormat("%s unable to set property: %s to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
+						std::string msg = utility::stringFormat("%s: Unable to set property: %s to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
 						setError(*cur_adapter, CVCaptureError::PropertyError, msg);
 					}
 				}
 				
 				if (!cur_adapter->getCaptureDevice().grab())
 				{
-					std::string msg = utility::stringFormat("%s: failed to grab frame from %s. Device disconnected or end of stream.", mID.c_str(), cur_adapter->mID.c_str());
+					std::string msg = utility::stringFormat("%s: Failed to grab frame from %s. Device disconnected or end of stream.", mID.c_str(), cur_adapter->mID.c_str());
 					setError(*cur_adapter, CVCaptureError::GrabError, msg);
 					continue;
 				}
@@ -234,7 +234,7 @@ namespace nap
 				frame_event.addFrame((*it)->retrieve(grab_error));
 				if (frame_event.lastFrame().empty())
 				{
-					std::string msg = utility::stringFormat("%s: failed to decode frame", mID.c_str());
+					std::string msg = utility::stringFormat("%s: Failed to decode frame", mID.c_str());
 					setError(**it, CVCaptureError::DecodeError, msg);
 					frame_event.popFrame();
 					it = capture_adapters.erase(it);

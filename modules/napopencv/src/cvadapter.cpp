@@ -11,6 +11,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool CVAdapter::init(utility::ErrorState& errorState)
+	{
+		mCaptureDevice.setExceptionMode(false);
+	}
+
+
 	void CVAdapter::setProperty(cv::VideoCaptureProperties propID, double value)
 	{
 		assert(mParent != nullptr);

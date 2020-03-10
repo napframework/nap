@@ -46,6 +46,18 @@ namespace nap
 	}
 
 
+	int CVVideo::getWidth() const
+	{
+		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_WIDTH));
+	}
+
+
+	int CVVideo::getHeight() const
+	{
+		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_HEIGHT));
+	}
+
+
 	float CVVideo::getFramerate() const
 	{
 		return static_cast<float>(getProperty(cv::CAP_PROP_FPS));
@@ -105,9 +117,10 @@ namespace nap
 
 	CVFrame CVVideo::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
+		// Retrieve currently stored frame
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
-			error.fail("%s: no new frame available", mID.c_str());
+			error.fail("%s: No new frame available", mID.c_str());
 			return CVFrame();
 		}
 

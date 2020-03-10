@@ -27,6 +27,13 @@ namespace nap
 		RTTI_ENABLE(Device)
 	public:
 		/**
+		 * Initializes the OpenCV Adapter
+		 * @param errorState contains the error when initialization fails.
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
 		 * @param propID the property to set.

@@ -11,15 +11,14 @@
 namespace nap
 {
 	/**
-	 * Captures frames from a video file or image sequence.
+	 * Captures frames from a video streamed over the network.
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
 	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
-	 * If you need regular video playback, use the nap::Video object instead.
 	 *
 	 * Add this device to a nap::CVCaptureDevice to capture frames from the video stream, in a background thread.
 	 * Note that this object should only be added once to a nap::CVCaptureDevice!
 	 */
-	class NAPAPI CVVideo : public CVAdapter
+	class NAPAPI CVWebStream : public CVAdapter
 	{
 		RTTI_ENABLE(CVAdapter)
 	public:
@@ -29,13 +28,6 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * Changes the video and restarts the background capture process.
-		 * @param file new video file to load
-		 * @return if the video loaded successfully. 
-		 */
-		bool changeVideo(const std::string& video, nap::utility::ErrorState& error);
 
 		/**
 		 * Returns capture frame width in pixels.
@@ -49,60 +41,7 @@ namespace nap
 		 */
 		int getHeight() const;
 
-		/**
-		 * @return intended video playback speed in frames per second
-		 */
-		float getFramerate() const;
-
-		/**
-		 * @return length of the video in seconds based on framerate and frame count.
-		 */
-		float getLength();
-
-		/**
-		 * @return number of frames in video file or sequence
-		 */
-		int geFrameCount() const;
-
-		/**
-		 * Reset the video to the beginning of the video stream.
-		 * The first frame is captured immediately in the background.
-		 */
-		void reset();
-
-		/**
-		* Selects the frame to be captured next, where 0 is the first frame.
-		* The requested frame is queued immediately for capture.
-		* Note that only the last request is considered when multiple requests are made before the frame is available.
-		* This function clamps the frame when out of bounds.
-		* @param frame the requested frame inside the stream
-		* @return if operation succeeded
-		*/
-		void setFrame(int frame);
-
-		/**
-		* Returns the current frame index.
-		* This value is updated when a new frame is captured.
-		* @return current position of the marker inside the video stream.
-		*/
-		int getFrame();
-
-		/**
-		 * Set the marker to a specific location inside the video stream.
-		 * The requested frame at the given time is captured immediately in the background.
-		 * Note that only the last request is considered when multiple requests are made before the frame is available.
-		 * This function clamps the time when out of bounds.
-		 * @param time time in seconds
-		 * @return if operation succeeded
-		 */
-		void setTime(float time);
-
-		/**
-		 * @return the current time in seconds of the marker in the video stream
-		 */
-		float getTime();
-
-		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
+		std::string		mLink;									///< Property: 'Link' link to the web stream.
 		bool			mConvertRGB = true;						///< Property: 'ConvertRGB' if the frame is converted into RGB
 		bool			mFlipHorizontal = false;				///< Property: 'FlipHorizontal' flips the frame on the x-axis
 		bool			mFlipVertical = false;					///< Property: 'FlipVertical' flips the frame on the y-axis
@@ -111,6 +50,9 @@ namespace nap
 
 	protected:
 		
+		/**
+		 * @return total number of matrices associated with a frame captured from this device.
+		 */
 		virtual int getMatrixCount() override					{ return 1; }
 
 		/**
@@ -129,18 +71,7 @@ namespace nap
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
 
-		/**
-		 * Stores the current frame index
-		 */
-		virtual void onCopy() override;
-
-		/**
-		 * Occurs when the device is closed
-		 */
-		virtual void onClose() override;
-
 	private:
-		std::atomic<int>		mCurrentFrame = 0;				///< Last (Current) captured video frame index
 		CVFrame					mCaptureFrame					{ 1 };
 		CVFrame					mOutputFrame					{ 1 };
 	};

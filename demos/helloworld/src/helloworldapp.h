@@ -98,6 +98,7 @@ namespace nap
 		ObjectPtr<RenderTexture2D> mCameraTextureOne = nullptr;			//< Pointer to the texture we need to capture
 		ObjectPtr<RenderTexture2D> mCameraTextureTwo = nullptr;			//< Pointer to the second camera texture
 		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture
+		ObjectPtr<RenderTexture2D> mStreamTexture = nullptr;			//< Pointer to the network stream texture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		int mCurrentVideoFrame = 0;
 

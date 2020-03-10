@@ -51,6 +51,7 @@ namespace nap
 		mCameraTextureOne = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureOne");
 		mCameraTextureTwo = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureTwo");
 		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
+		mStreamTexture = mResourceManager->findObject<nap::RenderTexture2D>("StreamTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -123,26 +124,38 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getComputeTime()).c_str());
 		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getComputeTime()).c_str());
-		if (ImGui::Button("Reconnect Camera"))
-		{
-			nap::utility::ErrorState error;
-			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
-			CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
-			camera_one->reconnect(error);
-			camera_two->reconnect(error);
-		}
-		
+
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{
+			if (ImGui::Button("Reconnect Camera One"))
+			{
+				nap::utility::ErrorState error;
+				CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
+				camera_one->reconnect(error);
+			}
+
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraTextureOne->getWidth()) / static_cast<float>(mCameraTextureOne->getHeight());
 			ImGui::Image(*mCameraTextureOne, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("Webcam Feed Two"))
 		{
+			if (ImGui::Button("Reconnect Camera Two"))
+			{
+				nap::utility::ErrorState error;
+				CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
+				camera_two->reconnect(error);
+			}
+
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraTextureTwo->getWidth()) / static_cast<float>(mCameraTextureTwo->getHeight());
 			ImGui::Image(*mCameraTextureTwo, { col_width, col_width / ratio_video });
+		}
+		if (ImGui::CollapsingHeader("Stream Feed"))
+		{
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mStreamTexture->getWidth()) / static_cast<float>(mStreamTexture->getHeight());
+			ImGui::Image(*mStreamTexture, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
