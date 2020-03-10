@@ -20,17 +20,14 @@ namespace nap
 
 	void CVAdapter::setProperty(cv::VideoCaptureProperties propID, double value)
 	{
-		if (isOpen())
-		{
-			assert(mParent != nullptr);
-			mParent->setProperty(*this, propID, value);
-		}
+		assert(mParent != nullptr);
+		mParent->setProperty(*this, propID, value);
 	}
 
 
 	double CVAdapter::getProperty(cv::VideoCaptureProperties propID) const
 	{
-		return isOpen() ? mCaptureDevice.get(propID) : -1.0;
+		return mCaptureDevice.get(propID);
 	}
 
 
@@ -38,6 +35,13 @@ namespace nap
 	{
 		assert(mParent != nullptr);
 		return mParent->getErrors(*this);
+	}
+
+
+	void CVAdapter::clearErrors()
+	{
+		assert(mParent != nullptr);
+		mParent->clearErrors(*this);
 	}
 
 
@@ -61,16 +65,17 @@ namespace nap
 
 	bool CVAdapter::open(utility::ErrorState& errorState)
 	{
-		assert(!mCaptureDevice.isOpened());
 		return onOpen(mCaptureDevice, static_cast<int>(mAPIPreference), errorState);
 	}
 
 
 	void CVAdapter::close()
 	{
-		assert(mCaptureDevice.isOpened());
-		mCaptureDevice.release();
-		onClose();
+		if (mCaptureDevice.isOpened())
+		{
+			mCaptureDevice.release();
+			onClose();
+		}
 	}
 
 
@@ -78,6 +83,13 @@ namespace nap
 	{
 		assert(mParent != nullptr);
 		return mParent->restart(*this, error);
+	}
+
+
+	void CVAdapter::stop()
+	{
+		assert(mParent != nullptr);
+		mParent->remove(*this);
 	}
 
 

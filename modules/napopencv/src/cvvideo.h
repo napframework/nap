@@ -31,7 +31,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Changes the video and restarts the background capture process.
+		 * Changes the video current video stream. The adapter is restarted.
 		 * @param file new video file to load
 		 * @return if the video loaded successfully. 
 		 */

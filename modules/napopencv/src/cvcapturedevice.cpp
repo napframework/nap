@@ -95,7 +95,6 @@ namespace nap
 		stopCapture();
 
 		// Close all open adapters
-		mCaptureMap.clear();
 		for (auto& adapter : mAdapters)
 		{
 			if (!(adapter->isOpen()))
@@ -103,8 +102,9 @@ namespace nap
 			adapter->close();
 		}
 
-		// Clear all errors
-		mErrorMap.clear();
+		// Clear all caches
+		mCaptureMap.clear();
+		clearErrors();
 		mHasErrors = false;
 
 		// Unregister capture device
@@ -133,38 +133,25 @@ namespace nap
 
 	bool CVCaptureDevice::restart(nap::CVAdapter& adapter, utility::ErrorState& error)
 	{
-		// Check if adapter is managed by this capture device
-		auto found_adapter = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
-		{
-			return it == &adapter;
-		});
-
-		if (found_adapter == mAdapters.end())
-		{
-			error.fail("%s: Not managed by capture device: %s", adapter.mID.c_str(), mID.c_str());
-			return false;
-		}
-
 		// Stop capture task
+		assert(isManaged(adapter));
 		stopCapture();
 
 		// Get reference to adapter and close when open
-		CVAdapter* curr_adapter = found_adapter->get();
-		if (curr_adapter->isOpen())
-			curr_adapter->close();
-		mErrorMap[curr_adapter] = {};
+		adapter.close();
+		mErrorMap[&adapter] = {};
 
 		// Try to open and when opened, reset errors and state
 		// On failure to open, erase as capture candidate
-		bool opened = curr_adapter->open(error);
+		bool opened = adapter.open(error);
 		if (!opened)
 		{
 			// Log error
-			error.fail("%s: Adapter: %s could not be opened", mID.c_str(), curr_adapter->mID.c_str());
-			setError(*curr_adapter, CVCaptureError::OpenError, error.toString());
+			error.fail("%s: Adapter: %s could not be opened", mID.c_str(), adapter.mID.c_str());
+			setError(adapter, CVCaptureError::OpenError, error.toString());
 
 			// Erase from adapter capture map
-			auto adapter_it = mCaptureMap.find(curr_adapter);
+			auto adapter_it = mCaptureMap.find(&adapter);
 			if (adapter_it != mCaptureMap.end())
 			{
 				mCaptureMap.erase(adapter_it);
@@ -173,12 +160,33 @@ namespace nap
 		else
 		{
 			// Add as valid entry for capturing
-			mCaptureMap[curr_adapter] = {};
+			mCaptureMap[&adapter] = {};
 		}
 
 		// Start capture thread and return if device is opened.
 		startCapture();
 		return opened;
+	}
+
+
+	void CVCaptureDevice::remove(nap::CVAdapter& adapter)
+	{
+		// Stop capture task and close adapter
+		assert(isManaged(adapter));
+		stopCapture();
+		
+		// Close adapter
+		adapter.close();
+
+		// Erase from adapter capture map
+		auto adapter_it = mCaptureMap.find(&adapter);
+		if (adapter_it != mCaptureMap.end())
+		{
+			mCaptureMap.erase(adapter_it);
+		}
+
+		// Start capture task
+		startCapture();
 	}
 
 
@@ -200,8 +208,20 @@ namespace nap
 
 	void CVCaptureDevice::clearErrors()
 	{
+		mHasErrors = false;
+
 		std::lock_guard<std::mutex> lock(mErrorMutex);
-		mErrorMap.clear();
+		for (auto& error : mErrorMap)
+		{
+			error.second = {};
+		}
+	}
+
+
+	void CVCaptureDevice::clearErrors(CVAdapter& adapter)
+	{
+		assert(isManaged(adapter));
+		mErrorMap[&adapter] = {};
 	}
 
 
@@ -231,7 +251,9 @@ namespace nap
 
 		// Wait till exit
 		if (mCaptureTask.valid())
+		{
 			mCaptureTask.wait();
+		}
 	}
 
 
@@ -339,6 +361,17 @@ namespace nap
 			mComputeTime	= timer.getElapsedTime();
 			mCaptureFrame	= mAutoCapture || mCaptureFrame;
 		}
+	}
+
+
+	bool CVCaptureDevice::isManaged(const nap::CVAdapter& adapter)
+	{
+		// Check if adapter is managed by this capture device
+		auto found_adapter = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
+		{
+			return it == &adapter;
+		});
+		return found_adapter != mAdapters.end();
 	}
 
 

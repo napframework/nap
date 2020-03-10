@@ -22,6 +22,8 @@ namespace nap
 	 * That device (a-synchronously) handles the frame grab and retrieve operations.
 	 * The capture device also opens the adapter on startup and closes it when stopped.
 	 * Note that every adapter should only be added once to a specific nap::CVCaptureDevice!
+	 * Restart or remove the adapter if it throws an error during the capture operation, errors are often caused
+	 * by a connection failure or end of stream.
 	 */
 	class NAPAPI CVAdapter : public Resource
 	{
@@ -37,7 +39,7 @@ namespace nap
 		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when the new frame is captured, not immediately.
-		 * This call has no effect when the adapter is not open.
+		 * This call has no effect when the adapter is not open or currently captured.
 		 * It is not guaranteed that the property can be set,
 		 * this depends completely on the interface exposed by the hardware.
 		 * @param propID the property to set.
@@ -51,16 +53,9 @@ namespace nap
 		 * It is not guaranteed that the property can be read, 
 		 * this depends completely on the interface exposed by the hardware.
 		 * @param propID the property to get.
-		 * @return property value if available. -1 if adapter is not open.
+		 * @return property value if available.
 		 */
 		double getProperty(cv::VideoCaptureProperties propID) const;
-
-		/**
-		 * Returns all errors associated with this adapter.
-		 * Only call this when hasErrors() returned true.
-		 * @return all errors associated with this adapter.
-		 */
-		CVCaptureErrorMap getErrors() const;
 
 		/**
 		 * Checks if any errors are associated with this adapter.
@@ -70,16 +65,37 @@ namespace nap
 		bool hasErrors(CVCaptureErrorMap& outErrors);
 
 		/**
+		 * Returns all errors associated with this adapter.
+		 * Only call this when hasErrors() returned true.
+		 * @return all errors associated with this adapter.
+		 */
+		CVCaptureErrorMap getErrors() const;
+
+		/**
+		 * Clears all errors associated with this adapter
+		 */
+		void clearErrors();
+
+		/**
 		 * @return if the device is currently open and ready for processing.
 		 */
 		bool isOpen() const;
 
 		/**
 		 * Re-opens the OpenCV capture device and restarts the background capture process.
+		 * If the restart procedure fails the adapter is removed from the capture process and
+		 * an OpenError is set. When the restart procedure succeeds all errors are cleared.
 		 * @param error contains the error if the restart procedure fails.
 		 * @return if the restart procedure succeeded.
 		 */
 		bool restart(utility::ErrorState& error);
+
+		/**
+		 * Removes this adapter from the capture process, preventing the stalling of the processing loop.
+		 * You typically remove an adapter explicitly when an error occurs. 
+		 * The adapter is closed after being removed, all errors are cleared
+		 */
+		void stop();
 
 		/**
 		 * @return number of OpenCV matrices associated with a single frame

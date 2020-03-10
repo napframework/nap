@@ -151,12 +151,6 @@ namespace nap
 			float ratio_video = static_cast<float>(mCameraTextureTwo->getWidth()) / static_cast<float>(mCameraTextureTwo->getHeight());
 			ImGui::Image(*mCameraTextureTwo, { col_width, col_width / ratio_video });
 		}
-		if (ImGui::CollapsingHeader("Stream Feed"))
-		{
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mStreamTexture->getWidth()) / static_cast<float>(mStreamTexture->getHeight());
-			ImGui::Image(*mStreamTexture, { col_width, col_width / ratio_video });
-		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
 			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
@@ -211,6 +205,9 @@ namespace nap
 					{
 						ImGui::Text(error.second.c_str());
 					}
+
+					adapter->stop();
+					adapter->clearErrors();
 				}
 			}
 			else
@@ -218,7 +215,6 @@ namespace nap
 				ImGui::Text(utility::stringFormat("%s: no errors", mCameraCaptureDevice->mID.c_str()).c_str());
 			}
 		}
-
 
 		ImGui::End();
 	}

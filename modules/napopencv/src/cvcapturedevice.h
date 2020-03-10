@@ -29,8 +29,11 @@ namespace nap
 	 * Frames are automatically forwarded to the right component based on the nap::CVCaptureComponent 'Device' property.
 	 * Listen to the 'frameCaptured' signal of this device to receive new frame events from the processing (background) thread directly.
 	 *
-	 * The capture task is paused when during a capture operation an error occurs. 
+	 * The capture task is paused when all adapters, during a capture operation, throw an error.
 	 * Call capture() to force a new frame capture operation if required.
+	 *
+	 * Internally this device keeps track of all eligible adapters for capture. 
+	 * If an adapter can't be opened on start(), the adapter is not added as a source for capture.
 	 */
 	class NAPAPI CVCaptureDevice : public Device
 	{
@@ -50,16 +53,27 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Starts the capture device.
+		 * Starts the capture process. Called automatically by the resource manager.
 		 * @param errorState contains the error if the device can't be started
 		 * @return if the device started
 		 */
 		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
-		 * Stops the capture device. Cancels background capture operation.
+		 * Stops the capture process completely. The background capture operation is canceled.
+		 * Called automatically by the resource manager.
 		 */
 		virtual void stop() override final;
+
+		/**
+		 * Removes a specific adapter from the capture process.
+		 * You typically remove an adapter from the capture process when 
+		 * an error occurs that causes the processing loop to stall.
+		 * The adapter is closed after being removed, errors are not cleared.
+		 * This call asserts when the adapter is not managed by this capture device.
+		 * @param adapter the adapter to remove
+		 */
+		void remove(nap::CVAdapter& adapter);
 
 		/**
 		 * Checks if a new frame is available. 
@@ -98,12 +112,16 @@ namespace nap
 		void setProperty(CVAdapter& adapter, cv::VideoCaptureProperties propID, double value);
 
 		/**
+		 * Returns the adapter at the given index as type T. 
+		 * This call asserts when the index is out of bounds.
 		 * @return the adapter at the given index as type T.
 		 */
 		template<typename T>
 		const T& getAdapter(int index) const;
 
 		/**
+		 * Returns the adapter at the given index as type T.
+		 * This call asserts when the index is out of bounds.
 		 * @return the adapter at the given index as type T.
 		 */
 		template<typename T>
@@ -149,8 +167,14 @@ namespace nap
 		void clearErrors();
 
 		/**
+		 * Clears all errors of a specific adapter.
+		 * This call asserts if the adapter is not managed by this capture device.
+		 */
+		void clearErrors(CVAdapter& adapter);
+
+		/**
 		 * Restarts a specific adapter by closing it and opening it again.
-		 * The given adapter needs to be managed by this capture device.
+		 * The given adapter needs to be managed by this capture device, asserts otherwise.
 		 * Before the adapter is closed the background capture process is stopped.
 		 * After attempting to open the adapter the background capture process is started again
 		 * @param adapter the adapter to restart
@@ -204,6 +228,11 @@ namespace nap
 		 * Task that captures new frames
 		 */
 		void captureTask();
+
+		/**
+		 * Checks if the adapter is managed by this capture device
+		 */
+		bool isManaged(const nap::CVAdapter& adapter);
 
 		/**
 		 * Sets an error for the given adapter
