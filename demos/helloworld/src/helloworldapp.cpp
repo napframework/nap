@@ -127,12 +127,23 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Webcam Feed One"))
 		{
-			if (ImGui::Button("Reconnect Camera One"))
+			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
+			if (camera_one->hasErrors())
 			{
-				nap::utility::ErrorState error;
-				CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
-				camera_one->reconnect(error);
+				nap::CVCaptureErrorMap map = camera_one->getErrors();
+				for (auto error : map)
+				{
+					ImGui::TextColored(clr, error.second.c_str());
+				}
+
+				if (ImGui::Button("Reconnect Camera One"))
+				{
+					nap::utility::ErrorState error;
+					camera_one->reconnect(error);
+				}
 			}
+			else
+				ImGui::Text("No Errors");
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraTextureOne->getWidth()) / static_cast<float>(mCameraTextureOne->getHeight());
@@ -140,12 +151,23 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Webcam Feed Two"))
 		{
-			if (ImGui::Button("Reconnect Camera Two"))
+			CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
+			if (camera_two->hasErrors())
 			{
-				nap::utility::ErrorState error;
-				CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
-				camera_two->reconnect(error);
+				nap::CVCaptureErrorMap map = camera_two->getErrors();
+				for (auto error : map)
+				{
+					ImGui::TextColored(clr, error.second.c_str());
+				}
+
+				if (ImGui::Button("Reconnect Camera Two"))
+				{
+					nap::utility::ErrorState error;
+					camera_two->reconnect(error);
+				}
 			}
+			else
+				ImGui::Text("No Errors");
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraTextureTwo->getWidth()) / static_cast<float>(mCameraTextureTwo->getHeight());
@@ -184,38 +206,16 @@ namespace nap
 				}
 				mCurrentVideoFrame = 0;
 			}
-		}
-		if (ImGui::CollapsingHeader("Capture Errors"))
-		{
-			if (mCameraCaptureDevice->hasErrors())
+
+			if (adapter.hasErrors())
 			{
-				std::unordered_map<const CVAdapter*, CVCaptureErrorMap> errors;
-				for (auto& adapter : mCameraCaptureDevice->mAdapters)
+				nap::CVCaptureErrorMap map = adapter.getErrors();
+				for (auto error : map)
 				{
-					// No errors associated with adapter
-					CVCaptureErrorMap errors = adapter->getErrors();
-					if (errors.empty())
-					{
-						ImGui::Text(utility::stringFormat("%s: no errors", adapter->mID.c_str()).c_str());
-						continue;
-					}
-
-					// Errors associated with adapter
-					for (auto error : errors)
-					{
-						ImGui::Text(error.second.c_str());
-					}
-
-					adapter->stop();
-					adapter->clearErrors();
+					ImGui::TextColored(clr, error.second.c_str());
 				}
 			}
-			else
-			{
-				ImGui::Text(utility::stringFormat("%s: no errors", mCameraCaptureDevice->mID.c_str()).c_str());
-			}
 		}
-
 		ImGui::End();
 	}
 

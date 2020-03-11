@@ -101,7 +101,7 @@ namespace nap
 	{
 		// Open capture device
 		if (!error.check(captureDevice.open(static_cast<int>(mDeviceIndex), api),
-			"Unable to open video capture device: %d", mDeviceIndex))
+			"%s: Unable to open video capture device: %d", mID.c_str(), mDeviceIndex))
 			return false;
 
 		// Set codec

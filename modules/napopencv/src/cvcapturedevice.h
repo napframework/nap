@@ -146,7 +146,14 @@ namespace nap
 		bool hasErrors() const												{ return mHasErrors; }
 
 		/**
+		 * Checks if any errors are associated with the given adapter
+		 * @param adapter the adapter to check for errors
+		 */
+		bool hasErrors(const CVAdapter& adapter) const;
+
+		/**
 		 * Returns all errors currently associated with the given adapter.
+		 * The key is the error id, the value is the error message.
 		 * Only call this when hasErrors() returned true. 
 		 * This call asserts when the adapter isn't part of this capture device as defined by the 'Adapters' property.
 		 * @param adapter adapter to get errors for.
@@ -160,17 +167,6 @@ namespace nap
 		 * @return all errors associated with this capture device
 		 */
 		std::unordered_map<const CVAdapter*, CVCaptureErrorMap> getErrors() const;
-
-		/**
-		 * Clears all errors of all adapters.
-		 */
-		void clearErrors();
-
-		/**
-		 * Clears all errors of a specific adapter.
-		 * This call asserts if the adapter is not managed by this capture device.
-		 */
-		void clearErrors(CVAdapter& adapter);
 
 		/**
 		 * Restarts a specific adapter by closing it and opening it again.
@@ -193,6 +189,7 @@ namespace nap
 
 		std::vector<nap::ResourcePtr<CVAdapter>> mAdapters;					///< Property: 'Adapters' all the video capture adapters.							
 		bool					mAutoCapture = true;						///< Property: 'AutoCapture' if this device captures new frames automatically.
+		bool					mAllowFailure = false;						///< Property: 'AllowFailure' if failure to open an adapter on startup is allowed.
 
 	private:
 		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame
@@ -240,7 +237,7 @@ namespace nap
 		 * @param error the error code
 		 * @param msg error message
 		 */
-		void setError(const CVAdapter& adapter, CVCaptureError error, const std::string& msg);
+		void setError(CVAdapter& adapter, CVCaptureError error, const std::string& msg);
 	};
 
 	using CVCaptureDeviceObjectCreator = rtti::ObjectCreator<CVCaptureDevice, CVService>;

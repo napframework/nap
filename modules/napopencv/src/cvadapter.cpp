@@ -3,7 +3,8 @@
 
 // nap::cvadapter run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVAdapter)
-	RTTI_PROPERTY("Backend", &nap::CVAdapter::mAPIPreference, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CloseOnError",	&nap::CVAdapter::mCloseOnCaptureError,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Backend",		&nap::CVAdapter::mAPIPreference,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,22 +39,10 @@ namespace nap
 	}
 
 
-	void CVAdapter::clearErrors()
+	bool CVAdapter::hasErrors() const
 	{
 		assert(mParent != nullptr);
-		mParent->clearErrors(*this);
-	}
-
-
-	bool CVAdapter::hasErrors(CVCaptureErrorMap& outErrors)
-	{
-		// First check if there's a global error
-		assert(mParent != nullptr);
-		if (!mParent->hasErrors())
-			return false;
-
-		// Now check if there's an adapter specific error
-		return mParent->getErrors(*this).empty();
+		return mParent->hasErrors(*this);
 	}
 
 

@@ -80,6 +80,7 @@
         {
             "Type": "nap::CVVideo",
             "mID": "Video",
+            "CloseOnError":false,
             "Backend": "Automatic",
             "ConvertRGB": true,
             "FlipHorizontal": false,

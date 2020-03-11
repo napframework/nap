@@ -59,10 +59,13 @@ namespace nap
 
 		/**
 		 * Checks if any errors are associated with this adapter.
-		 * @param outErrors contains the errors if any errors are associated with this adapter
+		 * Note that an adapter can be 'open' and report an error at the same time.
+		 * Set the 'CloseOnError' flag to ensure the device is closed by the capture device 
+		 * when a capture error occurs.
+		 *
 		 * @return if any errors are associated with this adapter
 		 */
-		bool hasErrors(CVCaptureErrorMap& outErrors);
+		bool hasErrors() const;
 
 		/**
 		 * Returns all errors associated with this adapter.
@@ -72,11 +75,12 @@ namespace nap
 		CVCaptureErrorMap getErrors() const;
 
 		/**
-		 * Clears all errors associated with this adapter
-		 */
-		void clearErrors();
-
-		/**
+		 * Returns if the device is currently open and ready for capturing.
+		 * Note that in case of an error the device can still be open but not 
+		 * capture any new frames. Set the 'CloseOnError' flag to ensure the device
+		 * is closed by the capture device when a capture error occurs.
+		 * Use this call in combination with hasErrors() to identify possible issues. 
+		 *
 		 * @return if the device is currently open and ready for processing.
 		 */
 		bool isOpen() const;
@@ -93,7 +97,7 @@ namespace nap
 		/**
 		 * Removes this adapter from the capture process, preventing the stalling of the processing loop.
 		 * You typically remove an adapter explicitly when an error occurs. 
-		 * The adapter is closed after being removed, all errors are cleared
+		 * The adapter is closed, errors remain.
 		 */
 		void stop();
 
@@ -102,6 +106,7 @@ namespace nap
 		 */
 		virtual int getMatrixCount() = 0;
 
+		bool			mCloseOnCaptureError = true;			///< Property: 'CloseOnError' controls if the capture operation is stopped when the adapter reports an error.
 		ECVCaptureAPI	mAPIPreference = ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
 
 	protected:

@@ -13,12 +13,11 @@ namespace nap
 	/**
 	 * Captures frames from a video streamed over the network.
 	 * The captured video frame is stored on the GPU when hardware acceleration is available (OpenCL).
-	 * This is not a video player, only a non-blocking interface into an OpenCV video stream.
 	 *
-	 * Add this device to a nap::CVCaptureDevice to capture frames from the video stream, in a background thread.
+	 * Add this device to a nap::CVCaptureDevice to capture frames from a video streamed over the network, in a background thread.
 	 * Note that this object should only be added once to a nap::CVCaptureDevice!
 	 */
-	class NAPAPI CVWebStream : public CVAdapter
+	class NAPAPI CVNetworkStream : public CVAdapter
 	{
 		RTTI_ENABLE(CVAdapter)
 	public:
@@ -40,6 +39,13 @@ namespace nap
 		 * @return capture frame height in pixels.
 		 */
 		int getHeight() const;
+
+		/**
+		 * Attempt to reconnect to the video stream.
+		 * @param error contains the error if connection fails.
+		 * @return if connection succeeded
+		 */
+		bool reconnect(utility::ErrorState& error);
 
 		std::string		mLink;									///< Property: 'Link' link to the web stream.
 		bool			mConvertRGB = true;						///< Property: 'ConvertRGB' if the frame is converted into RGB

@@ -78,7 +78,6 @@ namespace nap
 
 		/**
 		 * Reconnect the camera.
-		 * Other adapters (associated with the same capture device) are restarted as well.
 		 * @param error contains the error if connection fails.
 		 * @return if connection succeeded
 		 */

@@ -1,17 +1,17 @@
-#include "cvwebstream.h"
+#include "cvnetworkstream.h"
 #include "cvcapturedevice.h"
 
 #include <nap/logger.h>
 #include <mathutils.h>
 
 // nap::cvvideoadapter run time class definition 
-RTTI_BEGIN_CLASS(nap::CVWebStream)
-	RTTI_PROPERTY("ConvertRGB",		&nap::CVWebStream::mConvertRGB,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",	&nap::CVWebStream::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",	&nap::CVWebStream::mFlipVertical,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resize",			&nap::CVWebStream::mResize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",			&nap::CVWebStream::mSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Link",			&nap::CVWebStream::mLink,			nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::CVNetworkStream)
+	RTTI_PROPERTY("ConvertRGB",		&nap::CVNetworkStream::mConvertRGB,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipHorizontal",	&nap::CVNetworkStream::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipVertical",	&nap::CVNetworkStream::mFlipVertical,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resize",			&nap::CVNetworkStream::mResize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",			&nap::CVNetworkStream::mSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Link",			&nap::CVNetworkStream::mLink,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -19,27 +19,33 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool CVWebStream::init(utility::ErrorState& errorState)
+	bool CVNetworkStream::init(utility::ErrorState& errorState)
 	{
 		return CVAdapter::init(errorState);
 	}
 
 
-	int CVWebStream::getWidth() const
+	int CVNetworkStream::getWidth() const
 	{
 		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_WIDTH));
 	}
 
 
-	int CVWebStream::getHeight() const
+	int CVNetworkStream::getHeight() const
 	{
 		return static_cast<int>(getProperty(cv::CAP_PROP_FRAME_HEIGHT));
 	}
 
 
-	bool CVWebStream::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
+	bool CVNetworkStream::reconnect(utility::ErrorState& error)
 	{
-		if (!error.check(captureDevice.open(mLink, api), "Unable to open network stream: %s", mLink.c_str()))
+		return restart(error);
+	}
+
+
+	bool CVNetworkStream::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
+	{
+		if (!error.check(captureDevice.open(mLink, api), "%s: Unable to open network stream: %s", mID.c_str(), mLink.c_str()))
 			return false;
 
 		// Reset some internally managed variables
@@ -50,7 +56,7 @@ namespace nap
 	}
 
 
-	CVFrame CVWebStream::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
+	CVFrame CVNetworkStream::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
 		// Retrieve currently stored frame
 		if (!captureDevice.retrieve(mCaptureFrame[0]))

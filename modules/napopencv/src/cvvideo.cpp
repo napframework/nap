@@ -27,7 +27,7 @@ namespace nap
 
 	bool CVVideo::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
-		if (!error.check(captureDevice.open(mFile, api), "Unable to open video file: %s", mFile.c_str()))
+		if (!error.check(captureDevice.open(mFile, api), "%s: Unable to open video file: %s", mID.c_str(), mFile.c_str()))
 			return false;
 
 		// Reset some internally managed variables

@@ -8,8 +8,9 @@
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
 	RTTI_CONSTRUCTOR(nap::CVService&)
-	RTTI_PROPERTY("AutoCapture",				&nap::CVCaptureDevice::mAutoCapture,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Adapters",					&nap::CVCaptureDevice::mAdapters,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AutoCapture",	&nap::CVCaptureDevice::mAutoCapture,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowFailure",	&nap::CVCaptureDevice::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)	
+	RTTI_PROPERTY("Adapters",		&nap::CVCaptureDevice::mAdapters,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,25 +63,31 @@ namespace nap
 		// Register with service
 		mService->registerCaptureDevice(*this);
 
-		// Initialize property and error map
+		// Initialize property map
+		mCaptureMap.clear();
 		mCaptureMap.reserve(mAdapters.size());
+
+		// Initialize error map
+		mErrorMap.clear();
 		mErrorMap.reserve(mAdapters.size());
 		
-		// Start and on success add adapter for capturing
+		// Open every adapter
 		for (auto& adapter : mAdapters)
 		{
-			mErrorMap[adapter.get()] = {};
-			if (adapter->open(errorState))
-			{
-				// Create properties
-				mCaptureMap[adapter.get()] = {};
-				continue;
-			}
+			mErrorMap[adapter.get()]   = {};
+			mCaptureMap[adapter.get()] = {};
 
-			// Set and log error
-			errorState.fail("%s: Adapter: %s could not be opened", mID.c_str(), adapter->mID.c_str());
-			setError(*adapter, CVCaptureError::OpenError, errorState.toString());
-			nap::Logger::warn(errorState.toString());
+			if (!(adapter->open(errorState)))
+			{
+				// Set and log error
+				setError(*adapter, CVCaptureError::OpenError, errorState.toString());
+				if (mAllowFailure)
+				{
+					nap::Logger::warn(errorState.toString());
+					continue;
+				}
+				return false;
+			}
 		}
 
 		// Start capture task
@@ -94,18 +101,12 @@ namespace nap
 		// Stop capture task
 		stopCapture();
 
-		// Close all open adapters
-		for (auto& adapter : mAdapters)
+		// Close all open adapters and reset properties
+		for (auto& it : mCaptureMap)
 		{
-			if (!(adapter->isOpen()))
-				continue;
-			adapter->close();
+			it.first->close();
+			it.second = {};
 		}
-
-		// Clear all caches
-		mCaptureMap.clear();
-		clearErrors();
-		mHasErrors = false;
 
 		// Unregister capture device
 		mService->removeCaptureDevice(*this);
@@ -116,11 +117,7 @@ namespace nap
 	{
 		std::lock_guard<std::mutex> lock(mCaptureMutex);
 		auto it = mCaptureMap.find(&adapter);
-		if (it == mCaptureMap.end())
-		{
-			nap::Logger::warn("%s: Unknown CVAdapter: %s", this->mID.c_str(), adapter.mID.c_str());
-			return;
-		}
+		assert(it != mCaptureMap.end());
 		(*it).second[propID] = value;
 	}
 
@@ -139,6 +136,8 @@ namespace nap
 
 		// Get reference to adapter and close when open
 		adapter.close();
+		
+		// Clear errors associated with adapter
 		mErrorMap[&adapter] = {};
 
 		// Try to open and when opened, reset errors and state
@@ -149,18 +148,6 @@ namespace nap
 			// Log error
 			error.fail("%s: Adapter: %s could not be opened", mID.c_str(), adapter.mID.c_str());
 			setError(adapter, CVCaptureError::OpenError, error.toString());
-
-			// Erase from adapter capture map
-			auto adapter_it = mCaptureMap.find(&adapter);
-			if (adapter_it != mCaptureMap.end())
-			{
-				mCaptureMap.erase(adapter_it);
-			}
-		}
-		else
-		{
-			// Add as valid entry for capturing
-			mCaptureMap[&adapter] = {};
 		}
 
 		// Start capture thread and return if device is opened.
@@ -171,22 +158,28 @@ namespace nap
 
 	void CVCaptureDevice::remove(nap::CVAdapter& adapter)
 	{
-		// Stop capture task and close adapter
-		assert(isManaged(adapter));
+		// Stop capture task and close adapter;
 		stopCapture();
 		
 		// Close adapter
+		assert(isManaged(adapter));
 		adapter.close();
-
-		// Erase from adapter capture map
-		auto adapter_it = mCaptureMap.find(&adapter);
-		if (adapter_it != mCaptureMap.end())
-		{
-			mCaptureMap.erase(adapter_it);
-		}
 
 		// Start capture task
 		startCapture();
+	}
+
+
+	bool CVCaptureDevice::hasErrors(const CVAdapter& adapter) const
+	{
+		assert(isManaged(adapter));
+		if (!hasErrors())
+			return false;
+
+		std::lock_guard<std::mutex> lock(mErrorMutex);
+		auto it = mErrorMap.find(&adapter);
+		assert(it != mErrorMap.end());
+		return !(it->second.empty());
 	}
 
 
@@ -203,25 +196,6 @@ namespace nap
 		auto it = mErrorMap.find(&adapter);
 		assert(it != mErrorMap.end());
 		return it->second;
-	}
-
-
-	void CVCaptureDevice::clearErrors()
-	{
-		mHasErrors = false;
-
-		std::lock_guard<std::mutex> lock(mErrorMutex);
-		for (auto& error : mErrorMap)
-		{
-			error.second = {};
-		}
-	}
-
-
-	void CVCaptureDevice::clearErrors(CVAdapter& adapter)
-	{
-		assert(isManaged(adapter));
-		mErrorMap[&adapter] = {};
 	}
 
 
@@ -263,13 +237,23 @@ namespace nap
 		// Exit loop immediately when a stop is requested. Otherwise process next frame
 		CVFrameEvent frame_event;
 		frame_event.reserve(mAdapters.size());
+
+		// Copy of the capture map
 		std::unordered_map<CVAdapter*, PropertyMap> properties;
+
+		// All valid capture adapters (without errors and open)
 		std::vector<nap::CVAdapter*> capture_adapters;
-		bool set_properties = false;
 		SystemTimer timer;
 
+		// First wait for a capture request, this is set to true  after calling capture() or when 'AutoCapture' is turned on.
+		// All properties that need to be applied are copied over in a safe block before continue.
+		// After that properties are applied and a frame is grabbed. If grabbing fails, the device is closed and
+		// an error is reported. Only adapters that managed to grab a frame are considered valid for a subsequent capture.
+		// If no frame is captuted at all the process is paused, until a new capture() resquest is issued.
 		while(!mStopCapturing)
 		{
+			// Wait for the capture condition to be true.
+			// When this happens copy all the properties to set in order to release lock
 			{
 				std::unique_lock<std::mutex> lock(mCaptureMutex);
 				mCaptureCondition.wait(lock, [this]()
@@ -296,8 +280,13 @@ namespace nap
 			timer.reset();
 			capture_adapters.clear();
 			for (auto& adapter : properties)
-			{
+			{	
+				// Get adapter and ensure it's open
 				nap::CVAdapter* cur_adapter = adapter.first;
+				if (!(cur_adapter->isOpen()))
+					continue;
+
+				// Apply all properties
 				for (const auto& prop : adapter.second)
 				{
 					if (!cur_adapter->getCaptureDevice().set(prop.first, prop.second))
@@ -307,27 +296,32 @@ namespace nap
 					}
 				}
 				
+				// Attempt to grab frame, close if close requested
 				if (!cur_adapter->getCaptureDevice().grab())
 				{
-					std::string msg = utility::stringFormat("%s: Failed to grab frame from %s. Device disconnected or end of stream.", mID.c_str(), cur_adapter->mID.c_str());
+					if (cur_adapter->mCloseOnCaptureError)
+						cur_adapter->close();
+
+					std::string msg = utility::stringFormat("%s: Device disconnected or end of stream.", cur_adapter->mID.c_str());
 					setError(*cur_adapter, CVCaptureError::GrabError, msg);
 					continue;
 				}
+
+				// Valid capture adapter
 				capture_adapters.emplace_back(cur_adapter);
 			}
 
 			// Now retrieve frame (heaviest operation)
-			nap::utility::ErrorState grab_error;
+			nap::utility::ErrorState capture_error;
 			frame_event.clear();
 			auto it = capture_adapters.begin();
 			while (it != capture_adapters.end())
 			{
 				// If frame capture operation fails, pop the frame and remove capture device
-				frame_event.addFrame((*it)->retrieve(grab_error));
+				frame_event.addFrame((*it)->retrieve(capture_error));
 				if (frame_event.lastFrame().empty())
 				{
-					std::string msg = utility::stringFormat("%s: Failed to decode frame", mID.c_str());
-					setError(**it, CVCaptureError::DecodeError, msg);
+					setError(**it, CVCaptureError::DecodeError, capture_error.toString());
 					frame_event.popFrame();
 					it = capture_adapters.erase(it);
 					continue;
@@ -335,7 +329,7 @@ namespace nap
 				it++;
 			}
 
-			// No frames captured
+			// No frames captured, continue
 			if (frame_event.empty())
 				continue;
 
@@ -375,11 +369,11 @@ namespace nap
 	}
 
 
-	void CVCaptureDevice::setError(const CVAdapter& adapter, CVCaptureError error, const std::string& msg)
+	void CVCaptureDevice::setError(CVAdapter& adapter, CVCaptureError error, const std::string& msg)
 	{
 		{
 			std::lock_guard<std::mutex> lock(mErrorMutex);
-			mErrorMap[&adapter][error] = msg;
+			mErrorMap[&adapter][error] = getCurrentDateTime().toString() + msg;
 		}
 		mHasErrors = true;
 	}
