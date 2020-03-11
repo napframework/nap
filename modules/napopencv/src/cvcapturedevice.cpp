@@ -83,7 +83,7 @@ namespace nap
 				setError(*adapter, CVCaptureError::OpenError, errorState.toString());
 				if (mAllowFailure)
 				{
-					nap::Logger::warn(errorState.toString());
+					nap::Logger::error(errorState.toString());
 					continue;
 				}
 				return false;
@@ -136,23 +136,20 @@ namespace nap
 
 		// Get reference to adapter and close when open
 		adapter.close();
-		
-		// Clear errors associated with adapter
-		mErrorMap[&adapter] = {};
 
 		// Try to open and when opened, reset errors and state
 		// On failure to open, erase as capture candidate
-		bool opened = adapter.open(error);
-		if (!opened)
+		if (!adapter.open(error))
 		{
-			// Log error
-			error.fail("%s: Adapter: %s could not be opened", mID.c_str(), adapter.mID.c_str());
 			setError(adapter, CVCaptureError::OpenError, error.toString());
+			startCapture();
+			return false;
 		}
 
-		// Start capture thread and return if device is opened.
+		// Clear errors
+		mErrorMap[&adapter] = {};
 		startCapture();
-		return opened;
+		return true;
 	}
 
 
