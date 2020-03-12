@@ -174,12 +174,13 @@ namespace nap
 
 		// Begin running
 		HighResolutionTimer timer;
-		MicroSeconds frame_time;
-		MicroSeconds delay_time;
+		Milliseconds frame_time, delay_time;
 		while (!app.shouldQuit() && !mStop)
 		{
-			// Get time point for next frame
-			frame_time = timer.getMicros() + mWaitTime;
+			// Get point in time when frame is requested to be completed
+			frame_time = timer.getMillis() + (app.framerateCapped() ? 
+				Milliseconds(static_cast<long>(1000.0 / static_cast<double>(app.getRequestedFramerate()))) :
+				Milliseconds(0));
 			 
 			// Process app specific messages
 			app_event_handler.process();
@@ -193,8 +194,8 @@ namespace nap
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for
 			// The actual outcome of the sleep call can vary greatly from system to system
 			// And is more accurate with lower framerate limitations
-			delay_time = frame_time - timer.getMicros();
-			if(std::chrono::duration_cast<Milliseconds>(delay_time).count() > 0)
+			delay_time = frame_time - timer.getMillis();
+			if(delay_time.count() > 0)
 				std::this_thread::sleep_for(delay_time);
 		}
 

@@ -6,6 +6,7 @@
 #include <utility/errorstate.h>
 #include <nap/core.h>
 #include <windowevent.h>
+#include <mathutils.h>
 
 namespace nap
 {
@@ -93,9 +94,43 @@ namespace nap
 		*/
 		bool shouldQuit() const											{ return mQuit; }
 
+		/**
+		 * Turns limiting the execution speed of the application on / off.
+		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
+		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
+		 * but will always be less than the given framerate.
+		 * @param value if the framerate is capped
+		 */
+		void capFramerate(bool value)									{ mCapFramerate = value; }
+
+		/**
+		 * Returns if the execution speed of the application is limited.
+		 * @return if the framerate is capped
+		 */
+		bool framerateCapped() const									{ return mCapFramerate; }
+
+		/**
+		 * Limit execution speed of the application to the given framerate.
+		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
+		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
+		 * but will always be less than the given framerate.
+		 * The requested framerate has no effect when the framerate is not capped.
+		 * @param framerate the requested application framerate.
+		 */
+		void setFramerate(float framerate)								{ mRequestedFramerate = math::max<float>(framerate, 1.0f); }
+
+		/**
+		 * Returns the requested framerate. This is not the same as the actual framerate. 
+		 * Use Core::getFramerate() to get the actual framerate.
+		 * @return the requested framerate
+		 */
+		float getRequestedFramerate() const								{ return mRequestedFramerate; }
+
 	private:
 		bool mQuit = false;												// When set to true the application will exit
 		nap::Core& mCore;												// Core
+		float mRequestedFramerate = 60.0f;								// Requested framerate, only applied when mCapFramerate is enabled.
+		bool mCapFramerate = false;										// If the framerate should be capped.
 	};
 
 
