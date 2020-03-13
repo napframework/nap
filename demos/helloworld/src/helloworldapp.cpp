@@ -88,15 +88,6 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-			1000.0 / double(ImGui::GetIO().Framerate), double(ImGui::GetIO().Framerate));
-		float fps = getRequestedFramerate();
-		if (ImGui::SliderFloat("Framerate", &fps, 0.0f, 1000.0f))
-		{
-			this->capFramerate(true);
-			this->setFramerate(fps);
-		}
-
 		ImGui::End();
 	}
 

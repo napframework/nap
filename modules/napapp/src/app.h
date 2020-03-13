@@ -104,12 +104,6 @@ namespace nap
 		void capFramerate(bool value)									{ mCapFramerate = value; }
 
 		/**
-		 * Returns if the execution speed of the application is limited.
-		 * @return if the framerate is capped
-		 */
-		bool framerateCapped() const									{ return mCapFramerate; }
-
-		/**
 		 * Limit execution speed of the application to the given framerate.
 		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
 		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
@@ -125,6 +119,19 @@ namespace nap
 		 * @return the requested framerate
 		 */
 		float getRequestedFramerate() const								{ return mRequestedFramerate; }
+
+		/**
+		 * Returns the actual (average) execution speed of the application, 
+		 * in frames per second, as measured by core.
+		 * @return the actual framerate.
+		 */
+		float getActualFramerate() const								{ return mCore.getFramerate(); }
+
+		/**
+		 * Returns if the execution speed of the application is limited.
+		 * @return if the framerate is capped
+		 */
+		bool framerateCapped() const									{ return mCapFramerate; }
 
 	private:
 		bool mQuit = false;												// When set to true the application will exit
