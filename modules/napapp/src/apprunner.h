@@ -80,23 +80,12 @@ namespace nap
 		 */
 		int exitCode() const								{ return mExitCode; }
 
-		/**
-		 * Limits execution speed of the application. 
-		 * This causes the application to sleep in between calls when execution speed exceeds the set framerate.
-		 * The final execution speed may vary from platform to platform, based on the accuracy of the timers,
-		 * but will always be less than the given framerate.
-		 * Not setting any framerate allows the app to run at full speed (default)
-		 * @param fps the maximum allowed refresh rate in frames per second
-		 */
-		void setFramerate(float fps);
-
 	private:
 		nap::Core&					mCore;					// Core
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
 		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
-		MicroSeconds				mWaitTime;				// Time to wait in milliseconds based on FPS
 	};
 
 
@@ -130,7 +119,6 @@ namespace nap
 		// Create 'm
 		mApp = std::make_unique<APP>(core);
 		mHandler = std::make_unique<HANDLER>(*mApp);
-		mWaitTime = MicroSeconds(0);
 	}
 
 
@@ -174,12 +162,13 @@ namespace nap
 
 		// Begin running
 		HighResolutionTimer timer;
-		MicroSeconds frame_time;
-		MicroSeconds delay_time;
+		Milliseconds frame_time, delay_time, zero_delay(0);
 		while (!app.shouldQuit() && !mStop)
 		{
-			// Get time point for next frame
-			frame_time = timer.getMicros() + mWaitTime;
+			// Get point in time when frame is requested to be completed
+			frame_time = timer.getMillis() + (app.framerateCapped() ? 
+				Milliseconds(static_cast<long>(1000.0 / static_cast<double>(app.getRequestedFramerate()))) :
+				zero_delay);
 			 
 			// Process app specific messages
 			app_event_handler.process();
@@ -193,8 +182,8 @@ namespace nap
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for
 			// The actual outcome of the sleep call can vary greatly from system to system
 			// And is more accurate with lower framerate limitations
-			delay_time = frame_time - timer.getMicros();
-			if(std::chrono::duration_cast<Milliseconds>(delay_time).count() > 0)
+			delay_time = frame_time - timer.getMillis();
+			if(delay_time.count() > 0)
 				std::this_thread::sleep_for(delay_time);
 		}
 
@@ -227,12 +216,5 @@ namespace nap
 
 		// Now clear the app
 		mApp.reset();
-	}
-
-
-	template<typename APP, typename HANDLER>
-	void nap::AppRunner<APP, HANDLER>::setFramerate(float fps)
-	{
-		mWaitTime = MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(fps)));
 	}
 }
