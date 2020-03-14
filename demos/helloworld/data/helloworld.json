@@ -1,139 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::CVCamera",
-            "mID": "CameraOne",
-            "Backend": "DirectShow",
-            "ShowDialog": true,
-            "ConvertRGB": true,
-            "FlipHorizontal": false,
-            "FlipVertical": true,
-            "DeviceIndex": 0,
-            "Codec": "MJPG",
-            "OverrideResolution": false,
-            "Resolution": {
-                "x": 640,
-                "y": 480
-            },
-            "Resize": false,
-            "Size": {
-                "x": 640,
-                "y": 480
-            },
-            "ApplySettings": false,
-            "Settings": {
-                "AutoExposure": true,
-                "Brightness": 1.0,
-                "Contrast": 1.0,
-                "Saturation": 1.0,
-                "Gain": 1.0,
-                "Exposure": 1.0
-            }
-        },
-        {
-            "Type": "nap::CVCamera",
-            "mID": "CameraTwo",
-            "Backend": "DirectShow",
-            "ShowDialog": true,
-            "ConvertRGB": true,
-            "FlipHorizontal": false,
-            "FlipVertical": true,
-            "DeviceIndex": 1,
-            "Codec": "MJPG",
-            "OverrideResolution": false,
-            "Resolution": {
-                "x": 640,
-                "y": 480
-            },
-            "Resize": true,
-            "Size": {
-                "x": 640,
-                "y": 480
-            },
-            "ApplySettings": false,
-            "Settings": {
-                "AutoExposure": true,
-                "Brightness": 1.0,
-                "Contrast": 1.0,
-                "Saturation": 1.0,
-                "Gain": 1.0,
-                "Exposure": 1.0
-            }
-        },
-        {
-            "Type": "nap::CVCaptureDevice",
-            "mID": "CameraCaptureDevice",
-            "AutoCapture": true,
-            "Adapters": [
-                "CameraOne",
-                "CameraTwo"
-            ]
-        },
-        {
-            "Type": "nap::CVCaptureDevice",
-            "mID": "VideoCaptureDevice",
-            "AutoCapture": false,
-            "Adapters": [
-                "Video"
-            ]
-        },
-        {
-            "Type": "nap::CVVideo",
-            "mID": "Video",
-            "CloseOnError":false,
-            "Backend": "Automatic",
-            "ConvertRGB": true,
-            "FlipHorizontal": false,
-            "FlipVertical": true,
-            "Resize": true,
-            "Size": {
-                "x": 640,
-                "y": 360
-            },
-            "File": "people.mp4"
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "OpenCV",
-            "Components": [
-                {
-                    "Type": "nap::CVCaptureComponent",
-                    "mID": "CameraCaptureComponent",
-                    "Devices": "CameraCaptureDevice"
-                },
-                {
-                    "Type": "nap::CVCaptureComponent",
-                    "mID": "VideoCaptureComponent",
-                    "Devices": "VideoCaptureDevice"
-                },
-                {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderVideoTextureComponent",
-                    "CaptureComponent": "VideoCaptureComponent",
-                    "RenderTexture": "VideoTexture",
-                    "AdapterIndex": 0,
-                    "MatrixIndex": 0
-                },
-                {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderCameraTextureComponentOne",
-                    "CaptureComponent": "CameraCaptureComponent",
-                    "RenderTexture": "CameraTextureOne",
-                    "AdapterIndex": 0,
-                    "MatrixIndex": 0
-                },
-                {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderCameraTextureComponentTwo",
-                    "CaptureComponent": "CameraCaptureComponent",
-                    "RenderTexture": "CameraTextureTwo",
-                    "AdapterIndex": 1,
-                    "MatrixIndex": 0
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Entity",
             "mID": "OrthographicCamera",
             "Components": [
@@ -438,51 +305,6 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CameraTextureOne",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
-            "Usage": "Static",
-            "Width": 640,
-            "Height": 480,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CameraTextureTwo",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
-            "Usage": "Static",
-            "Width": 640,
-            "Height": 480,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
-            "Usage": "Static",
-            "Width": 640,
-            "Height": 360,
-            "Format": "RGB8"
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Width": 1280,
@@ -516,10 +338,6 @@
                 },
                 {
                     "Entity": "OrthographicCamera",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "OpenCV",
                     "InstanceProperties": []
                 }
             ]

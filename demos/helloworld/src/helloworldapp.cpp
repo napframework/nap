@@ -17,8 +17,6 @@
 #include <mathutils.h>
 #include <renderableglyph.h>
 #include <font.h>
-#include <imguiutils.h>
-#include <cvframe.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -46,12 +44,6 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mCameraCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("CameraCaptureDevice");
-		mVideoCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("VideoCaptureDevice");
-		mCameraTextureOne = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureOne");
-		mCameraTextureTwo = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureTwo");
-		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
-		mStreamTexture = mResourceManager->findObject<nap::RenderTexture2D>("StreamTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -63,32 +55,6 @@ namespace nap
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
-
-		//cv::samples::addSamplesDataSearchPath(utility::)
-
-		//-- 1. Load the cascades
-		if (!face_cascade.load("haarcascades/haarcascade_frontalface_alt.xml"))
-		{
-			std::cout << "--(!)Error loading face cascade\n";
-			return false;
-		};
-		if (!eyes_cascade.load("haarcascades/haarcascade_eye_tree_eyeglasses.xml"))
-		{
-			std::cout << "--(!)Error loading eyes cascade\n";
-			return false;
-		};
-
-		// Create a new frame
-		CVFrame frame_one;
-		frame_one.add(cv::UMat(256, 256, 0));
-		frame_one.add(cv::UMat(128, 128, 0));
-
-		// Perform a deep copy
-		CVFrame frame_two;
-		frame_one.copyTo(frame_two);
-
-		// Perform a weak copy
-		CVFrame frame_three(frame_two);
 
 		return true;
 	}
@@ -121,101 +87,7 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
-		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getCaptureTime()).c_str());
-
-		if (ImGui::CollapsingHeader("Webcam Feed One"))
-		{
-			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
-			if (camera_one->hasErrors())
-			{
-				nap::CVCaptureErrorMap map = camera_one->getErrors();
-				for (auto error : map)
-				{
-					ImGui::TextColored(clr, error.second.c_str());
-				}
-
-				if (ImGui::Button("Reconnect Camera One"))
-				{
-					nap::utility::ErrorState error;
-					camera_one->reconnect(error);
-				}
-			}
-			else
-				ImGui::Text("No Errors");
-
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraTextureOne->getWidth()) / static_cast<float>(mCameraTextureOne->getHeight());
-			ImGui::Image(*mCameraTextureOne, { col_width, col_width / ratio_video });
-		}
-		if (ImGui::CollapsingHeader("Webcam Feed Two"))
-		{
-			CVCamera* camera_two = mResourceManager->findObject<nap::CVCamera>("CameraTwo").get();
-			if (camera_two->hasErrors())
-			{
-				nap::CVCaptureErrorMap map = camera_two->getErrors();
-				for (auto error : map)
-				{
-					ImGui::TextColored(clr, error.second.c_str());
-				}
-
-				if (ImGui::Button("Reconnect Camera Two"))
-				{
-					nap::utility::ErrorState error;
-					camera_two->reconnect(error);
-				}
-			}
-			else
-				ImGui::Text("No Errors");
-
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraTextureTwo->getWidth()) / static_cast<float>(mCameraTextureTwo->getHeight());
-			ImGui::Image(*mCameraTextureTwo, { col_width, col_width / ratio_video });
-		}
-		if (ImGui::CollapsingHeader("Video Feed"))
-		{
-			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
-			{
-				adapter.setFrame(mCurrentVideoFrame);
-			}
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
-			ImGui::Image(*mVideoTexture, { col_width, col_width / ratio_video });
-
-			if (ImGui::Button("Set Streak"))
-			{
-				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-				utility::ErrorState error;
-				if (!video_adapter.changeVideo("streak.mp4", error))
-				{
-					nap::Logger::info(error.toString());
-				}
-				mCurrentVideoFrame = 0;
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("Set People"))
-			{
-				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-				utility::ErrorState error;
-				if (!video_adapter.changeVideo("people.mp4", error))
-				{
-					nap::Logger::info(error.toString());
-				}
-				mCurrentVideoFrame = 0;
-			}
-
-			if (adapter.hasErrors())
-			{
-				nap::CVCaptureErrorMap map = adapter.getErrors();
-				for (auto error : map)
-				{
-					ImGui::TextColored(clr, error.second.c_str());
-				}
-			}
-		}
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}
 
@@ -284,8 +156,6 @@ namespace nap
 
 		// Swap screen buffers
 		mRenderWindow->swap();
-
-		//cv::imshow("Capture - Face detection", mMat);
 	}
 	
 	
@@ -328,21 +198,5 @@ namespace nap
 	int HelloWorldApp::shutdown()
 	{
 		return 0;
-	}
-
-
-	void HelloWorldApp::detectFaces(CVFrame& frame)
-	{
-		cvtColor(frame[0], mMatGS, cv::COLOR_RGB2GRAY);
-		equalizeHist(mMatGS, mMatGS);
-			
-		std::vector<cv::Rect> faces;
-		face_cascade.detectMultiScale(mMatGS, faces);
-
-		for (size_t i = 0; i < faces.size(); i++)
-		{
-			cv::Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
-			ellipse(frame[0], center, cv::Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4);
-		}
 	}
 }

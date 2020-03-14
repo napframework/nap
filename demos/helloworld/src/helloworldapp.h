@@ -12,14 +12,6 @@
 #include <app.h>
 #include <spheremesh.h>
 #include <font.h>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
-#include <cvcamera.h>
-#include <cvvideo.h>
-#include <cvcapturedevice.h>
-#include <cvframe.h>
-#include <rendertexture2d.h>
 
 namespace nap
 {
@@ -93,23 +85,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
-		ObjectPtr<CVCaptureDevice> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
-		ObjectPtr<CVCaptureDevice> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
-		ObjectPtr<RenderTexture2D> mCameraTextureOne = nullptr;			//< Pointer to the texture we need to capture
-		ObjectPtr<RenderTexture2D> mCameraTextureTwo = nullptr;			//< Pointer to the second camera texture
-		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture
-		ObjectPtr<RenderTexture2D> mStreamTexture = nullptr;			//< Pointer to the network stream texture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		int mCurrentVideoFrame = 0;
-
-		// CV
-		CVFrameEvent mVidFrame;
-		CVFrameEvent mCamFrame;
-		cv::UMat mMatGS;
-		cv::VideoCapture mCapture;
-		cv::CascadeClassifier face_cascade;
-		cv::CascadeClassifier eyes_cascade;
-
-		void detectFaces(CVFrame& frame);
 	};
 }
