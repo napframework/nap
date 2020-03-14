@@ -229,7 +229,7 @@ namespace nap
 		/**
 		 * Checks if the adapter is managed by this capture device
 		 */
-		bool isManaged(const nap::CVAdapter& adapter);
+		bool isManaged(const nap::CVAdapter& adapter) const;
 
 		/**
 		 * Sets an error for the given adapter

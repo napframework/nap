@@ -355,7 +355,7 @@ namespace nap
 	}
 
 
-	bool CVCaptureDevice::isManaged(const nap::CVAdapter& adapter)
+	bool CVCaptureDevice::isManaged(const nap::CVAdapter& adapter) const
 	{
 		// Check if adapter is managed by this capture device
 		auto found_adapter = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)

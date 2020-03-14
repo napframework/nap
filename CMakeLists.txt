@@ -166,6 +166,8 @@ add_subdirectory(demos/copystamp/module)
 add_subdirectory(demos/python)
 add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
+add_subdirectory(demos/facedetection)
+add_subdirectory(demos/facedetection/module)
 
 # Unit tests
 add_subdirectory(unittests)
