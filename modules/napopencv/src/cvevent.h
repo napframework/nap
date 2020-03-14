@@ -104,6 +104,12 @@ namespace nap
 		const CVFrame& getFrame(int index) const;
 
 		/**
+		 * Finds the frame for the given adapter.
+		 * @return the frame associated with the given adapter, nullptr if not found.
+		 */
+		const CVFrame* findFrame(const CVAdapter& adapter) const;
+
+		/**
 		 *	Clears all frames
 		 */
 		void clear()												{ mFrames.clear(); }

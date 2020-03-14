@@ -41,7 +41,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("helloworld.json", error))
+		if (!mResourceManager->loadFile("facedetection.json", error))
 			return false;
 
 		// Extract loaded resources

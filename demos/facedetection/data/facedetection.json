@@ -3,6 +3,7 @@
         {
             "Type": "nap::CVCamera",
             "mID": "CameraOne",
+            "CloseOnError": true,
             "Backend": "DirectShow",
             "ShowDialog": true,
             "ConvertRGB": true,
@@ -33,6 +34,7 @@
         {
             "Type": "nap::CVCamera",
             "mID": "CameraTwo",
+            "CloseOnError": true,
             "Backend": "DirectShow",
             "ShowDialog": true,
             "ConvertRGB": true,
@@ -64,6 +66,7 @@
             "Type": "nap::CVCaptureDevice",
             "mID": "CameraCaptureDevice",
             "AutoCapture": true,
+            "AllowFailure": false,
             "Adapters": [
                 "CameraOne",
                 "CameraTwo"
@@ -73,6 +76,7 @@
             "Type": "nap::CVCaptureDevice",
             "mID": "VideoCaptureDevice",
             "AutoCapture": false,
+            "AllowFailure": false,
             "Adapters": [
                 "Video"
             ]
@@ -80,7 +84,7 @@
         {
             "Type": "nap::CVVideo",
             "mID": "Video",
-            "CloseOnError":false,
+            "CloseOnError": false,
             "Backend": "Automatic",
             "ConvertRGB": true,
             "FlipHorizontal": false,
@@ -111,7 +115,7 @@
                     "mID": "RenderVideoTextureComponent",
                     "CaptureComponent": "VideoCaptureComponent",
                     "RenderTexture": "VideoTexture",
-                    "AdapterIndex": 0,
+                    "Adapter": "Video",
                     "MatrixIndex": 0
                 },
                 {
@@ -119,7 +123,7 @@
                     "mID": "RenderCameraTextureComponentOne",
                     "CaptureComponent": "CameraCaptureComponent",
                     "RenderTexture": "CameraTextureOne",
-                    "AdapterIndex": 0,
+                    "Adapter": "CameraOne",
                     "MatrixIndex": 0
                 },
                 {
@@ -127,7 +131,7 @@
                     "mID": "RenderCameraTextureComponentTwo",
                     "CaptureComponent": "CameraCaptureComponent",
                     "RenderTexture": "CameraTextureTwo",
-                    "AdapterIndex": 1,
+                    "Adapter": "CameraTwo",
                     "MatrixIndex": 0
                 }
             ],

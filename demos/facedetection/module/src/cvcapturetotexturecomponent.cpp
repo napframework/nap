@@ -9,7 +9,7 @@
 RTTI_BEGIN_CLASS(nap::CVCaptureToTextureComponent)
 	RTTI_PROPERTY("CaptureComponent",	&nap::CVCaptureToTextureComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderTexture",		&nap::CVCaptureToTextureComponent::mRenderTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("AdapterIndex",		&nap::CVCaptureToTextureComponent::mAdapterIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",			&nap::CVCaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MatrixIndex",		&nap::CVCaptureToTextureComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -28,18 +28,19 @@ namespace nap
 		// Get resource and copy render texture
 		CVCaptureToTextureComponent* resource = getComponent<CVCaptureToTextureComponent>();
 		mRenderTexture  = resource->mRenderTexture.get();
-		mAdapterIndex	= resource->mAdapterIndex;
+		mAdapter		= resource->mAdapter.get();
 		mMatrixIndex	= resource->mMatrixIndex;
 
-		// Ensure adapter index is in range
-		int adapter_count = mCaptureComponent->getDevice().getAdapterCount();
-		if (!errorState.check(mAdapterIndex < adapter_count || adapter_count == 0, "adapter index out of range"))
+		// Ensure adapter is part of capture device
+		if (!errorState.check(mCaptureComponent->getDevice().manages(*mAdapter), "%s: adapter: %s not part of %s", 
+			resource->mID.c_str(),
+			mAdapter->mID.c_str(), mCaptureComponent->getDevice().mID.c_str()))
 			return false;
 
 		// Now ensure matrix capture is in range
-		nap::CVAdapter& cap_adap = mCaptureComponent->getDevice().getAdapter<nap::CVAdapter>(mAdapterIndex);
-		if (!errorState.check(mMatrixIndex < cap_adap.getMatrixCount(),
-			"matrix index out of range, adapter: %s has only %d matrices available", cap_adap.mID.c_str(), cap_adap.getMatrixCount()))
+		if (!errorState.check(mMatrixIndex < mAdapter->getMatrixCount(),
+			"%s: matrix index out of range, adapter: %s has only %d matrices available", resource->mID.c_str(), 
+			mAdapter->mID.c_str(), mAdapter->getMatrixCount()))
 			return false;
 
 		// Assign slot when new frame is captured
@@ -49,21 +50,14 @@ namespace nap
 	}
 
 
-	void CVCaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frame)
+	void CVCaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frameEvent)
 	{
-		// Ensure indices are within bounds
-		if (mAdapterIndex >= frame.getCount())
-		{
-			nap::Logger::warn("%s: invalid adapter index, got %d, expected: %d", mID.c_str(),
-				frame.getCount()-1, mAdapterIndex);
+		const CVFrame* frame = frameEvent.findFrame(*mAdapter);
+		if (frame == nullptr)
 			return;
-		}
-		assert(mMatrixIndex < frame[mAdapterIndex].getCount());
-
-		// Extract frame
-		const CVFrame& cv_frame = frame.getFrame(mAdapterIndex);		
 
 		// Ensure channel count is the same
+		const CVFrame& cv_frame = *frame;
 		int cv_channels = cv_frame[mMatrixIndex].channels();
 		int te_channels = mRenderTexture->getChannelCount();
 		if (!(cv_channels == te_channels))

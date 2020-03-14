@@ -131,7 +131,7 @@ namespace nap
 	bool CVCaptureDevice::restart(nap::CVAdapter& adapter, utility::ErrorState& error)
 	{
 		// Stop capture task
-		assert(isManaged(adapter));
+		assert(manages(adapter));
 		stopCapture();
 
 		// Get reference to adapter and close when open
@@ -159,7 +159,7 @@ namespace nap
 		stopCapture();
 		
 		// Close adapter
-		assert(isManaged(adapter));
+		assert(manages(adapter));
 		adapter.close();
 
 		// Start capture task
@@ -169,7 +169,7 @@ namespace nap
 
 	bool CVCaptureDevice::hasErrors(const CVAdapter& adapter) const
 	{
-		assert(isManaged(adapter));
+		assert(manages(adapter));
 		if (!hasErrors())
 			return false;
 
@@ -355,7 +355,7 @@ namespace nap
 	}
 
 
-	bool CVCaptureDevice::isManaged(const nap::CVAdapter& adapter) const
+	bool CVCaptureDevice::manages(const nap::CVAdapter& adapter) const
 	{
 		// Check if adapter is managed by this capture device
 		auto found_adapter = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)

@@ -2,6 +2,7 @@
 
 // External Includes
 #include <cvcapturecomponent.h>
+#include <cvadapter.h>
 #include <componentptr.h>
 #include <rendertexture2d.h>
 #include <opencv2/core/mat.hpp>
@@ -19,10 +20,10 @@ namespace nap
 		DECLARE_COMPONENT(CVCaptureToTextureComponent, CVCaptureToTextureComponentInstance)
 	public:
 
-		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent;		///< Property: 'CaptureComponent' the component that receives the captured frames
-		nap::ResourcePtr<RenderTexture2D> mRenderTexture;				///< Property: 'RenderTexture' the texture to render the captured frames to
-		int mAdapterIndex  = 0;											///< Property: 'AdapterIndex' the index of the adapter to render the frame from
-		int mMatrixIndex = 0;											///< Property: 'MatrixIndex' the opencv matrix index of the adapter to render
+		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent = nullptr;	///< Property: 'CaptureComponent' the component that receives the captured frames
+		nap::ResourcePtr<CVAdapter> mAdapter = nullptr;						///< Property: 'Adapter' the adapter to render frame for
+		nap::ResourcePtr<RenderTexture2D> mRenderTexture = nullptr;			///< Property: 'RenderTexture' the texture to render the captured frames to
+		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix index of the adapter to render
 	};
 
 
@@ -49,8 +50,8 @@ namespace nap
 
 	private:
 		nap::Slot<const CVFrameEvent&> mCaptureSlot = { this, &CVCaptureToTextureComponentInstance::onFrameCaptured };
-		void onFrameCaptured(const CVFrameEvent& newFrame);
-		int mAdapterIndex = 0;
+		void onFrameCaptured(const CVFrameEvent& frameEvent);
+		nap::CVAdapter* mAdapter = nullptr;
 		int mMatrixIndex = 0;
 	};
 }

@@ -128,6 +128,13 @@ namespace nap
 		T& getAdapter(int index);
 
 		/**
+		 * Checks if the given adapter is part of this capture device.
+		 * @param adapter the adapter to verify
+		 * @return if the adapter is part of this capture device
+		 */
+		bool manages(const nap::CVAdapter& adapter) const;
+
+		/**
 		 * @return number of adapters
 		 */
 		int getAdapterCount() const											{ return static_cast<int>(mAdapters.size()); }
@@ -225,11 +232,6 @@ namespace nap
 		 * Task that captures new frames
 		 */
 		void captureTask();
-
-		/**
-		 * Checks if the adapter is managed by this capture device
-		 */
-		bool isManaged(const nap::CVAdapter& adapter) const;
 
 		/**
 		 * Sets an error for the given adapter

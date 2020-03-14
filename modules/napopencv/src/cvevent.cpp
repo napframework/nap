@@ -49,6 +49,17 @@ namespace nap
 	}
 
 
+	const nap::CVFrame* CVFrameEvent::findFrame(const CVAdapter& adapter) const
+	{
+		// Check if adapter is managed by this capture device
+		auto found_frame = std::find_if(mFrames.begin(), mFrames.end(), [&](const auto& it)
+		{
+			return it.getSource() == &adapter;
+		});
+		return found_frame != mFrames.end() ? &(*found_frame) : nullptr;
+	}
+
+
 	void CVFrameEvent::copyTo(CVFrameEvent& outEvent) const
 	{
 		outEvent.mFrames.resize(mFrames.size());
