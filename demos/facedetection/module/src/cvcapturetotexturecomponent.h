@@ -5,7 +5,6 @@
 #include <cvadapter.h>
 #include <componentptr.h>
 #include <rendertexture2d.h>
-#include <opencv2/core/mat.hpp>
 
 namespace nap
 {
