@@ -61,7 +61,6 @@ namespace nap
 		cv::CascadeClassifier mClassifier;								///< OpenCV cascade classifier
 		nap::CVAdapter* mAdapter = nullptr;								///< OpenCV capture adapter
 		int mMatrixIndex = 0;											///< OpenCV matrix index
-		cv::UMat mFrameGrey;											///< OpenCV grey frame
 
 		std::future<void> mDetectTask;									///< The task that performs classification
 		std::mutex mDetectMutex;										///< The mutex that safe guards the capture thread

@@ -100,7 +100,9 @@ namespace nap
 
 	void CVCascadeClassifyComponentInstance::detectTask()
 	{
-		CVFrame process_frame;
+		CVFrame process_frame, gray_frame;
+		gray_frame.addNew();
+
 		while (!mStopDetection)
 		{
 			// Wait for the detect condition to be true.
@@ -122,11 +124,11 @@ namespace nap
 			}
 
 			// Convert to grey-scale and equalize history
-			cvtColor(mCapturedFrame[0], mFrameGrey, cv::COLOR_BGR2GRAY);
-			equalizeHist(mFrameGrey, mFrameGrey);
+			cvtColor(process_frame[0], gray_frame[0], cv::COLOR_BGR2GRAY);
+			equalizeHist(gray_frame[0], gray_frame[0]);
 
 			std::vector<cv::Rect> faces;
-			mClassifier.detectMultiScale(mFrameGrey, faces);
+			mClassifier.detectMultiScale(gray_frame[0], faces);
 			nap::Logger::info("found %d: faces", faces.size());
 		}
 	}

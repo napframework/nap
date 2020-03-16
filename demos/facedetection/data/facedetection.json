@@ -131,7 +131,7 @@
                     "CaptureComponent": "./VideoCaptureComponent",
                     "Adapter": "Video",
                     "MatrixIndex": 0,
-                    "Path": "haarcascades/haarcascade_frontalface_default.xml"
+                    "Path": "haarcascades/haarcascade_frontalface_alt.xml"
                 }
             ],
             "Children": []
