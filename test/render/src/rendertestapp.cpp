@@ -195,8 +195,8 @@ namespace nap
 				}
 			}
 
-			UniformVec4Instance& color = material_instance.getOrCreateUniform("UBO").getOrCreateUniform<UniformStructArrayInstance>("mData").getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
-			color.setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
+			UniformVec4Instance* color = material_instance.getOrCreateUniform("UBO")->getOrCreateUniform<UniformStructArrayInstance>("mData")->getElement(0).getOrCreateUniform<UniformVec4Instance>("mColor");
+			color->setValue(glm::vec4(value, 1.0f - value, 1.0f, 1.0f));
 
 			if (mRenderService->beginRendering(*render_window))
 			{
