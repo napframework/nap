@@ -22,6 +22,24 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	CVCascadeClassifyComponentInstance::~CVCascadeClassifyComponentInstance()
+	{
+		{
+			// Stop detection thread and notify worker
+			std::lock_guard<std::mutex> lock(mDetectMutex);
+			mStopDetection = true;
+		}
+		mDetectCondition.notify_one();
+
+		// Wait till exit
+		if (mDetectTask.valid())
+		{
+			mDetectTask.wait();
+		}
+	}
+
+
 	bool CVCascadeClassifyComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource and copy render texture
@@ -49,6 +67,11 @@ namespace nap
 		// Assign slot when new frame is captured
 		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
+		// Start capture
+		mStopDetection = false;
+		mDetect = false;
+		mDetectTask = std::async(std::launch::async, std::bind(&CVCascadeClassifyComponentInstance::detectTask, this));
+
 		return true;
 	}
 
@@ -64,14 +87,47 @@ namespace nap
 		const CVFrame* frame = frameEvent.findFrame(*mAdapter);
 		if (frame == nullptr)
 			return;
-		const CVFrame& cv_frame = *frame;
 
-		// Convert to grey-scale and equalize history
-		cvtColor(cv_frame[0], mFrameGrey, cv::COLOR_BGR2GRAY);
-		equalizeHist(mFrameGrey, mFrameGrey);
+		// Store frame for processing
+		{
+			std::lock_guard<std::mutex> lock(mDetectMutex);
+			frame->copyTo(mCapturedFrame);
+			mDetect = true;
+		}
+		mDetectCondition.notify_one();
+	}
 
-		std::vector<cv::Rect> faces;
-		mClassifier.detectMultiScale(mFrameGrey, faces);
-		nap::Logger::info("found %d: faces", faces.size());
+
+	void CVCascadeClassifyComponentInstance::detectTask()
+	{
+		CVFrame process_frame;
+		while (!mStopDetection)
+		{
+			// Wait for the detect condition to be true.
+			// When this happens copy all the properties to set in order to release lock
+			{
+				std::unique_lock<std::mutex> lock(mDetectMutex);
+				mDetectCondition.wait(lock, [this]()
+				{
+					return (mStopDetection || mDetect);
+				});
+
+				// Exit loop when exit has been triggered
+				if (mStopDetection)
+					break;
+
+				// Copy and clear
+				mCapturedFrame.copyTo(process_frame);
+				mDetect = false;
+			}
+
+			// Convert to grey-scale and equalize history
+			cvtColor(mCapturedFrame[0], mFrameGrey, cv::COLOR_BGR2GRAY);
+			equalizeHist(mFrameGrey, mFrameGrey);
+
+			std::vector<cv::Rect> faces;
+			mClassifier.detectMultiScale(mFrameGrey, faces);
+			nap::Logger::info("found %d: faces", faces.size());
+		}
 	}
 }

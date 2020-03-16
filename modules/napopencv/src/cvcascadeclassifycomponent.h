@@ -37,6 +37,8 @@ namespace nap
 		CVCascadeClassifyComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
+		virtual ~CVCascadeClassifyComponentInstance() override;
+
 		/**
 		 * Initialize cascadeclassifycomponentInstance based on the cascadeclassifycomponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -60,5 +62,17 @@ namespace nap
 		nap::CVAdapter* mAdapter = nullptr;								///< OpenCV capture adapter
 		int mMatrixIndex = 0;											///< OpenCV matrix index
 		cv::UMat mFrameGrey;											///< OpenCV grey frame
+
+		std::future<void> mDetectTask;									///< The task that performs classification
+		std::mutex mDetectMutex;										///< The mutex that safe guards the capture thread
+		std::condition_variable	mDetectCondition;						///< Used for telling the polling task to continue
+		bool mStopDetection = false;									///< If the detection should stop
+		bool mDetect = false;											///< Proceed to next frame
+		CVFrame mCapturedFrame;											///< Latest frame that is captured
+
+		/**
+         * Task that captures new frames
+		 */
+		void detectTask();
 	};
 }
