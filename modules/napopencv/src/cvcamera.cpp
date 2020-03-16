@@ -19,16 +19,13 @@ RTTI_END_STRUCT
 // nap::cvcameraadapter run time class definition 
 RTTI_BEGIN_CLASS(nap::CVCamera)
 	RTTI_PROPERTY("ShowDialog",			&nap::CVCamera::mShowDialog,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ConvertRGB",			&nap::CVCamera::mConvertRGB,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",		&nap::CVCamera::mFlipHorizontal,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",		&nap::CVCamera::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Codec",				&nap::CVCamera::mCodec,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DeviceIndex",		&nap::CVCamera::mDeviceIndex,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Codec",				&nap::CVCamera::mCodec,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("OverrideResolution",	&nap::CVCamera::mOverrideResolution,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resolution",			&nap::CVCamera::mResolution,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resize",				&nap::CVCamera::mResize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",				&nap::CVCamera::mSize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ApplySettings",		&nap::CVCamera::mApplySettings,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",				&nap::CVCamera::mSize,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ApplySettings",		&nap::CVCamera::mApplySettings,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Settings",			&nap::CVCamera::mCameraSettings,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -163,23 +160,12 @@ namespace nap
 			return CVFrame();
 		}
 
-		// Resize or perform a weak copy.
+		// Resize frame if required
+		// Otherwise simply copy mat reference (no actual data copy takes place)
 		if (mResize && (mCaptureFrame[0].cols != mSize.x || mCaptureFrame[0].rows != mSize.y))
 			cv::resize(mCaptureFrame[0], mOutputFrame[0], cv::Size(mSize.x, mSize.y));
 		else
 			mOutputFrame[0] = mCaptureFrame[0];
-
-		// Convert to RGB
-		if (mConvertRGB)
-			cv::cvtColor(mOutputFrame[0], mOutputFrame[0], cv::COLOR_BGR2RGB);
-
-		// Flip horizontal
-		if (mFlipHorizontal)
-			cv::flip(mOutputFrame[0], mOutputFrame[0], 1);
-
-		// Flip vertical
-		if (mFlipVertical)
-			cv::flip(mOutputFrame[0], mOutputFrame[0], 0);
 
 		return mOutputFrame.clone();
 	}

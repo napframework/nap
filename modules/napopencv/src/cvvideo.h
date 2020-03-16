@@ -103,9 +103,6 @@ namespace nap
 		float getTime();
 
 		std::string		mFile;									///< Property: 'File' the video file or image sequence. Sequences should be formatted as "my_seq.%02d.png
-		bool			mConvertRGB = true;						///< Property: 'ConvertRGB' if the frame is converted into RGB
-		bool			mFlipHorizontal = false;				///< Property: 'FlipHorizontal' flips the frame on the x-axis
-		bool			mFlipVertical = false;					///< Property: 'FlipVertical' flips the frame on the y-axis
 		bool			mResize = false;						///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
 		glm::ivec2		mSize = { 1280, 720 };					///< Property: 'Size' frame size, only used when 'Resize' is turned on.
 

@@ -6,9 +6,6 @@
 
 // nap::cvvideoadapter run time class definition 
 RTTI_BEGIN_CLASS(nap::CVNetworkStream)
-	RTTI_PROPERTY("ConvertRGB",		&nap::CVNetworkStream::mConvertRGB,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",	&nap::CVNetworkStream::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",	&nap::CVNetworkStream::mFlipVertical,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resize",			&nap::CVNetworkStream::mResize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",			&nap::CVNetworkStream::mSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Link",			&nap::CVNetworkStream::mLink,			nap::rtti::EPropertyMetaData::Required)
@@ -72,19 +69,6 @@ namespace nap
 		else
 			mOutputFrame[0] = mCaptureFrame[0];
 
-		// Convert to RGB
-		if (mConvertRGB)
-			cv::cvtColor(mOutputFrame[0], mOutputFrame[0], cv::COLOR_BGR2RGB);
-
-		// Flip horizontal
-		if (mFlipHorizontal)
-			cv::flip(mOutputFrame[0], mOutputFrame[0], 1);
-
-		// Flip vertical
-		if (mFlipVertical)
-			cv::flip(mOutputFrame[0], mOutputFrame[0], 0);
-
-		// Clone and return
 		return mOutputFrame.clone();
 	}
 }

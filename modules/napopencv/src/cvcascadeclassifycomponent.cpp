@@ -67,7 +67,7 @@ namespace nap
 		const CVFrame& cv_frame = *frame;
 
 		// Convert to grey-scale and equalize history
-		cvtColor(cv_frame[0], mFrameGrey, cv::COLOR_RGB2GRAY);
+		cvtColor(cv_frame[0], mFrameGrey, cv::COLOR_BGR2GRAY);
 		equalizeHist(mFrameGrey, mFrameGrey);
 
 		std::vector<cv::Rect> faces;
