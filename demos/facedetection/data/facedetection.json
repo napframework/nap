@@ -88,7 +88,7 @@
             "Backend": "Automatic",
             "ConvertRGB": true,
             "FlipHorizontal": false,
-            "FlipVertical": true,
+            "FlipVertical": false,
             "Resize": true,
             "Size": {
                 "x": 640,
@@ -133,6 +133,14 @@
                     "RenderTexture": "CameraTextureTwo",
                     "Adapter": "CameraTwo",
                     "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::CVCascadeClassifyComponent",
+                    "mID": "DetectComponentOne",
+                    "CaptureComponent": "./VideoCaptureComponent",
+                    "Adapter": "Video",
+                    "MatrixIndex": 0,
+                    "Path": "haarcascades/haarcascade_frontalface_alt.xml"
                 }
             ],
             "Children": []

@@ -9,7 +9,7 @@
 RTTI_BEGIN_CLASS(nap::CVCaptureToTextureComponent)
 	RTTI_PROPERTY("CaptureComponent",	&nap::CVCaptureToTextureComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderTexture",		&nap::CVCaptureToTextureComponent::mRenderTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Adapter",			&nap::CVCaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",			&nap::CVCaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MatrixIndex",		&nap::CVCaptureToTextureComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
