@@ -91,7 +91,7 @@ namespace nap
 		// Store frame for processing
 		{
 			std::lock_guard<std::mutex> lock(mDetectMutex);
-			frame->copyTo(mCapturedFrame);
+			mCapturedFrame = *frame;
 			mDetect = true;
 		}
 		mDetectCondition.notify_one();
