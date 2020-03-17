@@ -46,9 +46,6 @@ namespace nap
 		// Assign slot when new frame is captured
 		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
-		// Add new matrix
-		mConversionFrame.addNew();
-
 		return true;
 	}
 
@@ -83,10 +80,10 @@ namespace nap
 		}
 
 		// Convert to RGB and flip vertically
-		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
-		cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
+		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame, cv::COLOR_BGR2RGB);
+		cv::flip(mConversionFrame, mConversionFrame, 0);
 		
 		// Update texture
-		mRenderTexture->update(mConversionFrame[0].getMat(cv::ACCESS_READ).data);
+		mRenderTexture->update(mConversionFrame.getMat(cv::ACCESS_READ).data);
 	}
 }

@@ -52,6 +52,6 @@ namespace nap
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
 		nap::CVAdapter* mAdapter = nullptr;
 		int mMatrixIndex = 0;
-		CVFrame mConversionFrame;
+		cv::UMat mConversionFrame;
 	};
 }

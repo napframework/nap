@@ -6,23 +6,24 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/objdetect.hpp>
 #include <cvcapturecomponent.h>
+#include <rect.h>
 
 namespace nap
 {
-	class CVCascadeClassifyComponentInstance;
+	class CVClassifyComponentInstance;
 
 	/**
 	 *	cascadeclassifycomponent
 	 */
-	class NAPAPI CVCascadeClassifyComponent : public Component
+	class NAPAPI CVClassifyComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(CVCascadeClassifyComponent, CVCascadeClassifyComponentInstance)
+		DECLARE_COMPONENT(CVClassifyComponent, CVClassifyComponentInstance)
 	public:
 
 		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent = nullptr;	///< Property: 'CaptureComponent' the component that receives the captured frames
 		nap::ResourcePtr<CVAdapter> mAdapter = nullptr;						///< Property: 'Adapter' the adapter to render frame for
-		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix index of the adapter to render
+		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix of the adapter used for detection
 		std::string mPath;													///< Property: 'Path' path to cascade classifier file
 	};
 
@@ -30,14 +31,14 @@ namespace nap
 	/**
 	 * cascadeclassifycomponentInstance	
 	 */
-	class NAPAPI CVCascadeClassifyComponentInstance : public ComponentInstance
+	class NAPAPI CVClassifyComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		CVCascadeClassifyComponentInstance(EntityInstance& entity, Component& resource) :
+		CVClassifyComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
-		virtual ~CVCascadeClassifyComponentInstance() override;
+		virtual ~CVClassifyComponentInstance() override;
 
 		/**
 		 * Initialize cascadeclassifycomponentInstance based on the cascadeclassifycomponent resource
@@ -53,21 +54,28 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent = { this, &CVCascadeClassifyComponent::mCaptureComponent };
+		/**
+		 * @return classified (detected) objects
+		 */
+		std::vector<math::Rect> getObjects() const;
+
+		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent = { this, &CVClassifyComponent::mCaptureComponent };
 
 	private:
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
-		nap::Slot<const CVFrameEvent&> mCaptureSlot =					{ this, &CVCascadeClassifyComponentInstance::onFrameCaptured };
+		nap::Slot<const CVFrameEvent&> mCaptureSlot =					{ this, &CVClassifyComponentInstance::onFrameCaptured };
 		cv::CascadeClassifier mClassifier;								///< OpenCV cascade classifier
 		nap::CVAdapter* mAdapter = nullptr;								///< OpenCV capture adapter
 		int mMatrixIndex = 0;											///< OpenCV matrix index
 
-		std::future<void> mDetectTask;									///< The task that performs classification
-		std::mutex mDetectMutex;										///< The mutex that safe guards the capture thread
-		std::condition_variable	mDetectCondition;						///< Used for telling the polling task to continue
-		bool mStopDetection = false;									///< If the detection should stop
-		bool mDetect = false;											///< Proceed to next frame
+		std::future<void> mClassifyTask;								///< The task that performs classification
+		std::mutex mClassifyMutex;										///< The mutex that safe guards the capture thread
+		std::condition_variable	mClassifyCondition;						///< Used for telling the polling task to continue
+		bool mStopClassification = false;								///< If the detection should stop
+		bool mClassify = false;											///< Proceed to next frame
 		CVFrame mCapturedFrame;											///< Latest frame that is captured
+		std::vector<math::Rect> mObjects;								///< All detected objects
+		mutable std::mutex mObjectMutex;								///< The mutex that safe guards the capture thread
 
 		/**
          * Task that captures new frames

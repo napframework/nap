@@ -29,41 +29,12 @@
             }
         },
         {
-            "Type": "nap::CVCamera",
-            "mID": "CameraTwo",
-            "CloseOnError": true,
-            "Backend": "DirectShow",
-            "ShowDialog": true,
-            "DeviceIndex": 1,
-            "Codec": "MJPG",
-            "OverrideResolution": false,
-            "Resolution": {
-                "x": 640,
-                "y": 480
-            },
-            "Resize": true,
-            "Size": {
-                "x": 640,
-                "y": 480
-            },
-            "ApplySettings": false,
-            "Settings": {
-                "AutoExposure": true,
-                "Brightness": 1.0,
-                "Contrast": 1.0,
-                "Saturation": 1.0,
-                "Gain": 1.0,
-                "Exposure": 1.0
-            }
-        },
-        {
             "Type": "nap::CVCaptureDevice",
             "mID": "CameraCaptureDevice",
             "AutoCapture": true,
             "AllowFailure": false,
             "Adapters": [
-                "CameraOne",
-                "CameraTwo"
+                "CameraOne"
             ]
         },
         {
@@ -118,15 +89,7 @@
                     "MatrixIndex": 0
                 },
                 {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderCameraTextureComponentTwo",
-                    "CaptureComponent": "CameraCaptureComponent",
-                    "RenderTexture": "CameraTextureTwo",
-                    "Adapter": "CameraTwo",
-                    "MatrixIndex": 0
-                },
-                {
-                    "Type": "nap::CVCascadeClassifyComponent",
+                    "Type": "nap::CVClassifyComponent",
                     "mID": "DetectComponentOne",
                     "CaptureComponent": "./VideoCaptureComponent",
                     "Adapter": "Video",
@@ -443,21 +406,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraTextureOne",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
-            "Usage": "Static",
-            "Width": 640,
-            "Height": 480,
-            "Format": "RGB8"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CameraTextureTwo",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",

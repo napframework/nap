@@ -92,9 +92,9 @@ namespace nap
 		 * Note that grabbing frames manually might conflict with the automatic frame forwarding mechanism of this module.
 		 * Frames can only be grabbed manually when there is no nap::CVCaptureComponent interested in frames from this specific device.
 		 * @param target updated to hold the last captured frame data if a new frame is available.
-		 * @param copy if the latest frame contents are copied over into the given target.
+		 * @param copy if the frame is deep-copied instead of by reference.
          */
-		void grab(CVFrameEvent& target, bool copy = false);
+		void grab(CVFrameEvent& target, bool copy = true);
 
 		/**
 		 * Tells the capture thread to capture the next available frame.

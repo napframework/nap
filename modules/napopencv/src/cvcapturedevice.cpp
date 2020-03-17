@@ -288,7 +288,7 @@ namespace nap
 				{
 					if (!cur_adapter->getCaptureDevice().set(prop.first, prop.second))
 					{
-						std::string msg = utility::stringFormat("%s: Unable to set property: %s to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
+						std::string msg = utility::stringFormat("%s: Unable to set property: %d to: %.02f", cur_adapter->mID.c_str(), prop.first, prop.second);
 						setError(*cur_adapter, CVCaptureError::PropertyError, msg);
 					}
 				}
