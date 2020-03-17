@@ -10,6 +10,18 @@ namespace nap
 	class CVCaptureDevice;
 	class CVFrameEvent;
 	class CVCaptureComponentInstance;
+	class CVService;
+
+	/**
+	 * Configurable OpenCV library parameters.
+	 */
+	class NAPAPI CVServiceConfiguration : public ServiceConfiguration
+	{
+		RTTI_ENABLE(ServiceConfiguration)
+	public:
+		virtual rtti::TypeInfo getServiceType() override	{ return RTTI_OF(CVService); }
+		int mThreadCount = -1;								///< Property: 'ThreadCount' max number of threads to use, -1 = default
+	};
 
 	/**
 	 * Manages the OpenCV library and is responsible for grabbing and forwarding frame data to capture components.
@@ -34,7 +46,7 @@ namespace nap
 		/**
 		 * Sets the max number of CPU threads to use. 
 		 * 0 disables threading, all functions are run sequentially. 
-		 * A values < 0 will reset the number of threads to the system default (all).
+		 * A value < 0 will reset the number of threads to the system default (all).
 		 * @param count max number of CPU threads to use
 		 */
 		void setThreadCount(int count);

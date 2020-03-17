@@ -9,6 +9,10 @@
 #include <nap/logger.h>
 #include <unordered_map>
 
+RTTI_BEGIN_CLASS(nap::CVServiceConfiguration)
+	RTTI_PROPERTY("ThreadCount", &nap::CVServiceConfiguration::mThreadCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
@@ -35,6 +39,8 @@ namespace nap
 
 	bool CVService::init(nap::utility::ErrorState& errorState)
 	{
+		int thread_count = getConfiguration<CVServiceConfiguration>()->mThreadCount;
+		cv::setNumThreads(thread_count);
 		return true;
 	}
 
