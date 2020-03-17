@@ -38,6 +38,11 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mCVService		= getCore().getService<nap::CVService>();
+		
+		// Limit number of OpenCV cores
+		int count = mCVService->getThreadCount();
+		mCVService->setThreadCount(2);
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -233,8 +238,6 @@ namespace nap
 
 		// Swap screen buffers
 		mRenderWindow->swap();
-
-		//cv::imshow("Capture - Face detection", mMat);
 	}
 	
 	

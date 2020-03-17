@@ -9,6 +9,7 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <imguiservice.h>
+#include <cvservice.h>
 #include <app.h>
 #include <spheremesh.h>
 #include <font.h>
@@ -88,6 +89,7 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
+		CVService* mCVService = nullptr;								//< Pointer to the opencv service
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere

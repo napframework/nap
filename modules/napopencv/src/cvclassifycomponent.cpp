@@ -146,6 +146,7 @@ namespace nap
 
 			{
 				std::lock_guard<std::mutex> lock(mObjectMutex);
+				nap::Logger::info("found %d objects", na_objects.size());
 				mObjects = na_objects;
 			}
 		}

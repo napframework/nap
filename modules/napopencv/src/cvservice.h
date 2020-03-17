@@ -31,9 +31,20 @@ namespace nap
 		CVService(const CVService& that) = delete;
 		CVService& operator=(const CVService&) = delete;
 
+		/**
+		 * Sets the max number of CPU threads to use. 
+		 * 0 disables threading, all functions are run sequentially. 
+		 * A values < 0 will reset the number of threads to the system default (all).
+		 * @param count max number of CPU threads to use
+		 */
+		void setThreadCount(int count);
+
+		/**
+		 * @return the number of threads used by OpenCV for parallel regions.
+		 */
+		int getThreadCount() const;
+
 	protected:
-		// This service depends on render and scene
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		* Initializes the video service

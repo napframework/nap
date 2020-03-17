@@ -21,8 +21,15 @@ namespace nap
 	}
 
 
-	void CVService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	void CVService::setThreadCount(int count)
 	{
+		cv::setNumThreads(count);
+	}
+
+
+	int CVService::getThreadCount() const
+	{
+		return cv::getNumThreads();
 	}
 
 
