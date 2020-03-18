@@ -7,10 +7,12 @@
 
 // nap::cvdisplaycapturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CaptureToTextureComponent)
-	RTTI_PROPERTY("CaptureComponent",	&nap::CaptureToTextureComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CaptureComponent",	&nap::CaptureToTextureComponent::mCaptureComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClassifyComponent",	&nap::CaptureToTextureComponent::mClassifyComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RenderComponent",	&nap::CaptureToTextureComponent::mRenderComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderTexture",		&nap::CaptureToTextureComponent::mRenderTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Adapter",			&nap::CaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MatrixIndex",		&nap::CaptureToTextureComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",			&nap::CaptureToTextureComponent::mAdapter,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MatrixIndex",		&nap::CaptureToTextureComponent::mMatrixIndex,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::cvdisplaycapturecomponentInstance run time class definition 

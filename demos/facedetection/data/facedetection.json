@@ -2,7 +2,7 @@
     "Objects": [
         {
             "Type": "nap::CVCamera",
-            "mID": "CameraOne",
+            "mID": "Camera",
             "CloseOnError": true,
             "Backend": "DirectShow",
             "ShowDialog": true,
@@ -13,7 +13,7 @@
                 "x": 640,
                 "y": 480
             },
-            "Resize": false,
+            "Resize": true,
             "Size": {
                 "x": 640,
                 "y": 480
@@ -34,7 +34,7 @@
             "AutoCapture": true,
             "AllowFailure": false,
             "Adapters": [
-                "CameraOne"
+                "Camera"
             ]
         },
         {
@@ -80,17 +80,39 @@
                     "Type": "nap::CVClassifyComponent",
                     "mID": "CameraClassifyComponent",
                     "CaptureComponent": "./CameraCaptureComponent",
-                    "Adapter": "CameraOne",
+                    "Adapter": "Camera",
                     "MatrixIndex": 0,
                     "Path": "haarcascades/haarcascade_frontalface_alt.xml"
                 },
                 {
                     "Type": "nap::CaptureToTextureComponent",
-                    "mID": "CameraToTextureComponent",
+                    "mID": "CameraApplyBlobsComponent",
                     "CaptureComponent": "./CameraCaptureComponent",
-                    "RenderTexture": "CameraTextureOne",
-                    "Adapter": "CameraOne",
+                    "ClassifyComponent": "../OpenCVVideo/VideoClassifyComponent",
+                    "RenderComponent": "./CameraRenderBlobsComponent",
+                    "RenderTexture": "CameraCaptureTexture",
+                    "Adapter": "Camera",
                     "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "CameraRenderBlobsComponent",
+                    "OutputTexture": "CameraOutputTexture",
+                    "MaterialInstance": {
+                        "Material": "DetectMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClearColor": {
+                        "Values": [
+                            255,
+                            0,
+                            0
+                        ]
+                    },
+                    "ProjectionMatrixUniform": "projectionMatrix",
+                    "ModelMatrixUniform": "modelMatrix"
                 }
             ],
             "Children": []
@@ -114,11 +136,33 @@
                 },
                 {
                     "Type": "nap::CaptureToTextureComponent",
-                    "mID": "VideoToTextureComponent",
+                    "mID": "VideoApplyBlobsComponent",
                     "CaptureComponent": "./VideoCaptureComponent",
-                    "RenderTexture": "VideoTexture",
+                    "ClassifyComponent": "./VideoClassifyComponent",
+                    "RenderComponent": "./VideoRenderBlobsComponent",
+                    "RenderTexture": "VideoCaptureTexture",
                     "Adapter": "Video",
                     "MatrixIndex": 0
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "VideoRenderBlobsComponent",
+                    "OutputTexture": "VideoOutputTexture",
+                    "MaterialInstance": {
+                        "Material": "DetectMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClearColor": {
+                        "Values": [
+                            0,
+                            255,
+                            0
+                        ]
+                    },
+                    "ProjectionMatrixUniform": "projectionMatrix",
+                    "ModelMatrixUniform": "modelMatrix"
                 }
             ],
             "Children": []
@@ -366,6 +410,15 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "DetectMaterial",
+            "Uniforms": [],
+            "Shader": "DetectShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "FontMaterial",
             "Uniforms": [
                 {
@@ -429,7 +482,22 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "CameraTextureOne",
+            "mID": "CameraCaptureTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 1
+            },
+            "Usage": "Static",
+            "Width": 640,
+            "Height": 480,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "CameraOutputTexture",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -444,7 +512,22 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "VideoTexture",
+            "mID": "VideoCaptureTexture",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 1
+            },
+            "Usage": "Static",
+            "Width": 640,
+            "Height": 360,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "VideoOutputTexture",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
                 "MaxFilter": "Linear",
@@ -501,15 +584,21 @@
         },
         {
             "Type": "nap::Shader",
+            "mID": "DetectShader",
+            "mVertShader": "shaders/facedetection/detection.vert",
+            "mFragShader": "shaders/facedetection/detection.frag"
+        },
+        {
+            "Type": "nap::Shader",
             "mID": "FontShader",
-            "mVertShader": "shaders/helloworld/font.vert",
-            "mFragShader": "shaders/helloworld/font.frag"
+            "mVertShader": "shaders/facedetection/font.vert",
+            "mFragShader": "shaders/facedetection/font.frag"
         },
         {
             "Type": "nap::Shader",
             "mID": "WorldShader",
-            "mVertShader": "shaders/helloworld/world.vert",
-            "mFragShader": "shaders/helloworld/world.frag"
+            "mVertShader": "shaders/facedetection/world.vert",
+            "mFragShader": "shaders/facedetection/world.frag"
         },
         {
             "Type": "nap::SphereMesh",

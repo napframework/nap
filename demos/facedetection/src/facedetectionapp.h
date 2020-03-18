@@ -97,9 +97,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
 		ObjectPtr<CVCaptureDevice> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
 		ObjectPtr<CVCaptureDevice> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
-		ObjectPtr<RenderTexture2D> mCameraTextureOne = nullptr;			//< Pointer to the texture we need to capture
-		ObjectPtr<RenderTexture2D> mVideoTexture = nullptr;				//< Pointer to the video texture we need to capture
-		ObjectPtr<RenderTexture2D> mStreamTexture = nullptr;			//< Pointer to the network stream texture
+		ObjectPtr<RenderTexture2D> mCameraCaptureTexture = nullptr;			//< Pointer to the texture we need to capture
+		ObjectPtr<RenderTexture2D> mVideoCaptureTexture = nullptr;		//< Pointer to the video texture we need to capture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		int mCurrentVideoFrame = 0;
 	};

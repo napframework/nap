@@ -53,9 +53,8 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mCameraCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("CameraCaptureDevice");
 		mVideoCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("VideoCaptureDevice");
-		mCameraTextureOne = mResourceManager->findObject<nap::RenderTexture2D>("CameraTextureOne");
-		mVideoTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoTexture");
-		mStreamTexture = mResourceManager->findObject<nap::RenderTexture2D>("StreamTexture");
+		mCameraCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CameraCaptureTexture");
+		mVideoCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoCaptureTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -105,7 +104,7 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Webcam Feed"))
 		{
-			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("CameraOne").get();
+			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("Camera").get();
 			if (camera_one->hasErrors())
 			{
 				nap::CVCaptureErrorMap map = camera_one->getErrors();
@@ -124,8 +123,8 @@ namespace nap
 				ImGui::Text("No Errors");
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraTextureOne->getWidth()) / static_cast<float>(mCameraTextureOne->getHeight());
-			ImGui::Image(*mCameraTextureOne, { col_width, col_width / ratio_video });
+			float ratio_video = static_cast<float>(mCameraCaptureTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
+			ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
@@ -135,8 +134,8 @@ namespace nap
 				adapter.setFrame(mCurrentVideoFrame);
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mVideoTexture->getWidth()) / static_cast<float>(mVideoTexture->getHeight());
-			ImGui::Image(*mVideoTexture, { col_width, col_width / ratio_video });
+			float ratio_video = static_cast<float>(mVideoCaptureTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
+			ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
 			{
