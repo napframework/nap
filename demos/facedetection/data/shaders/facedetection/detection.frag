@@ -24,8 +24,6 @@ float fit(float value, float min, float max, float outMin, float outMax)
 {
     float v = clamp(value, min, max);
     float m = max - min;
-    if(m==0.0)
-        m = 0.00000001;
     return (v - min) / (m) * (outMax - outMin) + outMin;
 }
 
@@ -59,10 +57,14 @@ void main()
 	if (closest_blob >= 0)
 	{
 		lerp_v = fit(current_dist, 0.0, blobs[closest_blob].mSize, 1.0, 0.0);
+		float ring_a = fit(lerp_v, 0.0, 0.05, 0.0, 1.0);
+		float ring_b = fit(lerp_v, 0.20, 0.25, 1.0, 0.0);
+		lerp_v = ring_a * ring_b * 0.75;
 	}
 
 	vec3 tex_color = texture(captureTexture, passUVs.xy).bgr;
 	vec3 mix_color = mix(tex_color, vec3(1.0,1.0,1.0), lerp_v);
 
+    //out_Color = vec4(lerp_v, lerp_v, lerp_v, 1.0);
     out_Color = vec4(mix_color, 1.0);
 }
