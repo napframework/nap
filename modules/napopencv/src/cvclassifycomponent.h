@@ -24,6 +24,7 @@ namespace nap
 		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent = nullptr;	///< Property: 'CaptureComponent' the component that receives the captured frames
 		nap::ResourcePtr<CVAdapter> mAdapter = nullptr;						///< Property: 'Adapter' the adapter to render frame for
 		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix of the adapter used for detection
+		bool mNormalize = true;												///< Property: 'Normalize' if the coordinates are normalized (from 0 to 1)
 		std::string mPath;													///< Property: 'Path' path to cascade classifier file
 	};
 
@@ -67,6 +68,7 @@ namespace nap
 		cv::CascadeClassifier mClassifier;								///< OpenCV cascade classifier
 		nap::CVAdapter* mAdapter = nullptr;								///< OpenCV capture adapter
 		int mMatrixIndex = 0;											///< OpenCV matrix index
+		bool mNormalize = true;											///< If detection coordinates are normalized
 
 		std::future<void> mClassifyTask;								///< The task that performs classification
 		std::mutex mClassifyMutex;										///< The mutex that safe guards the capture thread

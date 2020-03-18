@@ -19,6 +19,7 @@
 #include <font.h>
 #include <imguiutils.h>
 #include <cvframe.h>
+#include <rendertotexturecomponent.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -55,6 +56,8 @@ namespace nap
 		mVideoCaptureDevice = mResourceManager->findObject<nap::CVCaptureDevice>("VideoCaptureDevice");
 		mCameraCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("CameraCaptureTexture");
 		mVideoCaptureTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoCaptureTexture");
+		mCameraOutputTexture = mResourceManager->findObject<nap::RenderTexture2D>("CameraOutputTexture");
+		mVideoOutputTexture = mResourceManager->findObject<nap::RenderTexture2D>("VideoOutputTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -62,6 +65,10 @@ namespace nap
 		// Fetch world and text
 		mWorldEntity = scene->findEntity("World");
 		mTextEntity = scene->findEntity("Text");
+
+		// Fetch capture OpenCV capture / track entities
+		mCameraCaptureEntity = scene->findEntity("OpenCVCamera");
+		mVideoCaptureEntity  = scene->findEntity("OpenCVVideo");
 
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
@@ -125,6 +132,7 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraCaptureTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
 			ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
+			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("Video Feed"))
 		{
@@ -136,6 +144,7 @@ namespace nap
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoCaptureTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
 			ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
+			ImGui::Image(*mVideoOutputTexture,  { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
 			{
@@ -184,6 +193,18 @@ namespace nap
 	 */
 	void FaceDetectionApp::render()
 	{
+		// Activate current (main) window for drawing
+		mRenderWindow->makeActive();
+
+		// Clear opengl context related resources that are not necessary any more
+		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+
+		// Render detected blobs to texture
+		{
+			mCameraCaptureEntity->getComponent<RenderToTextureComponentInstance>().draw();
+			mVideoCaptureEntity->getComponent<RenderToTextureComponentInstance>().draw();
+		}
+
 		// Update the camera location in the world shader for the halo effect
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
@@ -193,12 +214,6 @@ namespace nap
 		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform.setValue(global_pos);
-
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
-
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());

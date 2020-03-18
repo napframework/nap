@@ -48,6 +48,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		virtual void update(double deltaTime);
+
 		// Component that receives frame captures
 		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent			= { this, &CaptureToTextureComponent::mCaptureComponent };
 

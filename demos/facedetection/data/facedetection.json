@@ -79,6 +79,7 @@
                 {
                     "Type": "nap::CVClassifyComponent",
                     "mID": "CameraClassifyComponent",
+                    "Normalize": true,
                     "CaptureComponent": "./CameraCaptureComponent",
                     "Adapter": "Camera",
                     "MatrixIndex": 0,
@@ -88,7 +89,7 @@
                     "Type": "nap::CaptureToTextureComponent",
                     "mID": "CameraApplyBlobsComponent",
                     "CaptureComponent": "./CameraCaptureComponent",
-                    "ClassifyComponent": "../OpenCVVideo/VideoClassifyComponent",
+                    "ClassifyComponent": "./CameraClassifyComponent",
                     "RenderComponent": "./CameraRenderBlobsComponent",
                     "RenderTexture": "CameraCaptureTexture",
                     "Adapter": "Camera",
@@ -100,7 +101,14 @@
                     "OutputTexture": "CameraOutputTexture",
                     "MaterialInstance": {
                         "Material": "DetectMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "captureTexture2",
+                                "Name": "captureTexture",
+                                "Texture": "CameraCaptureTexture"
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -129,6 +137,7 @@
                 {
                     "Type": "nap::CVClassifyComponent",
                     "mID": "VideoClassifyComponent",
+                    "Normalize": true,
                     "CaptureComponent": "./VideoCaptureComponent",
                     "Adapter": "Video",
                     "MatrixIndex": 0,
@@ -150,7 +159,14 @@
                     "OutputTexture": "VideoOutputTexture",
                     "MaterialInstance": {
                         "Material": "DetectMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "captureTexture03",
+                                "Name": "captureTexture",
+                                "Texture": "VideoCaptureTexture"
+                            }
+                        ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },

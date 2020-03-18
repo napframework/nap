@@ -6,9 +6,10 @@
 
 // nap::cascadeclassifycomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CVClassifyComponent)
+	RTTI_PROPERTY("Normalize",			&nap::CVClassifyComponent::mNormalize,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CaptureComponent",	&nap::CVClassifyComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Adapter",			&nap::CVClassifyComponent::mAdapter,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MatrixIndex",		&nap::CVClassifyComponent::mMatrixIndex,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",			&nap::CVClassifyComponent::mAdapter,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MatrixIndex",		&nap::CVClassifyComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Path",				&nap::CVClassifyComponent::mPath,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
 RTTI_END_CLASS
 
@@ -63,6 +64,9 @@ namespace nap
 		if (!errorState.check(mClassifier.load(resource->mPath), "%s: unable to load cascade: %s",
 			this->mID.c_str(), resource->mPath.c_str()))
 			return false;
+		
+		// If we want to normalize coordinates
+		mNormalize = resource->mNormalize;
 
 		// Assign slot when new frame is captured
 		mCaptureComponent->getDevice().frameCaptured.connect(mCaptureSlot);
@@ -139,11 +143,19 @@ namespace nap
 			// Detect and store
 			mClassifier.detectMultiScale(gray_frame[0], cv_objects);
 
-			// Copy over rects
+			// Copy over rects, normalize if required
 			na_objects.clear();
 			for (auto& rect : cv_objects)
-				na_objects.emplace_back(math::Rect(rect.x, rect.y, rect.width, rect.height));
+			{
+				na_objects.emplace_back(math::Rect(
+					mNormalize ? (float)(rect.x) / (float)(gray_frame[0].cols) : (float)(rect.x),
+					mNormalize ? (float)(rect.y) / (float)(gray_frame[0].rows) : (float)(rect.y),
+					mNormalize ? (float)(rect.width) / (float)(gray_frame[0].cols) : (float)(rect.width),
+					mNormalize ? (float)(rect.height) / (float)(gray_frame[0].rows) : (float)(rect.height)));
 
+			}
+
+			// Copy to buffer (thread safe)
 			{
 				std::lock_guard<std::mutex> lock(mObjectMutex);
 				nap::Logger::info("found %d objects", na_objects.size());

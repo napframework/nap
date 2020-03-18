@@ -49,7 +49,42 @@ namespace nap
 		mConversionFrame.addNew();
 		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
+		// Get material instance
+		nap::MaterialInstance& mat_instance = mRenderComponent->getMaterialInstance();
 		return true;
+	}
+
+
+	void CaptureToTextureComponentInstance::update(double deltaTime)
+	{
+		// Get detected blobs
+		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
+
+		// Set blob count
+		nap::MaterialInstance& material = mRenderComponent->getMaterialInstance();
+		UniformInt& blob_count_uniform = material.getOrCreateUniform<UniformInt>("blobCount");
+		blob_count_uniform.setValue(blobs.size());
+
+		// Set blob data
+		int count = 0;
+		for (const auto& blob : blobs)
+		{
+			// Set blob center
+			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", count);
+			UniformVec2& center_uniform = material.getOrCreateUniform<UniformVec2>(center_uniform_name);
+			center_uniform.setValue(glm::vec2
+			(
+				blob.getMin().x + (blob.getWidth()  / 2.0),
+				blob.getMin().y + (blob.getHeight() / 2.0)
+			));
+
+			// Set blob size
+			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
+			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
+			size_uniform.setValue(blob.getWidth() / 2.0f);
+			
+			count++;
+		}
 	}
 
 
@@ -83,10 +118,10 @@ namespace nap
 		}
 
 		// Convert to RGB and flip vertically
-		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
-		cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
+		// cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
+		// cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
 		
 		// Update texture
-		mRenderTexture->update(mConversionFrame[0].getMat(cv::ACCESS_READ).data);
+		mRenderTexture->update(cv_frame[0].getMat(cv::ACCESS_READ).data);
 	}
 }
