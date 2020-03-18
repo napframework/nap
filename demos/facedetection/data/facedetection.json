@@ -6,7 +6,7 @@
             "CloseOnError": true,
             "Backend": "DirectShow",
             "ShowDialog": true,
-            "DeviceIndex": 0,
+            "DeviceIndex": 1,
             "Codec": "MJPG",
             "OverrideResolution": false,
             "Resolution": {
@@ -61,6 +61,15 @@
         {
             "Type": "nap::Entity",
             "mID": "OpenCV",
+            "Components": [],
+            "Children": [
+                "OpenCVVideo",
+                "OpenCVCamera"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OpenCVCamera",
             "Components": [
                 {
                     "Type": "nap::CVCaptureComponent",
@@ -68,33 +77,48 @@
                     "Devices": "CameraCaptureDevice"
                 },
                 {
+                    "Type": "nap::CVClassifyComponent",
+                    "mID": "CameraClassifyComponent",
+                    "CaptureComponent": "./CameraCaptureComponent",
+                    "Adapter": "CameraOne",
+                    "MatrixIndex": 0,
+                    "Path": "haarcascades/haarcascade_frontalface_alt.xml"
+                },
+                {
+                    "Type": "nap::CaptureToTextureComponent",
+                    "mID": "CameraToTextureComponent",
+                    "CaptureComponent": "./CameraCaptureComponent",
+                    "RenderTexture": "CameraTextureOne",
+                    "Adapter": "CameraOne",
+                    "MatrixIndex": 0
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OpenCVVideo",
+            "Components": [
+                {
                     "Type": "nap::CVCaptureComponent",
                     "mID": "VideoCaptureComponent",
                     "Devices": "VideoCaptureDevice"
                 },
                 {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderVideoTextureComponent",
-                    "CaptureComponent": "VideoCaptureComponent",
-                    "RenderTexture": "VideoTexture",
-                    "Adapter": "Video",
-                    "MatrixIndex": 0
-                },
-                {
-                    "Type": "nap::CVCaptureToTextureComponent",
-                    "mID": "RenderCameraTextureComponentOne",
-                    "CaptureComponent": "CameraCaptureComponent",
-                    "RenderTexture": "CameraTextureOne",
-                    "Adapter": "CameraOne",
-                    "MatrixIndex": 0
-                },
-                {
                     "Type": "nap::CVClassifyComponent",
-                    "mID": "DetectComponentOne",
+                    "mID": "VideoClassifyComponent",
                     "CaptureComponent": "./VideoCaptureComponent",
                     "Adapter": "Video",
                     "MatrixIndex": 0,
                     "Path": "haarcascades/haarcascade_frontalface_alt.xml"
+                },
+                {
+                    "Type": "nap::CaptureToTextureComponent",
+                    "mID": "VideoToTextureComponent",
+                    "CaptureComponent": "./VideoCaptureComponent",
+                    "RenderTexture": "VideoTexture",
+                    "Adapter": "Video",
+                    "MatrixIndex": 0
                 }
             ],
             "Children": []

@@ -1,4 +1,4 @@
-#include "cvcapturetotexturecomponent.h"
+#include "capturetotexturecomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -6,15 +6,15 @@
 #include <nap/logger.h>
 
 // nap::cvdisplaycapturecomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::CVCaptureToTextureComponent)
-	RTTI_PROPERTY("CaptureComponent",	&nap::CVCaptureToTextureComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RenderTexture",		&nap::CVCaptureToTextureComponent::mRenderTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Adapter",			&nap::CVCaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MatrixIndex",		&nap::CVCaptureToTextureComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::CaptureToTextureComponent)
+	RTTI_PROPERTY("CaptureComponent",	&nap::CaptureToTextureComponent::mCaptureComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RenderTexture",		&nap::CaptureToTextureComponent::mRenderTexture,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Adapter",			&nap::CaptureToTextureComponent::mAdapter,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MatrixIndex",		&nap::CaptureToTextureComponent::mMatrixIndex,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::cvdisplaycapturecomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureToTextureComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CaptureToTextureComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -23,10 +23,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool CVCaptureToTextureComponentInstance::init(utility::ErrorState& errorState)
+	bool CaptureToTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource and copy render texture
-		CVCaptureToTextureComponent* resource = getComponent<CVCaptureToTextureComponent>();
+		CaptureToTextureComponent* resource = getComponent<CaptureToTextureComponent>();
 		mRenderTexture  = resource->mRenderTexture.get();
 		mAdapter		= resource->mAdapter.get();
 		mMatrixIndex	= resource->mMatrixIndex;
@@ -51,7 +51,7 @@ namespace nap
 	}
 
 
-	void CVCaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frameEvent)
+	void CaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frameEvent)
 	{
 		const CVFrame* frame = frameEvent.findFrame(*mAdapter);
 		if (frame == nullptr)

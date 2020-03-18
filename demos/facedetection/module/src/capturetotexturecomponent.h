@@ -8,15 +8,15 @@
 
 namespace nap
 {
-	class NAPAPI CVCaptureToTextureComponentInstance;
+	class NAPAPI CaptureToTextureComponentInstance;
 
 	/**
 	 *	cvdisplaycapturecomponent
 	 */
-	class CVCaptureToTextureComponent : public Component
+	class CaptureToTextureComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(CVCaptureToTextureComponent, CVCaptureToTextureComponentInstance)
+		DECLARE_COMPONENT(CaptureToTextureComponent, CaptureToTextureComponentInstance)
 	public:
 
 		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent = nullptr;	///< Property: 'CaptureComponent' the component that receives the captured frames
@@ -29,11 +29,11 @@ namespace nap
 	/**
 	 * cvdisplaycapturecomponentInstance	
 	 */
-	class NAPAPI CVCaptureToTextureComponentInstance : public ComponentInstance
+	class NAPAPI CaptureToTextureComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		CVCaptureToTextureComponentInstance(EntityInstance& entity, Component& resource) :
+		CaptureToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
@@ -44,11 +44,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent = { this, &CVCaptureToTextureComponent::mCaptureComponent };
+		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent = { this, &CaptureToTextureComponent::mCaptureComponent };
 		nap::RenderTexture2D* mRenderTexture = nullptr;
 
 	private:
-		nap::Slot<const CVFrameEvent&> mCaptureSlot = { this, &CVCaptureToTextureComponentInstance::onFrameCaptured };
+		nap::Slot<const CVFrameEvent&> mCaptureSlot = { this, &CaptureToTextureComponentInstance::onFrameCaptured };
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
 		nap::CVAdapter* mAdapter = nullptr;
 		int mMatrixIndex = 0;
