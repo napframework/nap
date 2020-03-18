@@ -81,7 +81,7 @@ namespace nap
 			// Set blob size
 			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
 			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(blob.getWidth() / 2.0f);
+			size_uniform.setValue(blob.getHeight() / 2.0f);
 			
 			count++;
 		}
@@ -118,8 +118,8 @@ namespace nap
 		}
 
 		// Convert to RGB and flip vertically
-		// cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
-		// cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
+		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
+		cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
 		
 		// Update texture
 		mRenderTexture->update(cv_frame[0].getMat(cv::ACCESS_READ).data);

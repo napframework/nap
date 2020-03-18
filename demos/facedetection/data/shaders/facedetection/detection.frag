@@ -14,6 +14,7 @@ struct Blob
 uniform Blob blobs[20];					//< All detected blobs
 uniform int blobCount;					//< Total number of detected blobs
 uniform sampler2D captureTexture;		//< Classify texture 
+uniform vec2 captureSize;				//< Size of captureTexture in pixels
 
 // output
 out vec4 out_Color;
@@ -31,7 +32,11 @@ float fit(float value, float min, float max, float outMin, float outMax)
 // Computes the distance to a certain blob
 float getDistance(int blobID)
 {
-	return length(blobs[blobID].mCenter - passUVs.xy);
+	// Flip blob vertical
+	vec2 center = vec2(blobs[blobID].mCenter.x, captureSize.y - blobs[blobID].mCenter.y); 
+	
+	// Return distance from pixel to center of blob
+	return length(center - (passUVs.xy * captureSize));
 }
 
 
@@ -57,12 +62,12 @@ void main()
 	if (closest_blob >= 0)
 	{
 		lerp_v = fit(current_dist, 0.0, blobs[closest_blob].mSize, 1.0, 0.0);
-		float ring_a = fit(lerp_v, 0.0, 0.05, 0.0, 1.0);
-		float ring_b = fit(lerp_v, 0.20, 0.25, 1.0, 0.0);
+		float ring_a = fit(lerp_v, 0.0, 0.025, 0.0, 1.0);
+		float ring_b = fit(lerp_v, 0.20, 0.225, 1.0, 0.0);
 		lerp_v = ring_a * ring_b * 0.75;
 	}
 
-	vec3 tex_color = texture(captureTexture, passUVs.xy).bgr;
+	vec3 tex_color = texture(captureTexture, vec2(passUVs.x, 1.0-passUVs.y)).bgr;
 	vec3 mix_color = mix(tex_color, vec3(1.0,1.0,1.0), lerp_v);
 
     //out_Color = vec4(lerp_v, lerp_v, lerp_v, 1.0);

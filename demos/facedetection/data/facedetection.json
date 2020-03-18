@@ -79,7 +79,6 @@
                 {
                     "Type": "nap::CVClassifyComponent",
                     "mID": "CameraClassifyComponent",
-                    "Normalize": true,
                     "CaptureComponent": "./CameraCaptureComponent",
                     "Adapter": "Camera",
                     "MatrixIndex": 0,
@@ -107,6 +106,15 @@
                                 "mID": "captureTexture2",
                                 "Name": "captureTexture",
                                 "Texture": "CameraCaptureTexture"
+                            },
+                            {
+                                "Type": "nap::UniformVec2",
+                                "mID": "UniformVec2_723b32b6",
+                                "Name": "captureSize",
+                                "Value": {
+                                    "x": 640.0,
+                                    "y": 480.0
+                                }
                             }
                         ],
                         "BlendMode": "NotSet",
@@ -137,7 +145,6 @@
                 {
                     "Type": "nap::CVClassifyComponent",
                     "mID": "VideoClassifyComponent",
-                    "Normalize": true,
                     "CaptureComponent": "./VideoCaptureComponent",
                     "Adapter": "Video",
                     "MatrixIndex": 0,
@@ -165,6 +172,15 @@
                                 "mID": "captureTexture03",
                                 "Name": "captureTexture",
                                 "Texture": "VideoCaptureTexture"
+                            },
+                            {
+                                "Type": "nap::UniformVec2",
+                                "mID": "UniformVec2_efa2fe01",
+                                "Name": "captureSize",
+                                "Value": {
+                                    "x": 640.0,
+                                    "y": 360.0
+                                }
                             }
                         ],
                         "BlendMode": "NotSet",

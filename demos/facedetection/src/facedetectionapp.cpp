@@ -130,8 +130,8 @@ namespace nap
 				ImGui::Text("No Errors");
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraCaptureTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
-			ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
+			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
+			//ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
 			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("Video Feed"))
@@ -142,8 +142,8 @@ namespace nap
 				adapter.setFrame(mCurrentVideoFrame);
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mVideoCaptureTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
+			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
+			//ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
 			ImGui::Image(*mVideoOutputTexture,  { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
