@@ -74,7 +74,8 @@ namespace nap
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
-		return true;
+		CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+		return adapter.changeVideo(adapter.mFile, error);
 	}
 	
 	
