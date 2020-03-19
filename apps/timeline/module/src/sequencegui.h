@@ -1,7 +1,7 @@
 #pragma once
 
 // internal includes
-#include "timelinecontainer.h"
+#include "sequenceeditor.h"
 
 // external includes
 #include <nap/resource.h>
@@ -13,7 +13,8 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	enum TimelineGUIMouseActions
+	/*
+	enum SequenceGUIMouseActions
 	{
 		// HOVERING
 		HOVERING_KEYFRAME,
@@ -24,45 +25,47 @@ namespace nap
 		NONE
 	};
 
-	struct TimelineGUIMouseActionData
+	struct SequenceGUIMouseActionData
 	{
 	public:
 		bool	mouseWasDown					= false;
 		ImVec2	previousMousePos				= ImVec2(0, 0);
-		TimelineGUIMouseActions currentAction	= TimelineGUIMouseActions::NONE;
+		SequenceGUIMouseActions currentAction	= SequenceGUIMouseActions::NONE;
 		rtti::Object* currentObject				= nullptr;
 	};
+	*/
 
 	/**
 	 */
-	class NAPAPI TimelineGUI : public Resource
+	class NAPAPI SequenceGUI : public Resource
 	{
 		RTTI_ENABLE(Resource)
+		/*
 	public:
+		
 		void draw();
-
-		std::string getName() const;
 
 		virtual bool init(utility::ErrorState& errorState) override;
 	public:
-		ResourcePtr<TimelineContainer>						mTimelineContainer;
+		ResourcePtr<SequenceEditor>						mTimelineContainer;
 	protected:
-		TimelineGUIMouseActionData							mMouseActionData;
+		SequenceGUIMouseActionData						mMouseActionData;
 	private:
 
 		void drawTrack(
-			const ResourcePtr<TimelineTrack>& track,
+			const ResourcePtr<SequenceTrack>& track,
 			ImVec2 &cursorPos,
 			const int trackCount,
 			const float timelineWidth,
 			const float stepSize);
 
 		void drawKeyFrame(
-			const ResourcePtr<KeyFrame> &keyFrame,
+			const ResourcePtr<SequenceTrackSegment> &keyFrame,
 			const float stepSize,
 			ImDrawList* drawList,
 			const ImVec2 &trackTopLeft,
 			const float trackHeight,
 			float &previousKeyFrameX);
+			*/
 	};
 }

@@ -5,7 +5,6 @@
 #include <nap/resourceptr.h>
 
 // Module includes
-#include "timelineservice.h"
 #include <renderservice.h>
 #include <imguiservice.h>
 #include <sceneservice.h>
@@ -14,6 +13,9 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
+
+//
+#include "sequenceeditorservice.h"
 
 namespace nap 
 {
@@ -80,7 +82,7 @@ namespace nap
 		SceneService*			mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*			mInputService = nullptr;		///< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;			///< Manages GUI related update / draw calls
-		TimelineService*		mTimelineService = nullptr;
+		SequenceEditorService*		mTimelineService = nullptr;
 		ObjectPtr<RenderWindow> mRenderWindow;					///< Pointer to the render window	
 		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
 	};

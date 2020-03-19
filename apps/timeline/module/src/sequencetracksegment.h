@@ -11,19 +11,14 @@ namespace nap
 
 	/**
 	 */
-	class NAPAPI KeyFrame : public Resource
+	class NAPAPI SequenceTrackSegment : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		void adjustValue(const float newValue);
-
 	public:
-		float										mValue;
-		double										mTime = 0.0;
-		std::string									mName = "";
+		double										mStartTime = 0.0;
+		double										mDuration = 1.0;
 		ResourcePtr<math::FCurve<float, float>>		mCurve;
-		ResourcePtr<math::FCurve<float, float>>		mNextCurve;
 	};
 }

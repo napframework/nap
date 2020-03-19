@@ -1,7 +1,7 @@
 #pragma once
 
 // internal includes
-#include "timeline.h"
+#include "sequence.h"
 
 // external includes
 #include <nap/resource.h>
@@ -12,15 +12,16 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// forward declares
-	class TimelineGUI;
+	class SequenceGUI;
 
 	/**
-	 * TimelineHolder
-	 * TimelineHolder is responsible for instantiating a timeline, and the let it load and or save a show from/to disk
+	 * TimelineContainer
+	 * TimelineContainer is responsible for instantiating a timeline,
+	 * and the let it load and or save a show from/to disk
 	 */
-	class NAPAPI TimelineContainer : public Resource
+	class NAPAPI SequenceEditor : public Resource
 	{
-		friend class TimelineGUI;
+		friend class SequenceGUI;
 
 		RTTI_ENABLE(Resource)
 	public:
@@ -32,12 +33,14 @@ namespace nap
 		/**
 		 * 
 		 */
+		/*
 		bool init(utility::ErrorState& errorState) override;
 
 		bool save(const std::string& name, utility::ErrorState& errorState);
 
 		bool load(const std::string& name, utility::ErrorState& errorState);
+		*/
 	protected:
-		std::unique_ptr<Timeline>	mTimeline = nullptr;
+		//std::unique_ptr<Sequence>	mTimeline = nullptr;
 	};
 }

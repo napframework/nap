@@ -37,53 +37,15 @@
             "mID": "Scene",
             "Entities": []
         },
-        {
-            "Type": "nap::TimelineGUI",
-            "mID": "TimelineGUI_24a79fb0",
-            "Timeline": "TimelineHolder_7b76a144"
-        },
-        {
-            "Type": "nap::TimelineContainer",
-            "mID": "TimelineHolder_7b76a144",
-            "Timeline File": "timelines/test.json"
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "FloatFCurve_9694fbcd",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        }
+		{
+			"Type": "nap::SequencePlayer",
+			"mID": "SequencePlayer",
+			"Default Show" : "sequences/Default Show.json",
+			"mCreateDefaultShowOnFailure" : true,
+			"Linked Parameters" : [
+				"MyFloatParameter",
+				"MyFloatParameter2"
+			]
+		}
     ]
 }

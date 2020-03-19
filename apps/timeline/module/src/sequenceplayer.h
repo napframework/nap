@@ -1,8 +1,7 @@
 #pragma once
 
 // internal includes
-#include "keyframe.h"
-#include "timelinetrack.h"
+#include "sequence.h"
 
 // external includes
 #include <nap/resource.h>
@@ -13,22 +12,24 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 */
-	class NAPAPI Timeline : public Resource
+	*/
+	class NAPAPI SequencePlayer : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::string								mName = "Timeline";
-		std::vector<ResourcePtr<TimelineTrack>> mTracks;
-		
 		bool init(utility::ErrorState& errorState) override;
 
 		bool save(const std::string& name, utility::ErrorState& errorState);
 
 		bool load(const std::string& name, utility::ErrorState& errorState);
+	public:
+		std::string mDefaultShow;
+		bool mCreateDefaultShowOnFailure = true;
 
-		double mDuration = 1.0;
+		std::vector<ResourcePtr<ParameterFloat>> mParameters;
 	protected:
 		std::vector<std::unique_ptr<rtti::Object>> mReadObjects;
+
+		Sequence* mSequence = nullptr;
 	};
 }

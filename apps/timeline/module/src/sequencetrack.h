@@ -1,7 +1,7 @@
 #pragma once
 
 // internal includes
-#include "keyframe.h"
+#include "sequencetracksegment.h"
 
 // external includes
 #include <nap/resource.h>
@@ -14,10 +14,10 @@ namespace nap
 
 	/**
 	 */
-	class NAPAPI TimelineTrack : public Resource
+	class NAPAPI SequenceTrack : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::vector<ResourcePtr<KeyFrame>>			mKeyFrames;
+		std::vector<ResourcePtr<SequenceTrackSegment>>			mSegments;
 	};
 }

@@ -16,7 +16,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-		mTimelineService = getCore().getService<nap::TimelineService>();
+		mTimelineService = getCore().getService<nap::SequenceEditorService>();
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "timelinegui.h"
+#include "sequencegui.h"
 
 // External Includes
 #include <nap/service.h>
@@ -13,13 +13,13 @@ namespace nap
 	/**
 	 * Service associated with timeline module.
 	 */
-	class NAPAPI TimelineService : public Service
+	class NAPAPI SequenceEditorService : public Service
 	{
 		RTTI_ENABLE(Service)
 
 	public:
 		// Default Constructor
-		TimelineService(ServiceConfiguration* configuration);
+		SequenceEditorService(ServiceConfiguration* configuration);
 
 		//
 		void construct();
@@ -34,6 +34,6 @@ namespace nap
 
 	private:
 		std::map<std::string, bool>								mTimelineToggledMap;
-		std::map<std::string, rtti::ObjectPtr<TimelineGUI>>		mTimelineMap;
+		std::map<std::string, rtti::ObjectPtr<SequenceGUI>>		mTimelineMap;
 	};
 }

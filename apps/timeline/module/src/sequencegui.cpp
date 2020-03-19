@@ -1,13 +1,13 @@
 // local includes
-#include "timelinegui.h"
+#include "sequencegui.h"
 #include "napcolors.h"
 
 // External Includes
 #include <entity.h>
 #include <imgui/imgui.h>
 
-RTTI_BEGIN_CLASS(nap::TimelineGUI)
-RTTI_PROPERTY("Timeline", &nap::TimelineGUI::mTimelineContainer, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::SequenceGUI)
+//RTTI_PROPERTY("Timeline", &nap::SequenceGUI::mTimelineContainer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,10 +15,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void TimelineGUI::draw()
+	/*
+	void SequenceGUI::draw()
 	{
 		//
-		Timeline& timeline = *mTimelineContainer->mTimeline.get();
+		Sequence& sequence = *mTimelineContainer->mTimeline.get();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -27,14 +28,14 @@ namespace nap
 		float stepSize = 100.0f;
 
 		// calc width of content in timeline window
-		float timelineWidth = stepSize * timeline.mDuration + 150.0f;
+		float timelineWidth = stepSize * sequence.mDuration + 150.0f;
 
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(timelineWidth);
 
 		// begin window
 		if (ImGui::Begin(
-			timeline.mName.c_str(), // id
+			sequence.mID.c_str(), // id
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
@@ -45,7 +46,7 @@ namespace nap
 			if (ImGui::Button("Save"))
 			{
 				utility::ErrorState errorState;
-				timeline.save("test.json", errorState);
+				sequence.save("test.json", errorState);
 			}
 
 			// get current cursor pos, we will use this to position the track windows
@@ -55,7 +56,7 @@ namespace nap
 			int trackCount = 0;
 
 			// draw tracks
-			for (const auto& track : timeline.mTracks)
+			for (const auto& track : sequence.mTracks)
 			{
 				// draw the track
 				drawTrack(
@@ -78,14 +79,7 @@ namespace nap
 	}
 
 
-	std::string TimelineGUI::getName() const
-	{
-		auto& timeline = *mTimelineContainer->mTimeline.get();
-		return timeline.mName;
-	}
-
-
-	bool TimelineGUI::init(utility::ErrorState & errorState)
+	bool SequenceGUI::init(utility::ErrorState & errorState)
 	{
 		if (!Resource::init(errorState))
 		{
@@ -96,8 +90,8 @@ namespace nap
 	}
 
 
-	void TimelineGUI::drawTrack(
-		const ResourcePtr<TimelineTrack>& track,
+	void SequenceGUI::drawTrack(
+		const ResourcePtr<SequenceTrack>& track,
 		ImVec2 &cursorPos,
 		const int trackCount,
 		const float timelineWidth,
@@ -149,7 +143,7 @@ namespace nap
 			float previousKeyFrameX = 0.0f;
 
 			// draw keyframes
-			for (const auto& keyFrame : track->mKeyFrames)
+			for (const auto& keyFrame : track->mSegments)
 			{
 				drawKeyFrame(
 					keyFrame, // keyframe resource ptr
@@ -172,8 +166,8 @@ namespace nap
 	}
 
 
-	void TimelineGUI::drawKeyFrame(
-		const ResourcePtr<KeyFrame> &keyFrame,
+	void SequenceGUI::drawKeyFrame(
+		const ResourcePtr<SequenceTrackSegment> &keyFrame,
 		const float stepSize, 
 		ImDrawList* drawList,
 		const ImVec2 &trackTopLeft,
@@ -190,7 +184,7 @@ namespace nap
 			guicolors::red); // color
 
 		// handle mouse actions for keyframe value
-		if ((mMouseActionData.currentAction == TimelineGUIMouseActions::NONE || mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE)
+		if ((mMouseActionData.currentAction == SequenceGUIMouseActions::NONE || mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE)
 			&& ImGui::IsMouseHoveringRect(
 			{ trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5 }, // topleft
 			{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5 })) // bottomright
@@ -200,34 +194,34 @@ namespace nap
 				5.0f, // radius
 				guicolors::red); // color
 
-			mMouseActionData.currentAction = TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE;
+			mMouseActionData.currentAction = SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE;
 
 			// if we have a click, initiate a mouse action
 			if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
 			{
 				mMouseActionData.mouseWasDown = true;
 				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE;
 				mMouseActionData.currentObject = keyFrame.get();
 			}
 		}
 		else
 		{
 			// stop hovering
-			if (mMouseActionData.currentAction != TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
-				mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAMEVALUE)
+			if (mMouseActionData.currentAction != SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
+				mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE)
 			{
-				mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
 			}
 		}
 
 		// process mouse action for keyframe value
-		if (mMouseActionData.currentAction == TimelineGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
+		if (mMouseActionData.currentAction == SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
 			keyFrame.get() == mMouseActionData.currentObject)
 		{
 			// draw circle filled
 			drawList->AddCircleFilled(
-			{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
+				{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
 				5.0f, // radius
 				guicolors::red); // color
 
@@ -251,7 +245,7 @@ namespace nap
 			{
 				mMouseActionData.mouseWasDown = false;
 				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
 				mMouseActionData.currentObject = nullptr;
 			}
 		}
@@ -285,7 +279,7 @@ namespace nap
 
 		// check if keyframe line is being hovered
 		if (ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomRight) &&
-			(mMouseActionData.currentAction == TimelineGUIMouseActions::NONE || mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAME))
+			(mMouseActionData.currentAction == SequenceGUIMouseActions::NONE || mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAME))
 		{
 			// draw keyframe line thick
 			drawList->AddLine(
@@ -295,30 +289,30 @@ namespace nap
 				3.0f); // thickness
 
 			//
-			mMouseActionData.currentAction = TimelineGUIMouseActions::HOVERING_KEYFRAME;
+			mMouseActionData.currentAction = SequenceGUIMouseActions::HOVERING_KEYFRAME;
 
 			// if we have a click, initiate a mouse action
 			if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
 			{
 				mMouseActionData.mouseWasDown = true;
 				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = TimelineGUIMouseActions::DRAGGING_KEYFRAME;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::DRAGGING_KEYFRAME;
 				mMouseActionData.currentObject = keyFrame.get();
 			}
 		}
 
 		// handle mouse action
-		if (mMouseActionData.currentAction == TimelineGUIMouseActions::DRAGGING_KEYFRAME &&
+		if (mMouseActionData.currentAction == SequenceGUIMouseActions::DRAGGING_KEYFRAME &&
 			mMouseActionData.currentObject == keyFrame.get())
 		{
 			// draw keyframe line thick
 			drawList->AddLine(
-			{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+				{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 				guicolors::white, // color
 				3.0f); // thickness
 
-					   // handle mouse drag
+			// handle mouse drag
 			if (mMouseActionData.mouseWasDown && ImGui::IsMouseDragging(0))
 			{
 				// calc delta
@@ -339,7 +333,7 @@ namespace nap
 			{
 				mMouseActionData.mouseWasDown = false;
 				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
 				mMouseActionData.currentObject = nullptr;
 			}
 		}
@@ -353,12 +347,12 @@ namespace nap
 				1.0f); // thickness
 
 			// stop hovering
-			if (mMouseActionData.currentAction == TimelineGUIMouseActions::HOVERING_KEYFRAME)
+			if (mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAME)
 			{
-				mMouseActionData.currentAction = TimelineGUIMouseActions::NONE;
+				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
 			}
 		}
 
 		previousKeyFrameX = x;	
-	}
+	}*/
 }

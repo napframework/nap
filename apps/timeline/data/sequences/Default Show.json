@@ -1,0 +1,30 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Sequence",
+            "mID": "Generated_5",
+            "Sequence Track Links": [
+                {
+                    "Type": "nap::SequenceTrackLink",
+                    "mID": "Generated",
+                    "Parameter ID": "MyFloatParameter",
+                    "Sequence Track": {
+                        "Type": "nap::SequenceTrack",
+                        "mID": "Generated_2",
+                        "Segments": []
+                    }
+                },
+                {
+                    "Type": "nap::SequenceTrackLink",
+                    "mID": "Generated_3",
+                    "Parameter ID": "MyFloatParameter2",
+                    "Sequence Track": {
+                        "Type": "nap::SequenceTrack",
+                        "mID": "Generated_4",
+                        "Segments": []
+                    }
+                }
+            ]
+        }
+    ]
+}
