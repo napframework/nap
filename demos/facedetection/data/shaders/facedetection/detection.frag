@@ -11,10 +11,15 @@ struct Blob
 };
 
 // uniform inputs
-uniform Blob blobs[20];					//< All detected blobs
+uniform Blob blobs[200];				//< All detected blobs
 uniform int blobCount;					//< Total number of detected blobs
 uniform sampler2D captureTexture;		//< Classify texture 
 uniform vec2 captureSize;				//< Size of captureTexture in pixels
+
+const float ringSize = 3;
+//const vec3 edgeColor = vec3(0.784,0.411,0.411);
+const vec3 edgeColor = vec3(1.0,1.0,1.0);
+const vec3 innerColor = vec3(1.0,1.0,1.0);
 
 // output
 out vec4 out_Color;
@@ -24,8 +29,15 @@ out vec4 out_Color;
 float fit(float value, float min, float max, float outMin, float outMax)
 {
     float v = clamp(value, min, max);
+    if (v == 0.0)
+    	v = 0.00001;
     float m = max - min;
     return (v - min) / (m) * (outMax - outMin) + outMin;
+}
+
+float bell(float t, float strength)
+{
+	return pow(4.0f, strength) * pow(t *(1.0f - t), strength);
 }
 
 
@@ -44,7 +56,7 @@ void main()
 {
 	// Iterate over every blob, for every blob compute the distance to current uv coordinate.
 	// Store the blob with the lowest distance to current sample. 
-	float current_dist = 100.0;
+	float current_dist = 1000000.0;
 	int closest_blob = -1;
 
 	for(int i=0; i < blobCount; i++)
@@ -57,18 +69,25 @@ void main()
 		}
 	}
 
-	// For the closest blob, compute lerp value, where 0.0 is outer bound
-	float lerp_v = 0.0;
+	// For the closest blob, compute lerp values, 1.0 = inside, 0.0 = outside
+	float edge_lerp_v = 0.0;
+	float inne_lerp_v = 0.0;
+
 	if (closest_blob >= 0)
 	{
-		lerp_v = fit(current_dist, 0.0, blobs[closest_blob].mSize, 1.0, 0.0);
-		float ring_a = fit(lerp_v, 0.0, 0.025, 0.0, 1.0);
-		float ring_b = fit(lerp_v, 0.20, 0.225, 1.0, 0.0);
-		lerp_v = ring_a * ring_b * 0.75;
+		// Get blob size and create gradient on edge
+		float blob_size = blobs[closest_blob].mSize;
+		edge_lerp_v = fit(current_dist, blob_size-ringSize , blob_size+ringSize, 0.0, 1.0);
+		edge_lerp_v = bell(edge_lerp_v, 0.33);
+
+		// Compute inner circle
+		inne_lerp_v = fit(current_dist, blob_size-ringSize, blob_size, 1.0, 0.0);
 	}
 
+	// Mix based on interpolation values
 	vec3 tex_color = texture(captureTexture, vec2(passUVs.x, 1.0-passUVs.y)).bgr;
-	vec3 mix_color = mix(tex_color, vec3(1.0,1.0,1.0), lerp_v);
+	vec3 mix_color = mix(tex_color, innerColor, inne_lerp_v * 0.5);
+	mix_color = mix(mix_color, edgeColor, edge_lerp_v * 1.0);
 
     //out_Color = vec4(lerp_v, lerp_v, lerp_v, 1.0);
     out_Color = vec4(mix_color, 1.0);

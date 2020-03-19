@@ -32,7 +32,7 @@
             "Type": "nap::CVCaptureDevice",
             "mID": "CameraCaptureDevice",
             "AutoCapture": true,
-            "AllowFailure": false,
+            "AllowFailure": true,
             "Adapters": [
                 "Camera"
             ]
