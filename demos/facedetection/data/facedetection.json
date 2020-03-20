@@ -97,7 +97,7 @@
                     },
                     "ColorUniform": "meshColor",
                     "SphereMesh": "BlobMesh",
-                    "ClassifyComponent": "../../VideoClassifyComponent"
+                    "ClassifyComponent": "../../OpenCVClassifyComponent"
                 }
             ],
             "Children": []
@@ -189,8 +189,8 @@
             "mID": "OpenCV",
             "Components": [],
             "Children": [
-                "OpenCVVideo",
-                "OpenCVCamera"
+                "OpenCVCapture",
+                "OpenCVCapture"
             ]
         },
         {
@@ -225,7 +225,7 @@
                     "mID": "CameraRenderBlobsComponent",
                     "OutputTexture": "CameraOutputTexture",
                     "MaterialInstance": {
-                        "Material": "DetectMaterial",
+                        "Material": "VideoDetectMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformTexture2D",
@@ -261,54 +261,38 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "OpenCVVideo",
+            "mID": "OpenCVCapture",
             "Components": [
                 {
                     "Type": "nap::CVCaptureComponent",
-                    "mID": "VideoCaptureComponent",
+                    "mID": "OpenCVCaptureComponent",
                     "Devices": "VideoCaptureDevice"
                 },
                 {
                     "Type": "nap::CVClassifyComponent",
-                    "mID": "VideoClassifyComponent",
-                    "CaptureComponent": "./VideoCaptureComponent",
+                    "mID": "OpenCVClassifyComponent",
+                    "CaptureComponent": "./OpenCVCaptureComponent",
                     "Adapter": "Video",
                     "MatrixIndex": 0,
                     "Path": "haarcascades/haarcascade_frontalface_alt.xml"
                 },
                 {
                     "Type": "nap::CaptureToTextureComponent",
-                    "mID": "VideoApplyBlobsComponent",
-                    "CaptureComponent": "./VideoCaptureComponent",
-                    "ClassifyComponent": "./VideoClassifyComponent",
-                    "RenderComponent": "./VideoRenderBlobsComponent",
+                    "mID": "OpenCVCaptureToTextureComponent",
+                    "CaptureComponent": "./OpenCVCaptureComponent",
+                    "ClassifyComponent": "./OpenCVClassifyComponent",
+                    "RenderComponent": "./OpenCVCaptureRenderComponent",
                     "RenderTexture": "VideoCaptureTexture",
                     "Adapter": "Video",
                     "MatrixIndex": 0
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
-                    "mID": "VideoRenderBlobsComponent",
+                    "mID": "OpenCVCaptureRenderComponent",
                     "OutputTexture": "VideoOutputTexture",
                     "MaterialInstance": {
-                        "Material": "DetectMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformTexture2D",
-                                "mID": "captureTexture03",
-                                "Name": "captureTexture",
-                                "Texture": "VideoCaptureTexture"
-                            },
-                            {
-                                "Type": "nap::UniformVec2",
-                                "mID": "UniformVec2_efa2fe01",
-                                "Name": "captureSize",
-                                "Value": {
-                                    "x": 640.0,
-                                    "y": 360.0
-                                }
-                            }
-                        ],
+                        "Material": "VideoDetectMaterial",
+                        "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -507,6 +491,31 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "CameraDetectMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_76a0b43b",
+                    "Name": "captureTexture",
+                    "Texture": "CameraCaptureTexture"
+                },
+                {
+                    "Type": "nap::UniformVec2",
+                    "mID": "UniformVec2_04168e08",
+                    "Name": "captureSize",
+                    "Value": {
+                        "x": 640.0,
+                        "y": 480.0
+                    }
+                }
+            ],
+            "Shader": "DetectShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "ClassifyMaterial",
             "Uniforms": [
                 {
@@ -519,15 +528,6 @@
                 }
             ],
             "Shader": "ClassifyShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "DetectMaterial",
-            "Uniforms": [],
-            "Shader": "DetectShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -564,6 +564,31 @@
                 }
             ],
             "Shader": "PlaneShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VideoDetectMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec2",
+                    "mID": "UniformVec2_a528c61c",
+                    "Name": "captureSize",
+                    "Value": {
+                        "x": 640.0,
+                        "y": 360.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_50b9fb1e",
+                    "Name": "captureTexture",
+                    "Texture": "VideoCaptureTexture"
+                }
+            ],
+            "Shader": "DetectShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -676,7 +701,178 @@
                 },
                 {
                     "Entity": "OpenCV",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/OpenCVCaptureComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Devices",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_056425-078065-008573-097962",
+                                        "Value": "CameraCaptureDevice"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/OpenCVClassifyComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Adapter",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_024531-090995-041851-090063",
+                                        "Value": "Camera"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/OpenCVCaptureToTextureComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "RenderTexture",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_042273-089429-067668-092805",
+                                        "Value": "CameraCaptureTexture"
+                                    }
+                                },
+                                {
+                                    "Path": "Adapter",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_078957-059385-070336-052825",
+                                        "Value": "Camera"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/OpenCVCaptureRenderComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "OutputTexture",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_039821-070001-078549-047947",
+                                        "Value": "CameraOutputTexture"
+                                    }
+                                },
+                                {
+                                    "Path": "MaterialInstance/Material",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
+                                        "Value": "CameraDetectMaterial"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/3DVisualize:0/3DBlobs:0/3DVisualizeBlobsTransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_f84d9c62",
+                                        "Value": -240.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:0/OpenCVCaptureRenderComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "OutputTexture",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_001600-041261-015341-016686",
+                                        "Value": "VideoOutputTexture"
+                                    }
+                                },
+                                {
+                                    "Path": "MaterialInstance/Material",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_056425-078065-008373-097960",
+                                        "Value": "VideoDetectMaterial"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:0/OpenCVCaptureComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Devices",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_029894-052502-097985-035674",
+                                        "Value": "VideoCaptureDevice"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:0/OpenCVClassifyComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Adapter",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_057425-078065-008373-097960",
+                                        "Value": "Video"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:0/OpenCVCaptureToTextureComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Adapter",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_014531-090095-041851-090063",
+                                        "Value": "Video"
+                                    }
+                                },
+                                {
+                                    "Path": "RenderTexture",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_042273-089429-077668-092805",
+                                        "Value": "VideoCaptureTexture"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:0/3DVisualize:0/3DBlobs:0/3DVisualizeBlobsTransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_bb238106",
+                                        "Value": -320.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_85533682",
+                                        "Value": -180.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },

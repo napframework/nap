@@ -104,8 +104,7 @@ namespace nap
 		ObjectPtr<RenderTexture2D> mCameraOutputTexture = nullptr;		//< Pointer to the camera output texture, which contains the detected blobs
 		ObjectPtr<RenderTexture2D> mVideoOutputTexture = nullptr;		//< Pointer to the video output texture, which contains the detected blobs
 
-		ObjectPtr<EntityInstance> mCameraCaptureEntity = nullptr;		//< Pointer to the OpenCV camera capture entity	
-		ObjectPtr<EntityInstance> mVideoCaptureEntity = nullptr;		//< Pointer to the OpenCV video capture entity
+		ObjectPtr<EntityInstance> mOpenCVEntity = nullptr;				//< Pointer to the OpenCV entity
 		
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		int mCurrentVideoFrame = 0;

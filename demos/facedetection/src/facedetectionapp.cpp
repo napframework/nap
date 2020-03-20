@@ -64,8 +64,7 @@ namespace nap
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Fetch capture OpenCV capture / track entities
-		mCameraCaptureEntity = scene->findEntity("OpenCVCamera");
-		mVideoCaptureEntity  = scene->findEntity("OpenCVVideo");
+		mOpenCVEntity = scene->findEntity("OpenCV");
 
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
@@ -141,7 +140,7 @@ namespace nap
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			//ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
+			ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
 			ImGui::Image(*mVideoOutputTexture,  { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
@@ -197,10 +196,12 @@ namespace nap
 		// Clear opengl context related resources that are not necessary any more
 		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
 
-		// Render detected blobs to texture
+		// Render detected blobs to texture for all OpenCV capture entities
 		{
-			mCameraCaptureEntity->getComponent<RenderToTextureComponentInstance>().draw();
-			mVideoCaptureEntity->getComponent<RenderToTextureComponentInstance>().draw();
+			for (auto& entity : mOpenCVEntity->getChildren())
+			{
+				entity->getComponent<RenderToTextureComponentInstance>().draw();
+			}
 		}
 
 		// Clear back-buffer
@@ -211,7 +212,10 @@ namespace nap
 
 		// Find objects to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		for (auto& entity : mVideoCaptureEntity->getChildren()[0]->getChildren())
+		
+		// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
+		nap::EntityInstance* capture_entity = mOpenCVEntity->getChildren()[0];
+		for (auto& entity : capture_entity->getChildren()[0]->getChildren())
 		{
 			RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
 			components_to_render.emplace_back(&render_comp);
