@@ -37,6 +37,11 @@ RTTI_BEGIN_CLASS(nap::UniformFloat)
 	RTTI_FUNCTION("setValue", &nap::UniformFloat::setValue)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniformVec2)
+	RTTI_PROPERTY("Value", &nap::UniformVec2::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformVec2::setValue)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::UniformVec3)
 	RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
 	RTTI_FUNCTION("setValue", &nap::UniformVec3::setValue)
@@ -125,6 +130,13 @@ namespace nap
 	}
 
 
+	void UniformVec2::push(const opengl::UniformDeclaration& declaration) const
+	{
+		glUniform2fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue.x));
+		glAssert();
+	}
+
+
 	void UniformVec3::push(const opengl::UniformDeclaration& declaration) const
 	{
 		glUniform3fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue.x));
@@ -174,6 +186,13 @@ namespace nap
 	}
 
 
+	void UniformVec2Array::push(const opengl::UniformDeclaration& declaration) const
+	{
+		glUniform2fv(declaration.mLocation, mValues.size(), (const GLfloat*)(mValues.data()));
+		glAssert();
+	}
+
+
 	void UniformVec3Array::push(const opengl::UniformDeclaration& declaration) const
 	{
 		glUniform3fv(declaration.mLocation, mValues.size(), (const GLfloat*)(mValues.data()));
@@ -219,5 +238,4 @@ namespace nap
 		glUniform1iv(declaration.mLocation, mTextureUnits.size(), static_cast<const GLint*>(mTextureUnits.data()));
 		return num_bound;
 	}
-
 } // End Namespace NAP

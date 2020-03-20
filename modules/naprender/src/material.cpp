@@ -114,6 +114,14 @@ namespace nap
 
 				break;
 			}
+		case opengl::EGLSLType::Vec2:
+			{
+				if (declaration.isArray())
+					result = std::make_unique<UniformVec2Array>(declaration.mSize);
+				else
+					result = std::make_unique<UniformVec2>();
+				break;
+			}
 		}
 		assert(result);
 		result->mName = declaration.mName;

@@ -1,25 +1,26 @@
 #pragma once
 
+#include "midiservice.h"
+
 #include <rtti/object.h>
 #include <utility/dllexport.h>
-#include <RtMidi.h>
 #include <nap/device.h>
 
-#include "midiservice.h"
+// Forward Declares
+class RtMidiIn;
 
 namespace nap
 {
-    
-    
     /**
-     * Opens and manages one or more midi input ports that will be listened to for incoming midi messages.
+     * Opens and manages one or more midi input ports that are monitored for incoming midi messages.
      * Messages will be parsed and passed on to the midi service for processing.
+	 * When no 'Ports' are specified all ports are opened.
      */
     class NAPAPI MidiInputPort : public Device
     {
         RTTI_ENABLE(Device)
     public:
-        MidiInputPort() = default;
+		MidiInputPort() = default;
         MidiInputPort(MidiService& service);
 
         /**

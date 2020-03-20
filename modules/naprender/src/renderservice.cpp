@@ -321,6 +321,10 @@ namespace nap
 		if (!renderer->init(getConfiguration<RenderServiceConfiguration>()->mSettings, errorState))
 			return false;
 		mRenderer = std::move(renderer);
+		
+		// Register parameter blenders
+
+		
 		return true;
 	}
 	
