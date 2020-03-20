@@ -95,6 +95,8 @@ namespace nap
 		
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
+		ObjectPtr<EntityInstance> mOpenCVEntity = nullptr;				//< Pointer to the OpenCV entity
+		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can draw text
 
 		ObjectPtr<CVCaptureDevice> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
 		ObjectPtr<CVCaptureDevice> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
@@ -103,8 +105,6 @@ namespace nap
 		ObjectPtr<RenderTexture2D> mVideoCaptureTexture = nullptr;		//< Pointer to the video texture we need to capture
 		ObjectPtr<RenderTexture2D> mCameraOutputTexture = nullptr;		//< Pointer to the camera output texture, which contains the detected blobs
 		ObjectPtr<RenderTexture2D> mVideoOutputTexture = nullptr;		//< Pointer to the video output texture, which contains the detected blobs
-
-		ObjectPtr<EntityInstance> mOpenCVEntity = nullptr;				//< Pointer to the OpenCV entity
 		
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		int mCurrentVideoFrame = 0;

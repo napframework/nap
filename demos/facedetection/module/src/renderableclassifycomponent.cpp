@@ -144,9 +144,9 @@ namespace nap
 		const auto& color_binding = mMaterialInstance.getUniformBinding(mColorUniform->mName);
 		const auto& objec_binding = mMaterialInstance.getUniformBinding(mModelUniform->mName);
 
-		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
-
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
+		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
+		mLocations.clear();
 		for (auto i = 0; i < blobs.size(); i++)
 		{			
 			// Pick random color for mesh and push to GPU
@@ -173,12 +173,13 @@ namespace nap
 			);
 			float size = blobs[i].getHeight() / 2.0f;
 
-			// Calculate model matrix
+			// Calculate model matrix and store
 			glm::mat4x4 object_loc = glm::translate(model_matrix, center);
+			object_loc = glm::scale(object_loc, { size, size, size });
+			mLocations.emplace_back(object_loc);
 
 			// Add scale, set as value and push
-			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
-			mModelUniform->setValue(glm::scale(object_loc, { size, size, size}));
+			mModelUniform->setValue(object_loc);
 			mModelUniform->push(*objec_binding.mDeclaration);
 
 			// Iterate over all the shapes and render

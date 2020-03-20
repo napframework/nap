@@ -69,7 +69,12 @@ namespace nap
 		MaterialInstance& getMaterial();
 
 		/**
-		 * Link to camera, can be used to make the copied meshes look at the camera
+		 * @return list of recent blob placements in world space
+		 */
+		const std::vector<glm::mat4>& getLocations() const		{ return mLocations; }
+
+		/**
+		 * Link to the classification component, contains list of detected blobs
 		 */
 		ComponentInstancePtr<CVClassifyComponent> mClassifyComponent = { this, &RenderableClassifyComponent::mClassifyComponent };
 
@@ -104,7 +109,8 @@ namespace nap
 		nap::UniformMat4* mProjectionUniform = nullptr;					///< Projection matrix uniform slot
 		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
 		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform slot
-		std::vector<RGBColorFloat> mColors;								///< All selectable colors 
+		std::vector<RGBColorFloat> mColors;								///< All selectable colors
+		std::vector<glm::mat4> mLocations;								///< All world space blob locations
 	};
 
 

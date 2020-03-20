@@ -64,11 +64,12 @@ namespace nap
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Fetch capture OpenCV capture / track entities
-		mOpenCVEntity = scene->findEntity("OpenCV");
 
-		// Fetch the two different cameras
+		// Fetch the entities
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
+		mOpenCVEntity = scene->findEntity("OpenCV");
+		mTextEntity = scene->findEntity("Text");
 
 		CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
 		return adapter.changeVideo(adapter.mFile, error);
@@ -103,8 +104,6 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Cam Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
-		ImGui::Text(utility::stringFormat("Vid Framerate: %.02f", 1.0f / mVideoCaptureDevice->getCaptureTime()).c_str());
 
 		if (ImGui::CollapsingHeader("Webcam Feed"))
 		{
@@ -126,6 +125,7 @@ namespace nap
 			else
 				ImGui::Text("No Errors");
 
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
 			//ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
@@ -140,7 +140,6 @@ namespace nap
 			}
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			ImGui::Image(*mVideoCaptureTexture, { col_width, col_width / ratio_video });
 			ImGui::Image(*mVideoOutputTexture,  { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
@@ -214,8 +213,8 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		
 		// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
-		nap::EntityInstance* capture_entity = mOpenCVEntity->getChildren()[0];
-		for (auto& entity : capture_entity->getChildren()[0]->getChildren())
+		nap::EntityInstance& capture_entity = (*mOpenCVEntity)[0];
+		for (auto& entity : capture_entity[0].getChildren())
 		{
 			RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
 			components_to_render.emplace_back(&render_comp);
@@ -223,6 +222,21 @@ namespace nap
 
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+
+		// Get renderable 2D text component
+		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+
+		// Get blob location
+		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
+		RenderableClassifyComponentInstance& render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
+		const std::vector<glm::mat4>& locs = render_comp.getLocations();
+		for (const auto& location : locs)
+		{
+			glm::vec3 blob_pos = math::extractPosition(location);
+			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
+			text_comp.setLocation(text_pos + glm::vec2(0,100));
+			text_comp.draw(mRenderWindow->getBackbuffer());
+		}
 
 		// Draw our gui
 		mGuiService->draw();

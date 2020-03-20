@@ -470,7 +470,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 36,
+                "Size": 16,
                 "DPI": 96
             },
             "Font": "fonts/Montserrat-Light.otf"
@@ -693,7 +693,21 @@
                 },
                 {
                     "Entity": "Text",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./TextRenderableComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Text",
+                                    "Value": {
+                                        "Type": "nap::StringInstancePropertyValue",
+                                        "mID": "instanceProp_std::string_cc776bfe",
+                                        "Value": "Blob Number 1"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 },
                 {
                     "Entity": "OrthographicCamera",
