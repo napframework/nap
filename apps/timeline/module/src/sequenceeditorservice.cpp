@@ -1,6 +1,6 @@
 // Local Includes
 #include "sequenceeditorservice.h"
-#include "sequencegui.h"
+#include "sequenceeditorgui.h"
 
 // External Includes
 #include <glm/glm.hpp>
@@ -49,7 +49,7 @@ namespace nap
 		{
 			if (pair.second)
 			{
-				//mTimelineMap[pair.first]->draw();
+				mTimelineMap[pair.first]->draw();
 			}
 		}
 	}
@@ -63,7 +63,7 @@ namespace nap
 	void SequenceEditorService::resourcesLoaded()
 	{
 		// fetch all timeline guis
-		auto timelines = getCore().getResourceManager()->getObjects<SequenceGUI>();
+		auto timelines = getCore().getResourceManager()->getObjects<SequenceEditorGUI>();
 
 		// construct maps
 		for (const auto& timelineGUI : timelines)
@@ -72,7 +72,7 @@ namespace nap
 			if (mTimelineToggledMap.find(timelineGUI->mID) == mTimelineToggledMap.end())
 			{
 				mTimelineToggledMap.insert(std::pair<std::string, bool>(timelineGUI->mID, false));
-				mTimelineMap.insert(std::pair<std::string, rtti::ObjectPtr<SequenceGUI>>(timelineGUI->mID, timelineGUI));
+				mTimelineMap.insert(std::pair<std::string, rtti::ObjectPtr<SequenceEditorGUI>>(timelineGUI->mID, timelineGUI));
 			}
 
 		}

@@ -39,7 +39,8 @@ namespace nap
 		{
 			nap::Logger::info(*this, "Error loading default show, creating default sequence based on given parameters");
 		
-			mSequence = Sequence::createDefaultSequence(mParameters, mReadObjects);
+			std::unordered_set<std::string> objectIDs;
+			mSequence = Sequence::createDefaultSequence(mParameters, mReadObjects, objectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence, saving it");
 			if (errorState.check(!save(mDefaultShow, errorState), "Error saving sequence"))
@@ -94,7 +95,7 @@ namespace nap
 		// 
 		rtti::Factory factory;
 		if (!rtti::readJSONFile(
-			timelinePath,
+			name,
 			rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::NoRawPointers,
 			factory,
@@ -127,11 +128,52 @@ namespace nap
 		}
 
 		// check if we have deserialized a sequence
-		if (errorState.check(mSequence != nullptr, "sequence is null"))
+		if (errorState.check(mSequence == nullptr, "sequence is null"))
 		{
 			return false;
 		}
 
+		updateDuration();
+
 		return true;
+	}
+
+
+	Sequence& SequencePlayer::getSequence()
+	{
+		return *mSequence;
+	}
+
+
+	double SequencePlayer::getDuration() const
+	{
+		return mDuration;
+	}
+
+
+	void SequencePlayer::updateDuration()
+	{
+		double longestTrack = 0.0;
+		for (const auto& trackLink : mSequence->mSequenceTrackLinks)
+		{
+			double trackTime = 0.0;
+			for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+			{
+				double time = segment->mStartTime + segment->mDuration;
+				if (time > trackTime)
+				{
+					trackTime = time;
+				}
+			}
+
+			if (trackTime > longestTrack)
+			{
+				longestTrack = trackTime;
+			}
+		}
+
+		mDuration = longestTrack;
+
+		mDurationNeedsUpdating = false;
 	}
 }

@@ -37,15 +37,24 @@
             "mID": "Scene",
             "Entities": []
         },
-		{
-			"Type": "nap::SequencePlayer",
-			"mID": "SequencePlayer",
-			"Default Show" : "sequences/Default Show.json",
-			"mCreateDefaultShowOnFailure" : true,
-			"Linked Parameters" : [
-				"MyFloatParameter",
-				"MyFloatParameter2"
-			]
-		}
+        {
+            "Type": "nap::SequenceEditor",
+            "mID": "SequenceEditor",
+            "Sequence Player": "SequencePlayer"
+        },
+        {
+            "Type": "nap::SequenceEditorGUI",
+            "mID": "SequenceEditorGUI",
+            "Sequence Editor": "SequenceEditor"
+        },
+        {
+            "Type": "nap::SequencePlayer",
+            "mID": "SequencePlayer",
+            "Default Show": "sequences/Default Show.json",
+            "Linked Parameters": [
+                "MyFloatParameter",
+                "MyFloatParameter2"
+            ]
+        }
     ]
 }

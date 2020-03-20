@@ -37,35 +37,16 @@ namespace nap
 
 	/**
 	 */
-	class NAPAPI SequenceGUI : public Resource
+	class NAPAPI SequenceEditorGUI : public Resource
 	{
 		RTTI_ENABLE(Resource)
-		/*
 	public:
-		
+		virtual bool init(utility::ErrorState& errorState);
+
+		virtual void onDestroy();
+
 		void draw();
-
-		virtual bool init(utility::ErrorState& errorState) override;
 	public:
-		ResourcePtr<SequenceEditor>						mTimelineContainer;
-	protected:
-		SequenceGUIMouseActionData						mMouseActionData;
-	private:
-
-		void drawTrack(
-			const ResourcePtr<SequenceTrack>& track,
-			ImVec2 &cursorPos,
-			const int trackCount,
-			const float timelineWidth,
-			const float stepSize);
-
-		void drawKeyFrame(
-			const ResourcePtr<SequenceTrackSegment> &keyFrame,
-			const float stepSize,
-			ImDrawList* drawList,
-			const ImVec2 &trackTopLeft,
-			const float trackHeight,
-			float &previousKeyFrameX);
-			*/
+		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr;
 	};
 }

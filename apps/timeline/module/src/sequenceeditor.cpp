@@ -4,7 +4,7 @@
 // external includes
 
 RTTI_BEGIN_CLASS(nap::SequenceEditor)
-RTTI_PROPERTY("Timeline File", &nap::SequenceEditor::mTimelineFilePath, nap::rtti::EPropertyMetaData::FileLink)
+RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	/*
+	
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -20,43 +20,34 @@ namespace nap
 			return false;
 		}
 
-		std::unique_ptr<Sequence> timeline = std::make_unique<Sequence>();
-
-		if (!timeline->init(errorState))
-		{
-			return false;
-		}
-
-		if (!timeline->load(mTimelineFilePath, errorState))
-		{
-			return false;
-		}
-
-		mTimeline = std::move(timeline);
-
 		return true;
 	}
 
 
-	bool SequenceEditor::load(const std::string& name, utility::ErrorState& errorState)
+	void SequenceEditor::registerGUI(SequenceEditorGUI* sequenceEditorGUI)
 	{
-		if (!mTimeline->load(name, errorState))
-		{
-			return false;
-		}
+		bool found = (std::find(mGUIs.begin(), mGUIs.end(), sequenceEditorGUI) != mGUIs.end());
 
-		return true;
+		if (!found)
+		{
+			mGUIs.emplace_back(sequenceEditorGUI);
+		}
 	}
 
 
-	bool SequenceEditor::save(const std::string& name, utility::ErrorState& errorState)
+	void SequenceEditor::unregisterGUI(SequenceEditorGUI* sequenceEditorGUI)
 	{
-		if (!mTimeline->save(name, errorState))
-		{
-			return false;
-		}
+		bool found = (std::find(mGUIs.begin(), mGUIs.end(), sequenceEditorGUI) != mGUIs.end());
 
-		return true;
+		if (found)
+		{
+			mGUIs.remove(sequenceEditorGUI);
+		}
 	}
-	*/
+
+
+	const Sequence& SequenceEditor::getSequence()
+	{
+		return mSequencePlayer->getSequence();
+	}
 }

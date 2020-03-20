@@ -1,13 +1,13 @@
 // local includes
-#include "sequencegui.h"
+#include "sequenceeditorgui.h"
 #include "napcolors.h"
 
 // External Includes
 #include <entity.h>
 #include <imgui/imgui.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceGUI)
-//RTTI_PROPERTY("Timeline", &nap::SequenceGUI::mTimelineContainer, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
+RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,6 +15,120 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
+	{
+		if (!Resource::init(errorState))
+		{
+			return false;
+		}
+
+		mSequenceEditor->registerGUI(this);
+
+		return true;
+	}
+
+
+	void SequenceEditorGUI::onDestroy()
+	{
+		mSequenceEditor->unregisterGUI(this);
+	}
+
+
+	void SequenceEditorGUI::draw()
+	{
+		//
+		const Sequence& sequence = mSequenceEditor->getSequence();
+
+		//
+		const SequencePlayer& sequencePlayer = *mSequenceEditor->mSequencePlayer.get();
+
+		// push id
+		ImGui::PushID(mID.c_str());
+
+		// 100 px per second, default
+		float stepSize = 100.0f;
+
+		// calc width of content in timeline window
+		float timelineWidth =
+			stepSize * sequencePlayer.getDuration();
+
+		// set content width of next window
+		ImGui::SetNextWindowContentWidth(timelineWidth);
+
+		// get current cursor pos, we will use this to position the track windows
+		ImVec2 cursorPos = ImGui::GetCursorPos();
+
+		// begin window
+		if (ImGui::Begin(
+			mID.c_str(), // id
+			(bool*)0, // open
+			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
+		{
+			// check if window has focus
+			bool windowHasFocus = ImGui::IsWindowFocused();
+
+			int trackCount = 0;
+			for (const auto& trackLink : sequence.mSequenceTrackLinks)
+			{
+				// push id
+				ImGui::PushID(trackLink->mID.c_str());
+
+				// define consts
+				const float trackHeight = 100.0f;
+				const float keyframeHandlerHeight = 10.0f;
+
+				// manually set the cursor position before drawing new track window
+				cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + 1 };
+				ImGui::SetCursorPos(cursorPos);
+
+				// get child focus
+				bool trackHasFocus = ImGui::IsMouseHoveringWindow();
+
+				// get window drawlist
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+				// get current imgui cursor position
+				ImVec2 cursorPos = ImGui::GetCursorPos();
+
+				// get window position
+				ImVec2 windowTopLeft = ImGui::GetWindowPos();
+
+				// calc beginning of timeline graphic
+				ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
+
+				// draw background of timeline
+				drawList->AddRectFilled(
+					trackTopLeft, // top left position
+					{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
+					guicolors::black); // color 
+
+				// draw segments
+				for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+				{
+					float x = ( segment->mStartTime + segment->mDuration ) * stepSize;
+
+					// draw handler of segment duration
+					drawList->AddLine(
+						{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+						guicolors::white, // color
+						3.0f); // thickness
+				}
+
+				// pop id
+				ImGui::PopID();
+
+				// increment track count
+				trackCount++;
+			}
+
+			ImGui::End();
+		}
+
+		// pop id
+		ImGui::PopID();
+	}
+
 	/*
 	void SequenceGUI::draw()
 	{

@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequence.h"
+#include "sequenceplayer.h"
 
 // external includes
 #include <nap/resource.h>
@@ -12,35 +13,28 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// forward declares
-	class SequenceGUI;
+	class SequenceEditorGUI;
 
 	/**
-	 * TimelineContainer
-	 * TimelineContainer is responsible for instantiating a timeline,
-	 * and the let it load and or save a show from/to disk
 	 */
 	class NAPAPI SequenceEditor : public Resource
 	{
-		friend class SequenceGUI;
+		friend class SequenceEditorGUI;
 
 		RTTI_ENABLE(Resource)
 	public:
-		// Properties
-		std::string	mTimelineFilePath; ///< The default filepath that the timeline should load on startup
+		virtual bool init(utility::ErrorState& errorState);
+
+		void registerGUI(SequenceEditorGUI* sequenceEditorGUI);
+
+		void unregisterGUI(SequenceEditorGUI* sequenceEditorGUI);
 	public:
-		// Functions
-
-		/**
-		 * 
-		 */
-		/*
-		bool init(utility::ErrorState& errorState) override;
-
-		bool save(const std::string& name, utility::ErrorState& errorState);
-
-		bool load(const std::string& name, utility::ErrorState& errorState);
-		*/
+		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr;
 	protected:
-		//std::unique_ptr<Sequence>	mTimeline = nullptr;
+		// SequenceEditorGUI interface
+		const Sequence& getSequence();
+
+	protected:
+		std::list<SequenceEditorGUI*> mGUIs;
 	};
 }

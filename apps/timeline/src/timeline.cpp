@@ -20,7 +20,7 @@ namespace nap
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
-
+		
 		// Fetch the scene
 		mScene = mResourceManager->findObject<Scene>("Scene");
 

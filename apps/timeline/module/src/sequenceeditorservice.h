@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sequencegui.h"
+#include "sequenceeditorgui.h"
 
 // External Includes
 #include <nap/service.h>
@@ -34,6 +34,6 @@ namespace nap
 
 	private:
 		std::map<std::string, bool>								mTimelineToggledMap;
-		std::map<std::string, rtti::ObjectPtr<SequenceGUI>>		mTimelineMap;
+		std::map<std::string, rtti::ObjectPtr<SequenceEditorGUI>>		mTimelineMap;
 	};
 }

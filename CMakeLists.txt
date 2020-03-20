@@ -140,6 +140,8 @@ add_subdirectory(apps/flexblock)
 add_subdirectory(apps/flexblock/module)
 add_subdirectory(apps/anima)
 add_subdirectory(apps/anima/module)
+add_subdirectory(apps/timeline)
+add_subdirectory(apps/timeline/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
