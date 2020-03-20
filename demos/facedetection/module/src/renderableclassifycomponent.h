@@ -74,6 +74,11 @@ namespace nap
 		const std::vector<glm::mat4>& getLocations() const		{ return mLocations; }
 
 		/**
+		 * @return radius of blob in world space
+		 */
+		const std::vector<float>& getSizes() const				{ return mSizes; }
+
+		/**
 		 * Link to the classification component, contains list of detected blobs
 		 */
 		ComponentInstancePtr<CVClassifyComponent> mClassifyComponent = { this, &RenderableClassifyComponent::mClassifyComponent };
@@ -111,6 +116,7 @@ namespace nap
 		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform slot
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
 		std::vector<glm::mat4> mLocations;								///< All world space blob locations
+		std::vector<float> mSizes;										///< All world space blob dimensions
 	};
 
 

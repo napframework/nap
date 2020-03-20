@@ -147,6 +147,7 @@ namespace nap
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
 		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
 		mLocations.clear();
+		mSizes.clear();
 		for (auto i = 0; i < blobs.size(); i++)
 		{			
 			// Pick random color for mesh and push to GPU
@@ -172,6 +173,7 @@ namespace nap
 				0
 			);
 			float size = blobs[i].getHeight() / 2.0f;
+			mSizes.emplace_back(size);
 
 			// Calculate model matrix and store
 			glm::mat4x4 object_loc = glm::translate(model_matrix, center);

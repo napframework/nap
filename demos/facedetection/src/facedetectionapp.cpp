@@ -230,11 +230,19 @@ namespace nap
 		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
 		RenderableClassifyComponentInstance& render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
 		const std::vector<glm::mat4>& locs = render_comp.getLocations();
-		for (const auto& location : locs)
+		const std::vector<float>& sizes = render_comp.getSizes();
+
+		utility::ErrorState error;
+		for (int i = 0; i < locs.size(); i++)
 		{
-			glm::vec3 blob_pos = math::extractPosition(location);
+			// Get blob location in 3D
+			glm::vec3 blob_pos = math::extractPosition(locs[i]); 
+			blob_pos.y += sizes[i];
+			
+			// Get text location in screen space
 			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
-			text_comp.setLocation(text_pos + glm::vec2(0,100));
+			text_comp.setLocation(text_pos + glm::vec2(0,25));
+			text_comp.setText(utility::stringFormat("Blob %d", i), error);
 			text_comp.draw(mRenderWindow->getBackbuffer());
 		}
 
