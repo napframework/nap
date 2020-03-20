@@ -20,6 +20,7 @@
 #include <imguiutils.h>
 #include <cvframe.h>
 #include <rendertotexturecomponent.h>
+#include <renderableclassifycomponent.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -206,47 +207,22 @@ namespace nap
 			mVideoCaptureEntity->getComponent<RenderToTextureComponentInstance>().draw();
 		}
 
-		// Update the camera location in the world shader for the halo effect
-		// To do that we fetch the material associated with the world mesh and query the camera location uniform
-		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
-
-		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform.setValue(global_pos);
-
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
-
-		// Find the world and add as an object to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-
-		components_to_render.emplace_back(&renderable_world);
 
 		// Find the perspective camera
 		nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
+		// Find objects to render
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		for (auto& entity : mVideoCaptureEntity->getChildren()[0]->getChildren())
+		{
+			RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
+			components_to_render.emplace_back(&render_comp);
+		}
+
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
-
-		// Clear list of components to render
-		components_to_render.clear();
-
-		// Render text on top of the sphere
-		Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-
-		// Find the orthographic camera (2D text can only be rendered with an orthographic camera)
-		nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
-
-		// Center text
-        render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
-
-		// Render text on top of sphere using render service
-		// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
-		components_to_render.emplace_back(&render_text);
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
 
 		// Draw our gui
 		mGuiService->draw();

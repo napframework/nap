@@ -60,6 +60,132 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "3DBlobs",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "3DVisualizeBlobsTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": -320.0,
+                            "y": -180.0,
+                            "z": -50.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableClassifyComponent",
+                    "mID": "3DVisualizeBlobsRenderComponent",
+                    "Scale": 1.0,
+                    "RandomScale": 0.0,
+                    "MaterialInstance": {
+                        "Material": "ClassifyMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ColorUniform": "meshColor",
+                    "SphereMesh": "BlobMesh",
+                    "ClassifyComponent": "../../VideoClassifyComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "3DPlane",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "3DPlaneTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": -1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "3DPlaneRenderableMeshComponent",
+                    "Mesh": "GroundPlane",
+                    "MaterialInstance": {
+                        "Material": "PlaneMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "3DVisualize",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "3DTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "3DBlobs",
+                "3DPlane"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "OpenCV",
             "Components": [],
             "Children": [
@@ -197,7 +323,9 @@
                     "ModelMatrixUniform": "modelMatrix"
                 }
             ],
-            "Children": []
+            "Children": [
+                "3DVisualize"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -250,8 +378,8 @@
                     "mID": "PerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 45.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 1000.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 4000.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -264,12 +392,12 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "PerspCameraTransformComponent",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 4.0
+                            "x": 200.0,
+                            "y": 900.0,
+                            "z": 500.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -295,7 +423,7 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.032999999821186069,
+                    "MovementSpeed": 0.75,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
                     "LookAtPosition": {
@@ -313,7 +441,7 @@
             "Components": [
                 {
                     "Type": "nap::Renderable2DTextComponent",
-                    "mID": "nap::RenderableTextComponent",
+                    "mID": "TextRenderableComponent",
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "GlyphUniform": "glyph",
@@ -331,7 +459,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_3",
+                    "mID": "TextTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -428,6 +556,20 @@
         },
         {
             "Type": "nap::ImageFromFile",
+            "mID": "PlaneTexture",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "texture_one.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
             "Parameters": {
                 "MinFilter": "LinearMipmapLinear",
@@ -439,6 +581,24 @@
             "Usage": "Static",
             "ImagePath": "world_texture.png",
             "Compressed": false
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ClassifyMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStructArray",
+                    "mID": "UniformStructArray_121344fb",
+                    "Name": "lights",
+                    "Structs": [
+                        "LightOne"
+                    ]
+                }
+            ],
+            "Shader": "ClassifyShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -467,6 +627,22 @@
             "Shader": "FontShader",
             "VertexAttributeBindings": [],
             "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "PlaneMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "UniformTexture2D_8ba3bc61",
+                    "Name": "inTexture",
+                    "Texture": "PlaneTexture"
+                }
+            ],
+            "Shader": "PlaneShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
         {
@@ -511,6 +687,20 @@
             ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "GroundPlane",
+            "Size": {
+                "x": 640.0,
+                "y": 640.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -616,6 +806,12 @@
         },
         {
             "Type": "nap::Shader",
+            "mID": "ClassifyShader",
+            "mVertShader": "shaders/facedetection/classify.vert",
+            "mFragShader": "shaders/facedetection/classify.frag"
+        },
+        {
+            "Type": "nap::Shader",
             "mID": "DetectShader",
             "mVertShader": "shaders/facedetection/detection.vert",
             "mFragShader": "shaders/facedetection/detection.frag"
@@ -628,9 +824,22 @@
         },
         {
             "Type": "nap::Shader",
+            "mID": "PlaneShader",
+            "mVertShader": "shaders/facedetection/plane.vert",
+            "mFragShader": "shaders/facedetection/plane.frag"
+        },
+        {
+            "Type": "nap::Shader",
             "mID": "WorldShader",
             "mVertShader": "shaders/facedetection/world.vert",
             "mFragShader": "shaders/facedetection/world.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "BlobMesh",
+            "Radius": 1.0,
+            "Rings": 50.0,
+            "Sectors": 50.0
         },
         {
             "Type": "nap::SphereMesh",
@@ -638,6 +847,33 @@
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
+        },
+        {
+            "Type": "nap::UniformStruct",
+            "mID": "LightOne",
+            "Name": "PointLight",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_c1202ff0",
+                    "Name": "mPosition",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 1000.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3_2c4cde79",
+                    "Name": "mIntensity",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ]
         }
     ]
 }
