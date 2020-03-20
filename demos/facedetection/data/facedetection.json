@@ -470,7 +470,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 16,
+                "Size": 18,
                 "DPI": 96
             },
             "Font": "fonts/Montserrat-Light.otf"
