@@ -90,7 +90,7 @@
                     "Scale": 1.0,
                     "RandomScale": 0.0,
                     "MaterialInstance": {
-                        "Material": "ClassifyMaterial",
+                        "Material": "BlobMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -208,72 +208,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "OpenCVCamera",
-            "Components": [
-                {
-                    "Type": "nap::CVCaptureComponent",
-                    "mID": "CameraCaptureComponent",
-                    "Devices": "CameraCaptureDevice"
-                },
-                {
-                    "Type": "nap::CVClassifyComponent",
-                    "mID": "CameraClassifyComponent",
-                    "CaptureComponent": "./CameraCaptureComponent",
-                    "Adapter": "Camera",
-                    "MatrixIndex": 0,
-                    "Path": "haarcascades/haarcascade_frontalface_alt.xml"
-                },
-                {
-                    "Type": "nap::CaptureToTextureComponent",
-                    "mID": "CameraApplyBlobsComponent",
-                    "CaptureComponent": "./CameraCaptureComponent",
-                    "ClassifyComponent": "./CameraClassifyComponent",
-                    "RenderComponent": "./CameraRenderBlobsComponent",
-                    "RenderTexture": "CameraCaptureTexture",
-                    "Adapter": "Camera",
-                    "MatrixIndex": 0
-                },
-                {
-                    "Type": "nap::RenderToTextureComponent",
-                    "mID": "CameraRenderBlobsComponent",
-                    "OutputTexture": "CameraOutputTexture",
-                    "MaterialInstance": {
-                        "Material": "VideoDetectMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformTexture2D",
-                                "mID": "captureTexture2",
-                                "Name": "captureTexture",
-                                "Texture": "CameraCaptureTexture"
-                            },
-                            {
-                                "Type": "nap::UniformVec2",
-                                "mID": "UniformVec2_723b32b6",
-                                "Name": "captureSize",
-                                "Value": {
-                                    "x": 640.0,
-                                    "y": 480.0
-                                }
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClearColor": {
-                        "Values": [
-                            255,
-                            0,
-                            0
-                        ]
-                    },
-                    "ProjectionMatrixUniform": "projectionMatrix",
-                    "ModelMatrixUniform": "modelMatrix"
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "OpenCVCapture",
             "Components": [
                 {
@@ -304,7 +238,7 @@
                     "mID": "OpenCVCaptureRenderComponent",
                     "OutputTexture": "VideoOutputTexture",
                     "MaterialInstance": {
-                        "Material": "VideoDetectMaterial",
+                        "Material": "VideoClassifyMaterial",
                         "Uniforms": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -504,7 +438,25 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "CameraDetectMaterial",
+            "mID": "BlobMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStructArray",
+                    "mID": "UniformStructArray_121344fb",
+                    "Name": "lights",
+                    "Structs": [
+                        "LightOne"
+                    ]
+                }
+            ],
+            "Shader": "BlobShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CameraClassifyMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformTexture2D",
@@ -520,24 +472,6 @@
                         "x": 640.0,
                         "y": 480.0
                     }
-                }
-            ],
-            "Shader": "DetectShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ClassifyMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_121344fb",
-                    "Name": "lights",
-                    "Structs": [
-                        "LightOne"
-                    ]
                 }
             ],
             "Shader": "ClassifyShader",
@@ -583,7 +517,7 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "VideoDetectMaterial",
+            "mID": "VideoClassifyMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformVec2",
@@ -601,7 +535,7 @@
                     "Texture": "VideoCaptureTexture"
                 }
             ],
-            "Shader": "DetectShader",
+            "Shader": "ClassifyShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -792,7 +726,7 @@
                                     "Value": {
                                         "Type": "nap::PointerInstancePropertyValue",
                                         "mID": "instanceProp_nap::rtti::Object*_014531-090995-041851-090063",
-                                        "Value": "CameraDetectMaterial"
+                                        "Value": "CameraClassifyMaterial"
                                     }
                                 }
                             ]
@@ -826,7 +760,7 @@
                                     "Value": {
                                         "Type": "nap::PointerInstancePropertyValue",
                                         "mID": "instanceProp_nap::rtti::Object*_056425-078065-008373-097960",
-                                        "Value": "VideoDetectMaterial"
+                                        "Value": "VideoClassifyMaterial"
                                     }
                                 }
                             ]
@@ -905,13 +839,13 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "ClassifyShader",
-            "mVertShader": "shaders/facedetection/classify.vert",
-            "mFragShader": "shaders/facedetection/classify.frag"
+            "mID": "BlobShader",
+            "mVertShader": "shaders/facedetection/blob.vert",
+            "mFragShader": "shaders/facedetection/blob.frag"
         },
         {
             "Type": "nap::Shader",
-            "mID": "DetectShader",
+            "mID": "ClassifyShader",
             "mVertShader": "shaders/facedetection/detection.vert",
             "mFragShader": "shaders/facedetection/detection.frag"
         },
