@@ -63,10 +63,6 @@ namespace nap
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
-		// Fetch world and text
-		mWorldEntity = scene->findEntity("World");
-		mTextEntity = scene->findEntity("Text");
-
 		// Fetch capture OpenCV capture / track entities
 		mCameraCaptureEntity = scene->findEntity("OpenCVCamera");
 		mVideoCaptureEntity  = scene->findEntity("OpenCVVideo");

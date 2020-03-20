@@ -93,9 +93,6 @@ namespace nap
 		
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		
-		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
-		
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
 

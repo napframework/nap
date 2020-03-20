@@ -483,69 +483,6 @@
             "Children": []
         },
         {
-            "Type": "nap::Entity",
-            "mID": "World",
-            "Components": [
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "WorldMesh",
-                    "MaterialInstance": {
-                        "Material": "WorldMaterial",
-                        "Uniforms": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RotateComponent",
-                    "mID": "nap::RotateComponent",
-                    "Properties": {
-                        "Axis": {
-                            "x": 0.0,
-                            "y": 1.0,
-                            "z": 0.0
-                        },
-                        "Speed": 0.02500000037252903,
-                        "Offset": 0.6499999761581421
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
@@ -566,20 +503,6 @@
             },
             "Usage": "Static",
             "ImagePath": "texture_one.jpg",
-            "Compressed": false
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "WorldTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "ImagePath": "world_texture.png",
             "Compressed": false
         },
         {
@@ -642,49 +565,6 @@
             ],
             "Shader": "PlaneShader",
             "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "WorldMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
-                    "Name": "inWorldTexture",
-                    "Texture": "WorldTexture"
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "nap::UniformVec3",
-                    "Name": "inCameraPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 4.0
-                    }
-                }
-            ],
-            "Shader": "WorldShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                }
-            ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -783,10 +663,6 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "World",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "PerspectiveCamera",
                     "InstanceProperties": []
                 },
@@ -829,21 +705,8 @@
             "mFragShader": "shaders/facedetection/plane.frag"
         },
         {
-            "Type": "nap::Shader",
-            "mID": "WorldShader",
-            "mVertShader": "shaders/facedetection/world.vert",
-            "mFragShader": "shaders/facedetection/world.frag"
-        },
-        {
             "Type": "nap::SphereMesh",
             "mID": "BlobMesh",
-            "Radius": 1.0,
-            "Rings": 50.0,
-            "Sectors": 50.0
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "WorldMesh",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
