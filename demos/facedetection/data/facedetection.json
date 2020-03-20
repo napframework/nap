@@ -69,7 +69,7 @@
                         "Translate": {
                             "x": -320.0,
                             "y": -180.0,
-                            "z": -50.0
+                            "z": 0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -88,7 +88,6 @@
                     "Type": "nap::RenderableClassifyComponent",
                     "mID": "3DVisualizeBlobsRenderComponent",
                     "Scale": 1.0,
-                    "RandomScale": 0.0,
                     "MaterialInstance": {
                         "Material": "BlobMaterial",
                         "Uniforms": [],
@@ -640,21 +639,7 @@
                 },
                 {
                     "Entity": "Text",
-                    "InstanceProperties": [
-                        {
-                            "TargetComponent": "./TextRenderableComponent",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Text",
-                                    "Value": {
-                                        "Type": "nap::StringInstancePropertyValue",
-                                        "mID": "instanceProp_std::string_cc776bfe",
-                                        "Value": "Blob Number 1"
-                                    }
-                                }
-                            ]
-                        }
-                    ]
+                    "InstanceProperties": []
                 },
                 {
                     "Entity": "OrthographicCamera",

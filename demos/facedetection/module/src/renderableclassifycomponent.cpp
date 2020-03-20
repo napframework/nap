@@ -10,7 +10,6 @@
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
 	RTTI_PROPERTY("Scale",				&nap::RenderableClassifyComponent::mScale,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RandomScale",		&nap::RenderableClassifyComponent::mRandomScale,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableClassifyComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableClassifyComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SphereMesh",			&nap::RenderableClassifyComponent::mSphereMesh,					nap::rtti::EPropertyMetaData::Required)
@@ -83,7 +82,6 @@ namespace nap
 
 		// Copy over parameters
 		mScale	= resource->mScale;
-		mRandomScale = resource->mRandomScale;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
 		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
@@ -131,7 +129,6 @@ namespace nap
 		math::setRandomSeed(mSeed);
 
 		// Get randomization scale for various effects
-		float rand_scale = math::clamp<float>(mRandomScale, 0.0f, 1.0f);
 		int max_rand_color = static_cast<int>(mColors.size()) - 1;
 
 		// Push all existing uniforms to GPU
@@ -176,7 +173,7 @@ namespace nap
 			mSizes.emplace_back(size);
 
 			// Calculate model matrix and store
-			glm::mat4x4 object_loc = glm::translate(model_matrix, center);
+			glm::mat4x4 object_loc = glm::translate(model_matrix, center + glm::vec3(0.0f, 0.0f, -size));
 			object_loc = glm::scale(object_loc, { size, size, size });
 			mLocations.emplace_back(object_loc);
 

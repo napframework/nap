@@ -31,7 +31,6 @@ namespace nap
 
 		// Component Properties
 		float mScale = 1.0f;										///< Property: 'Scale' scale of the copied meshes
-		float mRandomScale = 0.0f;									///< Property: 'RandomScale' amount of random scale to apply (0-1)
 		MaterialInstanceResource mMaterialInstanceResource;			///< Property: 'MaterialInstance' the material used to shade the text
 		std::string mColorUniform = "color";						///< Property: 'ColorUniform' name of the color uniform binding (vec3) in the shader
 		ResourcePtr<SphereMesh> mSphereMesh;						///< Property: 'Sphere' list of meshes to copy onto target
@@ -85,7 +84,6 @@ namespace nap
 
 		bool	mOrient = true;										///< If copied meshes should be oriented towards the camera
 		float	mScale = 1.0f;										///< Scale of the meshes that are copied
-		float	mRandomScale = 0.0f;								///< Amount of random scale to apply	
 		int		mSeed = 0;											///< Random seed
 		float	mRotationSpeed = 1.0f;								///< Influences rotation speed
 

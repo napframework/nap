@@ -242,7 +242,7 @@ namespace nap
 			// Get text location in screen space
 			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
 			text_comp.setLocation(text_pos + glm::vec2(0,25));
-			text_comp.setText(utility::stringFormat("Blob %d", i), error);
+			text_comp.setText(utility::stringFormat("Blob %d", i+1), error);
 			text_comp.draw(mRenderWindow->getBackbuffer());
 		}
 
