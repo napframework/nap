@@ -17,10 +17,9 @@ uniform sampler2D captureTexture;		//< Classify texture
 uniform vec2 captureSize;				//< Size of captureTexture in pixels
 
 const float ringSize = 3;
-//const vec3 edgeColor = vec3(0.784,0.411,0.411);
-const vec3 edgeColor = vec3(1.0,1.0,1.0);
-const vec3 innerColor = vec3(1.0,1.0,1.0);
-
+const vec3 edgeColor = vec3(1.0, 1.0, 1.0);
+const vec3 innerColor = vec3(0.545,0.549,0.627);
+	
 // output
 out vec4 out_Color;
 
@@ -29,8 +28,6 @@ out vec4 out_Color;
 float fit(float value, float min, float max, float outMin, float outMax)
 {
     float v = clamp(value, min, max);
-    if (v == 0.0)
-    	v = 0.00001;
     float m = max - min;
     return (v - min) / (m) * (outMax - outMin) + outMin;
 }
