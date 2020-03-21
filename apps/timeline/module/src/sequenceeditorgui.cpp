@@ -5,6 +5,7 @@
 // External Includes
 #include <entity.h>
 #include <imgui/imgui.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -107,12 +108,37 @@ namespace nap
 				{
 					float x = ( segment->mStartTime + segment->mDuration ) * stepSize;
 
-					// draw handler of segment duration
-					drawList->AddLine(
-						{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
-						guicolors::white, // color
-						3.0f); // thickness
+					//
+					if ( ImGui::IsMouseHoveringRect(
+							{ trackTopLeft.x + x - 5, trackTopLeft.y - 5 }, // top left
+							{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
+					{
+						// draw handler of segment duration
+						drawList->AddLine(
+								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+								guicolors::white, // color
+								3.0f); // thickness
+
+						if (ImGui::IsMouseDragging(0))
+						{
+							float amount = ImGui::GetMouseDragDelta().x / stepSize;
+
+							mSegmentDurationChange.trigger(
+								*trackLink->mSequenceTrack, 
+								*segment.get(),
+								ImGui::GetMouseDragDelta().x);
+						}
+					}
+					else
+					{
+						// draw handler of segment duration
+						drawList->AddLine(
+							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+								guicolors::white, // color
+								1.0f); // thickness
+					}
 				}
 
 				// pop id

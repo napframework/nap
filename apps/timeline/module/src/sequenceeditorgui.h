@@ -47,6 +47,9 @@ namespace nap
 
 		void draw();
 	public:
+		// Signals
+		Signal<const SequenceTrack&, const SequenceTrackSegment&, float> mSegmentDurationChange;
+	public:
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr;
 	};
 }
