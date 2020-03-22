@@ -28,7 +28,7 @@ uniform PointLight 	lights[1];								// All lights in the scene
 // Light constants
 const float			ambientIntensity = 0.1;					// Ambient light intensity
 const float			shininess = 2.0;						// Specular angle shininess
-const float			specularIntensity = 0.3;				// Amount of added specular
+const float			specularIntensity = 0.25;				// Amount of added specular
 
 // output
 out vec4 out_Color;
