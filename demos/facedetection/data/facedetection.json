@@ -69,7 +69,7 @@
                         "Translate": {
                             "x": -320.0,
                             "y": -180.0,
-                            "z": 0
+                            "z": 0.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -507,6 +507,14 @@
                     "mID": "UniformTexture2D_8ba3bc61",
                     "Name": "inTexture",
                     "Texture": "PlaneTexture"
+                },
+                {
+                    "Type": "nap::UniformStructArray",
+                    "mID": "UniformStructArray_b2965733",
+                    "Name": "lights",
+                    "Structs": [
+                        "LightOne"
+                    ]
                 }
             ],
             "Shader": "PlaneShader",
@@ -864,7 +872,7 @@
                     "Name": "mPosition",
                     "Value": {
                         "x": 0.0,
-                        "y": 1000.0,
+                        "y": 250.0,
                         "z": 0.0
                     }
                 },

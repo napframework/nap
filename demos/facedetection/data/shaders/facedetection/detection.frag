@@ -11,7 +11,7 @@ struct Blob
 };
 
 // uniform inputs
-uniform Blob blobs[200];				//< All detected blobs
+uniform Blob blobs[20];					//< All detected blobs
 uniform int blobCount;					//< Total number of detected blobs
 uniform sampler2D captureTexture;		//< Classify texture 
 uniform vec2 captureSize;				//< Size of captureTexture in pixels

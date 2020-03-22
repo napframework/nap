@@ -1,7 +1,6 @@
 #version 330
 
 // vertex shader input 
-in vec3 passPosition;										//< frag world space position 
 in vec3 passNormals;										// Normals
 in mat4 passModelMatrix;									// Matrix
 in vec3 passVert;											// The vertex position
@@ -18,10 +17,10 @@ struct PointLight
 uniform PointLight	lights[1];								// All lights in the scene
 uniform vec3 		meshColor;								// Color or the mesh
 
-// Light Uniforms
+// Light constants
 const float			ambientIntensity = 0.3;					// Ambient light intensity
-const float			shininess = 4.0;						// Specular angle shininess
-const float			specularIntensity = 0.0;				// Amount of added specular
+const float			shininess = 3.0;						// Specular angle shininess
+const float			specularIntensity = 0.3;				// Amount of added specular
 
 // output
 out vec4 out_Color;
@@ -51,7 +50,9 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	vec3 specularColor = vec3(1.0,1.0,1.0);
 	float specularCoefficient = 0.0;
     if(diffuseCoefficient > 0.0)
+    {
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
+    }
     vec3 specular = specularCoefficient * specularColor * lights[lightIndex].mIntensity * specularIntensity;
 
     // return combination
