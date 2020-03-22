@@ -212,34 +212,6 @@ namespace nap
 		// Find objects to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		
-		// Get blob world space location and sizes
-		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
-		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
-		const std::vector<glm::mat4>& locs = classify_render_comp.getLocations();
-		const std::vector<float>& sizes = classify_render_comp.getSizes();
-
-		// Update plane shader, so it knows where the blobs are and can apply occlusion if required
-		nap::EntityInstance& plane_entity = (*mOpenCVEntity)[0][0][1];
-		RenderableMeshComponentInstance& plane_render_comp = plane_entity.getComponent<RenderableMeshComponentInstance>();
-		nap::MaterialInstance& material = plane_render_comp.getMaterialInstance();
-		material.getOrCreateUniform<UniformInt>("blobCount").setValue(locs.size());
-
-		// Set blob data
-		int count = 0;
-		for (const auto& loc : locs)
-		{
-			// Set blob center
-			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", count);
-			UniformVec3& center_uniform = material.getOrCreateUniform<UniformVec3>(center_uniform_name);
-			center_uniform.setValue(math::extractPosition(loc));
-
-			// Set blob size
-			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
-			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(sizes[count]);
-			count++;
-		}
-
 		// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
 		nap::EntityInstance& capture_entity = (*mOpenCVEntity)[0];
 		for (auto& entity : capture_entity[0].getChildren())
@@ -253,6 +225,12 @@ namespace nap
 
 		// Get renderable 2D text component
 		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+
+		// Get blob world space location and sizes
+		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
+		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
+		const std::vector<glm::mat4>& locs = classify_render_comp.getLocations();
+		const std::vector<float>& sizes = classify_render_comp.getSizes();
 
 		// Draw text
 		utility::ErrorState error;

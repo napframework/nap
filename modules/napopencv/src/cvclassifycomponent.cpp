@@ -65,7 +65,7 @@ namespace nap
 			return false;
 
 		// Assign slot when new frame is captured
-		mCaptureComponent->getDevice().frameCaptured.connect(mCaptureSlot);
+		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
 		// Start capture
 		mStopClassification = false;

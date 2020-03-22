@@ -14,6 +14,7 @@ RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableClassifyComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SphereMesh",			&nap::RenderableClassifyComponent::mSphereMesh,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClassifyComponent",	&nap::RenderableClassifyComponent::mClassifyComponent,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneComponent",		&nap::RenderableClassifyComponent::mPlaneComponent,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::renderablecopymeshcomponentInstance run time class definition 
@@ -94,7 +95,24 @@ namespace nap
 
 	void RenderableClassifyComponentInstance::update(double deltaTime)
 	{
-		//mTime += (deltaTime * (double)mRotationSpeed);
+		nap::MaterialInstance& plane_material = mPlaneComponent->getMaterialInstance();
+		plane_material.getOrCreateUniform<UniformInt>("blobCount").setValue(mLocations.size());
+
+		// Set 3D blob data for plane, used to calculate fake shadows
+		int count = 0;
+		for (const auto& loc : mLocations)
+		{
+			// Set blob center
+			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", count);
+			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
+			center_uniform.setValue(math::extractPosition(loc));
+
+			// Set blob size
+			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
+			UniformFloat& size_uniform = plane_material.getOrCreateUniform<UniformFloat>(size_uniform_name);
+			size_uniform.setValue(mSizes[count]);
+			count++;
+		}
 	}
 
 

@@ -96,7 +96,8 @@
                     },
                     "ColorUniform": "meshColor",
                     "SphereMesh": "BlobMesh",
-                    "ClassifyComponent": "../../OpenCVClassifyComponent"
+                    "ClassifyComponent": "../../OpenCVClassifyComponent",
+                    "PlaneComponent": "../3DPlane/3DPlaneRenderableMeshComponent"
                 }
             ],
             "Children": []
@@ -344,15 +345,15 @@
                 },
                 {
                     "Type": "nap::KeyInputComponent",
-                    "mID": "nap::KeyInputComponent"
+                    "mID": "PerspCameraKeyInputComponent"
                 },
                 {
                     "Type": "nap::PointerInputComponent",
-                    "mID": "nap::PointerInputComponent"
+                    "mID": "PerspCameraPointerInputComponent"
                 },
                 {
                     "Type": "nap::OrbitController",
-                    "mID": "nap::OrbitController",
+                    "mID": "PerspCameraOrbitController",
                     "MovementSpeed": 0.75,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
@@ -822,6 +823,19 @@
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "instanceProp_float_85533682",
                                         "Value": -180.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./OpenCVCapture:1/3DVisualize:0/3DTransformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Rotate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "instanceProp_float_99062aff",
+                                        "Value": -90.0
                                     }
                                 }
                             ]

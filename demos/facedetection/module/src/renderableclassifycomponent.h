@@ -8,6 +8,7 @@
 #include <color.h>
 #include <spheremesh.h>
 #include <cvclassifycomponent.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {
@@ -35,6 +36,7 @@ namespace nap
 		std::string mColorUniform = "color";						///< Property: 'ColorUniform' name of the color uniform binding (vec3) in the shader
 		ResourcePtr<SphereMesh> mSphereMesh;						///< Property: 'Sphere' list of meshes to copy onto target
 		ComponentPtr<CVClassifyComponent> mClassifyComponent;		///< Property: 'ClassifyComponent' components that contains detected objects
+		ComponentPtr<RenderableMeshComponent> mPlaneComponent;		///< Property: 'PlaneComponent'component that renders the plane 
 	};
 
 
@@ -81,6 +83,11 @@ namespace nap
 		 * Link to the classification component, contains list of detected blobs
 		 */
 		ComponentInstancePtr<CVClassifyComponent> mClassifyComponent = { this, &RenderableClassifyComponent::mClassifyComponent };
+
+		/**
+		 * Link to the component that renders the plane
+		 */
+		ComponentInstancePtr<RenderableMeshComponent> mPlaneComponent = { this, &RenderableClassifyComponent::mPlaneComponent };
 
 		bool	mOrient = true;										///< If copied meshes should be oriented towards the camera
 		float	mScale = 1.0f;										///< Scale of the meshes that are copied
