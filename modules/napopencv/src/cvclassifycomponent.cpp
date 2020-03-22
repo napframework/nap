@@ -34,9 +34,7 @@ namespace nap
 
 		// Wait till exit
 		if (mClassifyTask.valid())
-		{
 			mClassifyTask.wait();
-		}
 	}
 
 
@@ -76,12 +74,6 @@ namespace nap
 	}
 
 
-	void CVClassifyComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
 	std::vector<math::Rect> CVClassifyComponentInstance::getObjects() const
 	{
 		std::lock_guard<std::mutex> lock(mObjectMutex);
@@ -98,7 +90,7 @@ namespace nap
 		// Store frame for processing
 		{
 			std::lock_guard<std::mutex> lock(mClassifyMutex);
-			frame->copyTo(mCapturedFrame);
+			mCapturedFrame = *frame;
 			mClassify = true;
 		}
 		mClassifyCondition.notify_one();
@@ -132,7 +124,7 @@ namespace nap
 				mClassify = false;
 			}
 
-			// Convert to grey-scale and equalize history
+			// Convert to grey scale and equalize history
 			cvtColor(process_frame[0], gray_frame[0], cv::COLOR_BGR2GRAY);
 			equalizeHist(gray_frame[0], gray_frame[0]);
 
@@ -144,11 +136,8 @@ namespace nap
 			for (auto& rect : cv_objects)
 				na_objects.emplace_back(math::Rect(rect.x, rect.y, rect.width, rect.height));
 
-			// Copy to buffer (thread safe)
-			{
-				std::lock_guard<std::mutex> lock(mObjectMutex);
-				mObjects = na_objects;
-			}
+			std::lock_guard<std::mutex> lock(mObjectMutex);
+			mObjects = na_objects;
 		}
 	}
 }

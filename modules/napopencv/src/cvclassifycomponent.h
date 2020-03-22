@@ -13,7 +13,8 @@ namespace nap
 	class CVClassifyComponentInstance;
 
 	/**
-	 *	cascadeclassifycomponent
+	 * OpenCV Cascade Classifier, can be used to detect objects in a frame using a HaarCascade profile. 
+	 * The 'Path' property is a file-link that should point to a valid HaarCascade profile on disk.
 	 */
 	class NAPAPI CVClassifyComponent : public Component
 	{
@@ -22,14 +23,16 @@ namespace nap
 	public:
 
 		nap::ComponentPtr<CVCaptureComponent> mCaptureComponent = nullptr;	///< Property: 'CaptureComponent' the component that receives the captured frames
-		nap::ResourcePtr<CVAdapter> mAdapter = nullptr;						///< Property: 'Adapter' the adapter to render frame for
-		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix of the adapter used for detection
+		nap::ResourcePtr<CVAdapter> mAdapter = nullptr;						///< Property: 'Adapter' the adapter to run the classification algorithm on
+		int mMatrixIndex = 0;												///< Property: 'MatrixIndex' the OpenCV matrix index, defaults to 0
 		std::string mPath;													///< Property: 'Path' path to cascade classifier file
 	};
 
 
 	/**
-	 * cascadeclassifycomponentInstance	
+	 * Detects objects in a frame using a HaarCascade profile.
+	 * Classification is performed on a background thread when the 'CaptureComponent' receives a new frame. 
+	 * Call 'getObjects' to get a list of classified (detected) objects.
 	 */
 	class NAPAPI CVClassifyComponentInstance : public ComponentInstance
 	{
@@ -41,29 +44,26 @@ namespace nap
 		virtual ~CVClassifyComponentInstance() override;
 
 		/**
-		 * Initialize cascadeclassifycomponentInstance based on the cascadeclassifycomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the cascadeclassifycomponentInstance is initialized successfully
+		 * Initializes the classification component.
+		 * @param errorState contains the error when initialization fails.
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update cascadeclassifycomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
-		 * @return classified (detected) objects
+		 * Returns a list of classified (detected) objects. 
+		 * This call is thread safe and can be called every frame.
+		 * @return list of classified (detected) objects.
 		 */
 		std::vector<math::Rect> getObjects() const;
 
+		// Resolved link to the OpenCV capture component.
 		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent = { this, &CVClassifyComponent::mCaptureComponent };
 
 	private:
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
 		nap::Slot<const CVFrameEvent&> mCaptureSlot =					{ this, &CVClassifyComponentInstance::onFrameCaptured };
+		
 		cv::CascadeClassifier mClassifier;								///< OpenCV cascade classifier
 		nap::CVAdapter* mAdapter = nullptr;								///< OpenCV capture adapter
 		int mMatrixIndex = 0;											///< OpenCV matrix index
@@ -78,7 +78,7 @@ namespace nap
 		mutable std::mutex mObjectMutex;								///< The mutex that safe guards the capture thread
 
 		/**
-         * Task that captures new frames
+         * Classification task runs in the background.
 		 */
 		void detectTask();
 	};

@@ -229,7 +229,7 @@ namespace nap
 		// Get blob world space location and sizes
 		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
 		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
-		const std::vector<glm::mat4>& locs = classify_render_comp.getLocations();
+		const std::vector<glm::vec3>& locs = classify_render_comp.getLocations();
 		const std::vector<float>& sizes = classify_render_comp.getSizes();
 
 		// Draw text
@@ -237,7 +237,7 @@ namespace nap
 		for (int i = 0; i < locs.size(); i++)
 		{
 			// Get blob location in 3D
-			glm::vec3 blob_pos = math::extractPosition(locs[i]); 
+			glm::vec3 blob_pos = locs[i]; 
 			blob_pos.y += sizes[i];
 			
 			// Get text location in screen space

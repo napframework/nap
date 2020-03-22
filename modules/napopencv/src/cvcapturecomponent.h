@@ -28,16 +28,15 @@ namespace nap
 
 
 	/**
-	* Receives frame updates from a nap::CVCaptureDevice on the main application thread.
-	* The actual capture operation is handled by the nap::CVCaptureDevice on a background thread.
-	* Register to the 'frameReceived' signal to receive frame updates on the main processing thread.
-	*
-	* Note that the frame that is forwarded to potential listeners is a reference.
-	* Any actual operation on the frame's content will be picked up by other parts of the application
-	* that work with the same frame. This is unfortunately the way OpenCV works. 
-	* To get an actual copy of the content of the frame call FrameEvent::clone(). 
-	* Do this before performing any operation on the frame itself.
-	*/
+	 * Receives frame updates from a nap::CVCaptureDevice on the main application thread.
+	 * The actual capture operation is handled by the nap::CVCaptureDevice on a background thread.
+	 * Register to the 'frameReceived' signal to receive frame updates on the main processing thread.
+	 *
+	 * Note that the frame that is forwarded to potential listeners is a reference.
+	 * Do not modify the content of the frame! Changes will be forwarded to other listeners.
+	 * To get an actual copy of the content of the frame call FrameEvent::clone().
+	 * Do this before performing any operation on the frame itself.
+	 */
 	class NAPAPI CVCaptureComponentInstance : public ComponentInstance
 	{
 		friend class CVService;

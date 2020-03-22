@@ -116,12 +116,8 @@ namespace nap
 				cv_frame[mMatrixIndex].rows);
 			return;
 		}
-
-		// Convert to RGB and flip vertically
-		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_BGR2RGB);
-		cv::flip(mConversionFrame[0], mConversionFrame[0], 0);
 		
 		// Update texture
-		mRenderTexture->update(cv_frame[0].getMat(cv::ACCESS_READ).data);
+		mRenderTexture->update(cv_frame[mMatrixIndex].getMat(cv::ACCESS_READ).data);
 	}
 }

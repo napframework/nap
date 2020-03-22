@@ -72,7 +72,7 @@ namespace nap
 		/**
 		 * @return list of recent blob placements in world space
 		 */
-		const std::vector<glm::mat4>& getLocations() const		{ return mLocations; }
+		const std::vector<glm::vec3>& getLocations() const		{ return mLocations; }
 
 		/**
 		 * @return radius of blob in world space
@@ -120,7 +120,7 @@ namespace nap
 		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
 		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform slot
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
-		std::vector<glm::mat4> mLocations;								///< All world space blob locations
+		std::vector<glm::vec3> mLocations;								///< All world space blob locations
 		std::vector<float> mSizes;										///< All world space blob dimensions
 	};
 

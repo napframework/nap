@@ -246,7 +246,7 @@ namespace nap
 		// All properties that need to be applied are copied over in a safe block before continue.
 		// After that properties are applied and a frame is grabbed. If grabbing fails, the device is closed and
 		// an error is reported. Only adapters that managed to grab a frame are considered valid for a subsequent capture.
-		// If no frame is captuted at all the process is paused, until a new capture() resquest is issued.
+		// If no frame is captured at all the process is paused, until a new capture() resquest is issued.
 		while(!mStopCapturing)
 		{
 			// Wait for the capture condition to be true.
@@ -293,7 +293,8 @@ namespace nap
 					}
 				}
 				
-				// Attempt to grab frame, close if close requested
+				// Attempt to grab frame, close adapter is operation fails.
+				// Closing the adapter ensures it is skipped on the next capture operation
 				if (!cur_adapter->getCaptureDevice().grab())
 				{
 					if (cur_adapter->mCloseOnCaptureError)

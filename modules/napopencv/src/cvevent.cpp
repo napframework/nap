@@ -70,7 +70,7 @@ namespace nap
 	}
 
 
-	nap::CVFrameEvent CVFrameEvent::clone()
+	nap::CVFrameEvent CVFrameEvent::clone() const
 	{
 		CVFrameEvent clone;
 		clone.reserve(mFrames.size());

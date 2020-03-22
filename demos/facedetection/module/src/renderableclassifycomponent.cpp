@@ -95,23 +95,53 @@ namespace nap
 
 	void RenderableClassifyComponentInstance::update(double deltaTime)
 	{
+		// Get global transform
+		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
+
+		// Get all classified blobs
+		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
+
+		// Get plane material, needs blob information to draw fake shadows
 		nap::MaterialInstance& plane_material = mPlaneComponent->getMaterialInstance();
+
+		// Update number of detected blobs
 		plane_material.getOrCreateUniform<UniformInt>("blobCount").setValue(mLocations.size());
 
-		// Set 3D blob data for plane, used to calculate fake shadows
-		int count = 0;
-		for (const auto& loc : mLocations)
-		{
-			// Set blob center
-			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", count);
-			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
-			center_uniform.setValue(math::extractPosition(loc));
+		// Map the blob data from 2D (image) to 3D (scene)
+		// The location is mapped on the x/y plane, size is used to offset on the z-axis
+		mLocations.clear();
+		mSizes.clear();
 
-			// Set blob size
-			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
+		for (int i = 0; i < blobs.size(); i++)
+		{
+			// Compute size (radius)
+			float size = blobs[i].getHeight() / 2.0f;
+
+			// Compute center of blob in 3D -> object space
+			glm::vec3 center
+			(
+				blobs[i].getMin().x + (blobs[i].getWidth()  / 2.0),
+				blobs[i].getMin().y + (blobs[i].getHeight() / 2.0),
+				-size
+			);
+
+			// Convert location of blob to world space
+			glm::mat4 world_loc = glm::translate(model_matrix, center);
+			center = math::extractPosition(world_loc);
+
+			// Store location and size
+			mLocations.emplace_back(center);
+			mSizes.emplace_back(size);
+
+			// Set blob center on plane material
+			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
+			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
+			center_uniform.setValue(center);
+
+			// Set blob size on plane material
+			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
 			UniformFloat& size_uniform = plane_material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(mSizes[count]);
-			count++;
+			size_uniform.setValue(size);
 		}
 	}
 
@@ -129,9 +159,6 @@ namespace nap
 	 */
 	void RenderableClassifyComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
-		// Get global transform
-		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
-
 		// Bind material
 		mMaterialInstance.bind();
 
@@ -160,10 +187,7 @@ namespace nap
 		const auto& objec_binding = mMaterialInstance.getUniformBinding(mModelUniform->mName);
 
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
-		std::vector<math::Rect> blobs = mClassifyComponent->getObjects();
-		mLocations.clear();
-		mSizes.clear();
-		for (auto i = 0; i < blobs.size(); i++)
+		for (auto i = 0; i < mLocations.size(); i++)
 		{			
 			// Pick random color for mesh and push to GPU
 			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
@@ -180,22 +204,9 @@ namespace nap
 			// GPU mesh representation of mesh to copy
 			opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
-			// Get size and center from rect
-			glm::vec3 center
-			(
-				blobs[i].getMin().x + (blobs[i].getWidth() / 2.0),
-				blobs[i].getMin().y + (blobs[i].getHeight() / 2.0),
-				0
-			);
-			float size = blobs[i].getHeight() / 2.0f;
-			mSizes.emplace_back(size);
-
-			// Calculate model matrix and store
-			glm::mat4x4 object_loc = glm::translate(model_matrix, center + glm::vec3(0.0f, 0.0f, -size));
-			object_loc = glm::scale(object_loc, { size, size, size });
-			mLocations.emplace_back(object_loc);
-
-			// Add scale, set as value and push
+			// Calculate model matrix, set and push
+			glm::mat4 object_loc = glm::translate(glm::mat4(), mLocations[i]);
+			object_loc = glm::scale(object_loc, { mSizes[i], mSizes[i], mSizes[i]});
 			mModelUniform->setValue(object_loc);
 			mModelUniform->push(*objec_binding.mDeclaration);
 

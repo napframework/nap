@@ -11,7 +11,9 @@ namespace nap
 
 	/**
 	 * Single OpenCV frame that contains one or multiple OpenCV matrices and a source. 
-	 * Together the matrices define the content of a frame. A frame can be copied and moved.
+	 * Together the matrices define the content of a frame. 
+	 * Often a frame has only one matrix (Color) but certain adapters might return a frame that contain more, 
+	 * for example: color, depth and point cloud information. A frame can be copied and moved.
 	 * A frame can have a source. Often this is a nap::CVAdapter. 
 	 *
 	 * Note that a frame copy (or assignment) operation does not copy the actual content of the matrices.

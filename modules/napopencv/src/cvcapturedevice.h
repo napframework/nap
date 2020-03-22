@@ -94,7 +94,7 @@ namespace nap
 		 * @param target updated to hold the last captured frame data if a new frame is available.
 		 * @param copy if the frame is deep-copied instead of by reference.
          */
-		void grab(CVFrameEvent& target, bool copy = true);
+		void grab(CVFrameEvent& target, bool copy = false);
 
 		/**
 		 * Tells the capture thread to capture the next available frame.

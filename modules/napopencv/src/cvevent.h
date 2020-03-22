@@ -65,7 +65,7 @@ namespace nap
 		 * The default copy operation does not copy the actual content of the frames, only increases the ref count.
 		 * @return a clone of this event
 		 */
-		CVFrameEvent clone();
+		CVFrameEvent clone() const;
 
 		/**
 		 * @return number of frames associated with this event
