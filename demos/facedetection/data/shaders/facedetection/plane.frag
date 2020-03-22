@@ -10,7 +10,7 @@ in vec3 passNormals;										// Normals
 // Blob detection structure
 struct Blob
 {
-	vec2	mCenter;
+	vec3	mCenter;
 	float	mSize;
 };
 
@@ -24,6 +24,8 @@ struct PointLight
 // uniform inputs
 uniform sampler2D 	inTexture;
 uniform PointLight 	lights[1];								// All lights in the scene
+uniform Blob		blobs[20];								// All available blobs
+uniform int 		blobCount;								// Number of blobs
 
 // Light constants
 const float			ambientIntensity = 0.1;					// Ambient light intensity
@@ -68,6 +70,25 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 }
 
 
+// Computes the distance to a certain blob
+float getDistance(int blobID)
+{
+	//calculate the location of this fragment (pixel) in world coordinates
+    vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
+    vec3 blob_position = blobs[blobID].mCenter - vec3(0, blobs[blobID].mSize, 0.0);
+    return length(blob_position - frag_position);
+}
+
+
+// maps value from min / max to output
+float fit(float value, float min, float max, float outMin, float outMax)
+{
+    float v = clamp(value, min, max);
+    float m = max - min;
+    return (v - min) / (m) * (outMax - outMin) + outMin;
+}
+
+
 void main() 
 {
 	// Get texture rgba value
@@ -83,6 +104,20 @@ void main()
     // Add ambient color
 	vec3 ambient = tex_color * ambientIntensity;
 	light_color = light_color + ambient;
+
+	// Compute occlusion value
+	float occ_value = 0.0;
+	for(int i=0; i < blobCount; i++)
+	{
+		float blob_dist = getDistance(i);
+		float lerp_v = fit(blob_dist, 0.0, blobs[i].mSize, 1.0, 0.0);
+		lerp_v = smoothstep(0.0,1.0,pow(lerp_v, 0.85));
+		occ_value = occ_value + lerp_v;
+	}
+	occ_value = clamp(occ_value, 0.0, 1.0);
+
+	// Mix in occlusion
+	light_color = mix(light_color,vec3(0.0,0.0,0.0), occ_value);
 
 	// Set fragment color output to be texture color
 	out_Color =  vec4(light_color, 1.0);
