@@ -11,15 +11,7 @@
 #include <imguiservice.h>
 #include <cvservice.h>
 #include <app.h>
-#include <spheremesh.h>
-#include <font.h>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
-#include <cvcamera.h>
-#include <cvvideo.h>
 #include <cvcapturedevice.h>
-#include <cvframe.h>
 #include <rendertexture2d.h>
 
 namespace nap
@@ -27,7 +19,7 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Demo application that is called from within the main loop
+	 * OpenCV Demo application that is called from within the main loop
 	 *
 	 * Shows a set of detected (classified) objects in 3D and 2D.
 	 * Objects are detected using an OpenCV HaarCascade classifier.

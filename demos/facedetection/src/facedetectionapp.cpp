@@ -7,20 +7,15 @@
 #include <renderable2dtextcomponent.h>
 #include <renderable3dtextcomponent.h>
 #include <orthocameracomponent.h>
-#include <mathutils.h>
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
-#include <triangleiterator.h>
-#include <meshutils.h>
-#include <mathutils.h>
-#include <renderableglyph.h>
-#include <font.h>
 #include <imguiutils.h>
-#include <cvframe.h>
 #include <rendertotexturecomponent.h>
 #include <renderableclassifycomponent.h>
+#include <cvvideo.h>
+#include <cvcamera.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -225,7 +220,7 @@ namespace nap
 			glm::vec3 blob_pos = locs[i]; 
 			blob_pos.y += sizes[i];
 			
-			// Get text location in screen space, set and draw.
+			// Get text location in screen space, offset a bit and draw.
 			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
 			text_comp.setLocation(text_pos + glm::vec2(0,25));
 			text_comp.setText(utility::stringFormat("Blob %d", i+1), error);
