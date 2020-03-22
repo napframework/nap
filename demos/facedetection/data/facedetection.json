@@ -825,19 +825,6 @@
                                     }
                                 }
                             ]
-                        },
-                        {
-                            "TargetComponent": "./OpenCVCapture:1/3DVisualize:0/3DTransformComponent",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Rotate/x",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "instanceProp_float_99062aff",
-                                        "Value": -90.0
-                                    }
-                                }
-                            ]
                         }
                     ]
                 }
