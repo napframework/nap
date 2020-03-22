@@ -9,7 +9,6 @@
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
-	RTTI_PROPERTY("Scale",				&nap::RenderableClassifyComponent::mScale,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableClassifyComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorUniform",		&nap::RenderableClassifyComponent::mColorUniform,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SphereMesh",			&nap::RenderableClassifyComponent::mSphereMesh,					nap::rtti::EPropertyMetaData::Required)
@@ -55,19 +54,25 @@ namespace nap
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
-		mColorUniform = extractUniform<UniformVec3>(resource->mColorUniform, errorState);
+		mColorUniform = extractUniform<UniformVec3>(resource->mColorUniform, mMaterialInstance, errorState);
 		if (mColorUniform == nullptr)
 			return false;
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = extractUniform<UniformMat4>("projectionMatrix", errorState);
+		mProjectionUniform = extractUniform<UniformMat4>("projectionMatrix", mMaterialInstance, errorState);
 		if (mProjectionUniform == nullptr)
 			return false;
-		mViewUniform = extractUniform<UniformMat4>("viewMatrix", errorState);
+		
+		mViewUniform = extractUniform<UniformMat4>("viewMatrix", mMaterialInstance, errorState);
 		if (mViewUniform == nullptr)
 			return false;
-		mModelUniform = extractUniform<UniformMat4>("modelMatrix", errorState);
+		
+		mModelUniform = extractUniform<UniformMat4>("modelMatrix", mMaterialInstance, errorState);
 		if (mModelUniform == nullptr)
+			return false;
+
+		mBlobCountUniform = extractUniform<UniformInt>("blobCount", mPlaneComponent->getMaterialInstance(), errorState);
+		if (mBlobCountUniform == nullptr)
 			return false;
 
 		// Fetch render service
@@ -80,9 +85,6 @@ namespace nap
 		mSphereMesh = render_service->createRenderableMesh(*resource->mSphereMesh, mMaterialInstance, errorState);
 		if (!errorState.check(mSphereMesh.isValid(), "%s, mesh: %s can't be copied", resource->mID.c_str(), resource->mSphereMesh->mID.c_str()))
 			return false;
-
-		// Copy over parameters
-		mScale	= resource->mScale;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
 		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
@@ -105,14 +107,16 @@ namespace nap
 		nap::MaterialInstance& plane_material = mPlaneComponent->getMaterialInstance();
 
 		// Update number of detected blobs
-		plane_material.getOrCreateUniform<UniformInt>("blobCount").setValue(mLocations.size());
+		mBlobCountUniform->setValue(mLocations.size());
 
 		// Map the blob data from 2D (image) to 3D (scene)
 		// The location is mapped on the x/y plane, size is used to offset on the z-axis
 		mLocations.clear();
 		mSizes.clear();
 
-		for (int i = 0; i < blobs.size(); i++)
+		// Limit amount of blobs to 20 (as defined in shader, could be a property)
+		int blob_count = math::min<int>(blobs.size(), 20);
+		for (int i = 0; i < blob_count; i++)
 		{
 			// Compute size (radius)
 			float size = blobs[i].getHeight() / 2.0f;
@@ -133,13 +137,17 @@ namespace nap
 			mLocations.emplace_back(center);
 			mSizes.emplace_back(size);
 
-			// Set blob center on plane material
+			// Set blob location in plane material
 			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
+			assert(plane_material.getMaterial()->findUniform(center_uniform_name) != nullptr);
+
 			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
 			center_uniform.setValue(center);
 
-			// Set blob size on plane material
+			// Set blob size in plane material
 			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
+			assert(plane_material.getMaterial()->findUniform(size_uniform_name) != nullptr);
+			
 			UniformFloat& size_uniform = plane_material.getOrCreateUniform<UniformFloat>(size_uniform_name);
 			size_uniform.setValue(size);
 		}

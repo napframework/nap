@@ -32,6 +32,8 @@ float fit(float value, float min, float max, float outMin, float outMax)
     return (v - min) / (m) * (outMax - outMin) + outMin;
 }
 
+
+// Applies bell curve over 0-1 value
 float bell(float t, float strength)
 {
 	return pow(4.0f, strength) * pow(t *(1.0f - t), strength);

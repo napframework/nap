@@ -87,7 +87,6 @@
                 {
                     "Type": "nap::RenderableClassifyComponent",
                     "mID": "3DVisualizeBlobsRenderComponent",
-                    "Scale": 1.0,
                     "MaterialInstance": {
                         "Material": "BlobMaterial",
                         "Uniforms": [],

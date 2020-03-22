@@ -4,6 +4,7 @@
 #include <entity.h>
 #include <cvframe.h>
 #include <nap/logger.h>
+#include <mathutils.h>
 
 // nap::cvdisplaycapturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CaptureToTextureComponent)
@@ -46,11 +47,17 @@ namespace nap
 			return false;
 
 		// Assign slot when new frame is captured
-		mConversionFrame.addNew();
 		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
-		// Get material instance
+		// Make sure blobCount uniform is present on source material
 		nap::MaterialInstance& mat_instance = mRenderComponent->getMaterialInstance();
+		UniformInt* blob_count = mat_instance.getMaterial()->findUniform<UniformInt>("blobCount");
+		if (!errorState.check(blob_count != nullptr, "%s: missing 'blobCount' uniform", mID.c_str()))
+			return false;
+
+		// If present we can create our unique handle and store it for future use
+		mBlobCountUniform = &(mat_instance.getOrCreateUniform<UniformInt>("blobCount"));
+
 		return true;
 	}
 
@@ -62,34 +69,36 @@ namespace nap
 
 		// Set blob count
 		nap::MaterialInstance& material = mRenderComponent->getMaterialInstance();
-		UniformInt& blob_count_uniform = material.getOrCreateUniform<UniformInt>("blobCount");
-		blob_count_uniform.setValue(blobs.size());
+		mBlobCountUniform->setValue(blobs.size());
 
-		// Set blob data
-		int count = 0;
-		for (const auto& blob : blobs)
+		// Limit amount of blobs to 20 (as defined in shader, could be a property)
+		int blob_count = math::min<int>(blobs.size(), 20);
+		for (int i=0; i<blob_count; i++)
 		{
 			// Set blob center
-			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", count);
+			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
+			assert(material.getMaterial()->findUniform(center_uniform_name) != nullptr);
+			
 			UniformVec2& center_uniform = material.getOrCreateUniform<UniformVec2>(center_uniform_name);
 			center_uniform.setValue(glm::vec2
 			(
-				blob.getMin().x + (blob.getWidth()  / 2.0),
-				blob.getMin().y + (blob.getHeight() / 2.0)
+				blobs[i].getMin().x + (blobs[i].getWidth()  / 2.0),
+				blobs[i].getMin().y + (blobs[i].getHeight() / 2.0)
 			));
 
 			// Set blob size
-			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", count);
-			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(blob.getHeight() / 2.0f);
+			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
+			assert(material.getMaterial()->findUniform(size_uniform_name) != nullptr);
 			
-			count++;
+			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
+			size_uniform.setValue(blobs[i].getHeight() / 2.0f);
 		}
 	}
 
 
 	void CaptureToTextureComponentInstance::onFrameCaptured(const CVFrameEvent& frameEvent)
 	{
+		// Ensure the event contains the data of the adapter we are interested in.
 		const CVFrame* frame = frameEvent.findFrame(*mAdapter);
 		if (frame == nullptr)
 			return;
@@ -117,7 +126,7 @@ namespace nap
 			return;
 		}
 		
-		// Update texture
+		// Update GPU texture
 		mRenderTexture->update(cv_frame[mMatrixIndex].getMat(cv::ACCESS_READ).data);
 	}
 }

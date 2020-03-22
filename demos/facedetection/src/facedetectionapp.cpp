@@ -63,30 +63,18 @@ namespace nap
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
-		// Fetch capture OpenCV capture / track entities
-
 		// Fetch the entities
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 		mOpenCVEntity = scene->findEntity("OpenCV");
 		mTextEntity = scene->findEntity("Text");
 
-		CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-		return adapter.changeVideo(adapter.mFile, error);
+		return true;
 	}
 	
 	
 	/**
-	 * Forward all the received input messages to the camera input components.
-	 * The input router is used to filter the input events and to forward them
-	 * to the input components of a set of entities, in this case our camera.
-	 * 
-	 * The camera has two input components: KeyInputComponent and PointerInputComponent
-	 * The key input component receives key events, the pointer input component receives pointer events
-	 * The orbit controller listens to both of them
-	 * When an input component receives a message it sends a signal to the orbit controller.
-	 * The orbit controller validates if it's something useful and acts accordingly,
-	 * in this case by rotating around or zooming in on the sphere.
+	 * Forward all the received input messages to the camera and update the GUI.
 	 */
 	void FaceDetectionApp::update(double deltaTime)
 	{
@@ -104,52 +92,28 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
+		
+		// Show selection box
+		static const char* items[] = { "Video", "Webcam" };
+		ImGui::Combo("Select", &mCurrentSelection, items, IM_ARRAYSIZE(items));
 
-		if (ImGui::CollapsingHeader("Webcam Feed"))
-		{
-			CVCamera* camera_one = mResourceManager->findObject<nap::CVCamera>("Camera").get();
-			if (camera_one->hasErrors())
-			{
-				nap::CVCaptureErrorMap map = camera_one->getErrors();
-				for (auto error : map)
-				{
-					ImGui::TextColored(clr, error.second.c_str());
-				}
-
-				if (ImGui::Button("Reconnect Camera One"))
-				{
-					nap::utility::ErrorState error;
-					camera_one->reconnect(error);
-				}
-			}
-			else
-				ImGui::Text("No Errors");
-
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
-			//ImGui::Image(*mCameraCaptureTexture, { col_width, col_width / ratio_video });
-			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
-		}
-		if (ImGui::CollapsingHeader("Video Feed"))
+		// Video controls
+		if (ImGui::CollapsingHeader("Video"))
 		{
 			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
 			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
-			{
 				adapter.setFrame(mCurrentVideoFrame);
-			}
+
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			ImGui::Image(*mVideoOutputTexture,  { col_width, col_width / ratio_video });
+			ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
 			{
 				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
 				utility::ErrorState error;
 				if (!video_adapter.changeVideo("streak.mp4", error))
-				{
 					nap::Logger::info(error.toString());
-				}
 				mCurrentVideoFrame = 0;
 			}
 
@@ -159,33 +123,54 @@ namespace nap
 				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
 				utility::ErrorState error;
 				if (!video_adapter.changeVideo("people.mp4", error))
-				{
 					nap::Logger::info(error.toString());
-				}
 				mCurrentVideoFrame = 0;
 			}
-
 			if (adapter.hasErrors())
 			{
 				nap::CVCaptureErrorMap map = adapter.getErrors();
 				for (auto error : map)
-				{
 					ImGui::TextColored(clr, error.second.c_str());
+			}
+		}
+
+		// Webcam controls
+		if (ImGui::CollapsingHeader("Webcam"))
+		{
+			CVCamera& camera_one = mCameraCaptureDevice->getAdapter<CVCamera>(0);
+			if (camera_one.hasErrors())
+			{
+				nap::CVCaptureErrorMap map = camera_one.getErrors();
+				for (auto error : map)
+					ImGui::TextColored(clr, error.second.c_str());
+
+				if (ImGui::Button("Reconnect Camera One"))
+				{
+					nap::utility::ErrorState error;
+					if (!camera_one.reconnect(error))
+					{
+						nap::Logger::error(error.toString());
+					}
 				}
 			}
+			else
+				ImGui::Text("No Errors");
+
+			// Display camera framerate and draw camera texture
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
+			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
 		}
 		ImGui::End();
 	}
 
 	
 	/**
-	 * Render loop is rather straight forward:
-	 * Set the camera position in the world shader for the halo effect
-	 * make the main window active, this makes sure that all subsequent render calls are 
-	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
-	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the world and after that the text. 
-	 * Finally we swap the main window back-buffer, making sure the rendered image is blitted to screen.
+	 * First render the camera and video, together with the detected blobs, to texture.
+	 * After that render the blobs of the selected source (video / webcam) to screen in 3D.
+	 * Text is placed and rendered on top of every detected blob, before the GUI 
+	 * is rendered and the buffers are swapped.
 	 */
 	void FaceDetectionApp::render()
 	{
@@ -213,21 +198,19 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
 		
 		// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
-		nap::EntityInstance& capture_entity = (*mOpenCVEntity)[0];
+		nap::EntityInstance& capture_entity = (*mOpenCVEntity)[mCurrentSelection];
 		for (auto& entity : capture_entity[0].getChildren())
 		{
 			RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
 			components_to_render.emplace_back(&render_comp);
 		}
-
-		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
 
 		// Get renderable 2D text component
 		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 
 		// Get blob world space location and sizes
-		nap::EntityInstance& blob_entity = (*mOpenCVEntity)[0][0][0];
+		nap::EntityInstance& blob_entity = capture_entity[0][0];
 		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
 		const std::vector<glm::vec3>& locs = classify_render_comp.getLocations();
 		const std::vector<float>& sizes = classify_render_comp.getSizes();
@@ -240,7 +223,7 @@ namespace nap
 			glm::vec3 blob_pos = locs[i]; 
 			blob_pos.y += sizes[i];
 			
-			// Get text location in screen space
+			// Get text location in screen space, set and draw.
 			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
 			text_comp.setLocation(text_pos + glm::vec2(0,25));
 			text_comp.setText(utility::stringFormat("Blob %d", i+1), error);
@@ -286,7 +269,6 @@ namespace nap
 				mRenderWindow->toggleFullscreen();
 			}
 		}
-
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

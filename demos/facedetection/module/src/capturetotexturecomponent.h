@@ -14,7 +14,10 @@ namespace nap
 	class NAPAPI CaptureToTextureComponentInstance;
 
 	/**
-	 *	cvdisplaycapturecomponent
+	 * Resource part of the CaptureToTextureComponent.
+	 *
+	 * Ensures that the material used to render the captured frame (together with the detected blobs) 
+	 * contains the move recent frame and classification data.
 	 */
 	class CaptureToTextureComponent : public Component
 	{
@@ -32,7 +35,13 @@ namespace nap
 
 
 	/**
-	 * cvdisplaycapturecomponentInstance	
+	 * Instance part of the CaptureToTextureComponent.
+	 *
+	 * Ensures that the material used to render the captured frame (together with the detected blobs)
+	 * contains the most recent frame and classification data. 
+	 *
+	 * The frame data is updated when the 'mCaptureSlot' is called by the CVCaptureComponent.
+	 * Detected blobs are fetched, mapped and pushed to the material on update.
 	 */
 	class NAPAPI CaptureToTextureComponentInstance : public ComponentInstance
 	{
@@ -43,14 +52,14 @@ namespace nap
 
 		/**
 		 * Initialize this instance based on the resource
-		 * @param errorState should hold the error message when initialization fails
+		 * @param errorState holds the error message when initialization fails
 		 * @return if the instance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		virtual void update(double deltaTime);
 
-		// Component that receives frame captures
+		// Component that receives captured frames
 		nap::ComponentInstancePtr<CVCaptureComponent> mCaptureComponent			= { this, &CaptureToTextureComponent::mCaptureComponent };
 
 		// Component that applies object detection
@@ -59,7 +68,7 @@ namespace nap
 		// Component that renders received frame + detected blobs
 		nap::ComponentInstancePtr<RenderToTextureComponent> mRenderComponent	= { this, &CaptureToTextureComponent::mRenderComponent };
 
-		// Texture the received capture is uploaded to
+		// Frame captures are uploaded to this texture
 		nap::RenderTexture2D* mRenderTexture = nullptr;
 
 	private:
@@ -68,8 +77,8 @@ namespace nap
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
 		
 		// The adapter we should receive a frame from
-		nap::CVAdapter* mAdapter = nullptr;
-		int mMatrixIndex = 0;
-		CVFrame mConversionFrame;
+		nap::CVAdapter* mAdapter = nullptr;				///< Pointer to the OpenCV capture device
+		int mMatrixIndex = 0;							///< OpenCV sample matrix, defaults to 0
+		UniformInt* mBlobCountUniform = nullptr;		///< OpenCV blob count uniform
 	};
 }

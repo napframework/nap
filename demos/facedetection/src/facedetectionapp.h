@@ -29,22 +29,20 @@ namespace nap
 	/**
 	 * Demo application that is called from within the main loop
 	 *
-	 * Shows a rotating textured sphere in the center of the viewport
-	 * You can use the left mouse button to orbit around the object and 
-	 * the right mouse button to zoom in on the object
-	 * 
-	 * This demo uses 3 important modules:
-	 * mod_naprender, mod_napinput, mod_napcameracontrol
-	 * The sphere is rendered using a simple material that blends 2 colors based on a texture's alpha value
-	 * The sphere is positioned by a transform component and rotated along the y axis by a rotate component
-	 * The camera is placed away from the origin but can be moved using the mouse. The camera looks at
-	 * the sphere and uses that information to orbit around the object.
+	 * Shows a set of detected (classified) objects in 3D and 2D.
+	 * Objects are detected using an OpenCV HaarCascade classifier.
+	 * The classified objects are rendered to texture and the viewport.
 	 *
-	 * Mouse and key events are forwarded to the input service, the input service collects input events
-	 * and processes all of them on update. Because NAP does not have a default space (objects can
-	 * be rendered in multiple ways), you need to specify what input actually means to the application. 
-	 * The input router does that for you. This demo uses the default one that forwards the events to every input component
-	 * Refer to the cpp-update() call for more information on handling input
+	 * This demo makes use of your first (default) Web-cam if present.
+	 * Use the on-screen controls to switch detection source (Video / Web-cam).
+	 *
+	 * Note that this is a rather advanced demo that uses it's own module: mod_facedetection.
+	 * To render the detected objects to screen the 'RenderableClassifyComponent' is used.
+	 * The 'CaptureToTextureCompoment' is used to upload the captured frames to a GPU texture.
+	 * Refer to the documentation of both components to get a better understanding of what they do.
+	 *
+	 * You can use the left mouse button to orbit around the center and 
+	 * the right mouse button to zoom in on the object.
 	 */
 	class FaceDetectionApp : public App
 	{
@@ -63,7 +61,7 @@ namespace nap
 		void update(double deltaTime) override;
 
 		/**
-		 *	Render is called after update, pushes all renderable objects to the GPU
+		 *	Render is called after update, pushes all render-able objects to the GPU
 		 */
 		void render() override;
 
@@ -90,23 +88,24 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		CVService* mCVService = nullptr;								//< Pointer to the opencv service
-		
+
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		
-		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
-		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
-		ObjectPtr<EntityInstance> mOpenCVEntity = nullptr;				//< Pointer to the OpenCV entity
-		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can draw text
+		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
+		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
+		ObjectPtr<EntityInstance>	mOpenCVEntity = nullptr;			//< Pointer to the OpenCV entity
+		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can draw text
 
-		ObjectPtr<CVCaptureDevice> mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device
-		ObjectPtr<CVCaptureDevice> mVideoCaptureDevice = nullptr;		//< Pointer to the video device
-		
-		ObjectPtr<RenderTexture2D> mCameraCaptureTexture = nullptr;		//< Pointer to the texture we need to capture
-		ObjectPtr<RenderTexture2D> mVideoCaptureTexture = nullptr;		//< Pointer to the video texture we need to capture
-		ObjectPtr<RenderTexture2D> mCameraOutputTexture = nullptr;		//< Pointer to the camera output texture, which contains the detected blobs
-		ObjectPtr<RenderTexture2D> mVideoOutputTexture = nullptr;		//< Pointer to the video output texture, which contains the detected blobs
+		ObjectPtr<CVCaptureDevice>	mCameraCaptureDevice = nullptr;		//< Pointer to the camera capture device, captures the camera adapter
+		ObjectPtr<CVCaptureDevice>	mVideoCaptureDevice = nullptr;		//< Pointer to the video device, captures the video adapter
+
+		ObjectPtr<RenderTexture2D>	mCameraCaptureTexture = nullptr;	//< Pointer to the texture we need to capture
+		ObjectPtr<RenderTexture2D>	mVideoCaptureTexture = nullptr;		//< Pointer to the video texture we need to capture
+		ObjectPtr<RenderTexture2D>	mCameraOutputTexture = nullptr;		//< Pointer to the camera output texture, which contains the detected blobs
+		ObjectPtr<RenderTexture2D>	mVideoOutputTexture = nullptr;		//< Pointer to the video output texture, which contains the detected blobs
 		
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		int mCurrentVideoFrame = 0;
+		int mCurrentVideoFrame = 0;										//< Holds currently selected frame from video stream
+		int mCurrentSelection = 0;											//< Holds what to render to render to the viewport (video or camera)
 	};
 }
