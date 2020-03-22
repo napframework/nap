@@ -23,7 +23,9 @@ namespace nap
 			return false;
 		}
 
-		mSequenceEditor->registerGUI(this);
+		mView = std::make_unique<SequenceEditorView>();
+
+		mSequenceEditor->registerView(mView.get());
 
 		return true;
 	}
@@ -31,12 +33,17 @@ namespace nap
 
 	void SequenceEditorGUI::onDestroy()
 	{
-		mSequenceEditor->unregisterGUI(this);
+		mSequenceEditor->unregisterView(mView.get());
 	}
 
 
 	void SequenceEditorGUI::draw()
 	{
+		//
+		ImVec2 newPos = ImGui::GetMousePos();
+		ImVec2 mouseDelta = { newPos.x - mPreviousMousePos.x, newPos.y - mPreviousMousePos.y };
+		mPreviousMousePos = newPos;
+
 		//
 		const Sequence& sequence = mSequenceEditor->getSequence();
 
@@ -56,8 +63,7 @@ namespace nap
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(timelineWidth);
 
-		// get current cursor pos, we will use this to position the track windows
-		ImVec2 cursorPos = ImGui::GetCursorPos();
+
 
 		// begin window
 		if (ImGui::Begin(
@@ -65,84 +71,124 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
+			//
+			if (ImGui::Button("Save"))
+			{
+				mView->dispatchSave();
+			}
+
+			// get current cursor pos, we will use this to position the track windows
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+
 			// check if window has focus
 			bool windowHasFocus = ImGui::IsWindowFocused();
+
+			// define consts
+			const float trackHeight = 100.0f;
+			const float keyframeHandlerHeight = 10.0f;
 
 			int trackCount = 0;
 			for (const auto& trackLink : sequence.mSequenceTrackLinks)
 			{
-				// push id
-				ImGui::PushID(trackLink->mID.c_str());
-
-				// define consts
-				const float trackHeight = 100.0f;
-				const float keyframeHandlerHeight = 10.0f;
-
 				// manually set the cursor position before drawing new track window
 				cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + 1 };
 				ImGui::SetCursorPos(cursorPos);
 
-				// get child focus
-				bool trackHasFocus = ImGui::IsMouseHoveringWindow();
-
-				// get window drawlist
-				ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-				// get current imgui cursor position
-				ImVec2 cursorPos = ImGui::GetCursorPos();
-
-				// get window position
-				ImVec2 windowTopLeft = ImGui::GetWindowPos();
-
-				// calc beginning of timeline graphic
-				ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
-
-				// draw background of timeline
-				drawList->AddRectFilled(
-					trackTopLeft, // top left position
-					{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
-					guicolors::black); // color 
-
-				// draw segments
-				for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+				// begin track
+				if (ImGui::BeginChild(
+					trackLink->mID.c_str(), // id
+					{ timelineWidth + 5 , trackHeight + keyframeHandlerHeight }, // size
+					false, // no border
+					ImGuiWindowFlags_NoMove)) // window flags
 				{
-					float x = ( segment->mStartTime + segment->mDuration ) * stepSize;
+					// push id
+					ImGui::PushID(trackLink->mID.c_str());
 
-					//
-					if ( ImGui::IsMouseHoveringRect(
-							{ trackTopLeft.x + x - 5, trackTopLeft.y - 5 }, // top left
-							{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
+					// get child focus
+					bool trackHasFocus = ImGui::IsMouseHoveringWindow();
+
+					// get window drawlist
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+					// get current imgui cursor position
+					ImVec2 cursorPos = ImGui::GetCursorPos();
+
+					// get window position
+					ImVec2 windowTopLeft = ImGui::GetWindowPos();
+
+					// calc beginning of timeline graphic
+					ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
+
+					// draw background of timeline
+					drawList->AddRectFilled(
+						trackTopLeft, // top left position
+						{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
+						guicolors::black); // color 
+
+					// draw segments
+					for (const auto& segment : trackLink->mSequenceTrack->mSegments)
 					{
-						// draw handler of segment duration
-						drawList->AddLine(
-								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+						float x = (segment->mStartTime + segment->mDuration) * stepSize;
+
+						//
+						if (mState.currentAction == SequenceGUIMouseActions::NONE &&
+							ImGui::IsMouseHoveringRect(
+								{ trackTopLeft.x + x - 5, trackTopLeft.y - 5 }, // top left
+								{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
+						{
+							// draw handler of segment duration
+							drawList->AddLine(
+							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								3.0f); // thickness
 
-						if (ImGui::IsMouseDragging(0))
-						{
-							float amount = ImGui::GetMouseDragDelta().x / stepSize;
-
-							mSegmentDurationChange.trigger(
-								*trackLink->mSequenceTrack, 
-								*segment.get(),
-								ImGui::GetMouseDragDelta().x);
+							if (ImGui::IsMouseDown(0))
+							{
+								mState.currentAction = SequenceGUIMouseActions::DRAGGING_SEGMENT;
+								mState.currentObjectID = segment->mID;
+							}
 						}
-					}
-					else
-					{
-						// draw handler of segment duration
-						drawList->AddLine(
+						else if (
+							mState.currentAction == SequenceGUIMouseActions::DRAGGING_SEGMENT &&
+							mState.currentObjectID == segment->mID)
+						{
+							// draw handler of segment duration
+							drawList->AddLine(
+								{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+									guicolors::white, // color
+									3.0f); // thickness
+
+							if (ImGui::IsMouseDown(0))
+							{
+								float amount = mouseDelta.x / stepSize;
+								mView->dispatchSegmentDurationChange(
+									*trackLink->mSequenceTrack.get(), 
+									*segment, amount);
+							}
+							else if (ImGui::IsMouseReleased(0))
+							{
+								mState.currentAction = SequenceGUIMouseActions::NONE;
+							}
+						}
+						else
+						{
+							// draw handler of segment duration
+							drawList->AddLine(
 							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
 							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								1.0f); // thickness
+						}
 					}
-				}
 
-				// pop id
-				ImGui::PopID();
+					// pop id
+					ImGui::PopID();
+
+					ImGui::End();
+				}
+				
 
 				// increment track count
 				trackCount++;

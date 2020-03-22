@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequenceeditor.h"
+#include "sequenceeditorview.h"
 
 // external includes
 #include <nap/resource.h>
@@ -13,27 +14,23 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	/*
+	
 	enum SequenceGUIMouseActions
 	{
 		// HOVERING
-		HOVERING_KEYFRAME,
-		HOVERING_KEYFRAMEVALUE,
+		HOVERING_SEGMENT,
 		// ACTIONS
-		DRAGGING_KEYFRAME,
-		DRAGGING_KEYFRAMEVALUE,
+		DRAGGING_SEGMENT,
 		NONE
 	};
 
-	struct SequenceGUIMouseActionData
+	struct SequenceGUIState
 	{
 	public:
-		bool	mouseWasDown					= false;
-		ImVec2	previousMousePos				= ImVec2(0, 0);
 		SequenceGUIMouseActions currentAction	= SequenceGUIMouseActions::NONE;
-		rtti::Object* currentObject				= nullptr;
+		std::string currentObjectID		= "";
 	};
-	*/
+	
 
 	/**
 	 */
@@ -51,5 +48,11 @@ namespace nap
 		Signal<const SequenceTrack&, const SequenceTrackSegment&, float> mSegmentDurationChange;
 	public:
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr;
+	protected:
+		std::unique_ptr<SequenceEditorView> mView = nullptr;
+
+		SequenceGUIState mState;
+
+		ImVec2 mPreviousMousePos = { 0,0 };
 	};
 }
