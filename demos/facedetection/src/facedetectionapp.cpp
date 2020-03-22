@@ -206,12 +206,14 @@ namespace nap
 		}
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
 
-		// Get renderable 2D text component
+		// Get component that can render 2D text.
 		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 
-		// Get blob world space location and sizes
+		// Get entity that draws the 3D blobs, it's the first child of the 3D visualize entity.
 		nap::EntityInstance& blob_entity = capture_entity[0][0];
 		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
+		
+		// Extract world space blob locations and draw text
 		const std::vector<glm::vec3>& locs = classify_render_comp.getLocations();
 		const std::vector<float>& sizes = classify_render_comp.getSizes();
 
