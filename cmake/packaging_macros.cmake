@@ -643,3 +643,56 @@ macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
                                           ${FILENAME} 
                                   ERROR_QUIET)")
 endmacro()
+
+# Package into release, export FBX, other shared source project fixes
+# INCLUDE_WITH_RELEASE: whether the project should be packaged with the NAP platform release
+# INCLUDE_ONLY_WITH_NAIVI_APPS: whether a project should only be packaged if packaging Naivi apps
+# PROJECT_PREFIX: folder to package the project into in the NAP release (eg. demos, examples, etc)
+# RUN_FBX_CONVERTER: whether to run fbxconverter for the project
+function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_RELEASE INCLUDE_ONLY_WITH_NAIVI_APPS PROJECT_PREFIX RUN_FBX_CONVERTER)
+    # Determine if we're to package project with release
+    if(${INCLUDE_WITH_RELEASE} AND (NOT ${INCLUDE_ONLY_WITH_NAIVI_APPS} OR PACKAGE_NAIVI_APPS))
+        set(INCLUDE_PROJECT_WITH_RELEASE TRUE)
+    endif()
+
+    # If doing a framework release build and we don't want to package the project let's avoid building it or running FBX converter
+    if(NAP_PACKAGED_BUILD AND NOT INCLUDE_PROJECT_WITH_RELEASE)
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
+        return()
+    endif()
+
+    # Add the runtime paths for RTTR & GLEW on macOS
+    if(APPLE)
+        add_macos_rttr_rpath()
+        add_macos_glew_rpath()
+    endif()
+
+    # Run FBX converter
+    if(${RUN_FBX_CONVERTER} AND NOT NAP_PACKAGED_BUILD)
+        export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+    endif()
+
+    # Package into release build
+    if(INCLUDE_PROJECT_WITH_RELEASE)
+        package_project_into_release(${PROJECT_PREFIX}/${PROJECT_NAME})
+    endif()
+
+    # Don't build the projects while doing a framework build unless explicitly requested
+    if(NAP_PACKAGED_BUILD AND NOT BUILD_PROJECTS)
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+endfunction() 
+
+# Package into release, export FBX, other shared source project fixes
+function(project_module_selective_inclusion_and_building)
+    # If doing a framework release build let's avoid building the module
+    if(NAP_PACKAGED_BUILD AND NOT PACKAGE_NAIVI_APPS)
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
+        return()
+    endif()
+
+    # Don't build the project module while doing a framework build unless explicitly requested
+    if(NAP_PACKAGED_BUILD AND NOT BUILD_PROJECTS)
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+endfunction() 
