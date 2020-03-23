@@ -9,9 +9,59 @@
 #include <spheremesh.h>
 #include <cvclassifycomponent.h>
 #include <renderablemeshcomponent.h>
+#include <smoothdamp.h>
+#include <nap/timer.h>
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Blob
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Simple structure to smoothly interpolate a single blob position and size over time.
+	 */
+	class Blob final
+	{
+	public:
+		// Constructor
+		Blob(const glm::vec3& position, float size);
+
+		// Destructor
+		~Blob() = default;
+
+		/**
+		 * Sets the values to update the smoothers with on update.
+		 * @param position new blob position
+		 * @param size new blob size
+		 */
+		void set(const glm::vec3& position, float size);
+
+		/**
+		 * Updates the smoothers without giving a new target and size.
+		 * @return vec4 where the first 3 values are position, the 4th size.
+		 */
+		glm::vec4 update(double deltaTime);
+
+		/**
+		 * @return time elapsed tince the blob received new data
+		 */
+		double getElapsedTime() const;
+
+		glm::vec3 mTargetPosition;															///< Target position
+		float mTargetSize = 0.0f;															///< Size
+
+	private:
+		math::SmoothOperator<glm::vec3> mPositionOperator = { {0.0f,0.0f,0.0f}, 0.25f };	///< Current blob position
+		math::SmoothOperator<float> mSizeOperator = { 0.0f, 0.25f };						///< Current blob size
+		nap::SystemTimer mTimer;															///< When the blob received it's last position / size update.
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Renderable Classify Component
+	//////////////////////////////////////////////////////////////////////////
+
 	// Forward declare instance part
 	class RenderableClassifyComponentInstance;
 
@@ -72,14 +122,10 @@ namespace nap
 		MaterialInstance& getMaterial();
 
 		/**
-		 * @return list of recent blob placements in world space
+		 * Returns the most recent blob placement and size information, packaged as: position: xyz, size: z
+		 * @return list of recent blob placements and size in world space
 		 */
-		const std::vector<glm::vec3>& getLocations() const		{ return mLocations; }
-
-		/**
-		 * @return radius of blob in world space
-		 */
-		const std::vector<float>& getSizes() const				{ return mSizes; }
+		const std::vector<glm::vec4>& getLocations() const				{ return mLocations; }
 
 		/**
 		 * Link to the classification component, contains list of detected blobs
@@ -123,8 +169,8 @@ namespace nap
 		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform 
 		nap::UniformInt* mBlobCountUniform = nullptr;					///< Number of blobs uniform
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
-		std::vector<glm::vec3> mLocations;								///< All world space blob locations
-		std::vector<float> mSizes;										///< All world space blob dimensions
+		std::vector<Blob> mBlobs;										///< All the blobs in world space
+		std::vector<glm::vec4> mLocations;							///< Recent blob location and size data, xyz = position, z = size
 	};
 
 

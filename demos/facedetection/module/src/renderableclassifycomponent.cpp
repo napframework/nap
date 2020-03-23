@@ -6,6 +6,7 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
+#include <nap/datetime.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
@@ -106,14 +107,9 @@ namespace nap
 		// Get plane material, needs blob information to draw fake shadows
 		nap::MaterialInstance& plane_material = mPlaneComponent->getMaterialInstance();
 
-		// Update number of detected blobs
-		mBlobCountUniform->setValue(mLocations.size());
-
-		// Map the blob data from 2D (image) to 3D (scene)
+		// First map the blob data from 2D (image) to 3D (scene) 
 		// The location is mapped on the x/y plane, size is used to offset on the z-axis
-		mLocations.clear();
-		mSizes.clear();
-
+		// This mapped information becomes the new blob target position and size.
 		// Limit amount of blobs to 20 (as defined in shader, could be a property)
 		int blob_count = math::min<int>(blobs.size(), 20);
 		for (int i = 0; i < blob_count; i++)
@@ -133,24 +129,44 @@ namespace nap
 			glm::mat4 world_loc = glm::translate(model_matrix, center);
 			center = math::extractPosition(world_loc);
 
-			// Store location and size
-			mLocations.emplace_back(center);
-			mSizes.emplace_back(size);
+			// Add new blob if not present
+			if (mBlobs.size() <= i)
+				mBlobs.emplace_back(Blob(center, size));
+			mBlobs[i].set(center, size);
+		}
 
-			// Set blob location in plane material
+		// Update all 3D blobs so they move and grow towards their previously set target value.
+		// Also set blob information in material and store updated (most recent) blob location.
+		mLocations.clear();
+		for (int i = 0; i < mBlobs.size(); i++)
+		{
+			// Skip setting location of blob if it has not received a new tracking value.
+			if (mBlobs[i].getElapsedTime() > 1.0)
+				continue;
+
+			// Update blob and store corrent location and size as a vec4
+			glm::vec4 new_location = mBlobs[i].update(deltaTime);
+
+			// Set current blob location in plane material
 			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
 			assert(plane_material.getMaterial()->findUniform(center_uniform_name) != nullptr);
 
 			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
-			center_uniform.setValue(center);
+			center_uniform.setValue(glm::vec3(new_location));
 
-			// Set blob size in plane material
+			// Set current blob size in plane material
 			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
 			assert(plane_material.getMaterial()->findUniform(size_uniform_name) != nullptr);
-			
+
 			UniformFloat& size_uniform = plane_material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(size);
+			size_uniform.setValue(new_location.w);
+			
+			// Valid location
+			mLocations.emplace_back(new_location);
 		}
+
+		// Update number of detected blobs
+		mBlobCountUniform->setValue(mLocations.size());
 	}
 
 
@@ -213,8 +229,8 @@ namespace nap
 			opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 			// Calculate model matrix, set and push
-			glm::mat4 object_loc = glm::translate(glm::mat4(), mLocations[i]);
-			object_loc = glm::scale(object_loc, { mSizes[i], mSizes[i], mSizes[i]});
+			glm::mat4 object_loc = glm::translate(glm::mat4(), glm::vec3(mLocations[i]));
+			object_loc = glm::scale(object_loc, { mLocations[i].w, mLocations[i].w, mLocations[i].w });
 			mModelUniform->setValue(object_loc);
 			mModelUniform->push(*objec_binding.mDeclaration);
 
@@ -241,4 +257,44 @@ namespace nap
 		mMaterialInstance.unbind();
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Blob
+	//////////////////////////////////////////////////////////////////////////
+
+	Blob::Blob(const glm::vec3& position, float size)
+	{
+		// Store position
+		mTargetPosition = position;
+		mTargetSize = size;
+
+		// Reset smooth operators to construction value
+		mPositionOperator.setValue(position);
+		mSizeOperator.setValue(size);
+
+		// Reset time
+		mTimer.reset();
+	}
+
+
+	void Blob::set(const glm::vec3& position, float size)
+	{
+		mTargetPosition = position;
+		mTargetSize = size;
+		mTimer.reset();
+	}
+
+
+	glm::vec4 Blob::update(double deltaTime)
+	{
+		glm::vec3 new_pos = mPositionOperator.update(mTargetPosition, deltaTime);
+		float new_size = mSizeOperator.update(mTargetSize, deltaTime);
+		return glm::vec4(new_pos, new_size);
+	}
+
+
+	double Blob::getElapsedTime() const
+	{
+		return mTimer.getElapsedTime();
+	}
 }

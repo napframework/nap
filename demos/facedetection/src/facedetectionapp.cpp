@@ -209,8 +209,7 @@ namespace nap
 		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
 		
 		// Extract world space blob locations and draw text
-		const std::vector<glm::vec3>& locs = classify_render_comp.getLocations();
-		const std::vector<float>& sizes = classify_render_comp.getSizes();
+		const std::vector<glm::vec4>& locs = classify_render_comp.getLocations();
 
 		// Draw text
 		utility::ErrorState error;
@@ -218,7 +217,7 @@ namespace nap
 		{
 			// Get blob location in 3D
 			glm::vec3 blob_pos = locs[i]; 
-			blob_pos.y += sizes[i];
+			blob_pos.y += locs[i].w;
 			
 			// Get text location in screen space, offset a bit and draw.
 			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
