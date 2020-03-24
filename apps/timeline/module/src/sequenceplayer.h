@@ -35,13 +35,9 @@ namespace nap
 		// Sequence Editor interface
 		Sequence& getSequence();
 	private:
-		std::vector<std::unique_ptr<rtti::Object>> mReadObjects;
+		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
+		std::unordered_set<std::string>				mReadObjectIDs;
 
 		Sequence* mSequence = nullptr;
-
-		double	mDuration = 0.0;
-		bool	mDurationNeedsUpdating = true;
-
-		void updateDuration();
 	};
 }

@@ -2,7 +2,6 @@
 
 // internal includes
 #include "sequenceeditor.h"
-#include "sequenceeditorview.h"
 
 // external includes
 #include <nap/resource.h>
@@ -14,23 +13,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	
-	enum SequenceGUIMouseActions
-	{
-		// HOVERING
-		HOVERING_SEGMENT,
-		// ACTIONS
-		DRAGGING_SEGMENT,
-		NONE
-	};
-
-	struct SequenceGUIState
-	{
-	public:
-		SequenceGUIMouseActions currentAction	= SequenceGUIMouseActions::NONE;
-		std::string currentObjectID		= "";
-	};
-	
+	// forward declares
+	class SequenceEditorGUIView;
+	class SequenceEditorView;
 
 	/**
 	 */
@@ -44,15 +29,54 @@ namespace nap
 
 		void draw();
 	public:
-		// Signals
-		Signal<const SequenceTrack&, const SequenceTrackSegment&, float> mSegmentDurationChange;
-	public:
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr;
 	protected:
-		std::unique_ptr<SequenceEditorView> mView = nullptr;
+		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
+	};
 
+
+	enum SequenceGUIMouseActions
+	{
+		// ACTIONS
+		DRAGGING_SEGMENT,
+		NONE
+	};
+
+	struct SequenceGUIState
+	{
+	public:
+		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
+		std::string currentObjectID = "";
+	};
+
+
+	/**
+	 */
+	class SequenceEditorView
+	{
+	public:
+		// constructor
+		SequenceEditorView(const Sequence& sequence, SequenceEditorController& controller);
+	protected:
+		const Sequence& mSequence;
+		SequenceEditorController& mController;
+	};
+
+
+	/**
+	*/
+	class SequenceEditorGUIView : public SequenceEditorView
+	{
+	public:
+		SequenceEditorGUIView(
+			const Sequence& sequence,
+			SequenceEditorController& controller,
+			std::string id);
+
+		void draw();
+	private:
+		std::string mID;
 		SequenceGUIState mState;
-
 		ImVec2 mPreviousMousePos = { 0,0 };
 	};
 }

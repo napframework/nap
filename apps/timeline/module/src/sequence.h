@@ -29,7 +29,7 @@ namespace nap
 
 	/**
 	 * Sequence
-	 * Sequence contains a vector of sequence track links
+	 * Sequence holds all the information needed by the player to play a Sequence and link it to the right parameters
 	 */
 	class NAPAPI Sequence : public Resource
 	{
@@ -50,6 +50,6 @@ namespace nap
 			std::unordered_set<std::string>& objectIDs);
 	public:
 		std::vector<ResourcePtr<SequenceTrackLink>>	mSequenceTrackLinks; ///< Property: 'Sequence Track Links' Vector holding resourceptrs to the SequenceTrackLinks
-	protected:
+		double mDuration = 0; ///< Property: 'Duration' the duration of the sequence
 	};
 }

@@ -21,89 +21,91 @@ namespace nap
 			return false;
 		}
 
-		// define slots
-		mSegmentDurationChangeSlot = Slot<const SequenceTrack&, const SequenceTrackSegment&, float> ( [this](const SequenceTrack& track, const SequenceTrackSegment& segment, float amount) 
-		{
-			segmentDurationChange(track, segment, amount);
-		} );
-
-		mSaveSlot = Slot<>([this]()
-		{
-			save();
-		});
+		mController = std::make_unique<SequenceEditorController>(
+			*mSequencePlayer.get(),
+			mSequencePlayer->getSequence());
 
 		return true;
 	}
 
 
-	void SequenceEditor::registerView(SequenceEditorView* sequenceEditorView)
+	void SequenceEditorController::segmentDurationChange(std::string segmentID, float amount)
 	{
-		bool found = (std::find(mViews.begin(), mViews.end(), sequenceEditorView) != mViews.end());
+		// pause player thread
 
-		if (!found)
+		// find the track
+		for (auto& link : mSequence.mSequenceTrackLinks)
 		{
-			mViews.emplace_back(sequenceEditorView);
+			for (auto trackSegment : link->mSequenceTrack->mSegments)
+			{
+				if (trackSegment->mID == segmentID)
+				{
+					trackSegment->mDuration += amount;
 
-			sequenceEditorView->registerSegmentDurationChangeSlot(mSegmentDurationChangeSlot);
-			sequenceEditorView->registerSaveSlot(mSaveSlot);
+					// update duration of sequence
+					double longestTrack = 0.0;
+					for (const auto& trackLink : mSequence.mSequenceTrackLinks)
+					{
+						double trackTime = 0.0;
+						for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+						{
+							double time = segment->mStartTime + segment->mDuration;
+							if (time > trackTime)
+							{
+								trackTime = time;
+							}
+						}
+
+						if (trackTime > longestTrack)
+						{
+							longestTrack = trackTime;
+						}
+					}
+
+					mSequence.mDuration = longestTrack;
+
+					break;
+				}
+			}
 		}
+
+		// resume player thread
 	}
 
 
-	void SequenceEditor::unregisterView(SequenceEditorView* sequenceEditorView)
-	{
-		bool found = (std::find(mViews.begin(), mViews.end(), sequenceEditorView) != mViews.end());
-
-		if (found)
-		{
-			mViews.remove(sequenceEditorView);
-
-			sequenceEditorView->unregisterSegmentDurationChangeSlot(mSegmentDurationChangeSlot);
-			sequenceEditorView->unregisterSaveSlot(mSaveSlot);
-		}
-	}
-
-
-	const Sequence& SequenceEditor::getSequence()
+	const Sequence& SequenceEditor::getSequence() const
 	{
 		return mSequencePlayer->getSequence();
 	}
 
 
-	void SequenceEditor::segmentDurationChange(const SequenceTrack& track, const SequenceTrackSegment& segment, float amount)
+	SequenceEditorController& SequenceEditor::getController()
 	{
-		// find the track
-		for (auto& link : mSequencePlayer->mSequence->mSequenceTrackLinks)
-		{
-			auto trackPtr = link->mSequenceTrack.get();
-			if ( trackPtr == &track)
-			{
-				for (auto _trackSegment : trackPtr->mSegments)
-				{
-					if (_trackSegment.get() == &segment)
-					{
-						_trackSegment->mDuration += amount;
-
-						mSequencePlayer->updateDuration();
-
-						break;
-					}
-				}
-
-				break;
-			}
-			
-		}
+		return *mController.get();
 	}
 
 
-	void SequenceEditor::save()
+	void SequenceEditorController::save()
 	{
+		// pause player thread
+
+		// save
 		utility::ErrorState errorState;
-		if (!errorState.check(mSequencePlayer->save(mSequencePlayer->mDefaultShow, errorState), "Error saving show!"))
+		if (!errorState.check(mSequencePlayer.save(mSequencePlayer.mDefaultShow, errorState), "Error saving show!"))
 		{
 			nap::Logger::error(errorState.toString());
 		}
+
+		// resume player thread
 	}
 
+
+	void SequenceEditorController::insertSequence(double time)
+	{
+		// pause player thread
+
+		//mSequencePlayer.
+
+		// resume player thread
+	}
 }

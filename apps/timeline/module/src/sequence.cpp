@@ -4,11 +4,13 @@
 RTTI_BEGIN_CLASS(nap::SequenceTrackLink)
 	RTTI_PROPERTY("Parameter ID", &nap::SequenceTrackLink::mParameterID, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Sequence Track", &nap::SequenceTrackLink::mSequenceTrack, nap::rtti::EPropertyMetaData::Embedded)
+	
 RTTI_END_CLASS
 
 
 RTTI_BEGIN_CLASS(nap::Sequence)
 	RTTI_PROPERTY("Sequence Track Links", &nap::Sequence::mSequenceTrackLinks, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Duration", &nap::Sequence::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

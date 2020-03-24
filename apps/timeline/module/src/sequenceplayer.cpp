@@ -133,8 +133,6 @@ namespace nap
 			return false;
 		}
 
-		updateDuration();
-
 		return true;
 	}
 
@@ -147,33 +145,6 @@ namespace nap
 
 	double SequencePlayer::getDuration() const
 	{
-		return mDuration;
-	}
-
-
-	void SequencePlayer::updateDuration()
-	{
-		double longestTrack = 0.0;
-		for (const auto& trackLink : mSequence->mSequenceTrackLinks)
-		{
-			double trackTime = 0.0;
-			for (const auto& segment : trackLink->mSequenceTrack->mSegments)
-			{
-				double time = segment->mStartTime + segment->mDuration;
-				if (time > trackTime)
-				{
-					trackTime = time;
-				}
-			}
-
-			if (trackTime > longestTrack)
-			{
-				longestTrack = trackTime;
-			}
-		}
-
-		mDuration = longestTrack;
-
-		mDurationNeedsUpdating = false;
+		return mSequence->mDuration;
 	}
 }
