@@ -13,9 +13,8 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-if(WIN32)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
-endif()
+# Find OpenCV
+find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
 
 # LIBRARY
 
@@ -50,7 +49,8 @@ if(WIN32)
                 $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
     # copy ffmpeg for opencv
-    copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg412_64.dll)
+    file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    copy_files_to_bin(${CV_FFMPEG_DLLS})
 endif()
 
 # Package oscpack into platform release
