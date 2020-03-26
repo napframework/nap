@@ -56,21 +56,12 @@ endif()
 # Package oscpack into platform release
 package_module()
 
-install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/LICENSE DESTINATION thirdparty/opencv)
-install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/include 
-        DESTINATION thirdparty/opencv/include
-        PATTERN "*.cpp" EXCLUDE)
-
+# Install opencv into package
 if(MSVC)
-    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/lib/opencv_world412.lib DESTINATION thirdparty/opencv/lib)
-    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/lib/opencv_world412d.lib DESTINATION thirdparty/opencv/lib)
-    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412.dll DESTINATION thirdparty/opencv/bin)
-    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412d.dll DESTINATION thirdparty/opencv/bin)
-    install(FILES ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg412_64.dll DESTINATION thirdparty/opencv/bin)
-#elseif(APPLE)
-#    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
-#elseif(ANDROID)
-#    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/android/install/lib/ DESTINATION thirdparty/oscpack/lib)
-#else()
-#    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/ DESTINATION thirdparty/opencv)
+elseif(APPLE)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/osx/ DESTINATION thirdparty/opencv)
+else()
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/linux/ DESTINATION thirdparty/opencv)
 endif()
+
