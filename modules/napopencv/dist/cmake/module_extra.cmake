@@ -1,19 +1,35 @@
 include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
-if(NOT TARGET oscpack)
-    find_package(oscpack REQUIRED)
+# find OpenCV package
+if(NOT TARGET OpenCV)
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv REQUIRED)
 endif()
-set(MODULE_NAME_EXTRA_LIBS oscpack)
+set(MODULE_NAME_EXTRA_LIBS OpenCV)
 
-add_include_to_interface_target(mod_naposc ${OSCPACK_INCLUDE_DIRS})
+# add includes
+add_include_to_interface_target(mod_napopencv ${OpenCV_INCLUDE_DIRS})
 
-# Install oscpack licenses into packaged project
-install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION licenses/oscpack)
+# add libraries
+set(MODULE_NAME_EXTRA_LIBS ${OpenCV_LIBS})
 
-# Install oscpack shared lib into packaged project for Unix
-if(APPLE)
-    install(FILES $<TARGET_FILE:oscpack> DESTINATION lib)    
-elseif(UNIX)
-    file(GLOB OSCPACK_DYLIBS ${THIRDPARTY_DIR}/oscpack/lib/liboscpack*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${OSCPACK_DYLIBS} DESTINATION lib)
+# Copy over opencv dll's to build directory 
+if(WIN32)
+    get_target_property(__dll_dbg opencv_world IMPORTED_LOCATION_DEBUG)
+    get_target_property(__dll_release opencv_world  IMPORTED_LOCATION_RELEASE)
+
+    # copy opencv debug / release dll based on config
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} 
+                -E copy_if_different 
+                "$<$<CONFIG:debug>:${__dll_dbg}>$<$<CONFIG:release>:${__dll_release}>"
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+    # copy ffmpeg for opencv
+    file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    copy_files_to_bin(${CV_FFMPEG_DLLS})
 endif()
+
+# Install OpenCV license into packaged project
+install(FILES ${THIRDPARTY_DIR}/opencv/LICENSE DESTINATION licenses/opencv)
