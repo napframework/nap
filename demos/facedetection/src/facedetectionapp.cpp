@@ -38,7 +38,6 @@ namespace nap
 		mCVService		= getCore().getService<nap::CVService>();
 		
 		// Limit number of OpenCV cores
-		int count = mCVService->getThreadCount();
 		mCVService->setThreadCount(2);
 
 		// Get resource manager and load

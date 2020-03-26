@@ -4,11 +4,11 @@
             "Type": "nap::CVCamera",
             "mID": "Camera",
             "CloseOnError": true,
-            "Backend": "DirectShow",
+            "Backend": "Automatic",
             "ShowDialog": true,
-            "DeviceIndex": 1,
-            "Codec": "MJPG",
-            "OverrideResolution": false,
+            "DeviceIndex": 0,
+            "Codec": "",
+            "OverrideResolution": true,
             "Resolution": {
                 "x": 640,
                 "y": 480
