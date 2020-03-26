@@ -137,8 +137,8 @@ namespace nap
 		virtual void onClose() override;
 
 	private:
-		std::atomic<int>		mCurrentFrame = 0;				///< Last (Current) captured video frame index
-		CVFrame					mCaptureFrame					{ 1 };
-		CVFrame					mOutputFrame					{ 1 };
+		std::atomic<int>		mCurrentFrame   { 0 } ;				///< Last (Current) captured video frame index
+		CVFrame					mCaptureFrame	{ 1 };
+		CVFrame					mOutputFrame	{ 1 };
 	};
 }
