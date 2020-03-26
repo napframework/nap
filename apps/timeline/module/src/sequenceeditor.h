@@ -71,9 +71,11 @@ namespace nap
 		 * insertSequence
 		 * insert sequence at given time
 		 */
-		void insertSequence(double time);
+		void insertSequence(std::string trackID, double time);
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;
+
+		std::vector<std::unique_ptr<rtti::Object>> mCreatedObjects;
 	};
 }

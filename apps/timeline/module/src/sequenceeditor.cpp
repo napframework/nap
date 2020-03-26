@@ -1,5 +1,8 @@
 // local includes
 #include "sequenceeditor.h"
+#include "sequencetrack.h"
+#include "sequencetracksegment.h"
+#include "sequenceutils.h"
 
 // external includes
 #include <nap/logger.h>
@@ -34,9 +37,9 @@ namespace nap
 		// pause player thread
 
 		// find the track
-		for (auto& link : mSequence.mSequenceTrackLinks)
+		for (auto& track : mSequence.mTracks)
 		{
-			for (auto trackSegment : link->mSequenceTrack->mSegments)
+			for (auto trackSegment : track->mSegments)
 			{
 				if (trackSegment->mID == segmentID)
 				{
@@ -44,10 +47,10 @@ namespace nap
 
 					// update duration of sequence
 					double longestTrack = 0.0;
-					for (const auto& trackLink : mSequence.mSequenceTrackLinks)
+					for (const auto& track_ : mSequence.mTracks)
 					{
 						double trackTime = 0.0;
-						for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+						for (const auto& segment : track_->mSegments)
 						{
 							double time = segment->mStartTime + segment->mDuration;
 							if (time > trackTime)
@@ -100,11 +103,41 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::insertSequence(double time)
+	void SequenceEditorController::insertSequence(std::string trackID, double time)
 	{
 		// pause player thread
 
-		//mSequencePlayer.
+		for (auto& track : mSequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				int segmentCount = 1;
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mStartTime < time && 
+						segment->mStartTime + segment->mDuration > time)
+					{
+						std::unique_ptr<SequenceTrackSegment> newSegment = std::make_unique<SequenceTrackSegment>();
+						newSegment->mStartTime = time;
+						newSegment->mDuration = segment->mStartTime + segment->mDuration - time;
+						segment->mDuration = newSegment->mStartTime - segment->mStartTime;
+
+						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+						track->mSegments.insert( track->mSegments.begin() + segmentCount, newSegmentResourcePtr);
+
+						mCreatedObjects.emplace_back(std::move(newSegment));
+
+						break;
+					}
+
+					segmentCount++;
+				}
+				
+				break;
+			}
+		}
 
 		// resume player thread
 	}

@@ -1,5 +1,6 @@
 // local includes
 #include "sequenceplayer.h"
+#include "sequenceutils.h"
 
 // nap include
 #include <nap/logger.h>
@@ -40,7 +41,7 @@ namespace nap
 			nap::Logger::info(*this, "Error loading default show, creating default sequence based on given parameters");
 		
 			std::unordered_set<std::string> objectIDs;
-			mSequence = Sequence::createDefaultSequence(mParameters, mReadObjects, objectIDs);
+			mSequence = sequenceutils::createDefaultSequence(mParameters, mReadObjects, objectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence, saving it");
 			if (errorState.check(!save(mDefaultShow, errorState), "Error saving sequence"))
@@ -117,6 +118,7 @@ namespace nap
 				mSequence = dynamic_cast<Sequence*>(readObject.get());
 			}
 
+			mReadObjectIDs.emplace(readObject->mID);
 			mReadObjects.emplace_back(std::move(readObject));
 		}
 

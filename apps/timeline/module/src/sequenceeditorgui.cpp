@@ -101,7 +101,7 @@ namespace nap
 			const float keyframeHandlerHeight = 10.0f;
 
 			int trackCount = 0;
-			for (const auto& trackLink : sequence.mSequenceTrackLinks)
+			for (const auto& track : sequence.mTracks)
 			{
 				// manually set the cursor position before drawing new track window
 				cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + 1 };
@@ -109,13 +109,13 @@ namespace nap
 
 				// begin track
 				if (ImGui::BeginChild(
-					trackLink->mID.c_str(), // id
+					track->mID.c_str(), // id
 					{ timelineWidth + 5 , trackHeight + keyframeHandlerHeight }, // size
 					false, // no border
 					ImGuiWindowFlags_NoMove)) // window flags
 				{
 					// push id
-					ImGui::PushID(trackLink->mID.c_str());
+					ImGui::PushID(track->mID.c_str());
 
 					// get child focus
 					bool trackHasFocus = ImGui::IsMouseHoveringWindow();
@@ -155,15 +155,20 @@ namespace nap
 							// right mouse down
 							if (ImGui::IsMouseClicked(1))
 							{
-								// insert sequence
-								double time = ( newPos.x - trackTopLeft.x ) / stepSize;
-								mController.insertSequence(time);
+								double time = (newPos.x - trackTopLeft.x) / stepSize;
+
+								//
+								mState.currentAction = INSERTING_SEGMENT;
+								mState.currentActionData = std::make_unique<SequenceGUIInsertSequenceData>(track->mID, time);
+
+								// invoke insert sequence popup
+								ImGui::OpenPopup("Insert Segment");
 							}
 						}
 					}
 
 					// draw segments
-					for (const auto& segment : trackLink->mSequenceTrack->mSegments)
+					for (const auto& segment : track->mSegments)
 					{
 						float x = (segment->mStartTime + segment->mDuration) * stepSize;
 
@@ -219,7 +224,29 @@ namespace nap
 						}
 					}
 
-					//
+					// handle popups
+					if (mState.currentAction == INSERTING_SEGMENT)
+					{
+						if (ImGui::BeginPopup("Insert Segment"))
+						{
+							if (ImGui::Button("Insert"))
+							{
+								const SequenceGUIInsertSequenceData* data = dynamic_cast<SequenceGUIInsertSequenceData*>(mState.currentActionData.get());
+								mController.insertSequence(data->trackID, data->time);
+
+								ImGui::CloseCurrentPopup();
+								mState.currentAction = SequenceGUIMouseActions::NONE;
+							}
+
+							if (ImGui::Button("Cancel"))
+							{
+								ImGui::CloseCurrentPopup();
+								mState.currentAction = SequenceGUIMouseActions::NONE;
+							}
+
+							ImGui::EndPopup();
+						}
+					}
 
 					// pop id
 					ImGui::PopID();

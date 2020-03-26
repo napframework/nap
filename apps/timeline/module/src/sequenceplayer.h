@@ -16,6 +16,7 @@ namespace nap
 	class NAPAPI SequencePlayer : public Resource
 	{
 		friend class SequenceEditor;
+		friend class SequenceEditorController;
 
 		RTTI_ENABLE(Resource)
 	public:

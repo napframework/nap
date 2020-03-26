@@ -39,14 +39,32 @@ namespace nap
 	{
 		// ACTIONS
 		DRAGGING_SEGMENT,
+		INSERTING_SEGMENT,
 		NONE
 	};
 
-	struct SequenceGUIState
+	class SequenceGUIStateActionData
+	{
+	public:
+		SequenceGUIStateActionData() {}
+		virtual ~SequenceGUIStateActionData() {}
+	};
+
+	class SequenceGUIInsertSequenceData : public SequenceGUIStateActionData
+	{
+	public:
+		SequenceGUIInsertSequenceData(std::string id, double t) : trackID(id), time(t) {}
+
+		double time = 0.0;
+		std::string trackID;
+	};
+
+	class SequenceGUIState
 	{
 	public:
 		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
 		std::string currentObjectID = "";
+		std::unique_ptr<SequenceGUIStateActionData> currentActionData;
 	};
 
 
@@ -64,7 +82,7 @@ namespace nap
 
 
 	/**
-	*/
+	 */
 	class SequenceEditorGUIView : public SequenceEditorView
 	{
 	public:
@@ -79,4 +97,6 @@ namespace nap
 		SequenceGUIState mState;
 		ImVec2 mPreviousMousePos = { 0,0 };
 	};
+
+
 }
