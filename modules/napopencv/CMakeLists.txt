@@ -14,9 +14,13 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 module_json_to_cmake()
 
 # Find OpenCV
-find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
-
-# LIBRARY
+if(WIN32)
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
+elseif (APPLE)
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/osx/lib/cmake/opencv4 REQUIRED) 
+elseif(UNIX)
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/linux/lib/cmake/opencv4 REQUIRED) 
+endif()
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -33,6 +37,18 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${OpenCV_
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
+
+# Package oscpack into platform release
+package_module()
+
+# Install opencv into package
+if(MSVC)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/ DESTINATION thirdparty/opencv)
+elseif(APPLE)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/osx/ DESTINATION thirdparty/opencv)
+else()
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/linux/ DESTINATION thirdparty/opencv)
+endif()
 
 # Copy over opencv dll's to build directory 
 if(WIN32)
@@ -51,17 +67,5 @@ if(WIN32)
     # copy ffmpeg for opencv
     file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     copy_files_to_bin(${CV_FFMPEG_DLLS})
-endif()
-
-# Package oscpack into platform release
-package_module()
-
-# Install opencv into package
-if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/ DESTINATION thirdparty/opencv)
-elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/osx/ DESTINATION thirdparty/opencv)
-else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/linux/ DESTINATION thirdparty/opencv)
 endif()
 
