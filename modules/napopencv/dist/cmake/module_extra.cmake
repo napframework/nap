@@ -2,7 +2,11 @@ include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
 # find OpenCV package
 if(NOT TARGET OpenCV)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv REQUIRED)
+    if(MSCV)
+        find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv REQUIRED)
+    else()
+        find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/lib/cmake/opencv4)
+    endif()
 endif()
 set(MODULE_NAME_EXTRA_LIBS OpenCV)
 
