@@ -35,14 +35,22 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${OpenCV_
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
-# Copy over opencv to build directory
+# Copy over opencv dll's to build directory 
 if(WIN32)
+    get_target_property(__dll_dbg opencv_world IMPORTED_LOCATION_DEBUG)
+    get_target_property(__dll_release opencv_world  IMPORTED_LOCATION_RELEASE)
+
+    # copy opencv debug / release dll based on config
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} 
+                -E copy_if_different 
+                "$<$<CONFIG:debug>:${__dll_dbg}>$<$<CONFIG:release>:${__dll_release}>"
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+    # copy ffmpeg for opencv
     copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg412_64.dll)
-    if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412d.dll)
-    else()
-        copy_files_to_bin(${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_world412.dll)
-    endif()
 endif()
 
 # Package oscpack into platform release
