@@ -14,7 +14,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 module_json_to_cmake()
 
 # Find OpenCV
-if(WIN32)
+if(MSVC)
     find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
 elseif (APPLE)
     find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/osx/lib/cmake/opencv4 REQUIRED) 
