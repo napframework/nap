@@ -278,6 +278,11 @@ namespace nap
 		 */
 		std::string NAPAPI generateUUID();
 
+		/**
+		 * Generate a UUID4 (random every time, based on host device and random distribution)
+		 */
+		std::string NAPAPI generateUUID4();
+
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
 		//////////////////////////////////////////////////////////////////////////
