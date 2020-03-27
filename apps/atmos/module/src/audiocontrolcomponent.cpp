@@ -5,6 +5,8 @@
 
 RTTI_BEGIN_CLASS(nap::AudioControlComponent)
     RTTI_PROPERTY("AudioComponent", &nap::AudioControlComponent::mAudioComponent,			nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("DefaultAudioLayer", &nap::AudioControlComponent::mDefaultAudioLayer,			nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("EnableDefaultLayer", &nap::AudioControlComponent::mEnableDefaultLayer,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioControlComponentInstance)
@@ -33,6 +35,20 @@ namespace nap
 
         mLayerController = std::make_unique<audio::SampleLayerController>(*sampler);
 
+        auto resource = getComponent<AudioControlComponent>();
+        mEnableDefaultLayer = resource->mEnableDefaultLayer;
+        mDefaultAudioLayer = resource->mDefaultAudioLayer;
+
+        if (mDefaultAudioLayer != nullptr)
+        {
+            mDefaultAudioLayer->setRange(-1, sampler->getSamplerEntries().size() - 1);
+            if (mEnableDefaultLayer)
+                replaceLayers({ mDefaultAudioLayer->mValue }, 4000.f);
+            mDefaultAudioLayer->valueChanged.connect(mDefaultLayerChanged);
+        }
+
+
+
         return true;
     }
 
@@ -44,6 +60,13 @@ namespace nap
             if (entry >= 0)
                 samplerEntrySet.emplace(entry);
         mLayerController->replaceLayers(samplerEntrySet, crossFadeTime, crossFadeTime);
+    }
+
+
+    void AudioControlComponentInstance::defaultLayerChanged(int newLayer)
+    {
+        if (mEnableDefaultLayer)
+            replaceLayers({ newLayer }, 4000.f);
     }
 
 

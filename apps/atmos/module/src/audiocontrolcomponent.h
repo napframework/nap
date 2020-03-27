@@ -15,7 +15,7 @@ namespace nap
     class AudioControlComponentInstance;
 
     /**
-     *	Resource parth. Allows for switching between the various camera control methods.
+     *	Component that controls the sampler in the linked audio component.
      */
     class NAPAPI AudioControlComponent : public Component
     {
@@ -27,11 +27,14 @@ namespace nap
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { }
 
         ComponentPtr<audio::AudioComponent> mAudioComponent; ///< Property: "AudioComponent"
+
+        ResourcePtr<ParameterNumeric<int>> mDefaultAudioLayer = nullptr;
+        bool mEnableDefaultLayer = false;
     };
 
 
     /**
-     *	Resource part. Allows for switching between the various camera control methods.
+     *	Instance 0f @AudioControlComponent
      */
     class NAPAPI AudioControlComponentInstance : public ComponentInstance
     {
@@ -50,6 +53,12 @@ namespace nap
 
     private:
         std::unique_ptr<audio::SampleLayerController> mLayerController = nullptr;
+
+        bool mEnableDefaultLayer = false;
+        ResourcePtr<ParameterNumeric<int>> mDefaultAudioLayer = nullptr;
+
+        Slot<int> mDefaultLayerChanged = { this, &AudioControlComponentInstance::defaultLayerChanged };
+        void defaultLayerChanged(int newLayer);
     };
 
 }
