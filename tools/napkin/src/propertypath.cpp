@@ -292,7 +292,7 @@ void PropertyPath::setValue(rttr::variant value)
 					if (!propValue)
 					{
 						std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
-										 + "_" + nap::math::generateUUID4());
+										 + "_" + nap::math::generateUUID());
 						propValue = new nap::PointerInstancePropertyValue();
 						propValue->mID = name;
 					}
@@ -312,7 +312,7 @@ void PropertyPath::setValue(rttr::variant value)
 			if (isPointer())
 			{
 				std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
-								 + "_" + nap::math::generateUUID4());
+								 + "_" + nap::math::generateUUID());
 				auto propValue = new nap::PointerInstancePropertyValue();
 				propValue->mID = name;
 				propValue->mValue = value.get_value<nap::rtti::Object*>();
