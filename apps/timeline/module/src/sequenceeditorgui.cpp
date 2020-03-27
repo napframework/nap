@@ -158,20 +158,19 @@ namespace nap
 								double time = (newPos.x - trackTopLeft.x) / stepSize;
 
 								//
-								mState.currentAction = INSERTING_SEGMENT;
+								mState.currentAction = OPEN_INSERT_SEGMENT_POPUP;
 								mState.currentActionData = std::make_unique<SequenceGUIInsertSequenceData>(track->mID, time);
-
-								// invoke insert sequence popup
-								ImGui::OpenPopup("Insert Segment");
 							}
 						}
 					}
+
+					float previousSegmentX = 0.0f;
 
 					// draw segments
 					for (const auto& segment : track->mSegments)
 					{
 						float x = (segment->mStartTime + segment->mDuration) * stepSize;
-
+						float segmentWidth = segment->mDuration * stepSize;
 
 						//
 						if (mState.currentAction == SequenceGUIMouseActions::NONE &&
@@ -222,30 +221,60 @@ namespace nap
 								guicolors::white, // color
 								1.0f); // thickness
 						}
-					}
 
-					// handle popups
-					if (mState.currentAction == INSERTING_SEGMENT)
-					{
-						if (ImGui::BeginPopup("Insert Segment"))
+						// draw curve;
+						const int resolution = 20;
+						std::vector<ImVec2> points;
+						points.resize(resolution + 1);
+						for (int i = 0; i <= resolution; i++)
 						{
-							if (ImGui::Button("Insert"))
-							{
-								const SequenceGUIInsertSequenceData* data = dynamic_cast<SequenceGUIInsertSequenceData*>(mState.currentActionData.get());
-								mController.insertSequence(data->trackID, data->time);
+							float value = 1.0f - segment->mCurve->evaluate((float)i / resolution);
 
-								ImGui::CloseCurrentPopup();
-								mState.currentAction = SequenceGUIMouseActions::NONE;
-							}
-
-							if (ImGui::Button("Cancel"))
-							{
-								ImGui::CloseCurrentPopup();
-								mState.currentAction = SequenceGUIMouseActions::NONE;
-							}
-
-							ImGui::EndPopup();
+							points[i] = {
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
+								trackTopLeft.y + value * trackHeight };
 						}
+
+						// draw points of curve
+						drawList->AddPolyline(
+							&*points.begin(), // points array
+							points.size(), // size of points array
+							guicolors::red, // color
+							false, // closed
+							1.0f, // thickness
+							true); // anti-aliased
+
+						// keyframe handler box coordinates
+						ImVec2 handlerBoxTopLeft = { trackTopLeft.x + x - 5, trackTopLeft.y };
+						ImVec2 handlerBoxBottomRight = { trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight };
+
+						previousSegmentX = x;
+
+						/*
+						// check if keyframe line is being hovered
+						if (ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomRight) &&
+							(mMouseActionData.currentAction == SequenceGUIMouseActions::NONE || mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAME))
+						{
+							// draw keyframe line thick
+							drawList->AddLine(
+							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+								guicolors::white, // color
+								3.0f); // thickness
+
+									   //
+							mMouseActionData.currentAction = SequenceGUIMouseActions::HOVERING_KEYFRAME;
+
+							// if we have a click, initiate a mouse action
+							if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
+							{
+								mMouseActionData.mouseWasDown = true;
+								mMouseActionData.previousMousePos = ImGui::GetMousePos();
+								mMouseActionData.currentAction = SequenceGUIMouseActions::DRAGGING_KEYFRAME;
+								mMouseActionData.currentObject = keyFrame.get();
+							}
+						}
+						*/
 					}
 
 					// pop id
@@ -257,6 +286,47 @@ namespace nap
 				
 				// increment track count
 				trackCount++;
+			}
+
+			// handle opening of popups
+			if (mState.currentAction == OPEN_INSERT_SEGMENT_POPUP)
+			{
+				// invoke insert sequence popup
+				ImGui::OpenPopup("Insert Segment");
+
+				mState.currentAction = INSERTING_SEGMENT;
+			}
+
+			// handle popups
+			if (mState.currentAction == INSERTING_SEGMENT)
+			{
+				if (ImGui::BeginPopup("Insert Segment"))
+				{
+					if (ImGui::Button("Insert"))
+					{
+						const SequenceGUIInsertSequenceData* data = dynamic_cast<SequenceGUIInsertSequenceData*>(mState.currentActionData.get());
+						mController.insertSequence(data->trackID, data->time);
+
+						ImGui::CloseCurrentPopup();
+						mState.currentAction = SequenceGUIMouseActions::NONE;
+						mState.currentActionData = nullptr;
+					}
+
+					if (ImGui::Button("Cancel"))
+					{
+						ImGui::CloseCurrentPopup();
+						mState.currentAction = SequenceGUIMouseActions::NONE;
+						mState.currentActionData = nullptr;
+					}
+
+					ImGui::EndPopup();
+				}
+				else
+				{
+					// click outside popup so cancel action
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
 			}
 			
 			ImGui::End();

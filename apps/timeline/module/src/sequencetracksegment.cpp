@@ -24,8 +24,6 @@ namespace nap
 			return false;
 		}
 
-		mCurve->mPoints[mCurve->mPoints.size() - 1].mPos.mTime = mDuration;
-
 		return true;
 	}
 }

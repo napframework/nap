@@ -6,6 +6,7 @@
 
 // external includes
 #include <nap/logger.h>
+#include <fcurve.h>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
@@ -39,36 +40,77 @@ namespace nap
 		// find the track
 		for (auto& track : mSequence.mTracks)
 		{
+			ResourcePtr<SequenceTrackSegment> previousSegment = nullptr;
 			for (auto trackSegment : track->mSegments)
 			{
 				if (trackSegment->mID == segmentID)
 				{
-					trackSegment->mDuration += amount;
+					// check if new duration is valid
+					bool valid = true;
+					double newDuration = trackSegment->mDuration + amount;
 
-					// update duration of sequence
-					double longestTrack = 0.0;
-					for (const auto& track_ : mSequence.mTracks)
+					if (newDuration > 0.0)
 					{
-						double trackTime = 0.0;
-						for (const auto& segment : track_->mSegments)
+						if (previousSegment != nullptr)
 						{
-							double time = segment->mStartTime + segment->mDuration;
-							if (time > trackTime)
+							if (trackSegment->mStartTime + newDuration < previousSegment->mStartTime + previousSegment->mDuration)
 							{
-								trackTime = time;
+								valid = false;
+							}
+						}
+					}
+					else
+					{
+						valid = false;
+					}
+
+					if (valid)
+					{
+						trackSegment->mDuration += amount;
+
+						// update start times of all segments
+						{
+							ResourcePtr<SequenceTrackSegment> prevSeg = nullptr;
+							for (auto trackSeg : track->mSegments)
+							{
+								if (prevSeg == nullptr)
+								{
+									trackSeg->mStartTime = 0.0;
+								}
+								else
+								{
+									trackSeg->mStartTime = prevSeg->mStartTime + prevSeg->mDuration;
+								}
+								prevSeg = trackSeg;
 							}
 						}
 
-						if (trackTime > longestTrack)
+						// update duration of sequence
+						double longestTrack = 0.0;
+						for (const auto& otherTrack : mSequence.mTracks)
 						{
-							longestTrack = trackTime;
+							double trackTime = 0.0;
+							for (const auto& segment : otherTrack->mSegments)
+							{
+								double time = segment->mStartTime + segment->mDuration;
+								if (time > trackTime)
+								{
+									trackTime = time;
+								}
+							}
+
+							if (trackTime > longestTrack)
+							{
+								longestTrack = trackTime;
+							}
 						}
+
+						mSequence.mDuration = longestTrack;
 					}
-
-					mSequence.mDuration = longestTrack;
-
 					break;
 				}
+
+				previousSegment = trackSegment;
 			}
 		}
 
@@ -107,27 +149,45 @@ namespace nap
 	{
 		// pause player thread
 
+		// find the right track
 		for (auto& track : mSequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
+				// track found
+
+				// find the segment the new segment in inserted after
 				int segmentCount = 1;
 				for (auto& segment : track->mSegments)
 				{
 					if (segment->mStartTime < time && 
 						segment->mStartTime + segment->mDuration > time)
 					{
+						// segment found
+
+						// create new segment & set parameters
 						std::unique_ptr<SequenceTrackSegment> newSegment = std::make_unique<SequenceTrackSegment>();
 						newSegment->mStartTime = time;
 						newSegment->mDuration = segment->mStartTime + segment->mDuration - time;
+
+						// make new curve of segment
+						std::unique_ptr<math::FCurve<float,float>> newCurve = std::make_unique<math::FCurve<float,float>>();
+						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+						
+						// change duration of segment before inserted segment
 						segment->mDuration = newSegment->mStartTime - segment->mStartTime;
 
+						// generate unique id
 						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
 
+						// wrap it in a resource ptr and insert it into the track
 						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
 						track->mSegments.insert( track->mSegments.begin() + segmentCount, newSegmentResourcePtr);
 
-						mCreatedObjects.emplace_back(std::move(newSegment));
+						// move ownership to sequence player
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 						break;
 					}

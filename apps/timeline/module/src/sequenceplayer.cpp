@@ -110,6 +110,7 @@ namespace nap
 
 		// Move ownership of read objects
 		mReadObjects.clear();
+		mReadObjectIDs.clear();
 		for (auto& readObject : result.mReadObjects)
 		{
 			//

@@ -70,12 +70,12 @@ namespace nap
 		/**
 		 * insertSequence
 		 * insert sequence at given time
+		 * @param trackID the track that the segment gets inserted to
+		 * @param time the time at which the track gets inserted
 		 */
 		void insertSequence(std::string trackID, double time);
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;
-
-		std::vector<std::unique_ptr<rtti::Object>> mCreatedObjects;
 	};
 }
