@@ -38,10 +38,17 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} ${OpenCV_
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
+# Ensure application can find library when packaged and run
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/opencv/lib)
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/opencv/lib)
+endif()
+
 # Package oscpack into platform release
 package_module()
 
-# Install opencv into package
+# Install opencv directory into package
 if(MSVC)
     install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/ DESTINATION thirdparty/opencv)
 elseif(APPLE)
