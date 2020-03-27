@@ -33,7 +33,17 @@ if(WIN32)
     # copy ffmpeg for opencv
     file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     copy_files_to_bin(${CV_FFMPEG_DLLS})
-endif()
 
-# Install OpenCV license into packaged project
-install(FILES ${THIRDPARTY_DIR}/opencv/LICENSE DESTINATION licenses/opencv)
+    # Install OpenCV license into packaged project
+    install(FILES ${THIRDPARTY_DIR}/opencv/LICENSE DESTINATION licenses/opencv)
+
+elseif(UNIX)
+
+    # install library
+    file(GLOB OPENCV_DYLIBS ${THIRDPARTY_DIR}/opencv/lib/libopencv*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${OPENCV_DYLIBS} DESTINATION lib)
+
+    # install licenses
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/share/licenses DESTINATION licenses/opencv)
+    
+endif()
