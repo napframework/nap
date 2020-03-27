@@ -68,12 +68,23 @@ namespace nap
 		void save();
 
 		/**
-		 * insertSequence
-		 * insert sequence at given time
+		 * insertSegment
+		 * insert segment at given time
 		 * @param trackID the track that the segment gets inserted to
 		 * @param time the time at which the track gets inserted
 		 */
-		void insertSequence(std::string trackID, double time);
+		void insertSegment(std::string trackID, double time);
+
+		/**
+		* deleteSegment
+		* delete segment 
+		* @param trackID the track in which the segment gets deleted 
+		* @param segmentID the segment ID that needs to be deleted
+		*/
+		void deleteSegment(std::string trackID, std::string segmentID);
+
+	protected:
+		void updateSegments();
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;

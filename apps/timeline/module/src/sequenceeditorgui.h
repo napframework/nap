@@ -41,20 +41,32 @@ namespace nap
 		DRAGGING_SEGMENT,
 		INSERTING_SEGMENT,
 		OPEN_INSERT_SEGMENT_POPUP,
+		DELETING_SEGMENT,
+		OPEN_DELETE_SEGMENT_POPUP,
+		HOVERING_SEGMENT,
 		NONE
 	};
 
-	class SequenceGUIStateActionData
+	class SequenceGUIActionData
 	{
 	public:
-		SequenceGUIStateActionData() {}
-		virtual ~SequenceGUIStateActionData() {}
+		SequenceGUIActionData() {}
+		virtual ~SequenceGUIActionData() {}
 	};
 
-	class SequenceGUIInsertSequenceData : public SequenceGUIStateActionData
+	class SequenceGUIDeleteSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIInsertSequenceData(std::string id, double t) : trackID(id), time(t) {}
+		SequenceGUIDeleteSegmentData(std::string trackId_, std::string segmentID_) : trackID(trackId_), segmentID(segmentID_) {}
+
+		std::string trackID;
+		std::string segmentID;
+	};
+
+	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIInsertSegmentData(std::string id, double t) : trackID(id), time(t) {}
 
 		double time = 0.0;
 		std::string trackID;
@@ -65,7 +77,7 @@ namespace nap
 	public:
 		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
 		std::string currentObjectID = "";
-		std::unique_ptr<SequenceGUIStateActionData> currentActionData;
+		std::unique_ptr<SequenceGUIActionData> currentActionData;
 	};
 
 

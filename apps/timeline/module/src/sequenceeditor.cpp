@@ -68,44 +68,7 @@ namespace nap
 					{
 						trackSegment->mDuration += amount;
 
-						// update start times of all segments
-						{
-							ResourcePtr<SequenceTrackSegment> prevSeg = nullptr;
-							for (auto trackSeg : track->mSegments)
-							{
-								if (prevSeg == nullptr)
-								{
-									trackSeg->mStartTime = 0.0;
-								}
-								else
-								{
-									trackSeg->mStartTime = prevSeg->mStartTime + prevSeg->mDuration;
-								}
-								prevSeg = trackSeg;
-							}
-						}
-
-						// update duration of sequence
-						double longestTrack = 0.0;
-						for (const auto& otherTrack : mSequence.mTracks)
-						{
-							double trackTime = 0.0;
-							for (const auto& segment : otherTrack->mSegments)
-							{
-								double time = segment->mStartTime + segment->mDuration;
-								if (time > trackTime)
-								{
-									trackTime = time;
-								}
-							}
-
-							if (trackTime > longestTrack)
-							{
-								longestTrack = trackTime;
-							}
-						}
-
-						mSequence.mDuration = longestTrack;
+						updateSegments();
 					}
 					break;
 				}
@@ -145,7 +108,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::insertSequence(std::string trackID, double time)
+	void SequenceEditorController::insertSegment(std::string trackID, double time)
 	{
 		// pause player thread
 
@@ -191,6 +154,33 @@ namespace nap
 
 						break;
 					}
+					else if (segmentCount == track->mSegments.size())
+					{
+						// insert segment at the end of the list
+
+						// create new segment & set parameters
+						std::unique_ptr<SequenceTrackSegment> newSegment = std::make_unique<SequenceTrackSegment>();
+						newSegment->mStartTime = segment->mStartTime + segment->mDuration;
+						newSegment->mDuration = time - newSegment->mStartTime;
+
+						// make new curve of segment
+						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
+						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+
+						// generate unique id
+						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+						// wrap it in a resource ptr and insert it into the track
+						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+						track->mSegments.emplace_back(newSegmentResourcePtr);
+
+						// move ownership to sequence player
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+						break;
+					}
 
 					segmentCount++;
 				}
@@ -200,5 +190,78 @@ namespace nap
 		}
 
 		// resume player thread
+	}
+
+	void SequenceEditorController::deleteSegment(std::string trackID, std::string segmentID)
+	{
+		// pause player thread
+
+		for (auto& track : mSequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				int segmentIndex = 0;
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mID == segmentID)
+					{
+						track->mSegments.erase(track->mSegments.begin() + segmentIndex);
+						updateSegments();
+						break;
+					}
+					segmentIndex++;
+				}
+
+				break;
+			}
+		}
+
+
+		// resume player thread
+	}
+
+
+	void SequenceEditorController::updateSegments()
+	{
+		for (auto& track : mSequence.mTracks)
+		{
+			// update start time and duration of all segments
+			ResourcePtr<SequenceTrackSegment> prevSeg = nullptr;
+			for (auto trackSeg : track->mSegments)
+			{
+				if (prevSeg == nullptr)
+				{
+					trackSeg->mStartTime = 0.0;
+				}
+				else
+				{
+					trackSeg->mStartTime = prevSeg->mStartTime + prevSeg->mDuration;
+					prevSeg->mDuration = trackSeg->mStartTime - prevSeg->mStartTime;
+				}
+				prevSeg = trackSeg;
+			}
+		}
+
+		// update duration of sequence
+		double longestTrack = 0.0;
+		for (const auto& otherTrack : mSequence.mTracks)
+		{
+			double trackTime = 0.0;
+			for (const auto& segment : otherTrack->mSegments)
+			{
+				double time = segment->mStartTime + segment->mDuration;
+				if (time > trackTime)
+				{
+					trackTime = time;
+				}
+			}
+
+			if (trackTime > longestTrack)
+			{
+				longestTrack = trackTime;
+			}
+		}
+
+		mSequence.mDuration = longestTrack;
 	}
 }

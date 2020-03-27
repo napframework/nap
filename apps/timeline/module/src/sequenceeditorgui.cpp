@@ -138,7 +138,7 @@ namespace nap
 						{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
 						guicolors::black); // color 
 
-					//
+					// handle insertion of segment
 					if (mState.currentAction == SequenceGUIMouseActions::NONE)
 					{
 						if (ImGui::IsMouseHoveringRect(
@@ -159,8 +159,23 @@ namespace nap
 
 								//
 								mState.currentAction = OPEN_INSERT_SEGMENT_POPUP;
-								mState.currentActionData = std::make_unique<SequenceGUIInsertSequenceData>(track->mID, time);
+								mState.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track->mID, time);
 							}
+						}
+					}
+
+					// draw line in track while in inserting segment popup
+					if (mState.currentAction == SequenceGUIMouseActions::OPEN_INSERT_SEGMENT_POPUP || mState.currentAction == INSERTING_SEGMENT)
+					{
+						const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
+						if (data->trackID == track->mID)
+						{
+							// position of insertion in track
+							drawList->AddLine(
+								{ trackTopLeft.x + (float) data->time * stepSize, trackTopLeft.y }, // top left
+								{ trackTopLeft.x + (float) data->time * stepSize, trackTopLeft.y + trackHeight }, // bottom right
+								guicolors::lightGrey, // color
+								1.0f); // thickness
 						}
 					}
 
@@ -173,7 +188,8 @@ namespace nap
 						float segmentWidth = segment->mDuration * stepSize;
 
 						//
-						if (mState.currentAction == SequenceGUIMouseActions::NONE &&
+						if ( ( mState.currentAction == SequenceGUIMouseActions::NONE ||
+							( mState.currentAction == HOVERING_SEGMENT && mState.currentObjectID == segment->mID ) ) &&
 							ImGui::IsMouseHoveringRect(
 							{ trackTopLeft.x + x - 5, trackTopLeft.y - 5 }, // top left
 							{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
@@ -185,10 +201,22 @@ namespace nap
 								guicolors::white, // color
 								3.0f); // thickness
 
+							mState.currentAction = HOVERING_SEGMENT;
+							mState.currentObjectID = segment->mID;
+
+							// left mouse is start dragging
 							if (ImGui::IsMouseDown(0))
 							{
 								mState.currentAction = SequenceGUIMouseActions::DRAGGING_SEGMENT;
 								mState.currentObjectID = segment->mID;
+							}
+							// right mouse in deletion popup
+							else if (ImGui::IsMouseDown(1))
+							{
+								std::unique_ptr<SequenceGUIDeleteSegmentData> deleteSegmentData = std::make_unique<SequenceGUIDeleteSegmentData>(track->mID, segment->mID);
+								mState.currentAction = SequenceGUIMouseActions::OPEN_DELETE_SEGMENT_POPUP;
+								mState.currentObjectID = segment->mID;
+								mState.currentActionData = std::move(deleteSegmentData);
 							}
 						}
 						else if (
@@ -220,6 +248,24 @@ namespace nap
 							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								1.0f); // thickness
+
+							if (mState.currentAction == HOVERING_SEGMENT && mState.currentObjectID == segment->mID)
+							{
+								mState.currentAction = NONE;
+							}
+						}
+
+						//
+						if ((mState.currentAction == OPEN_DELETE_SEGMENT_POPUP || 
+							mState.currentAction == DELETING_SEGMENT || 
+							mState.currentAction == HOVERING_SEGMENT ||
+							mState.currentAction == DRAGGING_SEGMENT ) && mState.currentObjectID == segment->mID)
+						{
+							// draw selected background of segment
+							drawList->AddRectFilled(
+							{ trackTopLeft.x + x - segmentWidth, trackTopLeft.y }, // top left position
+							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right position
+								guicolors::darkGrey); // color 
 						}
 
 						// draw curve;
@@ -297,15 +343,56 @@ namespace nap
 				mState.currentAction = INSERTING_SEGMENT;
 			}
 
-			// handle popups
+			// handle insert segment popup
 			if (mState.currentAction == INSERTING_SEGMENT)
 			{
 				if (ImGui::BeginPopup("Insert Segment"))
 				{
 					if (ImGui::Button("Insert"))
 					{
-						const SequenceGUIInsertSequenceData* data = dynamic_cast<SequenceGUIInsertSequenceData*>(mState.currentActionData.get());
-						mController.insertSequence(data->trackID, data->time);
+						const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
+						mController.insertSegment(data->trackID, data->time);
+
+						ImGui::CloseCurrentPopup();
+						mState.currentAction = SequenceGUIMouseActions::NONE;
+						mState.currentActionData = nullptr;
+					}
+
+					if (ImGui::Button("Cancel"))
+					{
+						ImGui::CloseCurrentPopup();
+						mState.currentAction = SequenceGUIMouseActions::NONE;
+						mState.currentActionData = nullptr;
+					}
+
+					ImGui::EndPopup();
+				}
+				else
+				{
+					// click outside popup so cancel action
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+			}
+
+			// handle opening of popups
+			if (mState.currentAction == OPEN_DELETE_SEGMENT_POPUP)
+			{
+				// invoke insert sequence popup
+				ImGui::OpenPopup("Delete Segment");
+
+				mState.currentAction = DELETING_SEGMENT;
+			}
+
+			// handle delete segment popup
+			if (mState.currentAction == DELETING_SEGMENT)
+			{
+				if (ImGui::BeginPopup("Delete Segment"))
+				{
+					if (ImGui::Button("Delete"))
+					{
+						const SequenceGUIDeleteSegmentData* data = dynamic_cast<SequenceGUIDeleteSegmentData*>(mState.currentActionData.get());
+						mController.deleteSegment(data->trackID, data->segmentID);
 
 						ImGui::CloseCurrentPopup();
 						mState.currentAction = SequenceGUIMouseActions::NONE;
