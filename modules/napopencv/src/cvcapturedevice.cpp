@@ -122,12 +122,6 @@ namespace nap
 	}
 
 
-	double CVCaptureDevice::getCaptureTime() const
-	{
-		return mComputeTime;
-	}
-
-
 	bool CVCaptureDevice::restart(nap::CVAdapter& adapter, utility::ErrorState& error)
 	{
 		// Stop capture task
@@ -347,10 +341,9 @@ namespace nap
 			for (auto& adapter : capture_adapters)
 				adapter->copied();
 
-			// Set capture compute time and if we want to capture a new frame immediately.
+			// Set if we want to capture a new frame immediately.
 			// This is either the case when auto-capture is turned on or during the capture
 			// process someone called capture()
-			mComputeTime	= timer.getElapsedTime();
 			mCaptureFrame	= mAutoCapture || mCaptureFrame;
 		}
 	}

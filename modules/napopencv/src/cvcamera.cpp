@@ -94,6 +94,12 @@ namespace nap
 	}
 
 
+	float CVCamera::getFPS() const
+	{
+		return mFramerate;
+	}
+
+
 	bool CVCamera::onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error)
 	{
 		// Open capture device
@@ -148,17 +154,37 @@ namespace nap
 		mCaptureFrame = CVFrame(1, this);
 		mOutputFrame  = CVFrame(1, this);
 
+		// Reset fps counter
+		mTicksum = 0.0;
+		mTickIdx = 0;
+		mTicks = std::array<double, 20>();
+
 		return true;
 	}
 
 
 	CVFrame CVCamera::onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error)
 	{
+		// Try to retrieve new frame
 		if (!captureDevice.retrieve(mCaptureFrame[0]))
 		{
 			error.fail("%s: No new frame available", mID.c_str());
 			return CVFrame();
 		}
+
+		// Get capture delta_time
+		double delta_time = mTimer.getElapsedTime();
+		mTimer.reset();
+
+		// Update framerate
+		mTicksum -= mTicks[mTickIdx];			// subtract value falling off
+		mTicksum += delta_time;					// add new value
+		mTicks[mTickIdx] = delta_time;			// save new value so it can be subtracted later */
+		if (++mTickIdx == mTicks.size())		// inc buffer index
+			mTickIdx = 0;
+
+		// Store framerate
+		mFramerate = static_cast<double>(mTicks.size()) / mTicksum;
 
 		// Resize frame if required
 		// Otherwise simply copy mat reference (no actual data copy takes place)
@@ -167,6 +193,7 @@ namespace nap
 		else
 			mOutputFrame[0] = mCaptureFrame[0];
 
+		// Clone frame
 		return mOutputFrame.clone();
 	}
 }

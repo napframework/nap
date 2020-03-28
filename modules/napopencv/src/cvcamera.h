@@ -6,6 +6,8 @@
 // External Includes
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
+#include <nap/timer.h>
+#include <atomic>
 
 namespace nap
 {
@@ -83,6 +85,12 @@ namespace nap
 		 */
 		bool reconnect(utility::ErrorState& error);
 
+		/**
+		 * Returns the camera framerate, averaged over 20 samples.
+		 * @return current camera framerate.
+		 */
+		float getFPS() const;
+
 		std::string			mCodec = "";					///< Property: 'Codec' optional video capture codec, for example: 'MJPG' or 'H264'. Leaving this empty defaults to regular codec. 
 		bool				mResize = false;				///< Property: 'Resize' if the frame is resized to the specified 'Size' after capture
 		glm::ivec2			mSize = { 1280, 720 };			///< Property: 'Size' frame size, only used when 'Resize' is turned on.
@@ -116,5 +124,12 @@ namespace nap
 		bool					mLocalSettings;
 		CVFrame					mCaptureFrame					{ 1 };
 		CVFrame					mOutputFrame					{ 1 };
+		std::atomic<float>		mFramerate						{ 0.0f };
+		SystemTimer				mTimer;
+		
+		// Used to calculate framerate over time
+		std::array<double, 20> mTicks;
+		double mTicksum = 0;
+		uint32 mTickIdx = 0;
 	};
 }

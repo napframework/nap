@@ -140,13 +140,6 @@ namespace nap
 		int getAdapterCount() const											{ return static_cast<int>(mAdapters.size()); }
 
 		/**
-		 * Returns the last known capture task compute time in seconds.
-		 * This includes the time it takes to complete the entire process cycle for all the adapters.
-		 * @return capture task compute time.
-		 */
-		double getCaptureTime() const;
-
-		/**
 		 * Global check to see if any errors are associated with this capture device.
 		 * @return if any error is associated with this capture device.
 		 */
@@ -201,7 +194,6 @@ namespace nap
 	private:
 		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame
 		std::atomic<bool>		mCaptureFrame	= { true };					///< Proceed to next frame
-		std::atomic<double>		mComputeTime	= { 0.0f };					///< Last known capture task compute time
 		bool					mStopCapturing	= false;					///< Signals the capture thread to stop capturing video
 		bool					mFrameAvailable = false;					///< If a new frame is captured
 

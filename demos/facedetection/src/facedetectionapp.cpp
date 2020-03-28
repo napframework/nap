@@ -151,7 +151,7 @@ namespace nap
 				ImGui::Text("No Errors");
 
 			// Display camera framerate and draw camera texture
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", 1.0f / mCameraCaptureDevice->getCaptureTime()).c_str());
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", mCameraCaptureDevice->getAdapter<CVCamera>(0).getFPS()).c_str());
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
 			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });

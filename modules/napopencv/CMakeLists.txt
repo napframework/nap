@@ -15,7 +15,7 @@ module_json_to_cmake()
 
 # Find OpenCV
 if(MSVC)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/install REQUIRED) 
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc REQUIRED) 
 elseif (APPLE)
     find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/osx/lib/cmake/opencv4 REQUIRED) 
 elseif(UNIX)
@@ -50,7 +50,7 @@ package_module()
 
 # Install opencv directory into package
 if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/install/ DESTINATION thirdparty/opencv)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/ DESTINATION thirdparty/opencv)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/opencv/osx/ DESTINATION thirdparty/opencv)
 else()
@@ -72,7 +72,7 @@ if(WIN32)
                 $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
     # copy ffmpeg for opencv
-    file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/msvc/install/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    file(GLOB CV_FFMPEG_DLLS ${THIRDPARTY_DIR}/opencv/msvc/x64/vc14/bin/opencv_videoio_ffmpeg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     copy_files_to_bin(${CV_FFMPEG_DLLS})
 endif()
 
