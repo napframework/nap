@@ -629,7 +629,7 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
-            "Sync": false,
+            "Sync": true,
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,
