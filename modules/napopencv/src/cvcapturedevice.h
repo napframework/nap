@@ -29,11 +29,9 @@ namespace nap
 	 * Frames are automatically forwarded to the right component based on the nap::CVCaptureComponent 'Device' property.
 	 * Listen to the 'frameCaptured' signal of this device to receive new frame events from the processing (background) thread directly.
 	 *
-	 * The capture task is paused when all adapters, during a capture operation, throw an error.
-	 * Call capture() to force a new frame capture operation if required.
-	 *
 	 * Internally this device keeps track of all eligible adapters for capture. 
 	 * If an adapter can't be opened on start(), the adapter is not added as a source for capture.
+	 * When during capture an adapter disconnects or fails to grab a frame, it is closed automatically if the adapter's 'CloseOnError' flag is set.
 	 */
 	class NAPAPI CVCaptureDevice : public Device
 	{
@@ -64,16 +62,6 @@ namespace nap
 		 * Called automatically by the resource manager.
 		 */
 		virtual void stop() override final;
-
-		/**
-		 * Removes a specific adapter from the capture process.
-		 * You typically remove an adapter from the capture process when 
-		 * an error occurs that causes the processing loop to stall.
-		 * The adapter is closed after being removed, errors are not cleared.
-		 * This call asserts when the adapter is not managed by this capture device.
-		 * @param adapter the adapter to remove
-		 */
-		void remove(nap::CVAdapter& adapter);
 
 		/**
 		 * Checks if a new frame is available. 
@@ -193,7 +181,7 @@ namespace nap
 
 	private:
 		CVFrameEvent			mCaptureMat;								///< The GPU / CPU matrix that holds the most recent captured video frame
-		std::atomic<bool>		mCaptureFrame	= { true };					///< Proceed to next frame
+		bool					mCaptureFrame	= true;						///< Proceed to next frame
 		bool					mStopCapturing	= false;					///< Signals the capture thread to stop capturing video
 		bool					mFrameAvailable = false;					///< If a new frame is captured
 

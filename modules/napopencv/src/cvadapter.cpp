@@ -75,13 +75,6 @@ namespace nap
 	}
 
 
-	void CVAdapter::stop()
-	{
-		assert(mParent != nullptr);
-		mParent->remove(*this);
-	}
-
-
 	cv::VideoCapture& CVAdapter::getCaptureDevice()
 	{
 		return mCaptureDevice;

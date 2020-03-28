@@ -95,18 +95,11 @@ namespace nap
 		bool restart(utility::ErrorState& error);
 
 		/**
-		 * Removes this adapter from the capture process, preventing the stalling of the processing loop.
-		 * You typically remove an adapter explicitly when an error occurs. 
-		 * The adapter is closed, errors remain.
-		 */
-		void stop();
-
-		/**
 		 * @return number of OpenCV matrices associated with a single frame
 		 */
 		virtual int getMatrixCount() = 0;
 
-		bool			mCloseOnCaptureError = true;			///< Property: 'CloseOnError' controls if the capture operation is stopped when the adapter reports an error.
+		bool			mCloseOnCaptureError = false;			///< Property: 'CloseOnError' controls if the adapter is closed when it throws a frame grab error.
 		ECVCaptureAPI	mAPIPreference = ECVCaptureAPI::Auto;	///< Property: 'Backend' the capture api preference, 0 = default. See cv::CVVideoCapture for a full list of options.
 
 	protected:

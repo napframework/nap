@@ -3,7 +3,6 @@
 
 // External Includes
 #include <nap/logger.h>
-#include <nap/timer.h>
 
 // nap::cvvideocapture run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CVCaptureDevice)
@@ -72,6 +71,7 @@ namespace nap
 		mErrorMap.reserve(mAdapters.size());
 		
 		// Open every adapter
+		bool ready = false;
 		for (auto& adapter : mAdapters)
 		{
 			mErrorMap[adapter.get()]   = {};
@@ -82,16 +82,15 @@ namespace nap
 				// Set and log error
 				setError(*adapter, CVCaptureError::OpenError, errorState.toString());
 				if (mAllowFailure)
-				{
-					nap::Logger::error(errorState.toString());
 					continue;
-				}
 				return false;
 			}
+			ready = true;
 		}
 
-		// Start capture task
-		startCapture();
+		// Start capture task if at least one adapter opened successfully
+		if(ready)
+			startCapture();
 		return true;
 	}
 
@@ -128,11 +127,9 @@ namespace nap
 		assert(manages(adapter));
 		stopCapture();
 
-		// Get reference to adapter and close when open
-		adapter.close();
-
 		// Try to open and when opened, reset errors and state
 		// On failure to open, erase as capture candidate
+		adapter.close();
 		if (!adapter.open(error))
 		{
 			setError(adapter, CVCaptureError::OpenError, error.toString());
@@ -144,20 +141,6 @@ namespace nap
 		mErrorMap[&adapter] = {};
 		startCapture();
 		return true;
-	}
-
-
-	void CVCaptureDevice::remove(nap::CVAdapter& adapter)
-	{
-		// Stop capture task and close adapter;
-		stopCapture();
-		
-		// Close adapter
-		assert(manages(adapter));
-		adapter.close();
-
-		// Start capture task
-		startCapture();
 	}
 
 
@@ -199,16 +182,16 @@ namespace nap
 	void CVCaptureDevice::startCapture()
 	{
 		// Start capture
-		mStopCapturing = false;
-		mCaptureFrame = true;
-		mCaptureTask = std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
+		mStopCapturing	= false;
+		mCaptureFrame	= true;
+		mCaptureTask	= std::async(std::launch::async, std::bind(&CVCaptureDevice::captureTask, this));
 	}
 
 
 	void CVCaptureDevice::stopCapture()
-	{
+	{	
+		// Stop capturing thread and notify worker
 		{
-			// Stop capturing thread and notify worker
 			std::lock_guard<std::mutex> lock(mCaptureMutex);
 			mStopCapturing = true;
 		}
@@ -216,9 +199,7 @@ namespace nap
 
 		// Wait till exit
 		if (mCaptureTask.valid())
-		{
 			mCaptureTask.wait();
-		}
 	}
 
 
@@ -234,7 +215,6 @@ namespace nap
 
 		// All valid capture adapters (without errors and open)
 		std::vector<nap::CVAdapter*> capture_adapters;
-		SystemTimer timer;
 
 		// First wait for a capture request, this is set to true  after calling capture() or when 'AutoCapture' is turned on.
 		// All properties that need to be applied are copied over in a safe block before continue.
@@ -262,13 +242,24 @@ namespace nap
 					prop.second.clear();
 
 				// Don't capture new frame immediately, only do so when 'AutoCapture' is turned on
-				// and no decoding errors have been detected.
-				mCaptureFrame = false;
+				// or when capture() is called externally.
+				mCaptureFrame = mAutoCapture;
 			}
+
+			// Ensure at least one device is open for capturing
+			bool capture_ready = false;
+			for (auto& adapter : properties)
+			{
+				nap::CVAdapter* cur_adapter = adapter.first;
+				capture_ready = cur_adapter->isOpen();
+			}
+			
+			// If no device is open at this point there's no point in running this loop
+			if (!capture_ready)
+				break;
 
 			// Apply properties for every adapter and grab next frame
 			// Store adapters that are ready to be captured
-			timer.reset();
 			capture_adapters.clear();
 			for (auto& adapter : properties)
 			{	
@@ -321,16 +312,14 @@ namespace nap
 				it++;
 			}
 
-			// No frames captured, continue
-			if (frame_event.empty())
-				continue;
-
-			// Notify listeners
-			frameCaptured.trigger(frame_event);
-
-			// Copy the frame, note that this performs a shallow copy of the frame instead of a deep copy.
-			// It is therefore important that the capture device returns a clone of the last capture.
+			// New frame captured from one of the adapters
+			if (!frame_event.empty())
 			{
+				// Notify listeners
+				frameCaptured.trigger(frame_event);
+
+				// Copy the frame, note that this performs a shallow copy of the frame instead of a deep copy.
+				// It is therefore important that the capture device returns a clone of the last capture.
 				std::lock_guard<std::mutex> lock(mCaptureMutex);
 				mCaptureMat = frame_event;
 				mFrameAvailable = true;
@@ -340,11 +329,6 @@ namespace nap
 			// Only do this for adapters for which the frame was retrieved successfully. 
 			for (auto& adapter : capture_adapters)
 				adapter->copied();
-
-			// Set if we want to capture a new frame immediately.
-			// This is either the case when auto-capture is turned on or during the capture
-			// process someone called capture()
-			mCaptureFrame	= mAutoCapture || mCaptureFrame;
 		}
 	}
 
