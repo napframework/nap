@@ -140,6 +140,10 @@ if(NOT WIN32)
     # Set RPATH to search in ./lib
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
+        # install available propery list files if present
+        if(PROPERTYLIST)
+            install(FILES ${PROPERTYLIST} DESTINATION .)
+        endif()
     else()
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
     endif()
