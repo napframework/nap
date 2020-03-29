@@ -16,7 +16,16 @@ file(GLOB DATA data/*)
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+# Add executable, include plist files if found
+file(GLOB_RECURSE PROPERTYLIST apple/*.plist)
+if(APPLE AND PROPERTYLIST)
+	source_group("propertylist" FILES ${PROPERTYLIST})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${PROPERTYLIST})
+    copy_files_to_bin(${PROPERTYLIST})
+else()
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
