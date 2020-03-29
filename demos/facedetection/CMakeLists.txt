@@ -28,5 +28,10 @@ project_json_to_cmake()
 target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
+# Copy plist to output directory for camera access
+if(APPLE)
+    copy_files_to_bin(${PROJECT_SOURCE_DIR}/osx/Info.plist)
+endif()
+
 # Package into release, export FBX, other shared source project fixes
 nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "demos" TRUE)
