@@ -8,7 +8,7 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
-RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,50 @@ namespace nap
 						float x = (segment->mStartTime + segment->mDuration) * stepSize;
 						float segmentWidth = segment->mDuration * stepSize;
 
-						//
+						// end value handler
+						ImVec2 endValuePos = { trackTopLeft.x + x, trackTopLeft.y + trackHeight * ( 1.0f - (segment->mEndValue / 1.0f) ) };
+						if ((mState.currentAction == SequenceGUIMouseActions::NONE || mState.currentAction == HOVERING_SEGMENT ) &&
+							ImGui::IsMouseHoveringRect(
+							{ endValuePos.x - 7, endValuePos.y - 7 }, // top left
+							{ endValuePos.x + 7, endValuePos.y + 7 }))  // bottom right 
+						{
+							drawList->AddCircleFilled(endValuePos, 5.0f, guicolors::red);
+
+							mState.currentAction = HOVERING_SEGMENT_VALUE;
+
+							if (ImGui::IsMouseDown(0))
+							{
+								mState.currentAction = DRAGGING_SEGMENT_VALUE;
+								mState.currentObjectID = segment->mID;
+							}
+						}
+						else if( mState.currentAction != DRAGGING_SEGMENT_VALUE )
+						{
+							drawList->AddCircle(endValuePos, 5.0f, guicolors::red);
+
+							if (mState.currentAction == HOVERING_SEGMENT_VALUE)
+							{
+								mState.currentAction = SequenceGUIMouseActions::NONE;
+							}
+						}
+
+						// handle dragging segment value
+						if (mState.currentAction == DRAGGING_SEGMENT_VALUE && mState.currentObjectID == segment->mID)
+						{
+							drawList->AddCircleFilled(endValuePos, 5.0f, guicolors::red);
+
+							if (ImGui::IsMouseReleased(0))
+							{
+								mState.currentAction = NONE;
+							}
+							else
+							{
+								float dragAmount = ( mouseDelta.y / trackHeight ) * -1.0f;
+								mController.changeSegmentEndValue(track->mID, segment->mID, dragAmount);
+							}
+						}
+
+						// segment handler
 						if ( ( mState.currentAction == SequenceGUIMouseActions::NONE ||
 							( mState.currentAction == HOVERING_SEGMENT && mState.currentObjectID == segment->mID ) ) &&
 							ImGui::IsMouseHoveringRect(

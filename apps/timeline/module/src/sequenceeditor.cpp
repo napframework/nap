@@ -133,6 +133,24 @@ namespace nap
 						newSegment->mStartTime = time;
 						newSegment->mDuration = segment->mStartTime + segment->mDuration - time;
 
+						// set the value by evaluation curve
+						newSegment->mStartValue = segment->mCurve->evaluate((segment->mStartTime + segment->mDuration - time) / segment->mDuration);
+
+						// check if there is a next segment
+						if (segmentCount < track->mSegments.size())
+						{
+							// if there is a next segment, the new segments end value is the start value of the next segment ...
+							newSegment->mEndValue = track->mSegments[segmentCount]->mStartValue;
+						}
+						else
+						{
+							// ... otherwise it just gets this segments end value
+							newSegment->mEndValue = segment->mEndValue;
+						}
+
+						// the segment's end value gets the start value the newly inserted segment 
+						segment->mEndValue = newSegment->mStartValue;
+
 						// make new curve of segment
 						std::unique_ptr<math::FCurve<float,float>> newCurve = std::make_unique<math::FCurve<float,float>>();
 						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
@@ -151,6 +169,9 @@ namespace nap
 						// move ownership to sequence player
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+						//
+						updateSegments();
 
 						break;
 					}
@@ -179,6 +200,9 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
+						//
+						updateSegments();
+
 						break;
 					}
 
@@ -205,8 +229,22 @@ namespace nap
 				{
 					if (segment->mID == segmentID)
 					{
+						// store the duration of the segment that we are deleting
+						double duration = segment->mDuration;
+
+						// erase it from the list
 						track->mSegments.erase(track->mSegments.begin() + segmentIndex);
+						
+						// get the segment that is now at the previous deleted segments position
+						if (track->mSegments.begin() + segmentIndex != track->mSegments.end())
+						{
+							// add the duration
+							track->mSegments[segmentIndex]->mDuration += duration;
+						}
+
+						// update segments
 						updateSegments();
+
 						break;
 					}
 					segmentIndex++;
@@ -218,6 +256,30 @@ namespace nap
 
 
 		// resume player thread
+	}
+
+
+	void SequenceEditorController::changeSegmentEndValue(std::string trackID, std::string segmentID, float value)
+	{
+		for (auto& track : mSequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mID == segmentID)
+					{
+						segment->mEndValue += value;
+						segment->mEndValue = math::clamp<float>(segment->mEndValue, 0.0f, 1.0f);
+
+						updateSegments();
+
+						break;
+					}
+				}
+				break;;
+			}
+		}
 	}
 
 
@@ -263,5 +325,39 @@ namespace nap
 		}
 
 		mSequence.mDuration = longestTrack;
+
+		// make sure start & end value align
+		for (auto& track : mSequence.mTracks)
+		{
+			//
+			int segmentCount = 0;
+
+			// update start time and duration of all segments
+			ResourcePtr<SequenceTrackSegment> prevSeg = nullptr;
+			for (auto trackSeg : track->mSegments)
+			{
+				if (prevSeg == nullptr)
+				{
+					// no previous segment, so bluntly assign the start value to the curve
+					trackSeg->mCurve->mPoints[0].mPos.mValue = trackSeg->mStartValue;
+				}
+				else
+				{
+					// if we have a previous segment, the curve gets the value of the start value of the current segment
+					trackSeg->mStartValue = prevSeg->mEndValue;
+					prevSeg->mCurve->mPoints[prevSeg->mCurve->mPoints.size() - 1].mPos.mValue = trackSeg->mStartValue;
+					trackSeg->mCurve->mPoints[0].mPos.mValue = trackSeg->mStartValue;
+				}
+				prevSeg = trackSeg;
+
+				// if this is the last segment, bluntly assign the end value
+				if (segmentCount == track->mSegments.size()-1)
+				{
+					trackSeg->mCurve->mPoints[trackSeg->mCurve->mPoints.size() - 1].mPos.mValue = trackSeg->mEndValue;
+				}
+
+				segmentCount++;
+			}
+		}
 	}
 }

@@ -76,12 +76,14 @@ namespace nap
 		void insertSegment(std::string trackID, double time);
 
 		/**
-		* deleteSegment
-		* delete segment 
-		* @param trackID the track in which the segment gets deleted 
-		* @param segmentID the segment ID that needs to be deleted
-		*/
+		 * deleteSegment
+		 * delete segment 
+		 * @param trackID the track in which the segment gets deleted 
+		 * @param segmentID the segment ID that needs to be deleted
+		 */
 		void deleteSegment(std::string trackID, std::string segmentID);
+
+		void changeSegmentEndValue(std::string trackID, std::string segmentID, float value);
 
 	protected:
 		void updateSegments();

@@ -19,6 +19,9 @@ namespace nap
 	public:
 		double										mStartTime = 0.0;
 		double										mDuration = 1.0;
+
 		ResourcePtr<math::FCurve<float, float>>		mCurve;
+		float										mStartValue;
+		float										mEndValue;
 	};
 }
