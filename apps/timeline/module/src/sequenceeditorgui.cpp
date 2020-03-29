@@ -181,14 +181,103 @@ namespace nap
 
 					float previousSegmentX = 0.0f;
 
-					// draw segments
 					for (const auto& segment : track->mSegments)
 					{
-						float x = (segment->mStartTime + segment->mDuration) * stepSize;
+						float segmentX = (segment->mStartTime + segment->mDuration) * stepSize;
 						float segmentWidth = segment->mDuration * stepSize;
 
+						// curve
+						const int resolution = 20;
+						bool curveSelected = false;
+						std::vector<ImVec2> points;
+						points.resize(resolution + 1);
+						for (int i = 0; i <= resolution; i++)
+						{
+							float value = 1.0f - segment->mCurve->evaluate((float)i / resolution);
+
+							points[i] = {
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
+								trackTopLeft.y + value * trackHeight };
+						}
+
+						// determine if mouse is hovering curve
+						if (mState.currentAction == SequenceGUIMouseActions::NONE
+							&& ImGui::IsMouseHoveringRect(
+						{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }))  // bottom right 
+						{
+							// translate mouse position to position in curve
+							ImVec2 mousePos = ImGui::GetMousePos();
+							float xInSegment = ((mousePos.x - (trackTopLeft.x + segmentX - segmentWidth)) / stepSize) / segment->mDuration;
+							float yInSegment = 1.0f - ((mousePos.y - trackTopLeft.y) / trackHeight);
+						
+							// evaluate curve at x position
+							float yInCurve = segment->mCurve->evaluate(xInSegment);
+
+							//
+							const float maxDist = 0.05f;
+							if (abs(yInCurve - yInSegment) < maxDist)
+							{
+								curveSelected = true;
+								if (ImGui::IsMouseClicked(0))
+								{
+									mController.insertCurvePoint(track->mID, segment->mID, xInSegment);
+								}
+							}
+						}
+
+						// draw points of curve
+						drawList->AddPolyline(
+							&*points.begin(), // points array
+							points.size(), // size of points array
+							guicolors::red, // color
+							false, // closed
+							curveSelected ? 3.0f : 1.0f, // thickness
+							true); // anti-aliased
+
+						// draw control points of curve
+						for (int i = 1; i < segment->mCurve->mPoints.size() - 1; i++)
+						{
+							const auto& curvePoint = segment->mCurve->mPoints[i];
+							std::ostringstream curveString;
+							curveString << segment->mID << "point" << i;
+							std::string pointID = curveString.str();
+
+							ImVec2 circlePoint = 
+							{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
+								trackTopLeft.y + trackHeight * (1.0f - curvePoint.mPos.mValue) };
+
+							bool hovered = false;
+							if ((mState.currentAction == NONE || mState.currentAction == HOVERING_CONTROL_POINT )&&
+								ImGui::IsMouseHoveringRect(
+							    { circlePoint.x - 5, circlePoint.y - 5 }, 
+								{ circlePoint.x + 5, circlePoint.y + 5 }))
+							{
+								hovered = true;
+							}
+
+							drawList->AddCircleFilled(
+								circlePoint,
+								4.0f,
+								hovered ? guicolors::white : guicolors::lightGrey);
+
+							if (hovered)
+							{
+								mState.currentAction = HOVERING_CONTROL_POINT;
+								mState.currentObjectID = pointID;
+							}
+							else
+							{
+								if (mState.currentAction == HOVERING_CONTROL_POINT &&
+									pointID == mState.currentObjectID)
+								{
+									mState.currentAction = NONE;
+								}
+							}
+						}
+
 						// end value handler
-						ImVec2 endValuePos = { trackTopLeft.x + x, trackTopLeft.y + trackHeight * ( 1.0f - (segment->mEndValue / 1.0f) ) };
+						ImVec2 endValuePos = { trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight * ( 1.0f - (segment->mEndValue / 1.0f) ) };
 						if ((mState.currentAction == SequenceGUIMouseActions::NONE || mState.currentAction == HOVERING_SEGMENT ) &&
 							ImGui::IsMouseHoveringRect(
 							{ endValuePos.x - 7, endValuePos.y - 7 }, // top left
@@ -234,13 +323,13 @@ namespace nap
 						if ( ( mState.currentAction == SequenceGUIMouseActions::NONE ||
 							( mState.currentAction == HOVERING_SEGMENT && mState.currentObjectID == segment->mID ) ) &&
 							ImGui::IsMouseHoveringRect(
-							{ trackTopLeft.x + x - 5, trackTopLeft.y - 5 }, // top left
-							{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
+							{ trackTopLeft.x + segmentX - 5, trackTopLeft.y - 5 }, // top left
+							{ trackTopLeft.x + segmentX + 5, trackTopLeft.y + trackHeight + 5 }))  // bottom right 
 						{
 							// draw handler of segment duration
 							drawList->AddLine(
-							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+							{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								3.0f); // thickness
 
@@ -268,8 +357,8 @@ namespace nap
 						{
 							// draw handler of segment duration
 							drawList->AddLine(
-							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+							{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								3.0f); // thickness
 
@@ -287,8 +376,8 @@ namespace nap
 						{
 							// draw handler of segment duration
 							drawList->AddLine(
-							{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
+							{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }, // bottom right
 								guicolors::white, // color
 								1.0f); // thickness
 
@@ -298,46 +387,11 @@ namespace nap
 							}
 						}
 
-						//
-						if ((mState.currentAction == OPEN_DELETE_SEGMENT_POPUP || 
-							mState.currentAction == DELETING_SEGMENT || 
-							mState.currentAction == HOVERING_SEGMENT ||
-							mState.currentAction == DRAGGING_SEGMENT ) && mState.currentObjectID == segment->mID)
-						{
-							// draw selected background of segment
-							drawList->AddRectFilled(
-							{ trackTopLeft.x + x - segmentWidth, trackTopLeft.y }, // top left position
-							{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right position
-								guicolors::darkGrey); // color 
-						}
-
-						// draw curve;
-						const int resolution = 20;
-						std::vector<ImVec2> points;
-						points.resize(resolution + 1);
-						for (int i = 0; i <= resolution; i++)
-						{
-							float value = 1.0f - segment->mCurve->evaluate((float)i / resolution);
-
-							points[i] = {
-								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-								trackTopLeft.y + value * trackHeight };
-						}
-
-						// draw points of curve
-						drawList->AddPolyline(
-							&*points.begin(), // points array
-							points.size(), // size of points array
-							guicolors::red, // color
-							false, // closed
-							1.0f, // thickness
-							true); // anti-aliased
-
 						// keyframe handler box coordinates
-						ImVec2 handlerBoxTopLeft = { trackTopLeft.x + x - 5, trackTopLeft.y };
-						ImVec2 handlerBoxBottomRight = { trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight };
+						ImVec2 handlerBoxTopLeft = { trackTopLeft.x + segmentX - 5, trackTopLeft.y };
+						ImVec2 handlerBoxBottomRight = { trackTopLeft.x + segmentX + 5, trackTopLeft.y + trackHeight };
 
-						previousSegmentX = x;
+						previousSegmentX = segmentX;
 
 						/*
 						// check if keyframe line is being hovered

@@ -59,7 +59,7 @@ namespace nap
 		 * @param segmentID the id of the segement we need to edit
 		 * @param amount the amount that the duration of this segment should change
 		 */
-		void segmentDurationChange(std::string segmentID, float amount);
+		void segmentDurationChange(const std::string& segmentID, float amount);
 
 		/**
 		 * save
@@ -73,7 +73,7 @@ namespace nap
 		 * @param trackID the track that the segment gets inserted to
 		 * @param time the time at which the track gets inserted
 		 */
-		void insertSegment(std::string trackID, double time);
+		void insertSegment(const std::string& trackID, double time);
 
 		/**
 		 * deleteSegment
@@ -81,12 +81,25 @@ namespace nap
 		 * @param trackID the track in which the segment gets deleted 
 		 * @param segmentID the segment ID that needs to be deleted
 		 */
-		void deleteSegment(std::string trackID, std::string segmentID);
+		void deleteSegment(const std::string& trackID, const std::string& segmentID);
 
-		void changeSegmentEndValue(std::string trackID, std::string segmentID, float value);
+		/**
+		 * changeSegmentEndVlaue
+		 * changes the end value of this segment and updates the track accordingly
+		 * @param trackID the track in which the segment gets updated
+		 * @param segmentID the segment ID that needs to be updated
+		 * @param amount the amount that the end value needs to change
+		 */
+		void changeSegmentEndValue(const std::string& trackID, const std::string& segmentID, float amount);
 
+		/**
+		 * 
+		 */
+		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos);
 	protected:
 		void updateSegments();
+
+		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;

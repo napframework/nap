@@ -33,7 +33,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::segmentDurationChange(std::string segmentID, float amount)
+	void SequenceEditorController::segmentDurationChange(const std::string& segmentID, float amount)
 	{
 		// pause player thread
 
@@ -108,7 +108,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::insertSegment(std::string trackID, double time)
+	void SequenceEditorController::insertSegment(const std::string& trackID, double time)
 	{
 		// pause player thread
 
@@ -216,7 +216,7 @@ namespace nap
 		// resume player thread
 	}
 
-	void SequenceEditorController::deleteSegment(std::string trackID, std::string segmentID)
+	void SequenceEditorController::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		// pause player thread
 
@@ -259,7 +259,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::changeSegmentEndValue(std::string trackID, std::string segmentID, float value)
+	void SequenceEditorController::changeSegmentEndValue(const std::string& trackID, const std::string& segmentID, float value)
 	{
 		for (auto& track : mSequence.mTracks)
 		{
@@ -359,5 +359,55 @@ namespace nap
 				segmentCount++;
 			}
 		}
+	}
+
+
+	void SequenceEditorController::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos)
+	{
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+
+		if (segment != nullptr)
+		{
+			for (int i = 0; i < segment->mCurve->mPoints.size() - 1; i++)
+			{
+				if (segment->mCurve->mPoints[i].mPos.mTime <= pos
+					&& segment->mCurve->mPoints[i + 1].mPos.mTime > pos)
+				{
+					math::FCurvePoint<float, float> p;
+					p.mPos.mTime = pos;
+					p.mPos.mValue = segment->mCurve->evaluate(pos);
+					p.mInTan.mTime = -0.1f;
+					p.mOutTan.mTime = 0.1f;
+					p.mInTan.mValue = 0.0f;
+					p.mOutTan.mValue = 0.0f;
+					p.mTangentsAligned = true;
+					p.mInterp = math::ECurveInterp::Bezier;
+
+					segment->mCurve->mPoints.insert(segment->mCurve->mPoints.begin() + i + 1, p);
+					segment->mCurve->invalidate();
+					break;
+				}
+			}
+		}
+	}
+
+
+	SequenceTrackSegment* SequenceEditorController::findSegment(const std::string& trackID, const std::string& segmentID)
+	{
+		for (auto& track : mSequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mID == segmentID)
+					{
+						return segment.get();
+					}
+				}
+			}
+		}
+
+		return nullptr;
 	}
 }
