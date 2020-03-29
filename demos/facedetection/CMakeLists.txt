@@ -18,7 +18,15 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+
+if(APPLE)
+	# Apple PLIST file required for camera access
+	set(OSXPLIST ${PROJECT_SOURCE_DIR}/osx/Info.plist)
+	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS} ${OSXPLIST})
+	copy_files_to_bin(${OSXPLIST})
+else()
+	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
@@ -27,11 +35,6 @@ project_json_to_cmake()
 
 target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
-
-# Copy plist to output directory for camera access
-if(APPLE)
-    copy_files_to_bin(${PROJECT_SOURCE_DIR}/osx/Info.plist)
-endif()
 
 # Package into release, export FBX, other shared source project fixes
 nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "demos" TRUE)
