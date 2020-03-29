@@ -48,7 +48,7 @@ namespace nap
 		 * Initializes the capture device
 		 * @param errorState contains the error if initialization fails
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Starts the capture process. Called automatically by the resource manager.

@@ -89,7 +89,16 @@ create_hierarchical_source_groups_for_files("${SOURCES}" ${CMAKE_CURRENT_SOURCE_
 create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Headers")
 create_hierarchical_source_groups_for_files("${SHADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Shaders")
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+# Add executable, include plist files if found
+file(GLOB_RECURSE PROPERTYLIST apple/*.plist)
+if(APPLE AND PROPERTYLIST)
+    create_hierarchical_source_groups_for_files("${PROPERTYLIST}" ${CMAKE_CURRENT_SOURCE_DIR}/apple "PropertyList")
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS} ${PROPERTYLIST})
+    copy_files_to_bin(${PROPERTYLIST})
+else()
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+endif()
+
 if (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
     if (${CMAKE_VERSION} VERSION_GREATER "3.6.0")
@@ -131,6 +140,10 @@ if(NOT WIN32)
     # Set RPATH to search in ./lib
     if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
+        # install available propery list files if present
+        if(PROPERTYLIST)
+            install(FILES ${PROPERTYLIST} DESTINATION .)
+        endif()
     else()
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
     endif()

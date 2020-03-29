@@ -18,7 +18,15 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+if(APPLE)
+	# Apple PLIST file required for camera access
+	set(PROPERTYLIST ${PROJECT_SOURCE_DIR}/apple/Info.plist)
+	source_group("propertylist" FILES ${PROPERTYLIST})
+	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS} ${PROPERTYLIST})
+	copy_files_to_bin(${PROPERTYLIST})
+else()
+	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
