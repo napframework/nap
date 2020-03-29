@@ -332,8 +332,14 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "dist" EXCLUDE
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
+            PATTERN "*.plist" EXCLUDE
             )
     install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
+
+    # Install apple property list files for apple platform only
+    if(APPLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/apple)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/apple/ DESTINATION ${DEST_DIR}/apple)
+    endif()
 
     # Package any project extra CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/project_extra.cmake)
