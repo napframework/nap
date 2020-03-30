@@ -558,7 +558,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// GL Render window constructor
-	GLWindow::GLWindow() { }
+	GLWindow::GLWindow() :
+		mBackbuffer(*this)
+	{ 
+	}
 
 
 	GLWindow::~GLWindow()
@@ -695,13 +698,13 @@ namespace nap
 
 
 	// Returns the backbuffer
-	const opengl::BackbufferRenderTarget& GLWindow::getBackbuffer() const
+	const BackbufferRenderTarget& GLWindow::getBackbuffer() const
 	{
 		return mBackbuffer;
 	}
 
 
-	opengl::BackbufferRenderTarget& GLWindow::getBackbuffer()
+	BackbufferRenderTarget& GLWindow::getBackbuffer()
 	{
 		return mBackbuffer;
 	}
@@ -844,15 +847,26 @@ namespace nap
 		rect.extent.width = window_size.x;
 		rect.extent.height = window_size.y;
 		vkCmdSetScissor(mCommandBuffers[mCurrentFrame], 0, 1, &rect);
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = window_size.x;
+		viewport.height = window_size.y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(mCommandBuffers[mCurrentFrame], 0, 1, &viewport);
 	}
 
+	void GLWindow::endRenderPass()
+	{
+		vkCmdEndRenderPass(mCommandBuffers[mCurrentFrame]);
+	}
 
 	// Swap buffers
 	void GLWindow::swap()
 	{
 		VkCommandBuffer commandBuffer = mCommandBuffers[mCurrentFrame];
-
-		vkCmdEndRenderPass(commandBuffer);
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");

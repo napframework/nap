@@ -23,7 +23,8 @@ namespace nap
 	{
 		R			= 0,	///< R red component
 		RGBA		= 1,	///< RGBA red, green, blue and alpha component
-		BGRA		= 2		///< BGRA blue, green, red and alpha component
+		BGRA		= 2,	///< BGRA blue, green, red and alpha component
+		Depth		= 3		///< Depth texture
 	};
 
 	/**

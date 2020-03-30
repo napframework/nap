@@ -35,11 +35,8 @@ namespace nap
 			settings.mChannels = ESurfaceChannels::R;
 			break;
 		case ERenderTargetFormat::Depth:
-			return true;
-			//assert(false);
-// 			settings.mFormat			= GL_DEPTH_COMPONENT;
-// 			settings.mInternalFormat 	= GL_DEPTH_COMPONENT;
-// 			settings.mType				= GL_FLOAT;
+			settings.mChannels = ESurfaceChannels::Depth;
+			settings.mDataType = ESurfaceDataType::FLOAT;
 			break;
 		}
 

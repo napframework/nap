@@ -9,7 +9,6 @@
 #include <font.h>
 #include <planemesh.h>
 #include <renderablemesh.h>
-#include <nbackbufferrendertarget.h>
 #include <transformcomponent.h>
 
 namespace nap

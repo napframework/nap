@@ -514,7 +514,7 @@ namespace nap
 		window->addEvent(std::move(windowEvent));
 	}
 
-	void createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass)
+	void createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, bool inIsPresent, VkRenderPass& renderPass)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = colorFormat;
@@ -524,7 +524,7 @@ namespace nap
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = inIsPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment = {};
 		depthAttachment.format = depthFormat;
@@ -834,35 +834,37 @@ namespace nap
 		return true;
 	}
 
-	VkRenderPass RenderService::getOrCreateRenderPass(ERenderTargetFormat format)
+	VkRenderPass RenderService::getOrCreateRenderPass(ERenderTargetFormat format, bool inIsPresent)
 	{
+		RenderTargetPasses& render_passes = inIsPresent ? mBackbufferRenderPasses : mTextureRenderTargetPasses;
+
 		VkRenderPass render_pass = nullptr;
 		switch (format)
 		{
 			case ERenderTargetFormat::RGBA8:
 			{
-				if (mRenderPassRGBA8 == nullptr)
-					createRenderPass(mDevice, VK_FORMAT_B8G8R8A8_SRGB, mDepthFormat, mRenderPassRGBA8);
+				if (render_passes.mRenderPassRGBA8 == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_B8G8R8A8_SRGB, mDepthFormat, inIsPresent, render_passes.mRenderPassRGBA8);
 
-				render_pass = mRenderPassRGBA8;
+				render_pass = render_passes.mRenderPassRGBA8;
 			}
 			break;
 
 			case ERenderTargetFormat::R8:
 			{
-				if (mRenderPassR8 == nullptr)
-					createRenderPass(mDevice, VK_FORMAT_R8_SRGB, mDepthFormat, mRenderPassR8);
+				if (render_passes.mRenderPassR8 == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_R8_SRGB, mDepthFormat, inIsPresent, render_passes.mRenderPassR8);
 
-				render_pass = mRenderPassR8;
+				render_pass = render_passes.mRenderPassR8;
 			}
 			break;
 
 			case ERenderTargetFormat::Depth:
 			{
-				if (mRenderPassDepth == nullptr)
-					createRenderPass(mDevice, VK_FORMAT_D24_UNORM_S8_UINT, mDepthFormat, mRenderPassDepth);
+				if (render_passes.mRenderPassDepth == nullptr)
+					createRenderPass(mDevice, VK_FORMAT_D24_UNORM_S8_UINT, mDepthFormat, inIsPresent, render_passes.mRenderPassDepth);
 
-				render_pass = mRenderPassDepth;
+				render_pass = render_passes.mRenderPassDepth;
 			}
 			break;
 		}
@@ -874,7 +876,7 @@ namespace nap
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
-		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial().getShader().mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial().getShader().mOutputFormat, true);
 
 		VkPipelineLayout layout;
 		VkPipeline pipeline;
@@ -887,7 +889,7 @@ namespace nap
 
 	void RenderService::recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline)
 	{
-		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial().getShader().mOutputFormat);
+		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial().getShader().mOutputFormat, true);
 
 		VkPipeline old_pipeline = renderableMesh.getPipeline();
 
@@ -937,14 +939,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
 		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -1011,13 +1013,13 @@ namespace nap
 
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
 		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
 		assert(mCurrentCommandBuffer != nullptr);	// BeginRendering is not called if this assert is fired	
 
@@ -1165,7 +1167,6 @@ namespace nap
 			texture->upload(mCurrentCommandBuffer);
 
 		mTexturesToUpdate.clear();
-		renderWindow.beginRenderPass();
 
 		return true;
 	}
@@ -1215,6 +1216,16 @@ namespace nap
 	void RenderService::requestTextureUpdate(Texture2D& texture)
 	{
 		mTexturesToUpdate.insert(&texture);
+	}
+
+
+	VkImageAspectFlags RenderService::getDepthAspectFlags() const
+	{
+		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (mDepthFormat != VK_FORMAT_D32_SFLOAT)
+			flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+		return flags;
 	}
 
 } // Renderservice

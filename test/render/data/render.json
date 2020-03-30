@@ -9,6 +9,20 @@
 			"Title" : "Window 1"
 		},
 		{
+			"Type" : "nap::RenderTarget",
+			"mID": "PlaneRenderTarget",
+			"Size": { 
+				"x": 640,
+				"y": 480
+			},
+			"ClearColor" : {
+				"x" : 1.0,
+				"y" : 1.0,
+				"z" : 1.0,
+				"w" : 1.0
+			}
+		},
+		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "PigMesh",
 			"Path": "pig_head_alpha_rotated.mesh"
@@ -43,9 +57,51 @@
 				},
 				{
 					"Entity" : "DefaultInputRouterEntity"
-				}				
+				},
+				{
+					"Entity" : "PlaneEntity"
+				}
 			]
-		}, 
+		},
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID" : "CustomPlaneMesh"
+		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "PlaneEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "CustomPlaneMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": -1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.5					
+					}
+				}
+			]
+		},		
 		{
 			"Type" : "nap::Entity",
 			"mID": "DefaultInputRouterEntity",		

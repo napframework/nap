@@ -116,7 +116,7 @@ namespace nap
 		render_window->makeActive();
 
 		// Set target
-		opengl::RenderTarget& render_target = render_window->getBackbuffer();
+		IRenderTarget& render_target = render_window->getBackbuffer();
 		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::Color | opengl::EClearFlags::Depth);
 

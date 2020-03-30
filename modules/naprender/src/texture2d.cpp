@@ -134,54 +134,6 @@ namespace nap
 			return true;
 		}
 
-
-		VkFormat getTextureFormat(ESurfaceChannels channels, ESurfaceDataType dataType, EColorSpace colorSpace)
-		{
-			switch (channels)
-			{
-			case ESurfaceChannels::R:
-				{
-					switch (dataType)
-					{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16_UNORM;
-					}
-					break;
-				}
-			case ESurfaceChannels::RGBA:
-				{
-					switch (dataType)
-					{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32G32B32A32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16G16B16A16_UNORM;
-					}
-					break;
-				}
-			case ESurfaceChannels::BGRA:
-				{
-					switch (dataType)
-					{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_UNDEFINED;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_UNDEFINED;
-					}
-					break;
-				}
-			}
-			return VK_FORMAT_UNDEFINED;
-		}
-
 		void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) 
 		{
 			VkImageMemoryBarrier barrier = {};
@@ -259,14 +211,14 @@ namespace nap
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 		}
 
-		bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageView& imageView, utility::ErrorState& errorState) 
+		bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& imageView, utility::ErrorState& errorState)
 		{
 			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = image;
 			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 			viewInfo.format = format;
-			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			viewInfo.subresourceRange.aspectMask = aspectFlags;
 			viewInfo.subresourceRange.baseMipLevel = 0;
 			viewInfo.subresourceRange.levelCount = 1;
 			viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -281,12 +233,73 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	{
+		ESurfaceChannels channels = descriptor.getChannels();
+		ESurfaceDataType dataType = descriptor.getDataType();
+		EColorSpace colorSpace = descriptor.getColorSpace();
+
+		switch (channels)
+		{
+		case ESurfaceChannels::R:
+			{
+				switch (dataType)
+				{
+				case nap::ESurfaceDataType::BYTE:
+					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+				case nap::ESurfaceDataType::FLOAT:
+					return VK_FORMAT_R32_SFLOAT;
+				case nap::ESurfaceDataType::USHORT:
+					return VK_FORMAT_R16_UNORM;
+				}
+				break;
+			}
+		case ESurfaceChannels::RGBA:
+			{
+				switch (dataType)
+				{
+				case nap::ESurfaceDataType::BYTE:
+					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+				case nap::ESurfaceDataType::FLOAT:
+					return VK_FORMAT_R32G32B32A32_SFLOAT;
+				case nap::ESurfaceDataType::USHORT:
+					return VK_FORMAT_R16G16B16A16_UNORM;
+				}
+				break;
+			}
+		case ESurfaceChannels::BGRA:
+			{
+				switch (dataType)
+				{
+				case nap::ESurfaceDataType::BYTE:
+					return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+				case nap::ESurfaceDataType::FLOAT:
+					return VK_FORMAT_UNDEFINED;
+				case nap::ESurfaceDataType::USHORT:
+					return VK_FORMAT_UNDEFINED;
+				}
+				break;
+			}
+		case ESurfaceChannels::Depth:				
+			return renderService.getDepthFormat();
+		}
+
+		return VK_FORMAT_UNDEFINED;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	Texture2D::Texture2D(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
 	}
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
+	{
+		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
+	}
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
@@ -335,14 +348,15 @@ namespace nap
 		for (int index = 0; index < mImageData.size(); ++index)
 		{
 			ImageData& imageData = mImageData[index];
-			VkFormat texture_format = getTextureFormat(descriptor.mChannels, descriptor.mDataType, descriptor.mColorSpace);
+			VkFormat texture_format = getTextureFormat(*mRenderService, descriptor);
 			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 				return false;
 
-			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
+			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, usage, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
 				return false;
 
-			if (!createImageView(device, imageData.mTextureImage, texture_format, imageData.mTextureView, errorState))
+			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
+			if (!createImageView(device, imageData.mTextureImage, texture_format, aspect_flags, imageData.mTextureView, errorState))
 				return false;
 		}
 

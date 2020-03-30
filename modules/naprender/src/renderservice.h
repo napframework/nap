@@ -92,7 +92,7 @@ namespace nap
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
 		* Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -101,7 +101,7 @@ namespace nap
 		* @param camera the camera used for rendering all the available components
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -111,7 +111,7 @@ namespace nap
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Renders a specific set of objects to a specific renderTarget.
@@ -121,7 +121,7 @@ namespace nap
 		* @param comps the components to render to renderTarget
 		* @param sortFunction The function used to sort the components to render
 		*/
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		 * Shuts down the managed renderer
@@ -185,7 +185,7 @@ namespace nap
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
 
-		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format);
+		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format, bool inIsPresent);
 		
 		VkInstance getVulkanInstance() const { return mInstance; }
 		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
@@ -193,6 +193,7 @@ namespace nap
 		VkDevice getDevice() const { return mDevice; }
 		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
+		VkImageAspectFlags getDepthAspectFlags() const;
 		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
 		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
 
@@ -254,6 +255,13 @@ namespace nap
 			VkPipeline	mPipeline;
 		};
 
+		struct RenderTargetPasses
+		{
+			VkRenderPass							mRenderPassRGBA8 = nullptr;
+			VkRenderPass							mRenderPassR8 = nullptr;
+			VkRenderPass							mRenderPassDepth = nullptr;
+		};
+
 		using WindowList = std::vector<RenderWindow*>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
@@ -275,9 +283,8 @@ namespace nap
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
-		VkRenderPass							mRenderPassRGBA8 = nullptr;
-		VkRenderPass							mRenderPassR8 = nullptr;
-		VkRenderPass							mRenderPassDepth = nullptr;
+		RenderTargetPasses						mBackbufferRenderPasses;
+		RenderTargetPasses						mTextureRenderTargetPasses;
 
 		RendererSettings						mSettings;
 		VkInstance								mInstance = nullptr;

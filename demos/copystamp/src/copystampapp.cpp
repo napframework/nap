@@ -87,6 +87,9 @@ namespace nap
 		if (!mRenderService->beginRendering(*mRenderWindow))
 			return;
 
+		IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
+		backbuffer.beginRendering();
+
 		// Get perspective camera
 		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
@@ -105,6 +108,8 @@ namespace nap
 
 		// Draw gui
 		mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+
+		backbuffer.endRendering();
 
 		mRenderService->endRendering();
 	}

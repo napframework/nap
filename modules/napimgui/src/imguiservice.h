@@ -5,6 +5,7 @@
 #include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
+#include "nap/resourceptr.h"
 
 namespace nap
 {

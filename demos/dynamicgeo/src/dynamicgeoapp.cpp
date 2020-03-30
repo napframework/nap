@@ -84,7 +84,7 @@ namespace nap
 		mRenderWindow->makeActive();
 
 		// Clear window back-buffer
-		opengl::RenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
+		IRenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
 		mRenderService->clearRenderTarget(backbuffer);
 
 		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();

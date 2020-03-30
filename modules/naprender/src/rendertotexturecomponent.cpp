@@ -66,8 +66,8 @@ namespace nap
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 
 		// Bind textures to target
-		mTarget.mColorTexture = resource->mOutputTexture;
-		mTarget.mDepthTexture = &mDepthTexture;
+// 		mTarget.mColorTexture = resource->mOutputTexture;
+// 		mTarget.mDepthTexture = &mDepthTexture;
 
 		// Initialize target
 		if (!mTarget.init(errorState))
@@ -112,31 +112,31 @@ namespace nap
 	}
 
 
-	opengl::RenderTarget& RenderToTextureComponentInstance::getTarget()
+	IRenderTarget& RenderToTextureComponentInstance::getTarget()
 	{
-		return mTarget.getTarget();
+		return mTarget;
 	}
 
 
-	nap::Texture2D& RenderToTextureComponentInstance::getOutputTexture()
-	{
-		return mTarget.getColorTexture();
-	}
+// 	nap::Texture2D& RenderToTextureComponentInstance::getOutputTexture()
+// 	{
+// 		return mTarget.getColorTexture();
+// 	}
 
 
-	bool RenderToTextureComponentInstance::switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error)
-	{
-		mDirty = true;
-		if (mTarget.switchColorTexture(texture, error))
-			return true;
-		return false;
-	}
+// 	bool RenderToTextureComponentInstance::switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error)
+// 	{
+// 		mDirty = true;
+// 		if (mTarget.switchColorTexture(texture, error))
+// 			return true;
+// 		return false;
+// 	}
 
 
-	void RenderToTextureComponentInstance::draw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex)
+	void RenderToTextureComponentInstance::draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex)
 	{
 		// Create orthographic projection matrix
-		glm::ivec2 size = mTarget.getTarget().getSize();
+		glm::ivec2 size = mTarget.getSize();
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		// Clear target
@@ -162,7 +162,7 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderToTextureComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -227,7 +227,7 @@ namespace nap
 		if (mDirty)
 		{
 			// Transform to middle of target
-			glm::ivec2 tex_size = mTarget.getColorTexture().getSize();
+			glm::ivec2 tex_size = mTarget.getSize();
 			mModelMatrix = glm::translate(sIdentityMatrix, glm::vec3(
 				tex_size.x / 2.0f,
 				tex_size.y / 2.0f,

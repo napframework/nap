@@ -72,11 +72,12 @@ namespace nap
 		 * @param settings the texture specific settings associated with this texture
 		 */
 		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState);
 
 		/**
 		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
 		 */
-		const nap::TextureParameters& geParameters() const { return mParameters; }
+		const nap::TextureParameters& getParameters() const { return mParameters; }
 
 		/**
 		 * @return size of the texture, in texels.
@@ -182,6 +183,8 @@ namespace nap
 		size_t						mImageSizeInBytes = -1;
 		SurfaceDescriptor			mDescriptor;
 	};
+
+	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -91,7 +91,7 @@ namespace nap
 		* @param viewMatrix the camera world space location
 		* @param projectionMatrix the camera projection matrix
 		*/
-		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position instanced meshes

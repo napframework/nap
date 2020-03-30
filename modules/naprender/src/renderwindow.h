@@ -9,14 +9,10 @@
 #include <rect.h>
 #include "glwindow.h"
 
-namespace opengl
-{
-	class BackbufferRenderTarget;
-}
-
 namespace nap
 {
 	class Core;
+	class BackbufferRenderTarget;
 
 	/**
 	 * 3D render window resource that can be declared in json.
@@ -62,8 +58,6 @@ namespace nap
 		 * Makes this window active, calls activate afterwards
 		 */
 		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
-
-		void beginRenderPass() { mWindow->beginRenderPass(); }
 
 		/**
          * Returns the width of the window.
@@ -177,7 +171,7 @@ namespace nap
 		* that the opengl viewport always matches the window dimensions
 		* @return the back buffer associated with this window
 		*/
-		const opengl::BackbufferRenderTarget& getBackbuffer() const;
+		const BackbufferRenderTarget& getBackbuffer() const;
 
 		/**
 		* The back buffer for an OpenGL window isn't an actual frame buffer
@@ -186,7 +180,7 @@ namespace nap
 		* that the opengl viewport always matches the window dimensions
 		* @return the back buffer associated with this window
 		*/
-		opengl::BackbufferRenderTarget& getBackbuffer();
+		BackbufferRenderTarget& getBackbuffer();
 
 	private:
 		void handleEvent(const Event& event);

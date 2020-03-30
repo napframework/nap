@@ -990,7 +990,7 @@ namespace nap
 	
 		g_Gpu = mRenderService->getPhysicalDevice();
 		g_Device = mRenderService->getDevice();
-		g_RenderPass = mRenderService->getOrCreateRenderPass(ERenderTargetFormat::RGBA8);
+		g_RenderPass = mRenderService->getOrCreateRenderPass(ERenderTargetFormat::RGBA8, true);
 		
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 

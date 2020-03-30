@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nbackbufferrendertarget.h"
+#include "backbufferrendertarget.h"
 #include <rtti/rtti.h>
 #include <nap/numeric.h>
 
@@ -82,7 +82,7 @@ namespace nap
 		 * that the opengl viewport always matches the window dimensions
 		 * @return the back buffer associated with this window
 		 */
-		const opengl::BackbufferRenderTarget& getBackbuffer() const;
+		const BackbufferRenderTarget& getBackbuffer() const;
 
 		/**
 		* The back buffer for an OpenGL window isn't an actual frame buffer
@@ -91,7 +91,7 @@ namespace nap
 		* that the opengl viewport always matches the window dimensions
 		* @return the back buffer associated with this window
 		*/
-		opengl::BackbufferRenderTarget& getBackbuffer();
+		BackbufferRenderTarget& getBackbuffer();
 
 		/**
 		 * Set the window title
@@ -149,8 +149,6 @@ namespace nap
 		 */
 		VkCommandBuffer makeCurrent();
 
-		void beginRenderPass();
-
 		/**
 		 *	Returns the window number
 		 */
@@ -159,13 +157,18 @@ namespace nap
 		int getCurrentFrameIndex() const { return mCurrentFrame; }
 
 	private:
+		friend class BackbufferRenderTarget;
+
 		bool recreateSwapChain(utility::ErrorState& errorState);
 		
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();		
 
+		void beginRenderPass();
+		void endRenderPass();
+
 	private:
-		opengl::BackbufferRenderTarget					mBackbuffer;
+		BackbufferRenderTarget							mBackbuffer;
 
 		RenderService*									mRenderService = nullptr;
 		VkDevice										mDevice = nullptr;

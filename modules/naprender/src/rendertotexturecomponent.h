@@ -56,7 +56,8 @@ namespace nap
 	public:
 		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			RenderableComponentInstance(entity, resource),
-			mDepthTexture(*entity.getCore())
+			mDepthTexture(*entity.getCore()),
+			mTarget(*entity.getCore())
 		{
 		}
 
@@ -78,19 +79,19 @@ namespace nap
 		/**
 		 * @return the render target that is used to perform the render step	
 		 */
-		opengl::RenderTarget& getTarget();
+		IRenderTarget& getTarget();
 
 		/**
 		 * @return the output texture
 		 */
-		Texture2D& getOutputTexture();
+//		Texture2D& getOutputTexture();
 
 		/**
 		 * Switch the output texture, ie: the texture that is rendered to.
 		 * @param texture the new texture the result is rendered into
 		 * @param error contains the error if switching fails
 		 */
-		bool switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error);
+//		bool switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error);
 
 		/**
 		 * Directly executes the render step without having to go through the render service.
@@ -100,7 +101,7 @@ namespace nap
 		 * A custom orthographic projection matrix is constructed based on the size of the render target.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
-		void draw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex);
+		void draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex);
 
 		/**
 		 * Called by the Render Service.
@@ -114,7 +115,7 @@ namespace nap
 		* @param viewMatrix often the camera world space location
 		* @param projectionMatrix often the camera projection matrix
 		*/
-		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		nap::RenderTarget	mTarget;										///< Internally managed render target

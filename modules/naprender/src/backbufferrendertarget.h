@@ -1,0 +1,39 @@
+#pragma once
+
+#include "irendertarget.h"
+
+namespace nap
+{
+	class GLWindow;
+
+	/**
+	* Render target that represents a backbuffer.
+	*/
+	class BackbufferRenderTarget : public IRenderTarget
+	{
+	public:
+		BackbufferRenderTarget(GLWindow& window);
+
+		virtual void beginRendering() override;
+		virtual void endRendering() override;
+
+		/**
+		* @param size Size of the render target
+		*/
+		void setSize(const glm::ivec2& size) { mSize = size; }
+
+		/**
+		* @return size of render target.
+		*/
+		virtual const glm::ivec2 getSize() const override { return mSize; }
+
+		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
+		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
+
+	private:
+		GLWindow&	mWindow;
+		glm::ivec2	mSize;
+		glm::vec4 mClearColor;			// Clear color, used for clearing the color buffer
+	};
+
+} // nap

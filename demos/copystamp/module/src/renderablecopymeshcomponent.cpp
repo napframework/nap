@@ -129,7 +129,7 @@ namespace nap
 		return mMaterialInstance;
 	}
 
-	void renderMesh(RenderableMesh& renderableMesh, opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer)
+	void renderMesh(RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkCommandBuffer commandBuffer)
 	{
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
@@ -178,7 +178,7 @@ namespace nap
 	 * A randomly selected mesh is rendered at the position of every vertex in the reference mesh.
 	 * You can change the meshes that are copied and the reference mesh in the JSON file.
 	 */
-	void RenderableCopyMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableCopyMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();

@@ -70,7 +70,7 @@ namespace nap
 		* When using this function the orientation of the text is taken into account.
 		* @param target render target that defines the screen space bounds
 		*/
-		void draw(opengl::RenderTarget& target);
+		void draw(IRenderTarget& target);
 
 		/**
 		 * @return current text draw orientation
@@ -132,7 +132,7 @@ namespace nap
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
-		virtual void onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 
 	private:

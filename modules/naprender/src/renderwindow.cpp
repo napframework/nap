@@ -122,13 +122,13 @@ namespace nap
 	}
 
 
-	const opengl::BackbufferRenderTarget& RenderWindow::getBackbuffer() const
+	const BackbufferRenderTarget& RenderWindow::getBackbuffer() const
 	{
 		return mWindow->getBackbuffer();
 	}
 
 
-	opengl::BackbufferRenderTarget& RenderWindow::getBackbuffer()
+	BackbufferRenderTarget& RenderWindow::getBackbuffer()
 	{
 		return mWindow->getBackbuffer();
 	}

@@ -86,7 +86,7 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(opengl::RenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mRenderableMesh.isValid())
 		{
@@ -122,15 +122,6 @@ namespace nap
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
-
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = renderTarget.getSize().x;
-		viewport.height = renderTarget.getSize().y;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 		// Gather draw info
 		MeshInstance& mesh_instance = getMeshInstance();
