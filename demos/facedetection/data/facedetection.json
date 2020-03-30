@@ -41,7 +41,7 @@
             "Type": "nap::CVCaptureDevice",
             "mID": "VideoCaptureDevice",
             "AutoCapture": false,
-            "AllowFailure": false,
+            "AllowFailure": true,
             "Adapters": [
                 "Video"
             ]
