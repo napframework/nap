@@ -40,8 +40,17 @@ namespace nap
 	};
 
 	/**
+	 * 
+	 */
+	enum TanPointTypes
+	{
+		IN,
+		OUT
+	};
+
+	/**
 	 * SequenceEditorController 
-	 * The actual controller with methods that the view can call
+	 * The actual controller with methods that a view can call
 	 */
 	class SequenceEditorController
 	{
@@ -59,7 +68,9 @@ namespace nap
 		 * @param segmentID the id of the segement we need to edit
 		 * @param amount the amount that the duration of this segment should change
 		 */
-		void segmentDurationChange(const std::string& segmentID, float amount);
+		void segmentDurationChange(
+			const std::string& segmentID, 
+			float amount);
 
 		/**
 		 * save
@@ -73,7 +84,9 @@ namespace nap
 		 * @param trackID the track that the segment gets inserted to
 		 * @param time the time at which the track gets inserted
 		 */
-		void insertSegment(const std::string& trackID, double time);
+		void insertSegment(
+			const std::string& trackID, 
+			double time);
 
 		/**
 		 * deleteSegment
@@ -81,7 +94,9 @@ namespace nap
 		 * @param trackID the track in which the segment gets deleted 
 		 * @param segmentID the segment ID that needs to be deleted
 		 */
-		void deleteSegment(const std::string& trackID, const std::string& segmentID);
+		void deleteSegment(
+			const std::string& trackID,
+			const std::string& segmentID);
 
 		/**
 		 * changeSegmentEndVlaue
@@ -90,21 +105,45 @@ namespace nap
 		 * @param segmentID the segment ID that needs to be updated
 		 * @param amount the amount that the end value needs to change
 		 */
-		void changeSegmentEndValue(const std::string& trackID, const std::string& segmentID, float amount);
+		void changeSegmentEndValue(
+			const std::string& trackID, 
+			const std::string& segmentID,
+			float amount);
 
 		/**
 		 * 
 		 */
-		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos);
+		void insertCurvePoint(
+			const std::string& trackID,
+			const std::string& segmentID, 
+			float pos);
 
 		/**
 		 * 
 		 */
-		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, float time, float value);
+		void changeCurvePoint(
+			const std::string& trackID, 
+			const std::string& segmentID, 
+			const int index, 
+			float time, float 
+			value);
+
+		/**
+		 *
+		 */
+		void changeTanPoint(
+			const std::string& trackID,
+			const std::string& segmentID,
+			const int index,
+			TanPointTypes tanType,
+			float time, 
+			float value);
 	protected:
 		void updateSegments();
 
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
+	
+		SequenceTrack* SequenceEditorController::findTrack(const std::string& trackID);
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;

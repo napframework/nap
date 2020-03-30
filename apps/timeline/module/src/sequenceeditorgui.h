@@ -60,11 +60,6 @@ namespace nap
 		virtual ~SequenceGUIActionData() {}
 	};
 
-	enum TanPointTypes
-	{
-		IN,
-		OUT
-	};
 
 	class SequenceGUIDragTanPointData : public SequenceGUIActionData
 	{
@@ -143,16 +138,60 @@ namespace nap
 
 	private:
 		void drawTracks(
-			const Sequence &sequence, 
+			const Sequence &sequence,
 			const float timelineWidth,
 			const ImVec2 &mousePos,
-			const float stepSize, 
+			const float stepSize,
 			const ImVec2 &mouseDelta);
+
+		void drawSegmentHandler(
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float segmentX,
+			const float trackHeight,
+			const ImVec2 &mouseDelta,
+			const float stepSize,
+			ImDrawList* drawList);
+
+		void drawCurve(
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float previousSegmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const float segmentX,
+			const float stepSize,
+			ImDrawList* drawList);
+
+		void drawControlPoints(
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float segmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const ImVec2 mouseDelta,
+			const int stepSize,
+			ImDrawList* drawList);
+
+		void drawTanHandler(
+			const SequenceTrack &track,
+			const SequenceTrackSegment &segment,
+			std::ostringstream &stringStream,
+			const float segmentWidth,
+			const math::FCurvePoint<float, float> &curvePoint,
+			const float trackHeight,
+			const ImVec2 &circlePoint,
+			const int controlPointIndex,
+			const TanPointTypes type,
+			const ImVec2& mouseDelta,
+			const int stepSize,
+			ImDrawList* drawList);
 
 		std::string mID;
 		SequenceGUIState mState;
 		ImVec2 mPreviousMousePos = { 0,0 };
 	};
-
-
 }

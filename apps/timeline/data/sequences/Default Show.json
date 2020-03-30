@@ -50,14 +50,14 @@
                                     }
                                 ]
                             },
-                            "Duration": 0.3300000131130219,
+                            "Duration": 0.6300000064074993,
                             "Start Value": 0.0,
                             "End Value": 0.0
                         },
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_17",
-                            "Start Time": 0.3300000131130219,
+                            "Start Time": 0.6300000064074993,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_16",
@@ -96,14 +96,14 @@
                                     }
                                 ]
                             },
-                            "Duration": 0.34000000357627865,
+                            "Duration": 0.3400000035762787,
                             "Start Value": 0.0,
                             "End Value": 0.0
                         },
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_19",
-                            "Start Time": 0.6700000166893005,
+                            "Start Time": 0.970000009983778,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_18",
@@ -142,14 +142,14 @@
                                     }
                                 ]
                             },
-                            "Duration": 0.9699999764561652,
+                            "Duration": 0.9699999764561653,
                             "Start Value": 0.0,
                             "End Value": 0.6999996900558472
                         },
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_23",
-                            "Start Time": 1.639999993145466,
+                            "Start Time": 1.9399999864399434,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_22",
@@ -195,7 +195,7 @@
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_21",
-                            "Start Time": 2.80999992787838,
+                            "Start Time": 3.1099999211728575,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_20",
@@ -234,16 +234,16 @@
                                     },
                                     {
                                         "Position": {
-                                            "Time": 0.4999999701976776,
-                                            "Value": 0.5
+                                            "Time": 0.3384615480899811,
+                                            "Value": 0.5099999904632568
                                         },
                                         "InTangent": {
-                                            "Time": -0.10000000149011612,
-                                            "Value": 0.0
+                                            "Time": -0.2600000202655792,
+                                            "Value": 0.27000001072883608
                                         },
                                         "OutTangent": {
-                                            "Time": 0.10000000149011612,
-                                            "Value": 0.0
+                                            "Time": 0.2600000202655792,
+                                            "Value": -0.27000001072883608
                                         },
                                         "InterpolationType": "Bezier",
                                         "AlignedTangents": true
@@ -282,14 +282,14 @@
                                     }
                                 ]
                             },
-                            "Duration": 1.2999999951571229,
+                            "Duration": 1.2999999951571227,
                             "Start Value": 0.0,
                             "End Value": 1.0
                         },
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_27",
-                            "Start Time": 4.109999923035502,
+                            "Start Time": 4.40999991632998,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_26",
@@ -458,7 +458,7 @@
                                     }
                                 ]
                             },
-                            "Duration": 0.27000001072883608,
+                            "Duration": 0.270000010728836,
                             "Start Value": 0.8699995875358582,
                             "End Value": 0.0
                         },
@@ -511,7 +511,7 @@
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_11",
-                            "Start Time": 1.9900000225752593,
+                            "Start Time": 1.9900000225752595,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_10",
@@ -550,7 +550,7 @@
                                     }
                                 ]
                             },
-                            "Duration": 1.769999910145998,
+                            "Duration": 1.7699999101459978,
                             "Start Value": 0.5799997448921204,
                             "End Value": 0.0
                         },

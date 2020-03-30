@@ -387,6 +387,80 @@ namespace nap
 	}
 
 
+	void SequenceEditorController::changeTanPoint(
+		const std::string& trackID,
+		const std::string& segmentID,
+		const int index,
+		TanPointTypes tanType,
+		float time,
+		float value)
+	{
+		// find segment
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+
+		if (segment != nullptr)
+		{
+			if (index < segment->mCurve->mPoints.size())
+			{
+				auto& curvePoint = segment->mCurve->mPoints[index];
+
+				switch (tanType)
+				{
+				case IN:
+				{
+					curvePoint.mInTan.mTime += time;
+					curvePoint.mInTan.mValue += value;
+
+					if (curvePoint.mTangentsAligned)
+					{
+						curvePoint.mOutTan.mTime = -curvePoint.mInTan.mTime;
+						curvePoint.mOutTan.mValue = -curvePoint.mInTan.mValue;
+					}
+				}
+					break;
+				case OUT:
+				{
+					curvePoint.mOutTan.mTime += time;
+					curvePoint.mOutTan.mValue += value;
+
+					if (curvePoint.mTangentsAligned)
+					{
+						curvePoint.mInTan.mTime = -curvePoint.mOutTan.mTime;
+						curvePoint.mInTan.mValue = -curvePoint.mOutTan.mValue;
+					}
+				}
+				break;
+				}
+
+				// is this the last control point ?
+				// then also change the first control point of the next segment accordinly
+				if (index == segment->mCurve->mPoints.size() - 1)
+				{
+					SequenceTrack* track = findTrack(trackID);
+					if (track != nullptr)
+					{
+						for (int i = 0; i < track->mSegments.size(); i++)
+						{
+							if (track->mSegments[i].get() == segment &&
+								i + 1 < track->mSegments.size())
+							{
+								auto& nextSegmentCurvePoint = track->mSegments[i + 1]->mCurve->mPoints[0];
+
+								nextSegmentCurvePoint.mInTan.mTime = curvePoint.mInTan.mTime;
+								nextSegmentCurvePoint.mInTan.mValue = curvePoint.mInTan.mValue;
+								nextSegmentCurvePoint.mOutTan.mTime = curvePoint.mOutTan.mTime;
+								nextSegmentCurvePoint.mOutTan.mValue = curvePoint.mOutTan.mValue;
+							}
+						}
+					}
+				}
+
+				segment->mCurve->invalidate();
+			}
+		}
+	}
+
+
 	void SequenceEditorController::changeCurvePoint(
 		const std::string& trackID, const std::string& segmentID, const int index, 
 		float time,
@@ -421,6 +495,20 @@ namespace nap
 						return segment.get();
 					}
 				}
+			}
+		}
+
+		return nullptr;
+	}
+
+
+	SequenceTrack* SequenceEditorController::findTrack(const std::string& trackID)
+	{
+		for (auto& track : mSequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				return track.get();
 			}
 		}
 
