@@ -48,6 +48,8 @@ namespace nap
 		DRAGGING_SEGMENT_VALUE,
 		HOVERING_CONTROL_POINT,
 		DRAGGING_CONTROL_POINT,
+		HOVERING_TAN_POINT,
+		DRAGGING_TAN_POINT,
 		NONE
 	};
 
@@ -56,6 +58,24 @@ namespace nap
 	public:
 		SequenceGUIActionData() {}
 		virtual ~SequenceGUIActionData() {}
+	};
+
+	enum TanPointTypes
+	{
+		IN,
+		OUT
+	};
+
+	class SequenceGUIDragTanPointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragTanPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_, TanPointTypes type_)
+			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_), type(type_) {}
+
+		std::string		trackID;
+		std::string		segmentID;
+		int				controlPointIndex;
+		TanPointTypes	type;
 	};
 
 	class SequenceGUIDragControlPointData : public SequenceGUIActionData

@@ -242,7 +242,7 @@ namespace nap
 					{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
 					guicolors::black); // color 
 
-									   // handle insertion of segment
+				// handle insertion of segment
 				if (mState.currentAction == SequenceGUIMouseActions::NONE)
 				{
 					if (ImGui::IsMouseHoveringRect(
@@ -343,9 +343,9 @@ namespace nap
 					for (int i = 1; i < segment->mCurve->mPoints.size() - 1; i++)
 					{
 						const auto& curvePoint = segment->mCurve->mPoints[i];
-						std::ostringstream curveString;
-						curveString << segment->mID << "_point_" << i;
-						std::string pointID = curveString.str();
+						std::ostringstream stringStream;
+						stringStream << segment->mID << "_point_" << i;
+						std::string pointID = stringStream.str();
 
 						ImVec2 circlePoint =
 						{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
@@ -385,6 +385,110 @@ namespace nap
 								mState.currentAction = NONE;
 							}
 						}
+
+						// draw tan handlers
+						{
+							// create a string stream to create identifier of this object
+							std::ostringstream tanStream;
+							tanStream << stringStream.str() << "inTan";
+
+							// get the offset from the tan
+							ImVec2 offset =
+							{	( segmentWidth * curvePoint.mInTan.mTime ) / (float) segment->mDuration,
+								( trackHeight *  curvePoint.mInTan.mValue * -1.0f ) / (float) segment->mDuration};
+							ImVec2 tanPoint = { circlePoint.x + offset.x, circlePoint.y + offset.y };
+
+							// set if we are hoverting this point with the mouse
+							bool tanPointHovered = false;
+
+							// check if hovered
+							if (mState.currentAction == NONE  
+								&& ImGui::IsMouseHoveringRect(
+									{ tanPoint.x - 5, tanPoint.y - 5 },
+									{ tanPoint.x + 5, tanPoint.y + 5 }))
+							{
+								mState.currentAction = HOVERING_TAN_POINT;
+								mState.currentObjectID = tanStream.str();
+								tanPointHovered = true;
+							}
+							else if (mState.currentAction == HOVERING_TAN_POINT)
+							{
+								// if we hare already hovering, check if its this point
+								if (mState.currentObjectID == tanStream.str())
+								{
+									if (ImGui::IsMouseHoveringRect(
+									{ tanPoint.x - 5, tanPoint.y - 5 },
+									{ tanPoint.x + 5, tanPoint.y + 5 }))
+									{
+										// still hovering
+										tanPointHovered = true;
+
+										// start dragging if mouse down
+										if (ImGui::IsMouseDown(0))
+										{
+											mState.currentAction = DRAGGING_TAN_POINT;
+											mState.currentActionData = std::make_unique<SequenceGUIDragTanPointData>(
+												track->mID,
+												segment->mID,
+
+												)
+										}
+									}
+									else
+									{
+										// otherwise, release!
+										mState.currentAction = NONE;
+									}
+								}
+							}
+
+							// draw line
+							drawList->AddLine(circlePoint, tanPoint, tanPointHovered ? guicolors::white : guicolors::darkGrey, 1.0f);
+
+							// draw handler
+							drawList->AddCircleFilled(tanPoint, 3.0f, tanPointHovered ? guicolors::white : guicolors::darkGrey);
+
+						}
+						
+						/*
+						{
+							//
+							std::ostringstream tanStream;
+							tanStream << stringStream.str() << "outTan";
+
+							// out tan
+							ImVec2 offset =
+							{ (segmentWidth * curvePoint.mOutTan.mTime) / (float) segment->mDuration,
+								(trackHeight *  curvePoint.mOutTan.mValue * -1.0f) / (float) segment->mDuration };
+							ImVec2 tanPoint = { circlePoint.x + offset.x, circlePoint.y + offset.y };
+
+							bool tanPointHovered = false;
+
+							// check if hovered
+							if (mState.currentAction == NONE || mState.currentAction == HOVERING_TAN_POINT
+								&& ImGui::IsMouseHoveringRect(
+							{ circlePoint.x - 5, circlePoint.y - 5 },
+							{ tanPoint.x + 5, tanPoint.y + 5 }))
+							{
+								mState.currentAction = HOVERING_TAN_POINT;
+								mState.currentObjectID = tanStream.str();
+								tanPointHovered = true;
+							}
+							else if (mState.currentAction == HOVERING_TAN_POINT)
+							{
+								if (mState.currentObjectID == tanStream.str())
+								{
+									mState.currentAction = NONE;
+								}
+							}
+
+							// draw line
+							drawList->AddLine(circlePoint, tanPoint, tanPointHovered ? guicolors::white : guicolors::darkGrey, 1.0f);
+
+							// draw handler
+							drawList->AddCircleFilled(tanPoint, 3.0f, tanPointHovered ? guicolors::white : guicolors::darkGrey);
+
+						}*/
 					}
 
 					// handle dragging of control point
