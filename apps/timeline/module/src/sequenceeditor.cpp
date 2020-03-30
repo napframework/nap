@@ -261,24 +261,14 @@ namespace nap
 
 	void SequenceEditorController::changeSegmentEndValue(const std::string& trackID, const std::string& segmentID, float value)
 	{
-		for (auto& track : mSequence.mTracks)
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+
+		if (segment != nullptr)
 		{
-			if (track->mID == trackID)
-			{
-				for (auto& segment : track->mSegments)
-				{
-					if (segment->mID == segmentID)
-					{
-						segment->mEndValue += value;
-						segment->mEndValue = math::clamp<float>(segment->mEndValue, 0.0f, 1.0f);
+			segment->mEndValue += value;
+			segment->mEndValue = math::clamp<float>(segment->mEndValue, 0.0f, 1.0f);
 
-						updateSegments();
-
-						break;
-					}
-				}
-				break;;
-			}
+			updateSegments();
 		}
 	}
 
@@ -364,15 +354,19 @@ namespace nap
 
 	void SequenceEditorController::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos)
 	{
+		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
 		if (segment != nullptr)
 		{
+			// iterate trough points of curve
 			for (int i = 0; i < segment->mCurve->mPoints.size() - 1; i++)
 			{
+				// find the point the new point needs to get inserted after
 				if (segment->mCurve->mPoints[i].mPos.mTime <= pos
 					&& segment->mCurve->mPoints[i + 1].mPos.mTime > pos)
 				{
+					// create point
 					math::FCurvePoint<float, float> p;
 					p.mPos.mTime = pos;
 					p.mPos.mValue = segment->mCurve->evaluate(pos);
@@ -383,10 +377,32 @@ namespace nap
 					p.mTangentsAligned = true;
 					p.mInterp = math::ECurveInterp::Bezier;
 
+					// insert point
 					segment->mCurve->mPoints.insert(segment->mCurve->mPoints.begin() + i + 1, p);
 					segment->mCurve->invalidate();
 					break;
 				}
+			}
+		}
+	}
+
+
+	void SequenceEditorController::changeCurvePoint(
+		const std::string& trackID, const std::string& segmentID, const int index, 
+		float time,
+		float value)
+	{
+		// find segment
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+
+		if (segment != nullptr)
+		{
+			if (index < segment->mCurve->mPoints.size())
+			{
+				//
+				math::FCurvePoint<float, float>& curvePoint = segment->mCurve->mPoints[index];
+				curvePoint.mPos.mTime += time;
+				curvePoint.mPos.mValue += value;
 			}
 		}
 	}

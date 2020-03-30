@@ -47,6 +47,7 @@ namespace nap
 		HOVERING_SEGMENT_VALUE,
 		DRAGGING_SEGMENT_VALUE,
 		HOVERING_CONTROL_POINT,
+		DRAGGING_CONTROL_POINT,
 		NONE
 	};
 
@@ -55,6 +56,17 @@ namespace nap
 	public:
 		SequenceGUIActionData() {}
 		virtual ~SequenceGUIActionData() {}
+	};
+
+	class SequenceGUIDragControlPointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_) 
+			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_){}
+
+		std::string trackID;
+		std::string segmentID;
+		int			controlPointIndex;
 	};
 
 	class SequenceGUIDeleteSegmentData : public SequenceGUIActionData
@@ -108,7 +120,15 @@ namespace nap
 			std::string id);
 
 		void draw();
+
 	private:
+		void drawTracks(
+			const Sequence &sequence, 
+			const float timelineWidth,
+			const ImVec2 &mousePos,
+			const float stepSize, 
+			const ImVec2 &mouseDelta);
+
 		std::string mID;
 		SequenceGUIState mState;
 		ImVec2 mPreviousMousePos = { 0,0 };

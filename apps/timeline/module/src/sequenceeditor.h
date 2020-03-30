@@ -96,6 +96,11 @@ namespace nap
 		 * 
 		 */
 		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos);
+
+		/**
+		 * 
+		 */
+		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, float time, float value);
 	protected:
 		void updateSegments();
 
