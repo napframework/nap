@@ -337,8 +337,8 @@ macro(package_project_into_release DEST_DIR)
     install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
     # Install apple property list files for apple platform only
-    if(APPLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/apple)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/apple/ DESTINATION ${DEST_DIR}/apple)
+    if(APPLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/macos)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/macos/ DESTINATION ${DEST_DIR}/macos)
     endif()
 
     # Package any project extra CMake
