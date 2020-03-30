@@ -39,6 +39,8 @@ namespace nap
 		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
 		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
 
+		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::Clockwise; }
+
 		Texture2D& getColorTexture();
 
 	public:

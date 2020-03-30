@@ -5,6 +5,7 @@
 #include <windowevent.h>
 #include <rendertarget.h>
 #include "vk_mem_alloc.h"
+#include "pipelinekey.h"
 
 namespace opengl
 {
@@ -73,6 +74,17 @@ namespace nap
 			Initialized		= 0,		///< The render back end initialized correctly
 			WindowError		= 1,		///< The render back end produced a window error
 			SystemError		= 2,		///< The render back end produced a system error
+		};
+		
+		struct Pipeline
+		{
+			bool isValid() const
+			{
+				return mPipeline != nullptr && mLayout != nullptr;
+			}
+
+			VkPipeline			mPipeline = nullptr;
+			VkPipelineLayout	mLayout = nullptr;
 		};
 
 		// Default constructor
@@ -174,9 +186,9 @@ namespace nap
 		*/
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void requestTextureUpdate(Texture2D& texture);
+		Pipeline getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline);
+		void requestTextureUpdate(Texture2D& texture);
 
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
@@ -262,6 +274,7 @@ namespace nap
 			VkRenderPass							mRenderPassDepth = nullptr;
 		};
 
+		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
@@ -296,6 +309,7 @@ namespace nap
 		VkFormat								mDepthFormat;
 		unsigned int							mGraphicsQueueIndex = -1;
 		VkQueue									mGraphicsQueue = nullptr;
+		PipelineCache							mPipelineCache;
 	};
 } // nap
 

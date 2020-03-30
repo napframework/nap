@@ -121,15 +121,19 @@ namespace nap
 
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipeline());
-
 		// Gather draw info
 		MeshInstance& mesh_instance = getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+
 		Material& material = mRenderableMesh.getMaterialInstance().getMaterial();
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();

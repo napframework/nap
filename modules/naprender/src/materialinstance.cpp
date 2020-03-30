@@ -488,14 +488,12 @@ namespace nap
 	void MaterialInstance::setBlendMode(EBlendMode blendMode)
 	{
 		mResource->mBlendMode = blendMode;
-		pipelineStateChanged(*this, *mRenderService);
 	}
 
 	
 	void MaterialInstance::setDepthMode(EDepthMode depthMode)
 	{
 		mResource->mDepthMode = depthMode;
-		pipelineStateChanged(*this, *mRenderService);
 	}
 
 

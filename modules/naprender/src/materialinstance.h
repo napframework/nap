@@ -129,8 +129,6 @@ namespace nap
 	private:
 		friend class RenderableMesh;	// For responding to pipeline state events
 
-		Signal<const MaterialInstance&, RenderService&> pipelineStateChanged;
-
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);

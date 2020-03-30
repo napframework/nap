@@ -573,9 +573,9 @@ namespace nap
 		}
 	}
 
-	VkPrimitiveTopology getTopology(const IMesh& inMesh)
+	VkPrimitiveTopology getTopology(EDrawMode drawMode)
 	{
-		switch (inMesh.getMeshInstance().getDrawMode())
+		switch (drawMode)
 		{
 		case EDrawMode::POINTS:
 			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
@@ -692,10 +692,9 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, const IMesh& mesh, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
-
 		const Shader& shader = material.getShader();
 
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
@@ -706,18 +705,6 @@ namespace nap
 		for (auto& kvp : shader.getAttributes())
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-
-			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
-				return false;
-
-			const VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
-			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-				return false;
-
-			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-				return false;
-
 			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
 			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
@@ -751,7 +738,7 @@ namespace nap
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = getTopology(mesh);
+		inputAssembly.topology = getTopology(drawMode);
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkDynamicState dynamic_states[2] = {
@@ -778,7 +765,7 @@ namespace nap
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -874,30 +861,51 @@ namespace nap
 		return render_pass;
 	}
 
-	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+
+	RenderService::Pipeline RenderService::getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		VkRenderPass render_pass = getOrCreateRenderPass(materialInstance.getMaterial().getShader().mOutputFormat, true);
 
-		VkPipelineLayout layout;
-		VkPipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, mesh, render_pass, layout, pipeline, errorState))
-			return RenderableMesh();
+		Material& material = materialInstance.getMaterial();
+		const Shader& shader = material.getShader();
 
-		return RenderableMesh(mesh, materialInstance, layout, pipeline);
+		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
+		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder());
+		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
+		if (pos != mPipelineCache.end())
+			return pos->second;
+
+		Pipeline pipeline;
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), render_pass, pipeline.mLayout, pipeline.mPipeline, errorState))
+			return Pipeline();
+
+		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
+		return pipeline;
 	}
 
-
-	void RenderService::recreatePipeline(RenderableMesh& renderableMesh, VkPipelineLayout& layout, VkPipeline& pipeline)
+	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
-		VkRenderPass render_pass = getOrCreateRenderPass(renderableMesh.getMaterialInstance().getMaterial().getShader().mOutputFormat, true);
+		const Material& material = materialInstance.getMaterial();
+		const Shader& shader = material.getShader();
 
-		VkPipeline old_pipeline = renderableMesh.getPipeline();
+		// Verify that this mesh and material combination is valid
+		for (auto& kvp : shader.getAttributes())
+		{
+			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
-		utility::ErrorState errorState;
-		if (!createGraphicsPipeline(mDevice, renderableMesh.getMaterialInstance(), renderableMesh.getMesh(), render_pass, layout, pipeline, errorState))
-			return;
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
+				return RenderableMesh();
 
-		mPipelinesToDestroy.push_back({ mCurrentFrameIndex, old_pipeline });
+			const VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
+				return RenderableMesh();
+
+			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
+				return RenderableMesh();
+		}
+
+		return RenderableMesh(mesh, materialInstance);
 	}
 
 

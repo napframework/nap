@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace nap
 {
 	class UniformLeafInstance;
@@ -14,6 +16,12 @@ namespace nap
 		Opaque,					///< Regular opaque, similar to (One, Zero) blend
 		AlphaBlend,				///< Transparent object (SrcAlpha, InvSrcAlpha) blend
 		Additive				///< Additive, (One, One) blend
+	};
+
+	enum class ECullWindingOrder : int
+	{
+		Clockwise,
+		CounterClockwise
 	};
 
 	/**

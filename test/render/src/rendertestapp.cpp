@@ -196,6 +196,7 @@ namespace nap
 					std::vector<RenderableComponentInstance*> components_to_render;
 					components_to_render.push_back(&mPigEntity->getComponent<RenderableMeshComponentInstance>());
 
+					mTextureRenderTarget->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 					mTextureRenderTarget->beginRendering();
 					mRenderService->renderObjects(*mTextureRenderTarget, mCameraEntityLeft->getComponent<PerspCameraComponentInstance>(), components_to_render);
 					mTextureRenderTarget->endRendering();
