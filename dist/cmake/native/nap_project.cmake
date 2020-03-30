@@ -142,7 +142,7 @@ if(NOT WIN32)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
         # install available propery list files if present
         if(INFO_PLIST)
-            install(FILES ${PROPERTYLIST} DESTINATION .)
+            install(FILES ${INFO_PLIST} DESTINATION .)
         endif()
     else()
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
