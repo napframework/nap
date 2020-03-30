@@ -657,7 +657,7 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
 
     # If doing a framework release build and we don't want to package the project let's avoid building it or running FBX converter
     if(NAP_PACKAGED_BUILD AND NOT INCLUDE_PROJECT_WITH_RELEASE)
-        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
         return()
     endif()
 
@@ -683,16 +683,15 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
     endif()
 endfunction() 
 
-# Package into release, export FBX, other shared source project fixes
-function(project_module_selective_inclusion_and_building)
-    # If doing a framework release build let's avoid building the module
-    if(NAP_PACKAGED_BUILD AND NOT PACKAGE_NAIVI_APPS)
-        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)        
-        return()
-    endif()
-
-    # Don't build the project module while doing a framework build unless explicitly requested
-    if(NAP_PACKAGED_BUILD AND NOT BUILD_PROJECTS)
-        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# Don't build the project module while doing a framework build unless explicitly requested
+# INCLUDE_ONLY_WITH_NAIVI_APPS: whether the module is for a project that should only be 
+#   packaged if packaging Naivi apps
+function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
+    if(NAP_PACKAGED_BUILD) 
+        if(NOT BUILD_PROJECTS)
+            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        elseif(${INCLUDE_ONLY_WITH_NAIVI_APPS} AND NOT PACKAGE_NAIVI_APPS)
+            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
     endif()
 endfunction() 
