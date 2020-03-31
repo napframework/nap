@@ -35,6 +35,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return number of channels associated with the current format
+		 */
+		int getChannelCount();
+
 		int		mWidth  = 0;					///< Property: 'Width' width of the texture in texels
 		int		mHeight = 0;					///< Property: 'Height' of the texture, in texels
 		EFormat	mFormat = EFormat::RGB8;		///< Property: 'Format' format of the texture
