@@ -54,6 +54,7 @@ namespace nap
 
 	void SequenceEditorGUIView::draw()
 	{
+		
 		//
 		ImVec2 mousePos = ImGui::GetMousePos();
 		ImVec2 mouseDelta = { mousePos.x - mPreviousMousePos.x, mousePos.y - mPreviousMousePos.y };
@@ -75,7 +76,7 @@ namespace nap
 		const float trackInspectorWidth = 200.0f;
 		
 		// set content width of next window
-		ImGui::SetNextWindowContentWidth(timelineWidth + trackInspectorWidth + 10);
+		ImGui::SetNextWindowContentWidth(timelineWidth + trackInspectorWidth + 100);
 
 
 		// begin window
@@ -90,6 +91,7 @@ namespace nap
 				mController.save();
 			}
 
+			
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position 
 			const ImVec2 timelineControllerWindowPosition = ImGui::GetCursorPos();
 			drawPlayerController(
@@ -108,21 +110,23 @@ namespace nap
 				mousePos,
 				stepSize,
 				mouseDelta);
-
+				
 			// on top of everything, draw time line player position
 			drawTimelinePlayerPosition(
 				timelineControllerWindowPosition,
 				trackInspectorWidth,
 				timelineWidth);
-
+			
 			// handle insert segment popup
 			handleInsertSegmentPopup();
 
 			// handle delete segment popup
 			handleDeleteSegmentPopup();
-
-			ImGui::End();
+			
+			
 		}
+
+		ImGui::End();
 
 		// pop id
 		ImGui::PopID();
@@ -180,9 +184,8 @@ namespace nap
 					windowPos,
 					{ windowPos.x + windowSize.x - 5, windowPos.y + trackHeight },
 					guicolors::white);
-
-				ImGui::EndChild();
 			}
+			ImGui::EndChild();
 
 			const ImVec2 windowCursorPos = { cursorPos.x + inspectorWidth + 5, cursorPos.y };
 			ImGui::SetCursorPos(windowCursorPos);
@@ -350,8 +353,9 @@ namespace nap
 				// pop id
 				ImGui::PopID();
 
-				ImGui::End();
 			}
+
+			ImGui::End();
 
 			//
 			ImGui::SetCursorPos(cursorPos);
@@ -1068,6 +1072,7 @@ namespace nap
 		std::string idString = stringStream.str();
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startOffsetX);
+		ImGui::PushID(idString.c_str());
 
 		// draw timeline controller
 		if (ImGui::BeginChild(
@@ -1076,8 +1081,6 @@ namespace nap
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
-			ImGui::PushID(idString.c_str());
-
 			ImVec2 cursorPos = ImGui::GetCursorPos();
 			ImVec2 windowTopLeft = ImGui::GetWindowPos();
 			ImVec2 startPos =
@@ -1157,11 +1160,11 @@ namespace nap
 					}
 				}
 			}
-
-			ImGui::PopID();
-
-			ImGui::EndChild();
 		}
+
+		ImGui::EndChild();
+
+		ImGui::PopID();
 	}
 
 
@@ -1181,6 +1184,7 @@ namespace nap
 				+ timelineWidth * (float)(mController.getPlayerPosition() / mSequence.mDuration) - 1,
 			timelineControllerWindowPosition.y
 		});
+
 		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
 		if (ImGui::BeginChild(
 			idString.c_str(), // id
@@ -1189,8 +1193,9 @@ namespace nap
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
 
-			ImGui::End();
+			
 		}
+		ImGui::End();
 		ImGui::PopStyleColor();
 	}
 
