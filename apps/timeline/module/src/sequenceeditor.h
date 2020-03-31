@@ -149,6 +149,16 @@ namespace nap
 			TanPointTypes tanType,
 			float time, 
 			float value);
+
+		/**
+		 * 
+		 */
+		double getPlayerPosition();
+
+		/**
+		 * 
+		 */
+		void setPlayerPosition(double time);
 	protected:
 		void updateSegments();
 

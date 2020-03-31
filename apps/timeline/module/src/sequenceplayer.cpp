@@ -150,4 +150,17 @@ namespace nap
 	{
 		return mSequence->mDuration;
 	}
+
+
+	void SequencePlayer::setPlayerPosition(double time)
+	{
+		mPosition = time;
+		mPosition = math::clamp<double>(mPosition, .0, mSequence->mDuration);
+	}
+
+
+	double SequencePlayer::getPlayerPosition() const
+	{
+		return mPosition;
+	}
 }

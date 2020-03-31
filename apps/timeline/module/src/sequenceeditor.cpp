@@ -499,6 +499,18 @@ namespace nap
 	}
 
 
+	double SequenceEditorController::getPlayerPosition()
+	{
+		return mSequencePlayer.getPlayerPosition();
+	}
+
+
+	void SequenceEditorController::setPlayerPosition(double time)
+	{
+		mSequencePlayer.setPlayerPosition(time);
+	}
+
+
 	SequenceTrackSegment* SequenceEditorController::findSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		for (auto& track : mSequence.mTracks)

@@ -26,6 +26,10 @@ namespace nap
 
 		bool load(const std::string& name, utility::ErrorState& errorState);
 
+		void setPlayerPosition(double time);
+
+		double getPlayerPosition() const;
+
 		double getDuration() const;
 	public:
 		std::string mDefaultShow;
@@ -40,5 +44,7 @@ namespace nap
 		std::unordered_set<std::string>				mReadObjectIDs;
 
 		Sequence* mSequence = nullptr;
+
+		double mPosition;
 	};
 }

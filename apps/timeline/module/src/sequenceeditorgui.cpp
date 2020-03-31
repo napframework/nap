@@ -54,7 +54,6 @@ namespace nap
 
 	void SequenceEditorGUIView::draw()
 	{
-
 		//
 		ImVec2 mousePos = ImGui::GetMousePos();
 		ImVec2 mouseDelta = { mousePos.x - mPreviousMousePos.x, mousePos.y - mPreviousMousePos.y };
@@ -76,7 +75,7 @@ namespace nap
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(timelineWidth);
 
-		
+
 		// begin window
 		if (ImGui::Begin(
 			mID.c_str(), // id
@@ -90,109 +89,172 @@ namespace nap
 				mController.save();
 			}
 
+			ImVec2 playerHandlerMiddle;
+			ImVec2 timelineControllerWindowPosition = ImGui::GetCursorPos();
+			{
+				const float timelineControllerHeight = 15.0f;
+
+				std::ostringstream stringStream;
+				stringStream << mID << "timelinecontroller";
+				std::string idString = stringStream.str();
+
+				// draw timeline controller
+				if (ImGui::BeginChild(
+					idString.c_str(), // id
+					{ timelineWidth + 5 , timelineControllerHeight }, // size
+					false, // no border
+					ImGuiWindowFlags_NoMove)) // window flags
+				{
+					ImGui::PushID(idString.c_str());
+
+					ImVec2 cursorPos = ImGui::GetCursorPos();
+					ImVec2 windowTopLeft = ImGui::GetWindowPos();
+					ImVec2 startPos =
+					{
+						windowTopLeft.x + cursorPos.x,
+						windowTopLeft.y + cursorPos.y,
+					};
+
+					cursorPos.y += 5;
+
+					// get window drawlist
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+					// draw backgroundbox of controller
+					drawList->AddRectFilled(
+						startPos,
+						{
+							startPos.x + timelineWidth,
+							startPos.y + timelineControllerHeight
+						}, guicolors::black);
+
+					// draw box of controller
+					drawList->AddRect(
+						startPos,
+						{
+							startPos.x + timelineWidth,
+							startPos.y + timelineControllerHeight
+						}, guicolors::white);
+
+					// draw handler of player position
+					const double playerTime = mController.getPlayerPosition();
+					const ImVec2 playerTimeRectTopLeft =
+					{
+						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - 5,
+						startPos.y
+					};
+					const ImVec2 playerTimeRectBottomRight =
+					{
+						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth + 5,
+						startPos.y + timelineControllerHeight,
+					};
+
+					playerHandlerMiddle =
+					{
+						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - windowTopLeft.x,
+						startPos.y - windowTopLeft.y
+					};
+
+					drawList->AddRectFilled(
+						playerTimeRectTopLeft,
+						playerTimeRectBottomRight,
+						guicolors::red);
+
+					if (mState.currentAction == NONE || mState.currentAction == HOVERING_PLAYER_TIME)
+					{
+						if (ImGui::IsMouseHoveringRect(playerTimeRectTopLeft, playerTimeRectBottomRight))
+						{
+							mState.currentAction = HOVERING_PLAYER_TIME;
+
+							if (ImGui::IsMouseDown(0))
+							{
+								mState.currentAction = DRAGGING_PLAYER_TIME;
+							}
+						}
+						else
+						{
+							mState.currentAction = NONE;
+						}
+					}
+
+					if (mState.currentAction == DRAGGING_PLAYER_TIME)
+					{
+						if (ImGui::IsMouseDown(0))
+						{
+							double delta = (mouseDelta.x / timelineWidth) * mSequence.mDuration;
+							mController.setPlayerPosition(playerTime + delta);
+						}
+						else
+						{
+							if (ImGui::IsMouseReleased(0))
+							{
+								mState.currentAction = NONE;
+							}
+						}
+					}
+
+					ImGui::PopID();
+
+					ImGui::EndChild();
+				}
+			}
+
+			// move a little bit more up to align tracks nicely with timelinecontroller
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+
 			// draw tracks
 			drawTracks(
-				sequence, 
-				timelineWidth, 
+				sequence,
+				timelineWidth,
 				mousePos,
-				stepSize, 
+				stepSize,
 				mouseDelta);
 
-			// handle opening of popups
-			if (mState.currentAction == OPEN_INSERT_SEGMENT_POPUP)
-			{
-				// invoke insert sequence popup
-				ImGui::OpenPopup("Insert Segment");
-
-				mState.currentAction = INSERTING_SEGMENT;
-			}
+			//
 
 			// handle insert segment popup
-			if (mState.currentAction == INSERTING_SEGMENT)
-			{
-				if (ImGui::BeginPopup("Insert Segment"))
-				{
-					if (ImGui::Button("Insert"))
-					{
-						const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
-						mController.insertSegment(data->trackID, data->time);
-
-						ImGui::CloseCurrentPopup();
-						mState.currentAction = SequenceGUIMouseActions::NONE;
-						mState.currentActionData = nullptr;
-					}
-
-					if (ImGui::Button("Cancel"))
-					{
-						ImGui::CloseCurrentPopup();
-						mState.currentAction = SequenceGUIMouseActions::NONE;
-						mState.currentActionData = nullptr;
-					}
-
-					ImGui::EndPopup();
-				}
-				else
-				{
-					// click outside popup so cancel action
-					mState.currentAction = SequenceGUIMouseActions::NONE;
-					mState.currentActionData = nullptr;
-				}
-			}
-
-			// handle opening of popups
-			if (mState.currentAction == OPEN_DELETE_SEGMENT_POPUP)
-			{
-				// invoke insert sequence popup
-				ImGui::OpenPopup("Delete Segment");
-
-				mState.currentAction = DELETING_SEGMENT;
-			}
+			handleInsertSegmentPopup();
 
 			// handle delete segment popup
-			if (mState.currentAction == DELETING_SEGMENT)
+			handleDeleteSegmentPopup();
+
+			// on top of everything, draw time line player position
 			{
-				if (ImGui::BeginPopup("Delete Segment"))
+				std::ostringstream stringStream;
+				stringStream << mID << "timelineplayerposition";
+				std::string idString = stringStream.str();
+
+				ImGui::SetCursorPos(
 				{
-					if (ImGui::Button("Delete"))
-					{
-						const SequenceGUIDeleteSegmentData* data = dynamic_cast<SequenceGUIDeleteSegmentData*>(mState.currentActionData.get());
-						mController.deleteSegment(data->trackID, data->segmentID);
-
-						ImGui::CloseCurrentPopup();
-						mState.currentAction = SequenceGUIMouseActions::NONE;
-						mState.currentActionData = nullptr;
-					}
-
-					if (ImGui::Button("Cancel"))
-					{
-						ImGui::CloseCurrentPopup();
-						mState.currentAction = SequenceGUIMouseActions::NONE;
-						mState.currentActionData = nullptr;
-					}
-
-					ImGui::EndPopup();
-				}
-				else
+					timelineControllerWindowPosition.x + timelineWidth * (float) (mController.getPlayerPosition() / mSequence.mDuration) - 1,
+					timelineControllerWindowPosition.y
+				});
+				ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
+				if (ImGui::BeginChild(
+					idString.c_str(), // id
+					{ 1.0f, mSequence.mTracks.size() * 110.0f + 10.0f} , // size
+					false, // no border
+					ImGuiWindowFlags_NoMove)) // window flags
 				{
-					// click outside popup so cancel action
-					mState.currentAction = SequenceGUIMouseActions::NONE;
-					mState.currentActionData = nullptr;
+
+					ImGui::End();
 				}
+				ImGui::PopStyleColor();
 			}
-			
+
 			ImGui::End();
 		}
-		
+
 		// pop id
 		ImGui::PopID();
 	}
 
 
 	void SequenceEditorGUIView::drawTracks(
-		const Sequence &sequence, 
+		const Sequence &sequence,
 		const float timelineWidth,
-		const ImVec2 &mousePos, 
-		const float stepSize, 
+		const ImVec2 &mousePos,
+		const float stepSize,
 		const ImVec2 &mouseDelta)
 	{
 		// get current cursor pos, we will use this to position the track windows
@@ -300,12 +362,12 @@ namespace nap
 
 					// curve
 					drawCurve(
-						*track.get(), 
+						*track.get(),
 						*segment.get(),
 						trackTopLeft,
 						previousSegmentX,
 						segmentWidth,
-						trackHeight, 
+						trackHeight,
 						segmentX,
 						stepSize,
 						drawList);
@@ -390,9 +452,9 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegment& segment,
 		const ImVec2 &trackTopLeft,
-		const float segmentX, 
+		const float segmentX,
 		const float segmentWidth,
-		const float trackHeight, 
+		const float trackHeight,
 		const ImVec2 mouseDelta,
 		const int stepSize,
 		ImDrawList* drawList)
@@ -436,10 +498,10 @@ namespace nap
 				stepSize,
 				drawList);
 		}
-		
+
 		// draw control points of curve
 		// we ignore the first and last because they are controlled by the start & end value of the segment
-		for (int i = 1; i < segment.mCurve->mPoints.size() -1; i++)
+		for (int i = 1; i < segment.mCurve->mPoints.size() - 1; i++)
 		{
 			// get the curvepoint and generate a unique ID for the control point
 			const auto& curvePoint = segment.mCurve->mPoints[i];
@@ -454,12 +516,12 @@ namespace nap
 
 			// handle mouse hovering
 			bool hovered = false;
-			if ((mState.currentAction == NONE || 
-				 mState.currentAction == HOVERING_CONTROL_POINT ||
-				 mState.currentAction == HOVERING_CURVE )
+			if ((mState.currentAction == NONE ||
+				mState.currentAction == HOVERING_CONTROL_POINT ||
+				mState.currentAction == HOVERING_CURVE)
 				&& ImGui::IsMouseHoveringRect(
-					{ circlePoint.x - 5, circlePoint.y - 5 },
-					{ circlePoint.x + 5, circlePoint.y + 5 }))
+			{ circlePoint.x - 5, circlePoint.y - 5 },
+			{ circlePoint.x + 5, circlePoint.y + 5 }))
 			{
 				hovered = true;
 			}
@@ -527,11 +589,11 @@ namespace nap
 			drawTanHandler(
 				track,
 				segment,
-				stringStream, 
-				segmentWidth, 
-				curvePoint, 
-				trackHeight, 
-				circlePoint, 
+				stringStream,
+				segmentWidth,
+				curvePoint,
+				trackHeight,
+				circlePoint,
 				i,
 				TanPointTypes::IN,
 				mouseDelta,
@@ -563,8 +625,8 @@ namespace nap
 		std::string pointID = stringStream.str();
 
 		ImVec2 circlePoint =
-		 { (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-			trackTopLeft.y + trackHeight * (1.0f - curvePoint.mPos.mValue) };
+		{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
+		   trackTopLeft.y + trackHeight * (1.0f - curvePoint.mPos.mValue) };
 
 		drawTanHandler(
 			track,
@@ -593,7 +655,7 @@ namespace nap
 			mouseDelta,
 			stepSize,
 			drawList);
-		
+
 	}
 
 
@@ -622,10 +684,10 @@ namespace nap
 		}
 
 		// determine if mouse is hovering curve
-		if (( mState.currentAction == NONE || mState.currentAction == HOVERING_CURVE )
+		if ((mState.currentAction == NONE || mState.currentAction == HOVERING_CURVE)
 			&& ImGui::IsMouseHoveringRect(
-			{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }))  // bottom right 
+		{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+		{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }))  // bottom right 
 		{
 			// translate mouse position to position in curve
 			ImVec2 mousePos = ImGui::GetMousePos();
@@ -691,22 +753,22 @@ namespace nap
 	)
 	{
 		// calculate point of this value in the window
-		ImVec2 segmentValuePos = 
-		{ 
-			trackTopLeft.x + segmentX - ( segmentType == BEGIN ? segmentWidth : 0.0f ), 
-			trackTopLeft.y + trackHeight * (1.0f - ((segmentType == BEGIN ? segment.mStartValue : segment.mEndValue ) / 1.0f))
+		ImVec2 segmentValuePos =
+		{
+			trackTopLeft.x + segmentX - (segmentType == BEGIN ? segmentWidth : 0.0f),
+			trackTopLeft.y + trackHeight * (1.0f - ((segmentType == BEGIN ? segment.mStartValue : segment.mEndValue) / 1.0f))
 		};
 
 		bool hovered = false;
-		
+
 		// check if we are hovering this value
-		if ((	mState.currentAction == SequenceGUIMouseActions::NONE || 
-				mState.currentAction == HOVERING_SEGMENT_VALUE ||
-				mState.currentAction == HOVERING_SEGMENT ||
-				mState.currentAction == HOVERING_CURVE )
-				&& ImGui::IsMouseHoveringRect(
-					{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
-					{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
+		if ((mState.currentAction == SequenceGUIMouseActions::NONE ||
+			mState.currentAction == HOVERING_SEGMENT_VALUE ||
+			mState.currentAction == HOVERING_SEGMENT ||
+			mState.currentAction == HOVERING_CURVE)
+			&& ImGui::IsMouseHoveringRect(
+		{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
+		{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
 		{
 			hovered = true;
 			mState.currentAction = HOVERING_SEGMENT_VALUE;
@@ -736,10 +798,10 @@ namespace nap
 		}
 
 		// handle dragging segment value
-		if (mState.currentAction == DRAGGING_SEGMENT_VALUE && 
-			mState.currentObjectID == segment.mID )
+		if (mState.currentAction == DRAGGING_SEGMENT_VALUE &&
+			mState.currentObjectID == segment.mID)
 		{
-			const SequenceGUIDragSegmentData* data = 
+			const SequenceGUIDragSegmentData* data =
 				dynamic_cast<SequenceGUIDragSegmentData*>(mState.currentActionData.get());
 
 			if (data->type == segmentType)
@@ -758,7 +820,7 @@ namespace nap
 			}
 		}
 
-		if( hovered )
+		if (hovered)
 			drawList->AddCircleFilled(segmentValuePos, 5.0f, guicolors::red);
 		else
 			drawList->AddCircle(segmentValuePos, 5.0f, guicolors::red);
@@ -848,7 +910,7 @@ namespace nap
 			}
 		}
 	}
-	
+
 
 	void SequenceEditorGUIView::drawTanHandler(
 		const SequenceTrack &track,
@@ -871,7 +933,7 @@ namespace nap
 			tanStream << stringStream.str() << (type == TanPointTypes::IN) ? "inTan" : "outTan";
 
 			//
-			const math::FComplex<float, float>& tanComplex 
+			const math::FComplex<float, float>& tanComplex
 				= (type == TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
@@ -884,8 +946,8 @@ namespace nap
 			bool tanPointHovered = false;
 
 			// check if hovered
-			if ((mState.currentAction == NONE || 
-				mState.currentAction == HOVERING_CURVE )
+			if ((mState.currentAction == NONE ||
+				mState.currentAction == HOVERING_CURVE)
 				&& ImGui::IsMouseHoveringRect(
 			{ tanPoint.x - 5, tanPoint.y - 5 },
 			{ tanPoint.x + 5, tanPoint.y + 5 }))
@@ -895,7 +957,7 @@ namespace nap
 				tanPointHovered = true;
 			}
 			else if (
-				mState.currentAction == HOVERING_TAN_POINT )
+				mState.currentAction == HOVERING_TAN_POINT)
 			{
 				// if we hare already hovering, check if its this point
 				if (mState.currentObjectID == tanStream.str())
@@ -943,7 +1005,7 @@ namespace nap
 						tanPointHovered = true;
 
 						float time = mouseDelta.x / stepSize;
-						float value = ( mouseDelta.y / trackHeight ) * -1.0f;
+						float value = (mouseDelta.y / trackHeight) * -1.0f;
 
 						mController.changeTanPoint(
 							track.mID,
@@ -965,347 +1027,93 @@ namespace nap
 	}
 
 
+	void SequenceEditorGUIView::handleInsertSegmentPopup()
+	{
+		if (mState.currentAction == OPEN_INSERT_SEGMENT_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Insert Segment");
+
+			mState.currentAction = INSERTING_SEGMENT;
+		}
+
+		// handle insert segment popup
+		if (mState.currentAction == INSERTING_SEGMENT)
+		{
+			if (ImGui::BeginPopup("Insert Segment"))
+			{
+				if (ImGui::Button("Insert"))
+				{
+					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
+					mController.insertSegment(data->trackID, data->time);
+
+					ImGui::CloseCurrentPopup();
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.currentAction = SequenceGUIMouseActions::NONE;
+				mState.currentActionData = nullptr;
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleDeleteSegmentPopup()
+	{
+		if (mState.currentAction == OPEN_DELETE_SEGMENT_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Delete Segment");
+
+			mState.currentAction = DELETING_SEGMENT;
+		}
+
+		// handle delete segment popup
+		if (mState.currentAction == DELETING_SEGMENT)
+		{
+			if (ImGui::BeginPopup("Delete Segment"))
+			{
+				if (ImGui::Button("Delete"))
+				{
+					const SequenceGUIDeleteSegmentData* data = dynamic_cast<SequenceGUIDeleteSegmentData*>(mState.currentActionData.get());
+					mController.deleteSegment(data->trackID, data->segmentID);
+
+					ImGui::CloseCurrentPopup();
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.currentAction = SequenceGUIMouseActions::NONE;
+				mState.currentActionData = nullptr;
+			}
+		}
+	}
+
 	SequenceEditorView::SequenceEditorView(const Sequence& sequence, SequenceEditorController& controller)
 		: mSequence(sequence), mController(controller) {}
-
-	/*
-	void SequenceGUI::draw()
-	{
-		//
-		Sequence& sequence = *mTimelineContainer->mTimeline.get();
-
-		// push id
-		ImGui::PushID(mID.c_str());
-
-		// 100 px per second, default
-		float stepSize = 100.0f;
-
-		// calc width of content in timeline window
-		float timelineWidth = stepSize * sequence.mDuration + 150.0f;
-
-		// set content width of next window
-		ImGui::SetNextWindowContentWidth(timelineWidth);
-
-		// begin window
-		if (ImGui::Begin(
-			sequence.mID.c_str(), // id
-			(bool*)0, // open
-			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
-		{
-			// check if window has focus
-			bool windowHasFocus = ImGui::IsWindowFocused();
-
-			// handle save button
-			if (ImGui::Button("Save"))
-			{
-				utility::ErrorState errorState;
-				sequence.save("test.json", errorState);
-			}
-
-			// get current cursor pos, we will use this to position the track windows
-			ImVec2 cursorPos = ImGui::GetCursorPos();
-
-			// keep track of track count, we will use this to position the track windows
-			int trackCount = 0;
-
-			// draw tracks
-			for (const auto& track : sequence.mTracks)
-			{
-				// draw the track
-				drawTrack(
-					track, // track resource ptr ref
-					cursorPos, // cursor position
-					trackCount, // track count
-					timelineWidth, // width of timeline
-					stepSize); // stepsize
-
-				// increment track count
-				trackCount++;
-			}
-		}
-
-		// end window
-		ImGui::End();
-
-		// pop id
-		ImGui::PopID();
-	}
-
-
-	bool SequenceGUI::init(utility::ErrorState & errorState)
-	{
-		if (!Resource::init(errorState))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-
-	void SequenceGUI::drawTrack(
-		const ResourcePtr<SequenceTrack>& track,
-		ImVec2 &cursorPos,
-		const int trackCount,
-		const float timelineWidth,
-		const float stepSize)
-	{
-		// push id
-		ImGui::PushID(track->mID.c_str());
-
-		// define consts
-		const float trackHeight = 100.0f;
-		const float keyframeHandlerHeight = 10.0f;
-
-		// manually set the cursor position before drawing new track window
-		cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + 1 };
-		ImGui::SetCursorPos(cursorPos);
-
-		// begin track
-		if (ImGui::BeginChild(
-			track->mID.c_str(), // id
-			{ timelineWidth, trackHeight + keyframeHandlerHeight }, // size
-			false, // no border
-			ImGuiWindowFlags_NoMove)) // window flags
-		{
-			// push id
-			ImGui::PushID(track->mID.c_str());
-
-			// get child focus
-			bool trackHasFocus = ImGui::IsMouseHoveringWindow();
-
-			// get window drawlist
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-			// get current imgui cursor position
-			ImVec2 cursorPos = ImGui::GetCursorPos();
-
-			// get window position
-			ImVec2 windowTopLeft = ImGui::GetWindowPos();
-
-			// calc beginning of timeline graphic
-			ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
-
-			// draw background of timeline
-			drawList->AddRectFilled(
-				trackTopLeft, // top left position
-				{ trackTopLeft.x + timelineWidth, trackTopLeft.y + trackHeight }, // bottom right position
-				guicolors::black); // color 
-
-			// keep track of previous position of keyframe
-			float previousKeyFrameX = 0.0f;
-
-			// draw keyframes
-			for (const auto& keyFrame : track->mSegments)
-			{
-				drawKeyFrame(
-					keyFrame, // keyframe resource ptr
-					stepSize, // stepsize
-					drawList, // the current window drawlist
-					trackTopLeft, // the topleft position of the track in which the keyframe is located
-					trackHeight, // the trackheight
-					previousKeyFrameX); // previous position of keyframe on timeline
-			}
-
-			// pop id
-			ImGui::PopID();
-		}
-
-		// end track
-		ImGui::EndChild();
-
-		// pop id
-		ImGui::PopID();
-	}
-
-
-	void SequenceGUI::drawKeyFrame(
-		const ResourcePtr<SequenceTrackSegment> &keyFrame,
-		const float stepSize, 
-		ImDrawList* drawList,
-		const ImVec2 &trackTopLeft,
-		const float trackHeight,
-		float &previousKeyFrameX)
-	{
-		// position of keyframe
-		float x = keyFrame->mTime * stepSize;
-
-		// draw keyframe value handler
-		drawList->AddCircle(
-			{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
-			5.0f, // radius
-			guicolors::red); // color
-
-		// handle mouse actions for keyframe value
-		if ((mMouseActionData.currentAction == SequenceGUIMouseActions::NONE || mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE)
-			&& ImGui::IsMouseHoveringRect(
-			{ trackTopLeft.x + x - 5, trackTopLeft.y + trackHeight * keyFrame->mValue - 5 }, // topleft
-			{ trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight * keyFrame->mValue + 5 })) // bottomright
-		{
-			drawList->AddCircleFilled(
-				ImVec2(trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue), // position
-				5.0f, // radius
-				guicolors::red); // color
-
-			mMouseActionData.currentAction = SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE;
-
-			// if we have a click, initiate a mouse action
-			if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
-			{
-				mMouseActionData.mouseWasDown = true;
-				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE;
-				mMouseActionData.currentObject = keyFrame.get();
-			}
-		}
-		else
-		{
-			// stop hovering
-			if (mMouseActionData.currentAction != SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
-				mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAMEVALUE)
-			{
-				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
-			}
-		}
-
-		// process mouse action for keyframe value
-		if (mMouseActionData.currentAction == SequenceGUIMouseActions::DRAGGING_KEYFRAMEVALUE &&
-			keyFrame.get() == mMouseActionData.currentObject)
-		{
-			// draw circle filled
-			drawList->AddCircleFilled(
-				{ trackTopLeft.x + x, trackTopLeft.y + trackHeight * keyFrame->mValue }, // position
-				5.0f, // radius
-				guicolors::red); // color
-
-			// calc delta
-			float deltaY = ImGui::GetMousePos().y - mMouseActionData.previousMousePos.y;
-
-			// translate delta to timeline position
-			float translatedValue = keyFrame->mValue + deltaY / trackHeight;
-
-			// clamp value
-			translatedValue = math::clamp<float>(translatedValue, 0, 1);
-
-			// set value
-			keyFrame->adjustValue(translatedValue);
-
-			//
-			mMouseActionData.previousMousePos = ImGui::GetMousePos();
-
-			// handle release of mouse, stop mouse action
-			if (mMouseActionData.mouseWasDown && ImGui::IsMouseReleased(0))
-			{
-				mMouseActionData.mouseWasDown = false;
-				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
-				mMouseActionData.currentObject = nullptr;
-			}
-		}
-
-		// draw curve
-		float curveWidth = x - previousKeyFrameX;
-		const int resolution = 20;
-		std::vector<ImVec2> points;
-		points.resize(resolution + 1);
-		for (int i = 0; i <= resolution; i++)
-		{
-			float value = keyFrame->mCurve->evaluate((float)i / resolution);
-
-			points[i] = {
-				trackTopLeft.x + previousKeyFrameX + curveWidth * ((float)i / resolution),
-				trackTopLeft.y + value * trackHeight };
-		}
-
-		// draw points of curve
-		drawList->AddPolyline(
-			&*points.begin(), // points array
-			points.size(), // size of points array
-			guicolors::red, // color
-			false, // closed
-			1.0f, // thickness
-			true); // anti-aliased
-
-		// keyframe handler box coordinates
-		ImVec2 handlerBoxTopLeft = { trackTopLeft.x + x - 5, trackTopLeft.y };
-		ImVec2 handlerBoxBottomRight = { trackTopLeft.x + x + 5, trackTopLeft.y + trackHeight };
-
-		// check if keyframe line is being hovered
-		if (ImGui::IsMouseHoveringRect(handlerBoxTopLeft, handlerBoxBottomRight) &&
-			(mMouseActionData.currentAction == SequenceGUIMouseActions::NONE || mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAME))
-		{
-			// draw keyframe line thick
-			drawList->AddLine(
-			{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
-
-			//
-			mMouseActionData.currentAction = SequenceGUIMouseActions::HOVERING_KEYFRAME;
-
-			// if we have a click, initiate a mouse action
-			if (!mMouseActionData.mouseWasDown && ImGui::IsMouseDown(0))
-			{
-				mMouseActionData.mouseWasDown = true;
-				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = SequenceGUIMouseActions::DRAGGING_KEYFRAME;
-				mMouseActionData.currentObject = keyFrame.get();
-			}
-		}
-
-		// handle mouse action
-		if (mMouseActionData.currentAction == SequenceGUIMouseActions::DRAGGING_KEYFRAME &&
-			mMouseActionData.currentObject == keyFrame.get())
-		{
-			// draw keyframe line thick
-			drawList->AddLine(
-				{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
-
-			// handle mouse drag
-			if (mMouseActionData.mouseWasDown && ImGui::IsMouseDragging(0))
-			{
-				// calc delta
-				float deltaX = ImGui::GetMousePos().x - mMouseActionData.previousMousePos.x;
-
-				// translate delta to timeline position
-				float timelinepos = keyFrame->mTime + deltaX / stepSize;
-
-				// set keyframe time
-				keyFrame->mTime = timelinepos;
-
-				// set previous mouse pos
-				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-			}
-
-			// handle release of mouse, stop mouse action
-			if (mMouseActionData.mouseWasDown && ImGui::IsMouseReleased(0))
-			{
-				mMouseActionData.mouseWasDown = false;
-				mMouseActionData.previousMousePos = ImGui::GetMousePos();
-				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
-				mMouseActionData.currentObject = nullptr;
-			}
-		}
-		else
-		{
-			// draw keyframe line thin
-			drawList->AddLine(
-			{ trackTopLeft.x + x, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + x, trackTopLeft.y + trackHeight }, // bottom right
-				guicolors::white, // color
-				1.0f); // thickness
-
-			// stop hovering
-			if (mMouseActionData.currentAction == SequenceGUIMouseActions::HOVERING_KEYFRAME)
-			{
-				mMouseActionData.currentAction = SequenceGUIMouseActions::NONE;
-			}
-		}
-
-		previousKeyFrameX = x;	
-	}*/
 }

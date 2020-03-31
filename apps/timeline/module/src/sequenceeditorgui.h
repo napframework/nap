@@ -51,6 +51,8 @@ namespace nap
 		HOVERING_TAN_POINT,
 		DRAGGING_TAN_POINT,
 		HOVERING_CURVE,
+		HOVERING_PLAYER_TIME,
+		DRAGGING_PLAYER_TIME,
 		NONE
 	};
 
@@ -226,6 +228,10 @@ namespace nap
 			const ImVec2& mouseDelta,
 			const int stepSize,
 			ImDrawList* drawList);
+
+		void handleInsertSegmentPopup();
+
+		void handleDeleteSegmentPopup();
 
 		std::string mID;
 		SequenceGUIState mState;
