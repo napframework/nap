@@ -49,6 +49,15 @@ namespace nap
 	};
 
 	/**
+	 * 
+	 */
+	enum SegmentValueTypes
+	{
+		BEGIN,
+		END
+	};
+
+	/**
 	 * SequenceEditorController 
 	 * The actual controller with methods that a view can call
 	 */
@@ -104,11 +113,13 @@ namespace nap
 		 * @param trackID the track in which the segment gets updated
 		 * @param segmentID the segment ID that needs to be updated
 		 * @param amount the amount that the end value needs to change
+		 * @param type the type of value that needs to change ( first or last value )
 		 */
-		void changeSegmentEndValue(
+		void changeSegmentValue(
 			const std::string& trackID, 
 			const std::string& segmentID,
-			float amount);
+			float amount,
+			SegmentValueTypes type);
 
 		/**
 		 * 

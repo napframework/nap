@@ -259,14 +259,31 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::changeSegmentEndValue(const std::string& trackID, const std::string& segmentID, float value)
+	void SequenceEditorController::changeSegmentValue(
+		const std::string& trackID, 
+		const std::string& segmentID, 
+		float value,
+		SegmentValueTypes type)
 	{
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
 		if (segment != nullptr)
 		{
-			segment->mEndValue += value;
-			segment->mEndValue = math::clamp<float>(segment->mEndValue, 0.0f, 1.0f);
+			switch (type)
+			{
+			case BEGIN:
+			{
+				segment->mStartValue += value;
+				segment->mStartValue = math::clamp<float>(segment->mStartValue, 0.0f, 1.0f);
+			}
+				break;
+			case END:
+			{
+				segment->mEndValue += value;
+				segment->mEndValue = math::clamp<float>(segment->mEndValue, 0.0f, 1.0f);
+			}
+				break;
+			}
 
 			updateSegments();
 		}

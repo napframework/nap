@@ -50,6 +50,7 @@ namespace nap
 		DRAGGING_CONTROL_POINT,
 		HOVERING_TAN_POINT,
 		DRAGGING_TAN_POINT,
+		HOVERING_CURVE,
 		NONE
 	};
 
@@ -60,12 +61,34 @@ namespace nap
 		virtual ~SequenceGUIActionData() {}
 	};
 
+	class SequenceGUIDragSegmentData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragSegmentData(
+			std::string trackId_, 
+			std::string segmentID_, 
+			SegmentValueTypes type_)
+			: trackID(trackId_),
+				segmentID(segmentID_),
+				type(type_) {}
+
+		std::string			trackID;
+		std::string			segmentID;
+		SegmentValueTypes	type;
+	};
 
 	class SequenceGUIDragTanPointData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDragTanPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_, TanPointTypes type_)
-			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_), type(type_) {}
+		SequenceGUIDragTanPointData(
+			std::string trackId_, 
+			std::string segmentID_,
+			int controlPointIndex_,
+			TanPointTypes type_)
+			:	trackID(trackId_), 
+				segmentID(segmentID_), 
+				controlPointIndex(controlPointIndex_), 
+				type(type_) {}
 
 		std::string		trackID;
 		std::string		segmentID;
@@ -144,15 +167,29 @@ namespace nap
 			const float stepSize,
 			const ImVec2 &mouseDelta);
 
+		void drawSegmentValue(
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float segmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const ImVec2 &mouseDelta,
+			const float stepSize,
+			const SegmentValueTypes segmentType,
+			ImDrawList* drawList);
+
 		void drawSegmentHandler(
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
 			const float segmentX,
+			const float segmentWidth,
 			const float trackHeight,
 			const ImVec2 &mouseDelta,
 			const float stepSize,
-			ImDrawList* drawList);
+			ImDrawList* drawList
+		);
 
 		void drawCurve(
 			const SequenceTrack& track,
