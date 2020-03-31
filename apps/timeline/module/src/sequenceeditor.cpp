@@ -494,6 +494,27 @@ namespace nap
 				math::FCurvePoint<float, float>& curvePoint = segment->mCurve->mPoints[index];
 				curvePoint.mPos.mTime += time;
 				curvePoint.mPos.mValue += value;
+				segment->mCurve->invalidate();
+			}
+		}
+	}
+
+
+	void SequenceEditorController::deleteCurvePoint(
+		const std::string& trackID,
+		const std::string& segmentID,
+		const int index)
+	{
+		// find segment
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+
+		if (segment != nullptr)
+		{
+			if (index < segment->mCurve->mPoints.size())
+			{
+				//
+				segment->mCurve->mPoints.erase(segment->mCurve->mPoints.begin() + index);
+				segment->mCurve->invalidate();
 			}
 		}
 	}

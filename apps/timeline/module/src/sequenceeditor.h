@@ -142,6 +142,14 @@ namespace nap
 		/**
 		 *
 		 */
+		void deleteCurvePoint(
+			const std::string& trackID,
+			const std::string& segmentID,
+			const int index);
+
+		/**
+		 *
+		 */
 		void changeTanPoint(
 			const std::string& trackID,
 			const std::string& segmentID,

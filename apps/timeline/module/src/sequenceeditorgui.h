@@ -48,6 +48,7 @@ namespace nap
 		DRAGGING_SEGMENT_VALUE,
 		HOVERING_CONTROL_POINT,
 		DRAGGING_CONTROL_POINT,
+		DELETE_CONTROL_POINT,
 		HOVERING_TAN_POINT,
 		DRAGGING_TAN_POINT,
 		HOVERING_CURVE,
@@ -98,35 +99,9 @@ namespace nap
 		TanPointTypes	type;
 	};
 
-	class SequenceGUIDragControlPointData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIDragControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_) 
-			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_){}
-
-		std::string trackID;
-		std::string segmentID;
-		int			controlPointIndex;
-	};
-
-	class SequenceGUIDeleteSegmentData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIDeleteSegmentData(std::string trackId_, std::string segmentID_) : trackID(trackId_), segmentID(segmentID_) {}
-
-		std::string trackID;
-		std::string segmentID;
-	};
-
-	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIInsertSegmentData(std::string id, double t) : trackID(id), time(t) {}
-
-		double time = 0.0;
-		std::string trackID;
-	};
-
+	/**
+	 * 
+	 */
 	class SequenceGUIState
 	{
 	public:
@@ -160,10 +135,10 @@ namespace nap
 			std::string id);
 
 		void draw();
-
 	private:
 		void drawTracks(
 			const Sequence &sequence,
+			const float inspectorWidth,
 			const float timelineWidth,
 			const ImVec2 &mousePos,
 			const float stepSize,
@@ -229,12 +204,62 @@ namespace nap
 			const int stepSize,
 			ImDrawList* drawList);
 
+		void drawPlayerController(
+			const float startOffsetX,
+			const float timelineWidth,
+			const ImVec2 &mouseDelta);
+
 		void handleInsertSegmentPopup();
 
 		void handleDeleteSegmentPopup();
 
+		void drawTimelinePlayerPosition(
+			const ImVec2 &timelineControllerWindowPosition,
+			const float trackInspectorWidth,
+			const float timelineWidth);
+
 		std::string mID;
 		SequenceGUIState mState;
 		ImVec2 mPreviousMousePos = { 0,0 };
+	};
+
+	class SequenceGUIDeleteControlPointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDeleteControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_)
+			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_) {}
+
+		std::string trackID;
+		std::string segmentID;
+		int			controlPointIndex;
+	};
+
+	class SequenceGUIDragControlPointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_)
+			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_) {}
+
+		std::string trackID;
+		std::string segmentID;
+		int			controlPointIndex;
+	};
+
+	class SequenceGUIDeleteSegmentData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDeleteSegmentData(std::string trackId_, std::string segmentID_) : trackID(trackId_), segmentID(segmentID_) {}
+
+		std::string trackID;
+		std::string segmentID;
+	};
+
+	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIInsertSegmentData(std::string id, double t) : trackID(id), time(t) {}
+
+		double time = 0.0;
+		std::string trackID;
 	};
 }

@@ -69,11 +69,13 @@ namespace nap
 		float stepSize = 100.0f;
 
 		// calc width of content in timeline window
-		float timelineWidth =
+		const float timelineWidth =
 			stepSize * mSequence.mDuration;
 
+		const float trackInspectorWidth = 200.0f;
+		
 		// set content width of next window
-		ImGui::SetNextWindowContentWidth(timelineWidth);
+		ImGui::SetNextWindowContentWidth(timelineWidth + trackInspectorWidth + 10);
 
 
 		// begin window
@@ -82,122 +84,18 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
-
 			//
 			if (ImGui::Button("Save"))
 			{
 				mController.save();
 			}
 
-			ImVec2 playerHandlerMiddle;
-			ImVec2 timelineControllerWindowPosition = ImGui::GetCursorPos();
-			{
-				const float timelineControllerHeight = 15.0f;
-
-				std::ostringstream stringStream;
-				stringStream << mID << "timelinecontroller";
-				std::string idString = stringStream.str();
-
-				// draw timeline controller
-				if (ImGui::BeginChild(
-					idString.c_str(), // id
-					{ timelineWidth + 5 , timelineControllerHeight }, // size
-					false, // no border
-					ImGuiWindowFlags_NoMove)) // window flags
-				{
-					ImGui::PushID(idString.c_str());
-
-					ImVec2 cursorPos = ImGui::GetCursorPos();
-					ImVec2 windowTopLeft = ImGui::GetWindowPos();
-					ImVec2 startPos =
-					{
-						windowTopLeft.x + cursorPos.x,
-						windowTopLeft.y + cursorPos.y,
-					};
-
-					cursorPos.y += 5;
-
-					// get window drawlist
-					ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-					// draw backgroundbox of controller
-					drawList->AddRectFilled(
-						startPos,
-						{
-							startPos.x + timelineWidth,
-							startPos.y + timelineControllerHeight
-						}, guicolors::black);
-
-					// draw box of controller
-					drawList->AddRect(
-						startPos,
-						{
-							startPos.x + timelineWidth,
-							startPos.y + timelineControllerHeight
-						}, guicolors::white);
-
-					// draw handler of player position
-					const double playerTime = mController.getPlayerPosition();
-					const ImVec2 playerTimeRectTopLeft =
-					{
-						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - 5,
-						startPos.y
-					};
-					const ImVec2 playerTimeRectBottomRight =
-					{
-						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth + 5,
-						startPos.y + timelineControllerHeight,
-					};
-
-					playerHandlerMiddle =
-					{
-						startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - windowTopLeft.x,
-						startPos.y - windowTopLeft.y
-					};
-
-					drawList->AddRectFilled(
-						playerTimeRectTopLeft,
-						playerTimeRectBottomRight,
-						guicolors::red);
-
-					if (mState.currentAction == NONE || mState.currentAction == HOVERING_PLAYER_TIME)
-					{
-						if (ImGui::IsMouseHoveringRect(playerTimeRectTopLeft, playerTimeRectBottomRight))
-						{
-							mState.currentAction = HOVERING_PLAYER_TIME;
-
-							if (ImGui::IsMouseDown(0))
-							{
-								mState.currentAction = DRAGGING_PLAYER_TIME;
-							}
-						}
-						else
-						{
-							mState.currentAction = NONE;
-						}
-					}
-
-					if (mState.currentAction == DRAGGING_PLAYER_TIME)
-					{
-						if (ImGui::IsMouseDown(0))
-						{
-							double delta = (mouseDelta.x / timelineWidth) * mSequence.mDuration;
-							mController.setPlayerPosition(playerTime + delta);
-						}
-						else
-						{
-							if (ImGui::IsMouseReleased(0))
-							{
-								mState.currentAction = NONE;
-							}
-						}
-					}
-
-					ImGui::PopID();
-
-					ImGui::EndChild();
-				}
-			}
+			// store position of next window ( player controller ), we need it later to draw the timelineplayer position 
+			const ImVec2 timelineControllerWindowPosition = ImGui::GetCursorPos();
+			drawPlayerController(
+				trackInspectorWidth + 5,
+				timelineWidth, 
+				mouseDelta);
 
 			// move a little bit more up to align tracks nicely with timelinecontroller
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
@@ -205,42 +103,23 @@ namespace nap
 			// draw tracks
 			drawTracks(
 				sequence,
+				trackInspectorWidth,
 				timelineWidth,
 				mousePos,
 				stepSize,
 				mouseDelta);
 
-			//
+			// on top of everything, draw time line player position
+			drawTimelinePlayerPosition(
+				timelineControllerWindowPosition,
+				trackInspectorWidth,
+				timelineWidth);
 
 			// handle insert segment popup
 			handleInsertSegmentPopup();
 
 			// handle delete segment popup
 			handleDeleteSegmentPopup();
-
-			// on top of everything, draw time line player position
-			{
-				std::ostringstream stringStream;
-				stringStream << mID << "timelineplayerposition";
-				std::string idString = stringStream.str();
-
-				ImGui::SetCursorPos(
-				{
-					timelineControllerWindowPosition.x + timelineWidth * (float) (mController.getPlayerPosition() / mSequence.mDuration) - 1,
-					timelineControllerWindowPosition.y
-				});
-				ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
-				if (ImGui::BeginChild(
-					idString.c_str(), // id
-					{ 1.0f, mSequence.mTracks.size() * 110.0f + 10.0f} , // size
-					false, // no border
-					ImGuiWindowFlags_NoMove)) // window flags
-				{
-
-					ImGui::End();
-				}
-				ImGui::PopStyleColor();
-			}
 
 			ImGui::End();
 		}
@@ -252,6 +131,7 @@ namespace nap
 
 	void SequenceEditorGUIView::drawTracks(
 		const Sequence &sequence,
+		const float inspectorWidth,
 		const float timelineWidth,
 		const ImVec2 &mousePos,
 		const float stepSize,
@@ -270,9 +150,42 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
+			// begin inspector
+			std::ostringstream inspectorIDStream;
+			inspectorIDStream << track->mID << "inspector";
+			std::string inspectorID = inspectorIDStream.str();
+
 			// manually set the cursor position before drawing new track window
-			cursorPos = { cursorPos.x, cursorPos.y + trackHeight * trackCount + margin };
-			ImGui::SetCursorPos(cursorPos);
+			cursorPos = { cursorPos.x , cursorPos.y + trackHeight * trackCount + margin };
+
+			// manually set the cursor position before drawing inspector
+			ImVec2 inspectorCursorPos = { cursorPos.x + 5 , cursorPos.y };
+			ImGui::SetCursorPos(inspectorCursorPos);
+
+			if (ImGui::BeginChild(
+				inspectorID.c_str(), // id
+				{ inspectorWidth , trackHeight + 5 }, // size
+				false, // no border
+				ImGuiWindowFlags_NoMove)) // window flags
+			{
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				const ImVec2 windowPos = ImGui::GetWindowPos();
+				const ImVec2 windowSize = ImGui::GetWindowSize();
+				drawList->AddRectFilled(
+					windowPos,
+					{windowPos.x + windowSize.x - 5, windowPos.y + trackHeight},
+					guicolors::black);
+
+				drawList->AddRect(
+					windowPos,
+					{ windowPos.x + windowSize.x - 5, windowPos.y + trackHeight },
+					guicolors::white);
+
+				ImGui::EndChild();
+			}
+
+			const ImVec2 windowCursorPos = { cursorPos.x + inspectorWidth + 5, cursorPos.y };
+			ImGui::SetCursorPos(windowCursorPos);
 
 			// begin track
 			if (ImGui::BeginChild(
@@ -384,7 +297,6 @@ namespace nap
 						stepSize,
 						drawList);
 
-
 					// if this is the first segment of the track
 					// also draw a handler for the start value
 					if (segmentCount == 0)
@@ -441,6 +353,8 @@ namespace nap
 				ImGui::End();
 			}
 
+			//
+			ImGui::SetCursorPos(cursorPos);
 
 			// increment track count
 			trackCount++;
@@ -539,6 +453,13 @@ namespace nap
 					mState.currentActionData = std::make_unique<SequenceGUIDragControlPointData>(track.mID, segment.mID, i);
 					mState.currentObjectID = segment.mID;
 				}
+				// if we clicked right mouse button, delete control point
+				else if( ImGui::IsMouseClicked(1))
+				{
+					mState.currentAction = DELETE_CONTROL_POINT;
+					mState.currentActionData = std::make_unique<SequenceGUIDeleteControlPointData>(track.mID, segment.mID, i);
+					mState.currentObjectID = segment.mID;
+				}
 			}
 			else
 			{
@@ -576,6 +497,26 @@ namespace nap
 						mState.currentAction = NONE;
 						mState.currentActionData = nullptr;
 					}
+				}
+			}
+
+			// handle deletion of control point
+			if (mState.currentAction == DELETE_CONTROL_POINT &&
+				segment.mID == mState.currentObjectID)
+			{
+				const SequenceGUIDeleteControlPointData* data
+					= dynamic_cast<SequenceGUIDeleteControlPointData*>(mState.currentActionData.get());
+
+				if (data->controlPointIndex == i)
+				{
+					mController.deleteCurvePoint(
+						data->trackID,
+						data->segmentID,
+						data->controlPointIndex);
+
+					mState.currentAction = NONE;
+					mState.currentActionData = nullptr;
+					
 				}
 			}
 
@@ -1113,6 +1054,146 @@ namespace nap
 			}
 		}
 	}
+
+
+	void SequenceEditorGUIView::drawPlayerController(
+		const float startOffsetX,
+		const float timelineWidth, 
+		const ImVec2 &mouseDelta)
+	{
+		const float timelineControllerHeight = 15.0f;
+
+		std::ostringstream stringStream;
+		stringStream << mID << "timelinecontroller";
+		std::string idString = stringStream.str();
+
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startOffsetX);
+
+		// draw timeline controller
+		if (ImGui::BeginChild(
+			idString.c_str(), // id
+			{ timelineWidth + 5 , timelineControllerHeight }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+			ImGui::PushID(idString.c_str());
+
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+			ImVec2 windowTopLeft = ImGui::GetWindowPos();
+			ImVec2 startPos =
+			{
+				windowTopLeft.x + cursorPos.x,
+				windowTopLeft.y + cursorPos.y,
+			};
+
+			cursorPos.y += 5;
+
+			// get window drawlist
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			// draw backgroundbox of controller
+			drawList->AddRectFilled(
+				startPos,
+				{
+					startPos.x + timelineWidth,
+					startPos.y + timelineControllerHeight
+				}, guicolors::black);
+
+			// draw box of controller
+			drawList->AddRect(
+				startPos,
+				{
+					startPos.x + timelineWidth,
+					startPos.y + timelineControllerHeight
+				}, guicolors::white);
+
+			// draw handler of player position
+			const double playerTime = mController.getPlayerPosition();
+			const ImVec2 playerTimeRectTopLeft =
+			{
+				startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - 5,
+				startPos.y
+			};
+			const ImVec2 playerTimeRectBottomRight =
+			{
+				startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth + 5,
+				startPos.y + timelineControllerHeight,
+			};
+
+			drawList->AddRectFilled(
+				playerTimeRectTopLeft,
+				playerTimeRectBottomRight,
+				guicolors::red);
+
+			if (mState.currentAction == NONE || mState.currentAction == HOVERING_PLAYER_TIME)
+			{
+				if (ImGui::IsMouseHoveringRect(playerTimeRectTopLeft, playerTimeRectBottomRight))
+				{
+					mState.currentAction = HOVERING_PLAYER_TIME;
+
+					if (ImGui::IsMouseDown(0))
+					{
+						mState.currentAction = DRAGGING_PLAYER_TIME;
+					}
+				}
+				else
+				{
+					mState.currentAction = NONE;
+				}
+			}
+
+			if (mState.currentAction == DRAGGING_PLAYER_TIME)
+			{
+				if (ImGui::IsMouseDown(0))
+				{
+					double delta = (mouseDelta.x / timelineWidth) * mSequence.mDuration;
+					mController.setPlayerPosition(playerTime + delta);
+				}
+				else
+				{
+					if (ImGui::IsMouseReleased(0))
+					{
+						mState.currentAction = NONE;
+					}
+				}
+			}
+
+			ImGui::PopID();
+
+			ImGui::EndChild();
+		}
+	}
+
+
+	void SequenceEditorGUIView::drawTimelinePlayerPosition(
+		const ImVec2 &timelineControllerWindowPosition, 
+		const float trackInspectorWidth,
+		const float timelineWidth)
+	{
+		std::ostringstream stringStream;
+		stringStream << mID << "timelineplayerposition";
+		std::string idString = stringStream.str();
+
+		ImGui::SetCursorPos(
+		{
+			timelineControllerWindowPosition.x 
+				+ trackInspectorWidth + 5 
+				+ timelineWidth * (float)(mController.getPlayerPosition() / mSequence.mDuration) - 1,
+			timelineControllerWindowPosition.y
+		});
+		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
+		if (ImGui::BeginChild(
+			idString.c_str(), // id
+			{ 1.0f, mSequence.mTracks.size() * 110.0f + 10.0f }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+
+			ImGui::End();
+		}
+		ImGui::PopStyleColor();
+	}
+
 
 	SequenceEditorView::SequenceEditorView(const Sequence& sequence, SequenceEditorController& controller)
 		: mSequence(sequence), mController(controller) {}
