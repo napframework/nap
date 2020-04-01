@@ -86,6 +86,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'liblz4',
     'liblzma',
     r'libm-[0-9]+\.[0-9]+',
+    r'libmvec-[0-9]+\.[0-9]+',
     r'libnsl-[0-9]+\.[0-9]+',
     r'libnss_compat-[0-9]+\.[0-9]+',
     r'libnss_files-[0-9]+\.[0-9]+',
