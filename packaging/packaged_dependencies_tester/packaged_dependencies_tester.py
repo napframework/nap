@@ -157,7 +157,8 @@ MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/',
                                    '/System/Library/Frameworks/', 
                                    '/System/Library/PrivateFrameworks/', 
                                    '/System/Library/Extensions/', 
-                                   '/System/Library/Components/'
+                                   '/System/Library/Components/',
+                                   '/Library/CoreMediaIO/'
                                    ]
 
 # Quicker iteration when debugging this script
