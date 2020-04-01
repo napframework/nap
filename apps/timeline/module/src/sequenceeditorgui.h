@@ -137,6 +137,7 @@ namespace nap
 		void draw();
 	private:
 		void drawTracks(
+			const bool isWindowFocused,
 			const Sequence &sequence,
 			const float inspectorWidth,
 			const float timelineWidth,
@@ -145,6 +146,7 @@ namespace nap
 			const ImVec2 &mouseDelta);
 
 		void drawSegmentValue(
+			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
@@ -157,6 +159,7 @@ namespace nap
 			ImDrawList* drawList);
 
 		void drawSegmentHandler(
+			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
@@ -169,6 +172,7 @@ namespace nap
 		);
 
 		void drawCurve(
+			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
@@ -180,6 +184,7 @@ namespace nap
 			ImDrawList* drawList);
 
 		void drawControlPoints(
+			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
@@ -191,6 +196,7 @@ namespace nap
 			ImDrawList* drawList);
 
 		void drawTanHandler(
+			const bool isWindowFocused,
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,
 			std::ostringstream &stringStream,
@@ -205,6 +211,7 @@ namespace nap
 			ImDrawList* drawList);
 
 		void drawPlayerController(
+			const bool isWindowFocused,
 			SequencePlayer& player,
 			const float startOffsetX,
 			const float timelineWidth,
