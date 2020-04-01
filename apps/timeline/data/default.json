@@ -1,20 +1,27 @@
 {
     "Objects": [
         {
-            "Type": "nap::ParameterFloat",
-            "mID": "MyFloatParameter",
-            "Name": "",
-            "Value": 0.0,
-            "Minimum": 0.0,
-            "Maximum": 1.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "MyFloatParameter2",
-            "Name": "",
-            "Value": 0.0,
-            "Minimum": 0.0,
-            "Maximum": 1.0
+            "Type": "nap::ParameterGroup",
+            "mID": "ParameterGroup",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Float1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Float2",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderWindow",
@@ -52,9 +59,10 @@
             "mID": "SequencePlayer",
             "Default Show": "sequences/Default Show.json",
             "Linked Parameters": [
-                "MyFloatParameter",
-                "MyFloatParameter2"
-            ]
+                "Float1",
+                "Float2"
+            ],
+            "Frequency": 1000.0
         }
     ]
 }

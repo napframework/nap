@@ -15,6 +15,7 @@
 RTTI_BEGIN_CLASS(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Linked Parameters", &nap::SequencePlayer::mParameters, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,12 +51,43 @@ namespace nap
 			}
 		}
 
+		// launch player thread
+		mUpdateThreadRunning = true;
+		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
+
 		return true;
+	}
+
+
+	void SequencePlayer::onDestroy()
+	{
+		// stop running thread
+		mUpdateThreadRunning = false;
+		if (mUpdateTask.valid())
+		{
+			mUpdateTask.wait();
+		}
+	}
+
+
+	void SequencePlayer::play()
+	{
+		std::unique_lock<std::mutex> l = lock();
+		mIsPlaying = true;
+	}
+
+
+	void SequencePlayer::stop()
+	{
+		std::unique_lock<std::mutex> l = lock();
+		mIsPlaying = false;
 	}
 
 
 	bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
 	{
+		std::unique_lock<std::mutex> l = lock();
+
 		// Ensure the presets directory exists
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
@@ -82,6 +114,8 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
+		std::unique_lock<std::mutex> l = lock();
+
 		//
 		rtti::DeserializeResult result;
 
@@ -136,6 +170,19 @@ namespace nap
 			return false;
 		}
 
+		// if we have loaded the sequence, make a map of assigned parameters id's for each track
+		mTrackMap.clear();
+		for (const auto& track : mSequence->mTracks)
+		{
+			for (const auto& parameter : mParameters)
+			{
+				if (track->mAssignedParameterID == parameter->mID)
+				{
+					mTrackMap.emplace(parameter->mID, parameter.get());
+				}
+			}
+		}
+
 		return true;
 	}
 
@@ -152,15 +199,77 @@ namespace nap
 	}
 
 
-	void SequencePlayer::setPlayerPosition(double time)
+	void SequencePlayer::setPlayerTime(double time)
 	{
-		mPosition = time;
-		mPosition = math::clamp<double>(mPosition, .0, mSequence->mDuration);
+		std::unique_lock<std::mutex> l = lock();
+
+		mTime = time;
+		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
 	}
 
 
-	double SequencePlayer::getPlayerPosition() const
+	double SequencePlayer::getPlayerTime() const
 	{
-		return mPosition;
+		return mTime;
+	}
+
+
+	bool SequencePlayer::getIsPlaying() const
+	{
+		return mIsPlaying;
+	}
+
+	
+	void SequencePlayer::onUpdate()
+	{
+		// Compute sleep time in microseconds 
+		float sleep_time_microf = 000.0f / static_cast<float>(mFrequency);
+		long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
+
+		while (mUpdateThreadRunning)
+		{
+			{
+				std::unique_lock<std::mutex> l = lock();
+
+				//
+				std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+				std::chrono::nanoseconds elapsed = now - mBefore;
+				float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
+				mBefore = now;
+
+				if (mIsPlaying)
+				{
+					mTime += deltaTime;
+
+					for (const auto& track : mSequence->mTracks)
+					{
+						if (mTrackMap.find(track->mAssignedParameterID) != mTrackMap.end())
+						{
+							auto* parameter = mTrackMap[track->mAssignedParameterID];
+
+							for (const auto& segment : track->mSegments)
+							{
+								if (mTime > segment->mStartTime &&
+									mTime <= segment->mStartTime + segment->mDuration)
+								{
+									auto value = segment->mCurve->evaluate((mTime - segment->mStartTime) / segment->mDuration);
+									parameter->setValue(value);
+
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
+		}
+	}
+
+
+	std::unique_lock<std::mutex> SequencePlayer::lock()
+	{
+		return std::unique_lock<std::mutex>(mLock);
 	}
 }

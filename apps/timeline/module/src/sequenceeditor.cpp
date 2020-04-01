@@ -36,6 +36,7 @@ namespace nap
 	void SequenceEditorController::segmentDurationChange(const std::string& segmentID, float amount)
 	{
 		// pause player thread
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
 		// find the track
 		for (auto& track : mSequence.mTracks)
@@ -68,7 +69,7 @@ namespace nap
 					{
 						trackSegment->mDuration += amount;
 
-						updateSegments();
+						updateSegments(lock);
 					}
 					break;
 				}
@@ -95,22 +96,19 @@ namespace nap
 
 	void SequenceEditorController::save()
 	{
-		// pause player thread
-
 		// save
 		utility::ErrorState errorState;
 		if (!errorState.check(mSequencePlayer.save(mSequencePlayer.mDefaultShow, errorState), "Error saving show!"))
 		{
 			nap::Logger::error(errorState.toString());
 		}
-
-		// resume player thread
 	}
 
 
 	void SequenceEditorController::insertSegment(const std::string& trackID, double time)
 	{
 		// pause player thread
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
 		// find the right track
 		for (auto& track : mSequence.mTracks)
@@ -171,7 +169,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 						//
-						updateSegments();
+						updateSegments(lock);
 
 						break;
 					}
@@ -201,7 +199,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 						//
-						updateSegments();
+						updateSegments(lock);
 
 						break;
 					}
@@ -212,13 +210,12 @@ namespace nap
 				break;
 			}
 		}
-
-		// resume player thread
 	}
 
 	void SequenceEditorController::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		// pause player thread
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
 		for (auto& track : mSequence.mTracks)
 		{
@@ -243,7 +240,7 @@ namespace nap
 						}
 
 						// update segments
-						updateSegments();
+						updateSegments(lock);
 
 						break;
 					}
@@ -265,6 +262,9 @@ namespace nap
 		float value,
 		SegmentValueTypes type)
 	{
+		//
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
 		if (segment != nullptr)
@@ -285,12 +285,12 @@ namespace nap
 				break;
 			}
 
-			updateSegments();
+			updateSegments(lock);
 		}
 	}
 
 
-	void SequenceEditorController::updateSegments()
+	void SequenceEditorController::updateSegments(const std::unique_lock<std::mutex>& lock)
 	{
 		for (auto& track : mSequence.mTracks)
 		{
@@ -371,6 +371,9 @@ namespace nap
 
 	void SequenceEditorController::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos)
 	{
+		//
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
@@ -412,6 +415,9 @@ namespace nap
 		float time,
 		float value)
 	{
+		//
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
@@ -483,6 +489,8 @@ namespace nap
 		float time,
 		float value)
 	{
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
@@ -505,6 +513,8 @@ namespace nap
 		const std::string& segmentID,
 		const int index)
 	{
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 
@@ -517,18 +527,6 @@ namespace nap
 				segment->mCurve->invalidate();
 			}
 		}
-	}
-
-
-	double SequenceEditorController::getPlayerPosition()
-	{
-		return mSequencePlayer.getPlayerPosition();
-	}
-
-
-	void SequenceEditorController::setPlayerPosition(double time)
-	{
-		mSequencePlayer.setPlayerPosition(time);
 	}
 
 
@@ -563,5 +561,11 @@ namespace nap
 		}
 
 		return nullptr;
+	}
+
+
+	SequencePlayer& SequenceEditorController::getSequencePlayer()
+	{
+		return mSequencePlayer;
 	}
 }

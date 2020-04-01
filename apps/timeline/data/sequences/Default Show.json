@@ -142,14 +142,14 @@
                                     }
                                 ]
                             },
-                            "Duration": 0.9699999764561653,
+                            "Duration": 0.9699999764561652,
                             "Start Value": 0.0,
                             "End Value": 0.6999996900558472
                         },
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_23",
-                            "Start Time": 1.9399999864399434,
+                            "Start Time": 1.939999986439943,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_22",
@@ -195,7 +195,7 @@
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_21",
-                            "Start Time": 3.1099999211728575,
+                            "Start Time": 3.1099999211728579,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_20",
@@ -282,7 +282,7 @@
                                     }
                                 ]
                             },
-                            "Duration": 1.2999999951571227,
+                            "Duration": 1.2999999951571229,
                             "Start Value": 0.0,
                             "End Value": 1.0
                         },
@@ -364,7 +364,8 @@
                             "Start Value": 1.0,
                             "End Value": 0.0
                         }
-                    ]
+                    ],
+                    "Parameter ID": "Float1"
                 },
                 {
                     "Type": "nap::SequenceTrack",
@@ -511,7 +512,7 @@
                         {
                             "Type": "nap::SequenceTrackSegment",
                             "mID": "Generated_11",
-                            "Start Time": 1.9900000225752595,
+                            "Start Time": 1.9900000225752597,
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_10",
@@ -692,7 +693,8 @@
                             "Start Value": 0.1700001358985901,
                             "End Value": 0.0
                         }
-                    ]
+                    ],
+                    "Parameter ID": "Float2"
                 }
             ],
             "Duration": 10.399999976158142

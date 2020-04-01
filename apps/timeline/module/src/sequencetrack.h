@@ -20,6 +20,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		std::string mAssignedParameterID; ///< Property: 'Parameter ID' Assigned parameter id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments; ///< Property: 'Segments' Vector holding track segments
 	};
 }

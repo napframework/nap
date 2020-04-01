@@ -205,6 +205,7 @@ namespace nap
 			ImDrawList* drawList);
 
 		void drawPlayerController(
+			SequencePlayer& player,
 			const float startOffsetX,
 			const float timelineWidth,
 			const ImVec2 &mouseDelta);
@@ -214,6 +215,7 @@ namespace nap
 		void handleDeleteSegmentPopup();
 
 		void drawTimelinePlayerPosition(
+			SequencePlayer& player,
 			const ImVec2 &timelineControllerWindowPosition,
 			const float trackInspectorWidth,
 			const float timelineWidth);

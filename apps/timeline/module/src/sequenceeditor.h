@@ -161,14 +161,9 @@ namespace nap
 		/**
 		 * 
 		 */
-		double getPlayerPosition();
-
-		/**
-		 * 
-		 */
-		void setPlayerPosition(double time);
+		SequencePlayer& getSequencePlayer();
 	protected:
-		void updateSegments();
+		void updateSegments(const std::unique_lock<std::mutex>& lock);
 
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 	

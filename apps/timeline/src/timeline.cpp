@@ -16,7 +16,6 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-		mTimelineService = getCore().getService<nap::SequenceEditorService>();
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
@@ -40,22 +39,51 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
+		mSequenceEditorGUI = mResourceManager->findObject<SequenceEditorGUI>("SequenceEditorGUI");
+		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
+			return false;
+
+		mParameterGroup = mResourceManager->findObject<ParameterGroup>("ParameterGroup");
+		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
+			return false;
+
 		// All done!
         return true;
     }
 
 
     // Called when the window is going to render
-    void CoreApp::render()
-    {
+	void CoreApp::render()
+	{
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		//
-		mTimelineService->construct();
+		ImGui::Begin("Parameters");
+
+		for (const auto& parameterResource : mParameterGroup->mParameters)
+		{
+			ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
+
+			std::string name = parameter->getDisplayName();
+
+			float value = parameter->mValue;
+			if (ImGui::SliderFloat(name.c_str(),
+				&value,
+				parameter->mMinimum,
+				parameter->mMaximum))
+			{
+				parameter->setValue(value);
+			}
+		}
+		
+		ImGui::End();
+			
+
+		// Draw sequence editor gui
+		mSequenceEditorGUI->draw();
 
 		// Draw our gui
 		mGuiService->draw();

@@ -15,7 +15,7 @@
 #include <app.h>
 
 //
-#include "sequenceeditorservice.h"
+#include "sequenceeditorgui.h"
 
 namespace nap 
 {
@@ -82,8 +82,10 @@ namespace nap
 		SceneService*			mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*			mInputService = nullptr;		///< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;			///< Manages GUI related update / draw calls
-		SequenceEditorService*		mTimelineService = nullptr;
 		ObjectPtr<RenderWindow> mRenderWindow;					///< Pointer to the render window	
 		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
+
+		ObjectPtr<SequenceEditorGUI>		mSequenceEditorGUI;
+		ObjectPtr<ParameterGroup>			mParameterGroup;
 	};
 }

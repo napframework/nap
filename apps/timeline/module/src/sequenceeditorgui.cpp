@@ -91,10 +91,34 @@ namespace nap
 				mController.save();
 			}
 
+			ImGui::SameLine();
+
+			SequencePlayer& sequencePlayer = mController.getSequencePlayer();
+			if (sequencePlayer.getIsPlaying())
+			{
+				if (ImGui::Button("Stop"))
+				{
+					sequencePlayer.stop();
+				}
+			}
+			else
+			{
+				if (ImGui::Button("Play"))
+				{
+					sequencePlayer.play();
+				}
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Rewind"))
+			{
+				sequencePlayer.setPlayerTime(0.0);
+			}
 			
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position 
 			const ImVec2 timelineControllerWindowPosition = ImGui::GetCursorPos();
 			drawPlayerController(
+				sequencePlayer,
 				trackInspectorWidth + 5,
 				timelineWidth, 
 				mouseDelta);
@@ -113,6 +137,7 @@ namespace nap
 				
 			// on top of everything, draw time line player position
 			drawTimelinePlayerPosition(
+				sequencePlayer,
 				timelineControllerWindowPosition,
 				trackInspectorWidth,
 				timelineWidth);
@@ -1061,6 +1086,7 @@ namespace nap
 
 
 	void SequenceEditorGUIView::drawPlayerController(
+		SequencePlayer& player,
 		const float startOffsetX,
 		const float timelineWidth, 
 		const ImVec2 &mouseDelta)
@@ -1111,7 +1137,7 @@ namespace nap
 				}, guicolors::white);
 
 			// draw handler of player position
-			const double playerTime = mController.getPlayerPosition();
+			const double playerTime = player.getPlayerTime();
 			const ImVec2 playerTimeRectTopLeft =
 			{
 				startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - 5,
@@ -1150,7 +1176,7 @@ namespace nap
 				if (ImGui::IsMouseDown(0))
 				{
 					double delta = (mouseDelta.x / timelineWidth) * mSequence.mDuration;
-					mController.setPlayerPosition(playerTime + delta);
+					player.setPlayerTime(playerTime + delta);
 				}
 				else
 				{
@@ -1169,6 +1195,7 @@ namespace nap
 
 
 	void SequenceEditorGUIView::drawTimelinePlayerPosition(
+		SequencePlayer& player,
 		const ImVec2 &timelineControllerWindowPosition, 
 		const float trackInspectorWidth,
 		const float timelineWidth)
@@ -1181,7 +1208,7 @@ namespace nap
 		{
 			timelineControllerWindowPosition.x 
 				+ trackInspectorWidth + 5 
-				+ timelineWidth * (float)(mController.getPlayerPosition() / mSequence.mDuration) - 1,
+				+ timelineWidth * (float)(player.getPlayerTime() / mSequence.mDuration) - 1,
 			timelineControllerWindowPosition.y
 		});
 

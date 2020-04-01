@@ -6,13 +6,15 @@
 // external includes
 #include <nap/resource.h>
 #include <parameter.h>
+#include <future>
+#include <mutex>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	*/
+	 */
 	class NAPAPI SequencePlayer : public Resource
 	{
 		friend class SequenceEditor;
@@ -26,25 +28,55 @@ namespace nap
 
 		bool load(const std::string& name, utility::ErrorState& errorState);
 
-		void setPlayerPosition(double time);
+		void play();
 
-		double getPlayerPosition() const;
+		void stop();
+
+		void setPlayerTime(double time);
+
+		double getPlayerTime() const;
 
 		double getDuration() const;
+
+		bool getIsPlaying() const;
+
+		virtual void onDestroy();
+
 	public:
-		std::string mDefaultShow;
-		bool mCreateDefaultShowOnFailure = true;
+		// properties
+		std::string			mDefaultShow;
+		bool				mCreateDefaultShowOnFailure = true;
+		float				mFrequency = 1000.0f;
 
 		std::vector<ResourcePtr<ParameterFloat>> mParameters;
 	protected:
 		// Sequence Editor interface
 		Sequence& getSequence();
 	private:
+		//
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
 		std::unordered_set<std::string>				mReadObjectIDs;
 
+		//
+		std::future<void>	mUpdateTask;
+		std::mutex			mLock;
+
+		//
+		std::map<std::string, ParameterFloat*>	mTrackMap;
+
+		//
 		Sequence* mSequence = nullptr;
 
-		double mPosition;
+		void onUpdate();
+
+		bool mUpdateThreadRunning;
+		bool mIsPlaying = false;
+		double mTime = 0.0;
+
+		// used to calculate delta time in onUpdate
+		std::chrono::high_resolution_clock mTimer;
+		std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
+	private:
+		std::unique_lock<std::mutex> lock();
 	};
 }
