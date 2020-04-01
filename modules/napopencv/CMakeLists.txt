@@ -41,8 +41,11 @@ copy_module_json_to_bin()
 # Ensure application can find library when packaged and run
 if(APPLE)
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/opencv/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FFmpeg/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/opencv/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
 endif()
 
 # Package oscpack into platform release

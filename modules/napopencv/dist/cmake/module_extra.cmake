@@ -8,7 +8,6 @@ if(NOT TARGET OpenCV)
         find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/lib/cmake/opencv4)
     endif()
 endif()
-set(MODULE_NAME_EXTRA_LIBS OpenCV)
 
 # add includes
 add_include_to_interface_target(mod_napopencv ${OpenCV_INCLUDE_DIRS})
@@ -47,3 +46,24 @@ elseif(UNIX)
     install(DIRECTORY ${THIRDPARTY_DIR}/opencv/share/licenses DESTINATION licenses/opencv)
     
 endif()
+
+# Install FFmpeg with packaged app on *nix
+if(APPLE)
+    # Add FFmpeg RPATH to built app
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/FFmpeg/lib) 
+
+    # Install FFmpeg into packaged app
+    install(DIRECTORY ${THIRDPARTY_DIR}/FFmpeg/lib/ DESTINATION lib)
+elseif(UNIX)
+    # Install FFmpeg into packaged app
+    install(DIRECTORY ${THIRDPARTY_DIR}/FFmpeg/lib/ DESTINATION lib)
+endif()
+
+# Install FFmpeg license into packaged app
+install(FILES ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv2.1
+              ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv3
+              ${THIRDPARTY_DIR}/FFmpeg/LICENSE.md
+        DESTINATION licenses/FFmpeg
+        )
+# Install FFmpeg source into packaged app to comply with license
+install(FILES ${THIRDPARTY_DIR}/FFmpeg/ffmpeg-3.4.2.tar.xz DESTINATION licenses/FFmpeg)
