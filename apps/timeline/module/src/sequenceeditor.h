@@ -158,10 +158,14 @@ namespace nap
 			float time, 
 			float value);
 
+		void assignNewParameterID(
+			const std::string& trackID,
+			const std::string& parameterID);
+
 		/**
 		 * 
 		 */
-		SequencePlayer& getSequencePlayer();
+		SequencePlayer& getSequencePlayer() const;
 	protected:
 		void updateSegments(const std::unique_lock<std::mutex>& lock);
 

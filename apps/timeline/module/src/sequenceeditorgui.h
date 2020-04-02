@@ -137,6 +137,7 @@ namespace nap
 		void draw();
 	private:
 		void drawTracks(
+			const SequencePlayer& sequencePlayer,
 			const bool isWindowFocused,
 			const Sequence &sequence,
 			const float inspectorWidth,
@@ -230,6 +231,10 @@ namespace nap
 		std::string mID;
 		SequenceGUIState mState;
 		ImVec2 mPreviousMousePos = { 0,0 };
+	private:
+		// ImGUI tools
+		bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
+		bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 	};
 
 	class SequenceGUIDeleteControlPointData : public SequenceGUIActionData

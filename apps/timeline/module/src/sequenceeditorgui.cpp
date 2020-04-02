@@ -132,6 +132,7 @@ namespace nap
 
 			// draw tracks
 			drawTracks(
+				sequencePlayer,
 				windowIsFocused,
 				sequence,
 				trackInspectorWidth,
@@ -162,6 +163,7 @@ namespace nap
 
 
 	void SequenceEditorGUIView::drawTracks(
+		const SequencePlayer& sequencePlayer,
 		const bool isWindowFocused,
 		const Sequence &sequence,
 		const float inspectorWidth,
@@ -192,15 +194,21 @@ namespace nap
 			ImVec2 inspectorCursorPos = { cursorPos.x + 5 , cursorPos.y };
 			ImGui::SetCursorPos(inspectorCursorPos);
 
+			// draw inspector window
 			if (ImGui::BeginChild(
 				inspectorID.c_str(), // id
 				{ inspectorWidth , trackHeight + 5 }, // size
 				false, // no border
 				ImGuiWindowFlags_NoMove)) // window flags
 			{
+				// obtain drawlist
 				ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+				// store window size and position
 				const ImVec2 windowPos = ImGui::GetWindowPos();
 				const ImVec2 windowSize = ImGui::GetWindowSize();
+
+				// draw background & box
 				drawList->AddRectFilled(
 					windowPos,
 					{windowPos.x + windowSize.x - 5, windowPos.y + trackHeight},
@@ -210,6 +218,56 @@ namespace nap
 					windowPos,
 					{ windowPos.x + windowSize.x - 5, windowPos.y + trackHeight },
 					guicolors::white);
+
+				//
+				ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
+				inspectorCursorPos.x += 5;
+				inspectorCursorPos.y += 5;
+				ImGui::SetCursorPos(inspectorCursorPos);
+
+				// 
+				float scale = 0.1f;
+				ImGui::GetStyle().ScaleAllSizes(scale);
+
+				ImGui::Text("Assigned Parameter");
+
+				inspectorCursorPos = ImGui::GetCursorPos();
+				inspectorCursorPos.x += 5;
+				inspectorCursorPos.y += 5;
+				ImGui::SetCursorPos(inspectorCursorPos);
+
+				bool assigned = false;
+				std::string assignedID;
+				std::vector<std::string> parameterIDs;
+				int currentItem = 0;
+				parameterIDs.emplace_back("none");
+				int count = 0;
+				for(const auto& parameter : sequencePlayer.mParameters)
+				{
+					count++;
+
+					if (parameter->mID == track->mAssignedParameterID)
+					{
+						assigned = true;
+						assignedID = parameter->mID;
+						currentItem = count;
+					}
+
+					parameterIDs.emplace_back(parameter->mID);
+				}
+			
+				ImGui::PushItemWidth(175.0f);
+				if (Combo(
+					"",
+					&currentItem, 
+					parameterIDs))
+				{
+					mController.assignNewParameterID(track->mID, parameterIDs[currentItem]);
+				}
+				ImGui::PopItemWidth();
+
+				// 
+				ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
 			}
 			ImGui::EndChild();
 
@@ -1266,6 +1324,28 @@ namespace nap
 		}
 		ImGui::End();
 		ImGui::PopStyleColor();
+	}
+
+	static bool vector_getter(void* vec, int idx, const char** out_text)
+	{
+		auto& vector = *static_cast<std::vector<std::string>*>(vec);
+		if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+		*out_text = vector.at(idx).c_str();
+		return true;
+	};
+
+	bool SequenceEditorGUIView::Combo(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return ImGui::Combo(label, currIndex, vector_getter,
+			static_cast<void*>(&values), values.size());
+	}
+
+	bool SequenceEditorGUIView::ListBox(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return ImGui::ListBox(label, currIndex, vector_getter,
+			static_cast<void*>(&values), values.size());
 	}
 
 

@@ -564,7 +564,22 @@ namespace nap
 	}
 
 
-	SequencePlayer& SequenceEditorController::getSequencePlayer()
+	void SequenceEditorController::assignNewParameterID(
+		const std::string& trackID,
+		const std::string& parameterID)
+	{
+		SequenceTrack* track = findTrack(trackID);
+
+		if (track != nullptr)
+		{
+			std::unique_lock<std::mutex> l = mSequencePlayer.lock();
+
+			track->mAssignedParameterID = parameterID;
+		}
+	}
+
+
+	SequencePlayer& SequenceEditorController::getSequencePlayer() const
 	{
 		return mSequencePlayer;
 	}
