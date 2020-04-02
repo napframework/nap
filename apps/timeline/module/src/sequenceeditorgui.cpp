@@ -262,7 +262,11 @@ namespace nap
 					&currentItem, 
 					parameterIDs))
 				{
-					mController.assignNewParameterID(track->mID, parameterIDs[currentItem]);
+					if(currentItem!=0)
+						mController.assignNewParameterID(track->mID, parameterIDs[currentItem]);
+					else
+						mController.assignNewParameterID(track->mID, "");
+					
 				}
 				ImGui::PopItemWidth();
 
