@@ -55,6 +55,8 @@ namespace nap
 		HOVERING_CURVE,
 		HOVERING_PLAYER_TIME,
 		DRAGGING_PLAYER_TIME,
+		LOAD,
+		SAVE_AS,
 		NONE
 	};
 
@@ -77,9 +79,8 @@ namespace nap
 	{
 	public:
 		// constructor
-		SequenceEditorView(const Sequence& sequence, SequenceEditorController& controller);
+		SequenceEditorView(SequenceEditorController& controller);
 	protected:
-		const Sequence& mSequence;
 		SequenceEditorController& mController;
 	};
 
@@ -90,7 +91,6 @@ namespace nap
 	{
 	public:
 		SequenceEditorGUIView(
-			const Sequence& sequence,
 			SequenceEditorController& controller,
 			std::string id);
 
@@ -182,7 +182,12 @@ namespace nap
 
 		void handleDeleteSegmentPopup();
 
+		void handleLoadPopup();
+
+		void handleSaveAsPopup();
+
 		void drawTimelinePlayerPosition(
+			const Sequence& sequence,
 			SequencePlayer& player,
 			const ImVec2 &timelineControllerWindowPosition,
 			const float trackInspectorWidth,
@@ -292,4 +297,19 @@ namespace nap
 		TanPointTypes	type;
 	};
 
+	class SequenceGUILoadShowData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUILoadShowData() {}
+
+		int selectedShow = 0;
+	};
+
+	class SequenceGUISaveShowData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUISaveShowData() {}
+
+		int selectedShow = 0;
+	};
 }

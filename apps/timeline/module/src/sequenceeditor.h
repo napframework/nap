@@ -69,8 +69,8 @@ namespace nap
 		 * @param sequencePlayer reference to the sequence player
 		 * @param sequence reference to the sequence ( model )
 		 */
-		SequenceEditorController(SequencePlayer& sequencePlayer, Sequence& sequence) 
-			: mSequence(sequence), mSequencePlayer(sequencePlayer) {}
+		SequenceEditorController(SequencePlayer& sequencePlayer) 
+			: mSequencePlayer(sequencePlayer) {}
 
 		/**
 		 * segmentDurationChange
@@ -170,6 +170,8 @@ namespace nap
 		 * 
 		 */
 		SequencePlayer& getSequencePlayer() const;
+
+		const Sequence& getSequence() const;
 	protected:
 		void updateSegments(const std::unique_lock<std::mutex>& lock);
 
@@ -179,7 +181,6 @@ namespace nap
 
 		void deleteObjectFromSequencePlayer(const std::string& id);
 	protected:
-		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;
 	};
 }

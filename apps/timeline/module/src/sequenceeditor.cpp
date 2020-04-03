@@ -26,8 +26,7 @@ namespace nap
 		}
 
 		mController = std::make_unique<SequenceEditorController>(
-			*mSequencePlayer.get(),
-			mSequencePlayer->getSequence());
+			*mSequencePlayer.get());
 
 		return true;
 	}
@@ -38,8 +37,11 @@ namespace nap
 		// pause player thread
 		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
 		// find the track
-		for (auto& track : mSequence.mTracks)
+		for (auto& track : sequence.mTracks)
 		{
 			ResourcePtr<SequenceTrackSegment> previousSegment = nullptr;
 			for (auto trackSegment : track->mSegments)
@@ -110,8 +112,11 @@ namespace nap
 		// pause player thread
 		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
 		// find the right track
-		for (auto& track : mSequence.mTracks)
+		for (auto& track : sequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
@@ -244,7 +249,10 @@ namespace nap
 		// pause player thread
 		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
-		for (auto& track : mSequence.mTracks)
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
+		for (auto& track : sequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
@@ -321,7 +329,10 @@ namespace nap
 
 	void SequenceEditorController::updateSegments(const std::unique_lock<std::mutex>& lock)
 	{
-		for (auto& track : mSequence.mTracks)
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
+		for (auto& track : sequence.mTracks)
 		{
 			// update start time and duration of all segments
 			ResourcePtr<SequenceTrackSegment> prevSeg = nullptr;
@@ -342,7 +353,7 @@ namespace nap
 
 		// update duration of sequence
 		double longestTrack = 0.0;
-		for (const auto& otherTrack : mSequence.mTracks)
+		for (const auto& otherTrack : sequence.mTracks)
 		{
 			double trackTime = 0.0;
 			for (const auto& segment : otherTrack->mSegments)
@@ -360,10 +371,10 @@ namespace nap
 			}
 		}
 
-		mSequence.mDuration = longestTrack;
+		sequence.mDuration = longestTrack;
 
 		// make sure start & end value align
-		for (auto& track : mSequence.mTracks)
+		for (auto& track : sequence.mTracks)
 		{
 			//
 			int segmentCount = 0;
@@ -440,8 +451,11 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = mSequencePlayer.lock();
 
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
 		SequenceTrack* newTrack = sequenceutils::createDefaultSequenceTrack(mSequencePlayer.mReadObjects, mSequencePlayer.mReadObjectIDs);
-		mSequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
+		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
 
 		updateSegments(l);
 	}
@@ -579,7 +593,10 @@ namespace nap
 
 	SequenceTrackSegment* SequenceEditorController::findSegment(const std::string& trackID, const std::string& segmentID)
 	{
-		for (auto& track : mSequence.mTracks)
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
+		for (auto& track : sequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
@@ -599,7 +616,10 @@ namespace nap
 
 	SequenceTrack* SequenceEditorController::findTrack(const std::string& trackID)
 	{
-		for (auto& track : mSequence.mTracks)
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
+		for (auto& track : sequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
@@ -628,12 +648,15 @@ namespace nap
 
 	void SequenceEditorController::deleteTrack(const std::string& deleteTrackID)
 	{
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
 		int index = 0;
-		for (const auto& track : mSequence.mTracks)
+		for (const auto& track : sequence.mTracks)
 		{
 			if (track->mID == deleteTrackID)
 			{
-				mSequence.mTracks.erase(mSequence.mTracks.begin() + index);
+				sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
 				deleteObjectFromSequencePlayer(deleteTrackID);
 
@@ -647,6 +670,12 @@ namespace nap
 	SequencePlayer& SequenceEditorController::getSequencePlayer() const
 	{
 		return mSequencePlayer;
+	}
+
+
+	const Sequence& SequenceEditorController::getSequence() const
+	{
+		return *mSequencePlayer.mSequence;
 	}
 
 

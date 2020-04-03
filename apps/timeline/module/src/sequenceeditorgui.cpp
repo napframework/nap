@@ -6,6 +6,7 @@
 #include <entity.h>
 #include <imgui/imgui.h>
 #include <nap/logger.h>
+#include <utility/fileutils.h>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 	RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -24,7 +25,6 @@ namespace nap
 		}
 
 		mView = std::make_unique<SequenceEditorGUIView>(
-			mSequenceEditor->getSequence(),
 			mSequenceEditor->getController(),
 			mID);
 
@@ -45,9 +45,8 @@ namespace nap
 
 
 	SequenceEditorGUIView::SequenceEditorGUIView(
-		const Sequence& sequence,
 		SequenceEditorController& controller,
-		std::string id) : SequenceEditorView(sequence, controller) {
+		std::string id) : SequenceEditorView(controller) {
 		mID = id;
 	}
 
@@ -61,7 +60,8 @@ namespace nap
 		mPreviousMousePos = mousePos;
 
 		//
-		const Sequence& sequence = mSequence;
+		const Sequence& sequence = mController.getSequence();
+		SequencePlayer& sequencePlayer = mController.getSequencePlayer();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -71,7 +71,7 @@ namespace nap
 
 		// calc width of content in timeline window
 		const float timelineWidth =
-			stepSize * mSequence.mDuration;
+			stepSize * sequence.mDuration;
 
 		const float trackInspectorWidth = 200.0f;
 		
@@ -94,7 +94,23 @@ namespace nap
 
 			ImGui::SameLine();
 
-			SequencePlayer& sequencePlayer = mController.getSequencePlayer();
+			if (ImGui::Button("Save As"))
+			{
+				mState.currentAction = SAVE_AS;
+				mState.currentActionData = std::make_unique<SequenceGUISaveShowData>();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Load"))
+			{
+				ImGui::OpenPopup("Load");
+				mState.currentAction = LOAD;
+				mState.currentActionData = std::make_unique<SequenceGUILoadShowData>();
+			}
+
+			ImGui::SameLine();
+
 			if (sequencePlayer.getIsPlaying())
 			{
 				if (ImGui::Button("Stop"))
@@ -116,6 +132,10 @@ namespace nap
 				sequencePlayer.setPlayerTime(0.0);
 			}
 
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
 			// we want to know if this window is focused in order to handle mouseinput
 			// in child windows or not
 			bool windowIsFocused = ImGui::IsRootWindowOrAnyChildFocused();
@@ -130,7 +150,7 @@ namespace nap
 				mouseDelta);
 
 			// move a little bit more up to align tracks nicely with timelinecontroller
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 110.0f);
 
 			// draw tracks
 			drawTracks(
@@ -145,6 +165,7 @@ namespace nap
 				
 			// on top of everything, draw time line player position
 			drawTimelinePlayerPosition(
+				sequence,
 				sequencePlayer,
 				timelineControllerWindowPosition,
 				trackInspectorWidth,
@@ -162,6 +183,12 @@ namespace nap
 			{
 				mController.addNewTrack();
 			}
+
+			//
+			handleLoadPopup();
+
+			//
+			handleSaveAsPopup();
 		}
 
 		ImGui::End();
@@ -204,7 +231,7 @@ namespace nap
 			cursorPos =
 			{
 				cursorPos.x , 
-				trackHeight + ( trackHeight + margin ) * trackCount 
+				trackHeight + margin + cursorPos.y
 			};
 
 			// manually set the cursor position before drawing inspector
@@ -289,18 +316,19 @@ namespace nap
 					
 				}
 
+				//
+				ImGui::PopItemWidth();
+
 				// delete track button
 				ImGui::Spacing();
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 				// when we delete a track, we don't immediately call the controller because we are iterating track atm
-				if (ImGui::Button("Delete"))
+				if (ImGui::SmallButton("Delete"))
 				{
 					deleteTrack = true;
 					deleteTrackID = track->mID;
 				}
-
-				ImGui::PopItemWidth();
 
 				// pop scale
 				ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
@@ -1281,12 +1309,12 @@ namespace nap
 			const double playerTime = player.getPlayerTime();
 			const ImVec2 playerTimeRectTopLeft =
 			{
-				startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth - 5,
+				startPos.x + (float)(playerTime / player.getDuration()) * timelineWidth - 5,
 				startPos.y
 			};
 			const ImVec2 playerTimeRectBottomRight =
 			{
-				startPos.x + (float)(playerTime / mSequence.mDuration) * timelineWidth + 5,
+				startPos.x + (float)(playerTime / player.getDuration()) * timelineWidth + 5,
 				startPos.y + timelineControllerHeight,
 			};
 
@@ -1325,7 +1353,7 @@ namespace nap
 							}
 							
 							// snap to mouse position
-							double time = ((ImGui::GetMousePos().x - startPos.x) / timelineWidth) * mSequence.mDuration;
+							double time = ((ImGui::GetMousePos().x - startPos.x) / timelineWidth) * player.getDuration();
 							player.setPlayerTime(time);
 						}
 					}
@@ -1338,7 +1366,7 @@ namespace nap
 				{
 					if (ImGui::IsMouseDown(0))
 					{
-						double delta = (mouseDelta.x / timelineWidth) * mSequence.mDuration;
+						double delta = (mouseDelta.x / timelineWidth) * player.getDuration();
 						player.setPlayerTime(playerTime + delta);
 					}
 					else
@@ -1365,6 +1393,7 @@ namespace nap
 
 
 	void SequenceEditorGUIView::drawTimelinePlayerPosition(
+		const Sequence& sequence,
 		SequencePlayer& player,
 		const ImVec2 &timelineControllerWindowPosition, 
 		const float trackInspectorWidth,
@@ -1381,14 +1410,14 @@ namespace nap
 		{
 			timelineControllerWindowPosition.x 
 				+ trackInspectorWidth + 5 
-				+ timelineWidth * (float)(player.getPlayerTime() / mSequence.mDuration) - 1,
+				+ timelineWidth * (float)(player.getPlayerTime() / player.getDuration()) - 1,
 			timelineControllerWindowPosition.y
 		});
 
 		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
 		if (ImGui::BeginChild(
 			idString.c_str(), // id
-			{ 1.0f, mSequence.mTracks.size() * 110.0f + 10.0f }, // size
+			{ 1.0f, sequence.mTracks.size() * 110.0f + 10.0f }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -1400,6 +1429,224 @@ namespace nap
 
 		// pop cursorpos
 		ImGui::SetCursorPos(cursorPos);
+	}
+
+
+	void SequenceEditorGUIView::handleLoadPopup()
+	{
+		if (mState.currentAction == LOAD)
+		{
+			//
+			if (ImGui::BeginPopupModal(
+				"Load",
+				nullptr,
+				ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				//
+				SequenceGUILoadShowData* data = dynamic_cast<SequenceGUILoadShowData*>(mState.currentActionData.get());
+
+				//
+				std::string showDir = "sequences/";
+
+				// Find all files in the preset directory
+				std::vector<std::string> files_in_directory;
+				utility::listDir(showDir.c_str(), files_in_directory);
+
+				std::vector<std::string> shows;
+				std::vector<std::string> showFiles;
+				for (const auto& filename : files_in_directory)
+				{
+					// Ignore directories
+					if (utility::dirExists(filename))
+						continue;
+
+					if (utility::getFileExtension(filename) == "json")
+					{
+						shows.emplace_back(utility::getFileName(filename));
+						showFiles.emplace_back(filename);
+					}
+				}
+
+				int index = 0;
+				Combo("Sequences",
+					&data->selectedShow,
+					shows);
+					
+				utility::ErrorState errorState;
+				if (ImGui::Button("Load"))
+				{
+					if (mController.getSequencePlayer().load(
+						showFiles[data->selectedShow], errorState))
+					{
+						mState.currentAction = NONE;
+						mState.currentActionData = nullptr;
+						ImGui::CloseCurrentPopup();
+					}
+					else
+					{
+						ImGui::OpenPopup("Failed to load show");
+					}
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel"))
+				{
+					mState.currentAction = NONE;
+					mState.currentActionData = nullptr;
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::BeginPopupModal("Failed to load sequence", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+				{
+					if (ImGui::Button("OK"))
+					{
+						mState.currentAction = NONE;
+						mState.currentActionData = nullptr;
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleSaveAsPopup()
+	{
+		// save as popup
+		if (ImGui::BeginPopupModal(
+			"Save As",
+			nullptr,
+			ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			//
+			SequenceGUISaveShowData* data =
+				dynamic_cast<SequenceGUISaveShowData*>(mState.currentActionData.get());
+
+			const std::string showDir = "sequences";
+
+			// Find all files in the preset directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(showDir.c_str(), files_in_directory);
+
+			std::vector<std::string> shows;
+			for (const auto& filename : files_in_directory)
+			{
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
+
+				if (utility::getFileExtension(filename) == "json")
+				{
+					shows.push_back(utility::getFileName(filename));
+				}
+			}
+			shows.push_back("<New...>");
+
+			if (Combo("Shows",
+				&data->selectedShow,
+				shows))
+			{
+				if (data->selectedShow == shows.size() - 1)
+				{
+					ImGui::OpenPopup("New");
+				}
+				else
+				{
+					ImGui::OpenPopup("Overwrite");
+				}
+			}
+		}
+			/*
+			std::string newFilename;
+			utility::ErrorState errorState;
+			if (handleNewShowPopup(newFilename, errorState))
+			{
+				// Insert before the '<new...>' item
+				shows.insert(shows.end() - 1, newFilename);
+				if (mSequencePlayer->save(newFilename, errorState))
+				{
+					mProps.mSelectedShowIndex = shows.size() - 1;
+
+					if (mSequencePlayer->load(newFilename, errorState))
+					{
+
+					}
+					else
+					{
+						mProps.mErrorString = errorState.toString();
+						ImGui::OpenPopup("Failed to load show");
+					}
+				}
+				else
+				{
+					mProps.mErrorString = errorState.toString();
+					ImGui::OpenPopup("Failed to save show");
+				}
+			}
+
+			if (ImGui::BeginPopupModal("Overwrite"))
+			{
+				ImGui::Text(("Are you sure you want to overwrite " + shows[mProps.mSelectedShowIndex] + " ?").c_str());
+				if (ImGui::Button("OK"))
+				{
+					if (mSequencePlayer->save(shows[mProps.mSelectedShowIndex], errorState))
+					{
+						if (mSequencePlayer->load(shows[mProps.mSelectedShowIndex], errorState))
+						{
+
+						}
+						else
+						{
+							mProps.mErrorString = errorState.toString();
+							ImGui::OpenPopup("Failed  to save show");
+						}
+					}
+					else
+					{
+						mProps.mErrorString = errorState.toString();
+						ImGui::OpenPopup("Failed to save show");
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopupModal("Failed to save show"))
+			{
+				ImGui::Text(mProps.mErrorString.c_str());
+				if (ImGui::Button("OK"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::EndPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Done"))
+			{
+				mProps.mInPopup = false;
+				mProps.mCurrentAction = TimeLineActions::NONE;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			ImGui::EndPopup();
+		}*/
 	}
 
 	static bool vector_getter(void* vec, int idx, const char** out_text)
@@ -1425,6 +1672,6 @@ namespace nap
 	}
 
 
-	SequenceEditorView::SequenceEditorView(const Sequence& sequence, SequenceEditorController& controller)
-		: mSequence(sequence), mController(controller) {}
+	SequenceEditorView::SequenceEditorView(SequenceEditorController& controller)
+		: mController(controller) {}
 }
