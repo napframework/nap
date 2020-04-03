@@ -207,6 +207,33 @@ namespace nap
 					segmentCount++;
 				}
 				
+				//
+				if (track->mSegments.size() == 0)
+				{
+					// create new segment & set parameters
+					std::unique_ptr<SequenceTrackSegment> newSegment = std::make_unique<SequenceTrackSegment>();
+					newSegment->mStartTime = 0.0;
+					newSegment->mDuration = time - newSegment->mStartTime;
+
+					// make new curve of segment
+					std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
+					newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+					newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+
+					// generate unique id
+					newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+					// wrap it in a resource ptr and insert it into the track
+					ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+					track->mSegments.emplace_back(newSegmentResourcePtr);
+
+					// move ownership to sequence player
+					mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+					mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+					//
+					updateSegments(lock);
+				}
 				break;
 			}
 		}
@@ -238,6 +265,8 @@ namespace nap
 							// add the duration
 							track->mSegments[segmentIndex]->mDuration += duration;
 						}
+
+						deleteObjectFromSequencePlayer(segmentID);
 
 						// update segments
 						updateSegments(lock);
@@ -407,6 +436,16 @@ namespace nap
 	}
 
 
+	void SequenceEditorController::addNewTrack()
+	{
+		std::unique_lock<std::mutex> l = mSequencePlayer.lock();
+
+		SequenceTrack* newTrack = sequenceutils::createDefaultSequenceTrack(mSequencePlayer.mReadObjects, mSequencePlayer.mReadObjectIDs);
+		mSequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
+
+		updateSegments(l);
+	}
+
 	void SequenceEditorController::changeTanPoint(
 		const std::string& trackID,
 		const std::string& segmentID,
@@ -431,26 +470,33 @@ namespace nap
 				{
 				case IN:
 				{
-					curvePoint.mInTan.mTime += time;
-					curvePoint.mInTan.mValue += value;
-
-					if (curvePoint.mTangentsAligned)
+					if (curvePoint.mInTan.mTime + time < curvePoint.mOutTan.mTime)
 					{
-						curvePoint.mOutTan.mTime = -curvePoint.mInTan.mTime;
-						curvePoint.mOutTan.mValue = -curvePoint.mInTan.mValue;
+						curvePoint.mInTan.mTime += time;
+						curvePoint.mInTan.mValue += value;
+
+						if (curvePoint.mTangentsAligned)
+						{
+							curvePoint.mOutTan.mTime = -curvePoint.mInTan.mTime;
+							curvePoint.mOutTan.mValue = -curvePoint.mInTan.mValue;
+						}
 					}
 				}
 					break;
 				case OUT:
 				{
-					curvePoint.mOutTan.mTime += time;
-					curvePoint.mOutTan.mValue += value;
-
-					if (curvePoint.mTangentsAligned)
+					if (curvePoint.mOutTan.mTime + time > curvePoint.mInTan.mTime)
 					{
-						curvePoint.mInTan.mTime = -curvePoint.mOutTan.mTime;
-						curvePoint.mInTan.mValue = -curvePoint.mOutTan.mValue;
+						curvePoint.mOutTan.mTime += time;
+						curvePoint.mOutTan.mValue += value;
+
+						if (curvePoint.mTangentsAligned)
+						{
+							curvePoint.mInTan.mTime = -curvePoint.mOutTan.mTime;
+							curvePoint.mInTan.mValue = -curvePoint.mOutTan.mValue;
+						}
 					}
+
 				}
 				break;
 				}
@@ -473,6 +519,7 @@ namespace nap
 								nextSegmentCurvePoint.mInTan.mValue = curvePoint.mInTan.mValue;
 								nextSegmentCurvePoint.mOutTan.mTime = curvePoint.mOutTan.mTime;
 								nextSegmentCurvePoint.mOutTan.mValue = curvePoint.mOutTan.mValue;
+
 							}
 						}
 					}
@@ -579,8 +626,44 @@ namespace nap
 	}
 
 
+	void SequenceEditorController::deleteTrack(const std::string& deleteTrackID)
+	{
+		int index = 0;
+		for (const auto& track : mSequence.mTracks)
+		{
+			if (track->mID == deleteTrackID)
+			{
+				mSequence.mTracks.erase(mSequence.mTracks.begin() + index);
+
+				deleteObjectFromSequencePlayer(deleteTrackID);
+
+				break;
+			}
+			index++;
+		}
+	}
+
+
 	SequencePlayer& SequenceEditorController::getSequencePlayer() const
 	{
 		return mSequencePlayer;
+	}
+
+
+	void SequenceEditorController::deleteObjectFromSequencePlayer(const std::string& id)
+	{
+		if (mSequencePlayer.mReadObjectIDs.find(id) != mSequencePlayer.mReadObjectIDs.end())
+		{
+			mSequencePlayer.mReadObjectIDs.erase(id);
+		}
+
+		for (int i = 0; i < mSequencePlayer.mReadObjects.size(); i++)
+		{
+			if (mSequencePlayer.mReadObjects[i]->mID == id)
+			{
+				mSequencePlayer.mReadObjects.erase(mSequencePlayer.mReadObjects.begin() + i);
+				break;
+			}
+		}
 	}
 }

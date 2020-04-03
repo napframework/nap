@@ -162,6 +162,10 @@ namespace nap
 			const std::string& trackID,
 			const std::string& parameterID);
 
+		void addNewTrack();
+
+		void deleteTrack(const std::string& deleteTrackID);
+
 		/**
 		 * 
 		 */
@@ -171,7 +175,9 @@ namespace nap
 
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 	
-		SequenceTrack* SequenceEditorController::findTrack(const std::string& trackID);
+		SequenceTrack* findTrack(const std::string& trackID);
+
+		void deleteObjectFromSequencePlayer(const std::string& id);
 	protected:
 		Sequence&			mSequence;
 		SequencePlayer&		mSequencePlayer;

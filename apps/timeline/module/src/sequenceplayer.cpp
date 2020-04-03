@@ -74,6 +74,14 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = lock();
 		mIsPlaying = true;
+		mIsPaused = false;
+	}
+
+
+	void SequencePlayer::pause()
+	{
+		std::unique_lock<std::mutex> l = lock();
+		mIsPaused = true;
 	}
 
 
@@ -81,6 +89,7 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = lock();
 		mIsPlaying = false;
+		mIsPaused = false;
 	}
 
 
@@ -219,6 +228,11 @@ namespace nap
 		return mIsPlaying;
 	}
 
+
+	bool SequencePlayer::getIsPaused() const
+	{
+		return mIsPaused;
+	}
 	
 	void SequencePlayer::onUpdate()
 	{
@@ -239,7 +253,10 @@ namespace nap
 
 				if (mIsPlaying)
 				{
-					mTime += deltaTime;
+					if (!mIsPaused)
+					{
+						mTime += deltaTime;
+					}
 
 					for (const auto& track : mSequence->mTracks)
 					{

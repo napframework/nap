@@ -84,6 +84,8 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX());
+
 			//
 			if (ImGui::Button("Save"))
 			{
@@ -123,7 +125,7 @@ namespace nap
 			drawPlayerController(
 				windowIsFocused,
 				sequencePlayer,
-				trackInspectorWidth + 5,
+				trackInspectorWidth + 5.0f,
 				timelineWidth, 
 				mouseDelta);
 
@@ -153,6 +155,13 @@ namespace nap
 
 			// handle delete segment popup
 			handleDeleteSegmentPopup();
+
+			// move the cursor below the tracks
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 110.0f);
+			if (ImGui::Button("Insert New Track"))
+			{
+				mController.addNewTrack();
+			}
 		}
 
 		ImGui::End();
@@ -172,6 +181,10 @@ namespace nap
 		const float stepSize,
 		const ImVec2 &mouseDelta)
 	{
+		//
+		bool deleteTrack = false;
+		std::string deleteTrackID = "";
+
 		// get current cursor pos, we will use this to position the track windows
 		ImVec2 cursorPos = ImGui::GetCursorPos();
 
@@ -188,10 +201,14 @@ namespace nap
 			std::string inspectorID = inspectorIDStream.str();
 
 			// manually set the cursor position before drawing new track window
-			cursorPos = { cursorPos.x , cursorPos.y + trackHeight * trackCount + margin };
+			cursorPos =
+			{
+				cursorPos.x , 
+				trackHeight + ( trackHeight + margin ) * trackCount 
+			};
 
 			// manually set the cursor position before drawing inspector
-			ImVec2 inspectorCursorPos = { cursorPos.x + 5 , cursorPos.y };
+			ImVec2 inspectorCursorPos = { cursorPos.x , cursorPos.y };
 			ImGui::SetCursorPos(inspectorCursorPos);
 
 			// draw inspector window
@@ -219,16 +236,17 @@ namespace nap
 					{ windowPos.x + windowSize.x - 5, windowPos.y + trackHeight },
 					guicolors::white);
 
-				//
+				// 
 				ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
 				inspectorCursorPos.x += 5;
 				inspectorCursorPos.y += 5;
 				ImGui::SetCursorPos(inspectorCursorPos);
 
-				// 
-				float scale = 0.1f;
+				// scale down everything
+				float scale = 0.25f;
 				ImGui::GetStyle().ScaleAllSizes(scale);
 
+				// draw the assigned parameter
 				ImGui::Text("Assigned Parameter");
 
 				inspectorCursorPos = ImGui::GetCursorPos();
@@ -242,6 +260,7 @@ namespace nap
 				int currentItem = 0;
 				parameterIDs.emplace_back("none");
 				int count = 0;
+				const ParameterFloat* assignedParameterPtr = nullptr;
 				for(const auto& parameter : sequencePlayer.mParameters)
 				{
 					count++;
@@ -251,12 +270,13 @@ namespace nap
 						assigned = true;
 						assignedID = parameter->mID;
 						currentItem = count;
+						assignedParameterPtr = parameter.get();
 					}
 
 					parameterIDs.emplace_back(parameter->mID);
 				}
-			
-				ImGui::PushItemWidth(175.0f);
+
+				ImGui::PushItemWidth(140.0f);
 				if (Combo(
 					"",
 					&currentItem, 
@@ -268,9 +288,21 @@ namespace nap
 						mController.assignNewParameterID(track->mID, "");
 					
 				}
+
+				// delete track button
+				ImGui::Spacing();
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+				// when we delete a track, we don't immediately call the controller because we are iterating track atm
+				if (ImGui::Button("Delete"))
+				{
+					deleteTrack = true;
+					deleteTrackID = track->mID;
+				}
+
 				ImGui::PopItemWidth();
 
-				// 
+				// pop scale
 				ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
 			}
 			ImGui::EndChild();
@@ -458,6 +490,12 @@ namespace nap
 
 			// increment track count
 			trackCount++;
+		}
+
+		// delete the track if we did a delete track action
+		if (deleteTrack)
+		{
+			mController.deleteTrack(deleteTrackID);
 		}
 	}
 
@@ -711,6 +749,8 @@ namespace nap
 			stepSize,
 			drawList);
 
+		//
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - trackHeight);
 	}
 
 
@@ -1259,22 +1299,42 @@ namespace nap
 			{
 				if (mState.currentAction == NONE || mState.currentAction == HOVERING_PLAYER_TIME)
 				{
-					if (ImGui::IsMouseHoveringRect(playerTimeRectTopLeft, playerTimeRectBottomRight))
+					if (ImGui::IsMouseHoveringRect(startPos, 
+					{
+						startPos.x + timelineWidth,
+						startPos.y + timelineControllerHeight
+					}))
 					{
 						mState.currentAction = HOVERING_PLAYER_TIME;
 
 						if (ImGui::IsMouseDown(0))
 						{
+							//
+							bool playerWasPlaying = player.getIsPlaying();
+							bool playerWasPaused = player.getIsPaused();
+
 							mState.currentAction = DRAGGING_PLAYER_TIME;
+							mState.currentActionData = std::make_unique<SequenceGUIDragPlayerData>(
+								playerWasPlaying,
+								playerWasPaused
+								);
+
+							if (playerWasPlaying)
+							{
+								player.pause();
+							}
+							
+							// snap to mouse position
+							double time = ((ImGui::GetMousePos().x - startPos.x) / timelineWidth) * mSequence.mDuration;
+							player.setPlayerTime(time);
 						}
 					}
 					else
 					{
+						
 						mState.currentAction = NONE;
 					}
-				}
-
-				if (mState.currentAction == DRAGGING_PLAYER_TIME)
+				}else if (mState.currentAction == DRAGGING_PLAYER_TIME)
 				{
 					if (ImGui::IsMouseDown(0))
 					{
@@ -1285,6 +1345,12 @@ namespace nap
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
+							const SequenceGUIDragPlayerData* data = dynamic_cast<SequenceGUIDragPlayerData*>( mState.currentActionData.get() );
+							if (data->playerWasPlaying && !data->playerWasPaused)
+							{
+								player.play();
+							}
+
 							mState.currentAction = NONE;
 						}
 					}
@@ -1308,6 +1374,9 @@ namespace nap
 		stringStream << mID << "timelineplayerposition";
 		std::string idString = stringStream.str();
 
+		// store cursorpos
+		ImVec2 cursorPos = ImGui::GetCursorPos();
+
 		ImGui::SetCursorPos(
 		{
 			timelineControllerWindowPosition.x 
@@ -1328,6 +1397,9 @@ namespace nap
 		}
 		ImGui::End();
 		ImGui::PopStyleColor();
+
+		// pop cursorpos
+		ImGui::SetCursorPos(cursorPos);
 	}
 
 	static bool vector_getter(void* vec, int idx, const char** out_text)

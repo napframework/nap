@@ -16,6 +16,7 @@ namespace nap
 	// forward declares
 	class SequenceEditorGUIView;
 	class SequenceEditorView;
+	class SequenceGUIActionData;
 
 	/**
 	 */
@@ -57,47 +58,6 @@ namespace nap
 		NONE
 	};
 
-	class SequenceGUIActionData
-	{
-	public:
-		SequenceGUIActionData() {}
-		virtual ~SequenceGUIActionData() {}
-	};
-
-	class SequenceGUIDragSegmentData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIDragSegmentData(
-			std::string trackId_, 
-			std::string segmentID_, 
-			SegmentValueTypes type_)
-			: trackID(trackId_),
-				segmentID(segmentID_),
-				type(type_) {}
-
-		std::string			trackID;
-		std::string			segmentID;
-		SegmentValueTypes	type;
-	};
-
-	class SequenceGUIDragTanPointData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIDragTanPointData(
-			std::string trackId_, 
-			std::string segmentID_,
-			int controlPointIndex_,
-			TanPointTypes type_)
-			:	trackID(trackId_), 
-				segmentID(segmentID_), 
-				controlPointIndex(controlPointIndex_), 
-				type(type_) {}
-
-		std::string		trackID;
-		std::string		segmentID;
-		int				controlPointIndex;
-		TanPointTypes	type;
-	};
 
 	/**
 	 * 
@@ -237,6 +197,13 @@ namespace nap
 		bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 	};
 
+	class SequenceGUIActionData
+	{
+	public:
+		SequenceGUIActionData() {}
+		virtual ~SequenceGUIActionData() {}
+	};
+
 	class SequenceGUIDeleteControlPointData : public SequenceGUIActionData
 	{
 	public:
@@ -276,4 +243,53 @@ namespace nap
 		double time = 0.0;
 		std::string trackID;
 	};
+
+	class SequenceGUIDragPlayerData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragPlayerData(
+			bool playerWasPlaying_,
+			bool playerWasPaused_)
+			:	playerWasPlaying(playerWasPlaying_),
+				playerWasPaused(playerWasPaused_){}
+
+		bool playerWasPlaying;
+		bool playerWasPaused;
+	};
+
+	class SequenceGUIDragSegmentData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragSegmentData(
+			std::string trackId_,
+			std::string segmentID_,
+			SegmentValueTypes type_)
+			: trackID(trackId_),
+			segmentID(segmentID_),
+			type(type_) {}
+
+		std::string			trackID;
+		std::string			segmentID;
+		SegmentValueTypes	type;
+	};
+
+	class SequenceGUIDragTanPointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragTanPointData(
+			std::string trackId_,
+			std::string segmentID_,
+			int controlPointIndex_,
+			TanPointTypes type_)
+			: trackID(trackId_),
+			segmentID(segmentID_),
+			controlPointIndex(controlPointIndex_),
+			type(type_) {}
+
+		std::string		trackID;
+		std::string		segmentID;
+		int				controlPointIndex;
+		TanPointTypes	type;
+	};
+
 }

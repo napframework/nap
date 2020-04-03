@@ -32,6 +32,8 @@ namespace nap
 
 		void stop();
 
+		void pause();
+
 		void setPlayerTime(double time);
 
 		double getPlayerTime() const;
@@ -39,6 +41,8 @@ namespace nap
 		double getDuration() const;
 
 		bool getIsPlaying() const;
+
+		bool getIsPaused() const;
 
 		virtual void onDestroy();
 
@@ -71,6 +75,7 @@ namespace nap
 
 		bool mUpdateThreadRunning;
 		bool mIsPlaying = false;
+		bool mIsPaused = false;
 		double mTime = 0.0;
 
 		// used to calculate delta time in onUpdate
