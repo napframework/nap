@@ -128,13 +128,8 @@ namespace nap
 		//
 		rtti::DeserializeResult result;
 
-		const std::string dir = "sequences";
-
 		//
 		std::string timelineName = utility::getFileNameWithoutExtension(name);
-
-		//
-		std::string timelinePath = dir + "/" + name;
 
 		// 
 		rtti::Factory factory;
@@ -191,6 +186,8 @@ namespace nap
 				}
 			}
 		}
+
+		mDefaultShow = name;
 
 		return true;
 	}

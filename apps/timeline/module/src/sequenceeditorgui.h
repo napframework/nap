@@ -303,6 +303,7 @@ namespace nap
 		SequenceGUILoadShowData() {}
 
 		int selectedShow = 0;
+		std::string errorString;
 	};
 
 	class SequenceGUISaveShowData : public SequenceGUIActionData
@@ -311,5 +312,6 @@ namespace nap
 		SequenceGUISaveShowData() {}
 
 		int selectedShow = 0;
+		std::string errorString;
 	};
 }

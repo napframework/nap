@@ -96,6 +96,7 @@ namespace nap
 
 			if (ImGui::Button("Save As"))
 			{
+				ImGui::OpenPopup("Save As");
 				mState.currentAction = SAVE_AS;
 				mState.currentActionData = std::make_unique<SequenceGUISaveShowData>();
 			}
@@ -1446,7 +1447,7 @@ namespace nap
 				SequenceGUILoadShowData* data = dynamic_cast<SequenceGUILoadShowData*>(mState.currentActionData.get());
 
 				//
-				std::string showDir = "sequences/";
+				const std::string showDir = "sequences/";
 
 				// Find all files in the preset directory
 				std::vector<std::string> files_in_directory;
@@ -1484,7 +1485,8 @@ namespace nap
 					}
 					else
 					{
-						ImGui::OpenPopup("Failed to load show");
+						ImGui::OpenPopup("Error");
+						data->errorString = errorState.toString();
 					}
 				}
 
@@ -1496,12 +1498,12 @@ namespace nap
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::BeginPopupModal("Failed to load sequence", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
+					ImGui::Text(data->errorString.c_str());
 					if (ImGui::Button("OK"))
 					{
-						mState.currentAction = NONE;
-						mState.currentActionData = nullptr;
+						mState.currentAction = LOAD;
 						ImGui::CloseCurrentPopup();
 					}
 
@@ -1516,137 +1518,145 @@ namespace nap
 
 	void SequenceEditorGUIView::handleSaveAsPopup()
 	{
-		// save as popup
-		if (ImGui::BeginPopupModal(
-			"Save As",
-			nullptr,
-			ImGuiWindowFlags_AlwaysAutoResize))
+		if (mState.currentAction == SAVE_AS)
 		{
-			//
-			SequenceGUISaveShowData* data =
-				dynamic_cast<SequenceGUISaveShowData*>(mState.currentActionData.get());
-
-			const std::string showDir = "sequences";
-
-			// Find all files in the preset directory
-			std::vector<std::string> files_in_directory;
-			utility::listDir(showDir.c_str(), files_in_directory);
-
-			std::vector<std::string> shows;
-			for (const auto& filename : files_in_directory)
+			// save as popup
+			if (ImGui::BeginPopupModal(
+				"Save As",
+				nullptr,
+				ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				// Ignore directories
-				if (utility::dirExists(filename))
-					continue;
+				//
+				SequenceGUISaveShowData* data =
+					dynamic_cast<SequenceGUISaveShowData*>(mState.currentActionData.get());
 
-				if (utility::getFileExtension(filename) == "json")
-				{
-					shows.push_back(utility::getFileName(filename));
-				}
-			}
-			shows.push_back("<New...>");
+				const std::string showDir = "sequences";
 
-			if (Combo("Shows",
-				&data->selectedShow,
-				shows))
-			{
-				if (data->selectedShow == shows.size() - 1)
-				{
-					ImGui::OpenPopup("New");
-				}
-				else
-				{
-					ImGui::OpenPopup("Overwrite");
-				}
-			}
-		}
-			/*
-			std::string newFilename;
-			utility::ErrorState errorState;
-			if (handleNewShowPopup(newFilename, errorState))
-			{
-				// Insert before the '<new...>' item
-				shows.insert(shows.end() - 1, newFilename);
-				if (mSequencePlayer->save(newFilename, errorState))
-				{
-					mProps.mSelectedShowIndex = shows.size() - 1;
+				// Find all files in the preset directory
+				std::vector<std::string> files_in_directory;
+				utility::listDir(showDir.c_str(), files_in_directory);
 
-					if (mSequencePlayer->load(newFilename, errorState))
+				std::vector<std::string> shows;
+				for (const auto& filename : files_in_directory)
+				{
+					// Ignore directories
+					if (utility::dirExists(filename))
+						continue;
+
+					if (utility::getFileExtension(filename) == "json")
 					{
+						shows.push_back(utility::getFileName(filename));
+					}
+				}
+				shows.push_back("<New...>");
 
+				if (Combo("Shows",
+					&data->selectedShow,
+					shows))
+				{
+					if (data->selectedShow == shows.size() - 1)
+					{
+						ImGui::OpenPopup("New");
 					}
 					else
 					{
-						mProps.mErrorString = errorState.toString();
-						ImGui::OpenPopup("Failed to load show");
+						ImGui::OpenPopup("Overwrite");
 					}
 				}
-				else
-				{
-					mProps.mErrorString = errorState.toString();
-					ImGui::OpenPopup("Failed to save show");
-				}
-			}
 
-			if (ImGui::BeginPopupModal("Overwrite"))
-			{
-				ImGui::Text(("Are you sure you want to overwrite " + shows[mProps.mSelectedShowIndex] + " ?").c_str());
-				if (ImGui::Button("OK"))
+				// new show popup
+				std::string newShowFileName;
+				bool done = false;
+				if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
-					if (mSequencePlayer->save(shows[mProps.mSelectedShowIndex], errorState))
+					static char name[256] = { 0 };
+					ImGui::InputText("Name", name, 256);
+
+					if (ImGui::Button("OK") && strlen(name) != 0)
 					{
-						if (mSequencePlayer->load(shows[mProps.mSelectedShowIndex], errorState))
-						{
+						newShowFileName = std::string(name, strlen(name));
+						newShowFileName += ".json";
 
+						ImGui::CloseCurrentPopup();
+						done = true;
+					}
+
+					ImGui::SameLine();
+
+					if (ImGui::Button("Cancel"))
+						ImGui::CloseCurrentPopup();
+
+					ImGui::EndPopup();
+				}
+				if (done)
+				{
+					// Insert before the '<new...>' item
+					shows.insert(shows.end() - 1, newShowFileName);
+
+					utility::ErrorState errorState;
+					if (mController.getSequencePlayer().save(showDir + "/" + newShowFileName, errorState))
+					{
+						data->selectedShow = shows.size() - 2;
+					}
+					else
+					{
+						data->errorString = errorState.toString();
+						ImGui::OpenPopup("Error");
+					}
+				}
+
+				if (ImGui::BeginPopupModal("Overwrite"))
+				{
+					utility::ErrorState errorState;
+					ImGui::Text(("Are you sure you want to overwrite " + 
+						shows[data->selectedShow] + " ?").c_str());
+					if (ImGui::Button("OK"))
+					{
+						if (mController.getSequencePlayer().save(
+							shows[data->selectedShow],
+							errorState))
+						{
 						}
 						else
 						{
-							mProps.mErrorString = errorState.toString();
-							ImGui::OpenPopup("Failed  to save show");
+							data->errorString = errorState.toString();
+							ImGui::OpenPopup("Error");
 						}
-					}
-					else
-					{
-						mProps.mErrorString = errorState.toString();
-						ImGui::OpenPopup("Failed to save show");
+
+						ImGui::CloseCurrentPopup();
 					}
 
-					ImGui::CloseCurrentPopup();
+					ImGui::SameLine();
+					if (ImGui::Button("Cancel"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
+
+				if (ImGui::BeginPopupModal("Error"))
+				{
+					ImGui::Text(data->errorString.c_str());
+					if (ImGui::Button("OK"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
 				}
 
 				ImGui::SameLine();
-				if (ImGui::Button("Cancel"))
+
+				if (ImGui::Button("Done"))
 				{
+					mState.currentAction = NONE;
+					mState.currentActionData = nullptr;
 					ImGui::CloseCurrentPopup();
 				}
+
 				ImGui::EndPopup();
 			}
-
-			if (ImGui::BeginPopupModal("Failed to save show"))
-			{
-				ImGui::Text(mProps.mErrorString.c_str());
-				if (ImGui::Button("OK"))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				mProps.mInPopup = false;
-				mProps.mCurrentAction = TimeLineActions::NONE;
-				ImGui::EndPopup();
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("Done"))
-			{
-				mProps.mInPopup = false;
-				mProps.mCurrentAction = TimeLineActions::NONE;
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-
-			ImGui::EndPopup();
-		}*/
+		}
 	}
 
 	static bool vector_getter(void* vec, int idx, const char** out_text)
