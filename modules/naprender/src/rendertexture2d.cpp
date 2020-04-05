@@ -22,6 +22,30 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	int RenderTexture2D::getChannelCount()
+	{
+		switch (mFormat)
+		{
+			case RenderTexture2D::EFormat::R8:
+			case RenderTexture2D::EFormat::R16:
+			case RenderTexture2D::EFormat::R32:
+			case RenderTexture2D::EFormat::Depth:
+				return 1;
+			case RenderTexture2D::EFormat::RGB8:
+			case RenderTexture2D::EFormat::RGB16:
+			case RenderTexture2D::EFormat::RGB32:
+				return 3;
+			case RenderTexture2D::EFormat::RGBA8:
+			case RenderTexture2D::EFormat::RGBA16:
+			case RenderTexture2D::EFormat::RGBA32:
+				return 4;
+			default:
+				assert(false);
+				return 0;
+		}
+	}
+
+
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{

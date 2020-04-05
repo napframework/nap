@@ -272,9 +272,7 @@ namespace nap
 		glm::vec3 NAPAPI worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
 
 		/**
-		 * Generates a unique identifier.
-		 * TODO: Implement proper UUID generation, this is temp solution based on a random number generator.
-		 * @return a uuid as string
+		 * Generate a UUID4, random every time, based on host device and random distribution
 		 */
 		std::string NAPAPI generateUUID();
 

@@ -86,6 +86,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'liblz4',
     'liblzma',
     r'libm-[0-9]+\.[0-9]+',
+    r'libmvec-[0-9]+\.[0-9]+',
     r'libnsl-[0-9]+\.[0-9]+',
     r'libnss_compat-[0-9]+\.[0-9]+',
     r'libnss_files-[0-9]+\.[0-9]+',
@@ -157,7 +158,8 @@ MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/',
                                    '/System/Library/Frameworks/', 
                                    '/System/Library/PrivateFrameworks/', 
                                    '/System/Library/Extensions/', 
-                                   '/System/Library/Components/'
+                                   '/System/Library/Components/',
+                                   '/Library/CoreMediaIO/'
                                    ]
 
 # Quicker iteration when debugging this script
