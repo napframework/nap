@@ -12,7 +12,7 @@ namespace nap
 		std::string mVersion; // Version of this project
 		std::string mDefaultData; // Relative path of the default data (json) file
 		std::vector<std::string> mModuleNames; // Names of modules this project depends on
-		std::vector<std::string> mModuleDirs; // Relative or absolute directory paths to search for modules
+		std::vector<std::string> mLibraryPaths; // Relative or absolute directory paths to search for modules
 
 		std::string getFilename() const { return mFilename; }
 

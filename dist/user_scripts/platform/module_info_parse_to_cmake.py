@@ -7,6 +7,7 @@ import sys
 
 MODULE_INFO_FILENAME = 'module.json'
 MODULE_INFO_CMAKE_CACHE_FILENAME = 'cached_module_json.cmake'
+KEY_DEPENDENCIES = 'Dependencies'
 
 def find_module_json_by_module_name(module_name, nap_root):
     module_path = None
@@ -31,28 +32,24 @@ def find_new_dependencies_for_modules(new_dependencies, full_nap_modules, nap_ro
     for module_name in new_dependencies:
         module_json_path = find_module_json_by_module_name(module_name, nap_root)
         if module_json_path is None:
-            return (False, None)
+            return False, None
         else:
             dependencies_for_module = read_single_module_dependencies(module_json_path)
             for found_module_name in dependencies_for_module:
                 if not found_module_name in full_nap_modules and not found_module_name in output_dependencies:
                     output_dependencies.append(found_module_name)
 
-    return (True, output_dependencies)
+    return True, output_dependencies
 
 def read_single_module_dependencies(module_json_path):
     # Read in the JSON
     with open(module_json_path) as json_file:
         json_dict = json.load(json_file)
-        if not 'dependencies' in json_dict:
-            print("Missing element 'dependencies' in %s" % MODULE_INFO_FILENAME)
-            return False
 
-        if not type(json_dict['dependencies']) is list:
-            print("Element 'dependencies' in %s is not an array" % MODULE_INFO_FILENAME)
-            return False
-
-        return json_dict['dependencies']
+    dependencies = json_dict.get(KEY_DEPENDENCIES)
+    assert isinstance(dependencies, list), 'Expected an array called %s in %s' % \
+                                           (KEY_DEPENDENCIES, module_json_path)
+    return dependencies
 
 def update_module_info_to_cmake(module_path, nap_root):
     # Check our module exists
@@ -71,9 +68,9 @@ def update_module_info_to_cmake(module_path, nap_root):
     # Read full, deep, module dependencies
     full_nap_modules = []
     new_dependencies = nap_modules
-    while len(new_dependencies) > 0:
+    while new_dependencies:
         full_nap_modules.extend(new_dependencies)
-        (success, new_dependencies) = find_new_dependencies_for_modules(new_dependencies, full_nap_modules, nap_root)
+        success, new_dependencies = find_new_dependencies_for_modules(new_dependencies, full_nap_modules, nap_root)
         if not success:
             return False
 
