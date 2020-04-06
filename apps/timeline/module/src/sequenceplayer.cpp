@@ -213,6 +213,13 @@ namespace nap
 		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
 	}
 
+	void SequencePlayer::setPlaybackSpeed(float speed)
+	{
+		std::unique_lock<std::mutex> l = lock();
+
+		mSpeed = speed;
+	}
+
 
 	double SequencePlayer::getPlayerTime() const
 	{
@@ -230,6 +237,27 @@ namespace nap
 	{
 		return mIsPaused;
 	}
+
+
+	void SequencePlayer::setIsLooping(bool isLooping)
+	{
+		std::unique_lock<std::mutex> l = lock();
+
+		mIsLooping = isLooping;
+	}
+
+	
+	bool SequencePlayer::getIsLooping() const
+	{
+		return mIsLooping;
+	}
+
+
+	float SequencePlayer::getPlaybackSpeed() const
+	{
+		return mSpeed;
+	}
+
 	
 	void SequencePlayer::onUpdate()
 	{
@@ -239,10 +267,12 @@ namespace nap
 
 		while (mUpdateThreadRunning)
 		{
+			// stack push for lock
 			{
+				// lock
 				std::unique_lock<std::mutex> l = lock();
 
-				//
+				// advance time
 				std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
 				std::chrono::nanoseconds elapsed = now - mBefore;
 				float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
@@ -252,7 +282,23 @@ namespace nap
 				{
 					if (!mIsPaused)
 					{
-						mTime += deltaTime;
+						mTime += deltaTime * mSpeed;
+
+						if (mIsLooping)
+						{
+							if (mTime < 0.0)
+							{
+								mTime = mSequence->mDuration + mTime;
+							}
+							else if (mTime > mSequence->mDuration)
+							{
+								mTime = fmod(mTime, mSequence->mDuration);
+							}
+						}
+						else
+						{
+							mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
+						}
 					}
 
 					for (const auto& track : mSequence->mTracks)
@@ -267,7 +313,7 @@ namespace nap
 									mTime <= segment->mStartTime + segment->mDuration)
 								{
 									auto value = segment->mCurve->evaluate((mTime - segment->mStartTime) / segment->mDuration);
-									parameter->setValue(value);
+									parameter->setValue(value * ( parameter->mMaximum - parameter->mMinimum ) + parameter->mMinimum);
 
 									break;
 								}

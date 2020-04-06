@@ -7,6 +7,7 @@
 #include <imgui/imgui.h>
 #include <nap/logger.h>
 #include <utility/fileutils.h>
+#include <iomanip>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 	RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -53,7 +54,6 @@ namespace nap
 
 	void SequenceEditorGUIView::draw()
 	{
-		
 		//
 		ImVec2 mousePos = ImGui::GetMousePos();
 		ImVec2 mouseDelta = { mousePos.x - mPreviousMousePos.x, mousePos.y - mPreviousMousePos.y };
@@ -67,7 +67,7 @@ namespace nap
 		ImGui::PushID(mID.c_str());
 
 		// 100 px per second, default
-		float stepSize = 100.0f;
+		float stepSize = mHorizontalResolution;
 
 		// calc width of content in timeline window
 		const float timelineWidth =
@@ -76,7 +76,7 @@ namespace nap
 		const float trackInspectorWidth = 200.0f;
 		
 		// set content width of next window
-		ImGui::SetNextWindowContentWidth(timelineWidth + trackInspectorWidth + 100);
+		ImGui::SetNextWindowContentWidth(timelineWidth + trackInspectorWidth + mVerticalResolution);
 
 		// begin window
 		if (ImGui::Begin(
@@ -84,6 +84,23 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
+			// clear curve cache if we move the window
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			if (windowPos.x != mPrevWindowPos.x || windowPos.y != mPrevWindowPos.y)
+			{
+				mCurveCache.clear();
+			}
+			mPrevWindowPos = windowPos;
+
+			// clear curve cache if we scroll inside the window
+			ImVec2 scroll = ImVec2(ImGui::GetScrollX(), ImGui::GetScrollY());
+			if (scroll.x != mPrevScroll.x || scroll.y != mPrevScroll.y)
+			{
+				mCurveCache.clear();
+			}
+			mPrevScroll = scroll;
+
+
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX());
 
 			//
@@ -128,10 +145,56 @@ namespace nap
 			}
 
 			ImGui::SameLine();
+			if (sequencePlayer.getIsPaused() && sequencePlayer.getIsPlaying())
+			{
+				if (ImGui::Button("Play"))
+				{
+					sequencePlayer.play();
+				}
+			}
+			else
+			{
+				if (ImGui::Button("Pause"))
+				{
+					sequencePlayer.pause();
+				}
+
+			}
+
+			ImGui::SameLine();
 			if (ImGui::Button("Rewind"))
 			{
 				sequencePlayer.setPlayerTime(0.0);
 			}
+
+			ImGui::SameLine();
+			bool isLooping = sequencePlayer.getIsLooping();
+			if (ImGui::Checkbox("Loop", &isLooping))
+			{
+				sequencePlayer.setIsLooping(isLooping);
+			}
+
+			ImGui::SameLine();
+			float playbackSpeed = sequencePlayer.getPlaybackSpeed();
+			ImGui::PushItemWidth(50.0f);
+			if (ImGui::DragFloat("speed", &playbackSpeed, 0.01f, -10.0f, 10.0f, "%.1f"))
+			{
+				playbackSpeed = math::clamp(playbackSpeed, -10.0f, 10.0f);
+				sequencePlayer.setPlaybackSpeed(playbackSpeed);
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::PushItemWidth(200.0f);
+			if (ImGui::DragFloat("H-Zoom", &mHorizontalResolution, 0.5f, 10, 1000, "%0.1f"))
+				mCurveCache.clear();
+			ImGui::SameLine();
+			if (ImGui::DragFloat("V-Zoom", &mVerticalResolution, 0.5f, 100, 1000, "%0.1f"))
+				mCurveCache.clear();
+			ImGui::PopItemWidth();
 
 			ImGui::Spacing();
 			ImGui::Separator();
@@ -151,7 +214,7 @@ namespace nap
 				mouseDelta);
 
 			// move a little bit more up to align tracks nicely with timelinecontroller
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 110.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mVerticalResolution - 10);
 
 			// draw tracks
 			drawTracks(
@@ -183,6 +246,7 @@ namespace nap
 			if (ImGui::Button("Insert New Track"))
 			{
 				mController.addNewTrack();
+				mCurveCache.clear();
 			}
 
 			//
@@ -217,7 +281,7 @@ namespace nap
 		ImVec2 cursorPos = ImGui::GetCursorPos();
 
 		// define consts
-		const float trackHeight = 100.0f;
+		const float trackHeight = mVerticalResolution;
 		const float margin = 10.0f;
 
 		int trackCount = 0;
@@ -525,6 +589,7 @@ namespace nap
 		if (deleteTrack)
 		{
 			mController.deleteTrack(deleteTrackID);
+			mCurveCache.clear();
 		}
 	}
 
@@ -666,6 +731,7 @@ namespace nap
 							data->controlPointIndex,
 							timeAdjust,
 							valueAdjust);
+						mCurveCache.clear();
 
 						if (ImGui::IsMouseReleased(0))
 						{
@@ -688,6 +754,7 @@ namespace nap
 							data->trackID,
 							data->segmentID,
 							data->controlPointIndex);
+						mCurveCache.clear();
 
 						mState.currentAction = NONE;
 						mState.currentActionData = nullptr;
@@ -797,17 +864,29 @@ namespace nap
 	{
 		const int resolution = 40;
 		bool curveSelected = false;
-		std::vector<ImVec2> points;
-		points.resize(resolution + 1);
-		for (int i = 0; i <= resolution; i++)
-		{
-			float value = 1.0f - segment.mCurve->evaluate((float)i / resolution);
 
-			points[i] = {
-				trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-				trackTopLeft.y + value * trackHeight };
+		// check the cache
+		if (mCurveCache.find(segment.mID) == mCurveCache.end())
+		{
+			std::vector<ImVec2> points;
+			points.resize(resolution + 1);
+			for (int i = 0; i <= resolution; i++)
+			{
+				float value = 1.0f - segment.mCurve->evaluate((float)i / resolution);
+
+				points[i] = {
+					trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
+					trackTopLeft.y + value * trackHeight };
+			}
+
+			mCurveCache.emplace(segment.mID, points);
 		}
 
+		const std::vector<ImVec2>& points = mCurveCache[segment.mID];
+
+		// because we need to retain the reference to the points in the cache, only clear the cache
+		// on the end of this scrope
+		bool clearCurveCache = false;
 		if (isWindowFocused)
 		{
 			// determine if mouse is hovering curve
@@ -835,6 +914,7 @@ namespace nap
 					if (ImGui::IsMouseClicked(0))
 					{
 						mController.insertCurvePoint(track.mID, segment.mID, xInSegment);
+						clearCurveCache = true;
 					}
 				}
 				else
@@ -864,6 +944,10 @@ namespace nap
 			false, // closed
 			curveSelected ? 3.0f : 1.0f, // thickness
 			true); // anti-aliased
+
+		//
+		if (clearCurveCache)
+			mCurveCache.clear();
 	}
 
 
@@ -947,6 +1031,7 @@ namespace nap
 					{
 						float dragAmount = (mouseDelta.y / trackHeight) * -1.0f;
 						mController.changeSegmentValue(track.mID, segment.mID, dragAmount, segmentType);
+						mCurveCache.clear();
 					}
 				}
 			}
@@ -1020,6 +1105,7 @@ namespace nap
 			{
 				float amount = mouseDelta.x / stepSize;
 				mController.segmentDurationChange(segment.mID, amount);
+				mCurveCache.clear();
 			}
 			// otherwise... release!
 			else if (ImGui::IsMouseReleased(0))
@@ -1152,6 +1238,7 @@ namespace nap
 								type,
 								time,
 								value);
+							mCurveCache.clear();
 						}
 					}
 				}
@@ -1185,6 +1272,7 @@ namespace nap
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
 					mController.insertSegment(data->trackID, data->time);
+					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
 					mState.currentAction = SequenceGUIMouseActions::NONE;
@@ -1229,6 +1317,7 @@ namespace nap
 				{
 					const SequenceGUIDeleteSegmentData* data = dynamic_cast<SequenceGUIDeleteSegmentData*>(mState.currentActionData.get());
 					mController.deleteSegment(data->trackID, data->segmentID);
+					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
 					mState.currentAction = SequenceGUIMouseActions::NONE;
@@ -1261,7 +1350,7 @@ namespace nap
 		const float timelineWidth, 
 		const ImVec2 &mouseDelta)
 	{
-		const float timelineControllerHeight = 15.0f;
+		const float timelineControllerHeight = 30.0f;
 
 		std::ostringstream stringStream;
 		stringStream << mID << "timelinecontroller";
@@ -1269,6 +1358,10 @@ namespace nap
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startOffsetX);
 		ImGui::PushID(idString.c_str());
+
+		// used for culling ( is stuff inside the parent window ??? )
+		ImVec2 parentWindowPos = ImGui::GetWindowPos();
+		ImVec2 parentWindowSize = ImGui::GetWindowSize();
 
 		// draw timeline controller
 		if (ImGui::BeginChild(
@@ -1282,7 +1375,7 @@ namespace nap
 			ImVec2 startPos =
 			{
 				windowTopLeft.x + cursorPos.x,
-				windowTopLeft.y + cursorPos.y,
+				windowTopLeft.y + cursorPos.y + 15,
 			};
 
 			cursorPos.y += 5;
@@ -1295,7 +1388,7 @@ namespace nap
 				startPos,
 				{
 					startPos.x + timelineWidth,
-					startPos.y + timelineControllerHeight
+					startPos.y + timelineControllerHeight - 15
 				}, guicolors::black);
 
 			// draw box of controller
@@ -1303,7 +1396,7 @@ namespace nap
 				startPos,
 				{
 					startPos.x + timelineWidth,
-					startPos.y + timelineControllerHeight
+					startPos.y + timelineControllerHeight - 15
 				}, guicolors::white);
 
 			// draw handler of player position
@@ -1323,6 +1416,35 @@ namespace nap
 				playerTimeRectTopLeft,
 				playerTimeRectBottomRight,
 				guicolors::red);
+
+			// draw timestamp text every 100 pixels
+			const float timestampInterval = 100.0f;
+			int steps = timelineWidth / timestampInterval;
+			for (int i = 0; i < steps; i++)
+			{
+				ImVec2 timestampPos;
+				timestampPos.x = i * timestampInterval + startPos.x;
+				timestampPos.y = startPos.y - 18;
+
+				if (timestampPos.x < parentWindowSize.x + parentWindowPos.x &&
+					timestampPos.x >= parentWindowPos.x)
+				{
+					if (timestampPos.y >= parentWindowPos.y &&
+						timestampPos.y < parentWindowSize.y + parentWindowPos.y)
+					{
+						double timeInPlayer = mController.getSequence().mDuration * (float)((float)i / steps);
+						std::string formattedTimeString = formatTimeString(timeInPlayer);
+						drawList->AddText(timestampPos, guicolors::white, formattedTimeString.c_str());
+
+						if (i != 0)
+						{
+							drawList->AddLine(
+							{ timestampPos.x, timestampPos.y + 18 },
+							{ timestampPos.x, timestampPos.y + timelineControllerHeight + 2 }, guicolors::darkGrey);
+						}
+					}
+				}
+			}
 
 			if (isWindowFocused)
 			{
@@ -1412,13 +1534,13 @@ namespace nap
 			timelineControllerWindowPosition.x 
 				+ trackInspectorWidth + 5 
 				+ timelineWidth * (float)(player.getPlayerTime() / player.getDuration()) - 1,
-			timelineControllerWindowPosition.y
+			timelineControllerWindowPosition.y + 15.0f
 		});
 
 		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
 		if (ImGui::BeginChild(
 			idString.c_str(), // id
-			{ 1.0f, sequence.mTracks.size() * 110.0f + 10.0f }, // size
+			{ 1.0f, sequence.mTracks.size() * ( mVerticalResolution + 10.0f ) + 10.0f }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -1481,6 +1603,7 @@ namespace nap
 					{
 						mState.currentAction = NONE;
 						mState.currentActionData = nullptr;
+						mCurveCache.clear();
 						ImGui::CloseCurrentPopup();
 					}
 					else
@@ -1657,6 +1780,37 @@ namespace nap
 				ImGui::EndPopup();
 			}
 		}
+	}
+
+	std::string SequenceEditorGUIView::formatTimeString(double time)
+	{
+		int hours = time / 3600.0f;
+		int minutes = (int)(time / 60.0f) % 60;
+		int seconds = (int)time % 60;
+		int milliseconds = (int)(time * 100.0f) % 100;
+
+		std::stringstream stringStream;
+
+		stringStream << std::setw(2) << std::setfill('0') << seconds;
+		std::string secondsString = stringStream.str();
+
+		stringStream = std::stringstream();
+		stringStream << std::setw(2) << std::setfill('0') << minutes;
+		std::string minutesString = stringStream.str();
+
+		stringStream = std::stringstream();
+		stringStream << std::setw(2) << std::setfill('0') << milliseconds;
+		std::string millisecondsStrings = stringStream.str();
+
+		std::string hoursString = "";
+		if (hours > 0)
+		{
+			stringStream = std::stringstream();
+			stringStream << std::setw(2) << std::setfill('0') << hours;
+			hoursString = stringStream.str() + ":";
+		}
+
+		return hoursString + minutesString + ":" + secondsString + ":" + millisecondsStrings;
 	}
 
 	static bool vector_getter(void* vec, int idx, const char** out_text)

@@ -563,6 +563,7 @@ namespace nap
 				math::FCurvePoint<float, float>& curvePoint = segment->mCurve->mPoints[index];
 				curvePoint.mPos.mTime += time;
 				curvePoint.mPos.mValue += value;
+				curvePoint.mPos.mValue = math::clamp<float>(curvePoint.mPos.mValue, 0.0f, 1.0f);
 				segment->mCurve->invalidate();
 			}
 		}

@@ -200,6 +200,15 @@ namespace nap
 		// ImGUI tools
 		bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
 		bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
+		std::string formatTimeString(double time);
+
+		float mVerticalResolution = 100.0f;
+		float mHorizontalResolution = 100.0f;
+		std::map<std::string, std::vector<ImVec2>> mCurveCache;
+
+		// used to determine if we need to cache the curves again
+		ImVec2 mPrevWindowPos;
+		ImVec2 mPrevScroll;
 	};
 
 	class SequenceGUIActionData
