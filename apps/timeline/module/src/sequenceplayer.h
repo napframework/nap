@@ -64,7 +64,12 @@ namespace nap
 	protected:
 		// Sequence Editor interface
 		Sequence& getSequence();
-	private:
+
+		void onUpdate();
+
+		template<typename T, typename V>
+		void processSegmentNumeric(SequenceTrackSegment& segment, Parameter& parameter, double time);
+
 		//
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
 		std::unordered_set<std::string>				mReadObjectIDs;
@@ -74,12 +79,10 @@ namespace nap
 		std::mutex			mLock;
 
 		//
-		std::map<std::string, ParameterFloat*>	mTrackMap;
+		std::map<std::string, Parameter*>	mTrackMap;
 
 		//
 		Sequence* mSequence = nullptr;
-
-		void onUpdate();
 
 		bool mUpdateThreadRunning;
 		bool mIsPlaying = false;
@@ -94,4 +97,19 @@ namespace nap
 	private:
 		std::unique_lock<std::mutex> lock();
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T, typename V>
+	void SequencePlayer::processSegmentNumeric(
+		SequenceTrackSegment& segment, Parameter& parameter, double time)
+	{
+		T& target = segment.getDerived<T>();
+		ParameterNumeric<V>& parameterCast = static_cast<ParameterNumeric<V>&>(parameter);
+
+		V value = target.mCurve->evaluate((mTime - target.mStartTime) / target.mDuration);
+		parameterCast.setValue(value * (parameterCast.mMaximum - parameterCast.mMinimum) + parameterCast.mMinimum);
+	}
 }

@@ -1,6 +1,7 @@
 // local includes
 #include "sequenceutils.h"
 #include "sequence.h"
+#include "sequencetracksegmentnumeric.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +70,7 @@ namespace nap
 			std::unordered_set<std::string>& objectIDs)
 		{
 			// create one segment
-			std::unique_ptr<SequenceTrackSegment> trackSegment = std::make_unique<SequenceTrackSegment>();
+			std::unique_ptr<SequenceTrackSegmentFloat> trackSegment = std::make_unique<SequenceTrackSegmentFloat>();
 			trackSegment->mID = generateUniqueID(objectIDs);
 			trackSegment->mDuration = 1.0;
 			trackSegment->mStartTime = 0.0;

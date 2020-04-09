@@ -1,6 +1,7 @@
 // local includes
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
+#include "sequencetracksegmentnumeric.h"
 
 // nap include
 #include <nap/logger.h>
@@ -39,6 +40,7 @@ namespace nap
 		}
 		else if (!load(mDefaultShow, errorState))
 		{
+			nap::Logger::info(*this, errorState.toString());
 			nap::Logger::info(*this, "Error loading default show, creating default sequence based on given parameters");
 		
 			std::unordered_set<std::string> objectIDs;
@@ -305,8 +307,16 @@ namespace nap
 					{
 						if (mTrackMap.find(track->mAssignedParameterID) != mTrackMap.end())
 						{
-							auto* parameter = mTrackMap[track->mAssignedParameterID];
+							for (const auto& segment : track->mSegments)
+							{
+								auto* parameter = mTrackMap[track->mAssignedParameterID];
+								if (parameter->get_type().is_derived_from(RTTI_OF(ParameterFloat)))
+								{
+									processSegmentNumeric<SequenceTrackSegmentFloat, float>(*segment.get(), *parameter, mTime);
+								}
+							}
 
+							/*
 							for (const auto& segment : track->mSegments)
 							{
 								if (mTime > segment->mStartTime &&
@@ -317,7 +327,7 @@ namespace nap
 
 									break;
 								}
-							}
+							}*/
 						}
 					}
 				}

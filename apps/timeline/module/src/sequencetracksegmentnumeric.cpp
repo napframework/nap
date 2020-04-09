@@ -1,0 +1,4 @@
+#include "sequencetracksegmentnumeric.h"
+
+DEFINE_NUMERIC_SEQUENCETRACKSEGMENT(nap::SequenceTrackSegmentFloat)
+DEFINE_NUMERIC_SEQUENCETRACKSEGMENT(nap::SequenceTrackSegmentDouble)

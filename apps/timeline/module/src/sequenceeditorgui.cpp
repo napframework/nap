@@ -1,6 +1,7 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
+#include "sequencetracksegmentnumeric.h"
 
 // External Includes
 #include <entity.h>
@@ -597,7 +598,7 @@ namespace nap
 	void SequenceEditorGUIView::drawControlPoints(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
-		const SequenceTrackSegment& segment,
+		const SequenceTrackSegment& segment_,
 		const ImVec2 &trackTopLeft,
 		const float segmentX,
 		const float segmentWidth,
@@ -606,6 +607,8 @@ namespace nap
 		const int stepSize,
 		ImDrawList* drawList)
 	{
+		const SequenceTrackSegmentFloat& segment = segment_.getDerivedConst<SequenceTrackSegmentFloat>();
+
 		// draw first control point handlers IF this is the first segment of the track
 		if (track.mSegments[0]->mID == segment.mID)
 		{
@@ -853,7 +856,7 @@ namespace nap
 	void SequenceEditorGUIView::drawCurve(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
-		const SequenceTrackSegment& segment,
+		const SequenceTrackSegment& segment_,
 		const ImVec2 &trackTopLeft,
 		const float previousSegmentX,
 		const float segmentWidth,
@@ -862,6 +865,8 @@ namespace nap
 		const float stepSize,
 		ImDrawList* drawList)
 	{
+		const SequenceTrackSegmentFloat& segment = segment_.getDerivedConst<SequenceTrackSegmentFloat>();
+
 		const int resolution = 40;
 		bool curveSelected = false;
 
@@ -954,7 +959,7 @@ namespace nap
 	void SequenceEditorGUIView::drawSegmentValue(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
-		const SequenceTrackSegment& segment,
+		const SequenceTrackSegment& segment_,
 		const ImVec2 &trackTopLeft,
 		const float segmentX,
 		const float segmentWidth,
@@ -965,6 +970,8 @@ namespace nap
 		ImDrawList* drawList
 	)
 	{
+		const SequenceTrackSegmentFloat& segment = segment_.getDerivedConst<SequenceTrackSegmentFloat>();
+
 		// calculate point of this value in the window
 		ImVec2 segmentValuePos =
 		{
@@ -1030,7 +1037,7 @@ namespace nap
 					else
 					{
 						float dragAmount = (mouseDelta.y / trackHeight) * -1.0f;
-						mController.changeSegmentValue(track.mID, segment.mID, dragAmount, segmentType);
+						mController.changeSegmentValueNumeric(track.mID, segment.mID, dragAmount, segmentType, segment.get_type() );
 						mCurveCache.clear();
 					}
 				}
@@ -1271,7 +1278,7 @@ namespace nap
 				if (ImGui::Button("Insert"))
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
-					mController.insertSegment(data->trackID, data->time);
+					mController.insertSegment(data->trackID, data->time, RTTI_OF(SequenceTrackSegmentFloat));
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();

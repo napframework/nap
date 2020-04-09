@@ -95,7 +95,8 @@ namespace nap
 		 */
 		void insertSegment(
 			const std::string& trackID, 
-			double time);
+			double time,
+			rttr::type type);
 
 		/**
 		 * deleteSegment
@@ -108,18 +109,19 @@ namespace nap
 			const std::string& segmentID);
 
 		/**
-		 * changeSegmentEndVlaue
+		 * changeSegmentValue
 		 * changes the end value of this segment and updates the track accordingly
 		 * @param trackID the track in which the segment gets updated
 		 * @param segmentID the segment ID that needs to be updated
 		 * @param amount the amount that the end value needs to change
 		 * @param type the type of value that needs to change ( first or last value )
 		 */
-		void changeSegmentValue(
+		void changeSegmentValueNumeric(
 			const std::string& trackID, 
 			const std::string& segmentID,
 			float amount,
-			SegmentValueTypes type);
+			SegmentValueTypes valueType,
+			rttr::type segmentType);
 
 		/**
 		 * 
@@ -180,6 +182,12 @@ namespace nap
 		SequenceTrack* findTrack(const std::string& trackID);
 
 		void deleteObjectFromSequencePlayer(const std::string& id);
+
+		template<typename T>
+		void insertSegmentNumeric(const std::string& trackID, double time);
+
+		template<typename T>
+		void changeSegmentValueNumeric(const std::string& trackID, const std::string& segmentID, float amount, SegmentValueTypes valueType);
 	protected:
 		SequencePlayer&		mSequencePlayer;
 	};
