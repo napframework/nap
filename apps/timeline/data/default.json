@@ -19,6 +19,22 @@
                     "Value": 0.0,
                     "Minimum": -100.0,
                     "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Int",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 100
+                },
+                {
+                    "Type": "nap::ParameterLong",
+                    "mID": "Long",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1410065407
                 }
             ],
             "Groups": []
@@ -60,7 +76,9 @@
             "Default Show": "sequences/Default Show.json",
             "Linked Parameters": [
                 "Float1",
-                "Float2"
+                "Float2",
+                "Int",
+                "Long"
             ],
             "Frequency": 1000.0
         }

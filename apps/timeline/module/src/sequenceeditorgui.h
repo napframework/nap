@@ -106,7 +106,21 @@ namespace nap
 			const float stepSize,
 			const ImVec2 &mouseDelta);
 
-		void drawSegmentValue(
+		void drawSegmentContentNumeric(
+			const bool isWindowFocused,
+			const SequenceTrack &track,
+			const SequenceTrackSegment &segment,
+			ImVec2 trackTopLeft,
+			float previousSegmentX,
+			float segmentWidth,
+			const float trackHeight,
+			float segmentX,
+			const float stepSize,
+			ImDrawList* drawList,
+			const ImVec2 & mouseDelta,
+			bool drawStartValue);
+
+		void drawSegmentValueNumeric(
 			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
@@ -132,7 +146,7 @@ namespace nap
 			ImDrawList* drawList
 		);
 
-		void drawCurve(
+		void drawCurveNumeric(
 			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
@@ -144,7 +158,7 @@ namespace nap
 			const float stepSize,
 			ImDrawList* drawList);
 
-		void drawControlPoints(
+		void drawControlPointsNumeric(
 			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
@@ -156,7 +170,7 @@ namespace nap
 			const int stepSize,
 			ImDrawList* drawList);
 
-		void drawTanHandler(
+		void drawTanHandlerNumeric(
 			const bool isWindowFocused,
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,

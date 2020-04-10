@@ -110,14 +110,147 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::insertSegment(
+	void SequenceEditorController::insertSegmentNumeric(
 		const std::string& trackID,
-		double time, 
-		rttr::type type)
+		double time)
 	{
-		if (type == RTTI_OF(SequenceTrackSegmentFloat))
+		// pause player thread
+		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
+
+		//
+		Sequence& sequence = mSequencePlayer.getSequence();
+
+		// find the right track
+		for (auto& track : sequence.mTracks)
 		{
-			insertSegmentNumeric<float>(trackID, time);
+			if (track->mID == trackID)
+			{
+				// track found
+
+				// find the segment the new segment in inserted after
+				int segmentCount = 1;
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mStartTime < time &&
+						segment->mStartTime + segment->mDuration > time)
+					{
+						// segment found
+
+						// create new segment & set parameters
+						std::unique_ptr<SequenceTrackSegmentNumeric> newSegment = std::make_unique<SequenceTrackSegmentNumeric>();
+						newSegment->mStartTime = time;
+						newSegment->mDuration = segment->mStartTime + segment->mDuration - time;
+
+						//
+						SequenceTrackSegmentNumeric& segmentFloat = segment->getDerived<SequenceTrackSegmentNumeric>();
+
+						// set the value by evaluation curve
+						newSegment->mStartValue = segmentFloat.mCurve->evaluate((segment->mStartTime + segment->mDuration - time) / segment->mDuration);
+
+						// check if there is a next segment
+						if (segmentCount < track->mSegments.size())
+						{
+							// if there is a next segment, the new segments end value is the start value of the next segment ...
+							SequenceTrackSegmentNumeric& nextSegmentFloat = track->mSegments[segmentCount]->getDerived<SequenceTrackSegmentNumeric>();
+							newSegment->mEndValue = nextSegmentFloat.mStartValue;
+						}
+						else
+						{
+							// ... otherwise it just gets this segments end value
+							newSegment->mEndValue = segmentFloat.mEndValue;
+						}
+
+						// the segment's end value gets the start value the newly inserted segment 
+						segmentFloat.mEndValue = newSegment->mStartValue;
+
+						// make new curve of segment
+						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
+						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+
+						// change duration of segment before inserted segment
+						segment->mDuration = newSegment->mStartTime - segment->mStartTime;
+
+						// generate unique id
+						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+						// wrap it in a resource ptr and insert it into the track
+						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+						track->mSegments.insert(track->mSegments.begin() + segmentCount, newSegmentResourcePtr);
+
+						// move ownership to sequence player
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+						//
+						updateSegments(lock);
+
+						break;
+					}
+					else if (segmentCount == track->mSegments.size())
+					{
+						// insert segment at the end of the list
+
+						// create new segment & set parameters
+						std::unique_ptr<SequenceTrackSegmentNumeric> newSegment = std::make_unique<SequenceTrackSegmentNumeric>();
+						newSegment->mStartTime = segment->mStartTime + segment->mDuration;
+						newSegment->mDuration = time - newSegment->mStartTime;
+
+						// make new curve of segment
+						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
+						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+
+						// generate unique id
+						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+						// wrap it in a resource ptr and insert it into the track
+						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+						track->mSegments.emplace_back(newSegmentResourcePtr);
+
+						// move ownership to sequence player
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+						//
+						updateSegments(lock);
+
+						break;
+					}
+
+
+					segmentCount++;
+				}
+
+				//
+				if (track->mSegments.size() == 0)
+				{
+					// create new segment & set parameters
+					std::unique_ptr<SequenceTrackSegmentNumeric> newSegment = std::make_unique<SequenceTrackSegmentNumeric>();
+					newSegment->mStartTime = 0.0;
+					newSegment->mDuration = time - newSegment->mStartTime;
+
+					// make new curve of segment
+					std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
+					newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+					newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
+
+					// generate unique id
+					newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
+
+					// wrap it in a resource ptr and insert it into the track
+					ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
+					track->mSegments.emplace_back(newSegmentResourcePtr);
+
+					// move ownership to sequence player
+					mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+					mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
+
+					//
+					updateSegments(lock);
+				}
+				break;
+			}
 		}
 	}
 
@@ -164,194 +297,6 @@ namespace nap
 				break;
 			}
 		}
-
-
-		// resume player thread
-	}
-
-
-	void SequenceEditorController::changeSegmentValueNumeric(
-		const std::string& trackID, 
-		const std::string& segmentID, 
-		float amount,
-		SegmentValueTypes valueType,
-		rttr::type segmentType)
-	{
-		if (RTTI_OF(SequenceTrackSegmentFloat) == segmentType)
-		{
-			changeSegmentValueNumeric<float>(trackID, segmentID, amount, valueType);
-		}
-	}
-
-
-	void SequenceEditorController::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos)
-	{
-		//
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
-
-		// find segment
-		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-
-		if (segment != nullptr)
-		{
-			//
-			auto& trackSegFloat = segment->getDerived<SequenceTrackSegmentFloat>();
-
-			// iterate trough points of curve
-			for (int i = 0; i < trackSegFloat.mCurve->mPoints.size() - 1; i++)
-			{
-				// find the point the new point needs to get inserted after
-				if (trackSegFloat.mCurve->mPoints[i].mPos.mTime <= pos
-					&& trackSegFloat.mCurve->mPoints[i + 1].mPos.mTime > pos)
-				{
-					// create point
-					math::FCurvePoint<float, float> p;
-					p.mPos.mTime = pos;
-					p.mPos.mValue = trackSegFloat.mCurve->evaluate(pos);
-					p.mInTan.mTime = -0.1f;
-					p.mOutTan.mTime = 0.1f;
-					p.mInTan.mValue = 0.0f;
-					p.mOutTan.mValue = 0.0f;
-					p.mTangentsAligned = true;
-					p.mInterp = math::ECurveInterp::Bezier;
-
-					// insert point
-					trackSegFloat.mCurve->mPoints.insert(trackSegFloat.mCurve->mPoints.begin() + i + 1, p);
-					trackSegFloat.mCurve->invalidate();
-					break;
-				}
-			}
-		}
-	}
-
-
-	void SequenceEditorController::addNewTrack()
-	{
-		std::unique_lock<std::mutex> l = mSequencePlayer.lock();
-
-		//
-		Sequence& sequence = mSequencePlayer.getSequence();
-
-		SequenceTrack* newTrack = sequenceutils::createDefaultSequenceTrack(mSequencePlayer.mReadObjects, mSequencePlayer.mReadObjectIDs);
-		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
-
-		updateSegments(l);
-	}
-
-	void SequenceEditorController::changeTanPoint(
-		const std::string& trackID,
-		const std::string& segmentID,
-		const int index,
-		TanPointTypes tanType,
-		float time,
-		float value)
-	{
-		//
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
-
-		// find segment
-		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-
-
-		if (segment != nullptr)
-		{
-			//
-			auto& trackSegFloat = segment->getDerived<SequenceTrackSegmentFloat>();
-
-			if (index < trackSegFloat.mCurve->mPoints.size())
-			{
-				auto& curvePoint = trackSegFloat.mCurve->mPoints[index];
-
-				switch (tanType)
-				{
-				case IN:
-				{
-					if (curvePoint.mInTan.mTime + time < curvePoint.mOutTan.mTime)
-					{
-						curvePoint.mInTan.mTime += time;
-						curvePoint.mInTan.mValue += value;
-
-						if (curvePoint.mTangentsAligned)
-						{
-							curvePoint.mOutTan.mTime = -curvePoint.mInTan.mTime;
-							curvePoint.mOutTan.mValue = -curvePoint.mInTan.mValue;
-						}
-					}
-				}
-					break;
-				case OUT:
-				{
-					if (curvePoint.mOutTan.mTime + time > curvePoint.mInTan.mTime)
-					{
-						curvePoint.mOutTan.mTime += time;
-						curvePoint.mOutTan.mValue += value;
-
-						if (curvePoint.mTangentsAligned)
-						{
-							curvePoint.mInTan.mTime = -curvePoint.mOutTan.mTime;
-							curvePoint.mInTan.mValue = -curvePoint.mOutTan.mValue;
-						}
-					}
-
-				}
-				break;
-				}
-
-				// is this the last control point ?
-				// then also change the first control point of the next segment accordinly
-				if (index == trackSegFloat.mCurve->mPoints.size() - 1)
-				{
-					SequenceTrack* track = findTrack(trackID);
-					if (track != nullptr)
-					{
-						for (int i = 0; i < track->mSegments.size(); i++)
-						{
-							if (track->mSegments[i].get() == segment &&
-								i + 1 < track->mSegments.size())
-							{
-								auto& nextSegmentCurvePoint = track->mSegments[i + 1]->getDerived<SequenceTrackSegmentFloat>().mCurve->mPoints[0];
-
-								nextSegmentCurvePoint.mInTan.mTime = curvePoint.mInTan.mTime;
-								nextSegmentCurvePoint.mInTan.mValue = curvePoint.mInTan.mValue;
-								nextSegmentCurvePoint.mOutTan.mTime = curvePoint.mOutTan.mTime;
-								nextSegmentCurvePoint.mOutTan.mValue = curvePoint.mOutTan.mValue;
-
-							}
-						}
-					}
-				}
-
-				trackSegFloat.mCurve->invalidate();
-			}
-		}
-	}
-
-
-	void SequenceEditorController::changeCurvePoint(
-		const std::string& trackID, const std::string& segmentID, const int index, 
-		float time,
-		float value)
-	{
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
-
-		// find segment
-		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-
-		if (segment != nullptr)
-		{
-			//
-			auto& trackSegFloat = segment->getDerived<SequenceTrackSegmentFloat>();
-
-			if (index < trackSegFloat.mCurve->mPoints.size())
-			{
-				//
-				math::FCurvePoint<float, float>& curvePoint = trackSegFloat.mCurve->mPoints[index];
-				curvePoint.mPos.mTime += time;
-				curvePoint.mPos.mValue += value;
-				curvePoint.mPos.mValue = math::clamp<float>(curvePoint.mPos.mValue, 0.0f, 1.0f);
-				trackSegFloat.mCurve->invalidate();
-			}
-		}
 	}
 
 
@@ -368,7 +313,7 @@ namespace nap
 		if (segment != nullptr)
 		{
 			//
-			auto& trackSegFloat = segment->getDerived<SequenceTrackSegmentFloat>();
+			auto& trackSegFloat = segment->getDerived<SequenceTrackSegmentNumeric>();
 
 			if (index < trackSegFloat.mCurve->mPoints.size())
 			{
@@ -430,7 +375,10 @@ namespace nap
 		{
 			std::unique_lock<std::mutex> l = mSequencePlayer.lock();
 
-			track->mAssignedParameterID = parameterID;
+			if (mSequencePlayer.createProcessor(parameterID, trackID))
+			{
+				track->mAssignedParameterID = parameterID;
+			}
 		}
 	}
 
@@ -485,186 +433,7 @@ namespace nap
 		}
 	}
 
-	template<typename T>
-	void SequenceEditorController::insertSegmentNumeric(
-		const std::string& trackID,
-		double time)
-	{
-		// pause player thread
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
-		//
-		Sequence& sequence = mSequencePlayer.getSequence();
-
-		// find the right track
-		for (auto& track : sequence.mTracks)
-		{
-			if (track->mID == trackID)
-			{
-				// track found
-
-				// find the segment the new segment in inserted after
-				int segmentCount = 1;
-				for (auto& segment : track->mSegments)
-				{
-					if (segment->mStartTime < time &&
-						segment->mStartTime + segment->mDuration > time)
-					{
-						// segment found
-
-						// create new segment & set parameters
-						std::unique_ptr<SequenceTrackSegmentNumeric<T>> newSegment = std::make_unique<SequenceTrackSegmentNumeric<T>>();
-						newSegment->mStartTime = time;
-						newSegment->mDuration = segment->mStartTime + segment->mDuration - time;
-
-						//
-						SequenceTrackSegmentNumeric<T>& segmentFloat = segment->getDerived<SequenceTrackSegmentNumeric<T>>();
-
-						// set the value by evaluation curve
-						newSegment->mStartValue = segmentFloat.mCurve->evaluate((segment->mStartTime + segment->mDuration - time) / segment->mDuration);
-
-						// check if there is a next segment
-						if (segmentCount < track->mSegments.size())
-						{
-							// if there is a next segment, the new segments end value is the start value of the next segment ...
-							SequenceTrackSegmentNumeric<T>& nextSegmentFloat = track->mSegments[segmentCount]->getDerived<SequenceTrackSegmentNumeric<T>>();
-							newSegment->mEndValue = nextSegmentFloat.mStartValue;
-						}
-						else
-						{
-							// ... otherwise it just gets this segments end value
-							newSegment->mEndValue = segmentFloat.mEndValue;
-						}
-
-						// the segment's end value gets the start value the newly inserted segment 
-						segmentFloat.mEndValue = newSegment->mStartValue;
-
-						// make new curve of segment
-						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
-						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
-
-						// change duration of segment before inserted segment
-						segment->mDuration = newSegment->mStartTime - segment->mStartTime;
-
-						// generate unique id
-						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-
-						// wrap it in a resource ptr and insert it into the track
-						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
-						track->mSegments.insert(track->mSegments.begin() + segmentCount, newSegmentResourcePtr);
-
-						// move ownership to sequence player
-						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
-						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
-
-						//
-						updateSegments(lock);
-
-						break;
-					}
-					else if (segmentCount == track->mSegments.size())
-					{
-						// insert segment at the end of the list
-
-						// create new segment & set parameters
-						std::unique_ptr<SequenceTrackSegmentNumeric<T>> newSegment = std::make_unique<SequenceTrackSegmentNumeric<T>>();
-						newSegment->mStartTime = segment->mStartTime + segment->mDuration;
-						newSegment->mDuration = time - newSegment->mStartTime;
-
-						// make new curve of segment
-						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
-						newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-						newSegment->mCurve = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
-
-						// generate unique id
-						newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-
-						// wrap it in a resource ptr and insert it into the track
-						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
-						track->mSegments.emplace_back(newSegmentResourcePtr);
-
-						// move ownership to sequence player
-						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
-						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
-
-						//
-						updateSegments(lock);
-
-						break;
-					}
-
-
-					segmentCount++;
-				}
-
-				//
-				if (track->mSegments.size() == 0)
-				{
-					// create new segment & set parameters
-					std::unique_ptr<SequenceTrackSegmentNumeric<T>> newSegment = std::make_unique<SequenceTrackSegmentNumeric<T>>();
-					newSegment->mStartTime = 0.0;
-					newSegment->mDuration = time - newSegment->mStartTime;
-
-					// make new curve of segment
-					std::unique_ptr<math::FCurve<float, T>> newCurve = std::make_unique<math::FCurve<float, T>>();
-					newCurve->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-					newSegment->mCurve = ResourcePtr<math::FCurve<float, T>>(newCurve.get());
-
-					// generate unique id
-					newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
-
-					// wrap it in a resource ptr and insert it into the track
-					ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
-					track->mSegments.emplace_back(newSegmentResourcePtr);
-
-					// move ownership to sequence player
-					mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
-					mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
-
-					//
-					updateSegments(lock);
-				}
-				break;
-			}
-		}
-	}
-
-	template<typename T>
-	void SequenceEditorController::changeSegmentValueNumeric(
-		const std::string& trackID,
-		const std::string& segmentID,
-		float amount, 
-		SegmentValueTypes valueType)
-	{
-		//
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
-
-		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-		SequenceTrackSegmentNumeric<T>& segmentNumeric = segment->getDerived<SequenceTrackSegmentNumeric<T>>();
-
-		if (segment != nullptr)
-		{
-			switch (valueType)
-			{
-			case BEGIN:
-			{
-				segmentNumeric.mStartValue += amount;
-				segmentNumeric.mStartValue = math::clamp<float>(segmentNumeric.mStartValue, 0.0f, 1.0f);
-			}
-			break;
-			case END:
-			{
-				segmentNumeric.mEndValue += amount;
-				segmentNumeric.mEndValue = math::clamp<float>(segmentNumeric.mEndValue, 0.0f, 1.0f);
-			}
-			break;
-			}
-
-			updateSegments(lock);
-		}
-	}
-	
 	void SequenceEditorController::updateSegments(const std::unique_lock<std::mutex>& lock)
 	{
 		//
@@ -718,12 +487,12 @@ namespace nap
 			int segmentCount = 0;
 
 			// update start time and duration of all segments
-			ResourcePtr<SequenceTrackSegmentFloat> prevSeg = nullptr;
+			ResourcePtr<SequenceTrackSegmentNumeric> prevSeg = nullptr;
 			for (auto trackSeg : track->mSegments)
 			{
-				if (trackSeg->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentFloat)))
+				if (trackSeg->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentNumeric)))
 				{
-					auto& trackSegFloat = trackSeg->getDerived<SequenceTrackSegmentFloat>();
+					auto& trackSegFloat = trackSeg->getDerived<SequenceTrackSegmentNumeric>();
 
 					if (prevSeg == nullptr)
 					{

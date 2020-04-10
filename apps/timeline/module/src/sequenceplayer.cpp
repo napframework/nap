@@ -176,17 +176,11 @@ namespace nap
 			return false;
 		}
 
-		// if we have loaded the sequence, make a map of assigned parameters id's for each track
-		mTrackMap.clear();
-		for (const auto& track : mSequence->mTracks)
+		// create processors
+		mProcessors.clear();
+		for (auto& track : mSequence->mTracks)
 		{
-			for (const auto& parameter : mParameters)
-			{
-				if (track->mAssignedParameterID == parameter->mID)
-				{
-					mTrackMap.emplace(parameter->mID, parameter.get());
-				}
-			}
+			createProcessor(track->mAssignedParameterID, track->mID);
 		}
 
 		mDefaultShow = name;
@@ -303,38 +297,105 @@ namespace nap
 						}
 					}
 
-					for (const auto& track : mSequence->mTracks)
+					for (auto& processor : mProcessors)
 					{
-						if (mTrackMap.find(track->mAssignedParameterID) != mTrackMap.end())
-						{
-							for (const auto& segment : track->mSegments)
-							{
-								auto* parameter = mTrackMap[track->mAssignedParameterID];
-								if (parameter->get_type().is_derived_from(RTTI_OF(ParameterFloat)))
-								{
-									processSegmentNumeric<SequenceTrackSegmentFloat, float>(*segment.get(), *parameter, mTime);
-								}
-							}
-
-							/*
-							for (const auto& segment : track->mSegments)
-							{
-								if (mTime > segment->mStartTime &&
-									mTime <= segment->mStartTime + segment->mDuration)
-								{
-									auto value = segment->mCurve->evaluate((mTime - segment->mStartTime) / segment->mDuration);
-									parameter->setValue(value * ( parameter->mMaximum - parameter->mMinimum ) + parameter->mMinimum);
-
-									break;
-								}
-							}*/
-						}
+						processor.second->process(mTime);
 					}
 				}
 			}
 			
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
+	}
+
+
+	bool SequencePlayer::createProcessor(
+		const std::string& parameterID, 
+		const std::string& trackID)
+	{
+		Parameter* parameter = nullptr;
+		for (auto& ownedParameter : mParameters)
+		{
+			if (ownedParameter->mID == parameterID)
+			{
+				parameter = ownedParameter.get();
+				break;
+			}
+		}
+
+		if (mProcessors.find(trackID) != mProcessors.end())
+		{
+			mProcessors.erase(trackID);
+		}
+
+		// don't assign anything because we assign an empty parameter
+		if (parameterID == "")
+		{
+			return true;
+		}
+
+		if (parameter == nullptr)
+		{
+			nap::Logger::error(*this, "Couldn't find parameter with id : %s", parameterID.c_str());
+			return false;
+		}
+
+		for (auto& track : mSequence->mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				switch (track->mTrackType)
+				{
+				case SequenceTrackTypes::NUMERIC:
+				{
+					if (parameter->get_type().is_derived_from<ParameterFloat>())
+					{
+						ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorNumeric<float>>(*track.get(), target);
+						mProcessors.emplace( trackID, std::move(processor));
+					}
+					else if (parameter->get_type().is_derived_from<ParameterDouble>())
+					{
+						ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorNumeric<double>>(*track.get(), target);
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+					else if (parameter->get_type().is_derived_from<ParameterInt>())
+					{
+						ParameterInt& target = static_cast<ParameterInt&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorNumeric<int>>(*track.get(), target);
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+					else if (parameter->get_type().is_derived_from<ParameterLong>())
+					{
+						ParameterLong& target = static_cast<ParameterLong&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorNumeric<int64_t>>(*track.get(), target);
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+
+					else
+					{
+						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
+						return false;
+					}
+				}
+					break;
+				case SequenceTrackTypes::VEC3:
+				{
+					return false;
+				}
+					break;
+				}
+
+				break;
+			}
+		}
+
+		return true;
 	}
 
 

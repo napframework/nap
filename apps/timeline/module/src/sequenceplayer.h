@@ -60,15 +60,14 @@ namespace nap
 		bool				mCreateDefaultShowOnFailure = true;
 		float				mFrequency = 1000.0f;
 
-		std::vector<ResourcePtr<ParameterFloat>> mParameters;
+		std::vector<ResourcePtr<Parameter>> mParameters;
 	protected:
 		// Sequence Editor interface
 		Sequence& getSequence();
 
-		void onUpdate();
+		bool createProcessor(const std::string& parameterID, const std::string& trackID);
 
-		template<typename T, typename V>
-		void processSegmentNumeric(SequenceTrackSegment& segment, Parameter& parameter, double time);
+		void onUpdate();
 
 		//
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
@@ -77,9 +76,6 @@ namespace nap
 		//
 		std::future<void>	mUpdateTask;
 		std::mutex			mLock;
-
-		//
-		std::map<std::string, Parameter*>	mTrackMap;
 
 		//
 		Sequence* mSequence = nullptr;
@@ -96,20 +92,50 @@ namespace nap
 		std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
 	private:
 		std::unique_lock<std::mutex> lock();
+
+		/**
+		 * 
+		 */
+		template<typename T>
+		class ProcessorNumeric : public ProcessorBase
+		{
+		public:
+			ProcessorNumeric(SequenceTrack& track, ParameterNumeric<T>& parameter)
+				: mParameter(parameter), mTrack(track) {}
+
+			virtual void process(double time) override
+			{
+				for (const auto& segment : mTrack.mSegments)
+				{
+					if (time >= segment->mStartTime &&
+						time < segment->mStartTime + segment->mDuration)
+					{
+						SequenceTrackSegmentNumeric& source = segment->getDerived<SequenceTrackSegmentNumeric>();
+						T value = source.mCurve->evaluate((time - source.mStartTime) / source.mDuration)
+							* static_cast<float>(mParameter.mMaximum - mParameter.mMinimum)
+							+ mParameter.mMinimum;
+						
+						mParameter.setValue(value);
+						break;
+					}
+				}
+			}
+		private:
+			ParameterNumeric<T>& mParameter;
+			SequenceTrack&	mTrack;
+		};
+
+		/**
+		 * 
+		 */
+		class ProcessorBase
+		{
+		public:
+			ProcessorBase() {};
+
+			virtual void process(double time) = 0;
+		};
+
+		std::unordered_map<std::string, std::unique_ptr<ProcessorBase>> mProcessors;
 	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T, typename V>
-	void SequencePlayer::processSegmentNumeric(
-		SequenceTrackSegment& segment, Parameter& parameter, double time)
-	{
-		T& target = segment.getDerived<T>();
-		ParameterNumeric<V>& parameterCast = static_cast<ParameterNumeric<V>&>(parameter);
-
-		V value = target.mCurve->evaluate((mTime - target.mStartTime) / target.mDuration);
-		parameterCast.setValue(value * (parameterCast.mMaximum - parameterCast.mMinimum) + parameterCast.mMinimum);
-	}
 }

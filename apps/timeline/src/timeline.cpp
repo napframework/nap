@@ -65,18 +65,67 @@ namespace nap
 
 		for (const auto& parameterResource : mParameterGroup->mParameters)
 		{
-			ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
-
-			std::string name = parameter->getDisplayName();
-
-			float value = parameter->mValue;
-			if (ImGui::SliderFloat(name.c_str(),
-				&value,
-				parameter->mMinimum,
-				parameter->mMaximum))
+			if (parameterResource->get_type().is_derived_from<ParameterFloat>())
 			{
-				parameter->setValue(value);
+				ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				float value = parameter->mValue;
+				if (ImGui::SliderFloat(name.c_str(),
+					&value,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
 			}
+			else if (parameterResource->get_type().is_derived_from<ParameterInt>())
+			{
+				ParameterInt* parameter = static_cast<ParameterInt*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				int value = parameter->mValue;
+				if (ImGui::SliderInt(name.c_str(),
+					&value,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+			}
+			else if (parameterResource->get_type().is_derived_from<ParameterDouble>())
+			{
+				ParameterDouble* parameter = static_cast<ParameterDouble*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				float value = static_cast<float>(parameter->mValue);
+				if (ImGui::SliderFloat(name.c_str(),
+					&value,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+			}
+			else if (parameterResource->get_type().is_derived_from<ParameterLong>())
+			{
+				ParameterLong* parameter = static_cast<ParameterLong*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				int value = static_cast<int>(parameter->mValue);
+				if (ImGui::SliderInt(name.c_str(),
+					&value,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+			}
+
 		}
 		
 		ImGui::End();
