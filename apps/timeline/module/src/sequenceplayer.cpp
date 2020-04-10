@@ -274,6 +274,7 @@ namespace nap
 				float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
 				mBefore = now;
 
+				//
 				if (mIsPlaying)
 				{
 					if (!mIsPaused)

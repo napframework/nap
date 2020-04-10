@@ -246,7 +246,7 @@ namespace nap
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 110.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
-				mController.addNewTrackNumeric<double>();
+				mController.addNewTrackNumeric();
 				mCurveCache.clear();
 			}
 
