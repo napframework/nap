@@ -45,14 +45,22 @@ namespace nap
 		DELETING_SEGMENT,
 		OPEN_DELETE_SEGMENT_POPUP,
 		HOVERING_SEGMENT,
-		HOVERING_SEGMENT_VALUE,
-		DRAGGING_SEGMENT_VALUE,
-		HOVERING_CONTROL_POINT,
-		DRAGGING_CONTROL_POINT,
-		DELETE_CONTROL_POINT,
-		HOVERING_TAN_POINT,
-		DRAGGING_TAN_POINT,
-		HOVERING_CURVE,
+		HOVERING_SEGMENT_VALUE_NUM,
+		HOVERING_SEGMENT_VALUE_VEC,
+		DRAGGING_SEGMENT_VALUE_NUM,
+		DRAGGING_SEGMENT_VALUE_VEC,
+		HOVERING_CONTROL_POINT_NUM,
+		HOVERING_CONTROL_POINT_VEC,
+		DRAGGING_CONTROL_POINT_NUM,
+		DRAGGING_CONTROL_POINT_VEC,
+		DELETE_CONTROL_POINT_NUM,
+		DELETE_CONTROL_POINT_VEC,
+		HOVERING_TAN_POINT_NUM,
+		DRAGGING_TAN_POINT_NUM,
+		HOVERING_TAN_POINT_VEC,
+		DRAGGING_TAN_POINT_VEC,
+		HOVERING_CURVE_NUM,
+		HOVERING_CURVE_VEC,
 		HOVERING_PLAYER_TIME,
 		DRAGGING_PLAYER_TIME,
 		LOAD,
@@ -120,7 +128,36 @@ namespace nap
 			const ImVec2 & mouseDelta,
 			bool drawStartValue);
 
-		void drawSegmentValueNumeric(
+		template<typename T>
+		void drawSegmentContentVec(
+			const bool isWindowFocused,
+			const SequenceTrack &track,
+			const SequenceTrackSegment &segment,
+			ImVec2 trackTopLeft,
+			float previousSegmentX,
+			float segmentWidth,
+			const float trackHeight,
+			float segmentX,
+			const float stepSize,
+			ImDrawList* drawList,
+			const ImVec2 & mouseDelta,
+			bool drawStartValue);
+
+		void drawSegmentValueNum(
+			const bool isWindowFocused,
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float segmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const ImVec2 &mouseDelta,
+			const float stepSize,
+			const SegmentValueTypes segmentType,
+			ImDrawList* drawList);
+
+		template<typename T>
+		void drawSegmentValueVec(
 			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
@@ -170,7 +207,20 @@ namespace nap
 			const int stepSize,
 			ImDrawList* drawList);
 
-		void drawTanHandlerNumeric(
+		template<typename T>
+		void drawControlPointsVec(
+			const bool isWindowFocused,
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float segmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const ImVec2 mouseDelta,
+			const int stepSize,
+			ImDrawList* drawList);
+
+		void drawTanHandlerNum(
 			const bool isWindowFocused,
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,
@@ -180,6 +230,36 @@ namespace nap
 			const float trackHeight,
 			const ImVec2 &circlePoint,
 			const int controlPointIndex,
+			const TanPointTypes type,
+			const ImVec2& mouseDelta,
+			const int stepSize,
+			ImDrawList* drawList);
+
+		template<typename T>
+		void drawCurveVec(
+			const bool isWindowFocused,
+			const SequenceTrack& track,
+			const SequenceTrackSegment& segment,
+			const ImVec2 &trackTopLeft,
+			const float previousSegmentX,
+			const float segmentWidth,
+			const float trackHeight,
+			const float segmentX,
+			const float stepSize,
+			ImDrawList* drawList);
+
+		template<typename T>
+		void drawTanHandlerVec(
+			const bool isWindowFocused,
+			const SequenceTrack &track,
+			const SequenceTrackSegment &segment,
+			std::ostringstream &stringStream,
+			const float segmentWidth,
+			const math::FCurvePoint<float, float> &curvePoint,
+			const float trackHeight,
+			const ImVec2 &circlePoint,
+			const int controlPointIndex,
+			const int curveIndex,
 			const TanPointTypes type,
 			const ImVec2& mouseDelta,
 			const int stepSize,
@@ -218,11 +298,12 @@ namespace nap
 
 		float mVerticalResolution = 100.0f;
 		float mHorizontalResolution = 100.0f;
-		std::map<std::string, std::vector<ImVec2>> mCurveCache;
+		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
 
 		// used to determine if we need to cache the curves again
 		ImVec2 mPrevWindowPos;
 		ImVec2 mPrevScroll;
+	private:
 	};
 
 	class SequenceGUIActionData
@@ -232,10 +313,10 @@ namespace nap
 		virtual ~SequenceGUIActionData() {}
 	};
 
-	class SequenceGUIDeleteControlPointData : public SequenceGUIActionData
+	class SequenceGUIDeleteControlPointDataNum : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDeleteControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_)
+		SequenceGUIDeleteControlPointDataNum(std::string trackId_, std::string segmentID_, int controlPointIndex_)
 			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_) {}
 
 		std::string trackID;
@@ -243,10 +324,10 @@ namespace nap
 		int			controlPointIndex;
 	};
 
-	class SequenceGUIDragControlPointData : public SequenceGUIActionData
+	class SequenceGUIDragControlPointDataNum : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDragControlPointData(std::string trackId_, std::string segmentID_, int controlPointIndex_)
+		SequenceGUIDragControlPointDataNum(std::string trackId_, std::string segmentID_, int controlPointIndex_)
 			: trackID(trackId_), segmentID(segmentID_), controlPointIndex(controlPointIndex_) {}
 
 		std::string trackID;
@@ -266,10 +347,11 @@ namespace nap
 	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIInsertSegmentData(std::string id, double t) : trackID(id), time(t) {}
+		SequenceGUIInsertSegmentData(std::string id, double t, SequenceTrackTypes type) : trackID(id), time(t), trackType(type) {}
 
 		double time = 0.0;
 		std::string trackID;
+		SequenceTrackTypes trackType;
 	};
 
 	class SequenceGUIDragPlayerData : public SequenceGUIActionData
@@ -301,10 +383,29 @@ namespace nap
 		SegmentValueTypes	type;
 	};
 
-	class SequenceGUIDragTanPointData : public SequenceGUIActionData
+	class SequenceGUIDragSegmentDataVec : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDragTanPointData(
+		SequenceGUIDragSegmentDataVec(
+			std::string trackId_,
+			std::string segmentID_,
+			SegmentValueTypes type_,
+			int curveIndex_)
+			: trackID(trackId_),
+			segmentID(segmentID_),
+			type(type_),
+			curveIndex(curveIndex_){}
+
+		std::string			trackID;
+		std::string			segmentID;
+		SegmentValueTypes	type;
+		int					curveIndex;
+	};
+
+	class SequenceGUIDragTanPointDataNum : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragTanPointDataNum(
 			std::string trackId_,
 			std::string segmentID_,
 			int controlPointIndex_,
@@ -320,6 +421,28 @@ namespace nap
 		TanPointTypes	type;
 	};
 
+	class SequenceGUIDragTanPointDataVec : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDragTanPointDataVec(
+			std::string trackId_,
+			std::string segmentID_,
+			int controlPointIndex_,
+			int curveIndex_,
+			TanPointTypes type_)
+			: trackID(trackId_),
+			segmentID(segmentID_),
+			controlPointIndex(controlPointIndex_),
+			curveIndex(curveIndex_),
+			type(type_) {}
+
+		std::string		trackID;
+		std::string		segmentID;
+		int				controlPointIndex;
+		TanPointTypes	type;
+		int				curveIndex;
+	};
+
 	class SequenceGUILoadShowData : public SequenceGUIActionData
 	{
 	public:
@@ -327,6 +450,52 @@ namespace nap
 
 		int selectedShow = 0;
 		std::string errorString;
+	};
+
+	class SequenceGUIHoveringCurveVecData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIHoveringCurveVecData(int index) : selectedIndex(index) {}
+
+		int selectedIndex;
+	};
+
+	class SequenceGUIControlPointDataVec : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIControlPointDataVec(
+			std::string trackId_, 
+			std::string segmentID_,
+			int controlPointIndex_,
+			int curveIndex_)
+			: trackID(trackId_), 
+			segmentID(segmentID_),
+			controlPointIndex(controlPointIndex_),
+			curveIndex(curveIndex_){}
+
+		std::string trackID;
+		std::string segmentID;
+		int			controlPointIndex;
+		int			curveIndex;
+	};
+
+	class SequenceGUIDeleteControlPointDataVec : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIDeleteControlPointDataVec(
+			std::string trackId_,
+			std::string segmentID_,
+			int controlPointIndex_,
+			int curveIndex_)
+			: trackID(trackId_), 
+			segmentID(segmentID_), 
+			controlPointIndex(controlPointIndex_),
+			curveIndex(curveIndex_){}
+
+		std::string trackID;
+		std::string segmentID;
+		int			controlPointIndex;
+		int			curveIndex;
 	};
 
 	class SequenceGUISaveShowData : public SequenceGUIActionData

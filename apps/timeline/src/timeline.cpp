@@ -65,6 +65,7 @@ namespace nap
 
 		for (const auto& parameterResource : mParameterGroup->mParameters)
 		{
+			/*
 			if (parameterResource->get_type().is_derived_from<ParameterFloat>())
 			{
 				ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
@@ -119,6 +120,35 @@ namespace nap
 				int value = static_cast<int>(parameter->mValue);
 				if (ImGui::SliderInt(name.c_str(),
 					&value,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+			}*/
+			if (parameterResource->get_type().is_derived_from<ParameterVec3>())
+			{
+				ParameterVec3* parameter = static_cast<ParameterVec3*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				glm::vec3 value = static_cast<glm::vec3>(parameter->mValue);
+				if (ImGui::SliderFloat(name.c_str(),
+					&value.x,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+				if (ImGui::SliderFloat(name.c_str(),
+					&value.y,
+					parameter->mMinimum,
+					parameter->mMaximum))
+				{
+					parameter->setValue(value);
+				}
+				if (ImGui::SliderFloat(name.c_str(),
+					&value.z,
 					parameter->mMinimum,
 					parameter->mMaximum))
 				{

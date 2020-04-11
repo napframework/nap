@@ -14,9 +14,11 @@ namespace nap
 
 	enum SequenceTrackTypes : int
 	{
+		UNKOWN,
 		NUMERIC,
+		VEC2,
 		VEC3,
-		UNKOWN
+		VEC4
 	};
 
 	/**

@@ -6,6 +6,7 @@
 // external includes
 #include <nap/resource.h>
 #include <parameter.h>
+#include <parametervec.h>
 #include <future>
 #include <mutex>
 
@@ -123,6 +124,45 @@ namespace nap
 		private:
 			ParameterNumeric<T>& mParameter;
 			SequenceTrack&	mTrack;
+		};
+
+		/**
+		 *
+		 */
+		template<typename T>
+		class ProcessorVector : public ProcessorBase
+		{
+		public:
+			ProcessorVector(SequenceTrack& track, ParameterVec<T>& parameter)
+				: mParameter(parameter), mTrack(track) {}
+
+			virtual void process(double time) override
+			{
+				for (const auto& segment : mTrack.mSegments)
+				{
+					if (time >= segment->mStartTime &&
+						time < segment->mStartTime + segment->mDuration)
+					{
+						SequenceTrackSegmentVec<T>& source = segment->getDerived<SequenceTrackSegmentVec<T>>();
+						T value;
+						for (int i = 0; i < source.mCurves.size(); i++)
+						{
+							const T& maximum = static_cast<T>(mParameter.mMaximum);
+							const T& minimum = static_cast<T>(mParameter.mMinimum);
+
+							value[i] = source.mCurves[i]->evaluate(
+										(time - source.mStartTime) / source.mDuration)
+										* static_cast<float>(maximum[i] - minimum[i])
+										+ minimum[i];
+						}
+						mParameter.setValue(value);
+						break;
+					}
+				}
+			}
+		private:
+			ParameterVec<T>&	mParameter;
+			SequenceTrack&		mTrack;
 		};
 
 		/**

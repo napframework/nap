@@ -74,7 +74,7 @@ namespace nap
 					{
 						trackSegment->mDuration += amount;
 
-						updateSegments(lock);
+						updateSegments();
 					}
 					break;
 				}
@@ -140,11 +140,11 @@ namespace nap
 			mSequencePlayer.mReadObjectIDs);
 		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
 
-		updateSegments(l);
+		updateSegments();
 	}
 
 
-	void SequenceEditorController::changeTanPointNumeric(
+	void SequenceEditorController::changeTanPointNum(
 		const std::string& trackID,
 		const std::string& segmentID,
 		const int index,
@@ -234,7 +234,7 @@ namespace nap
 
 
 
-	void SequenceEditorController::insertCurvePointNumeric(
+	void SequenceEditorController::insertCurvePointNum(
 		const std::string& trackID,
 		const std::string& segmentID,
 		float pos)
@@ -319,7 +319,7 @@ namespace nap
 			break;
 			}
 
-			updateSegments(lock);
+			updateSegments();
 		}
 	}
 
@@ -397,7 +397,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 						//
-						updateSegments(lock);
+						updateSegments();
 
 						break;
 					}
@@ -427,7 +427,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 						//
-						updateSegments(lock);
+						updateSegments();
 
 						break;
 					}
@@ -461,7 +461,7 @@ namespace nap
 					mSequencePlayer.mReadObjects.emplace_back(std::move(newCurve));
 
 					//
-					updateSegments(lock);
+					updateSegments();
 				}
 				break;
 			}
@@ -501,7 +501,7 @@ namespace nap
 						deleteObjectFromSequencePlayer(segmentID);
 
 						// update segments
-						updateSegments(lock);
+						updateSegments();
 
 						break;
 					}
@@ -514,7 +514,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::deleteCurvePoint(
+	void SequenceEditorController::deleteCurvePointNum(
 		const std::string& trackID,
 		const std::string& segmentID,
 		const int index)
@@ -648,7 +648,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorController::updateSegments(const std::unique_lock<std::mutex>& lock)
+	void SequenceEditorController::updateSegments()
 	{
 		//
 		Sequence& sequence = mSequencePlayer.getSequence();

@@ -2,9 +2,11 @@
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
 #include "sequencetracksegmentnumeric.h"
+#include "sequencetracksegmentvec.h"
 
 // nap include
 #include <nap/logger.h>
+#include <parametervec.h>
 
 // external includes
 #include <utility/fileutils.h>
@@ -377,7 +379,6 @@ namespace nap
 						auto processor = std::make_unique<ProcessorNumeric<int64_t>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
-
 					else
 					{
 						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
@@ -387,7 +388,19 @@ namespace nap
 					break;
 				case SequenceTrackTypes::VEC3:
 				{
-					return false;
+					if (parameter->get_type().is_derived_from<ParameterVec3>())
+					{
+						ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorVector<glm::vec3>>(*track.get(), target);
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+
+					else
+					{
+						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
+						return false;
+					}
 				}
 					break;
 				}
