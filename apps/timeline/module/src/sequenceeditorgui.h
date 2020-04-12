@@ -72,6 +72,15 @@ namespace nap
 		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
 		std::string currentObjectID = "";
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
+		bool isWindowFocused = false;
+		ImVec2 mouseDelta;
+		ImVec2 mousePos;
+		ImVec2 windowPos;
+		ImVec2 timelineControllerPos;
+		float timelineWidth;
+		float stepSize;
+		float trackHeight;
+		float inspectorWidth;
 	};
 
 
@@ -100,105 +109,71 @@ namespace nap
 	private:
 		void drawTracks(
 			const SequencePlayer& sequencePlayer,
-			const bool isWindowFocused,
-			const Sequence &sequence,
-			const float inspectorWidth,
-			const float timelineWidth,
-			const ImVec2 &mousePos,
-			const float stepSize,
-			const ImVec2 &mouseDelta);
+			const Sequence &sequence);
 
 		template<typename T>
 		void drawSegmentContent(
-			const bool isWindowFocused,
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,
-			ImVec2 trackTopLeft,
+			const ImVec2& trackTopLeft,
 			float previousSegmentX,
 			float segmentWidth,
-			const float trackHeight,
 			float segmentX,
-			const float stepSize,
 			ImDrawList* drawList,
-			const ImVec2 & mouseDelta,
 			bool drawStartValue);
 
 		template<typename T>
 		void drawSegmentValue(
-			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
 			const float segmentX,
 			const float segmentWidth,
-			const float trackHeight,
-			const ImVec2 &mouseDelta,
-			const float stepSize,
 			const SegmentValueTypes segmentType,
 			ImDrawList* drawList);
 
 		void drawSegmentHandler(
-			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
 			const float segmentX,
 			const float segmentWidth,
-			const float trackHeight,
-			const ImVec2 &mouseDelta,
-			const float stepSize,
 			ImDrawList* drawList
 		);
 
 		template<typename T>
 		void drawControlPoints(
-			const bool isWindowFocused,
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
 			const float segmentX,
 			const float segmentWidth,
-			const float trackHeight,
-			const ImVec2 mouseDelta,
-			const int stepSize,
 			ImDrawList* drawList);
 
 		template<typename T>
-		void drawCurve(
-			const bool isWindowFocused,
+		void drawCurves(
 			const SequenceTrack& track,
 			const SequenceTrackSegment& segment,
 			const ImVec2 &trackTopLeft,
 			const float previousSegmentX,
 			const float segmentWidth,
-			const float trackHeight,
 			const float segmentX,
-			const float stepSize,
 			ImDrawList* drawList);
 
 		template<typename T>
 		void drawTanHandler(
-			const bool isWindowFocused,
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,
 			std::ostringstream &stringStream,
 			const float segmentWidth,
 			const math::FCurvePoint<float, float> &curvePoint,
-			const float trackHeight,
 			const ImVec2 &circlePoint,
 			const int controlPointIndex,
 			const int curveIndex,
 			const TanPointTypes type,
-			const ImVec2& mouseDelta,
-			const int stepSize,
 			ImDrawList* drawList);
 
-		void drawPlayerController(
-			const bool isWindowFocused,
-			SequencePlayer& player,
-			const float startOffsetX,
-			const float timelineWidth,
-			const ImVec2 &mouseDelta);
+		void drawPlayerController(SequencePlayer& playerm);
 
 		void handleInsertSegmentPopup();
 
@@ -210,12 +185,7 @@ namespace nap
 
 		void handleSaveAsPopup();
 
-		void drawTimelinePlayerPosition(
-			const Sequence& sequence,
-			SequencePlayer& player,
-			const ImVec2 &timelineControllerWindowPosition,
-			const float trackInspectorWidth,
-			const float timelineWidth);
+		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
 
 		std::string mID;
 		SequenceGUIState mState;

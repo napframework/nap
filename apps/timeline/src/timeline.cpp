@@ -5,7 +5,7 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-
+#include <napcolors.h>
 
 namespace nap 
 {    
@@ -157,6 +157,15 @@ namespace nap
 			}
 
 		}
+
+		// draw framerate
+		// Color used for highlights
+		getCore().getFramerate();
+
+		ImGui::Begin("Information");
+		ImGui::SameLine();
+		ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(guicolors::red), "%.3f ms/frame (%.1f FPS)", 1000.0f / getCore().getFramerate(), getCore().getFramerate());
+		ImGui::End();
 		
 		ImGui::End();
 			
@@ -169,6 +178,7 @@ namespace nap
 
 		// Swap screen buffers
 		mRenderWindow->swap();
+
     }
 
 
