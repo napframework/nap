@@ -1,4 +1,0 @@
-#include "sequencetracksegmentvec.h"
-
-DEFINE_VECTOR_SEQUENCETRACKSEGMENT(nap::SequenceTrackSegmentVec2)
-DEFINE_VECTOR_SEQUENCETRACKSEGMENT(nap::SequenceTrackSegmentVec3)
