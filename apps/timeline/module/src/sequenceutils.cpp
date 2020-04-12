@@ -1,7 +1,6 @@
 // local includes
 #include "sequenceutils.h"
 #include "sequence.h"
-#include "sequencetracksegmentnumeric.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +37,8 @@ namespace nap
 			for (const auto& parameter : parameters)
 			{
 				// make a unique sequence track
-				SequenceTrack* sequenceTrack = sequenceutils::createSequenceTrackNumeric(createdObjects, objectIDs);
+				SequenceTrack* sequenceTrack
+					= sequenceutils::createSequenceTrackVector<float>(createdObjects, objectIDs);
 
 				// make a resource pointer of the sequence track
 				ResourcePtr<SequenceTrack> sequenceTrackResourcePtr = ResourcePtr<SequenceTrack>(sequenceTrack);
@@ -62,42 +62,6 @@ namespace nap
 
 			// finally return
 			return returnSequence;
-		}
-
-		SequenceTrack* createSequenceTrackNumeric(
-			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
-			std::unordered_set<std::string>& objectIDs)
-		{
-			// create one segment
-			std::unique_ptr<SequenceTrackSegmentNumeric> trackSegment = std::make_unique<SequenceTrackSegmentNumeric>();
-			trackSegment->mID = generateUniqueID(objectIDs);
-			trackSegment->mDuration = 1.0;
-			trackSegment->mStartTime = 0.0;
-
-			// create default curve
-			std::unique_ptr<math::FCurve<float, float>> segmentCurve = std::make_unique<math::FCurve<float, float>>();
-			segmentCurve->mID = generateUniqueID(objectIDs);
-
-			// assign curve
-			trackSegment->mCurve = nap::ResourcePtr<math::FCurve<float, float>>(segmentCurve.get());
-
-			// create sequence track
-			std::unique_ptr<SequenceTrack> sequenceTrack = std::make_unique<SequenceTrack>();
-			sequenceTrack->mID = generateUniqueID(objectIDs);
-			sequenceTrack->mTrackType = SequenceTrackTypes::NUMERIC;
-
-			// assign track segment
-			sequenceTrack->mSegments.emplace_back(ResourcePtr<SequenceTrackSegment>(trackSegment.get()));
-
-			// assign return ptr
-			SequenceTrack* returnPtr = sequenceTrack.get();
-
-			// move ownership of unique ptrs
-			createdObjects.emplace_back(std::move(trackSegment));
-			createdObjects.emplace_back(std::move(segmentCurve));
-			createdObjects.emplace_back(std::move(sequenceTrack));
-
-			return returnPtr;
 		}
 	}
 }

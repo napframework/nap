@@ -2,8 +2,7 @@
 
 // internal includes
 #include "sequence.h"
-#include "sequencetracksegmentnumeric.h"
-#include "sequencetracksegmentvec.h"
+#include "sequencetracksegmentcurve.h"
 
 namespace nap
 {
@@ -27,17 +26,6 @@ namespace nap
 		 */
 		Sequence* createDefaultSequence(
 			const std::vector<rtti::ObjectPtr<Parameter>>& parameters,
-			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
-			std::unordered_set<std::string>& objectIDs);
-
-		 /**
-		 * createSequenceTrackNumeric
-		 * static method that creates a default sequence track
-		 * @param createdObject a reference to a vector that will be filled with unique pointers of created objects
-		 * @param objectIDs a list of unique ids, used to created unique ids for each object in this sequence track
-		 * @return a raw pointer to the newly created sequence track
-		 */
-		SequenceTrack* createSequenceTrackNumeric(
 			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
 			std::unordered_set<std::string>& objectIDs);
 
@@ -70,12 +58,17 @@ namespace nap
 				curveCount = 2;
 				trackType = VEC2;
 			}
+			else if (RTTI_OF(T) == RTTI_OF(float))
+			{
+				curveCount = 1;
+				trackType = FLOAT;
+			}
 
 			//
 			assert(trackType != UNKOWN);
 
 			// create one segment
-			std::unique_ptr<SequenceTrackSegmentVec<T>> trackSegment = std::make_unique<SequenceTrackSegmentVec<T>>();
+			std::unique_ptr<SequenceTrackSegmentCurve<T>> trackSegment = std::make_unique<SequenceTrackSegmentCurve<T>>();
 			trackSegment->mID = generateUniqueID(objectIDs);
 			trackSegment->mDuration = 1.0;
 			trackSegment->mStartTime = 0.0;

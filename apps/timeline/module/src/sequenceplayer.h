@@ -95,13 +95,13 @@ namespace nap
 		std::unique_lock<std::mutex> lock();
 
 		/**
-		 * 
-		 */
-		template<typename T>
-		class ProcessorNumeric : public ProcessorBase
+		*
+		*/
+		template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
+		class ProcessorCurve : public ProcessorBase
 		{
 		public:
-			ProcessorNumeric(SequenceTrack& track, ParameterNumeric<T>& parameter)
+			ProcessorCurve(SequenceTrack& track, PARAMETER_TYPE& parameter)
 				: mParameter(parameter), mTrack(track) {}
 
 			virtual void process(double time) override
@@ -111,57 +111,22 @@ namespace nap
 					if (time >= segment->mStartTime &&
 						time < segment->mStartTime + segment->mDuration)
 					{
-						SequenceTrackSegmentNumeric& source = segment->getDerived<SequenceTrackSegmentNumeric>();
-						T value = source.mCurve->evaluate((time - source.mStartTime) / source.mDuration)
-							* static_cast<float>(mParameter.mMaximum - mParameter.mMinimum)
-							+ mParameter.mMinimum;
-						
+						SequenceTrackSegmentCurve<CURVE_TYPE>& source = segment->getDerived<SequenceTrackSegmentCurve<CURVE_TYPE>>();
+						CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
+
+						const PARAMETER_VALUE_TYPE& maximum = static_cast<PARAMETER_VALUE_TYPE>(mParameter.mMaximum);
+						const PARAMETER_VALUE_TYPE& minimum = static_cast<PARAMETER_VALUE_TYPE>(mParameter.mMinimum);
+
+						PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (maximum - minimum));
+						value += minimum;
 						mParameter.setValue(value);
+
 						break;
 					}
 				}
 			}
 		private:
-			ParameterNumeric<T>& mParameter;
-			SequenceTrack&	mTrack;
-		};
-
-		/**
-		 *
-		 */
-		template<typename T>
-		class ProcessorVector : public ProcessorBase
-		{
-		public:
-			ProcessorVector(SequenceTrack& track, ParameterVec<T>& parameter)
-				: mParameter(parameter), mTrack(track) {}
-
-			virtual void process(double time) override
-			{
-				for (const auto& segment : mTrack.mSegments)
-				{
-					if (time >= segment->mStartTime &&
-						time < segment->mStartTime + segment->mDuration)
-					{
-						SequenceTrackSegmentVec<T>& source = segment->getDerived<SequenceTrackSegmentVec<T>>();
-						T value;
-						for (int i = 0; i < source.mCurves.size(); i++)
-						{
-							const T& maximum = static_cast<T>(mParameter.mMaximum);
-							const T& minimum = static_cast<T>(mParameter.mMinimum);
-
-							value[i] = source.mCurves[i]->evaluate(
-										(time - source.mStartTime) / source.mDuration)
-										* static_cast<float>(maximum[i] - minimum[i])
-										+ minimum[i];
-						}
-						mParameter.setValue(value);
-						break;
-					}
-				}
-			}
-		private:
-			ParameterVec<T>&	mParameter;
+			PARAMETER_TYPE&		mParameter;
 			SequenceTrack&		mTrack;
 		};
 

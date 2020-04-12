@@ -1,8 +1,7 @@
 // local includes
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
-#include "sequencetracksegmentnumeric.h"
-#include "sequencetracksegmentvec.h"
+#include "sequencetracksegmentcurve.h"
 
 // nap include
 #include <nap/logger.h>
@@ -349,34 +348,34 @@ namespace nap
 			{
 				switch (track->mTrackType)
 				{
-				case SequenceTrackTypes::NUMERIC:
+				case SequenceTrackTypes::FLOAT:
 				{
 					if (parameter->get_type().is_derived_from<ParameterFloat>())
 					{
 						ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
 
-						auto processor = std::make_unique<ProcessorNumeric<float>>(*track.get(), target);
+						auto processor = std::make_unique<ProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
 						mProcessors.emplace( trackID, std::move(processor));
 					}
 					else if (parameter->get_type().is_derived_from<ParameterDouble>())
 					{
 						ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
 
-						auto processor = std::make_unique<ProcessorNumeric<double>>(*track.get(), target);
+						auto processor = std::make_unique<ProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 					else if (parameter->get_type().is_derived_from<ParameterInt>())
 					{
 						ParameterInt& target = static_cast<ParameterInt&>(*parameter);
 
-						auto processor = std::make_unique<ProcessorNumeric<int>>(*track.get(), target);
+						auto processor = std::make_unique<ProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 					else if (parameter->get_type().is_derived_from<ParameterLong>())
 					{
 						ParameterLong& target = static_cast<ParameterLong&>(*parameter);
 
-						auto processor = std::make_unique<ProcessorNumeric<int64_t>>(*track.get(), target);
+						auto processor = std::make_unique<ProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 					else
@@ -392,7 +391,7 @@ namespace nap
 					{
 						ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
 
-						auto processor = std::make_unique<ProcessorVector<glm::vec3>>(*track.get(), target);
+						auto processor = std::make_unique<ProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 

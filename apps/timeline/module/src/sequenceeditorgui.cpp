@@ -1,7 +1,6 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
-#include "sequencetracksegmentnumeric.h"
 
 // External Includes
 #include <entity.h>
@@ -242,12 +241,15 @@ namespace nap
 			// handle delete segment popup
 			handleDeleteSegmentPopup();
 
+			// handler insert track popup
+			handleInsertTrackPopup();
+
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mVerticalResolution + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
-				mController.addNewTrackVector<glm::vec3>();
-				mCurveCache.clear();
+				ImGui::OpenPopup("Insert New Track");
+				mState.currentAction = SequenceGUIMouseActions::OPEN_INSERT_TRACK_POPUP;
 			}
 
 			//
@@ -495,9 +497,9 @@ namespace nap
 					float segmentX = (segment->mStartTime + segment->mDuration) * stepSize;
 					float segmentWidth = segment->mDuration * stepSize;
 
-					if (trackType == SequenceTrackTypes::NUMERIC)
+					if (trackType == SequenceTrackTypes::FLOAT)
 					{
-						drawSegmentContentNumeric(
+						drawSegmentContent<float>(
 							isWindowFocused,
 							*track.get(),
 							*segment.get(),
@@ -513,7 +515,7 @@ namespace nap
 					}
 					else if( trackType == SequenceTrackTypes::VEC3 )
 					{
-						drawSegmentContentVec<glm::vec3>(
+						drawSegmentContent<glm::vec3>(
 							isWindowFocused,
 							*track.get(),
 							*segment.get(),
@@ -529,7 +531,23 @@ namespace nap
 					}
 					else if (trackType == SequenceTrackTypes::VEC2)
 					{
-						drawSegmentContentVec<glm::vec2>(
+						drawSegmentContent<glm::vec2>(
+							isWindowFocused,
+							*track.get(),
+							*segment.get(),
+							trackTopLeft,
+							previousSegmentX,
+							segmentWidth,
+							trackHeight,
+							segmentX,
+							stepSize,
+							drawList,
+							mouseDelta,
+							(segmentCount == 0));
+					}
+					else if (trackType == SequenceTrackTypes::VEC4)
+					{
+						drawSegmentContent<glm::vec4>(
 							isWindowFocused,
 							*track.get(),
 							*segment.get(),
@@ -587,266 +605,8 @@ namespace nap
 		}
 	}
 
-	void SequenceEditorGUIView::drawControlPointsNumeric(
-		const bool isWindowFocused,
-		const SequenceTrack& track,
-		const SequenceTrackSegment& segment_,
-		const ImVec2 &trackTopLeft,
-		const float segmentX,
-		const float segmentWidth,
-		const float trackHeight,
-		const ImVec2 mouseDelta,
-		const int stepSize,
-		ImDrawList* drawList)
-	{
-		const SequenceTrackSegmentNumeric& segment = segment_.getDerivedConst<SequenceTrackSegmentNumeric>();
-
-		// draw first control point handlers IF this is the first segment of the track
-		if (track.mSegments[0]->mID == segment.mID)
-		{
-			const auto& curvePoint = segment.mCurve->mPoints[0];
-			std::ostringstream stringStream;
-			stringStream << segment.mID << "_point_" << 0;
-
-			ImVec2 circlePoint =
-			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-				trackTopLeft.y + trackHeight * (1.0f - (float) curvePoint.mPos.mValue) };
-
-			drawTanHandlerNum(
-				isWindowFocused,
-				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				trackHeight,
-				circlePoint,
-				0,
-				TanPointTypes::IN,
-				mouseDelta,
-				stepSize,
-				drawList);
-
-			drawTanHandlerNum(
-				isWindowFocused,
-				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				trackHeight,
-				circlePoint,
-				0,
-				TanPointTypes::OUT,
-				mouseDelta,
-				stepSize,
-				drawList);
-		}
-
-		// draw control points of curve
-		// we ignore the first and last because they are controlled by the start & end value of the segment
-		for (int i = 1; i < segment.mCurve->mPoints.size() - 1; i++)
-		{
-			// get the curvepoint and generate a unique ID for the control point
-			const auto& curvePoint = segment.mCurve->mPoints[i];
-			std::ostringstream stringStream;
-			stringStream << segment.mID << "_point_" << i;
-			std::string pointID = stringStream.str();
-
-			// determine the point at where to draw the control point
-			ImVec2 circlePoint =
-			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-				trackTopLeft.y + trackHeight * (1.0f - (float) curvePoint.mPos.mValue) };
-
-			// handle mouse hovering
-			bool hovered = false;
-			if (isWindowFocused)
-			{
-				if ((mState.currentAction == NONE ||
-					mState.currentAction == HOVERING_CONTROL_POINT_NUM ||
-					mState.currentAction == HOVERING_CURVE_NUM)
-					&& ImGui::IsMouseHoveringRect(
-				{ circlePoint.x - 5, circlePoint.y - 5 },
-				{ circlePoint.x + 5, circlePoint.y + 5 }))
-				{
-					hovered = true;
-				}
-			}
-
-			if (hovered)
-			{
-				// if we are hovering this point, store ID
-				mState.currentAction = HOVERING_CONTROL_POINT_NUM;
-				mState.currentObjectID = pointID;
-
-				// is the mouse held down, then we are dragging
-				if (ImGui::IsMouseDown(0))
-				{
-					mState.currentAction = DRAGGING_CONTROL_POINT_NUM;
-					mState.currentActionData = std::make_unique<SequenceGUIDragControlPointDataNum>(track.mID, segment.mID, i);
-					mState.currentObjectID = segment.mID;
-				}
-				// if we clicked right mouse button, delete control point
-				else if( ImGui::IsMouseClicked(1))
-				{
-					mState.currentAction = DELETE_CONTROL_POINT_NUM;
-					mState.currentActionData = std::make_unique<SequenceGUIDeleteControlPointDataNum>(track.mID, segment.mID, i);
-					mState.currentObjectID = segment.mID;
-				}
-			}
-			else
-			{
-				// otherwise, if we where hovering but not anymore, stop hovering
-				if (mState.currentAction == HOVERING_CONTROL_POINT_NUM &&
-					pointID == mState.currentObjectID)
-				{
-					mState.currentAction = NONE;
-				}
-			}
-
-			if (isWindowFocused)
-			{
-				// handle dragging of control point
-				if (mState.currentAction == DRAGGING_CONTROL_POINT_NUM &&
-					segment.mID == mState.currentObjectID)
-				{
-					const SequenceGUIDragControlPointDataNum* data
-						= dynamic_cast<SequenceGUIDragControlPointDataNum*>(mState.currentActionData.get());
-
-					if (data->controlPointIndex == i)
-					{
-						float timeAdjust = mouseDelta.x / segmentWidth;
-						float valueAdjust = (mouseDelta.y / trackHeight) * -1.0f;
-
-						hovered = true;
-
-						mController.changeCurvePointNumeric(
-							data->trackID,
-							data->segmentID,
-							data->controlPointIndex,
-							timeAdjust,
-							valueAdjust);
-						mCurveCache.clear();
-
-						if (ImGui::IsMouseReleased(0))
-						{
-							mState.currentAction = NONE;
-							mState.currentActionData = nullptr;
-						}
-					}
-				}
-
-				// handle deletion of control point
-				if (mState.currentAction == DELETE_CONTROL_POINT_NUM &&
-					segment.mID == mState.currentObjectID)
-				{
-					const SequenceGUIDeleteControlPointDataNum* data
-						= dynamic_cast<SequenceGUIDeleteControlPointDataNum*>(mState.currentActionData.get());
-
-					if (data->controlPointIndex == i)
-					{
-						mController.deleteCurvePointNum(
-							data->trackID,
-							data->segmentID,
-							data->controlPointIndex);
-						mCurveCache.clear();
-
-						mState.currentAction = NONE;
-						mState.currentActionData = nullptr;
-
-					}
-				}
-			}
-		
-
-			// draw the control point
-			drawList->AddCircleFilled(
-				circlePoint,
-				4.0f,
-				hovered ? guicolors::white : guicolors::lightGrey);
-
-			// draw the handlers
-			drawTanHandlerNum(
-				isWindowFocused,
-				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				trackHeight,
-				circlePoint,
-				i,
-				TanPointTypes::IN,
-				mouseDelta,
-				stepSize,
-				drawList);
-
-			drawTanHandlerNum(
-				isWindowFocused,
-				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				trackHeight,
-				circlePoint,
-				i,
-				TanPointTypes::OUT,
-				mouseDelta,
-				stepSize,
-				drawList);
-		}
-
-		// handle last control point
-		// overlaps with endvalue so only draw tan handlers
-		const int controlPointIndex = segment.mCurve->mPoints.size() - 1;
-		const auto& curvePoint = segment.mCurve->mPoints[controlPointIndex];
-
-		std::ostringstream stringStream;
-		stringStream << segment.mID << "_point_" << controlPointIndex;
-		std::string pointID = stringStream.str();
-
-		ImVec2 circlePoint =
-		{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-		   trackTopLeft.y + trackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
-
-		drawTanHandlerNum(
-			isWindowFocused,
-			track,
-			segment,
-			stringStream,
-			segmentWidth,
-			curvePoint,
-			trackHeight,
-			circlePoint,
-			controlPointIndex,
-			TanPointTypes::IN,
-			mouseDelta,
-			stepSize,
-			drawList);
-
-		drawTanHandlerNum(
-			isWindowFocused,
-			track,
-			segment,
-			stringStream,
-			segmentWidth,
-			curvePoint,
-			trackHeight,
-			circlePoint,
-			controlPointIndex,
-			TanPointTypes::OUT,
-			mouseDelta,
-			stepSize,
-			drawList);
-
-		//
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - trackHeight);
-	}
-
-
 	template<typename T>
-	void SequenceEditorGUIView::drawControlPointsVec(
+	void SequenceEditorGUIView::drawControlPoints(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
 		const SequenceTrackSegment& segment_,
@@ -859,8 +619,8 @@ namespace nap
 		ImDrawList* drawList)
 	{
 
-		const SequenceTrackSegmentVec<T>& segment 
-			= segment_.getDerivedConst<SequenceTrackSegmentVec<T>>();
+		const SequenceTrackSegmentCurve<T>& segment 
+			= segment_.getDerivedConst<SequenceTrackSegmentCurve<T>>();
 
 		// draw first control point(s) handlers IF this is the first segment of the track
 		if (track.mSegments[0]->mID == segment.mID)
@@ -875,7 +635,7 @@ namespace nap
 				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
 					trackTopLeft.y + trackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
 
-				drawTanHandlerVec<T>(
+				drawTanHandler<T>(
 					isWindowFocused,
 					track,
 					segment,
@@ -891,7 +651,7 @@ namespace nap
 					stepSize,
 					drawList);
 
-				drawTanHandlerVec<T>(
+				drawTanHandler<T>(
 					isWindowFocused,
 					track,
 					segment,
@@ -931,8 +691,8 @@ namespace nap
 				if (isWindowFocused)
 				{
 					if ((mState.currentAction == NONE ||
-						mState.currentAction == HOVERING_CONTROL_POINT_VEC ||
-						mState.currentAction == HOVERING_CURVE_VEC)
+						mState.currentAction == HOVERING_CONTROL_POINT ||
+						mState.currentAction == HOVERING_CURVE)
 						&& ImGui::IsMouseHoveringRect(
 					{ circlePoint.x - 5, circlePoint.y - 5 },
 					{ circlePoint.x + 5, circlePoint.y + 5 }))
@@ -944,14 +704,14 @@ namespace nap
 				if (hovered)
 				{
 					// if we are hovering this point, store ID
-					mState.currentAction = HOVERING_CONTROL_POINT_VEC;
+					mState.currentAction = HOVERING_CONTROL_POINT;
 					mState.currentObjectID = pointID;
 
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.currentAction = DRAGGING_CONTROL_POINT_VEC;
-						mState.currentActionData = std::make_unique<SequenceGUIControlPointDataVec>(
+						mState.currentAction = DRAGGING_CONTROL_POINT;
+						mState.currentActionData = std::make_unique<SequenceGUIControlPointData>(
 							track.mID, 
 							segment.mID, 
 							i,
@@ -961,8 +721,8 @@ namespace nap
 					// if we clicked right mouse button, delete control point
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mState.currentAction = DELETE_CONTROL_POINT_VEC;
-						mState.currentActionData = std::make_unique<SequenceGUIDeleteControlPointDataVec>(
+						mState.currentAction = DELETE_CONTROL_POINT;
+						mState.currentActionData = std::make_unique<SequenceGUIDeleteControlPointData>(
 							track.mID, 
 							segment.mID, 
 							i,
@@ -973,7 +733,7 @@ namespace nap
 				else
 				{
 					// otherwise, if we where hovering but not anymore, stop hovering
-					if (mState.currentAction == HOVERING_CONTROL_POINT_VEC &&
+					if (mState.currentAction == HOVERING_CONTROL_POINT &&
 						pointID == mState.currentObjectID)
 					{
 						mState.currentAction = NONE;
@@ -983,11 +743,11 @@ namespace nap
 				if (isWindowFocused)
 				{
 					// handle dragging of control point
-					if (mState.currentAction == DRAGGING_CONTROL_POINT_VEC &&
+					if (mState.currentAction == DRAGGING_CONTROL_POINT &&
 						segment.mID == mState.currentObjectID)
 					{
-						const SequenceGUIControlPointDataVec* data
-							= dynamic_cast<SequenceGUIControlPointDataVec*>(mState.currentActionData.get());
+						const SequenceGUIControlPointData* data
+							= dynamic_cast<SequenceGUIControlPointData*>(mState.currentActionData.get());
 
 						if (data->controlPointIndex == i && data->curveIndex == v)
 						{
@@ -996,7 +756,7 @@ namespace nap
 
 							hovered = true;
 
-							mController.changeCurvePointVec<T>(
+							mController.changeCurvePoint<T>(
 								data->trackID,
 								data->segmentID,
 								data->controlPointIndex,
@@ -1014,16 +774,16 @@ namespace nap
 					}
 
 					// handle deletion of control point
-					if (mState.currentAction == DELETE_CONTROL_POINT_VEC &&
+					if (mState.currentAction == DELETE_CONTROL_POINT &&
 						segment.mID == mState.currentObjectID)
 					{
-						const SequenceGUIDeleteControlPointDataVec* data
-							= dynamic_cast<SequenceGUIDeleteControlPointDataVec*>(mState.currentActionData.get());
+						const SequenceGUIDeleteControlPointData* data
+							= dynamic_cast<SequenceGUIDeleteControlPointData*>(mState.currentActionData.get());
 
 						if (data->controlPointIndex == i && 
 							data->curveIndex == v)
 						{
-							mController.deleteCurvePointVec<T>(
+							mController.deleteCurvePoint<T>(
 								data->trackID,
 								data->segmentID,
 								data->controlPointIndex,
@@ -1044,7 +804,7 @@ namespace nap
 					hovered ? guicolors::white : guicolors::lightGrey);
 
 				// draw the handlers
-				drawTanHandlerVec<T>(
+				drawTanHandler<T>(
 					isWindowFocused,
 					track,
 					segment,
@@ -1060,7 +820,7 @@ namespace nap
 					stepSize,
 					drawList);
 
-				drawTanHandlerVec<T>(
+				drawTanHandler<T>(
 					isWindowFocused,
 					track,
 					segment,
@@ -1093,7 +853,7 @@ namespace nap
 			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
 				trackTopLeft.y + trackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
 
-			drawTanHandlerVec<T>(
+			drawTanHandler<T>(
 				isWindowFocused,
 				track,
 				segment,
@@ -1109,7 +869,7 @@ namespace nap
 				stepSize,
 				drawList);
 
-			drawTanHandlerVec<T>(
+			drawTanHandler<T>(
 				isWindowFocused,
 				track,
 				segment,
@@ -1130,211 +890,8 @@ namespace nap
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - trackHeight);
 	}
 
-
-	void SequenceEditorGUIView::drawCurveNumeric(
-		const bool isWindowFocused,
-		const SequenceTrack& track,
-		const SequenceTrackSegment& segment_,
-		const ImVec2 &trackTopLeft,
-		const float previousSegmentX,
-		const float segmentWidth,
-		const float trackHeight,
-		const float segmentX,
-		const float stepSize,
-		ImDrawList* drawList)
-	{
-		const SequenceTrackSegmentNumeric& segment = segment_.getDerivedConst<SequenceTrackSegmentNumeric>();
-
-		const int resolution = 40;
-		bool curveSelected = false;
-
-		// check the cache
-		if (mCurveCache.find(segment.mID) == mCurveCache.end())
-		{
-			std::vector<ImVec2> points;
-			points.resize(resolution + 1);
-			for (int i = 0; i <= resolution; i++)
-			{
-				float value = 1.0f - segment.mCurve->evaluate((float)i / resolution);
-
-				points[i] = {
-					trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-					trackTopLeft.y + value * trackHeight };
-			}
-
-			mCurveCache.emplace(segment.mID, points);
-		}
-
-		const std::vector<ImVec2>& points = mCurveCache[segment.mID];
-
-		// because we need to retain the reference to the points in the cache, only clear the cache
-		// on the end of this scrope
-		bool clearCurveCache = false;
-		if (isWindowFocused)
-		{
-			// determine if mouse is hovering curve
-			if ((mState.currentAction == NONE || 
-				mState.currentAction == HOVERING_CURVE_NUM)
-				&& ImGui::IsMouseHoveringRect(
-			{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }))  // bottom right 
-			{
-				// translate mouse position to position in curve
-				ImVec2 mousePos = ImGui::GetMousePos();
-				float xInSegment = ((mousePos.x - (trackTopLeft.x + segmentX - segmentWidth)) / stepSize) / segment.mDuration;
-				float yInSegment = 1.0f - ((mousePos.y - trackTopLeft.y) / trackHeight);
-
-				// evaluate curve at x position
-				float yInCurve = segment.mCurve->evaluate(xInSegment);
-
-				// insert curve point on click
-				const float maxDist = 0.1f;
-				if (abs(yInCurve - yInSegment) < maxDist)
-				{
-					curveSelected = true;
-					mState.currentAction = HOVERING_CURVE_NUM;
-					mState.currentObjectID = segment.mID;
-
-					if (ImGui::IsMouseClicked(0))
-					{
-						mController.insertCurvePointNum(track.mID, segment.mID, xInSegment);
-						clearCurveCache = true;
-					}
-				}
-				else
-				{
-					if (mState.currentAction == HOVERING_CURVE_NUM &&
-						mState.currentObjectID == segment.mID)
-					{
-						mState.currentAction = NONE;
-					}
-				}
-			}
-			else
-			{
-				if (mState.currentAction == HOVERING_CURVE_NUM &&
-					mState.currentObjectID == segment.mID)
-				{
-					mState.currentAction = NONE;
-				}
-			}
-		}
-
-		// draw points of curve
-		drawList->AddPolyline(
-			&*points.begin(), // points array
-			points.size(), // size of points array
-			guicolors::red, // color
-			false, // closed
-			curveSelected ? 3.0f : 1.0f, // thickness
-			true); // anti-aliased
-
-		//
-		if (clearCurveCache)
-			mCurveCache.clear();
-	}
-
-
-	void SequenceEditorGUIView::drawSegmentValueNum(
-		const bool isWindowFocused,
-		const SequenceTrack& track,
-		const SequenceTrackSegment& segment_,
-		const ImVec2 &trackTopLeft,
-		const float segmentX,
-		const float segmentWidth,
-		const float trackHeight,
-		const ImVec2 &mouseDelta,
-		const float stepSize,
-		const SegmentValueTypes segmentType,
-		ImDrawList* drawList
-	)
-	{
-		const SequenceTrackSegmentNumeric& segment = segment_.getDerivedConst<SequenceTrackSegmentNumeric>();
-
-		// calculate point of this value in the window
-		ImVec2 segmentValuePos =
-		{
-			trackTopLeft.x + segmentX - (segmentType == BEGIN ? segmentWidth : 0.0f),
-			trackTopLeft.y + trackHeight * (1.0f - ((segmentType == BEGIN ? (float) segment.mStartValue : (float) segment.mEndValue) / 1.0f))
-		};
-
-		bool hovered = false;
-
-		if (isWindowFocused)
-		{
-			// check if we are hovering this value
-			if ((mState.currentAction == SequenceGUIMouseActions::NONE ||
-				mState.currentAction == HOVERING_SEGMENT_VALUE_NUM ||
-				mState.currentAction == HOVERING_SEGMENT ||
-				mState.currentAction == HOVERING_CURVE_NUM)
-				&& ImGui::IsMouseHoveringRect(
-			{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
-			{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
-			{
-				hovered = true;
-				mState.currentAction = HOVERING_SEGMENT_VALUE_NUM;
-				mState.currentActionData = std::make_unique<SequenceGUIDragSegmentData>(
-					track.mID,
-					segment.mID,
-					segmentType);
-
-				if (ImGui::IsMouseDown(0))
-				{
-					mState.currentAction = DRAGGING_SEGMENT_VALUE_NUM;
-					mState.currentObjectID = segment.mID;
-				}
-			}
-			else if (mState.currentAction != DRAGGING_SEGMENT_VALUE_NUM)
-			{
-				if (mState.currentAction == HOVERING_SEGMENT_VALUE_NUM)
-				{
-					const SequenceGUIDragSegmentData* data =
-						dynamic_cast<SequenceGUIDragSegmentData*>(mState.currentActionData.get());
-
-					if (data->type == segmentType && data->segmentID == segment.mID)
-					{
-						mState.currentAction = SequenceGUIMouseActions::NONE;
-					}
-				}
-			}
-
-			// handle dragging segment value
-			if (mState.currentAction == DRAGGING_SEGMENT_VALUE_NUM &&
-				mState.currentObjectID == segment.mID)
-			{
-				const SequenceGUIDragSegmentData* data =
-					dynamic_cast<SequenceGUIDragSegmentData*>(mState.currentActionData.get());
-
-				if (data->type == segmentType)
-				{
-					hovered = true;
-
-					if (ImGui::IsMouseReleased(0))
-					{
-						mState.currentAction = NONE;
-					}
-					else
-					{
-						float dragAmount = (mouseDelta.y / trackHeight) * -1.0f;
-						mController.changeSegmentValueNumeric(
-							track.mID,
-							segment.mID, 
-							dragAmount,
-							segmentType);
-						mCurveCache.clear();
-					}
-				}
-			}
-		}
-
-		if (hovered)
-			drawList->AddCircleFilled(segmentValuePos, 5.0f, guicolors::red);
-		else
-			drawList->AddCircle(segmentValuePos, 5.0f, guicolors::red);
-	}
-
 	template<typename T>
-	void SequenceEditorGUIView::drawSegmentValueVec(
+	void SequenceEditorGUIView::drawSegmentValue(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
 		const SequenceTrackSegment& segment_,
@@ -1348,8 +905,8 @@ namespace nap
 		ImDrawList* drawList
 	)
 	{
-		const SequenceTrackSegmentVec<T>& segment = 
-			segment_.getDerivedConst<SequenceTrackSegmentVec<T>>();
+		const SequenceTrackSegmentCurve<T>& segment = 
+			segment_.getDerivedConst<SequenceTrackSegmentCurve<T>>();
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -1357,7 +914,9 @@ namespace nap
 			ImVec2 segmentValuePos =
 			{
 				trackTopLeft.x + segmentX - (segmentType == BEGIN ? segmentWidth : 0.0f),
-				trackTopLeft.y + trackHeight * (1.0f - ((segmentType == BEGIN ? (float)segment.mStartValue[v] : (float)segment.mEndValue[v]) / 1.0f))
+				trackTopLeft.y + trackHeight * (1.0f - ((segmentType == BEGIN ? 
+				(float)segment.mCurves[v]->mPoints[0].mPos.mValue : 
+				(float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size()-1].mPos.mValue) / 1.0f))
 			};
 
 			bool hovered = false;
@@ -1366,16 +925,16 @@ namespace nap
 			{
 				// check if we are hovering this value
 				if ((mState.currentAction == SequenceGUIMouseActions::NONE ||
-					mState.currentAction == HOVERING_SEGMENT_VALUE_VEC ||
+					mState.currentAction == HOVERING_SEGMENT_VALUE ||
 					mState.currentAction == HOVERING_SEGMENT ||
-					mState.currentAction == HOVERING_CURVE_VEC)
+					mState.currentAction == HOVERING_CURVE)
 					&& ImGui::IsMouseHoveringRect(
 						{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
 						{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
 				{
 					hovered = true;
-					mState.currentAction = HOVERING_SEGMENT_VALUE_VEC;
-					mState.currentActionData = std::make_unique<SequenceGUIDragSegmentDataVec>(
+					mState.currentAction = HOVERING_SEGMENT_VALUE;
+					mState.currentActionData = std::make_unique<SequenceGUIDragSegmentData>(
 						track.mID,
 						segment.mID,
 						segmentType,
@@ -1383,16 +942,16 @@ namespace nap
 
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.currentAction = DRAGGING_SEGMENT_VALUE_VEC;
+						mState.currentAction = DRAGGING_SEGMENT_VALUE;
 						mState.currentObjectID = segment.mID;
 					}
 				}
-				else if (mState.currentAction != DRAGGING_SEGMENT_VALUE_VEC)
+				else if (mState.currentAction != DRAGGING_SEGMENT_VALUE)
 				{
-					if (mState.currentAction == HOVERING_SEGMENT_VALUE_VEC)
+					if (mState.currentAction == HOVERING_SEGMENT_VALUE)
 					{
-						const SequenceGUIDragSegmentDataVec* data =
-							dynamic_cast<SequenceGUIDragSegmentDataVec*>(mState.currentActionData.get());
+						const SequenceGUIDragSegmentData* data =
+							dynamic_cast<SequenceGUIDragSegmentData*>(mState.currentActionData.get());
 
 						if (data->type == segmentType && 
 							data->segmentID == segment.mID &&
@@ -1404,11 +963,11 @@ namespace nap
 				}
 
 				// handle dragging segment value
-				if (mState.currentAction == DRAGGING_SEGMENT_VALUE_VEC &&
+				if (mState.currentAction == DRAGGING_SEGMENT_VALUE &&
 					mState.currentObjectID == segment.mID)
 				{
-					const SequenceGUIDragSegmentDataVec* data =
-						dynamic_cast<SequenceGUIDragSegmentDataVec*>(mState.currentActionData.get());
+					const SequenceGUIDragSegmentData* data =
+						dynamic_cast<SequenceGUIDragSegmentData*>(mState.currentActionData.get());
 
 					if (data->type == segmentType && data->curveIndex == v)
 					{
@@ -1531,127 +1090,8 @@ namespace nap
 		
 	}
 
-	void SequenceEditorGUIView::drawTanHandlerNum(
-		const bool isWindowFocused,
-		const SequenceTrack &track,
-		const SequenceTrackSegment &segment,
-		std::ostringstream &stringStream,
-		const float segmentWidth,
-		const math::FCurvePoint<float, float> &curvePoint,
-		const float trackHeight,
-		const ImVec2 &circlePoint,
-		const int controlPointIndex,
-		const TanPointTypes type,
-		const ImVec2& mouseDelta,
-		const int stepSize,
-		ImDrawList* drawList)
-	{
-		// draw tan handlers
-		{
-			// create a string stream to create identifier of this object
-			std::ostringstream tanStream;
-			tanStream << stringStream.str() << (type == TanPointTypes::IN) ? "inTan" : "outTan";
-
-			//
-			const math::FComplex<float, float>& tanComplex
-				= (type == TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
-
-			// get the offset from the tan
-			ImVec2 offset =
-			{ (segmentWidth * tanComplex.mTime) / (float)segment.mDuration,
-				(trackHeight *  (float) tanComplex.mValue * -1.0f) };
-			ImVec2 tanPoint = { circlePoint.x + offset.x, circlePoint.y + offset.y };
-
-			// set if we are hoverting this point with the mouse
-			bool tanPointHovered = false;
-
-			if (isWindowFocused)
-			{
-				// check if hovered
-				if ((mState.currentAction == NONE ||
-					mState.currentAction == HOVERING_CURVE_NUM)
-					&& ImGui::IsMouseHoveringRect(
-				{ tanPoint.x - 5, tanPoint.y - 5 },
-				{ tanPoint.x + 5, tanPoint.y + 5 }))
-				{
-					mState.currentAction = HOVERING_TAN_POINT_NUM;
-					mState.currentObjectID = tanStream.str();
-					tanPointHovered = true;
-				}
-				else if (
-					mState.currentAction == HOVERING_TAN_POINT_NUM)
-				{
-					// if we hare already hovering, check if its this point
-					if (mState.currentObjectID == tanStream.str())
-					{
-						if (ImGui::IsMouseHoveringRect(
-						{ tanPoint.x - 5, tanPoint.y - 5 },
-						{ tanPoint.x + 5, tanPoint.y + 5 }))
-						{
-							// still hovering
-							tanPointHovered = true;
-
-							// start dragging if mouse down
-							if (ImGui::IsMouseDown(0) && mState.currentAction == HOVERING_TAN_POINT_NUM)
-							{
-								mState.currentAction = DRAGGING_TAN_POINT_NUM;
-
-								mState.currentActionData = std::make_unique<SequenceGUIDragTanPointDataNum>(
-									track.mID,
-									segment.mID,
-									controlPointIndex,
-									type);
-							}
-						}
-						else
-						{
-							// otherwise, release!
-							mState.currentAction = NONE;
-						}
-					}
-				}
-
-				// handle dragging of tan point
-				if (mState.currentAction == DRAGGING_TAN_POINT_NUM)
-				{
-					const SequenceGUIDragTanPointDataNum* data = dynamic_cast<SequenceGUIDragTanPointDataNum*>(mState.currentActionData.get());
-					if (data->segmentID == segment.mID && data->controlPointIndex == controlPointIndex && data->type == type)
-					{
-						if (ImGui::IsMouseReleased(0))
-						{
-							mState.currentAction = NONE;
-							mState.currentActionData = nullptr;
-						}
-						else
-						{
-							tanPointHovered = true;
-
-							float time = mouseDelta.x / stepSize;
-							float value = (mouseDelta.y / trackHeight) * -1.0f ;
-
-							mController.changeTanPointNum(
-								track.mID,
-								segment.mID,
-								controlPointIndex,
-								type,
-								time,
-								value);
-							mCurveCache.clear();
-						}
-					}
-				}
-			}
-
-			// draw line
-			drawList->AddLine(circlePoint, tanPoint, tanPointHovered ? guicolors::white : guicolors::darkGrey, 1.0f);
-
-			// draw handler
-			drawList->AddCircleFilled(tanPoint, 3.0f, tanPointHovered ? guicolors::white : guicolors::darkGrey);
-		}
-	}
-
 	template<typename T>
-	void SequenceEditorGUIView::drawTanHandlerVec(
+	void SequenceEditorGUIView::drawTanHandler(
 		const bool isWindowFocused,
 		const SequenceTrack &track,
 		const SequenceTrackSegment &segment,
@@ -1690,17 +1130,17 @@ namespace nap
 			{
 				// check if hovered
 				if ((mState.currentAction == NONE ||
-					mState.currentAction == HOVERING_CURVE_VEC)
+					mState.currentAction == HOVERING_CURVE)
 					&& ImGui::IsMouseHoveringRect(
 				{ tanPoint.x - 5, tanPoint.y - 5 },
 				{ tanPoint.x + 5, tanPoint.y + 5 }))
 				{
-					mState.currentAction = HOVERING_TAN_POINT_VEC;
+					mState.currentAction = HOVERING_TAN_POINT;
 					mState.currentObjectID = tanStream.str();
 					tanPointHovered = true;
 				}
 				else if (
-					mState.currentAction == HOVERING_TAN_POINT_VEC)
+					mState.currentAction == HOVERING_TAN_POINT)
 				{
 					// if we hare already hovering, check if its this point
 					if (mState.currentObjectID == tanStream.str())
@@ -1713,11 +1153,11 @@ namespace nap
 							tanPointHovered = true;
 
 							// start dragging if mouse down
-							if (ImGui::IsMouseDown(0) && mState.currentAction == HOVERING_TAN_POINT_VEC)
+							if (ImGui::IsMouseDown(0) && mState.currentAction == HOVERING_TAN_POINT)
 							{
-								mState.currentAction = DRAGGING_TAN_POINT_VEC;
+								mState.currentAction = DRAGGING_TAN_POINT;
 
-								mState.currentActionData = std::make_unique<SequenceGUIDragTanPointDataVec>(
+								mState.currentActionData = std::make_unique<SequenceGUIDragTanPointData>(
 									track.mID,
 									segment.mID,
 									controlPointIndex,
@@ -1734,10 +1174,10 @@ namespace nap
 				}
 
 				// handle dragging of tan point
-				if (mState.currentAction == DRAGGING_TAN_POINT_VEC)
+				if (mState.currentAction == DRAGGING_TAN_POINT)
 				{
-					const SequenceGUIDragTanPointDataVec* data =
-						dynamic_cast<SequenceGUIDragTanPointDataVec*>(mState.currentActionData.get());
+					const SequenceGUIDragTanPointData* data =
+						dynamic_cast<SequenceGUIDragTanPointData*>(mState.currentActionData.get());
 					if (data->segmentID == segment.mID && 
 						data->controlPointIndex == controlPointIndex &&
 						data->type == type &&
@@ -1755,7 +1195,7 @@ namespace nap
 							float time = mouseDelta.x / stepSize;
 							float value = (mouseDelta.y / trackHeight) * -1.0f;
 
-							mController.changeTanPointVec<T>(
+							mController.changeTanPoint<T>(
 								track.mID,
 								segment.mID,
 								controlPointIndex,
@@ -1798,9 +1238,12 @@ namespace nap
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState.currentActionData.get());
 					switch (data->trackType)
 					{
-					case SequenceTrackTypes::NUMERIC:
-						mController.insertSegmentNumeric(data->trackID, data->time);
+					case SequenceTrackTypes::FLOAT:
+						mController.insertSegmentVec<float>(data->trackID, data->time);
 						break;
+					case SequenceTrackTypes::VEC4:
+						mController.insertSegmentVec<glm::vec4>(data->trackID, data->time);
+						break;;
 					case SequenceTrackTypes::VEC3:
 						mController.insertSegmentVec<glm::vec3>(data->trackID, data->time);
 						break;
@@ -1817,6 +1260,75 @@ namespace nap
 				}
 
 				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mState.currentAction = SequenceGUIMouseActions::NONE;
+					mState.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.currentAction = SequenceGUIMouseActions::NONE;
+				mState.currentActionData = nullptr;
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleInsertTrackPopup()
+	{
+		if (mState.currentAction == OPEN_INSERT_TRACK_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Insert Track");
+
+			mState.currentAction = INSERTING_TRACK;
+		}
+
+		// handle insert segment popup
+		if (mState.currentAction == INSERTING_TRACK)
+		{
+			if (ImGui::BeginPopup("Insert Track"))
+			{
+				bool closePopup = false;
+
+				if (ImGui::Button("Vector 4"))
+				{
+					mController.addNewTrack<glm::vec4>();
+					mCurveCache.clear();
+					closePopup = true;
+				}
+
+				if (ImGui::Button("Vector 3"))
+				{
+					mController.addNewTrack<glm::vec3>();
+					mCurveCache.clear();
+					closePopup = true;
+				}
+
+				if (ImGui::Button("Vector 2"))
+				{
+					mController.addNewTrack<glm::vec2>();
+					mCurveCache.clear();
+					closePopup = true;
+				}
+
+				if (ImGui::Button("Float"))
+				{
+					mController.addNewTrack<float>();
+					mCurveCache.clear();
+					closePopup = true;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					closePopup = true;
+				}
+
+				if (closePopup)
 				{
 					ImGui::CloseCurrentPopup();
 					mState.currentAction = SequenceGUIMouseActions::NONE;
@@ -2320,82 +1832,8 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUIView::drawSegmentContentNumeric(
-		const bool isWindowFocused,
-		const SequenceTrack &track,
-		const SequenceTrackSegment &segment,
-		ImVec2 trackTopLeft,
-		float previousSegmentX,
-		float segmentWidth,
-		const float trackHeight,
-		float segmentX,
-		const float stepSize,
-		ImDrawList* drawList,
-		const ImVec2 & mouseDelta,
-		bool drawStartValue)
-	{
-		// curve
-		drawCurveNumeric(
-			isWindowFocused,
-			track,
-			segment,
-			trackTopLeft,
-			previousSegmentX,
-			segmentWidth,
-			trackHeight,
-			segmentX,
-			stepSize,
-			drawList);
-
-		// draw control points
-		drawControlPointsNumeric(
-			isWindowFocused,
-			track,
-			segment,
-			trackTopLeft,
-			segmentX,
-			segmentWidth,
-			trackHeight,
-			mouseDelta,
-			stepSize,
-			drawList);
-
-		// if this is the first segment of the track
-		// also draw a handler for the start value
-		if (drawStartValue)
-		{
-			// draw segment value handler
-			drawSegmentValueNum(
-				isWindowFocused,
-				track,
-				segment,
-				trackTopLeft,
-				segmentX,
-				segmentWidth,
-				trackHeight,
-				mouseDelta,
-				stepSize,
-				SegmentValueTypes::BEGIN,
-				drawList);
-		}
-
-		// draw segment value handler
-		drawSegmentValueNum(
-			isWindowFocused,
-			track,
-			segment,
-			trackTopLeft,
-			segmentX,
-			segmentWidth,
-			trackHeight,
-			mouseDelta,
-			stepSize,
-			SegmentValueTypes::END,
-			drawList);
-	}
-
 	template<typename T>
-	void SequenceEditorGUIView::drawCurveVec(
+	void SequenceEditorGUIView::drawCurve(
 		const bool isWindowFocused,
 		const SequenceTrack& track,
 		const SequenceTrackSegment& segment_,
@@ -2407,7 +1845,7 @@ namespace nap
 		const float stepSize,
 		ImDrawList* drawList)
 	{
-		const SequenceTrackSegmentVec<T>& segment = segment_.getDerivedConst<SequenceTrackSegmentVec<T>>();
+		const SequenceTrackSegmentCurve<T>& segment = segment_.getDerivedConst<SequenceTrackSegmentCurve<T>>();
 
 		const int resolution = 40;
 		bool curveSelected = false;
@@ -2437,7 +1875,7 @@ namespace nap
 		{
 			// determine if mouse is hovering curve
 			if ((mState.currentAction == NONE || 
-				 mState.currentAction == HOVERING_CURVE_VEC)
+				 mState.currentAction == HOVERING_CURVE)
 					&& ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + trackHeight }))  // bottom right 
@@ -2456,12 +1894,12 @@ namespace nap
 					const float maxDist = 0.1f;
 					if (abs(yInCurve - yInSegment) < maxDist)
 					{
-						mState.currentAction = HOVERING_CURVE_VEC;
+						mState.currentAction = HOVERING_CURVE;
 						mState.currentObjectID = segment.mID;
-						mState.currentActionData = std::make_unique<SequenceGUIHoveringCurveVecData>(i);
+						mState.currentActionData = std::make_unique<SequenceGUIHoveringCurveData>(i);
 						if (ImGui::IsMouseClicked(0))
 						{
-							mController.insertCurvePointVec<T>(
+							mController.insertCurvePoint<T>(
 								track.mID,
 								segment.mID,
 								xInSegment, 
@@ -2473,7 +1911,7 @@ namespace nap
 			}
 			else
 			{
-				if (mState.currentAction == HOVERING_CURVE_VEC &&
+				if (mState.currentAction == HOVERING_CURVE &&
 					mState.currentObjectID == segment.mID)
 				{
 					mState.currentAction = NONE;
@@ -2496,7 +1934,7 @@ namespace nap
 	}
 
 	template<typename T>
-	void SequenceEditorGUIView::drawSegmentContentVec(
+	void SequenceEditorGUIView::drawSegmentContent(
 		const bool isWindowFocused,
 		const SequenceTrack &track,
 		const SequenceTrackSegment &segment,
@@ -2511,7 +1949,7 @@ namespace nap
 		bool drawStartValue)
 	{
 		// curve
-		drawCurveVec<T>(
+		drawCurve<T>(
 			isWindowFocused,
 			track,
 			segment,
@@ -2525,7 +1963,7 @@ namespace nap
 			
 
 		// draw control points
-		drawControlPointsVec<T>(
+		drawControlPoints<T>(
 			isWindowFocused,
 			track,
 			segment,
@@ -2543,7 +1981,7 @@ namespace nap
 		if (drawStartValue)
 		{
 			// draw segment value handler
-			drawSegmentValueVec<T>(
+			drawSegmentValue<T>(
 				isWindowFocused,
 				track,
 				segment,
@@ -2558,7 +1996,7 @@ namespace nap
 		}
 
 		// draw segment value handler
-		drawSegmentValueVec<T>(
+		drawSegmentValue<T>(
 			isWindowFocused,
 			track,
 			segment,
