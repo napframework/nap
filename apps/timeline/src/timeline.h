@@ -16,6 +16,7 @@
 
 //
 #include "sequenceeditorgui.h"
+#include "sequenceplayergui.h"
 
 namespace nap 
 {
@@ -85,6 +86,7 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;					///< Pointer to the render window	
 		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
 
+		ObjectPtr<SequencePlayerGUI>		mSequencePlayerGUI;
 		ObjectPtr<SequenceEditorGUI>		mSequenceEditorGUI;
 		ObjectPtr<ParameterGroup>			mParameterGroup;
 	};

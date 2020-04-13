@@ -66,46 +66,24 @@ namespace nap
 	/**
 	 * 
 	 */
-	class SequenceGUIState
+	class SequenceEditorGUIState
 	{
 	public:
 		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
 		std::string currentObjectID = "";
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
-		bool isWindowFocused = false;
-		ImVec2 mouseDelta;
-		ImVec2 mousePos;
-		ImVec2 windowPos;
-		ImVec2 timelineControllerPos;
-		float timelineWidth;
-		float stepSize;
-		float trackHeight;
-		float inspectorWidth;
 	};
-
 
 	/**
 	 */
-	class SequenceEditorView
-	{
-	public:
-		// constructor
-		SequenceEditorView(SequenceEditorController& controller);
-	protected:
-		SequenceEditorController& mController;
-	};
-
-
-	/**
-	 */
-	class SequenceEditorGUIView : public SequenceEditorView
+	class SequenceEditorGUIView
 	{
 	public:
 		SequenceEditorGUIView(
 			SequenceEditorController& controller,
 			std::string id);
 
-		void draw();
+		virtual void draw();
 	private:
 		void drawTracks(
 			const SequencePlayer& sequencePlayer,
@@ -175,6 +153,8 @@ namespace nap
 
 		void drawPlayerController(SequencePlayer& playerm);
 
+		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
+
 		void handleInsertSegmentPopup();
 
 		void handleDeleteSegmentPopup();
@@ -185,25 +165,39 @@ namespace nap
 
 		void handleSaveAsPopup();
 
-		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
-
-		std::string mID;
-		SequenceGUIState mState;
-		ImVec2 mPreviousMousePos = { 0,0 };
-	private:
+	protected:
 		// ImGUI tools
 		bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
+
 		bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
+
 		std::string formatTimeString(double time);
 
-		float mVerticalResolution = 100.0f;
-		float mHorizontalResolution = 100.0f;
+	protected:
+
 		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
 
-		// used to determine if we need to cache the curves again
+		SequenceEditorController& mController;
+	protected:
+		SequenceEditorGUIState mEditorAction;
+
+		std::string mID;
+		ImVec2 mPreviousMousePos;
+
+		bool mIsWindowFocused = false;
+		ImVec2 mMouseDelta;
+		ImVec2 mMousePos;
+		ImVec2 mWindowPos;
+		ImVec2 mTimelineControllerPos;
+		float mTimelineWidth;
+		float mStepSize;
+		float mTrackHeight;
+		float mInspectorWidth;
 		ImVec2 mPrevWindowPos;
 		ImVec2 mPrevScroll;
-	private:
+		float mVerticalResolution = 100.0f;
+		float mHorizontalResolution = 100.0f;
+
 	};
 
 	class SequenceGUIActionData

@@ -95,6 +95,11 @@
                 "Vec3"
             ],
             "Frequency": 1000.0
+        },
+        {
+            "Type": "nap::SequencePlayerGUI",
+            "mID": "SequencePlayerGUI",
+            "Sequence Player": "SequencePlayer"
         }
     ]
 }

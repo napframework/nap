@@ -43,6 +43,10 @@ namespace nap
 		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
 			return false;
 
+		mSequencePlayerGUI = mResourceManager->findObject<SequencePlayerGUI>("SequencePlayerGUI");
+		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequencePlayerGUI with name: %s", "SequenceEditorGUI"))
+			return false;
+
 		mParameterGroup = mResourceManager->findObject<ParameterGroup>("ParameterGroup");
 		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
@@ -172,6 +176,9 @@ namespace nap
 
 		// Draw sequence editor gui
 		mSequenceEditorGUI->draw();
+
+		//Draw sequence player gui
+		mSequencePlayerGUI->draw();
 
 		// Draw our gui
 		mGuiService->draw();

@@ -62,6 +62,9 @@ namespace nap
 		float				mFrequency = 1000.0f;
 
 		std::vector<ResourcePtr<Parameter>> mParameters;
+
+		// Sequence Editor interface
+		const Sequence& getSequenceConst() const;
 	protected:
 		// Sequence Editor interface
 		Sequence& getSequence();

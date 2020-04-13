@@ -195,6 +195,10 @@ namespace nap
 		return *mSequence;
 	}
 
+	const Sequence& SequencePlayer::getSequenceConst() const
+	{
+		return *mSequence;
+	}
 
 	double SequencePlayer::getDuration() const
 	{
