@@ -46,8 +46,7 @@ namespace nap
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
 
-		RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)				{ }
+		RenderableTextComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initializes the this component.

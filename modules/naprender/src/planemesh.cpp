@@ -4,7 +4,7 @@
 #include "renderservice.h"
 #include "nap/core.h"
 
-RTTI_BEGIN_CLASS(nap::PlaneMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
@@ -15,10 +15,6 @@ RTTI_END_CLASS
  
 namespace nap
 {
-	PlaneMesh::PlaneMesh() :
-		mRenderService(nullptr)
-	{
-	}
 	PlaneMesh::PlaneMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{

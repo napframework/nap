@@ -27,6 +27,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	RenderableTextComponentInstance::RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource),
+		mPlane(*entity.getCore())
+	{
+	}
+
 	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource

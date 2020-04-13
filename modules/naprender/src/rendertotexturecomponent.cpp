@@ -9,6 +9,9 @@
 #include "rendertarget.h"
 #include "renderservice.h"
 #include "indexbuffer.h"
+#include "renderglobals.h"
+#include "uniforminstances.h"
+#include "ntexture.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -38,6 +41,13 @@ namespace nap
 
 	}
 
+	RenderToTextureComponentInstance::RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource),
+		mPlane(*entity.getCore()),
+		mDepthTexture(*entity.getCore()),
+		mTarget(*entity.getCore())
+	{
+	}
 
 	RenderToTextureComponentInstance::~RenderToTextureComponentInstance()
 	{
@@ -54,6 +64,7 @@ namespace nap
 		mDepthTexture.mFormat = ERenderTargetFormat::Depth;
 		mDepthTexture.mWidth  = resource->mOutputTexture->getWidth();
 		mDepthTexture.mHeight = resource->mOutputTexture->getHeight();
+		mDepthTexture.mUsage = opengl::ETextureUsage::RenderTarget;
 
 		// Initialize internally managed depth texture
 		mDepthTexture.mParameters.mMaxFilter = EFilterMode::Linear;
@@ -66,8 +77,8 @@ namespace nap
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 
 		// Bind textures to target
-// 		mTarget.mColorTexture = resource->mOutputTexture;
-// 		mTarget.mDepthTexture = &mDepthTexture;
+ 		mTarget.mColorTexture = resource->mOutputTexture;
+ 		mTarget.mDepthTexture = &mDepthTexture;
 
 		// Initialize target
 		if (!mTarget.init(errorState))
@@ -133,26 +144,20 @@ namespace nap
 // 	}
 
 
-	void RenderToTextureComponentInstance::draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex)
+	void RenderToTextureComponentInstance::draw()
 	{
+		VkCommandBuffer command_buffer = mService->getCurrentCommandBuffer();
+
 		// Create orthographic projection matrix
 		glm::ivec2 size = mTarget.getSize();
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 
-		// Clear target
-		//mService->clearRenderTarget(mTarget.getTarget());
-
-		// Bind render target
-		//mTarget.getTarget().bind();
-
-		// Ensure correct render state
-		//mService->pushRenderState();
-
+		mTarget.beginRendering();
+		
 		// Call on draw
-		onDraw(renderTarget, commandBuffer, sIdentityMatrix, proj_matrix);
+		onDraw(mTarget, command_buffer, sIdentityMatrix, proj_matrix);
 
-		// Unbind render target
-		//mTarget.getTarget().unbind();
+		mTarget.endRendering();
 	}
 
 
@@ -171,42 +176,47 @@ namespace nap
 			return;
 		}
 
-		// Bind material
-		//mMaterialInstance.bind();
-
 		// Get the parent material
-		Material& comp_mat = mMaterialInstance.getMaterial();
+		Material& comp_mat = mMaterialInstance.getMaterial();		 
 
-		// Push matrices
-// 		UniformMat4& projectionUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mProjectMatrixUniform);
-// 		projectionUniform.setValue(projectionMatrix);
-// 
-// 		computeModelMatrix();
-// 		UniformMat4& modelUniform = mMaterialInstance.getOrCreateUniform<UniformMat4>(mModelMatrixUniform);
-// 		modelUniform.setValue(mModelMatrix);
+		UniformStructInstance* nap_uniform = mMaterialInstance.getOrCreateUniform(napStructUniform);
+		if (nap_uniform != nullptr)
+		{
+			// Set projection uniform in shader
+			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(mProjectMatrixUniform);
+			if (projection_uniform != nullptr)
+				projection_uniform->setValue(projectionMatrix);
 
-		// Prepare blending
-		//mMaterialInstance.update(frame_index);
+			// Set model matrix uniform in shader
+			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(mModelMatrixUniform);
+			if (model_uniform != nullptr)
+				model_uniform->setValue(mModelMatrix);
+		}
 
-		// Push all uniforms now
-		//mMaterialInstance.pushUniforms();
+		VkDescriptorSet descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-		const GPUMesh& mesh = mesh_instance.getGPUMesh();
+		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
-		// Draw all shapes associated with the mesh
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+
+		Material& material = mRenderableMesh.getMaterialInstance().getMaterial();
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+
+		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			MeshShape& shape = mesh_instance.getShape(index);
 			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
-
-			//GLenum draw_mode = getGLMode(shape.getDrawMode());
-			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-
-// 			index_buffer.bind();
-// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-// 			index_buffer.unbind();
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
 	}
 
@@ -214,7 +224,12 @@ namespace nap
 	bool RenderToTextureComponentInstance::ensureUniform(const std::string& uniformName, utility::ErrorState& error)
 	{
 		// Same applies for the matrices
-		if (!error.check(mMaterialInstance.getMaterial().findUniform(uniformName) != nullptr,
+		UniformInstance* found_uniform = nullptr;
+		UniformStructInstance* nap_uniform = mMaterialInstance.getMaterial().findUniform("nap");
+		if (nap_uniform != nullptr)
+			found_uniform = nap_uniform->findUniform(uniformName);
+
+		if (!error.check(found_uniform != nullptr,
 			"%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(),
 			mMaterialInstance.getMaterial().mID.c_str()))
 			return false;

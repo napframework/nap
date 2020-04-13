@@ -91,6 +91,10 @@ namespace nap
 			{
 				return std::make_unique<UniformIntInstance>(*value_declaration);
 			}
+			else if (value_declaration->mType == EUniformValueType::Float)
+			{
+				return std::make_unique<UniformFloatInstance>(*value_declaration);
+			}
 			else if (value_declaration->mType == EUniformValueType::Vec2)
 			{
 				return std::make_unique<UniformVec2Instance>(*value_declaration);

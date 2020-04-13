@@ -54,12 +54,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
-		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource),
-			mDepthTexture(*entity.getCore()),
-			mTarget(*entity.getCore())
-		{
-		}
+		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource);
 
 		virtual ~RenderToTextureComponentInstance();
 
@@ -84,7 +79,7 @@ namespace nap
 		/**
 		 * @return the output texture
 		 */
-//		Texture2D& getOutputTexture();
+//		Texture2D& getOutputTexture(); 
 
 		/**
 		 * Switch the output texture, ie: the texture that is rendered to.
@@ -101,7 +96,7 @@ namespace nap
 		 * A custom orthographic projection matrix is constructed based on the size of the render target.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
-		void draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, int frameIndex);
+		void draw();
 
 		/**
 		 * Called by the Render Service.

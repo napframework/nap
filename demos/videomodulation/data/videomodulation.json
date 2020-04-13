@@ -11,6 +11,15 @@
                     "MaterialInstance": {
                         "Material": "BackgroundMaterial",
                         "Uniforms": [],
+                        "Samplers" :
+                        [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "nap::Sampler2D1231",
+                                "Name": "videoTexture",
+                                "Texture": "VideoColorTexture"
+                            }
+                        ],                        
                         "BlendMode": "NotSet",
                         "DepthMode": "ReadOnly"
                     },
@@ -72,6 +81,15 @@
                     "MaterialInstance": {
                         "Material": "DisplacementMaterial",
                         "Uniforms": [],
+                         "Samplers" :
+                            [
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "nap::Sampler2D_2123213",
+                                    "Name": "videoTexture",
+                                    "Texture": "VideoColorTexture"
+                                }
+                            ],                        
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -321,15 +339,25 @@
                     "OutputTexture": "OutputTexture",
                     "MaterialInstance": {
                         "Material": "FXMaterial",
-                        "Uniforms": [
+                        "Uniforms" : [
                             {
-                                "Type": "nap::UniformFloat",
-                                "mID": "intensityUniform",
-                                "Name": "intensity",
-                                "Value": 1.0
-                            },
+
+                                "Type" : "nap::UniformStruct",
+                                "Name" : "UBO",
+                                "Uniforms" :
+                                [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "intensityUniform",
+                                        "Name": "intensity",
+                                        "Value": 1.0
+                                    }
+                                ]                              
+                            }
+                        ],
+                        "Samplers" : [
                             {
-                                "Type": "nap::UniformTexture2D",
+                                "Type": "nap::Sampler2D",
                                 "mID": "input_tex_uniform",
                                 "Name": "inputTexture",
                                 "Texture": "VideoColorTexture"
@@ -352,14 +380,15 @@
         {
             "Type": "nap::Material",
             "mID": "BackgroundMaterial",
-            "Uniforms": [
+            "Samplers" :
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
+                    "mID": "nap::Sampler2D",
                     "Name": "videoTexture",
                     "Texture": "VideoColorTexture"
                 }
-            ],
+            ], 
             "Shader": "BackgroundShader",
             "VertexAttributeBindings": [
                 {
@@ -376,36 +405,68 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "DisplacementMaterial",
-            "Uniforms": [
+            "mID": "DisplacementMaterial",          
+            "Uniforms" : 
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D_2",
-                    "Name": "videoTexture",
-                    "Texture": "VideoColorTexture"
-                },
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_af2d9fe4",
-                    "Name": "light",
-                    "Uniforms": [
+
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "DisplacementUBO",
+                    "Uniforms" :
+                    [
                         {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_de59dce3",
-                            "Name": "mPosition",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 3.0,
-                                "z": 5.0
-                            }
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_1234",
+                            "Name": "value",
+                            "Value": 0.3
                         },
                         {
                             "Type": "nap::UniformFloat",
-                            "mID": "UniformVec3_dfee004c",
-                            "Name": "mIntensity",
-                            "Value": 1.0
+                            "mID": "UniformFloat_123",
+                            "Name": "randomness",
+                            "Value": 0.05
+                        }                       
+                    ]                               
+                },          
+                {
+
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UniformStruct_af2d9fe4",
+                            "Name": "light",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_de59dce3",
+                                    "Name": "mPosition",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 3.0,
+                                        "z": 5.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformVec3_dfee004c",
+                                    "Name": "mIntensity",
+                                    "Value": 1.0
+                                }
+                            ]
                         }
-                    ]
+                    ]                               
+                }
+            ],
+            "Samplers" :
+            [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "nap::Sampler2D_2",
+                    "Name": "videoTexture",
+                    "Texture": "VideoColorTexture"
                 }
             ],
             "Shader": "DisplacementShader",
@@ -446,11 +507,14 @@
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
-        },
+        },  
         {
             "Type": "nap::Material",
             "mID": "VideoMaterial",
             "Uniforms": [],
+            "Samplers" :
+            [
+            ],          
             "Shader": "VideoShader",
             "VertexAttributeBindings": [
                 {
@@ -496,9 +560,9 @@
         {
             "Type": "nap::RenderTarget",
             "mID": "VideoRenderTarget",
-            "mColorTexture": "VideoColorTexture",
-            "mDepthTexture": "VideoDepthTexture",
-            "mClearColor": {
+            "ColorTexture": "VideoColorTexture",
+            "DepthTexture": "VideoDepthTexture",
+            "ClearColor": {
                 "x": 1.0,
                 "y": 0.0,
                 "z": 0.0,
@@ -515,10 +579,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 1920,
             "Height": 1080,
-            "Format": "RGB8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -530,10 +594,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "DynamicRead",
+            "Usage": "RenderTarget",
             "Width": 1920,
             "Height": 1080,
-            "Format": "RGB8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -545,7 +609,7 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 1920,
             "Height": 1080,
             "Format": "Depth"
@@ -636,7 +700,7 @@
             "Path": "streak.mp4",
             "Loop": false,
             "Speed": 1.0
-        },
+        },   
         {
             "Type": "nap::VideoMeshFromFile",
             "mID": "CubeMesh",

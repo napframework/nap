@@ -113,6 +113,7 @@ this means that all video frames up until time 2 will be dropped.
 
 #include "video.h"
 #include "videoservice.h"
+#include "rendertarget.h"
 
 // external includes
 #include <rendertexture2d.h>
@@ -130,7 +131,6 @@ extern "C"
 	#include <libavformat/avformat.h>
 	#include <libavutil/pixfmt.h>
 	#include "libswresample/swresample.h"
-#include "rendertarget.h"
 }
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
