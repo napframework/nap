@@ -35,33 +35,34 @@ namespace nap
 		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
 	};
 
-
-	enum SequenceGUIMouseActions
+	namespace SequenceGUIMouseActions
 	{
-		// ACTIONS
-		DRAGGING_SEGMENT,
-		INSERTING_SEGMENT,
-		OPEN_INSERT_SEGMENT_POPUP,
-		DELETING_SEGMENT,
-		OPEN_DELETE_SEGMENT_POPUP,
-		HOVERING_SEGMENT,
-		HOVERING_SEGMENT_VALUE,
-		DRAGGING_SEGMENT_VALUE,
-		HOVERING_CONTROL_POINT,
-		DRAGGING_CONTROL_POINT,
-		DELETE_CONTROL_POINT,
-		HOVERING_TAN_POINT,
-		DRAGGING_TAN_POINT,
-		HOVERING_CURVE,
-		HOVERING_PLAYER_TIME,
-		DRAGGING_PLAYER_TIME,
-		OPEN_INSERT_TRACK_POPUP,
-		INSERTING_TRACK,
-		LOAD,
-		SAVE_AS,
-		NONE
-	};
-
+		enum SequenceGUIMouseActions
+		{
+			// ACTIONS
+			DRAGGING_SEGMENT,
+			INSERTING_SEGMENT,
+			OPEN_INSERT_SEGMENT_POPUP,
+			DELETING_SEGMENT,
+			OPEN_DELETE_SEGMENT_POPUP,
+			HOVERING_SEGMENT,
+			HOVERING_SEGMENT_VALUE,
+			DRAGGING_SEGMENT_VALUE,
+			HOVERING_CONTROL_POINT,
+			DRAGGING_CONTROL_POINT,
+			DELETE_CONTROL_POINT,
+			HOVERING_TAN_POINT,
+			DRAGGING_TAN_POINT,
+			HOVERING_CURVE,
+			HOVERING_PLAYER_TIME,
+			DRAGGING_PLAYER_TIME,
+			OPEN_INSERT_TRACK_POPUP,
+			INSERTING_TRACK,
+			LOAD,
+			SAVE_AS,
+			NONE
+		};
+	}
 
 	/**
 	 * 
@@ -69,7 +70,8 @@ namespace nap
 	class SequenceEditorGUIState
 	{
 	public:
-		SequenceGUIMouseActions currentAction = SequenceGUIMouseActions::NONE;
+		SequenceGUIMouseActions::SequenceGUIMouseActions currentAction
+			= SequenceGUIMouseActions::SequenceGUIMouseActions::NONE;
 		std::string currentObjectID = "";
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
 	};
@@ -107,7 +109,7 @@ namespace nap
 			const ImVec2 &trackTopLeft,
 			const float segmentX,
 			const float segmentWidth,
-			const SegmentValueTypes segmentType,
+			const SequenceEditorTypes::SegmentValueTypes segmentType,
 			ImDrawList* drawList);
 
 		void drawSegmentHandler(
@@ -148,7 +150,7 @@ namespace nap
 			const ImVec2 &circlePoint,
 			const int controlPointIndex,
 			const int curveIndex,
-			const TanPointTypes type,
+			const SequenceEditorTypes::TanPointTypes type,
 			ImDrawList* drawList);
 
 		void drawPlayerController(SequencePlayer& playerm);
@@ -219,11 +221,11 @@ namespace nap
 	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIInsertSegmentData(std::string id, double t, SequenceTrackTypes type) : trackID(id), time(t), trackType(type) {}
+		SequenceGUIInsertSegmentData(std::string id, double t, SequenceTrackTypes::Types type) : trackID(id), time(t), trackType(type) {}
 
 		double time = 0.0;
 		std::string trackID;
-		SequenceTrackTypes trackType;
+		SequenceTrackTypes::Types trackType;
 	};
 
 	class SequenceGUIDragPlayerData : public SequenceGUIActionData
@@ -245,7 +247,7 @@ namespace nap
 		SequenceGUIDragSegmentData(
 			std::string trackId_,
 			std::string segmentID_,
-			SegmentValueTypes type_,
+			SequenceEditorTypes::SegmentValueTypes type_,
 			int curveIndex_)
 			: trackID(trackId_),
 			segmentID(segmentID_),
@@ -254,7 +256,7 @@ namespace nap
 
 		std::string			trackID;
 		std::string			segmentID;
-		SegmentValueTypes	type;
+		SequenceEditorTypes::SegmentValueTypes	type;
 		int					curveIndex;
 	};
 
@@ -266,7 +268,7 @@ namespace nap
 			std::string segmentID_,
 			int controlPointIndex_,
 			int curveIndex_,
-			TanPointTypes type_)
+			SequenceEditorTypes::TanPointTypes type_)
 			: trackID(trackId_),
 			segmentID(segmentID_),
 			controlPointIndex(controlPointIndex_),
@@ -276,7 +278,7 @@ namespace nap
 		std::string		trackID;
 		std::string		segmentID;
 		int				controlPointIndex;
-		TanPointTypes	type;
+		SequenceEditorTypes::TanPointTypes	type;
 		int				curveIndex;
 	};
 

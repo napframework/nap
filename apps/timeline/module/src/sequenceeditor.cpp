@@ -14,6 +14,7 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
+using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
@@ -324,14 +325,14 @@ namespace nap
 			mSequencePlayer.mReadObjectIDs);
 		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
 
-		updateSegmentsVec<T>(*newTrack);
+		updateSegments<T>(*newTrack);
 	}
 
 	/**
 	*
 	*/
 	template<typename T>
-	void SequenceEditorController::insertSegmentVec(
+	void SequenceEditorController::insertSegment(
 		const std::string& trackID,
 		double time)
 	{
@@ -434,7 +435,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 						//
-						updateSegmentsVec<T>(*(track.get()));
+						updateSegments<T>(*(track.get()));
 
 						break;
 					}
@@ -467,7 +468,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 						//
-						updateSegmentsVec<T>(*(track.get()));
+						updateSegments<T>(*(track.get()));
 
 						break;
 					}
@@ -505,7 +506,7 @@ namespace nap
 					mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 					//
-					updateSegmentsVec<T>(*(track.get()));
+					updateSegments<T>(*(track.get()));
 				}
 				break;
 			}
@@ -516,7 +517,7 @@ namespace nap
 	*
 	*/
 	template<typename T>
-	void SequenceEditorController::changeSegmentValueVec(
+	void SequenceEditorController::changeSegmentValue(
 		const std::string& trackID,
 		const std::string& segmentID,
 		float amount,
@@ -556,14 +557,14 @@ namespace nap
 		}
 
 		//
-		updateSegmentsVec<T>(*track);
+		updateSegments<T>(*track);
 	}
 
 	/**
 	*
 	*/
 	template<typename T>
-	void SequenceEditorController::updateSegmentsVec(SequenceTrack& track)
+	void SequenceEditorController::updateSegments(SequenceTrack& track)
 	{
 		// update start time and duration of all segments
 		ResourcePtr<SequenceTrackSegmentCurve<T>> prevSeg = nullptr;
@@ -777,10 +778,10 @@ namespace nap
 	template void nap::SequenceEditorController::addNewTrack<glm::vec3>();
 	template void nap::SequenceEditorController::addNewTrack<glm::vec4>();
 
-	template void nap::SequenceEditorController::insertSegmentVec<float>(const std::string& trackID, double time);
-	template void nap::SequenceEditorController::insertSegmentVec<glm::vec2>(const std::string& trackID, double time);
-	template void nap::SequenceEditorController::insertSegmentVec<glm::vec3>(const std::string& trackID, double time);
-	template void nap::SequenceEditorController::insertSegmentVec<glm::vec4>(const std::string& trackID, double time);
+	template void nap::SequenceEditorController::insertSegment<float>(const std::string& trackID, double time);
+	template void nap::SequenceEditorController::insertSegment<glm::vec2>(const std::string& trackID, double time);
+	template void nap::SequenceEditorController::insertSegment<glm::vec3>(const std::string& trackID, double time);
+	template void nap::SequenceEditorController::insertSegment<glm::vec4>(const std::string& trackID, double time);
 
 	template void nap::SequenceEditorController::insertCurvePoint<float>(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
 	template void nap::SequenceEditorController::insertCurvePoint<glm::vec2>(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
@@ -792,10 +793,10 @@ namespace nap
 	template void nap::SequenceEditorController::changeCurvePoint<glm::vec3>(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
 	template void nap::SequenceEditorController::changeCurvePoint<glm::vec4>(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
 
-	template void nap::SequenceEditorController::changeSegmentValueVec<float>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
-	template void nap::SequenceEditorController::changeSegmentValueVec<glm::vec2>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
-	template void nap::SequenceEditorController::changeSegmentValueVec<glm::vec3>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
-	template void nap::SequenceEditorController::changeSegmentValueVec<glm::vec4>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
+	template void nap::SequenceEditorController::changeSegmentValue<float>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
+	template void nap::SequenceEditorController::changeSegmentValue<glm::vec2>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
+	template void nap::SequenceEditorController::changeSegmentValue<glm::vec3>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
+	template void nap::SequenceEditorController::changeSegmentValue<glm::vec4>(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SegmentValueTypes valueType);
 
 	template void nap::SequenceEditorController::changeTanPoint<float>(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, TanPointTypes tanType, float time, float value);
 	template void nap::SequenceEditorController::changeTanPoint<glm::vec2>(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, TanPointTypes tanType, float time, float value);

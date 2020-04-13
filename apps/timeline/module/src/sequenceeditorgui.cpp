@@ -10,11 +10,13 @@
 #include <iomanip>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
-	RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
+using namespace nap::SequenceGUIMouseActions;
+using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
@@ -444,7 +446,7 @@ namespace nap
 
 								//
 								mEditorAction.currentAction = OPEN_INSERT_SEGMENT_POPUP;
-								mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track->mID, time, static_cast<SequenceTrackTypes>(track->mTrackType));
+								mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track->mID, time, static_cast<SequenceTrackTypes::Types>(track->mTrackType));
 							}
 						}
 					}
@@ -467,7 +469,7 @@ namespace nap
 
 				float previousSegmentX = 0.0f;
 
-				SequenceTrackTypes trackType = track->getTrackType();
+				SequenceTrackTypes::Types trackType = track->getTrackType();
 
 				int segmentCount = 0;
 				for (const auto& segment : track->mSegments)
@@ -475,7 +477,7 @@ namespace nap
 					float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
 					float segmentWidth = segment->mDuration * mStepSize;
 
-					if (trackType == SequenceTrackTypes::FLOAT)
+					if (trackType == SequenceTrackTypes::Types::FLOAT)
 					{
 						drawSegmentContent<float>(
 							*track.get(),
@@ -487,7 +489,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if( trackType == SequenceTrackTypes::VEC3 )
+					else if( trackType == SequenceTrackTypes::Types::VEC3 )
 					{
 						drawSegmentContent<glm::vec3>(
 							*track.get(),
@@ -499,7 +501,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if (trackType == SequenceTrackTypes::VEC2)
+					else if (trackType == SequenceTrackTypes::Types::VEC2)
 					{
 						drawSegmentContent<glm::vec2>(
 							*track.get(),
@@ -511,7 +513,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if (trackType == SequenceTrackTypes::VEC4)
+					else if (trackType == SequenceTrackTypes::Types::VEC4)
 					{
 						drawSegmentContent<glm::vec4>(
 							*track.get(),
@@ -905,7 +907,7 @@ namespace nap
 						{
 							float dragAmount = (mMouseDelta.y / mTrackHeight) * -1.0f;
 							
-							mController.changeSegmentValueVec<T>(
+							mController.changeSegmentValue<T>(
 								track.mID,
 								segment.mID,
 								dragAmount,
@@ -918,9 +920,9 @@ namespace nap
 			}
 
 			if (hovered)
-				drawList->AddCircleFilled(segmentValuePos, 5.0f, guicolors::red);
+				drawList->AddCircleFilled(segmentValuePos, 5.0f, guicolors::curvecolors[v]);
 			else
-				drawList->AddCircle(segmentValuePos, 5.0f, guicolors::red);
+				drawList->AddCircle(segmentValuePos, 5.0f, guicolors::curvecolors[v]);
 		}
 	}
 
@@ -1156,16 +1158,16 @@ namespace nap
 					switch (data->trackType)
 					{
 					case SequenceTrackTypes::FLOAT:
-						mController.insertSegmentVec<float>(data->trackID, data->time);
+						mController.insertSegment<float>(data->trackID, data->time);
 						break;
 					case SequenceTrackTypes::VEC4:
-						mController.insertSegmentVec<glm::vec4>(data->trackID, data->time);
+						mController.insertSegment<glm::vec4>(data->trackID, data->time);
 						break;;
 					case SequenceTrackTypes::VEC3:
-						mController.insertSegmentVec<glm::vec3>(data->trackID, data->time);
+						mController.insertSegment<glm::vec3>(data->trackID, data->time);
 						break;
 					case SequenceTrackTypes::VEC2:
-						mController.insertSegmentVec<glm::vec2>(data->trackID, data->time);
+						mController.insertSegment<glm::vec2>(data->trackID, data->time);
 						break;
 					}
 					
@@ -1832,7 +1834,7 @@ namespace nap
 			drawList->AddPolyline(
 				&*mCurveCache[segment.mID].begin() + i * ( resolution + 1 ), // points array
 				mCurveCache[segment.mID].size() / segment.mCurves.size(), // size of points array
-				guicolors::red, // color
+				guicolors::curvecolors[i], // color
 				false, // closed
 				selectedCurve == i ? 3.0f : 1.0f, // thickness
 				true); // anti-aliased

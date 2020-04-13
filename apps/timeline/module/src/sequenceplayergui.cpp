@@ -345,7 +345,7 @@ namespace nap
 
 				float previousSegmentX = 0.0f;
 
-				SequenceTrackTypes trackType = track->getTrackType();
+				SequenceTrackTypes::Types trackType = track->getTrackType();
 
 				int segmentCount = 0;
 				for (const auto& segment : track->mSegments)
@@ -353,7 +353,7 @@ namespace nap
 					float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
 					float segmentWidth = segment->mDuration * mStepSize;
 
-					if (trackType == SequenceTrackTypes::FLOAT)
+					if (trackType == SequenceTrackTypes::Types::FLOAT)
 					{
 						drawSegmentContent<float>(
 							*track.get(),
@@ -365,7 +365,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if (trackType == SequenceTrackTypes::VEC3)
+					else if (trackType == SequenceTrackTypes::Types::VEC3)
 					{
 						drawSegmentContent<glm::vec3>(
 							*track.get(),
@@ -377,7 +377,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if (trackType == SequenceTrackTypes::VEC2)
+					else if (trackType == SequenceTrackTypes::Types::VEC2)
 					{
 						drawSegmentContent<glm::vec2>(
 							*track.get(),
@@ -389,7 +389,7 @@ namespace nap
 							drawList,
 							(segmentCount == 0));
 					}
-					else if (trackType == SequenceTrackTypes::VEC4)
+					else if (trackType == SequenceTrackTypes::Types::VEC4)
 					{
 						drawSegmentContent<glm::vec4>(
 							*track.get(),
@@ -761,7 +761,7 @@ namespace nap
 			drawList->AddPolyline(
 				&*mCurveCache[segment.mID].begin() + i * (resolution + 1), // points array
 				mCurveCache[segment.mID].size() / segment.mCurves.size(), // size of points array
-				guicolors::red, // color
+				guicolors::curvecolors[i], // color
 				false, // closed
 				1.0f, // thickness
 				true); // anti-aliased

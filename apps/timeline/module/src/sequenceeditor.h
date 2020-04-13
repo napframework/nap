@@ -43,20 +43,24 @@ namespace nap
 	/**
 	 * 
 	 */
-	enum TanPointTypes
+	namespace SequenceEditorTypes
 	{
-		IN,
-		OUT
-	};
+		enum TanPointTypes
+		{
+			IN,
+			OUT
+		};
 
-	/**
-	 * 
-	 */
-	enum SegmentValueTypes
-	{
-		BEGIN,
-		END
-	};
+		/**
+		*
+		*/
+		enum SegmentValueTypes
+		{
+			BEGIN,
+			END
+		};
+	}
+	
 
 	/**
 	 * SequenceEditorController 
@@ -133,7 +137,7 @@ namespace nap
 		 * 
 		 */
 		template<typename T>
-		void insertSegmentVec(
+		void insertSegment(
 			const std::string& trackID,
 			double time);
 
@@ -141,18 +145,18 @@ namespace nap
 		 * 
 		 */
 		template<typename T>
-		void changeSegmentValueVec(
+		void changeSegmentValue(
 			const std::string& trackID,
 			const std::string& segmentID,
 			float amount,
 			int curveIndex,
-			SegmentValueTypes valueType);
+			SequenceEditorTypes::SegmentValueTypes valueType);
 
 		/**
 		 * 
 		 */
 		template<typename T>
-		void updateSegmentsVec(SequenceTrack& track);
+		void updateSegments(SequenceTrack& track);
 
 		/**
 		 * 
@@ -186,7 +190,7 @@ namespace nap
 			const std::string& segmentID,
 			const int pointIndex,
 			const int curveIndex,
-			TanPointTypes tanType,
+			SequenceEditorTypes::TanPointTypes tanType,
 			float time,
 			float value);
 	protected:

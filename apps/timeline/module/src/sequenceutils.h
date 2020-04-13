@@ -42,30 +42,30 @@ namespace nap
 			std::unordered_set<std::string>& objectIDs)
 		{
 			int curveCount = 0;
-			SequenceTrackTypes trackType = UNKOWN;
+			SequenceTrackTypes::Types trackType = SequenceTrackTypes::Types::UNKOWN;
 			if (RTTI_OF(T) == RTTI_OF(glm::vec4))
 			{
 				curveCount = 4;
-				trackType = VEC4;
+				trackType = SequenceTrackTypes::Types::VEC4;
 			}
 			else if (RTTI_OF(T) == RTTI_OF(glm::vec3))
 			{
 				curveCount = 3;
-				trackType = VEC3;
+				trackType = SequenceTrackTypes::Types::VEC3;
 			}
 			else if (RTTI_OF(T) == RTTI_OF(glm::vec2))
 			{
 				curveCount = 2;
-				trackType = VEC2;
+				trackType = SequenceTrackTypes::Types::VEC2;
 			}
 			else if (RTTI_OF(T) == RTTI_OF(float))
 			{
 				curveCount = 1;
-				trackType = FLOAT;
+				trackType = SequenceTrackTypes::Types::FLOAT;
 			}
 
 			//
-			assert(trackType != UNKOWN);
+			assert(trackType != SequenceTrackTypes::Types::UNKOWN);
 
 			// create one segment
 			std::unique_ptr<SequenceTrackSegmentCurve<T>> trackSegment = std::make_unique<SequenceTrackSegmentCurve<T>>();

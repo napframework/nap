@@ -12,14 +12,17 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	enum SequenceTrackTypes : int
+	namespace SequenceTrackTypes
 	{
-		UNKOWN,
-		FLOAT,
-		VEC2,
-		VEC3,
-		VEC4
-	};
+		enum Types : int
+		{
+			UNKOWN,
+			FLOAT,
+			VEC2,
+			VEC3,
+			VEC4
+		};
+	}
 
 	/**
 	 * SequenceTrack
@@ -31,8 +34,8 @@ namespace nap
 	public:
 		std::string mAssignedParameterID; ///< Property: 'Parameter ID' Assigned parameter id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments; ///< Property: 'Segments' Vector holding track segments
-		int mTrackType = UNKOWN; ///< Property: 'Track Type' Type of segments this track holds
+		int mTrackType = SequenceTrackTypes::Types::UNKOWN; ///< Property: 'Track Type' Type of segments this track holds
 	
-		const SequenceTrackTypes getTrackType() const { return static_cast<SequenceTrackTypes>(mTrackType); }
+		const SequenceTrackTypes::Types getTrackType() const { return static_cast<SequenceTrackTypes::Types>(mTrackType); }
 	};
 }
