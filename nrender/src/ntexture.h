@@ -26,7 +26,8 @@ namespace opengl
 	{
 		Static,				///< Texture does not change
 		DynamicRead,		///< Texture is frequently read from GPU to CPU
-		DynamicWrite		///< Texture is frequently updated from CPU to GPU
+		DynamicWrite,		///< Texture is frequently updated from CPU to GPU
+		RenderTarget		///< Texture is used as output for a RenderTarget
 	};
 
 

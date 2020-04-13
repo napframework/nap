@@ -197,8 +197,6 @@ namespace nap
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
 
-		VkRenderPass getOrCreateRenderPass(ERenderTargetFormat format, bool inIsPresent);
-		
 		VkInstance getVulkanInstance() const { return mInstance; }
 		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
 		uint32_t getPhysicalDeviceVersion() const { return mPhysicalDeviceVersion; }
@@ -267,13 +265,6 @@ namespace nap
 			VkPipeline	mPipeline;
 		};
 
-		struct RenderTargetPasses
-		{
-			VkRenderPass							mRenderPassRGBA8 = nullptr;
-			VkRenderPass							mRenderPassR8 = nullptr;
-			VkRenderPass							mRenderPassDepth = nullptr;
-		};
-
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using PipelineList = std::vector<PipelineToDestroy>;
@@ -295,9 +286,6 @@ namespace nap
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
-
-		RenderTargetPasses						mBackbufferRenderPasses;
-		RenderTargetPasses						mTextureRenderTargetPasses;
 
 		RendererSettings						mSettings;
 		VkInstance								mInstance = nullptr;

@@ -2,11 +2,18 @@
 
 // External Includes
 #include "texture2d.h"
-#include "rendertarget.h"
 
 namespace nap
 {
 	class Core;
+
+	enum class ERenderTargetFormat
+	{
+		Backbuffer,		///< The current native format of the color backbuffer
+		RGBA8,			///< RGBA8 4 components, 8 bytes per component
+		R8,				///< R8	1 components, 8 bytes per component
+		Depth			///< Depth Texture used for binding to depth buffer
+	};
 
 	/**
 	 * GPU texture resource that it is initially empty

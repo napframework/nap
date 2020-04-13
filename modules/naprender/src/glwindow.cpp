@@ -592,9 +592,8 @@ namespace nap
 
 	bool GLWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		VkFormat swapchainFormat;
 		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, swapchainFormat, errorState))
+		if (!createSwapChain(getSize(), mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -602,10 +601,10 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, swapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
 			return false;
 
-		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, swapchainFormat, errorState))
+		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
 		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
@@ -696,6 +695,11 @@ namespace nap
 		return mWindow;
 	}
 
+
+	VkFormat GLWindow::getDepthFormat() const
+	{
+		return mRenderService->getDepthFormat();
+	}
 
 	// Returns the backbuffer
 	const BackbufferRenderTarget& GLWindow::getBackbuffer() const

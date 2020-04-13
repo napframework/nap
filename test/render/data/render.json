@@ -9,12 +9,27 @@
 			"Title" : "Window 1"
 		},
 		{
+			"Type" : "nap::RenderTexture2D",
+			"mID" : "ColorTexture",
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "Backbuffer",
+			"Usage" : "RenderTarget"
+		},
+		
+		{
+			"Type" : "nap::RenderTexture2D",
+			"mID" : "DepthTexture",
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "Depth",
+			"Usage" : "RenderTarget"
+		},		
+		{
 			"Type" : "nap::RenderTarget",
 			"mID": "PlaneRenderTarget",
-			"Size": { 
-				"x": 640,
-				"y": 480
-			},
+			"ColorTexture": "ColorTexture",
+			"DepthTexture": "DepthTexture",	
 			"ClearColor" : {
 				"x" : 1.0,
 				"y" : 1.0,
@@ -76,11 +91,19 @@
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "CustomPlaneMesh",
 					"MaterialInstance" : {
-						"Material": "GeneralMaterial"
+						"Material": "GeneralMaterial",
+						"Samplers" :
+						[
+							{
+								"Type" : "nap::Sampler2D",
+								"Name" : "pigTexture",
+								"Texture" : "ColorTexture"
+							}
+						]
 					}
 				},
 				{
-					"Type" : "nap::TransformComponent",
+					"Type" : "nap::TransformComponent", 
 					"Properties": {
 						"Translate": {
 							"x": -1.0,

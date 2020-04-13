@@ -32,10 +32,15 @@ namespace nap
 
 		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::CounterClockwise; }
 
+		virtual VkRenderPass getRenderPass() const;
+
+		virtual VkFormat getColorFormat() const override;
+		virtual VkFormat getDepthFormat() const override;
+
 	private:
 		GLWindow&	mWindow;
 		glm::ivec2	mSize;
-		glm::vec4 mClearColor;			// Clear color, used for clearing the color buffer
+		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer
 	};
 
 } // nap

@@ -61,10 +61,14 @@ namespace nap
 		*/
 		EBlendMode getBlendMode() const			{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
+		void setBlendMode(EBlendMode blendMode) { mBlendMode = blendMode; }
+
 		/**
 		* @return Depth mode mode for this material
 		*/
 		EDepthMode getDepthMode() const			{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+
+		void setDepthMode(EDepthMode depthMode) { mDepthMode = depthMode; }
 
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.

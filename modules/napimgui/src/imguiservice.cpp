@@ -34,7 +34,6 @@ static unsigned int gVboHandle = 0, gVaoHandle = 0, gElementsHandle = 0;
 static VkAllocationCallbacks* g_Allocator = NULL;
 static VkPhysicalDevice       g_Gpu = VK_NULL_HANDLE;
 static VkDevice               g_Device = VK_NULL_HANDLE;
-static VkRenderPass           g_RenderPass = VK_NULL_HANDLE;
 static VkPipelineCache        g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool       g_DescriptorPool = VK_NULL_HANDLE;
 static void(*g_CheckVkResult)(VkResult err) = NULL;
@@ -63,6 +62,9 @@ static VkBuffer               g_IndexBuffer[IMGUI_VK_QUEUED_FRAMES] = {};
 
 static VkDeviceMemory         g_UploadBufferMemory = VK_NULL_HANDLE;
 static VkBuffer               g_UploadBuffer = VK_NULL_HANDLE;
+
+VkShaderModule				  g_VertModule = VK_NULL_HANDLE;
+VkShaderModule				  g_FragModule = VK_NULL_HANDLE;
 
 static uint32_t __glsl_shader_vert_spv[] =
 {
@@ -575,8 +577,6 @@ namespace nap
 	bool createDeviceObjects()
 	{
 		VkResult err;
-		VkShaderModule vert_module;
-		VkShaderModule frag_module;
 
 		// Create The Shader Modules:
 		{
@@ -584,13 +584,13 @@ namespace nap
 			vert_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			vert_info.codeSize = sizeof(__glsl_shader_vert_spv);
 			vert_info.pCode = (uint32_t*)__glsl_shader_vert_spv;
-			err = vkCreateShaderModule(g_Device, &vert_info, g_Allocator, &vert_module);
+			err = vkCreateShaderModule(g_Device, &vert_info, g_Allocator, &g_VertModule);
 			checkVkResult(err);
 			VkShaderModuleCreateInfo frag_info = {};
 			frag_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			frag_info.codeSize = sizeof(__glsl_shader_frag_spv);
 			frag_info.pCode = (uint32_t*)__glsl_shader_frag_spv;
-			err = vkCreateShaderModule(g_Device, &frag_info, g_Allocator, &frag_module);
+			err = vkCreateShaderModule(g_Device, &frag_info, g_Allocator, &g_FragModule);
 			checkVkResult(err);
 		}
 
@@ -655,14 +655,22 @@ namespace nap
 			checkVkResult(err);
 		}
 
+		return true;
+	}
+
+	static void createPipeline(VkRenderPass renderPass)
+	{
+		if (g_Pipeline != nullptr)
+			vkDestroyPipeline(g_Device, g_Pipeline, g_Allocator);
+
 		VkPipelineShaderStageCreateInfo stage[2] = {};
 		stage[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		stage[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-		stage[0].module = vert_module;
+		stage[0].module = g_VertModule;
 		stage[0].pName = "main";
 		stage[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		stage[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		stage[1].module = frag_module;
+		stage[1].module = g_FragModule;
 		stage[1].pName = "main";
 
 		VkVertexInputBindingDescription binding_desc[1] = {};
@@ -748,14 +756,9 @@ namespace nap
 		info.pColorBlendState = &blend_info;
 		info.pDynamicState = &dynamic_state;
 		info.layout = g_PipelineLayout;
-		info.renderPass = g_RenderPass;
-		err = vkCreateGraphicsPipelines(g_Device, g_PipelineCache, 1, &info, g_Allocator, &g_Pipeline);
+		info.renderPass = renderPass;
+		VkResult err = vkCreateGraphicsPipelines(g_Device, g_PipelineCache, 1, &info, g_Allocator, &g_Pipeline);
 		checkVkResult(err);
-
-		vkDestroyShaderModule(g_Device, vert_module, g_Allocator);
-		vkDestroyShaderModule(g_Device, frag_module, g_Allocator);
-
-		return true;
 	}
 
 
@@ -907,6 +910,8 @@ namespace nap
 		mUserWindow = window;
 		setGuiWindow(window->getWindow()->getNativeWindow());
 		mWindowChanged = true;
+
+		createPipeline(window->getBackbuffer().getRenderPass());
 	}
 
 
@@ -990,7 +995,6 @@ namespace nap
 	
 		g_Gpu = mRenderService->getPhysicalDevice();
 		g_Device = mRenderService->getDevice();
-		g_RenderPass = mRenderService->getOrCreateRenderPass(ERenderTargetFormat::RGBA8, true);
 		
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 

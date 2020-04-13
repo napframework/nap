@@ -17,4 +17,19 @@ namespace nap
 	{
 		mWindow.endRenderPass();
 	}
+
+	VkRenderPass BackbufferRenderTarget::getRenderPass() const
+	{
+		return mWindow.getRenderPass();
+	}
+
+	VkFormat BackbufferRenderTarget::getColorFormat() const
+	{
+		return mWindow.getSwapchainFormat();
+	}
+
+	VkFormat BackbufferRenderTarget::getDepthFormat() const
+	{
+		return mWindow.getDepthFormat();
+	}
 }

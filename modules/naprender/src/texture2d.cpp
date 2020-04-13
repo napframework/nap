@@ -299,8 +299,45 @@ namespace nap
 		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 	}
 
+	static int getNumStagingBuffers(opengl::ETextureUsage textureUsage)
+	{
+		switch (textureUsage)
+		{
+		case opengl::ETextureUsage::DynamicWrite:
+			return 3;
+		case opengl::ETextureUsage::Static:
+		case opengl::ETextureUsage::DynamicRead:
+			return 1;
+		case opengl::ETextureUsage::RenderTarget:
+			return 0;
+		}
+
+		assert(false);
+		return 0;
+	}
+
+	static int getNumImages(opengl::ETextureUsage textureUsage)
+	{
+		switch (textureUsage)
+		{
+		case opengl::ETextureUsage::DynamicWrite:
+		case opengl::ETextureUsage::RenderTarget:
+			return 2;
+		case opengl::ETextureUsage::Static:
+		case opengl::ETextureUsage::DynamicRead:
+			return 1;
+		}
+		
+		assert(false);
+		return 0;
+	}
+
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
+		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
+		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
+			return false;
+
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
@@ -325,7 +362,7 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
-		mStagingBuffers.resize(mUsage == opengl::ETextureUsage::DynamicWrite ? 3 : 1);
+		mStagingBuffers.resize(getNumStagingBuffers(mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			StagingBuffer& imageBuffer = mStagingBuffers[index];
@@ -343,20 +380,17 @@ namespace nap
 				return false;
 		}
 
-		// We create images and imageviews for the amount of frame in flight
-		mImageData.resize(mUsage == opengl::ETextureUsage::DynamicWrite ? 2 : 1);
+		// We create images and imageviews for the amount of frames in flight
+		mImageData.resize(getNumImages(mUsage));
 		for (int index = 0; index < mImageData.size(); ++index)
 		{
 			ImageData& imageData = mImageData[index];
-			VkFormat texture_format = getTextureFormat(*mRenderService, descriptor);
-			if (!errorState.check(texture_format != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
-				return false;
 
-			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, texture_format, VK_IMAGE_TILING_OPTIMAL, usage, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
+			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_IMAGE_TILING_OPTIMAL, usage, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
 				return false;
 
 			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
-			if (!createImageView(device, imageData.mTextureImage, texture_format, aspect_flags, imageData.mTextureView, errorState))
+			if (!createImageView(device, imageData.mTextureImage, mVulkanFormat, aspect_flags, imageData.mTextureView, errorState))
 				return false;
 		}
 
@@ -402,7 +436,12 @@ namespace nap
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		imageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	
+
+		notifyChanged();
+	}
+
+	void Texture2D::notifyChanged()
+	{
 		// Notify listeners such as Samplers, so that they can use another ImageView for this texture.
 		changed(*this);
 	}
@@ -431,7 +470,6 @@ namespace nap
 
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
 
-		//memcpy(mapped_memory, data, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
@@ -455,9 +493,16 @@ namespace nap
 
 
 	VkImageView Texture2D::getImageView() const
-	 { 
+	{ 
 		assert(mCurrentImageIndex != -1);
 		return mImageData[mCurrentImageIndex].mTextureView; 
+	}
+
+
+	VkImageView Texture2D::getImageView(int index) const
+	{
+		assert(index >= 0 && index < mImageData.size());
+		return mImageData[index].mTextureView;
 	}
 
 

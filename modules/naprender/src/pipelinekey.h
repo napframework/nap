@@ -9,18 +9,21 @@ namespace nap
 
 	struct PipelineKey
 	{
-		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder) :
+		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat) :
 			mShader(&shader),
 			mDrawMode(drawMode),
 			mDepthMode(depthMode),
 			mBlendMode(blendMode),
-			mCullWindingOrder(cullWindingOrder)
+			mCullWindingOrder(cullWindingOrder),
+			mColorFormat(colorFormat),
+			mDepthFormat(depthFormat)
 		{
 		}
 
 		bool operator==(const PipelineKey& rhs) const
 		{
-			return mShader == rhs.mShader && mDrawMode == rhs.mDrawMode && mDepthMode == rhs.mDepthMode && mBlendMode == rhs.mBlendMode && mCullWindingOrder == rhs.mCullWindingOrder;
+			return	mShader == rhs.mShader && mDrawMode == rhs.mDrawMode && mDepthMode == rhs.mDepthMode && mBlendMode == rhs.mBlendMode && 
+					mCullWindingOrder == rhs.mCullWindingOrder && mColorFormat == rhs.mColorFormat && mDepthFormat == rhs.mDepthFormat;
 		}
 
 		const Shader*		mShader = nullptr;
@@ -28,6 +31,8 @@ namespace nap
 		EDepthMode			mDepthMode = EDepthMode::NotSet;
 		EBlendMode			mBlendMode = EBlendMode::NotSet;
 		ECullWindingOrder	mCullWindingOrder = ECullWindingOrder::Clockwise;
+		VkFormat			mColorFormat;
+		VkFormat			mDepthFormat;
 	};
 }
 
@@ -43,8 +48,10 @@ namespace std
 			size_t depth_mode_hash = hash<size_t>{}((size_t)key.mDepthMode);
 			size_t blend_mode_hash = hash<size_t>{}((size_t)key.mBlendMode);
 			size_t cull_winding_hash = hash<size_t>{}((size_t)key.mCullWindingOrder);
+			size_t color_format_hash = hash<size_t>{}((size_t)key.mColorFormat);
+			size_t depth_format_hash = hash<size_t>{}((size_t)key.mDepthFormat);
 
-			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash;
+			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash;
 		}
 	};
 }

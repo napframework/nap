@@ -218,8 +218,8 @@ namespace nap
 				components_to_render.push_back(&mPigEntity->getComponent<RenderableMeshComponentInstance>());
 				//components_to_render.push_back(&mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>());
 
-				MaterialInstance& plane_material = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-				plane_material.getOrCreateSampler<Sampler2DInstance>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
+				//MaterialInstance& plane_material = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+				//plane_material.getOrCreateSampler<Sampler2DInstance>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
 				//plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
 				//plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
 				//plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);

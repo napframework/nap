@@ -100,7 +100,6 @@ namespace nap
 
 		std::string										mVertPath;									///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string										mFragPath;									///< Property: 'mFragShader' path to the fragment shader on disk
-		ERenderTargetFormat								mOutputFormat = ERenderTargetFormat::RGBA8;	///< Property: 'OutputFormat' what elements the fragment shader writes to the target
 
 	private:
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);

@@ -129,12 +129,15 @@ namespace nap
 		return mMaterialInstance;
 	}
 
-	void renderMesh(RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkCommandBuffer commandBuffer)
+	void renderMesh(RenderService& renderService, RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkCommandBuffer commandBuffer)
 	{
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderableMesh.getPipeline());
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = renderService.getOrCreatePipeline(renderTarget, renderableMesh.getMesh(), mat_instance, error_state);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
@@ -151,7 +154,7 @@ namespace nap
 
 		Material& material = mat_instance.getMaterial();
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderableMesh.getPipelineLayout(), 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& vertexBufferOffsets = renderableMesh.getVertexBufferOffsets();
@@ -180,6 +183,8 @@ namespace nap
 	 */
 	void RenderableCopyMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
+		RenderService* renderService = getEntityInstance()->getCore()->getService<RenderService>();
+
 		// Get global transform
 		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
 
@@ -244,7 +249,7 @@ namespace nap
 			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
 			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
 
-			renderMesh(render_mesh, renderTarget, commandBuffer);
+			renderMesh(*renderService, render_mesh, renderTarget, commandBuffer);
 		}
 	}
 

@@ -105,6 +105,10 @@ namespace nap
 
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
+		void notifyChanged();
+
+		VkFormat getVulkanFormat() const { return mVulkanFormat; }
+
 		/**
 		 * Blocking call to retrieve GPU texture data that is stored in this texture
 		 * When the internal bitmap is empty it will be initialized based on the settings associated with this texture
@@ -133,6 +137,8 @@ namespace nap
 		void endGetData(Bitmap& bitmap);
 
 		VkImageView getImageView() const;
+
+		VkImageView getImageView(int index) const;
 
 		nap::Signal<const Texture2D&> changed;
 
@@ -182,6 +188,7 @@ namespace nap
 		int							mCurrentImageIndex = -1;
 		size_t						mImageSizeInBytes = -1;
 		SurfaceDescriptor			mDescriptor;
+		VkFormat					mVulkanFormat = VK_FORMAT_UNDEFINED;
 	};
 
 	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);

@@ -156,6 +156,9 @@ namespace nap
 
 		int getCurrentFrameIndex() const { return mCurrentFrame; }
 
+		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
+		VkFormat getDepthFormat() const;
+
 	private:
 		friend class BackbufferRenderTarget;
 
@@ -164,6 +167,7 @@ namespace nap
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();		
 
+		VkRenderPass getRenderPass() const { return mRenderPass; }
 		void beginRenderPass();
 		void endRenderPass();
 
@@ -177,6 +181,7 @@ namespace nap
 		VkRenderPass									mRenderPass = nullptr;
 		VkQueue											mGraphicsQueue = nullptr;
 		VkQueue											mPresentQueue = nullptr;
+		VkFormat										mSwapchainFormat;
 		std::vector<VkImageView>						mSwapChainImageViews;
 		std::vector<VkFramebuffer>						mSwapChainFramebuffers;
 		std::vector<VkCommandBuffer>					mCommandBuffers;

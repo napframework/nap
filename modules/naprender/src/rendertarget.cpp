@@ -3,19 +3,12 @@
 #include "nap\core.h"
 #include "renderservice.h"
 
-RTTI_BEGIN_ENUM(nap::ERenderTargetFormat)
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGBA8,	"RGBA8"),
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::R8,		"R8"),	
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Depth,	"Depth")
-RTTI_END_ENUM
-
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
-// 	RTTI_PROPERTY("mColorTexture",	&nap::RenderTarget::mColorTexture, nap::rtti::EPropertyMetaData::Required)
-// 	RTTI_PROPERTY("mDepthTexture",	&nap::RenderTarget::mDepthTexture, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",		&nap::RenderTarget::mSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ClearColor",	&nap::RenderTarget::mClearColor,	nap::rtti::EPropertyMetaData::Default)
+ 	RTTI_PROPERTY("ColorTexture",	&nap::RenderTarget::mColorTexture,	nap::rtti::EPropertyMetaData::Required)
+ 	RTTI_PROPERTY("DepthTexture",	&nap::RenderTarget::mDepthTexture,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderTarget::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -48,50 +41,109 @@ namespace nap
 
 			return true;
 		}
+
+		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		{
+			VkAttachmentDescription colorAttachment = {};
+			colorAttachment.format = colorFormat;
+			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			VkAttachmentDescription depthAttachment = {};
+			depthAttachment.format = depthFormat;
+			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference colorAttachmentRef = {};
+			colorAttachmentRef.attachment = 0;
+			colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference depthAttachmentRef = {};
+			depthAttachmentRef.attachment = 1;
+			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorAttachmentRef;
+			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+			std::array<VkSubpassDependency, 2> dependencies;
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+	
+			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+			VkRenderPassCreateInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderPassInfo.pAttachments = attachments.data();
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = dependencies.size();
+			renderPassInfo.pDependencies = dependencies.data();
+
+			if (!errorState.check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass"))
+				return false;
+
+			return true;
+		}
 	}
 
 	RenderTarget::RenderTarget(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
-		for (int i = 0; i < 2; ++i)
-		{
-			mColorTextures[i] = std::make_unique<Texture2D>(core);
-			mDepthTextures[i] = std::make_unique<Texture2D>(core);
-		}
 	}
 
 	bool RenderTarget::init(utility::ErrorState& errorState)
 	{
-		SurfaceDescriptor color_descriptor;
-		color_descriptor.mWidth = mSize.x;
-		color_descriptor.mHeight = mSize.y;
-		color_descriptor.mDataType = ESurfaceDataType::BYTE;
-		color_descriptor.mColorSpace = EColorSpace::sRGB;
-		color_descriptor.mChannels = ESurfaceChannels::BGRA;
+		if (!errorState.check(mColorTexture->mUsage == opengl::ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
+			return false;
 
-		SurfaceDescriptor depth_descriptor = color_descriptor;
-		depth_descriptor.mChannels = ESurfaceChannels::Depth;
+		if (!errorState.check(mDepthTexture->mUsage == opengl::ETextureUsage::RenderTarget, "The depth texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
+			return false;
+
+		if (!errorState.check(mColorTexture->getSize() == mDepthTexture->getSize(), "The color & depth textures used by a RenderTarget must have the same size."))
+			return false;
+
+		glm::ivec2 size = mColorTexture->getSize();
 
 		std::vector<VkImageView> color_image_views;
 		std::vector<VkImageView> depth_image_views;
-		for (int i = 0; i < mColorTextures.size(); ++i)
+		for (int i = 0; i < 2; ++i)
 		{
-			if (!mColorTextures[i]->init(color_descriptor, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
-				return false;
-
-			color_image_views.push_back(mColorTextures[i]->getImageView());
-
-			if (!mDepthTextures[i]->init(depth_descriptor, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
-				return false;
-
-			depth_image_views.push_back(mDepthTextures[i]->getImageView());
+			color_image_views.push_back(mColorTexture->getImageView(i));
+			depth_image_views.push_back(mDepthTexture->getImageView(i));
 		}
 
-		mRenderPass = mRenderService->getOrCreateRenderPass(ERenderTargetFormat::RGBA8, false);
+		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mDepthTexture->getVulkanFormat(), mRenderPass, errorState))
+			return false;
 
 		VkExtent2D framebuffer_size;
-		framebuffer_size.width = mSize.x;
-		framebuffer_size.height = mSize.y;
+		framebuffer_size.width = size.x;
+		framebuffer_size.height = size.y;
 
 		if (!createFramebuffers(mRenderService->getDevice(), mFramebuffers, color_image_views, depth_image_views, mRenderPass, framebuffer_size, errorState))
 			return false;
@@ -101,12 +153,14 @@ namespace nap
 
 	void RenderTarget::beginRendering()
 	{
+		glm::ivec2 size = mColorTexture->getSize();
+
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mFramebuffers[mRenderService->getCurrentFrameIndex()];
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { (uint32_t)mSize.x, (uint32_t)mSize.y };
+		renderPassInfo.renderArea.extent = { (uint32_t)size.x, (uint32_t)size.y };
 
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
@@ -120,15 +174,15 @@ namespace nap
 		VkRect2D rect;
 		rect.offset.x = 0;
 		rect.offset.y = 0;
-		rect.extent.width = mSize.x;
-		rect.extent.height = mSize.y;
+		rect.extent.width = size.x;
+		rect.extent.height = size.y;
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
-		viewport.y = mSize.y;
-		viewport.width = mSize.x;
-		viewport.height = -mSize.y;
+		viewport.y = size.y;
+		viewport.width = size.x;
+		viewport.height = -size.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
@@ -137,11 +191,29 @@ namespace nap
 	void RenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
+		mColorTexture->notifyChanged();
+		mDepthTexture->notifyChanged();
 	}
 
-	Texture2D& RenderTarget::getColorTexture()
+	const glm::ivec2 RenderTarget::getSize() const
 	{
-		return *mColorTextures[mRenderService->getCurrentFrameIndex()];
+		return mColorTexture->getSize();
 	}
+
+	RenderTexture2D& RenderTarget::getColorTexture()
+	{
+		return *mColorTexture;
+	}
+
+	VkFormat RenderTarget::getColorFormat() const
+	{
+		return mColorTexture->getVulkanFormat();
+	}
+
+	VkFormat RenderTarget::getDepthFormat() const
+	{
+		return mDepthTexture->getVulkanFormat();
+	}
+
 
 } // nap

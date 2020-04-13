@@ -10,7 +10,8 @@
 RTTI_BEGIN_ENUM(opengl::ETextureUsage)
 	RTTI_ENUM_VALUE(opengl::ETextureUsage::Static,			"Static"),
 	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicRead,		"DynamicRead"),
-	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicWrite,	"DynamicWrite")
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicWrite,	"DynamicWrite"),
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::RenderTarget,	"RenderTarget")
 RTTI_END_ENUM
 
 namespace opengl

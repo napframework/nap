@@ -3,17 +3,14 @@
 // External Includes
 #include <nap/resource.h>
 #include "irendertarget.h"
-#include "texture2d.h"
+#include "rtti/objectptr.h"
+#include "vulkan/vulkan_core.h"
+#include "rendertexture2d.h"
 
 namespace nap
 {
-	enum class ERenderTargetFormat
-	{
-//		Backbuffer,		///< The current native format of the color backbuffer
-		RGBA8,			///< RGBA8 4 components, 8 bytes per component
-		R8,				///< R8	1 components, 8 bytes per component
-		Depth			///< Depth Texture used for binding to depth buffer
-	};
+	class RenderTexture2D;
+	class RenderService;
 
 	/**
 	 * A resource that is used to render objects to an off screen surface (set of textures).
@@ -34,27 +31,30 @@ namespace nap
 		virtual void beginRendering() override;
 		virtual void endRendering() override;
 
-		virtual const glm::ivec2 getSize() const { return mSize; }
+		virtual const glm::ivec2 getSize() const;
 
 		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
 		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
 
 		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::Clockwise; }
 
-		Texture2D& getColorTexture();
+		virtual VkRenderPass getRenderPass() const { return mRenderPass; }
+
+		RenderTexture2D& getColorTexture();
+
+		virtual VkFormat getColorFormat() const override;
+		virtual VkFormat getDepthFormat() const override;
 
 	public:
 		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer
-		glm::ivec2	mSize;
+		rtti::ObjectPtr<RenderTexture2D>	mColorTexture;
+		rtti::ObjectPtr<RenderTexture2D>	mDepthTexture;
 
 	private:
-		using TextureArray = std::array<std::unique_ptr<Texture2D>, 2>;
 		using FramebufferList = std::vector<VkFramebuffer>;
 
-		RenderService*	mRenderService;
-		TextureArray	mColorTextures;
-		TextureArray	mDepthTextures;
-		FramebufferList	mFramebuffers;
-		VkRenderPass	mRenderPass = nullptr;
+		RenderService*				mRenderService;
+		FramebufferList				mFramebuffers;
+		VkRenderPass				mRenderPass = nullptr;
 	};
 }
