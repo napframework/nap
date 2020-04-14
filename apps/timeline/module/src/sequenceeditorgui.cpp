@@ -443,6 +443,9 @@ namespace nap
 					{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
 					guicolors::white); // color 
 
+				//
+				mMouseCursorTime = (mMousePos.x - trackTopLeft.x) / mStepSize;
+
 				if (mIsWindowFocused)
 				{
 					// handle insertion of segment
@@ -462,7 +465,7 @@ namespace nap
 							 // right mouse down
 							if (ImGui::IsMouseClicked(1))
 							{
-								double time = (mMousePos.x - trackTopLeft.x) / mStepSize;
+								double time = mMouseCursorTime;
 
 								//
 								mEditorAction.currentAction = OPEN_INSERT_SEGMENT_POPUP;
@@ -595,7 +598,7 @@ namespace nap
 	{
 
 		const SequenceTrackSegmentCurve<T>& segment 
-			= segmentBase.getDerivedConst<SequenceTrackSegmentCurve<T>>();
+			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		// draw first control point(s) handlers IF this is the first segment of the track
 		if (track.mSegments[0]->mID == segment.mID)
@@ -857,7 +860,7 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		const SequenceTrackSegmentCurve<T>& segment = 
-			segmentBase.getDerivedConst<SequenceTrackSegmentCurve<T>>();
+			static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -1781,7 +1784,8 @@ namespace nap
 		const float segmentX,
 		ImDrawList* drawList)
 	{
-		const SequenceTrackSegmentCurve<T>& segment = segmentBase.getDerivedConst<SequenceTrackSegmentCurve<T>>();
+		const SequenceTrackSegmentCurve<T>& segment 
+			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		const int resolution = 40;
 		bool curveSelected = false;
@@ -1842,8 +1846,6 @@ namespace nap
 								i);
 						}
 						selectedCurve = i;
-
-						showValue<T>(track, segment, xInSegment, selectedCurve);
 					}
 				}
 
@@ -1851,6 +1853,10 @@ namespace nap
 				{
 					mEditorAction.currentAction = NONE;
 					mEditorAction.currentActionData = nullptr;
+				}
+				else
+				{
+					showValue<T>(track, segment, xInSegment, selectedCurve);
 				}
 			}
 			else
@@ -1992,6 +1998,7 @@ namespace nap
 
 		ImGui::BeginTooltip();
 
+		ImGui::Text("Time : %.3f", mMouseCursorTime);
 		ImGui::Text("%.3f", segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum);
 
 		ImGui::EndTooltip();
@@ -2019,6 +2026,7 @@ namespace nap
 			"y"
 		};
 
+		ImGui::Text("Time : %.3f", mMouseCursorTime);
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();
@@ -2047,6 +2055,7 @@ namespace nap
 			"z"
 		};
 
+		ImGui::Text("Time : %.3f", mMouseCursorTime);
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();
@@ -2076,6 +2085,7 @@ namespace nap
 			"w"
 		};
 
+		ImGui::Text("Time : %.3f", mMouseCursorTime);
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();

@@ -397,7 +397,7 @@ namespace nap
 						}
 
 						//
-						SequenceTrackSegmentCurve<T>& segmentVec = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+						SequenceTrackSegmentCurve<T>& segmentVec = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
 
 						// set the value by evaluation curve
 						newSegment->setStartValue(
@@ -409,7 +409,8 @@ namespace nap
 						if (segmentCount < track->mSegments.size())
 						{
 							// if there is a next segment, the new segments end value is the start value of the next segment ...
-							SequenceTrackSegmentCurve<T>& nextSegmentFloat = track->mSegments[segmentCount]->getDerived<SequenceTrackSegmentCurve<T>&>();
+							SequenceTrackSegmentCurve<T>& nextSegmentFloat = static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[segmentCount].get());
+							
 							newSegment->setEndValue(nextSegmentFloat.getEndValue());
 						}
 						else
@@ -533,7 +534,7 @@ namespace nap
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
 		assert(segment != nullptr);
 
-		SequenceTrackSegmentCurve<T>& segmentVec = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+		SequenceTrackSegmentCurve<T>& segmentVec = static_cast<SequenceTrackSegmentCurve<T>&>(*segment);
 		assert(curveIndex < segmentVec.mCurves.size());
 
 		if (segment != nullptr)
@@ -570,7 +571,7 @@ namespace nap
 		ResourcePtr<SequenceTrackSegmentCurve<T>> prevSeg = nullptr;
 		for (auto trackSeg : track.mSegments)
 		{
-			auto& trackSegVec = trackSeg->getDerived<SequenceTrackSegmentCurve<T>>();
+			auto& trackSegVec = static_cast<SequenceTrackSegmentCurve<T>&>(*trackSeg.get());
 
 			if (prevSeg == nullptr)
 			{
@@ -602,7 +603,7 @@ namespace nap
 		assert(segment != nullptr);
 
 		//
-		auto& trackSegNum = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+		auto& trackSegNum = static_cast<SequenceTrackSegmentCurve<T>&>(*segment);
 		assert(curveIndex < trackSegNum.mCurves.size());
 
 		// iterate trough points of curve
@@ -646,7 +647,7 @@ namespace nap
 		assert(segment != nullptr);
 
 		//
-		auto& trackSegVec = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+		auto& trackSegVec = static_cast<SequenceTrackSegmentCurve<T>&>(*segment);
 		assert(curveIndex < trackSegVec.mCurves.size());
 
 		if (index < trackSegVec.mCurves[curveIndex]->mPoints.size())
@@ -673,7 +674,7 @@ namespace nap
 		assert(segment != nullptr);
 
 		//
-		auto& trackSegVec = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+		auto& trackSegVec = static_cast<SequenceTrackSegmentCurve<T>&>(*segment);;
 		assert(curveIndex < trackSegVec.mCurves.size());
 		assert(pointIndex < trackSegVec.mCurves[curveIndex]->mPoints.size());
 
@@ -704,7 +705,7 @@ namespace nap
 		assert(segment != nullptr);
 
 		//
-		auto& trackSegVec = segment->getDerived<SequenceTrackSegmentCurve<T>>();
+		auto& trackSegVec = static_cast<SequenceTrackSegmentCurve<T>&>(*segment);;
 		assert(curveIndex < trackSegVec.mCurves.size());
 		assert(pointIndex < trackSegVec.mCurves[curveIndex]->mPoints.size());
 
@@ -758,7 +759,7 @@ namespace nap
 					i + 1 < track->mSegments.size())
 				{
 					auto& nextSegmentCurvePoint =
-						track->mSegments[i + 1]->getDerived<SequenceTrackSegmentCurve<T>>().mCurves[curveIndex]->mPoints[0];
+						static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[i + 1]).mCurves[curveIndex]->mPoints[0];
 
 					nextSegmentCurvePoint.mInTan.mTime = curvePoint.mInTan.mTime;
 					nextSegmentCurvePoint.mInTan.mValue = curvePoint.mInTan.mValue;

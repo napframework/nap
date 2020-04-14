@@ -730,7 +730,7 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		const SequenceTrackSegmentCurve<T>& segment = 
-			segmentBase.getDerivedConst<SequenceTrackSegmentCurve<T>>();
+			static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		const int resolution = 40;
 		bool curveSelected = false;

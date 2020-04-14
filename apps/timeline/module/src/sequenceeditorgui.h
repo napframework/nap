@@ -182,7 +182,11 @@ namespace nap
 		void drawInspectorRange(const SequenceTrack& track);
 
 		template<typename T>
-		void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, int curveIndex);
+		void showValue(
+			const SequenceTrack& track,
+			const SequenceTrackSegmentCurve<T>& segment, 
+			float x, 
+			int curveIndex);
 	protected:
 
 		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
@@ -207,7 +211,7 @@ namespace nap
 		ImVec2 mPrevScroll;
 		float mVerticalResolution = 150.0f;
 		float mHorizontalResolution = 100.0f;
-
+		double mMouseCursorTime;
 	};
 
 	class SequenceGUIActionData

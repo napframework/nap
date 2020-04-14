@@ -114,14 +114,11 @@ namespace nap
 					if (time >= segment->mStartTime &&
 						time < segment->mStartTime + segment->mDuration)
 					{
-						SequenceTrackSegmentCurve<CURVE_TYPE>& source = segment->getDerived<SequenceTrackSegmentCurve<CURVE_TYPE>>();
+						assert(segment.get()->.is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
+						const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
+						
 						CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
-
-						const CURVE_TYPE& maximum = static_cast<CURVE_TYPE>(mTrack.mMaximum);
-						const CURVE_TYPE& minimum = static_cast<CURVE_TYPE>(mTrack.mMinimum);
-
-						PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (maximum - minimum));
-						value += static_cast<PARAMETER_VALUE_TYPE>(minimum);
+						PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack.mMaximum - mTrack.mMinimum) + mTrack.mMinimum);
 						mParameter.setValue(value);
 
 						break;
