@@ -69,7 +69,6 @@ namespace nap
 
 		for (const auto& parameterResource : mParameterGroup->mParameters)
 		{
-			/*
 			if (parameterResource->get_type().is_derived_from<ParameterFloat>())
 			{
 				ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
@@ -129,30 +128,31 @@ namespace nap
 				{
 					parameter->setValue(value);
 				}
-			}*/
-			if (parameterResource->get_type().is_derived_from<ParameterVec3>())
+			}else if (parameterResource->get_type().is_derived_from<ParameterVec3>())
 			{
 				ParameterVec3* parameter = static_cast<ParameterVec3*>(parameterResource.get());
 
 				std::string name = parameter->getDisplayName();
 
 				glm::vec3 value = static_cast<glm::vec3>(parameter->mValue);
-				if (ImGui::SliderFloat(name.c_str(),
-					&value.x,
+				if (ImGui::SliderFloat3(name.c_str(),
+					&value[0],
 					parameter->mMinimum,
 					parameter->mMaximum))
 				{
 					parameter->setValue(value);
 				}
-				if (ImGui::SliderFloat(name.c_str(),
-					&value.y,
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-				if (ImGui::SliderFloat(name.c_str(),
-					&value.z,
+			}
+			else if (parameterResource->get_type().is_derived_from<ParameterVec2>())
+			{
+				ParameterVec2* parameter = static_cast<ParameterVec2*>(parameterResource.get());
+
+				std::string name = parameter->getDisplayName();
+
+				glm::vec2 value = static_cast<glm::vec2>(parameter->mValue);
+				if (ImGui::SliderFloat2(
+					name.c_str(),
+					&value[0],
 					parameter->mMinimum,
 					parameter->mMaximum))
 				{

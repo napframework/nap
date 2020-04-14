@@ -389,6 +389,11 @@ namespace nap
 					}
 				}
 					break;
+				case SequenceTrackTypes::VEC4:
+				{
+					nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
+					return false;
+				}
 				case SequenceTrackTypes::VEC3:
 				{
 					if (parameter->get_type().is_derived_from<ParameterVec3>())
@@ -396,6 +401,23 @@ namespace nap
 						ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
 
 						auto processor = std::make_unique<ProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+
+					else
+					{
+						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
+						return false;
+					}
+				}
+					break;
+				case SequenceTrackTypes::VEC2:
+				{
+					if (parameter->get_type().is_derived_from<ParameterVec2>())
+					{
+						ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
+
+						auto processor = std::make_unique<ProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 
