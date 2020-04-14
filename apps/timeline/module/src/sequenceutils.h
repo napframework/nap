@@ -88,9 +88,8 @@ namespace nap
 			}
 
 			// create sequence track
-			std::unique_ptr<SequenceTrack> sequenceTrack = std::make_unique<SequenceTrack>();
+			std::unique_ptr<SequenceTrackCurve<T>> sequenceTrack = std::make_unique<SequenceTrackCurve<T>>();
 			sequenceTrack->mID = generateUniqueID(objectIDs);
-			sequenceTrack->mTrackType = trackType;
 
 			// assign track segment
 			sequenceTrack->mSegments.emplace_back(ResourcePtr<SequenceTrackSegment>(trackSegment.get()));

@@ -56,7 +56,7 @@ namespace nap
 	void SequenceEditorGUIView::draw()
 	{
 		//
-		mInspectorWidth = 200.0f;
+		mInspectorWidth = 300.0f;
 
 		//
 		mMousePos = ImGui::GetMousePos();
@@ -199,7 +199,7 @@ namespace nap
 			if (ImGui::DragFloat("H-Zoom", &mHorizontalResolution, 0.5f, 10, 1000, "%0.1f"))
 				mCurveCache.clear();
 			ImGui::SameLine();
-			if (ImGui::DragFloat("V-Zoom", &mVerticalResolution, 0.5f, 100, 1000, "%0.1f"))
+			if (ImGui::DragFloat("V-Zoom", &mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
 				mCurveCache.clear();
 			ImGui::PopItemWidth();
 
@@ -366,6 +366,26 @@ namespace nap
 				//
 				ImGui::PopItemWidth();
 
+				//
+				switch (track->getTrackType())
+				{
+				case SequenceTrackTypes::UNKOWN:
+					break;
+				case SequenceTrackTypes::FLOAT:
+					drawInspectorRange<float>(*track.get());
+					break;
+				case SequenceTrackTypes::VEC2:
+					drawInspectorRange<glm::vec2>(*track.get());
+					break;
+				case SequenceTrackTypes::VEC3:
+					drawInspectorRange<glm::vec3>(*track.get());
+					break;
+				case SequenceTrackTypes::VEC4:
+					drawInspectorRange<glm::vec4>(*track.get());
+					break;
+				}
+				
+
 				// delete track button
 				ImGui::Spacing();
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
@@ -446,7 +466,7 @@ namespace nap
 
 								//
 								mEditorAction.currentAction = OPEN_INSERT_SEGMENT_POPUP;
-								mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track->mID, time, static_cast<SequenceTrackTypes::Types>(track->mTrackType));
+								mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track->mID, time, static_cast<SequenceTrackTypes::Types>(track->getTrackType()));
 							}
 						}
 					}
@@ -654,6 +674,9 @@ namespace nap
 					mEditorAction.currentAction = HOVERING_CONTROL_POINT;
 					mEditorAction.currentObjectID = pointID;
 
+					//
+					showValue<T>(track, segment, curvePoint.mPos.mTime, v);
+
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
 					{
@@ -702,6 +725,8 @@ namespace nap
 							float valueAdjust = (mMouseDelta.y / mTrackHeight) * -1.0f;
 
 							hovered = true;
+
+							showValue<T>(track, segment, curvePoint.mPos.mTime, v);
 
 							mController.changeCurvePoint<T>(
 								data->trackID,
@@ -871,6 +896,8 @@ namespace nap
 						mEditorAction.currentAction = DRAGGING_SEGMENT_VALUE;
 						mEditorAction.currentObjectID = segment.mID;
 					}
+
+					showValue<T>(track, segment, segmentType == BEGIN ? 0.0f : 1.0f, v);
 				}
 				else if (mEditorAction.currentAction != DRAGGING_SEGMENT_VALUE)
 				{
@@ -898,6 +925,7 @@ namespace nap
 					if (data->type == segmentType && data->curveIndex == v)
 					{
 						hovered = true;
+						showValue<T>(track, segment, segmentType == BEGIN ? 0.0f : 1.0f, v);
 
 						if (ImGui::IsMouseReleased(0))
 						{
@@ -1814,13 +1842,21 @@ namespace nap
 								i);
 						}
 						selectedCurve = i;
+
+						showValue<T>(track, segment, xInSegment, selectedCurve);
 					}
+				}
+
+				if (selectedCurve == -1)
+				{
+					mEditorAction.currentAction = NONE;
+					mEditorAction.currentActionData = nullptr;
 				}
 			}
 			else
 			{
 				if (mEditorAction.currentAction == HOVERING_CURVE &&
-					mEditorAction.currentObjectID == segment.mID)
+					mEditorAction.currentObjectID == segment.mID )
 				{
 					mEditorAction.currentAction = NONE;
 					mEditorAction.currentActionData = nullptr;
@@ -1898,6 +1934,187 @@ namespace nap
 			drawList);
 	}
 
+
+	template<typename T>
+	void SequenceEditorGUIView::drawInspectorRange(const SequenceTrack& track)
+	{
+		const SequenceTrackCurve<T>& curveTrack = static_cast<const SequenceTrackCurve<T>&>(track);
+
+		T min = curveTrack.mMinimum;
+		T max = curveTrack.mMaximum;
+
+		//
+		ImGui::PushID(track.mID.c_str());
+
+		float dragFloatX = ImGui::GetCursorPosX() + 40;
+		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + 5, ImGui::GetCursorPosY() + 5 });
+		ImGui::Text("Min:"); ImGui::SameLine();
+		ImGui::PushID("min");
+		ImGui::SetCursorPosX(dragFloatX);
+		if (inputFloat<T>(min, 3))
+		{
+			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+		}
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+		ImGui::Text("Max:"); ImGui::SameLine();
+		ImGui::PushID("max");
+		ImGui::SetCursorPosX(dragFloatX);
+		if (inputFloat<T>(max, 3))
+		{
+			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+		}
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+
+		ImGui::PopID();
+	}
+
+	template<typename T>
+	void SequenceEditorGUIView::showValue(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<T>& segment,
+		float x,
+		int curveIndex)
+	{
+		assert(false);
+	}
+
+	template<>
+	void SequenceEditorGUIView::showValue<float>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<float>& segment,
+		float x,
+		int curveIndex)
+	{
+		const SequenceTrackCurve<float>& curveTrack = static_cast<const SequenceTrackCurve<float>&>(track);
+
+		ImGui::BeginTooltip();
+
+		ImGui::Text("%.3f", segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum);
+
+		ImGui::EndTooltip();
+	}
+
+	template<>
+	void SequenceEditorGUIView::showValue<glm::vec2>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec2>& segment,
+		float x,
+		int curveIndex)
+	{
+		assert(curveIndex >= 0);
+		assert(curveIndex < 2);
+
+		const SequenceTrackCurve<glm::vec2>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec2>&>(track);
+
+		ImGui::BeginTooltip();
+
+		glm::vec2 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+
+		static std::string names[2] =
+		{
+			"x",
+			"y"
+		};
+
+		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
+
+		ImGui::EndTooltip();
+	}
+
+	template<>
+	void SequenceEditorGUIView::showValue<glm::vec3>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec3>& segment,
+		float x,
+		int curveIndex)
+	{
+		assert(curveIndex >= 0);
+		assert(curveIndex < 3);
+
+		const SequenceTrackCurve<glm::vec3>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec3>&>(track);
+
+		ImGui::BeginTooltip();
+
+		glm::vec3 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+
+		static std::string names[3] =
+		{
+			"x",
+			"y",
+			"z"
+		};
+
+		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
+
+		ImGui::EndTooltip();
+	}
+
+	template<>
+	void SequenceEditorGUIView::showValue<glm::vec4>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec4>& segment,
+		float x,
+		int curveIndex)
+	{
+		assert(curveIndex >= 0);
+		assert(curveIndex < 4);
+
+		const SequenceTrackCurve<glm::vec4>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec4>&>(track);
+
+		ImGui::BeginTooltip();
+
+		glm::vec4 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+
+		static std::string names[4] =
+		{
+			"x",
+			"y",
+			"z",
+			"w"
+		};
+
+		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
+
+		ImGui::EndTooltip();
+	}
+
+	template<typename T>
+	bool SequenceEditorGUIView::inputFloat(T &v, int precision)
+	{
+		assert(true);
+		return false;
+	}
+
+	template<>
+	bool SequenceEditorGUIView::inputFloat<float>(float &v, int precision)
+	{
+		ImGui::PushItemWidth(100.0f);
+		return ImGui::InputFloat("", &v, 0.0f, 0.0f, precision);
+	}
+
+	template<>
+	bool SequenceEditorGUIView::inputFloat<glm::vec2>(glm::vec2 &v, int precision)
+	{
+		ImGui::PushItemWidth(145.0f);
+		return ImGui::InputFloat2("", &v[0], precision);
+	}
+
+	template<>
+	bool SequenceEditorGUIView::inputFloat<glm::vec3>(glm::vec3 &v, int precision)
+	{
+		ImGui::PushItemWidth(180.0f);
+		return ImGui::InputFloat3("", &v[0], precision);
+	}
+
+	template<>
+	bool SequenceEditorGUIView::inputFloat<glm::vec4>(glm::vec4 &v, int precision)
+	{
+		ImGui::PushItemWidth(225.0f);
+		return ImGui::InputFloat4("", &v[0], precision);
+	}
 
 	std::string SequenceEditorGUIView::formatTimeString(double time)
 	{

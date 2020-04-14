@@ -350,7 +350,7 @@ namespace nap
 		{
 			if (track->mID == trackID)
 			{
-				switch (track->mTrackType)
+				switch (track->getTrackType())
 				{
 				case SequenceTrackTypes::FLOAT:
 				{

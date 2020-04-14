@@ -173,8 +173,16 @@ namespace nap
 
 		bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 
+		template<typename T>
+		bool inputFloat(T &, int precision);
+
 		std::string formatTimeString(double time);
 
+		template<typename T>
+		void drawInspectorRange(const SequenceTrack& track);
+
+		template<typename T>
+		void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, int curveIndex);
 	protected:
 
 		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
@@ -197,7 +205,7 @@ namespace nap
 		float mInspectorWidth;
 		ImVec2 mPrevWindowPos;
 		ImVec2 mPrevScroll;
-		float mVerticalResolution = 100.0f;
+		float mVerticalResolution = 150.0f;
 		float mHorizontalResolution = 100.0f;
 
 	};

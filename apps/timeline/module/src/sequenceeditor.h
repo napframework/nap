@@ -193,6 +193,9 @@ namespace nap
 			SequenceEditorTypes::TanPointTypes tanType,
 			float time,
 			float value);
+
+		template<typename T>
+		void changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum);
 	protected:
 		void updateSegments();
 

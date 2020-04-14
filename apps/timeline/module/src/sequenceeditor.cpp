@@ -772,6 +772,19 @@ namespace nap
 		trackSegVec.mCurves[curveIndex]->invalidate();
 	}
 
+	template<typename T>
+	void SequenceEditorController::changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum)
+	{
+		auto l = mSequencePlayer.lock();
+
+		SequenceTrack* track = findTrack(trackID);
+		assert(track != nullptr);
+		
+		SequenceTrackCurve<T>* trackCurve = static_cast<SequenceTrackCurve<T>*>(track);
+		trackCurve->mMinimum = minimum;
+		trackCurve->mMaximum = maximum;
+	}
+
 	// explicit template declarations
 	template void nap::SequenceEditorController::addNewTrack<float>();
 	template void nap::SequenceEditorController::addNewTrack<glm::vec2>();
@@ -807,4 +820,9 @@ namespace nap
 	template void nap::SequenceEditorController::deleteCurvePoint<glm::vec2>(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
 	template void nap::SequenceEditorController::deleteCurvePoint<glm::vec3>(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
 	template void nap::SequenceEditorController::deleteCurvePoint<glm::vec4>(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
+
+	template void SequenceEditorController::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum);
+	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec2>(const std::string& trackID, glm::vec2 minimum, glm::vec2 maximum);
+	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec3>(const std::string& trackID, glm::vec3 minimum, glm::vec3 maximum);
+	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec4>(const std::string& trackID, glm::vec4 minimum, glm::vec4 maximum);
 }

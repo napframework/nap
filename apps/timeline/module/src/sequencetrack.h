@@ -34,8 +34,26 @@ namespace nap
 	public:
 		std::string mAssignedParameterID; ///< Property: 'Parameter ID' Assigned parameter id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments; ///< Property: 'Segments' Vector holding track segments
-		int mTrackType = SequenceTrackTypes::Types::UNKOWN; ///< Property: 'Track Type' Type of segments this track holds
-	
-		const SequenceTrackTypes::Types getTrackType() const { return static_cast<SequenceTrackTypes::Types>(mTrackType); }
+
+		virtual const SequenceTrackTypes::Types getTrackType() const {
+			return SequenceTrackTypes::Types::UNKOWN;
+		}
 	};
+
+	template<typename T>
+	class NAPAPI SequenceTrackCurve : public SequenceTrack
+	{
+		RTTI_ENABLE(SequenceTrack)
+	public:
+		T mMaximum;
+		T mMinimum;
+
+		virtual const SequenceTrackTypes::Types getTrackType() const;
+	};
+
+#define DEFINE_SEQUENCETRACKCURVE(Type)																			\
+		RTTI_BEGIN_CLASS(Type)																						\
+			RTTI_PROPERTY("Minimum",	&Type::mMinimum, nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_PROPERTY("Maximum",	&Type::mMaximum, nap::rtti::EPropertyMetaData::Default)				\
+		RTTI_END_CLASS
 }

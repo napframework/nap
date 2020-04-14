@@ -105,7 +105,7 @@ namespace nap
 		{
 		public:
 			ProcessorCurve(SequenceTrack& track, PARAMETER_TYPE& parameter)
-				: mParameter(parameter), mTrack(track) {}
+				: mParameter(parameter), mTrack(static_cast<SequenceTrackCurve<CURVE_TYPE>&>(track)) {}
 
 			virtual void process(double time) override
 			{
@@ -117,11 +117,11 @@ namespace nap
 						SequenceTrackSegmentCurve<CURVE_TYPE>& source = segment->getDerived<SequenceTrackSegmentCurve<CURVE_TYPE>>();
 						CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
 
-						const PARAMETER_VALUE_TYPE& maximum = static_cast<PARAMETER_VALUE_TYPE>(mParameter.mMaximum);
-						const PARAMETER_VALUE_TYPE& minimum = static_cast<PARAMETER_VALUE_TYPE>(mParameter.mMinimum);
+						const CURVE_TYPE& maximum = static_cast<CURVE_TYPE>(mTrack.mMaximum);
+						const CURVE_TYPE& minimum = static_cast<CURVE_TYPE>(mTrack.mMinimum);
 
 						PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (maximum - minimum));
-						value += minimum;
+						value += static_cast<PARAMETER_VALUE_TYPE>(minimum);
 						mParameter.setValue(value);
 
 						break;
@@ -129,8 +129,8 @@ namespace nap
 				}
 			}
 		private:
-			PARAMETER_TYPE&		mParameter;
-			SequenceTrack&		mTrack;
+			PARAMETER_TYPE&					mParameter;
+			SequenceTrackCurve<CURVE_TYPE>&		mTrack;
 		};
 
 		/**

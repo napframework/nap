@@ -53,7 +53,7 @@ namespace nap
 	using SequenceTrackSegmentCurveVec4	= SequenceTrackSegmentCurve<glm::vec4>;
 
 	/**
-	* Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
+	* Helper macro 
 	*/
 #define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)																			\
 		RTTI_BEGIN_CLASS(Type)																						\
