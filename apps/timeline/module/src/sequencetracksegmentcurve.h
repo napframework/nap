@@ -16,6 +16,8 @@ namespace nap
 	public:
 		std::vector<ResourcePtr<math::FCurve<float, float>>>	mCurves;
 
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		/**
 		 * 
 		 */

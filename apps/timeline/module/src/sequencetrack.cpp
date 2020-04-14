@@ -1,5 +1,6 @@
 // local includes
 #include "sequencetrack.h"
+#include "sequencetracksegmentcurve.h"
 
 // external includes
 #include <nap/resourceptr.h>
@@ -19,6 +20,27 @@ DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<glm::vec4>)
 
 namespace nap
 {
+	template<typename T>
+	bool SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
+	{
+		if (SequenceTrack::init(errorState))
+		{
+			for (int i = 0; i < mSegments.size(); i++)
+			{
+				if (!errorState.check(mSegments[i].get()->get_type().is_derived_from<SequenceTrackSegmentCurve<T>>(), "segment not derived from correct type"))
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	template<>
 	const SequenceTrackTypes::Types SequenceTrackCurve<float>::getTrackType() const
 	{

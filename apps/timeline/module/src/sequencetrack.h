@@ -45,6 +45,8 @@ namespace nap
 	{
 		RTTI_ENABLE(SequenceTrack)
 	public:
+		virtual bool init(utility::ErrorState& errorState) override;
+
 		T mMaximum;
 		T mMinimum;
 

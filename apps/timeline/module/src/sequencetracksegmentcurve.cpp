@@ -6,9 +6,16 @@ DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec3)
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec4)
 
 template<typename T>   // primary template
+bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState& errorState)
+{
+	assert(false);
+	return false;
+}
+
+template<typename T>   // primary template
 const T nap::SequenceTrackSegmentCurve<T>::getStartValue() const
 {
-	assert(true);
+	assert(false);
 
 	T value;
 	return value;
@@ -17,7 +24,7 @@ const T nap::SequenceTrackSegmentCurve<T>::getStartValue() const
 template<typename T>   // primary template
 const T nap::SequenceTrackSegmentCurve<T>::getEndValue() const
 {
-	assert(true);
+	assert(false);
 
 	T value;
 	return value;
@@ -26,7 +33,7 @@ const T nap::SequenceTrackSegmentCurve<T>::getEndValue() const
 template<typename T>   // primary template
 const T nap::SequenceTrackSegmentCurve<T>::getValue(float t) const
 {
-	assert(true);
+	assert(false);
 
 	T value;
 	return value;
@@ -35,15 +42,42 @@ const T nap::SequenceTrackSegmentCurve<T>::getValue(float t) const
 template<typename T>   // primary template
 void nap::SequenceTrackSegmentCurve<T>::setStartValue(T value)
 {
-	assert(true);
+	assert(false);
 }
 
 template<typename T>   // primary template
 void nap::SequenceTrackSegmentCurve<T>::setEndValue(T value)
 {
-	assert(true);
+	assert(false);
 }
 
+template<>
+bool nap::SequenceTrackSegmentCurveFloat::init(utility::ErrorState& errorState)
+{
+	if (SequenceTrackSegment::init(errorState))
+	{
+		if (!errorState.check(mCurves.size() == 1, "size of curves must be 1"))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < mCurves.size(); i++)
+			{
+				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}
 
 template<>
 const float nap::SequenceTrackSegmentCurveFloat::getStartValue() const
@@ -90,6 +124,33 @@ void nap::SequenceTrackSegmentCurveFloat::setEndValue(float t)
 	mCurves[0]->mPoints[mCurves[0]->mPoints.size()].mPos.mValue = t;
 }
 
+template<>
+bool nap::SequenceTrackSegmentCurveVec2::init(utility::ErrorState& errorState)
+{
+	if (SequenceTrackSegment::init(errorState))
+	{
+		if (!errorState.check(mCurves.size() == 2, "size of curves must be 2"))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < mCurves.size(); i++)
+			{
+				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}
 
 template<>
 const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const
@@ -149,6 +210,34 @@ void nap::SequenceTrackSegmentCurveVec2::setEndValue(glm::vec2 t)
 	{
 		mCurves[i]->mPoints[mCurves[i]->mPoints.size()-1].mPos.mValue = t[i];
 	}
+}
+
+template<>
+bool nap::SequenceTrackSegmentCurveVec3::init(utility::ErrorState& errorState)
+{
+	if (SequenceTrackSegment::init(errorState))
+	{
+		if (!errorState.check(mCurves.size() == 3, "size of curves must be 3"))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < mCurves.size(); i++)
+			{
+				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
 }
 
 template<>
@@ -212,6 +301,34 @@ void nap::SequenceTrackSegmentCurveVec3::setEndValue(glm::vec3 t)
 	{
 		mCurves[i]->mPoints[mCurves[i]->mPoints.size() - 1].mPos.mValue = t[i];
 	}
+}
+
+template<>
+bool nap::SequenceTrackSegmentCurveVec4::init(utility::ErrorState& errorState)
+{
+	if (SequenceTrackSegment::init(errorState))
+	{
+		if (!errorState.check(mCurves.size() == 4, "size of curves must be 4"))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < mCurves.size(); i++)
+			{
+				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
 }
 
 template<>
