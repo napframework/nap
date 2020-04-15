@@ -168,6 +168,8 @@ add_subdirectory(demos/copystamp/module)
 add_subdirectory(demos/python)
 add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
+add_subdirectory(demos/facedetection)
+add_subdirectory(demos/facedetection/module)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -205,6 +207,7 @@ add_subdirectory(modules/napparametergui)
 add_subdirectory(modules/napserial)
 add_subdirectory(modules/napwebsocket)
 add_subdirectory(modules/napapiwebsocket)
+add_subdirectory(modules/napopencv)
 add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
 

@@ -28,6 +28,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
+# Only include project modules when desired, only build when not packaging
+exclude_from_build_when_packaging(FALSE)
+
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 

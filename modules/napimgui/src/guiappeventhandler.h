@@ -25,9 +25,9 @@ namespace nap
 		virtual void start() override;
 
 		/**
-		* This call polls the various SDL messages and filters them based on GUI activity. 
-		* If a GUI element is actively used the events are not forwarded to the running app.
-		*/
+		 * This call polls the various SDL messages and filters them based on GUI activity. 
+		 * If a GUI element is actively used the events are not forwarded to the running app.
+		 */
 		virtual void process() override;
 
 		/**

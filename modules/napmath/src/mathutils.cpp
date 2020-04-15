@@ -244,15 +244,35 @@ namespace nap
 			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
 		}
 
+
 		std::string generateUUID()
 		{
-			setRandomSeed(rand());
-			return utility::stringFormat("%06d-%06d-%06d-%06d",
-				math::random<int>(0, 100000),
-				math::random<int>(0, 100000),
-				math::random<int>(0, 100000),
-				math::random<int>(0, 100000));
+			static std::random_device rd;
+			static std::mt19937 gen(rd());
+			static std::uniform_int_distribution<> dis(0, 15);
+			static std::uniform_int_distribution<> dis2(8, 11);
+
+			std::stringstream ss;
+			int i;
+			ss << std::hex;
+			for (i = 0; i < 8; i++)
+				ss << dis(gen);
+			ss << "-";
+			for (i = 0; i < 4; i++)
+				ss << dis(gen);
+			ss << "-4"; // UUID4 marker
+			for (i = 0; i < 3; i++)
+				ss << dis(gen);
+			ss << "-";
+			ss << dis2(gen);
+			for (i = 0; i < 3; i++)
+				ss << dis(gen);
+			ss << "-";
+			for (i = 0; i < 12; i++)
+				ss << dis(gen);
+			return ss.str();
 		}
+
 
 		template<>
 		int random(int min, int max)

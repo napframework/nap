@@ -206,12 +206,23 @@ namespace nap
 		/**
 		 * @return Non const component iterator
 		 */
-		ComponentIterator getComponents()					{ return ComponentIterator(mComponents); }
+		ComponentIterator getComponents()									{ return ComponentIterator(mComponents); }
 		
 		/**
 		 *	@return const component iterator
 		 */
-		ComponentConstIterator getComponents() const		{ return ComponentConstIterator(mComponents); }
+		ComponentConstIterator getComponents() const						{ return ComponentConstIterator(mComponents); }
+
+		/**
+		 * 
+		 * @return child entity at index. Asserts when out of range
+		 */
+		EntityInstance& operator[](std::size_t index)						{ assert(index < mChildren.size()); return *(mChildren[index]); }
+
+		/**
+		 * @return child entity at index. Asserts when out of range.
+		 */
+		const EntityInstance& operator[](std::size_t index) const			{ assert(index < mChildren.size()); return *(mChildren[index]); }
 
 	private:
 		Core*			mCore = nullptr;

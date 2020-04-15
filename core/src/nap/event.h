@@ -19,7 +19,7 @@ namespace nap
 		Event() = default;
 
 		// Disable copy
-		Event(Event&) = delete;
+		Event(const Event&) = delete;
 		Event& operator=(const Event&) = delete;
 	};
 
