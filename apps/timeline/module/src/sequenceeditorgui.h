@@ -92,6 +92,23 @@ namespace nap
 			const Sequence &sequence);
 
 		template<typename T>
+		void drawCurveTrack(
+			const SequenceTrack &track,
+			ImVec2 &cursorPos,
+			const float marginBetweenTracks,
+			const SequencePlayer &sequencePlayer,
+			bool &deleteTrack,
+			std::string &deleteTrackID);
+
+		void drawEventTrack(
+			const SequenceTrack &track,
+			ImVec2 &cursorPos,
+			const float marginBetweenTracks,
+			const SequencePlayer &sequencePlayer,
+			bool &deleteTrack,
+			std::string &deleteTrackID);
+
+		template<typename T>
 		void drawSegmentContent(
 			const SequenceTrack &track,
 			const SequenceTrackSegment &segment,

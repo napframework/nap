@@ -3,6 +3,7 @@
 // internal includes
 #include "sequence.h"
 #include "sequencetracksegmentcurve.h"
+#include "sequencetracksegmentevent.h"
 
 namespace nap
 {
@@ -33,11 +34,17 @@ namespace nap
 		// Template Definitions
 		//////////////////////////////////////////////////////////////////////////
 
+		SequenceTrack* createSequenceEventTrack(
+			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
+			std::unordered_set<std::string>& objectIDs
+		);
+
+
 		/**
 		 * 
 		 */
 		template<typename T>
-		SequenceTrack* createSequenceTrackVector(
+		SequenceTrack* createSequenceCurveTrack(
 			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
 			std::unordered_set<std::string>& objectIDs)
 		{

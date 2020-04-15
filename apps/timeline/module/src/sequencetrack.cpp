@@ -7,7 +7,10 @@
 
 RTTI_BEGIN_CLASS(nap::SequenceTrack)
 	RTTI_PROPERTY("Segments", &nap::SequenceTrack::mSegments, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Parameter ID", &nap::SequenceTrack::mAssignedParameterID, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Parameter ID", &nap::SequenceTrack::mAssignedObjectIDs, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SequenceTrackEvent)
 RTTI_END_CLASS
 
 DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<float>)
@@ -63,6 +66,11 @@ namespace nap
 	const SequenceTrackTypes::Types SequenceTrackCurve<glm::vec4>::getTrackType() const
 	{
 		return SequenceTrackTypes::VEC4;
+	}
+
+	const SequenceTrackTypes::Types SequenceTrackEvent::getTrackType() const
+	{
+		return SequenceTrackTypes::EVENT;
 	}
 }
 

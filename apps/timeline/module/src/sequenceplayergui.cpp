@@ -290,7 +290,7 @@ namespace nap
 
 				ImGui::PushItemWidth(200.0f);
 
-				std::string name = track->mAssignedParameterID;
+				std::string name = track->mAssignedObjectIDs;
 				if (name == "")
 					name = "none";
 				ImGui::Text(name.c_str());

@@ -20,7 +20,8 @@ namespace nap
 			FLOAT,
 			VEC2,
 			VEC3,
-			VEC4
+			VEC4,
+			EVENT
 		};
 	}
 
@@ -32,7 +33,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::string mAssignedParameterID; ///< Property: 'Parameter ID' Assigned parameter id
+		std::string mAssignedObjectIDs; ///< Property: 'Assigned Object ID' Assigned object to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments; ///< Property: 'Segments' Vector holding track segments
 
 		virtual const SequenceTrackTypes::Types getTrackType() const {
@@ -50,6 +51,13 @@ namespace nap
 		T mMaximum;
 		T mMinimum;
 
+		virtual const SequenceTrackTypes::Types getTrackType() const;
+	};
+
+	class NAPAPI SequenceTrackEvent : public SequenceTrack
+	{
+		RTTI_ENABLE(SequenceTrack)
+	public:
 		virtual const SequenceTrackTypes::Types getTrackType() const;
 	};
 

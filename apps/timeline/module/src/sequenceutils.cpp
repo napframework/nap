@@ -24,6 +24,24 @@ namespace nap
 			return unique_id;
 		}
 
+		SequenceTrack* createSequenceEventTrack(
+			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
+			std::unordered_set<std::string>& objectIDs
+		)
+		{
+			// create sequence track
+			std::unique_ptr<SequenceTrackEvent> sequenceTrack = std::make_unique<SequenceTrackEvent>();
+			sequenceTrack->mID = generateUniqueID(objectIDs);
+
+			// assign return ptr
+			SequenceTrack* returnPtr = sequenceTrack.get();
+
+			// move ownership of unique ptrs
+			createdObjects.emplace_back(std::move(sequenceTrack));
+
+			return returnPtr;
+		}
+
 
 		Sequence* createDefaultSequence(
 			const std::vector<rtti::ObjectPtr<Parameter>>& parameters,
@@ -38,7 +56,7 @@ namespace nap
 			{
 				// make a unique sequence track
 				SequenceTrack* sequenceTrack
-					= sequenceutils::createSequenceTrackVector<float>(createdObjects, objectIDs);
+					= sequenceutils::createSequenceCurveTrack<float>(createdObjects, objectIDs);
 
 				// make a resource pointer of the sequence track
 				ResourcePtr<SequenceTrack> sequenceTrackResourcePtr = ResourcePtr<SequenceTrack>(sequenceTrack);

@@ -8,8 +8,52 @@ DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec4)
 template<typename T>   // primary template
 bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState& errorState)
 {
-	assert(false);
-	return false;
+	int curveCount = -1;
+	if (RTTI_OF(glm::vec2) == RTTI_OF(T))
+	{
+		curveCount = 2;
+	}
+	else if (RTTI_OF(glm::vec3) == RTTI_OF(T))
+	{
+		curveCount = 3;
+	}
+	else if (RTTI_OF(glm::vec4) == RTTI_OF(T))
+	{
+		curveCount = 4;
+	}
+	else if (RTTI_OF(float) == RTTI_OF(T))
+	{
+		curveCount = 1;
+	}
+	else
+	{
+		return errorState.check(false, "SequenceTrackSegmentCurve of unknown type!");
+	}
+
+
+	if (SequenceTrackSegment::init(errorState))
+	{
+		if (!errorState.check(mCurves.size() == curveCount, "size of curves must be %i", curveCount))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < mCurves.size(); i++)
+			{
+				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
 }
 
 template<typename T>   // primary template
@@ -49,34 +93,6 @@ template<typename T>   // primary template
 void nap::SequenceTrackSegmentCurve<T>::setEndValue(T value)
 {
 	assert(false);
-}
-
-template<>
-bool nap::SequenceTrackSegmentCurveFloat::init(utility::ErrorState& errorState)
-{
-	if (SequenceTrackSegment::init(errorState))
-	{
-		if (!errorState.check(mCurves.size() == 1, "size of curves must be 1"))
-		{
-			return false;
-		}
-		else
-		{
-			for (int i = 0; i < mCurves.size(); i++)
-			{
-				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
 }
 
 template<>
@@ -122,34 +138,6 @@ void nap::SequenceTrackSegmentCurveFloat::setEndValue(float t)
 	assert(mCurves[0]->mPoints.size() > 1);
 
 	mCurves[0]->mPoints[mCurves[0]->mPoints.size()].mPos.mValue = t;
-}
-
-template<>
-bool nap::SequenceTrackSegmentCurveVec2::init(utility::ErrorState& errorState)
-{
-	if (SequenceTrackSegment::init(errorState))
-	{
-		if (!errorState.check(mCurves.size() == 2, "size of curves must be 2"))
-		{
-			return false;
-		}
-		else
-		{
-			for (int i = 0; i < mCurves.size(); i++)
-			{
-				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
 }
 
 template<>
@@ -213,34 +201,6 @@ void nap::SequenceTrackSegmentCurveVec2::setEndValue(glm::vec2 t)
 }
 
 template<>
-bool nap::SequenceTrackSegmentCurveVec3::init(utility::ErrorState& errorState)
-{
-	if (SequenceTrackSegment::init(errorState))
-	{
-		if (!errorState.check(mCurves.size() == 3, "size of curves must be 3"))
-		{
-			return false;
-		}
-		else
-		{
-			for (int i = 0; i < mCurves.size(); i++)
-			{
-				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
-}
-
-template<>
 const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const
 {
 	assert(mCurves.size() == 3);
@@ -301,34 +261,6 @@ void nap::SequenceTrackSegmentCurveVec3::setEndValue(glm::vec3 t)
 	{
 		mCurves[i]->mPoints[mCurves[i]->mPoints.size() - 1].mPos.mValue = t[i];
 	}
-}
-
-template<>
-bool nap::SequenceTrackSegmentCurveVec4::init(utility::ErrorState& errorState)
-{
-	if (SequenceTrackSegment::init(errorState))
-	{
-		if (!errorState.check(mCurves.size() == 4, "size of curves must be 4"))
-		{
-			return false;
-		}
-		else
-		{
-			for (int i = 0; i < mCurves.size(); i++)
-			{
-				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
 }
 
 template<>

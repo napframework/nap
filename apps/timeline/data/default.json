@@ -94,12 +94,19 @@
                 "Long",
                 "Vec3"
             ],
+            "Linked Event Dispatcher": [
+                "Event Dispatcher"
+            ],
             "Frequency": 1000.0
         },
         {
             "Type": "nap::SequencePlayerGUI",
             "mID": "SequencePlayerGUI",
             "Sequence Player": "SequencePlayer"
+        },
+        {
+            "Type": "nap::SequenceTrackEventDispatcher",
+            "mID": "Event Dispatcher"
         }
     ]
 }

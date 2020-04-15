@@ -86,6 +86,11 @@ namespace nap
 			const std::string& segmentID, 
 			float amount);
 
+		void segmentEventStartTimeChange(
+			const std::string& trackID,
+			const std::string& segmentID,
+			float amount);
+
 		/**
 		 * save
 		 * saves the sequence
@@ -106,7 +111,7 @@ namespace nap
 		/**
 		 * 
 		 */
-		void assignNewParameterID(
+		void assignNewObjectID(
 			const std::string& trackID,
 			const std::string& parameterID);
 
@@ -131,13 +136,11 @@ namespace nap
 		 * 
 		 */
 		template<typename T>
-		void addNewTrack();
+		void addNewCurveTrack();
 
-		/**
-		 * 
-		 */
-		template<typename T>
-		void insertSegment(
+		void addNewEventTrack();
+
+		void insertEventSegment(
 			const std::string& trackID,
 			double time);
 
@@ -145,7 +148,15 @@ namespace nap
 		 * 
 		 */
 		template<typename T>
-		void changeSegmentValue(
+		void insertCurveSegment(
+			const std::string& trackID,
+			double time);
+
+		/**
+		 * 
+		 */
+		template<typename T>
+		void changeCurveSegmentValue(
 			const std::string& trackID,
 			const std::string& segmentID,
 			float amount,
@@ -197,13 +208,14 @@ namespace nap
 		template<typename T>
 		void changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum);
 	protected:
-		void updateSegments();
 
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 	
 		SequenceTrack* findTrack(const std::string& trackID);
 
 		void deleteObjectFromSequencePlayer(const std::string& id);
+
+		void updateTracks();
 	protected:
 		SequencePlayer&		mSequencePlayer;
 	};

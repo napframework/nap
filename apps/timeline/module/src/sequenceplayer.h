@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequence.h"
+#include "sequencetrackeventdispatcher.h"
 
 // external includes
 #include <nap/resource.h>
@@ -62,6 +63,7 @@ namespace nap
 		float				mFrequency = 1000.0f;
 
 		std::vector<ResourcePtr<Parameter>> mParameters;
+		std::vector<ResourcePtr<SequenceTrackEventDispatcher>> mEventDispatchers;
 
 		// Sequence Editor interface
 		const Sequence& getSequenceConst() const;
@@ -139,6 +141,37 @@ namespace nap
 			ProcessorBase() {};
 
 			virtual void process(double time) = 0;
+		};
+
+		class ProcessorEvent : public ProcessorBase
+		{
+		public:
+			ProcessorEvent(SequenceTrack& track, SequenceTrackEventDispatcher& dispatcher)
+				: mTrack(track), mDispatcher(dispatcher) {}
+
+			virtual void process(double time)
+			{
+				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
+				auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
+				for (const auto& eventSegment : eventTrack.mSegments)
+				{
+					assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+					SequenceTrackSegmentEvent& mssg = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
+
+					if (time > mssg.mStartTime && !mssg.mDispatched)
+					{
+						mssg.mDispatched = true;
+						mDispatcher.mSignal.trigger(mssg);
+					}
+					else if (time < mssg.mStartTime && mssg.mDispatched)
+					{
+						mssg.mDispatched = false;
+					}
+				}
+			}
+		private:
+			SequenceTrack& mTrack;
+			SequenceTrackEventDispatcher& mDispatcher;
 		};
 
 		std::unordered_map<std::string, std::unique_ptr<ProcessorBase>> mProcessors;

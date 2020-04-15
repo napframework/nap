@@ -17,6 +17,7 @@
 RTTI_BEGIN_CLASS(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Linked Parameters", &nap::SequencePlayer::mParameters, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Linked Event Dispatcher", &nap::SequencePlayer::mEventDispatchers, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -181,7 +182,7 @@ namespace nap
 		mProcessors.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createProcessor(track->mAssignedParameterID, track->mID);
+			createProcessor(track->mAssignedObjectIDs, track->mID);
 		}
 
 		mDefaultShow = name;
@@ -316,124 +317,168 @@ namespace nap
 
 
 	bool SequencePlayer::createProcessor(
-		const std::string& parameterID, 
+		const std::string& objectID, 
 		const std::string& trackID)
 	{
-		Parameter* parameter = nullptr;
-		for (auto& ownedParameter : mParameters)
+		SequenceTrack* track = nullptr;
+
+		for (auto& aTrack : mSequence->mTracks)
 		{
-			if (ownedParameter->mID == parameterID)
+			if (aTrack->mID == trackID)
 			{
-				parameter = ownedParameter.get();
+				track = aTrack.get();
 				break;
 			}
 		}
 
-		if (mProcessors.find(trackID) != mProcessors.end())
-		{
-			mProcessors.erase(trackID);
-		}
+		assert(track != nullptr);
 
-		// don't assign anything because we assign an empty parameter
-		if (parameterID == "")
+		switch (track->getTrackType())
 		{
-			return true;
-		}
-
-		if (parameter == nullptr)
+		case SequenceTrackTypes::FLOAT:
+		case SequenceTrackTypes::VEC2:
+		case SequenceTrackTypes::VEC3:
+		case SequenceTrackTypes::VEC4:
 		{
-			nap::Logger::error(*this, "Couldn't find parameter with id : %s", parameterID.c_str());
-			return false;
-		}
-
-		for (auto& track : mSequence->mTracks)
-		{
-			if (track->mID == trackID)
+			Parameter* parameter = nullptr;
+			for (auto& ownedParameter : mParameters)
 			{
-				switch (track->getTrackType())
+				if (ownedParameter->mID == objectID)
 				{
-				case SequenceTrackTypes::FLOAT:
-				{
-					if (parameter->get_type().is_derived_from<ParameterFloat>())
-					{
-						ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
-						mProcessors.emplace( trackID, std::move(processor));
-					}
-					else if (parameter->get_type().is_derived_from<ParameterDouble>())
-					{
-						ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
-						mProcessors.emplace(trackID, std::move(processor));
-					}
-					else if (parameter->get_type().is_derived_from<ParameterInt>())
-					{
-						ParameterInt& target = static_cast<ParameterInt&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
-						mProcessors.emplace(trackID, std::move(processor));
-					}
-					else if (parameter->get_type().is_derived_from<ParameterLong>())
-					{
-						ParameterLong& target = static_cast<ParameterLong&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
-						mProcessors.emplace(trackID, std::move(processor));
-					}
-					else
-					{
-						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
-						return false;
-					}
-				}
-					break;
-				case SequenceTrackTypes::VEC4:
-				{
-					nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
-					return false;
-				}
-				case SequenceTrackTypes::VEC3:
-				{
-					if (parameter->get_type().is_derived_from<ParameterVec3>())
-					{
-						ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
-						mProcessors.emplace(trackID, std::move(processor));
-					}
-
-					else
-					{
-						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
-						return false;
-					}
-				}
-					break;
-				case SequenceTrackTypes::VEC2:
-				{
-					if (parameter->get_type().is_derived_from<ParameterVec2>())
-					{
-						ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
-
-						auto processor = std::make_unique<ProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
-						mProcessors.emplace(trackID, std::move(processor));
-					}
-
-					else
-					{
-						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", parameterID.c_str());
-						return false;
-					}
-				}
+					parameter = ownedParameter.get();
 					break;
 				}
+			}
 
-				break;
+			if (mProcessors.find(trackID) != mProcessors.end())
+			{
+				mProcessors.erase(trackID);
+			}
+
+			// don't assign anything because we assign an empty parameter
+			if (objectID == "")
+			{
+				return true;
+			}
+
+			if (parameter == nullptr)
+			{
+				nap::Logger::error(*this, "Couldn't find parameter with id : %s", objectID.c_str());
+				return false;
+			}
+
+			for (auto& track : mSequence->mTracks)
+			{
+				if (track->mID == trackID)
+				{
+					switch (track->getTrackType())
+					{
+					case SequenceTrackTypes::FLOAT:
+					{
+						if (parameter->get_type().is_derived_from<ParameterFloat>())
+						{
+							ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+						else if (parameter->get_type().is_derived_from<ParameterDouble>())
+						{
+							ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+						else if (parameter->get_type().is_derived_from<ParameterInt>())
+						{
+							ParameterInt& target = static_cast<ParameterInt&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+						else if (parameter->get_type().is_derived_from<ParameterLong>())
+						{
+							ParameterLong& target = static_cast<ParameterLong&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+						else
+						{
+							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
+							return false;
+						}
+					}
+					break;
+					case SequenceTrackTypes::VEC4:
+					{
+						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
+						return false;
+					}
+					case SequenceTrackTypes::VEC3:
+					{
+						if (parameter->get_type().is_derived_from<ParameterVec3>())
+						{
+							ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+
+						else
+						{
+							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
+							return false;
+						}
+					}
+					break;
+					case SequenceTrackTypes::VEC2:
+					{
+						if (parameter->get_type().is_derived_from<ParameterVec2>())
+						{
+							ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
+
+							auto processor = std::make_unique<ProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
+							mProcessors.emplace(trackID, std::move(processor));
+						}
+
+						else
+						{
+							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
+							return false;
+						}
+					}
+					break;
+					}
+
+					break;
+				}
 			}
 		}
+			break;
+			case SequenceTrackTypes::EVENT:
+			{
+				for (auto& dispatcher : mEventDispatchers)
+				{
+					if (dispatcher->mID == objectID)
+					{
+						if (mProcessors.find(trackID) != mProcessors.end())
+						{
+							mProcessors.erase(trackID);
+						}
 
+						auto processor = std::make_unique<ProcessorEvent>(*track, *dispatcher.get());
+						mProcessors.emplace(trackID, std::move(processor));
+					}
+				}
+				
+			}
+				break;;
+		default:
+			break;
+		}
+
+		
 		return true;
 	}
 

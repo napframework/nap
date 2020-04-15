@@ -7,6 +7,8 @@
 #include <inputrouter.h>
 #include <napcolors.h>
 
+#include <sequencetrackeventdispatcher.h>
+
 namespace nap 
 {    
     bool CoreApp::init(utility::ErrorState& error)
@@ -44,12 +46,21 @@ namespace nap
 			return false;
 
 		mSequencePlayerGUI = mResourceManager->findObject<SequencePlayerGUI>("SequencePlayerGUI");
-		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequencePlayerGUI with name: %s", "SequenceEditorGUI"))
+		if (!error.check(mSequencePlayerGUI != nullptr, "unable to find SequencePlayerGUI with name: %s", "SequenceEditorGUI"))
 			return false;
 
 		mParameterGroup = mResourceManager->findObject<ParameterGroup>("ParameterGroup");
 		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
+
+		const ObjectPtr<SequenceTrackEventDispatcher> eventDispatcher = mResourceManager->findObject<SequenceTrackEventDispatcher>("Event Dispatcher");
+		if (!error.check(eventDispatcher != nullptr, "unable to find Event Dispatcher with name: %s", "Event Dispatcher"))
+			return false;
+
+		eventDispatcher->mSignal.connect([](const SequenceTrackSegmentEvent &event)
+		{
+			nap::Logger::info("Event received with message : %s", event.mMessage.c_str());
+		});
 
 		// All done!
         return true;
