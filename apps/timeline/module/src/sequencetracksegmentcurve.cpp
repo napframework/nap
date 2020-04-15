@@ -137,7 +137,7 @@ void nap::SequenceTrackSegmentCurveFloat::setEndValue(float t)
 	assert(mCurves.size() == 1);
 	assert(mCurves[0]->mPoints.size() > 1);
 
-	mCurves[0]->mPoints[mCurves[0]->mPoints.size()].mPos.mValue = t;
+	mCurves[0]->mPoints[mCurves[0]->mPoints.size()-1].mPos.mValue = t;
 }
 
 template<>

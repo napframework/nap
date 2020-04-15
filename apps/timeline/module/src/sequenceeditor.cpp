@@ -225,9 +225,15 @@ namespace nap
 		for (auto& track : mSequencePlayer.mSequence->mTracks)
 		{
 			double trackDuration = 0.0;
-			for (auto& segment : track->mSegments)
+			double highestSegment = 0.0;
+
+			for(const auto& segment : track->mSegments)
 			{
-				trackDuration += segment->mStartTime + segment->mDuration;
+				if (segment->mStartTime + segment->mDuration > highestSegment)
+				{
+					highestSegment = segment->mStartTime + segment->mDuration;
+					trackDuration = highestSegment;
+				}
 			}
 
 			if (trackDuration > longestTrackDuration)
@@ -387,6 +393,8 @@ namespace nap
 		const std::string& trackID,
 		double time)
 	{
+		auto l = mSequencePlayer.lock();
+
 		int curveCount = 0;
 		if (RTTI_OF(T) == RTTI_OF(glm::vec4))
 		{
@@ -407,9 +415,6 @@ namespace nap
 
 		//
 		assert(curveCount > 0);
-
-		// pause player thread
-		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
 		//
 		Sequence& sequence = mSequencePlayer.getSequence();
@@ -569,6 +574,8 @@ namespace nap
 		const std::string& trackID,
 		double time)
 	{
+		auto l = mSequencePlayer.lock();
+
 		// create new segment & set parameters
 		std::unique_ptr<SequenceTrackSegmentEvent> newSegment = std::make_unique<SequenceTrackSegmentEvent>();
 		newSegment->mStartTime = time;
@@ -640,6 +647,22 @@ namespace nap
 	{
 		// update start time and duration of all segments
 		ResourcePtr<SequenceTrackSegmentCurve<T>> prevSeg = nullptr;
+		for (auto trackSeg : track.mSegments)
+		{
+			if (prevSeg == nullptr)
+			{
+				trackSeg->mStartTime = 0.0;
+			}
+			else
+			{
+				trackSeg->mStartTime = prevSeg->mStartTime + prevSeg->mDuration;
+				prevSeg->mDuration = trackSeg->mStartTime - prevSeg->mStartTime;
+			}
+			prevSeg = static_cast<ResourcePtr<SequenceTrackSegmentCurve<T>>>(trackSeg);
+		}
+
+		// 
+		 prevSeg = nullptr;
 		for (auto trackSeg : track.mSegments)
 		{
 			auto& trackSegVec = static_cast<SequenceTrackSegmentCurve<T>&>(*trackSeg.get());
