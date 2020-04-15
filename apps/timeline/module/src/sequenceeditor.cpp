@@ -572,14 +572,15 @@ namespace nap
 
 	void SequenceEditorController::insertEventSegment(
 		const std::string& trackID,
-		double time)
+		double time,
+		const std::string& eventMessage)
 	{
 		auto l = mSequencePlayer.lock();
 
 		// create new segment & set parameters
 		std::unique_ptr<SequenceTrackSegmentEvent> newSegment = std::make_unique<SequenceTrackSegmentEvent>();
 		newSegment->mStartTime = time;
-		newSegment->mMessage = "hello!";
+		newSegment->mMessage = eventMessage;
 		newSegment->mID = sequenceutils::generateUniqueID(mSequencePlayer.mReadObjectIDs);
 		newSegment->mDuration = 0.0;
 

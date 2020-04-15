@@ -58,6 +58,8 @@ namespace nap
 			DRAGGING_PLAYER_TIME,
 			OPEN_INSERT_TRACK_POPUP,
 			INSERTING_TRACK,
+			OPEN_INSERT_EVENT_SEGMENT_POPUP,
+			INSERTING_EVENT_SEGMENT,
 			LOAD,
 			SAVE_AS,
 			NONE
@@ -179,6 +181,8 @@ namespace nap
 		void handleDeleteSegmentPopup();
 
 		void handleInsertTrackPopup();
+
+		void handleInsertEventSegmentPopup();
 
 		void handleLoadPopup();
 
@@ -373,5 +377,16 @@ namespace nap
 
 		int selectedShow = 0;
 		std::string errorString;
+	};
+
+	class SequenceGUIInsertEventSegment : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIInsertEventSegment(std::string id, double aTime)
+			: trackID(id), time(aTime){}
+
+		std::string trackID;
+		double time;
+		std::string eventMessage = "Hello world";
 	};
 }

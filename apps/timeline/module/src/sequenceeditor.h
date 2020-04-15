@@ -142,7 +142,8 @@ namespace nap
 
 		void insertEventSegment(
 			const std::string& trackID,
-			double time);
+			double time,
+			const std::string& eventMessage );
 
 		/**
 		 * 

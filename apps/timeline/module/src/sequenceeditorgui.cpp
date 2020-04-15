@@ -229,6 +229,8 @@ namespace nap
 			// handler insert track popup
 			handleInsertTrackPopup();
 
+			handleInsertEventSegmentPopup();
+
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mVerticalResolution + 10.0f);
 			if (ImGui::Button("Insert New Track"))
@@ -1496,27 +1498,46 @@ namespace nap
 					switch (data->trackType)
 					{
 					case SequenceTrackTypes::FLOAT:
+					{
 						mController.insertCurveSegment<float>(data->trackID, data->time);
+						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+						mEditorAction.currentActionData = nullptr;
+					}
 						break;
 					case SequenceTrackTypes::VEC4:
+					{
 						mController.insertCurveSegment<glm::vec4>(data->trackID, data->time);
+						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+						mEditorAction.currentActionData = nullptr;
+					}
 						break;;
 					case SequenceTrackTypes::VEC3:
+					{
 						mController.insertCurveSegment<glm::vec3>(data->trackID, data->time);
+						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+						mEditorAction.currentActionData = nullptr;
+					}
 						break;
 					case SequenceTrackTypes::VEC2:
+					{
 						mController.insertCurveSegment<glm::vec2>(data->trackID, data->time);
+						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+						mEditorAction.currentActionData = nullptr;
+					}
 						break;
 					case SequenceTrackTypes::EVENT:
-						mController.insertEventSegment(data->trackID, data->time);
+					{
+						mEditorAction.currentAction = OPEN_INSERT_EVENT_SEGMENT_POPUP;
+						mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertEventSegment>(data->trackID, data->time);
+					}
+						
 						break;
 					}
 					
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
-					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
-					mEditorAction.currentActionData = nullptr;
+	
 				}
 
 				if (ImGui::Button("Cancel"))
@@ -1613,6 +1634,58 @@ namespace nap
 		}
 	}
 
+
+	void SequenceEditorGUIView::handleInsertEventSegmentPopup()
+	{
+		if (mEditorAction.currentAction == OPEN_INSERT_EVENT_SEGMENT_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Insert Event");
+
+			mEditorAction.currentAction = INSERTING_EVENT_SEGMENT;
+		}
+
+		// handle insert segment popup
+		if (mEditorAction.currentAction == INSERTING_EVENT_SEGMENT)
+		{
+			if (ImGui::BeginPopup("Insert Event"))
+			{
+				SequenceGUIInsertEventSegment& data = static_cast<SequenceGUIInsertEventSegment&>(*mEditorAction.currentActionData.get());
+				
+				int n = data.eventMessage.length();
+				char buffer[256];
+				strcpy(buffer, data.eventMessage.c_str());
+
+				if (ImGui::InputText("message", buffer, 256))
+				{
+					data.eventMessage = std::string(buffer);
+				}
+
+				if (ImGui::Button("Insert"))
+				{
+					mController.insertEventSegment(data.trackID, data.time, data.eventMessage);
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+				mEditorAction.currentActionData = nullptr;
+			}
+		}
+	}
 
 	void SequenceEditorGUIView::handleDeleteSegmentPopup()
 	{
