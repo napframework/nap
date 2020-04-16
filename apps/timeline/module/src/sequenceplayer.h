@@ -2,7 +2,8 @@
 
 // internal includes
 #include "sequence.h"
-#include "sequencetrackeventdispatcher.h"
+#include "sequenceeventreceiver.h"
+#include "SequenceTrackSegmentEvent.h"
 
 // external includes
 #include <nap/resource.h>
@@ -14,6 +15,7 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequencePlayerProcessorBase;
 
 	/**
 	 */
@@ -63,7 +65,7 @@ namespace nap
 		float				mFrequency = 1000.0f;
 
 		std::vector<ResourcePtr<Parameter>> mParameters;
-		std::vector<ResourcePtr<SequenceTrackEventDispatcher>> mEventDispatchers;
+		std::vector<ResourcePtr<SequenceEventReceiver>> mEventDispatchers;
 
 		// Sequence Editor interface
 		const Sequence& getSequenceConst() const;
@@ -99,81 +101,76 @@ namespace nap
 	private:
 		std::unique_lock<std::mutex> lock();
 
-		/**
-		*
-		*/
-		template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-		class ProcessorCurve : public ProcessorBase
-		{
-		public:
-			ProcessorCurve(SequenceTrack& track, PARAMETER_TYPE& parameter)
-				: mParameter(parameter), mTrack(static_cast<SequenceTrackCurve<CURVE_TYPE>&>(track)) {}
-
-			virtual void process(double time) override
-			{
-				for (const auto& segment : mTrack.mSegments)
-				{
-					if (time >= segment->mStartTime &&
-						time < segment->mStartTime + segment->mDuration)
-					{
-						assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
-						const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
-						
-						CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
-						PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack.mMaximum - mTrack.mMinimum) + mTrack.mMinimum);
-						mParameter.setValue(value);
-
-						break;
-					}
-				}
-			}
-		private:
-			PARAMETER_TYPE&					mParameter;
-			SequenceTrackCurve<CURVE_TYPE>&		mTrack;
-		};
-
-		/**
-		 * 
-		 */
-		class ProcessorBase
-		{
-		public:
-			ProcessorBase() {};
-
-			virtual void process(double time) = 0;
-		};
-
-		class ProcessorEvent : public ProcessorBase
-		{
-		public:
-			ProcessorEvent(SequenceTrack& track, SequenceTrackEventDispatcher& dispatcher)
-				: mTrack(track), mDispatcher(dispatcher) {}
-
-			virtual void process(double time)
-			{
-				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-				auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
-				for (const auto& eventSegment : eventTrack.mSegments)
-				{
-					assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
-					SequenceTrackSegmentEvent& mssg = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
-
-					if (time > mssg.mStartTime && !mssg.mDispatched)
-					{
-						mssg.mDispatched = true;
-						mDispatcher.mSignal.trigger(mssg);
-					}
-					else if (time < mssg.mStartTime && mssg.mDispatched)
-					{
-						mssg.mDispatched = false;
-					}
-				}
-			}
-		private:
-			SequenceTrack& mTrack;
-			SequenceTrackEventDispatcher& mDispatcher;
-		};
-
-		std::unordered_map<std::string, std::unique_ptr<ProcessorBase>> mProcessors;
+		std::unordered_map<std::string, std::unique_ptr<SequencePlayerProcessorBase>> mProcessors;
 	};
+
+	class SequencePlayerProcessorBase
+	{
+	public:
+		SequencePlayerProcessorBase() {};
+
+		virtual void process(double time) = 0;
+	};
+
+	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
+	class SequencePlayerProcessorCurve : public SequencePlayerProcessorBase
+	{
+	public:
+		SequencePlayerProcessorCurve(SequenceTrack& track, PARAMETER_TYPE& parameter)
+			: mParameter(parameter), mTrack(static_cast<SequenceTrackCurve<CURVE_TYPE>&>(track)) {}
+
+		virtual void process(double time) override
+		{
+			for (const auto& segment : mTrack.mSegments)
+			{
+				if (time >= segment->mStartTime &&
+					time < segment->mStartTime + segment->mDuration)
+				{
+					assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
+					const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
+
+					CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
+					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack.mMaximum - mTrack.mMinimum) + mTrack.mMinimum);
+					mParameter.setValue(value);
+
+					break;
+				}
+			}
+		}
+	private:
+		PARAMETER_TYPE&					mParameter;
+		SequenceTrackCurve<CURVE_TYPE>&		mTrack;
+	};
+
+	class SequencePlayerProcessorEvent : public SequencePlayerProcessorBase
+	{
+	public:
+		SequencePlayerProcessorEvent(SequenceTrack& track, SequenceEventReceiver& dispatcher)
+			: mTrack(track), mDispatcher(dispatcher) {}
+
+		virtual void process(double time)
+		{
+			assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
+			auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
+			for (const auto& eventSegment : eventTrack.mSegments)
+			{
+				assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+				SequenceTrackSegmentEvent& event = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
+
+				if (time > event.mStartTime && !event.mDispatched)
+				{
+					event.mDispatched = true;
+					mDispatcher.addEvent(event.createEvent());
+				}
+				else if (time < event.mStartTime && event.mDispatched)
+				{
+					event.mDispatched = false;
+				}
+			}
+		}
+	private:
+		SequenceTrack& mTrack;
+		SequenceEventReceiver& mDispatcher;
+	};
+
 }

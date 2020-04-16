@@ -84,6 +84,10 @@
             "Sequence Editor": "SequenceEditor"
         },
         {
+            "Type": "nap::SequenceEventReceiver",
+            "mID": "SequenceEventReceiver"
+        },
+        {
             "Type": "nap::SequencePlayer",
             "mID": "SequencePlayer",
             "Default Show": "sequences/Default Show.json",
@@ -95,7 +99,7 @@
                 "Vec3"
             ],
             "Linked Event Dispatcher": [
-                "Event Dispatcher"
+                "SequenceEventReceiver"
             ],
             "Frequency": 1000.0
         },
@@ -103,10 +107,6 @@
             "Type": "nap::SequencePlayerGUI",
             "mID": "SequencePlayerGUI",
             "Sequence Player": "SequencePlayer"
-        },
-        {
-            "Type": "nap::SequenceTrackEventDispatcher",
-            "mID": "Event Dispatcher"
         }
     ]
 }

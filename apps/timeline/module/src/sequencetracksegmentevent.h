@@ -2,19 +2,13 @@
 
 // Local Includes
 #include "sequencetracksegment.h"
+#include "sequenceevent.h"
 
 // External Includes
+#include <nap/event.h>
 
 namespace nap
 {
-	namespace SequenceTrackSegmentEventTypes
-	{
-		enum Types
-		{
-			STRING,
-			UNKOWN
-		};
-	}
 	/**
 	 * 
 	 */
@@ -26,6 +20,8 @@ namespace nap
 
 		bool mDispatched = false;
 
-		virtual const SequenceTrackSegmentEventTypes::Types getEventType() const { return SequenceTrackSegmentEventTypes::STRING; }
+		virtual const SequenceEventTypes::Types getEventType() const { return SequenceEventTypes::STRING; }
+		
+		virtual SequenceEventPtr createEvent() ;
 	};
 }

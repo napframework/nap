@@ -7,7 +7,8 @@
 #include <inputrouter.h>
 #include <napcolors.h>
 
-#include <sequencetrackeventdispatcher.h>
+#include <sequenceeventreceiver.h>
+#include <sequenceevent.h>
 
 namespace nap 
 {    
@@ -53,13 +54,17 @@ namespace nap
 		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
 
-		const ObjectPtr<SequenceTrackEventDispatcher> eventDispatcher = mResourceManager->findObject<SequenceTrackEventDispatcher>("Event Dispatcher");
-		if (!error.check(eventDispatcher != nullptr, "unable to find Event Dispatcher with name: %s", "Event Dispatcher"))
+		const ObjectPtr<SequenceEventReceiver> eventReceiver = mResourceManager->findObject<SequenceEventReceiver>("SequenceEventReceiver");
+		if (!error.check(eventReceiver != nullptr, "unable to find SequenceEventReceiver with name: %s", "SequenceEventReceiver"))
 			return false;
 
-		eventDispatcher->mSignal.connect([](const SequenceTrackSegmentEvent &event)
+		eventReceiver->mSignal.connect([](const SequenceEvent &event)
 		{
-			nap::Logger::info("Event received with message : %s", event.mMessage.c_str());
+			if (event.getEventType() == SequenceEventTypes::STRING)
+			{
+				const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
+				nap::Logger::info("Event received with message : %s", eventString.mMessage.c_str());
+			}
 		});
 
 		// All done!

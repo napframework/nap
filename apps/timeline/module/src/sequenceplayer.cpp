@@ -379,28 +379,28 @@ namespace nap
 						{
 							ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterDouble>())
 						{
 							ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterInt>())
 						{
 							ParameterInt& target = static_cast<ParameterInt&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterLong>())
 						{
 							ParameterLong& target = static_cast<ParameterLong&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else
@@ -421,7 +421,7 @@ namespace nap
 						{
 							ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 
@@ -438,7 +438,7 @@ namespace nap
 						{
 							ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
 
-							auto processor = std::make_unique<ProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 
@@ -467,7 +467,7 @@ namespace nap
 							mProcessors.erase(trackID);
 						}
 
-						auto processor = std::make_unique<ProcessorEvent>(*track, *dispatcher.get());
+						auto processor = std::make_unique<SequencePlayerProcessorEvent>(*track, *dispatcher.get());
 						mProcessors.emplace(trackID, std::move(processor));
 					}
 				}
