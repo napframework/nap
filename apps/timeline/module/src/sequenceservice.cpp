@@ -8,6 +8,7 @@
 // Local Includes
 #include "sequenceservice.h"
 #include "sequenceeventreceiver.h"
+#include "sequenceplayerprocessors.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -26,6 +27,7 @@ namespace nap
 	void SequenceService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<SequenceReceiverObjectCreator>(*this));
+		factory.addObjectCreator(std::make_unique<SequencePlayerObjectCreator>(*this));
 	}
 
 	bool SequenceService::init(nap::utility::ErrorState& errorState)
@@ -38,7 +40,7 @@ namespace nap
 		std::queue<SequenceEventPtr> events;
 
 		// Forward every event to every input component of interest
-		for (auto& receiver : mReceivers)
+		for (auto& receiver : mEventReceivers)
 		{
 			receiver->consumeEvents(events);
 
@@ -51,21 +53,42 @@ namespace nap
 				events.pop();
 			}
 		}
+
+		//
+		for (auto& setter : mParameterSetters)
+		{
+			setter->setValue();
+		}
 	}
 
-	void SequenceService::registerReceiver(SequenceEventReceiver& receiver)
+	void SequenceService::registerEventReceiver(SequenceEventReceiver& receiver)
 	{
-		mReceivers.emplace_back(&receiver);
+		mEventReceivers.emplace_back(&receiver);
 	}
 
 
-	void SequenceService::removeReceiver(SequenceEventReceiver& receiver)
+	void SequenceService::removeEventReceiver(SequenceEventReceiver& receiver)
 	{
-		auto found_it = std::find_if(mReceivers.begin(), mReceivers.end(), [&](const auto& it)
+		auto found_it = std::find_if(mEventReceivers.begin(), mEventReceivers.end(), [&](const auto& it)
 		{
 			return it == &receiver;
 		});
-		assert(found_it != mReceivers.end());
-		mReceivers.erase(found_it);
+		assert(found_it != mEventReceivers.end());
+		mEventReceivers.erase(found_it);
+	}
+
+	void SequenceService::registerParameterSetter(SequencePlayerParameterSetterBase& setter)
+	{
+		mParameterSetters.emplace_back(&setter);
+	}
+
+	void SequenceService::removeParameterSetter(SequencePlayerParameterSetterBase& setter)
+	{
+		auto found_it = std::find_if(mParameterSetters.begin(), mParameterSetters.end(), [&](const auto& it)
+		{
+			return it == &setter;
+		});
+		assert(found_it != mParameterSetters.end());
+		mParameterSetters.erase(found_it);
 	}
 }

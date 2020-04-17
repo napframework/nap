@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequenceevent.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <nap/resource.h>
@@ -13,7 +14,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	class SequenceService;
 
 	/**
 	 * 

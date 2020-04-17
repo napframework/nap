@@ -3,44 +3,54 @@
 // Local Includes
 #include "sequencetracksegment.h"
 
-// External Includes
-
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
+	 * SequenceTrackSegmentCurve
+	 * A SequenceTrackSegment that holds an arbitrary amount of curves
+	 * There are four supported types ( float, vec2, vec3, vec4 ) that can contain 1, 2 , 3 or 4 curves 
 	 */
 	template<typename T>
 	class SequenceTrackSegmentCurve : public SequenceTrackSegment
 	{
 		RTTI_ENABLE(SequenceTrackSegment)
 	public:
-		std::vector<ResourcePtr<math::FCurve<float, float>>>	mCurves;
+		// properties
+		std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;  ///< Property: 'Curves' vector holding curves
 
+		/**
+		 * init evaluates the data hold in curves and checks if its valid for this type
+		 *
+		 * @param errorState contains information about eventual failure of evaluation
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * 
+		 * Gets the value of the first point of the curve, translated into the type
 		 */
 		const T getStartValue() const;
 
 		/**
-		 * 
+		 * Gets the value of the last point of the curve, translated into the type
 		 */
 		const T getEndValue() const;
 
 		/**
-		 * 
+		 * Gets the value of the evaluated point of the curve, translated in to the type
+		 * @param pos must be a value between 0-1 ( 0 meaning start of curve, 1 meaning end )
 		 */
 		const T getValue(float pos) const;
 
 		/**
-		 * 
+		 * Sets the value of the first point in the curve(s)
 		 */
 		void setStartValue(T value);
 
 		/**
-		*
-		*/
+		 * Sets the value of the last point in the curve(s)
+		 */
 		void setEndValue(T value);
 	};
 

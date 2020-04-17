@@ -124,14 +124,14 @@ namespace nap
 			{
 				if (ImGui::Button("Stop"))
 				{
-					mPlayer.stop();
+					mPlayer.setIsPlaying(false);
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Play"))
 				{
-					mPlayer.play();
+					mPlayer.setIsPlaying(true);
 				}
 			}
 
@@ -140,7 +140,7 @@ namespace nap
 			{
 				if (ImGui::Button("Play"))
 				{
-					mPlayer.play();
+					mPlayer.setIsPlaying(true);
 				}
 			}
 			else
@@ -578,7 +578,7 @@ namespace nap
 								dynamic_cast<SequenceGUIPlayerDragPlayerData*>(mPlayerAction.currentActionData.get());
 							if (data->playerWasPlaying && !data->playerWasPaused)
 							{
-								player.play();
+								player.setIsPlaying(true);
 							}
 
 							mPlayerAction.currentAction = SequencePlayerActions::NONE;

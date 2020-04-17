@@ -9,12 +9,12 @@ namespace nap
 
 	SequenceEventReceiver::SequenceEventReceiver(SequenceService& service) : mService(&service)
 	{
-		mService->registerReceiver(*this);
+		mService->registerEventReceiver(*this);
 	}
 
 	SequenceEventReceiver::~SequenceEventReceiver()
 	{
-		mService->removeReceiver(*this);
+		mService->removeEventReceiver(*this);
 	}
 
 	void SequenceEventReceiver::consumeEvents(std::queue<SequenceEventPtr>& outEvents)

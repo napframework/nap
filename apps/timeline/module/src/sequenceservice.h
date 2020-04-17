@@ -10,10 +10,12 @@
 namespace nap
 {
 	class SequenceEventReceiver;
+	class SequencePlayerParameterSetterBase;
 
 	class NAPAPI SequenceService : public Service
 	{
 		friend class SequenceEventReceiver;
+		friend class SequencePlayerParameterSetterBase;
 
 		RTTI_ENABLE(Service)
 	public:
@@ -34,10 +36,15 @@ namespace nap
 
 		virtual void update(double deltaTime) override;
 	private:
-		void registerReceiver(SequenceEventReceiver& receiver);
+		void registerEventReceiver(SequenceEventReceiver& receiver);
 
-		void removeReceiver(SequenceEventReceiver& receiver);
+		void removeEventReceiver(SequenceEventReceiver& receiver);
 
-		std::vector<SequenceEventReceiver*> mReceivers;
+		void registerParameterSetter(SequencePlayerParameterSetterBase& setter);
+
+		void removeParameterSetter(SequencePlayerParameterSetterBase& setter);
+
+		std::vector<SequenceEventReceiver*>			mEventReceivers;
+		std::vector<SequencePlayerParameterSetterBase*> mParameterSetters;
 	};
 }

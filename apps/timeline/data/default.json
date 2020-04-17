@@ -101,7 +101,8 @@
             "Linked Event Dispatcher": [
                 "SequenceEventReceiver"
             ],
-            "Frequency": 1000.0
+            "Frequency": 1000.0,
+            "Set parameters on main thread": true
         },
         {
             "Type": "nap::SequencePlayerGUI",

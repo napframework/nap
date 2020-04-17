@@ -14,11 +14,12 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS(nap::SequencePlayer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Linked Parameters", &nap::SequencePlayer::mParameters, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Linked Event Dispatcher", &nap::SequencePlayer::mEventDispatchers, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Set parameters on main thread", &nap::SequencePlayer::mSetParametersOnMainThread, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -26,6 +27,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	SequencePlayer::SequencePlayer(SequenceService& service)
+		:mSequenceService(service)
+	{
+	
+	}
+
 	bool SequencePlayer::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -43,10 +50,10 @@ namespace nap
 		else if (!load(mDefaultShow, errorState))
 		{
 			nap::Logger::info(*this, errorState.toString());
-			nap::Logger::info(*this, "Error loading default show, creating default sequence based on given parameters");
+			nap::Logger::info(*this, "Error loading default show, creating default sequence");
 		
 			std::unordered_set<std::string> objectIDs;
-			mSequence = sequenceutils::createDefaultSequence(mParameters, mReadObjects, objectIDs);
+			mSequence = sequenceutils::createSequence(mReadObjects, objectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence, saving it");
 			if (errorState.check(!save(mDefaultShow, errorState), "Error saving sequence"))
@@ -55,6 +62,11 @@ namespace nap
 			}
 		}
 
+		return true;
+	}
+
+	bool SequencePlayer::start(utility::ErrorState& errorState)
+	{
 		// launch player thread
 		mUpdateThreadRunning = true;
 		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
@@ -63,7 +75,7 @@ namespace nap
 	}
 
 
-	void SequencePlayer::onDestroy()
+	void SequencePlayer::stop()
 	{
 		// stop running thread
 		mUpdateThreadRunning = false;
@@ -74,11 +86,21 @@ namespace nap
 	}
 
 
-	void SequencePlayer::play()
+	void SequencePlayer::setIsPlaying(bool isPlaying)
 	{
 		std::unique_lock<std::mutex> l = lock();
-		mIsPlaying = true;
-		mIsPaused = false;
+
+		if (isPlaying)
+		{
+			mIsPlaying = true;
+			mIsPaused = false;
+		}
+		else
+		{
+			mIsPlaying = false;
+			mIsPaused = false;
+		}
+
 	}
 
 
@@ -86,14 +108,6 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = lock();
 		mIsPaused = true;
-	}
-
-
-	void SequencePlayer::stop()
-	{
-		std::unique_lock<std::mutex> l = lock();
-		mIsPlaying = false;
-		mIsPaused = false;
 	}
 
 
@@ -379,28 +393,44 @@ namespace nap
 						{
 							ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterFloat, float>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterFloat, float>>(
+								*track.get(),
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterDouble>())
 						{
 							ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterDouble, double>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterDouble, double>>(
+								*track.get(),
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterInt>())
 						{
 							ParameterInt& target = static_cast<ParameterInt&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterInt, int>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterInt, int>>(
+								*track.get(), 
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterLong>())
 						{
 							ParameterLong& target = static_cast<ParameterLong&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterLong, int64_t>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterLong, int64_t>>(
+								*track.get(),
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 						else
@@ -421,7 +451,11 @@ namespace nap
 						{
 							ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(
+								*track.get(),
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 
@@ -438,7 +472,11 @@ namespace nap
 						{
 							ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(*track.get(), target);
+							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(
+								*track.get(),
+								target,
+								mSequenceService,
+								mSetParametersOnMainThread);
 							mProcessors.emplace(trackID, std::move(processor));
 						}
 
