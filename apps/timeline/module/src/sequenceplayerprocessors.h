@@ -19,6 +19,7 @@ namespace nap
 	{
 	public:
 		SequencePlayerProcessorBase() {};
+		virtual ~SequencePlayerProcessorBase() {}
 
 		virtual void process(double time) = 0;
 	};
@@ -28,7 +29,7 @@ namespace nap
 	public:
 		SequencePlayerParameterSetterBase(SequenceService& service);
 
-		~SequencePlayerParameterSetterBase();
+		virtual ~SequencePlayerParameterSetterBase();
 
 		virtual void setValue() = 0;
 	protected:
@@ -45,6 +46,8 @@ namespace nap
 		SequencePlayerParameterSetter(SequenceService& service, PARAMETER_TYPE& parameter)
 			: SequencePlayerParameterSetterBase(service),
 			 mParameter(parameter) {}
+
+		virtual ~SequencePlayerParameterSetter() {}
 
 		/**
 		 * Called from player thread
@@ -86,21 +89,25 @@ namespace nap
 			bool useMainThread)
 			: mParameter(parameter),
 			  mUseMainThread(useMainThread),
-			  mTrack(static_cast<SequenceTrackCurve<CURVE_TYPE>&>(track)),
 			  mService(service)
 		{
+			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
+			mTrack = static_cast<SequenceTrackCurve<CURVE_TYPE>*>(&track);
+
 			if (mUseMainThread)
 			{
 				mSetter = std::make_unique<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(service, mParameter);
 			}
 		}
 
+		virtual ~SequencePlayerProcessorCurve() {}
+
 		/**
 		 * Called from player thread
 		 */
 		virtual void process(double time) override
 		{
-			for (const auto& segment : mTrack.mSegments)
+			for (const auto& segment : mTrack->mSegments)
 			{
 				if (time >= segment->mStartTime &&
 					time < segment->mStartTime + segment->mDuration)
@@ -109,7 +116,7 @@ namespace nap
 					const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
 					CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
-					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack.mMaximum - mTrack.mMinimum) + mTrack.mMinimum);
+					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 					
 					if (!mUseMainThread)
 						mParameter.setValue(value);
@@ -125,7 +132,7 @@ namespace nap
 		}
 	private:
 		PARAMETER_TYPE&									mParameter;
-		SequenceTrackCurve<CURVE_TYPE>&					mTrack;
+		SequenceTrackCurve<CURVE_TYPE>*					mTrack;
 		bool											mUseMainThread;
 		SequenceService&								mService;
 		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
@@ -135,6 +142,8 @@ namespace nap
 	{
 	public:
 		SequencePlayerProcessorEvent(SequenceTrack& track, SequenceEventReceiver& receiver);
+
+		virtual ~SequencePlayerProcessorEvent() {}
 
 		virtual void process(double time);
 	private:

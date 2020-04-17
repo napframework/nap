@@ -316,6 +316,11 @@ namespace nap
 		{
 			if (track->mID == deleteTrackID)
 			{
+				if (mSequencePlayer.mProcessors.find(track->mID) != mSequencePlayer.mProcessors.end())
+				{
+					mSequencePlayer.mProcessors.erase(track->mID);
+				}
+
 				sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
 				deleteObjectFromSequencePlayer(deleteTrackID);

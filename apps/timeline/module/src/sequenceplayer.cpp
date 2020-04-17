@@ -347,6 +347,11 @@ namespace nap
 
 		assert(track != nullptr);
 
+		if (mProcessors.find(track->mID) != mProcessors.end())
+		{
+			mProcessors.erase(track->mID);
+		}
+
 		switch (track->getTrackType())
 		{
 		case SequenceTrackTypes::FLOAT:
