@@ -318,9 +318,9 @@ namespace nap
 						}
 					}
 
-					for (auto& processor : mAdapters)
+					for (auto& adapter : mAdapters)
 					{
-						processor.second->process(mTime);
+						adapter.second->update(mTime);
 					}
 				}
 			}

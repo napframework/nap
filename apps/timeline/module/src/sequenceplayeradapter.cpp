@@ -11,7 +11,7 @@ namespace nap
 	}
 
 
-	void SequencePlayerEventAdapter::process(double time)
+	void SequencePlayerEventAdapter::update(double time)
 	{
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
 		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);

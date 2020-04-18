@@ -12,19 +12,49 @@
 
 namespace nap
 {
+	/**
+	 * SequencePlayerAdapter
+	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
+	 * Typically, a SequencePlayerAdapter is responsible for doing something with a track while the player is playing
+	 */
 	class SequencePlayerAdapter
 	{
 	public:
+		/**
+		 * Constructor
+		 */
 		SequencePlayerAdapter() {};
+
+		/**
+		 * Deconstructor
+		 */
 		virtual ~SequencePlayerAdapter() {}
 
-		virtual void process(double time) = 0;
+		/**
+		 * update
+		 * called from sequence player thread
+		 * @param time time in sequence player
+		 */
+		virtual void update(double time) = 0;
 	};
 
+	/**
+	 * SequencePlayerCurveAdapter
+	 * Responsible for translating the value read on a curve track, to a parameter
+	 * When the user wants to do this on the main thread, it uses a SequencePlayerParameterSetter as an intermediate class to ensure thread safety,
+	 * otherwise it sets the parameter value directly from the sequence player thread
+	 */
 	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
 	class SequencePlayerCurveAdapter : public SequencePlayerAdapter
 	{
 	public:
+		/**
+		 * Constructor
+		 * @param track reference to sequence track that holds curve information
+		 * @param parameter reference to parameter that is assigned to this track
+		 * @param service reference to the sequence service, needed to sync with main thread
+		 * @param useMain thread, wether to sync with the main thread or not
+		 */
 		SequencePlayerCurveAdapter(
 			SequenceTrack& track, 
 			PARAMETER_TYPE& parameter,
@@ -43,12 +73,17 @@ namespace nap
 			}
 		}
 
+		/**
+		 * Deconstructor
+		 */
 		virtual ~SequencePlayerCurveAdapter() {}
 
 		/**
-		 * Called from player thread
+		 * update
+		 * called from sequence player thread
+		 * @param time time in sequence player
 		 */
-		virtual void process(double time) override
+		virtual void update(double time) override
 		{
 			for (const auto& segment : mTrack->mSegments)
 			{
@@ -81,14 +116,32 @@ namespace nap
 		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
 	};
 
+	/**
+	 * SequencePlayerEventAdapter
+	 * Adapter responsible for handling events from an event track and sync them with the main thread using a 
+	 * sequence event receiver intermediate class.
+	 */
 	class SequencePlayerEventAdapter : public SequencePlayerAdapter
 	{
 	public:
+		/**
+		 * Constructor
+		 * @param track reference to sequence event track
+		 * @param receiver reference to event receiver
+		 */
 		SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver);
 
+		/**
+		 * Deconstructor
+		 */
 		virtual ~SequencePlayerEventAdapter() {}
 
-		virtual void process(double time);
+		/**
+		 * update
+		 * called from sequence player thread
+		 * @param time time in sequence player
+		 */
+		virtual void update(double time);
 	private:
 		SequenceTrack& mTrack;
 		SequenceEventReceiver& mReceiver;
