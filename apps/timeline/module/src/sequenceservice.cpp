@@ -8,7 +8,7 @@
 // Local Includes
 #include "sequenceservice.h"
 #include "sequenceeventreceiver.h"
-#include "sequenceplayerprocessors.h"
+#include "sequenceplayeradapter.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)

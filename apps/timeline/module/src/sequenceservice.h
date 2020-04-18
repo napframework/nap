@@ -41,16 +41,47 @@ namespace nap
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
+		/**
+		 * init
+		 * initializes service
+		 * @param errorState contains any errors
+		 * @return returns true on successful initialization
+		 */
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
+		/**
+		 * update
+		 * updates any ParameterSetters and SequenceEventReceivers from main thread
+		 * @param deltaTime deltaTime
+		 */
 		virtual void update(double deltaTime) override;
 	private:
+		/**
+		 * registerEventReceiver
+		 * registers a new event receiver
+		 * @param receiver reference to event receiver
+		 */
 		void registerEventReceiver(SequenceEventReceiver& receiver);
 
+		/**
+		 * registerEventReceiver
+		 * removes a registered event receiver
+		 * @param receiver reference to event receiver
+		 */
 		void removeEventReceiver(SequenceEventReceiver& receiver);
 
+		/**
+		 * registerParameterSetter
+		 * registers a new parameter setter 
+		 * @param setter reference to parameter setter
+		 */
 		void registerParameterSetter(SequencePlayerParameterSetterBase& setter);
 
+		/**
+		 * removeParameterSetter
+		 * removes a registered parameter setter 
+		 * @param setter reference to parameter setter to be removed
+		 */
 		void removeParameterSetter(SequencePlayerParameterSetterBase& setter);
 
 		std::vector<SequenceEventReceiver*>			mEventReceivers;

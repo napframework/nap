@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequencetracksegment.h"
+#include "sequencetracktypes.h"
 
 // external includes
 #include <nap/resource.h>
@@ -11,19 +12,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
-	namespace SequenceTrackTypes
-	{
-		enum Types : int
-		{
-			UNKOWN,
-			FLOAT,
-			VEC2,
-			VEC3,
-			VEC4,
-			EVENT
-		};
-	}
 
 	/**
 	 * SequenceTrack
@@ -58,7 +46,7 @@ namespace nap
 		 * init
 		 * initializes the curve segment and validates its data
 		 * @param errorState contains any errors
-		 * @return returns true on succesful initialization
+		 * @return returns true on successful initialization
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 

@@ -1,30 +1,17 @@
-#include "sequenceplayerprocessors.h"
+#include "sequenceplayeradapter.h"
 #include "sequenceservice.h"
 #include "sequenceeventreceiver.h"
 
 namespace nap
 {
-	SequencePlayerParameterSetterBase::SequencePlayerParameterSetterBase(SequenceService& service)
-		: mService(service)
-	{
-		mService.registerParameterSetter(*this);
-	}
-
-
-	SequencePlayerParameterSetterBase::~SequencePlayerParameterSetterBase()
-	{
-		mService.removeParameterSetter(*this);
-	}
-
-
-	SequencePlayerProcessorEvent::SequencePlayerProcessorEvent(SequenceTrack& track, SequenceEventReceiver& receiver)
+	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver)
 		: mTrack(track), mReceiver(receiver)
 	{
 
 	}
 
 
-	void SequencePlayerProcessorEvent::process(double time)
+	void SequencePlayerEventAdapter::process(double time)
 	{
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
 		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);

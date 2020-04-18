@@ -298,7 +298,7 @@ namespace nap
 		{
 			std::unique_lock<std::mutex> l = mSequencePlayer.lock();
 
-			if (mSequencePlayer.createProcessor(objectID, trackID))
+			if (mSequencePlayer.createAdapter(objectID, trackID))
 			{
 				track->mAssignedObjectIDs = objectID;
 			}
@@ -316,9 +316,9 @@ namespace nap
 		{
 			if (track->mID == deleteTrackID)
 			{
-				if (mSequencePlayer.mProcessors.find(track->mID) != mSequencePlayer.mProcessors.end())
+				if (mSequencePlayer.mAdapters.find(track->mID) != mSequencePlayer.mAdapters.end())
 				{
-					mSequencePlayer.mProcessors.erase(track->mID);
+					mSequencePlayer.mAdapters.erase(track->mID);
 				}
 
 				sequence.mTracks.erase(sequence.mTracks.begin() + index);

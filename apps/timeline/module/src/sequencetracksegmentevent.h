@@ -20,7 +20,7 @@ namespace nap
 	 */
 	class SequenceTrackSegmentEvent : public SequenceTrackSegment
 	{
-		friend class SequencePlayerProcessorEvent;
+		friend class SequencePlayerEventAdapter;
 
 		RTTI_ENABLE(SequenceTrackSegment)
 	public:
@@ -34,7 +34,7 @@ namespace nap
 	private:
 		/**
 		 * creates an SequenceEventPtr. 
-		 * This method is called by SequencePlayerProcessorEvent when a type of this event needs to be given to the main thread
+		 * This method is called by SequencePlayerEventAdapter when a type of this event needs to be given to the main thread
 		 */
 		virtual SequenceEventPtr createEvent() ;
 	};

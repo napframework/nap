@@ -3,7 +3,7 @@
 // internal includes
 #include "sequence.h"
 #include "sequenceeventreceiver.h"
-#include "sequenceplayerprocessors.h"
+#include "sequenceplayeradapter.h"
 
 
 // external includes
@@ -72,7 +72,7 @@ namespace nap
 		bool				mSetParametersOnMainThread = true;
 
 		std::vector<ResourcePtr<Parameter>> mParameters;
-		std::vector<ResourcePtr<SequenceEventReceiver>> mEventDispatchers;
+		std::vector<ResourcePtr<SequenceEventReceiver>> mEventReceivers;
 
 		// Sequence Editor interface
 		const Sequence& getSequenceConst() const;
@@ -80,7 +80,7 @@ namespace nap
 		// Sequence Editor interface
 		Sequence& getSequence();
 
-		bool createProcessor(const std::string& parameterID, const std::string& trackID);
+		bool createAdapter(const std::string& objectID, const std::string& trackID);
 
 		void onUpdate();
 
@@ -108,7 +108,7 @@ namespace nap
 	private:
 		std::unique_lock<std::mutex> lock();
 
-		std::unordered_map<std::string, std::unique_ptr<SequencePlayerProcessorBase>> mProcessors;
+		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
 	
 		SequenceService& mSequenceService;
 	};

@@ -409,7 +409,7 @@ namespace nap
 			dispatcherIDs.emplace_back("none");
 			int count = 0;
 			const SequenceEventReceiver* assignedParameterPtr = nullptr;
-			for (const auto& dispatcher : sequencePlayer.mEventDispatchers)
+			for (const auto& dispatcher : sequencePlayer.mEventReceivers)
 			{
 				count++;
 

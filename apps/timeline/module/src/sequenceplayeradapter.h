@@ -3,6 +3,7 @@
 // local includes
 #include "sequencetracksegmentevent.h"
 #include "sequencetrack.h"
+#include "sequenceplayerparametersetter.h"
 
 // external includes
 #include <nap/resource.h>
@@ -11,78 +12,20 @@
 
 namespace nap
 {
-	class SequenceService;
-	class SequenceEventReceiver;
-	class SequenceEvent;
-
-	class SequencePlayerProcessorBase
+	class SequencePlayerAdapter
 	{
 	public:
-		SequencePlayerProcessorBase() {};
-		virtual ~SequencePlayerProcessorBase() {}
+		SequencePlayerAdapter() {};
+		virtual ~SequencePlayerAdapter() {}
 
 		virtual void process(double time) = 0;
 	};
 
-	class SequencePlayerParameterSetterBase
-	{
-	public:
-		SequencePlayerParameterSetterBase(SequenceService& service);
-
-		virtual ~SequencePlayerParameterSetterBase();
-
-		virtual void setValue() = 0;
-	protected:
-		SequenceService&		mService;
-		bool					mUpdate;
-		std::mutex				mMutex;
-	};
-
-	template<typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-	class SequencePlayerParameterSetter :
-		public SequencePlayerParameterSetterBase
-	{
-	public:
-		SequencePlayerParameterSetter(SequenceService& service, PARAMETER_TYPE& parameter)
-			: SequencePlayerParameterSetterBase(service),
-			 mParameter(parameter) {}
-
-		virtual ~SequencePlayerParameterSetter() {}
-
-		/**
-		 * Called from player thread
-		 */
-		void storeValue(PARAMETER_VALUE_TYPE value)
-		{
-			std::lock_guard<std::mutex> l(mMutex);
-
-			mValue = value;
-			mUpdate = true;
-		}
-
-		/**
-		 * Called from service main thread
-		 */
-		virtual void setValue() override
-		{
-			std::lock_guard<std::mutex> l(mMutex);
-
-			if (mUpdate)
-			{
-				mParameter.setValue(mValue);
-				mUpdate = false;
-			}
-		}
-	private:
-		PARAMETER_TYPE&			mParameter;
-		PARAMETER_VALUE_TYPE	mValue;
-	};
-
 	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-	class SequencePlayerProcessorCurve : public SequencePlayerProcessorBase
+	class SequencePlayerCurveAdapter : public SequencePlayerAdapter
 	{
 	public:
-		SequencePlayerProcessorCurve(
+		SequencePlayerCurveAdapter(
 			SequenceTrack& track, 
 			PARAMETER_TYPE& parameter,
 			SequenceService &service,
@@ -100,7 +43,7 @@ namespace nap
 			}
 		}
 
-		virtual ~SequencePlayerProcessorCurve() {}
+		virtual ~SequencePlayerCurveAdapter() {}
 
 		/**
 		 * Called from player thread
@@ -138,12 +81,12 @@ namespace nap
 		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
 	};
 
-	class SequencePlayerProcessorEvent : public SequencePlayerProcessorBase
+	class SequencePlayerEventAdapter : public SequencePlayerAdapter
 	{
 	public:
-		SequencePlayerProcessorEvent(SequenceTrack& track, SequenceEventReceiver& receiver);
+		SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver);
 
-		virtual ~SequencePlayerProcessorEvent() {}
+		virtual ~SequencePlayerEventAdapter() {}
 
 		virtual void process(double time);
 	private:

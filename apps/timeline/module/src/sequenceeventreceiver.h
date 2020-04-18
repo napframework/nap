@@ -20,7 +20,7 @@ namespace nap
 	 */
 	class NAPAPI SequenceEventReceiver : public Resource
 	{
-		friend class SequencePlayerProcessorEvent;
+		friend class SequencePlayerEventAdapter;
 		friend class SequenceService;
 
 		RTTI_ENABLE(Resource)

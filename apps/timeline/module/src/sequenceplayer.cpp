@@ -17,7 +17,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Linked Parameters", &nap::SequencePlayer::mParameters, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Linked Event Dispatcher", &nap::SequencePlayer::mEventDispatchers, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Linked Event Dispatcher", &nap::SequencePlayer::mEventReceivers, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Set parameters on main thread", &nap::SequencePlayer::mSetParametersOnMainThread, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -193,10 +193,10 @@ namespace nap
 		}
 
 		// create processors
-		mProcessors.clear();
+		mAdapters.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createProcessor(track->mAssignedObjectIDs, track->mID);
+			createAdapter(track->mAssignedObjectIDs, track->mID);
 		}
 
 		mDefaultShow = name;
@@ -318,7 +318,7 @@ namespace nap
 						}
 					}
 
-					for (auto& processor : mProcessors)
+					for (auto& processor : mAdapters)
 					{
 						processor.second->process(mTime);
 					}
@@ -330,7 +330,7 @@ namespace nap
 	}
 
 
-	bool SequencePlayer::createProcessor(
+	bool SequencePlayer::createAdapter(
 		const std::string& objectID, 
 		const std::string& trackID)
 	{
@@ -347,9 +347,9 @@ namespace nap
 
 		assert(track != nullptr);
 
-		if (mProcessors.find(track->mID) != mProcessors.end())
+		if (mAdapters.find(track->mID) != mAdapters.end())
 		{
-			mProcessors.erase(track->mID);
+			mAdapters.erase(track->mID);
 		}
 
 		switch (track->getTrackType())
@@ -369,9 +369,9 @@ namespace nap
 				}
 			}
 
-			if (mProcessors.find(trackID) != mProcessors.end())
+			if (mAdapters.find(trackID) != mAdapters.end())
 			{
-				mProcessors.erase(trackID);
+				mAdapters.erase(trackID);
 			}
 
 			// don't assign anything because we assign an empty parameter
@@ -398,45 +398,45 @@ namespace nap
 						{
 							ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterFloat, float>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(
 								*track.get(),
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterDouble>())
 						{
 							ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterDouble, double>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(
 								*track.get(),
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterInt>())
 						{
 							ParameterInt& target = static_cast<ParameterInt&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterInt, int>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(
 								*track.get(), 
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 						else if (parameter->get_type().is_derived_from<ParameterLong>())
 						{
 							ParameterLong& target = static_cast<ParameterLong&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<float, ParameterLong, int64_t>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, int64_t>>(
 								*track.get(),
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 						else
 						{
@@ -456,12 +456,12 @@ namespace nap
 						{
 							ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec3, ParameterVec3, glm::vec3>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(
 								*track.get(),
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 
 						else
@@ -477,12 +477,12 @@ namespace nap
 						{
 							ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
 
-							auto processor = std::make_unique<SequencePlayerProcessorCurve<glm::vec2, ParameterVec2, glm::vec2>>(
+							auto processor = std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(
 								*track.get(),
 								target,
 								mSequenceService,
 								mSetParametersOnMainThread);
-							mProcessors.emplace(trackID, std::move(processor));
+							mAdapters.emplace(trackID, std::move(processor));
 						}
 
 						else
@@ -501,17 +501,17 @@ namespace nap
 			break;
 			case SequenceTrackTypes::EVENT:
 			{
-				for (auto& dispatcher : mEventDispatchers)
+				for (auto& receiver : mEventReceivers)
 				{
-					if (dispatcher->mID == objectID)
+					if (receiver->mID == objectID)
 					{
-						if (mProcessors.find(trackID) != mProcessors.end())
+						if (mAdapters.find(trackID) != mAdapters.end())
 						{
-							mProcessors.erase(trackID);
+							mAdapters.erase(trackID);
 						}
 
-						auto processor = std::make_unique<SequencePlayerProcessorEvent>(*track, *dispatcher.get());
-						mProcessors.emplace(trackID, std::move(processor));
+						auto processor = std::make_unique<SequencePlayerEventAdapter>(*track, *receiver.get());
+						mAdapters.emplace(trackID, std::move(processor));
 					}
 				}
 				
