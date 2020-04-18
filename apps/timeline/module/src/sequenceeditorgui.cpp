@@ -394,8 +394,8 @@ namespace nap
 			float scale = 0.25f;
 			ImGui::GetStyle().ScaleAllSizes(scale);
 
-			// draw the assigned parameter
-			ImGui::Text("Assigned Dispatcher");
+			// draw the assigned receiver
+			ImGui::Text("Assigned Receivers");
 
 			inspectorCursorPos = ImGui::GetCursorPos();
 			inspectorCursorPos.x += 5;
