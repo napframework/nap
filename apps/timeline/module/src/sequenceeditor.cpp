@@ -145,7 +145,7 @@ namespace nap
 	{
 		// save
 		utility::ErrorState errorState;
-		if (!errorState.check(mSequencePlayer.save(mSequencePlayer.mDefaultShow, errorState), "Error saving show!"))
+		if (!errorState.check(mSequencePlayer.save(mSequencePlayer.mDefaultSequence, errorState), "Error saving show!"))
 		{
 			nap::Logger::error(errorState.toString());
 		}
@@ -254,6 +254,28 @@ namespace nap
 		Sequence& sequence = mSequencePlayer.getSequence();
 
 		for (auto& track : sequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mID == segmentID)
+					{
+						return segment.get();
+					}
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	const SequenceTrackSegment* SequenceEditorController::getSegment(const std::string& trackID, const std::string& segmentID) const
+	{
+		//
+		const Sequence& sequence = mSequencePlayer.getSequenceConst();
+
+		for (const auto& track : sequence.mTracks)
 		{
 			if (track->mID == trackID)
 			{
@@ -575,6 +597,33 @@ namespace nap
 		}
 	}
 
+	template<typename T>
+	void SequenceEditorController::changeCurveType(
+		const std::string& trackID,
+		const std::string& segmentID,
+		const int curveIndex,
+		math::ECurveInterp type)
+	{
+		auto l = mSequencePlayer.lock();
+
+		auto* segment = findSegment(trackID, segmentID);
+		assert(segment != nullptr);
+
+		auto* segmentCurve = dynamic_cast<SequenceTrackSegmentCurve<T>*>(segment);
+		assert(segmentCurve != nullptr);
+		
+		assert(curveIndex < segmentCurve->mCurves.size());
+		segmentCurve->mCurveType = type;
+		for (int i = 0; i < segmentCurve->mCurves.size(); i++)
+		{
+			for (int j = 0; j < segmentCurve->mCurves[i]->mPoints.size(); j++)
+			{
+				segmentCurve->mCurves[i]->mPoints[j].mInterp = type;
+			}
+		}
+	}
+
+
 	void SequenceEditorController::insertEventSegment(
 		const std::string& trackID,
 		double time,
@@ -596,6 +645,25 @@ namespace nap
 		track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent>(newSegment.get()));
 
 		mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
+	}
+
+	void SequenceEditorController::editEventSegment(
+		const std::string& trackID,
+		const std::string& segmentID,
+		const std::string& eventMessage)
+	{
+		auto l = mSequencePlayer.lock();
+
+		SequenceTrack* track = findTrack(trackID);
+		assert(track != nullptr);
+
+		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+		assert(segment != nullptr);
+
+		SequenceTrackSegmentEvent* eventSegment = dynamic_cast<SequenceTrackSegmentEvent*>(segment);
+		assert(eventSegment != nullptr);
+
+		eventSegment->mMessage = eventMessage;
 	}
 
 	/**
@@ -722,7 +790,7 @@ namespace nap
 				p.mInTan.mValue = 0.0f;
 				p.mOutTan.mValue = 0.0f;
 				p.mTangentsAligned = true;
-				p.mInterp = math::ECurveInterp::Bezier;
+				p.mInterp = trackSegNum.mCurveType;
 
 				// insert point
 				trackSegNum.mCurves[curveIndex]->mPoints.insert(trackSegNum.mCurves[curveIndex]->mPoints.begin() + i + 1, p);
@@ -926,4 +994,9 @@ namespace nap
 	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec2>(const std::string& trackID, glm::vec2 minimum, glm::vec2 maximum);
 	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec3>(const std::string& trackID, glm::vec3 minimum, glm::vec3 maximum);
 	template void SequenceEditorController::changeMinMaxCurveTrack<glm::vec4>(const std::string& trackID, glm::vec4 minimum, glm::vec4 maximum);
+
+	template void SequenceEditorController::changeCurveType<float> (const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
+	template void SequenceEditorController::changeCurveType<glm::vec2>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
+	template void SequenceEditorController::changeCurveType<glm::vec3>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
+	template void SequenceEditorController::changeCurveType<glm::vec4>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
 }

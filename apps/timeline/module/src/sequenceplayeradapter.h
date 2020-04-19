@@ -12,6 +12,8 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * SequencePlayerAdapter
 	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
@@ -53,7 +55,7 @@ namespace nap
 		 * @param track reference to sequence track that holds curve information
 		 * @param parameter reference to parameter that is assigned to this track
 		 * @param service reference to the sequence service, needed to sync with main thread
-		 * @param useMain thread, wether to sync with the main thread or not
+		 * @param useMain thread, whether to sync with the main thread or not
 		 */
 		SequencePlayerCurveAdapter(
 			SequenceTrack& track, 

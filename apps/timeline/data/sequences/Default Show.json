@@ -36,7 +36,8 @@
                             "Duration": 1.2199999950826169,
                             "Curves": [
                                 "Generated_2"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
@@ -45,7 +46,8 @@
                             "Duration": 2.080000029876828,
                             "Curves": [
                                 "Generated_5"
-                            ]
+                            ],
+                            "Curve Type": "Linear"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
@@ -54,7 +56,8 @@
                             "Duration": 1.269999943673611,
                             "Curves": [
                                 "Generated_11"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
@@ -63,7 +66,8 @@
                             "Duration": 2.4599998127669098,
                             "Curves": [
                                 "Generated_8"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         }
                     ],
                     "Parameter ID": "Float1",
@@ -83,7 +87,8 @@
                                 "Generated_18",
                                 "Generated_19",
                                 "Generated_20"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveVec3",
@@ -94,7 +99,8 @@
                                 "Generated_13",
                                 "Generated_14",
                                 "Generated_15"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveVec3",
@@ -105,7 +111,8 @@
                                 "Generated_23",
                                 "Generated_24",
                                 "Generated_25"
-                            ]
+                            ],
+                            "Curve Type": "Bezier"
                         }
                     ],
                     "Parameter ID": "Vec3",
@@ -622,13 +629,13 @@
                         "Time": 0.10000000149011612,
                         "Value": 0.0
                     },
-                    "InterpolationType": "Bezier",
+                    "InterpolationType": "Linear",
                     "AlignedTangents": true
                 },
                 {
                     "Position": {
-                        "Time": 0.27173930406570437,
-                        "Value": 0.18529832363128663
+                        "Time": 0.39193135499954226,
+                        "Value": 0.27196502685546877
                     },
                     "InTangent": {
                         "Time": -0.5399998426437378,
@@ -638,7 +645,23 @@
                         "Time": 0.5399998426437378,
                         "Value": -0.18666662275791169
                     },
-                    "InterpolationType": "Bezier",
+                    "InterpolationType": "Linear",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.5384618043899536,
+                        "Value": 0.6501977443695068
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Linear",
                     "AlignedTangents": true
                 },
                 {
@@ -654,7 +677,7 @@
                         "Time": 0.10000000149011612,
                         "Value": 0.0
                     },
-                    "InterpolationType": "Bezier",
+                    "InterpolationType": "Linear",
                     "AlignedTangents": true
                 }
             ]

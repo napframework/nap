@@ -43,14 +43,13 @@ namespace nap
 			DRAGGING_SEGMENT,
 			INSERTING_SEGMENT,
 			OPEN_INSERT_SEGMENT_POPUP,
-			DELETING_SEGMENT,
-			OPEN_DELETE_SEGMENT_POPUP,
+			EDITING_SEGMENT,
+			OPEN_EDIT_SEGMENT_POPUP,
 			HOVERING_SEGMENT,
 			HOVERING_SEGMENT_VALUE,
 			DRAGGING_SEGMENT_VALUE,
 			HOVERING_CONTROL_POINT,
 			DRAGGING_CONTROL_POINT,
-			DELETE_CONTROL_POINT,
 			HOVERING_TAN_POINT,
 			DRAGGING_TAN_POINT,
 			HOVERING_CURVE,
@@ -60,6 +59,14 @@ namespace nap
 			INSERTING_TRACK,
 			OPEN_INSERT_EVENT_SEGMENT_POPUP,
 			INSERTING_EVENT_SEGMENT,
+			OPEN_EDIT_EVENT_SEGMENT_POPUP,
+			EDITING_EVENT_SEGMENT,
+			OPEN_INSERT_CURVE_POINT_POPUP,
+			INSERTING_CURVE_POINT,
+			OPEN_CURVE_POINT_ACTION_POPUP,
+			CURVE_POINT_ACTION_POPUP,
+			OPEN_CURVE_TYPE_POPUP,
+			CURVE_TYPE_POPUP,
 			LOAD,
 			SAVE_AS,
 			NONE
@@ -184,10 +191,17 @@ namespace nap
 
 		void handleInsertEventSegmentPopup();
 
+		void handleInsertCurvePointPopup();
+
 		void handleLoadPopup();
 
 		void handleSaveAsPopup();
 
+		void handleCurvePointActionPopup();
+
+		void handleCurveTypePopup();
+
+		void handleEditEventSegmentPopup();
 	protected:
 		// ImGUI tools
 		bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
@@ -207,6 +221,7 @@ namespace nap
 			const SequenceTrack& track,
 			const SequenceTrackSegmentCurve<T>& segment, 
 			float x, 
+			double time,
 			int curveIndex);
 	protected:
 
@@ -242,13 +257,20 @@ namespace nap
 		virtual ~SequenceGUIActionData() {}
 	};
 
-	class SequenceGUIDeleteSegmentData : public SequenceGUIActionData
+	class SequenceGUIEditSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDeleteSegmentData(std::string trackId_, std::string segmentID_) : trackID(trackId_), segmentID(segmentID_) {}
+		SequenceGUIEditSegmentData(
+			std::string trackId_,
+			std::string segmentID_,
+			SequenceTrackTypes::Types trackType) :
+				mTrackID(trackId_),
+				mSegmentID(segmentID_),
+				mTrackType(trackType){}
 
-		std::string trackID;
-		std::string segmentID;
+		std::string mTrackID;
+		std::string mSegmentID;
+		SequenceTrackTypes::Types mTrackType;
 	};
 
 	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
@@ -332,6 +354,44 @@ namespace nap
 		int selectedIndex;
 	};
 
+	class SequenceGUIInsertCurvePointData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIInsertCurvePointData(
+			std::string trackID, 
+			std::string segmentID,
+			int index,
+			float pos,
+			SequenceTrackTypes::Types type) :
+			mTrackID(trackID), mSegmentID(segmentID), 
+			mSelectedIndex(index), mPos(pos), mSegmentType(type) {}
+
+		std::string mTrackID;
+		std::string mSegmentID;
+		int mSelectedIndex;
+		float mPos;
+		SequenceTrackTypes::Types mSegmentType;
+	};
+
+	class SequenceGUIChangeCurveData : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIChangeCurveData(
+			std::string trackID,
+			std::string segmentID,
+			int index,
+			SequenceTrackTypes::Types type,
+			ImVec2 windowPos) :
+			mTrackID(trackID), mSegmentID(segmentID),
+			mSelectedIndex(index), mSegmentType(type), mWindowPos(windowPos) {}
+
+		std::string mTrackID;
+		std::string mSegmentID;
+		int mSelectedIndex;
+		SequenceTrackTypes::Types mSegmentType;
+		ImVec2 mWindowPos;
+	};
+
 	class SequenceGUIControlPointData : public SequenceGUIActionData
 	{
 	public:
@@ -351,23 +411,27 @@ namespace nap
 		int			curveIndex;
 	};
 
-	class SequenceGUIDeleteControlPointData : public SequenceGUIActionData
+	class SequenceGUIControlPointActionData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIDeleteControlPointData(
-			std::string trackId_,
-			std::string segmentID_,
-			int controlPointIndex_,
-			int curveIndex_)
-			: trackID(trackId_), 
-			segmentID(segmentID_), 
-			controlPointIndex(controlPointIndex_),
-			curveIndex(curveIndex_){}
+		SequenceGUIControlPointActionData(
+			std::string trackId,
+			std::string segmentID,
+			int controlPointIndex,
+			int curveIndex,
+			SequenceTrackTypes::Types trackType)
+			: mTrackId(trackId), 
+			mSegmentID(segmentID), 
+			mControlPointIndex(controlPointIndex),
+			mCurveIndex(curveIndex),
+			mTrackType(trackType)
+			{}
 
-		std::string trackID;
-		std::string segmentID;
-		int			controlPointIndex;
-		int			curveIndex;
+		std::string mTrackId;
+		std::string mSegmentID;
+		int			mControlPointIndex;
+		int			mCurveIndex;
+		SequenceTrackTypes::Types mTrackType;
 	};
 
 	class SequenceGUISaveShowData : public SequenceGUIActionData
@@ -388,5 +452,25 @@ namespace nap
 		std::string trackID;
 		double time;
 		std::string eventMessage = "Hello world";
+	};
+
+	class SequenceGUIEditEventSegment : public SequenceGUIActionData
+	{
+	public:
+		SequenceGUIEditEventSegment(
+			std::string trackId,
+			std::string segmentID,
+			std::string message,
+			ImVec2 windowPos)
+			: 
+			mTrackID(trackId),
+			mSegmentID(segmentID),
+			mMessage(message),
+			mWindowPos(windowPos){}
+
+		std::string mTrackID;
+		std::string mSegmentID;
+		std::string mMessage;
+		ImVec2 mWindowPos;
 	};
 }

@@ -208,6 +208,20 @@ namespace nap
 
 		template<typename T>
 		void changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum);
+
+		template<typename T>
+		void changeCurveType(
+			const std::string& trackID,
+			const std::string& segmentID,
+			const int curveIndex,
+			math::ECurveInterp type);
+
+		void editEventSegment(
+			const std::string& trackID,
+			const std::string& segmentID,
+			const std::string& eventMessage);
+		
+		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
 	protected:
 
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);

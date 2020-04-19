@@ -136,20 +136,19 @@ namespace nap
 			}
 
 			ImGui::SameLine();
-			if (mPlayer.getIsPaused() && mPlayer.getIsPlaying())
+			if (mPlayer.getIsPaused())
 			{
-				if (ImGui::Button("Play"))
+				if (ImGui::Button("Unpause"))
 				{
-					mPlayer.setIsPlaying(true);
+					mPlayer.setIsPaused(false);
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Pause"))
 				{
-					mPlayer.pause();
+					mPlayer.setIsPaused(true);
 				}
-
 			}
 
 			ImGui::SameLine();
@@ -550,7 +549,7 @@ namespace nap
 
 							if (playerWasPlaying)
 							{
-								player.pause();
+								player.setIsPaused(true);
 							}
 
 							// snap to mouse position

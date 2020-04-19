@@ -15,7 +15,7 @@
 #include <fstream>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
-RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultShow, nap::rtti::EPropertyMetaData::FileLink)
+RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultSequence, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Linked Parameters", &nap::SequencePlayer::mParameters, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Linked Event Dispatcher", &nap::SequencePlayer::mEventReceivers, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
@@ -42,12 +42,12 @@ namespace nap
 
 		if (!mCreateDefaultShowOnFailure)
 		{
-			if (errorState.check(load(mDefaultShow, errorState), "Error loading default sequence"))
+			if (errorState.check(load(mDefaultSequence, errorState), "Error loading default sequence"))
 			{
 				return false;
 			}
 		}
-		else if (!load(mDefaultShow, errorState))
+		else if (!load(mDefaultSequence, errorState))
 		{
 			nap::Logger::info(*this, errorState.toString());
 			nap::Logger::info(*this, "Error loading default show, creating default sequence");
@@ -56,7 +56,7 @@ namespace nap
 			mSequence = sequenceutils::createSequence(mReadObjects, objectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence, saving it");
-			if (errorState.check(!save(mDefaultShow, errorState), "Error saving sequence"))
+			if (errorState.check(!save(mDefaultSequence, errorState), "Error saving sequence"))
 			{
 				return false;
 			}
@@ -104,10 +104,10 @@ namespace nap
 	}
 
 
-	void SequencePlayer::pause()
+	void SequencePlayer::setIsPaused(bool isPaused)
 	{
 		std::unique_lock<std::mutex> l = lock();
-		mIsPaused = true;
+		mIsPaused = isPaused;
 	}
 
 
@@ -199,7 +199,7 @@ namespace nap
 			createAdapter(track->mAssignedObjectIDs, track->mID);
 		}
 
-		mDefaultShow = name;
+		mDefaultSequence = name;
 
 		return true;
 	}

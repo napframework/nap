@@ -108,7 +108,7 @@ namespace nap
 			}
 			mPrevScroll = scroll;
 
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			//
 			if (ImGui::Button("Save"))
@@ -152,21 +152,21 @@ namespace nap
 			}
 
 			ImGui::SameLine();
-			if (sequencePlayer.getIsPaused() && sequencePlayer.getIsPlaying())
+			if (sequencePlayer.getIsPaused())
 			{
-				if (ImGui::Button("Play"))
+				if (ImGui::Button("Unpause"))
 				{
-					sequencePlayer.setIsPlaying(true);
+					sequencePlayer.setIsPaused(false);
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Pause"))
 				{
-					sequencePlayer.pause();
+					sequencePlayer.setIsPaused(true);
 				}
-
 			}
+			
 
 			ImGui::SameLine();
 			if (ImGui::Button("Rewind"))
@@ -194,6 +194,8 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
+
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
 			if (ImGui::DragFloat("H-Zoom", &mHorizontalResolution, 0.5f, 10, 1000, "%0.1f"))
@@ -230,6 +232,14 @@ namespace nap
 			handleInsertTrackPopup();
 
 			handleInsertEventSegmentPopup();
+
+			handleInsertCurvePointPopup();
+
+			handleCurvePointActionPopup();
+
+			handleCurveTypePopup();
+
+			handleEditEventSegmentPopup();
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mVerticalResolution + 10.0f);
@@ -517,7 +527,11 @@ namespace nap
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 
-								   // right mouse down
+						ImGui::BeginTooltip();
+						ImGui::Text(formatTimeString(mMouseCursorTime).c_str());
+						ImGui::EndTooltip();
+
+						// right mouse down
 						if (ImGui::IsMouseClicked(1))
 						{
 							double time = mMouseCursorTime;
@@ -775,6 +789,12 @@ namespace nap
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 
+						ImGui::BeginTooltip();
+
+						ImGui::Text(formatTimeString(mMouseCursorTime).c_str());
+
+						ImGui::EndTooltip();
+
 								   // right mouse down
 						if (ImGui::IsMouseClicked(1))
 						{
@@ -980,7 +1000,12 @@ namespace nap
 					mEditorAction.currentObjectID = pointID;
 
 					//
-					showValue<T>(track, segment, curvePoint.mPos.mTime, v);
+					showValue<T>(
+						track, 
+						segment, 
+						curvePoint.mPos.mTime,
+						curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
+						v);
 
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
@@ -993,15 +1018,16 @@ namespace nap
 							v);
 						mEditorAction.currentObjectID = segment.mID;
 					}
-					// if we clicked right mouse button, delete control point
+					// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mEditorAction.currentAction = DELETE_CONTROL_POINT;
-						mEditorAction.currentActionData = std::make_unique<SequenceGUIDeleteControlPointData>(
+						mEditorAction.currentAction = OPEN_CURVE_POINT_ACTION_POPUP;
+						mEditorAction.currentActionData = std::make_unique<SequenceGUIControlPointActionData>(
 							track.mID, 
 							segment.mID, 
 							i,
-							v);
+							v,
+							track.getTrackType());
 						mEditorAction.currentObjectID = segment.mID;
 					}
 				}
@@ -1031,7 +1057,12 @@ namespace nap
 
 							hovered = true;
 
-							showValue<T>(track, segment, curvePoint.mPos.mTime, v);
+							showValue<T>(
+								track, 
+								segment, 
+								curvePoint.mPos.mTime,
+								curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
+								v);
 
 							mController.changeCurvePoint<T>(
 								data->trackID,
@@ -1047,28 +1078,6 @@ namespace nap
 								mEditorAction.currentAction = NONE;
 								mEditorAction.currentActionData = nullptr;
 							}
-						}
-					}
-
-					// handle deletion of control point
-					if (mEditorAction.currentAction == DELETE_CONTROL_POINT &&
-						segment.mID == mEditorAction.currentObjectID)
-					{
-						const SequenceGUIDeleteControlPointData* data
-							= dynamic_cast<SequenceGUIDeleteControlPointData*>(mEditorAction.currentActionData.get());
-
-						if (data->controlPointIndex == i && 
-							data->curveIndex == v)
-						{
-							mController.deleteCurvePoint<T>(
-								data->trackID,
-								data->segmentID,
-								data->controlPointIndex,
-								data->curveIndex);
-							mCurveCache.clear();
-
-							mEditorAction.currentAction = NONE;
-							mEditorAction.currentActionData = nullptr;
 						}
 					}
 				}
@@ -1202,7 +1211,12 @@ namespace nap
 						mEditorAction.currentObjectID = segment.mID;
 					}
 
-					showValue<T>(track, segment, segmentType == BEGIN ? 0.0f : 1.0f, v);
+					showValue<T>(
+						track, 
+						segment, 
+						segmentType == BEGIN ? 0.0f : 1.0f,
+						segmentType == BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+						v);
 				}
 				else if (mEditorAction.currentAction != DRAGGING_SEGMENT_VALUE)
 				{
@@ -1230,7 +1244,12 @@ namespace nap
 					if (data->type == segmentType && data->curveIndex == v)
 					{
 						hovered = true;
-						showValue<T>(track, segment, segmentType == BEGIN ? 0.0f : 1.0f, v);
+						showValue<T>(
+							track,
+							segment,
+							segmentType == BEGIN ? 0.0f : 1.0f,
+							segmentType == BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration, 
+							v);
 
 						if (ImGui::IsMouseReleased(0))
 						{
@@ -1287,6 +1306,10 @@ namespace nap
 			mEditorAction.currentAction = HOVERING_SEGMENT;
 			mEditorAction.currentObjectID = segment.mID;
 
+			ImGui::BeginTooltip();
+			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+			ImGui::EndTooltip();
+
 			// left mouse is start dragging
 			if (ImGui::IsMouseDown(0))
 			{
@@ -1296,10 +1319,13 @@ namespace nap
 			// right mouse in deletion popup
 			else if (ImGui::IsMouseDown(1))
 			{
-				std::unique_ptr<SequenceGUIDeleteSegmentData> deleteSegmentData = std::make_unique<SequenceGUIDeleteSegmentData>(track.mID, segment.mID);
-				mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_DELETE_SEGMENT_POPUP;
+				std::unique_ptr<SequenceGUIEditSegmentData> editSegmentData = std::make_unique<SequenceGUIEditSegmentData>(
+					track.mID, 
+					segment.mID,
+					track.getTrackType());
+				mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_EDIT_SEGMENT_POPUP;
 				mEditorAction.currentObjectID = segment.mID;
-				mEditorAction.currentActionData = std::move(deleteSegmentData);
+				mEditorAction.currentActionData = std::move(editSegmentData);
 			}
 		}
 		else if (
@@ -1312,6 +1338,10 @@ namespace nap
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mTrackHeight }, // bottom right
 				guicolors::white, // color
 				3.0f); // thickness
+
+			ImGui::BeginTooltip();
+			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+			ImGui::EndTooltip();
 
 			// do we have the mouse still held down ? drag the segment
 			if (ImGui::IsMouseDown(0))
@@ -1634,6 +1664,276 @@ namespace nap
 		}
 	}
 
+	void SequenceEditorGUIView::handleCurveTypePopup()
+	{
+		if (mEditorAction.currentAction == OPEN_CURVE_TYPE_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Change Curve Type");
+
+			mEditorAction.currentAction = CURVE_TYPE_POPUP;
+		}
+
+		// handle insert segment popup
+		if (mEditorAction.currentAction == CURVE_TYPE_POPUP)
+		{
+			SequenceGUIChangeCurveData* data = dynamic_cast<SequenceGUIChangeCurveData*>(mEditorAction.currentActionData.get());
+			assert(data != nullptr);
+
+			
+			if (ImGui::BeginPopup("Change Curve Type"))
+			{
+				ImGui::SetWindowPos(data->mWindowPos);
+
+				if (ImGui::Button("Linear"))
+				{
+					switch (data->mSegmentType)
+					{
+					default:
+						break;
+					case SequenceTrackTypes::FLOAT:
+						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						break;
+					case SequenceTrackTypes::VEC2:
+						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						break;
+					case SequenceTrackTypes::VEC3:
+						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						break;
+					case SequenceTrackTypes::VEC4:
+						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						break;
+					}
+
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+					mCurveCache.clear();
+					
+				}
+
+				if (ImGui::Button("Bezier"))
+				{
+					switch (data->mSegmentType)
+					{
+					default:
+						break;
+					case SequenceTrackTypes::FLOAT:
+						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						break;
+					case SequenceTrackTypes::VEC2:
+						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						break;
+					case SequenceTrackTypes::VEC3:
+						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						break;
+					case SequenceTrackTypes::VEC4:
+						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						break;
+					}
+
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+					mCurveCache.clear();
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+				mEditorAction.currentActionData = nullptr;
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleInsertCurvePointPopup()
+	{
+		if (mEditorAction.currentAction == OPEN_INSERT_CURVE_POINT_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Insert Curve Point");
+
+			mEditorAction.currentAction = INSERTING_CURVE_POINT;
+		}
+
+		// handle insert segment popup
+		if (mEditorAction.currentAction == INSERTING_CURVE_POINT)
+		{
+			if (ImGui::BeginPopup("Insert Curve Point"))
+			{
+				SequenceGUIInsertCurvePointData& data = static_cast<SequenceGUIInsertCurvePointData&>(*mEditorAction.currentActionData.get());
+
+				if (ImGui::Button("Insert Point"))
+				{
+					switch (data.mSegmentType)
+					{
+					case SequenceTrackTypes::FLOAT:
+						mController.insertCurvePoint<float>(
+							data.mTrackID,
+							data.mSegmentID,
+							data.mPos,
+							data.mSelectedIndex);
+						break;
+					case SequenceTrackTypes::VEC2:
+						mController.insertCurvePoint<glm::vec2>(
+							data.mTrackID,
+							data.mSegmentID,
+							data.mPos,
+							data.mSelectedIndex);
+						break;
+					case SequenceTrackTypes::VEC3:
+						mController.insertCurvePoint<glm::vec3>(
+							data.mTrackID,
+							data.mSegmentID,
+							data.mPos,
+							data.mSelectedIndex);
+						break;
+					case SequenceTrackTypes::VEC4:
+						mController.insertCurvePoint<glm::vec4>(
+							data.mTrackID,
+							data.mSegmentID,
+							data.mPos,
+							data.mSelectedIndex);
+						break;
+					default:
+						assert(true);
+						break;
+					}
+
+					mCurveCache.clear();
+
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+
+				}
+
+				if (ImGui::Button("Change Curve Type"))
+				{
+					ImGui::CloseCurrentPopup();
+
+					SequenceGUIInsertCurvePointData& data = static_cast<SequenceGUIInsertCurvePointData&>(*mEditorAction.currentActionData.get());
+
+					mEditorAction.currentActionData = std::make_unique<SequenceGUIChangeCurveData>(
+						data.mTrackID,
+						data.mSegmentID, 
+						data.mSelectedIndex,
+						data.mSegmentType,
+						ImGui::GetWindowPos());
+					mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_CURVE_TYPE_POPUP;
+
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+				mEditorAction.currentActionData = nullptr;
+			}
+		}
+	}
+
+	void SequenceEditorGUIView::handleCurvePointActionPopup()
+	{
+		if (mEditorAction.currentAction == OPEN_CURVE_POINT_ACTION_POPUP)
+		{
+			mEditorAction.currentAction = CURVE_POINT_ACTION_POPUP;
+			ImGui::OpenPopup("Curve Point Actions");
+		}
+
+		if (mEditorAction.currentAction == CURVE_POINT_ACTION_POPUP)
+		{
+			if (ImGui::BeginPopup("Curve Point Actions"))
+			{
+				if (ImGui::Button("Delete"))
+				{
+					const SequenceGUIControlPointActionData* data
+						= dynamic_cast<SequenceGUIControlPointActionData*>(mEditorAction.currentActionData.get());
+
+					assert(data != nullptr);
+
+					switch (data->mTrackType)
+					{
+					default:
+						assert(true);
+						break;
+					case SequenceTrackTypes::FLOAT:
+						mController.deleteCurvePoint<float>(
+							data->mTrackId,
+							data->mSegmentID,
+							data->mControlPointIndex,
+							data->mCurveIndex);
+						mCurveCache.clear();
+						break;
+					case SequenceTrackTypes::VEC2:
+						mController.deleteCurvePoint<glm::vec2>(
+							data->mTrackId,
+							data->mSegmentID,
+							data->mControlPointIndex,
+							data->mCurveIndex);
+						mCurveCache.clear();
+						break;
+					case SequenceTrackTypes::VEC3:
+						mController.deleteCurvePoint<glm::vec3>(
+							data->mTrackId,
+							data->mSegmentID,
+							data->mControlPointIndex,
+							data->mCurveIndex);
+						mCurveCache.clear();
+						break;
+					case SequenceTrackTypes::VEC4:
+						mController.deleteCurvePoint<glm::vec4>(
+							data->mTrackId,
+							data->mSegmentID,
+							data->mControlPointIndex,
+							data->mCurveIndex);
+						mCurveCache.clear();
+						break;
+					}
+
+					mEditorAction.currentAction = NONE;
+					mEditorAction.currentActionData = nullptr;
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mEditorAction.currentAction = NONE;
+					mEditorAction.currentActionData = nullptr;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+				mEditorAction.currentActionData = nullptr;
+			}
+		}
+	}
+
 
 	void SequenceEditorGUIView::handleInsertEventSegmentPopup()
 	{
@@ -1687,30 +1987,106 @@ namespace nap
 		}
 	}
 
+	void SequenceEditorGUIView::handleEditEventSegmentPopup()
+	{
+		if (mEditorAction.currentAction == OPEN_EDIT_EVENT_SEGMENT_POPUP)
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Edit Event");
+
+			mEditorAction.currentAction = EDITING_EVENT_SEGMENT;
+		}
+
+		// handle insert segment popup
+		if (mEditorAction.currentAction == EDITING_EVENT_SEGMENT)
+		{
+			if (ImGui::BeginPopup("Edit Event"))
+			{
+				SequenceGUIEditEventSegment* data = dynamic_cast<SequenceGUIEditEventSegment*>(mEditorAction.currentActionData.get());
+				assert(data != nullptr);
+
+				ImGui::SetWindowPos(data->mWindowPos);
+
+				int n = data->mMessage.length();
+				char buffer[256];
+				strcpy(buffer, data->mMessage.c_str());
+
+				if (ImGui::InputText("message", buffer, 256))
+				{
+					data->mMessage = std::string(buffer);
+				}
+
+				if (ImGui::Button("Done"))
+				{
+					mController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+				mEditorAction.currentActionData = nullptr;
+			}
+		}
+	}
+
+
 	void SequenceEditorGUIView::handleDeleteSegmentPopup()
 	{
-		if (mEditorAction.currentAction == OPEN_DELETE_SEGMENT_POPUP)
+		if (mEditorAction.currentAction == OPEN_EDIT_SEGMENT_POPUP)
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			mEditorAction.currentAction = DELETING_SEGMENT;
+			mEditorAction.currentAction = EDITING_SEGMENT;
 		}
 
 		// handle delete segment popup
-		if (mEditorAction.currentAction == DELETING_SEGMENT)
+		if (mEditorAction.currentAction == EDITING_SEGMENT)
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
+				const SequenceGUIEditSegmentData* data = dynamic_cast<SequenceGUIEditSegmentData*>(mEditorAction.currentActionData.get());
+				assert(data != nullptr);
+
 				if (ImGui::Button("Delete"))
 				{
-					const SequenceGUIDeleteSegmentData* data = dynamic_cast<SequenceGUIDeleteSegmentData*>(mEditorAction.currentActionData.get());
-					mController.deleteSegment(data->trackID, data->segmentID);
+					mController.deleteSegment(data->mTrackID, data->mSegmentID);
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
+				}
+
+				if (data->mTrackType == SequenceTrackTypes::EVENT)
+				{
+					if (ImGui::Button("Edit"))
+					{
+						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(mController.getSegment(data->mTrackID, data->mSegmentID));
+						assert(eventSegment != nullptr);
+
+						mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_EDIT_EVENT_SEGMENT_POPUP;
+						mEditorAction.currentActionData = std::make_unique<SequenceGUIEditEventSegment>(
+							data->mTrackID,
+							data->mSegmentID,
+							eventSegment->mMessage,
+							ImGui::GetWindowPos());
+
+						ImGui::CloseCurrentPopup();
+					}
 				}
 
 				if (ImGui::Button("Cancel"))
@@ -1856,7 +2232,7 @@ namespace nap
 
 							if (playerWasPlaying)
 							{
-								player.pause();
+								player.setIsPaused(true);
 							}
 							
 							// snap to mouse position
@@ -2227,13 +2603,16 @@ namespace nap
 						mEditorAction.currentAction = HOVERING_CURVE;
 						mEditorAction.currentObjectID = segment.mID;
 						mEditorAction.currentActionData = std::make_unique<SequenceGUIHoveringCurveData>(i);
-						if (ImGui::IsMouseClicked(0))
+
+						if (ImGui::IsMouseClicked(1))
 						{
-							mController.insertCurvePoint<T>(
+							mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertCurvePointData>(
 								track.mID,
 								segment.mID,
-								xInSegment, 
-								i);
+								i, 
+								xInSegment,
+								track.getTrackType());
+							mEditorAction.currentAction = OPEN_INSERT_CURVE_POINT_POPUP;
 						}
 						selectedCurve = i;
 					}
@@ -2246,7 +2625,12 @@ namespace nap
 				}
 				else
 				{
-					showValue<T>(track, segment, xInSegment, selectedCurve);
+					showValue<T>(
+						track, 
+						segment, 
+						xInSegment, 
+						mMouseCursorTime,
+						selectedCurve);
 				}
 			}
 			else
@@ -2372,6 +2756,7 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegmentCurve<T>& segment,
 		float x,
+		double time,
 		int curveIndex)
 	{
 		assert(false);
@@ -2382,13 +2767,14 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegmentCurve<float>& segment,
 		float x,
+		double time,
 		int curveIndex)
 	{
 		const SequenceTrackCurve<float>& curveTrack = static_cast<const SequenceTrackCurve<float>&>(track);
 
 		ImGui::BeginTooltip();
 
-		ImGui::Text("Time : %.3f", mMouseCursorTime);
+		ImGui::Text(formatTimeString(time).c_str());
 		ImGui::Text("%.3f", segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum);
 
 		ImGui::EndTooltip();
@@ -2399,6 +2785,7 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegmentCurve<glm::vec2>& segment,
 		float x,
+		double time,
 		int curveIndex)
 	{
 		assert(curveIndex >= 0);
@@ -2416,7 +2803,7 @@ namespace nap
 			"y"
 		};
 
-		ImGui::Text("Time : %.3f", mMouseCursorTime);
+		ImGui::Text(formatTimeString(time).c_str());
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();
@@ -2427,6 +2814,7 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegmentCurve<glm::vec3>& segment,
 		float x,
+		double time,
 		int curveIndex)
 	{
 		assert(curveIndex >= 0);
@@ -2445,7 +2833,7 @@ namespace nap
 			"z"
 		};
 
-		ImGui::Text("Time : %.3f", mMouseCursorTime);
+		ImGui::Text(formatTimeString(time).c_str());
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();
@@ -2456,6 +2844,7 @@ namespace nap
 		const SequenceTrack& track,
 		const SequenceTrackSegmentCurve<glm::vec4>& segment,
 		float x,
+		double time,
 		int curveIndex)
 	{
 		assert(curveIndex >= 0);
@@ -2475,7 +2864,7 @@ namespace nap
 			"w"
 		};
 
-		ImGui::Text("Time : %.3f", mMouseCursorTime);
+		ImGui::Text(formatTimeString(time).c_str());
 		ImGui::Text("%s : %.3f", names[curveIndex].c_str(), value[curveIndex]);
 
 		ImGui::EndTooltip();

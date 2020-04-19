@@ -5,6 +5,8 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	class SequenceService;
 	class SequenceEventReceiver;
 	class SequenceEvent;

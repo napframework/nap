@@ -19,6 +19,7 @@ namespace nap
 	public:
 		// properties
 		std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;  ///< Property: 'Curves' vector holding curves
+		math::ECurveInterp mCurveType; ///< Property: 'Curve Type' curve type of this segment ( linear, bezier )
 
 		/**
 		 * init evaluates the data hold in curves and checks if its valid for this type
@@ -69,6 +70,7 @@ namespace nap
 	*/
 #define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)																			\
 		RTTI_BEGIN_CLASS(Type)																						\
-			RTTI_PROPERTY("Curves",	&Type::mCurves, nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_PROPERTY("Curves",	&Type::mCurves, nap::rtti::EPropertyMetaData::Default)						\
+			RTTI_PROPERTY("Curve Type", &Type::mCurveType, nap::rtti::EPropertyMetaData::Default) \
 		RTTI_END_CLASS
 }
