@@ -329,7 +329,7 @@ void nap::SequenceTrackSegmentCurveVec4::setEndValue(glm::vec4 t)
 	}
 }
 
-template class nap::SequenceTrackSegmentCurve<float>;
-template class nap::SequenceTrackSegmentCurve<glm::vec2>;
-template class nap::SequenceTrackSegmentCurve<glm::vec3>;
-template class nap::SequenceTrackSegmentCurve<glm::vec4>;
+template class NAPAPI nap::SequenceTrackSegmentCurve<float>;
+template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec2>;
+template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec3>;
+template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec4>;

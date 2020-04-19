@@ -128,7 +128,7 @@ namespace nap
 	 * Responsible for draw the GUI for the sequence editor
 	 * Needs reference to controller
 	 */
-	class SequenceEditorGUIView
+	class NAPAPI SequenceEditorGUIView
 	{
 	public:
 

@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "mod_napmath",
+        "mod_napsdlinput",
+		"mod_napparameter"
+    ]
+}

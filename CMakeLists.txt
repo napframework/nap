@@ -141,7 +141,6 @@ add_subdirectory(apps/flexblock/module)
 add_subdirectory(apps/anima)
 add_subdirectory(apps/anima/module)
 add_subdirectory(apps/timeline)
-add_subdirectory(apps/timeline/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -210,6 +209,8 @@ add_subdirectory(modules/napapiwebsocket)
 add_subdirectory(modules/napopencv)
 add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
+add_subdirectory(modules/napsequence)
+add_subdirectory(modules/napsequencegui)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
