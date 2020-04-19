@@ -19,25 +19,46 @@ namespace nap
 	class SequenceGUIActionData;
 
 	/**
+	 * SequenceEditorGUI
+	 * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
 	 */
 	class NAPAPI SequenceEditorGUI : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		/**
+		 * init
+		 * @param errorState contains any errors
+		 * @return true on success
+		 */
 		virtual bool init(utility::ErrorState& errorState);
 
+		/**
+		 * onDestroy
+		 * called before deconstruction
+		 */
 		virtual void onDestroy();
 
+		/**
+		 * draw
+		 * Call this method to draw the GUI
+		 */
 		void draw();
 	public:
-		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr;
+		// properties
+		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
 	protected:
-		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
+		// instantiated view
+		std::unique_ptr<SequenceEditorGUIView> mView = nullptr; 
 	};
 
+	/**
+	 * Types of possible interactions with GUI
+	 * Used by the gui state to handle mouse input / popups / actions
+	 */
 	namespace SequenceGUIMouseActions
 	{
-		enum SequenceGUIMouseActions
+		enum Types
 		{
 			// ACTIONS
 			DRAGGING_SEGMENT,
@@ -74,25 +95,44 @@ namespace nap
 	}
 
 	/**
-	 * 
+	 * SequenceEditorGUIState
+	 * Class holding state information for current Editor GUI
 	 */
 	class SequenceEditorGUIState
 	{
 	public:
-		SequenceGUIMouseActions::SequenceGUIMouseActions currentAction
-			= SequenceGUIMouseActions::SequenceGUIMouseActions::NONE;
+		/**
+		 * default constructor
+		 */
+		SequenceEditorGUIState() = default;
+
+		/**
+		 * deconstructor
+		 */
+		~SequenceEditorGUIState() {}
+
+		// current action
+		SequenceGUIMouseActions::Types currentAction
+			= SequenceGUIMouseActions::Types::NONE;
+
+		// current object id, used to identify object with actions
 		std::string currentObjectID = "";
+
+		// current action data
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
 	};
 
+
 	/**
+	 * SequenceEditorGUIView
+	 * Responsible for draw the GUI for the sequence editor
+	 * Needs reference to controller
 	 */
 	class SequenceEditorGUIView
 	{
 	public:
-		SequenceEditorGUIView(
-			SequenceEditorController& controller,
-			std::string id);
+
+		SequenceEditorGUIView(SequenceEditorController& controller, std::string id);
 
 		virtual void draw();
 	private:

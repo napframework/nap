@@ -4,6 +4,7 @@
 #include "sequence.h"
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
+#include "sequenceeditortypes.h"
 
 // external includes
 #include <nap/resource.h>
@@ -41,28 +42,6 @@ namespace nap
 	};
 
 	/**
-	 * 
-	 */
-	namespace SequenceEditorTypes
-	{
-		enum TanPointTypes
-		{
-			IN,
-			OUT
-		};
-
-		/**
-		*
-		*/
-		enum SegmentValueTypes
-		{
-			BEGIN,
-			END
-		};
-	}
-	
-
-	/**
 	 * SequenceEditorController 
 	 * The actual controller with methods that a view can call
 	 */
@@ -79,7 +58,7 @@ namespace nap
 
 		/**
 		 * segmentDurationChange
-		 * @param segmentID the id of the segement we need to edit
+		 * @param segmentID the id of the segment we need to edit
 		 * @param amount the amount that the duration of this segment should change
 		 */
 		void segmentDurationChange(
@@ -127,10 +106,6 @@ namespace nap
 		SequencePlayer& getSequencePlayer() const;
 
 		const Sequence& getSequence() const;
-
-		//////////////////////////////////////////////////////////////////////////
-		// Template Definitions
-		//////////////////////////////////////////////////////////////////////////
 
 		/**
 		 * 
