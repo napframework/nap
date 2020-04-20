@@ -117,7 +117,7 @@ namespace nap
 
 		auto* segment = findSegment(trackID, segmentID);
 		assert(segment != nullptr);
-		assert(segment->get_type().template is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+		assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
 
 		auto& segmentEvent = static_cast<SequenceTrackSegmentEvent&>(*segment);
 		segmentEvent.mStartTime += amount;
