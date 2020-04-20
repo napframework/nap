@@ -45,7 +45,7 @@ namespace nap
 		{
 			for (int i = 0; i < mSegments.size(); i++)
 			{
-				if (!errorState.check(mSegments[i].get()->get_type().is_derived_from<SequenceTrackSegmentCurve<T>>(), "segment not derived from correct type"))
+				if (!errorState.check(mSegments[i].get()->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(), "segment not derived from correct type"))
 				{
 					return false;
 				}
