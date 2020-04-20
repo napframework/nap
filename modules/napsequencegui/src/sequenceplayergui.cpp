@@ -364,7 +364,7 @@ namespace nap
 
 				drawList->AddLine({trackTopLeft.x + segmentX , trackTopLeft.y}, {trackTopLeft.x + segmentX, trackTopLeft.y + mTrackHeight}, guicolors::white, 1.0f);
 
-				assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+				assert(segment->get_type().template is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
 				const auto& segmentEvent = static_cast<const SequenceTrackSegmentEvent&>(*segment.get());
 
 				drawList->AddText(

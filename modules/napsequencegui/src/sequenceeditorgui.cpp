@@ -578,7 +578,7 @@ namespace nap
 					0.0f,
 					drawList);
 
-				assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+				assert(segment->get_type().template is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
 				const auto& segmentEvent = static_cast<const SequenceTrackSegmentEvent&>(*segment.get());
 
 				drawList->AddText(
