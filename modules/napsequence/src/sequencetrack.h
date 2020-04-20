@@ -54,7 +54,7 @@ namespace nap
 		 * getTrackType
 		 * returns this tracktype
 		 */
-		virtual const SequenceTrackTypes::Types getTrackType() const;
+		virtual const SequenceTrackTypes::Types getTrackType() const override;
 
 		T mMaximum; ///< Property: 'Maximum' maximum value of track
 		T mMinimum; ///< Property: 'Minimum' minimum value of track
@@ -72,12 +72,6 @@ namespace nap
 		 * getTrackType
 		 * returns this tracktype
 		 */
-		virtual const SequenceTrackTypes::Types getTrackType() const;
+		virtual const SequenceTrackTypes::Types getTrackType() const override;
 	};
-
-#define DEFINE_SEQUENCETRACKCURVE(Type)																			\
-		RTTI_BEGIN_CLASS(Type)																						\
-			RTTI_PROPERTY("Minimum",	&Type::mMinimum, nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Maximum",	&Type::mMaximum, nap::rtti::EPropertyMetaData::Default)				\
-		RTTI_END_CLASS
 }

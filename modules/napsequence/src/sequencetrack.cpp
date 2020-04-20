@@ -13,10 +13,25 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::SequenceTrackEvent)
 RTTI_END_CLASS
 
-DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<float>)
-DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<glm::vec2>)
-DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<glm::vec3>)
-DEFINE_SEQUENCETRACKCURVE(nap::SequenceTrackCurve<glm::vec4>)
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurve<float>)																						
+RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurve<float>::mMinimum, nap::rtti::EPropertyMetaData::Default)				
+RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurve<float>::mMaximum, nap::rtti::EPropertyMetaData::Default)				
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurve<glm::vec2>)
+RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurve<glm::vec2>::mMinimum, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurve<glm::vec2>::mMaximum, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurve<glm::vec3>)
+RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurve<glm::vec3>::mMinimum, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurve<glm::vec3>::mMaximum, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurve<glm::vec4>)
+RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurve<glm::vec4>::mMinimum, nap::rtti::EPropertyMetaData::Default)
+RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurve<glm::vec4>::mMaximum, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
