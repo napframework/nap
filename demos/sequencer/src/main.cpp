@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "timeline.h"
+#include "sequencer.h"
 
 // Nap includes
 #include <apprunner.h>

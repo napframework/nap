@@ -34,79 +34,77 @@ namespace nap
 
 
 	void SequenceEditorController::segmentDurationChange(
+		const std::string& trackID,
 		const std::string& segmentID,
 		float amount)
 	{
-		// pause player thread
+		// lock
 		std::unique_lock<std::mutex> lock = mSequencePlayer.lock();
 
 		//
 		Sequence& sequence = mSequencePlayer.getSequence();
 
-		// find the track
-		for (auto& track : sequence.mTracks)
+		//
+		SequenceTrack* track = findTrack(trackID);
+		assert(track != nullptr);
+
+		ResourcePtr<SequenceTrackSegment> previousSegment = nullptr;
+		for (auto trackSegment : track->mSegments)
 		{
-			ResourcePtr<SequenceTrackSegment> previousSegment = nullptr;
-			for (auto trackSegment : track->mSegments)
+			if (trackSegment->mID == segmentID)
 			{
-				if (trackSegment->mID == segmentID)
+				// check if new duration is valid
+				bool valid = true;
+				double newDuration = trackSegment->mDuration + amount;
+
+				if (newDuration > 0.0)
 				{
-					// check if new duration is valid
-					bool valid = true;
-					double newDuration = trackSegment->mDuration + amount;
-
-					if (newDuration > 0.0)
+					if (previousSegment != nullptr)
 					{
-						if (previousSegment != nullptr)
+						if (trackSegment->mStartTime + newDuration < previousSegment->mStartTime + previousSegment->mDuration)
 						{
-							if (trackSegment->mStartTime + newDuration < previousSegment->mStartTime + previousSegment->mDuration)
-							{
-								valid = false;
-							}
+							valid = false;
 						}
 					}
-					else
-					{
-						valid = false;
-					}
-
-					if (valid)
-					{
-						trackSegment->mDuration += amount;
-
-						switch (track->getTrackType())
-						{
-						default:
-							break;
-						case SequenceTrackTypes::UNKOWN:
-
-							break;
-						case SequenceTrackTypes::FLOAT:
-							updateSegments<float>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC2:
-							updateSegments<glm::vec2>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC3:
-							updateSegments<glm::vec3>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC4:
-							updateSegments<glm::vec4>(*track.get());
-							break;
-						case SequenceTrackTypes::EVENT:
-							break;
-						}
-						updateTracks();
-						
-					}
-					break;
+				}
+				else
+				{
+					valid = false;
 				}
 
-				previousSegment = trackSegment;
-			}
-		}
+				if (valid)
+				{
+					trackSegment->mDuration += amount;
 
-		// resume player thread
+					switch (track->getTrackType())
+					{
+					default:
+						break;
+					case SequenceTrackTypes::UNKOWN:
+						break;
+					case SequenceTrackTypes::FLOAT:
+						updateSegments<float>(*track);
+						break;
+					case SequenceTrackTypes::VEC2:
+						updateSegments<glm::vec2>(*track);
+						break;
+					case SequenceTrackTypes::VEC3:
+						updateSegments<glm::vec3>(*track);
+						break;
+					case SequenceTrackTypes::VEC4:
+						updateSegments<glm::vec4>(*track);
+						break;
+					case SequenceTrackTypes::EVENT:
+						break;
+					}
+					updateTracks();
+						
+				}
+				break;
+			}
+
+			previousSegment = trackSegment;
+		}
 	}
 
 	void SequenceEditorController::segmentEventStartTimeChange(
@@ -315,15 +313,13 @@ namespace nap
 		const std::string& objectID)
 	{
 		SequenceTrack* track = findTrack(trackID);
+		assert(track != nullptr);
 
-		if (track != nullptr)
+		std::unique_lock<std::mutex> l = mSequencePlayer.lock();
+
+		if (mSequencePlayer.createAdapter(objectID, trackID, l))
 		{
-			std::unique_lock<std::mutex> l = mSequencePlayer.lock();
-
-			if (mSequencePlayer.createAdapter(objectID, trackID))
-			{
-				track->mAssignedObjectIDs = objectID;
-			}
+			track->mAssignedObjectIDs = objectID;
 		}
 	}
 
@@ -601,7 +597,6 @@ namespace nap
 	void SequenceEditorController::changeCurveType(
 		const std::string& trackID,
 		const std::string& segmentID,
-		const int curveIndex,
 		math::ECurveInterp type)
 	{
 		auto l = mSequencePlayer.lock();
@@ -612,7 +607,6 @@ namespace nap
 		auto* segmentCurve = dynamic_cast<SequenceTrackSegmentCurve<T>*>(segment);
 		assert(segmentCurve != nullptr);
 		
-		assert(curveIndex < segmentCurve->mCurves.size());
 		segmentCurve->mCurveType = type;
 		for (int i = 0; i < segmentCurve->mCurves.size(); i++)
 		{
@@ -995,8 +989,8 @@ namespace nap
 	template NAPAPI void SequenceEditorController::changeMinMaxCurveTrack<glm::vec3>(const std::string& trackID, glm::vec3 minimum, glm::vec3 maximum);
 	template NAPAPI void SequenceEditorController::changeMinMaxCurveTrack<glm::vec4>(const std::string& trackID, glm::vec4 minimum, glm::vec4 maximum);
 
-	template NAPAPI void SequenceEditorController::changeCurveType<float>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
-	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec2>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
-	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec3>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
-	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec4>(const std::string& trackID, const std::string& segmentID, const int curveIndex, math::ECurveInterp type);
+	template NAPAPI void SequenceEditorController::changeCurveType<float>(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
+	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec2>(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
+	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec3>(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
+	template NAPAPI void SequenceEditorController::changeCurveType<glm::vec4>(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
 }

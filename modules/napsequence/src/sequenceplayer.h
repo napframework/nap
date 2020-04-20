@@ -179,8 +179,9 @@ namespace nap
 		 * creates an adapter with string objectID for track with trackid. This searches the list of appropriate adapter types for the corresponding track id and creates it if available
 		 * @param objectID the id of the adapter object
 		 * @param trackID the id of the track
+		 * @param player lock, the player needs to be locked, to ensure this, pass a unique lock
 		 */
-		bool createAdapter(const std::string& objectID, const std::string& trackID);
+		bool createAdapter(const std::string& objectID, const std::string& trackID, const std::unique_lock<std::mutex>& playerLock);
 
 		/**
 		 * onUpdate

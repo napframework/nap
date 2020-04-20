@@ -1,5 +1,5 @@
 {
-    "title": "Timeline",
+    "title": "Sequencer",
     "version": "0.3.0",
     "modules": [
         "mod_napapp",

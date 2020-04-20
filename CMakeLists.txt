@@ -140,7 +140,6 @@ add_subdirectory(apps/flexblock)
 add_subdirectory(apps/flexblock/module)
 add_subdirectory(apps/anima)
 add_subdirectory(apps/anima/module)
-add_subdirectory(apps/timeline)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -169,6 +168,7 @@ add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
+add_subdirectory(demos/sequencer)
 
 # Unit tests
 add_subdirectory(unittests)
