@@ -84,34 +84,38 @@ namespace nap
 	{
 		// Activate current window for drawing
 
-		if (!mRenderService->beginRendering(*mRenderWindow))
-			return;
+		mRenderService->beginFrame();
 
-		IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-		backbuffer.beginRendering();
+		if (mRenderService->beginRendering(*mRenderWindow))
+		{
+			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
+			backbuffer.beginRendering();
 
-		// Get perspective camera
-		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			// Get perspective camera
+			PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-		// Get mesh to render
-		RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
-		
-		// Set camera location in the shader that draws all the meshes.
-		// The camera location is used for the light computation.
-		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
-		UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
-		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
-		
-		// Render all copied meshes
-		std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
+			// Get mesh to render
+			RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
 
-		// Draw gui
-		mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			// Set camera location in the shader that draws all the meshes.
+			// The camera location is used for the light computation.
+			TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+			UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
+			cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
-		backbuffer.endRendering();
+			// Render all copied meshes
+			std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
 
-		mRenderService->endRendering();
+			// Draw gui
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+
+			backbuffer.endRendering();
+
+			mRenderService->endRendering();
+		}
+
+		mRenderService->endFrame();
 	}
 	
 

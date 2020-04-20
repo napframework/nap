@@ -409,7 +409,38 @@ namespace nap
 		return false;
 	}
 
-//////////////////////////////////////////////////////////////////////////
+	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int maxFramesInFlight, utility::ErrorState& errorState)
+	{
+		commandBuffers.resize(maxFramesInFlight);
+
+		VkCommandBufferAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+
+		if (!errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers"))
+			return false;
+
+		return true;
+	}
+
+	static bool createSyncObjects(VkDevice device, std::vector<VkFence>& inFlightFences, int maxFramesInFlight, utility::ErrorState& errorState)
+	{
+		inFlightFences.resize(maxFramesInFlight);
+
+		VkFenceCreateInfo fenceInfo = {};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		for (size_t i = 0; i < maxFramesInFlight; i++)
+			if (!errorState.check(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS, "Failed to create sync objects"))
+				return false;
+
+		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 	RenderService::RenderService(ServiceConfiguration* configuration) :
 		Service(configuration)
@@ -807,27 +838,6 @@ namespace nap
 	}
 
 
-	void RenderService::advanceToFrame(int frameIndex)
-	{
-		mCurrentFrameIndex = frameIndex;
-
-		// Destroy pipelines for the new frame
-		mPipelinesToDestroy.erase(std::remove_if(mPipelinesToDestroy.begin(), mPipelinesToDestroy.end(), [this, frameIndex](PipelineToDestroy& pipelineToDestroy)
-		{
-			if (pipelineToDestroy.mFrameIndex == mCurrentFrameIndex)
-			{
-				vkDestroyPipeline(mDevice, pipelineToDestroy.mPipeline, nullptr);
-				return true;
-			}
-
-			return false;
-		}), mPipelinesToDestroy.end());
-
-		for (auto& kvp : mDescriptorSetCaches)
-			kvp.second->release(mCurrentFrameIndex);
-	}
-
-
 	void RenderService::processEvents()
 	{
 		for (const auto& window : mWindows)
@@ -1052,9 +1062,102 @@ namespace nap
 		if (!initEmptyTexture(errorState))
 			return false;
 
+		if (!createCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers, getMaxFramesInFlight(), errorState))
+			return false;
+
+		if (!createSyncObjects(mDevice, mFrameInFlightFences, getMaxFramesInFlight(), errorState))
+			return false;
+
+		if (!createCommandBuffers(mDevice, mCommandPool, mHeadlessCommandBuffers, getMaxFramesInFlight(), errorState))
+			return false;
+
 		return true;
 	}
 
+
+	void RenderService::transferTextures()
+	{
+		VkCommandBuffer commandBuffer = mTransferCommandBuffers[mCurrentFrameIndex];
+		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+		VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		assert(result == VK_SUCCESS);
+
+		for (Texture2D* texture : mTexturesToUpdate)
+			texture->upload(mTransferCommandBuffers[mCurrentFrameIndex]);
+
+		mTexturesToUpdate.clear();
+
+		result = vkEndCommandBuffer(mTransferCommandBuffers[mCurrentFrameIndex]);
+		assert(result == VK_SUCCESS);
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &mTransferCommandBuffers[mCurrentFrameIndex];
+
+		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		assert(result == VK_SUCCESS);
+	}
+
+	void RenderService::beginFrame()
+	{
+		assert(mCurrentCommandBuffer == nullptr);
+		assert(mCurrentRenderWindow == nullptr);
+
+		vkWaitForFences(mDevice, 1, &mFrameInFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
+		vkResetFences(mDevice, 1, &mFrameInFlightFences[mCurrentFrameIndex]);
+		 
+		for (auto& kvp : mDescriptorSetCaches)
+			kvp.second->release(mCurrentFrameIndex);
+
+		transferTextures();
+	}
+
+	void RenderService::endFrame()
+	{
+		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
+		// the commandbuffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
+		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFrameInFlightFences[mCurrentFrameIndex]);
+		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
+	}
+
+	bool RenderService::beginHeadlessRendering()
+	{
+		assert(mCurrentCommandBuffer == nullptr);
+
+		mCurrentCommandBuffer = mHeadlessCommandBuffers[mCurrentFrameIndex];
+		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
+		assert(result == VK_SUCCESS);
+
+		return true;
+	}
+
+	void RenderService::endHeadlessRendering()
+	{
+		assert(mCurrentCommandBuffer != nullptr);
+
+		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
+		assert(result == VK_SUCCESS);
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &mCurrentCommandBuffer;
+
+		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		assert(result == VK_SUCCESS);
+
+		mCurrentCommandBuffer = nullptr;
+	}
 
 	bool RenderService::beginRendering(RenderWindow& renderWindow)
 	{
@@ -1066,13 +1169,6 @@ namespace nap
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
-		int frame_index = renderWindow.getWindow()->getCurrentFrameIndex();
-		advanceToFrame(frame_index);
-
-		for (Texture2D* texture : mTexturesToUpdate)
-			texture->upload(mCurrentCommandBuffer);
-
-		mTexturesToUpdate.clear();
 
 		return true;
 	}

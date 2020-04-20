@@ -4,10 +4,19 @@
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window0",
-			"Width" : 512,
-			"Height" : 512,
+			"Width" : 256,
+			"Height" : 256,
 			"Title" : "Window 1"
 		},
+
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window1",
+			"Width" : 512,
+			"Height" : 512,
+			"Title" : "Window 2"
+		},
+
 		{
 			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture",
@@ -43,6 +52,10 @@
 			"Path": "pig_head_alpha_rotated.mesh"
 		},
 		{
+			"Type" : "nap::SphereMesh",
+			"mID": "SphereMesh"
+		},		
+		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "TestTexture",
 			"ImagePath" : "test.jpg"
@@ -53,11 +66,21 @@
 			"ImagePath" : "pig_head.jpg"
 		},		
 		{
+			"Type" : "nap::ImageFromFile",	
+			"mID" : "WorldTexture",
+			"ImagePath" : "world_texture.jpg"
+		},		
+		{
 			"Type" : "nap::Shader",
 			"mID": "GeneralShader",
 			"mVertShader": "shaders/shader.vert",
 			"mFragShader": "shaders/shader.frag",
             "OutputFormat": "RGBA8"
+		},
+		{
+			"Type" : "nap::PythonScript",
+			"mID" : "WorldEntityScript",
+			"Path" : "scripts/world.py"
 		},        
 		{
 			"Type" : "nap::Scene",
@@ -70,6 +93,15 @@
 				{
 					"Entity" : "CameraEntityLeft"
 				},
+				{
+					"Entity" : "CameraEntityRight"
+				},
+				{
+					"Entity" : "SplitCameraEntity"
+				},
+				{
+					"Entity" : "WorldEntity"
+				},				
 				{
 					"Entity" : "DefaultInputRouterEntity"
 				},
@@ -123,6 +155,100 @@
 						"UniformScale": 1.5					
 					}
 				}
+			]
+		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "WorldEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "SphereMesh",
+					"MaterialInstance" : {
+						"mID": "WorldMaterialInstance",
+						"Material": "GeneralMaterial",
+						"Uniforms" : 
+						[
+							{
+
+								"Type" : "nap::UniformStruct",
+								"Name" : "UBO",
+								"Uniforms" :
+								[
+									{
+										"Type" : "nap::UniformStructArray",
+										"Name" : "mData",
+										"Structs" :
+										[
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 0
+													}
+												]
+											},
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 1
+													}
+												]
+											}													
+										]
+									}
+								]
+							}
+						],
+						"Samplers" : 
+						[
+							{
+								"Type" : "nap::Sampler2D",
+								"Name" : "pigTexture",
+								"Texture" : "WorldTexture"
+							},
+							{
+								"Type" : "nap::Sampler2D",
+								"Name" : "testTexture",
+								"Texture" : "WorldTexture"
+							}
+						]	
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				},
+				{
+					"Type" : "nap::PythonScriptComponent",
+					"PythonScript": "WorldEntityScript",
+					"Class": "WorldEntity"
+				}			
 			]
 		},		
 		{
@@ -355,6 +481,96 @@
 					}
 				}
 			]
-		}
+		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntityRight",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponentRight",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::KeyInputComponent"
+				},				
+				{
+					"Type" : "nap::PointerInputComponent"
+				},
+				{
+					"Type" : "nap::FirstPersonController",
+					"MovementSpeed": 20.0,
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponentRight"
+				},					
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "SplitCameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0,
+						"GridDimensions": {
+							"x": 2,
+							"y": 1
+						}
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}		
 	]
 }

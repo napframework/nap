@@ -93,8 +93,15 @@ namespace nap
 		// Default destructor
 		virtual ~RenderService();
 
+		void beginFrame();
+		void endFrame();
+
+		bool beginHeadlessRendering();
+		void endHeadlessRendering();
+
 		bool beginRendering(RenderWindow& renderWindow);
 		void endRendering();
+
 
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -209,6 +216,8 @@ namespace nap
 
 		Texture2D& getEmptyTexture() const { return *mEmptyTexture; }
 
+		int getMaxFramesInFlight() const { return 2; }
+
 	protected:
 		/**
 		* Object creation registration
@@ -255,19 +264,13 @@ namespace nap
 		 */
 		void processEvents();
 
-		void advanceToFrame(int frameIndex);
-
 		bool initEmptyTexture(nap::utility::ErrorState& errorState);
 
-		struct PipelineToDestroy
-		{
-			int			mFrameIndex;
-			VkPipeline	mPipeline;
-		};
+		void transferTextures();
 
+	private:
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
-		using PipelineList = std::vector<PipelineToDestroy>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
 
@@ -278,11 +281,12 @@ namespace nap
 		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TexturesToUpdateSet						mTexturesToUpdate;
 
-		PipelineList							mPipelinesToDestroy;
-
 		int										mCurrentFrameIndex = 0;
+		std::vector<VkCommandBuffer>			mTransferCommandBuffers;
+		std::vector<VkCommandBuffer>			mHeadlessCommandBuffers;
+		std::vector<VkFence>					mFrameInFlightFences;
 		VkCommandBuffer							mCurrentCommandBuffer = nullptr;
-		RenderWindow*							mCurrentRenderWindow = nullptr;
+		RenderWindow*							mCurrentRenderWindow = nullptr;		
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;

@@ -422,24 +422,18 @@ namespace nap
 		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers");
 	}
 
-	bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, std::vector<VkFence>& inFlightFences, int numFramesInFlight, utility::ErrorState& errorState)
+	bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, int numFramesInFlight, utility::ErrorState& errorState)
 	{
 		imageAvailableSemaphores.resize(numFramesInFlight);
 		renderFinishedSemaphores.resize(numFramesInFlight);
-		inFlightFences.resize(numFramesInFlight);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		VkFenceCreateInfo fenceInfo = {};
-		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
 		for (size_t i = 0; i < numFramesInFlight; i++) 
 		{
 			if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) == VK_SUCCESS &&
-								  vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS &&
-								  vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS, "Failed to create sync objects"))
+								  vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS, "Failed to create sync objects"))
 			{
 				return false;
 			}
@@ -672,11 +666,10 @@ namespace nap
 		if (!createSwapChainResources(errorState))
 			return false;
 
-		const int maxFramesInFlight = 2;
-		if (!createCommandBuffers(mDevice, renderService.getCommandPool(), mCommandBuffers, maxFramesInFlight, errorState))
+		if (!createCommandBuffers(mDevice, renderService.getCommandPool(), mCommandBuffers, renderService.getMaxFramesInFlight(), errorState))
 			return false;
 
-		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mInFlightFences, maxFramesInFlight, errorState))
+		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, renderService.getMaxFramesInFlight(), errorState))
 			return false;
 
 		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
@@ -771,6 +764,8 @@ namespace nap
 	// Make this window's context current 
 	VkCommandBuffer GLWindow::makeCurrent()
 	{
+		int	current_frame = mRenderService->getCurrentFrameIndex();
+
 		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
 		uint32_t window_state = SDL_GetWindowFlags(mWindow);
 
@@ -800,31 +795,27 @@ namespace nap
 			mPreviousWindowSize = window_size;
 		}
 
-		// Wait for the previous frame to finish. Note that we do this *after* the previous checks, otherwise this would lead to a hang in the zero-sized-window-case. This is because makeCurrent
-		// will still be getting called, but nobody is presenting frames, so the fence will never be signaled, leading to an infinite wait.
-		vkWaitForFences(mDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
-		vkResetFences(mDevice, 1, &mInFlightFences[mCurrentFrame]);
-
 		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
-		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mCurrentImageIndex);
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		assert(result == VK_SUCCESS);
 
-		VkCommandBuffer commandBuffer = mCommandBuffers[mCurrentFrame];
+		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 		
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-			throw std::runtime_error("failed to begin recording command buffer!");
-		}
+		result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		assert(result == VK_SUCCESS);
 
 		return commandBuffer;
 	}
 
 	void GLWindow::beginRenderPass()
 	{
+		int	current_frame = mRenderService->getCurrentFrameIndex();
+
 		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
 
 		VkRenderPassBeginInfo renderPassInfo = {};
@@ -843,14 +834,14 @@ namespace nap
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
-		vkCmdBeginRenderPass(mCommandBuffers[mCurrentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mCommandBuffers[current_frame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkRect2D rect;
 		rect.offset.x = 0;
 		rect.offset.y = 0;
 		rect.extent.width = window_size.x;
 		rect.extent.height = window_size.y;
-		vkCmdSetScissor(mCommandBuffers[mCurrentFrame], 0, 1, &rect);
+		vkCmdSetScissor(mCommandBuffers[current_frame], 0, 1, &rect);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
@@ -859,18 +850,20 @@ namespace nap
 		viewport.height = window_size.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(mCommandBuffers[mCurrentFrame], 0, 1, &viewport);
+		vkCmdSetViewport(mCommandBuffers[current_frame], 0, 1, &viewport);
 	}
 
 	void GLWindow::endRenderPass()
 	{
-		vkCmdEndRenderPass(mCommandBuffers[mCurrentFrame]);
+		int	current_frame = mRenderService->getCurrentFrameIndex();
+		vkCmdEndRenderPass(mCommandBuffers[current_frame]);
 	}
 
 	// Swap buffers
 	void GLWindow::swap()
 	{
-		VkCommandBuffer commandBuffer = mCommandBuffers[mCurrentFrame];
+		int	current_frame = mRenderService->getCurrentFrameIndex();
+		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
@@ -879,20 +872,20 @@ namespace nap
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrame] };
+		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &mCommandBuffers[mCurrentFrame];
+		submitInfo.pCommandBuffers = &mCommandBuffers[current_frame];
 
-		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[mCurrentFrame] };
+		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		VkResult result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mCurrentFrame]);
+		VkResult result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
 		VkPresentInfoKHR presentInfo = {};
@@ -911,8 +904,6 @@ namespace nap
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
 		result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
 		assert(result == VK_SUCCESS);
-
-		mCurrentFrame = (mCurrentFrame + 1) % mCommandBuffers.size();
 	}
 
 

@@ -1,10 +1,16 @@
 import nap
 import math
 
-def update(entity, currentTime, deltaTime):
-	transform = entity.findComponent("nap::TransformComponentInstance")
+class WorldEntity:
+	def __init__(self, entity):
+		self.entity = entity
 
-	translate = transform.getTranslate()
-	translate = nap.vec3(math.sin(currentTime*2), 0.0, -3.0)
-	transform.setTranslate(translate)
+	def update(self, currentTime, deltaTime):
+		transform = self.entity.findComponent("nap::TransformComponentInstance")
 
+		translate = transform.getTranslate()
+		translate = nap.vec3(math.sin(currentTime*2), 0.0, -3.0)
+		transform.setTranslate(translate)
+
+	def destroy(self):
+		pass

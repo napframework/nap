@@ -154,8 +154,6 @@ namespace nap
 		 */
 		uint32 getNumber() const;
 
-		int getCurrentFrameIndex() const { return mCurrentFrame; }
-
 		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
 
@@ -187,11 +185,9 @@ namespace nap
 		std::vector<VkCommandBuffer>					mCommandBuffers;
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
-		std::vector<VkFence>							mInFlightFences;
 		VkImage											mDepthImage = nullptr;
 		VkDeviceMemory									mDepthImageMemory = nullptr;
 		VkImageView										mDepthImageView = nullptr;
-		int												mCurrentFrame = 0;
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window

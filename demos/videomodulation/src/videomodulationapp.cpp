@@ -106,13 +106,13 @@ namespace nap
 	*/
 	void VideoModulationApp::render()
 	{
-		if (!mRenderService->beginRendering(*mRenderWindow))
-			return;
+		mRenderService->beginFrame();
 
 		// Get orthographic camera
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 
 		// Video render target
+		if (mRenderService->beginHeadlessRendering())
 		{
 			// Get objects to render
 			std::vector<RenderableComponentInstance*> render_objects;
@@ -122,15 +122,18 @@ namespace nap
 			mVideoRenderTarget->beginRendering();
 			mRenderService->renderObjects(*mVideoRenderTarget, ortho_cam, render_objects);
 			mVideoRenderTarget->endRendering();
+
+			// Apply video effect to rendered video texture
+			{
+				RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+				to_tex_comp.draw();
+			}
+
+			mRenderService->endHeadlessRendering(); 
 		}
-		
-		// Apply video effect to rendered video texture
-		{
-			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
-			to_tex_comp.draw();
-		}
-		
+
 		// Render everything to screen
+		if (mRenderService->beginRendering(*mRenderWindow))
 		{
 			// Clear target
 			BackbufferRenderTarget& render_target = mRenderWindow->getBackbuffer();
@@ -138,13 +141,13 @@ namespace nap
 
 			render_target.beginRendering();
 
- 			// Get background plane to render
- 			std::vector<RenderableComponentInstance*> render_objects;
- 			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
+			// Get background plane to render
+			std::vector<RenderableComponentInstance*> render_objects;
+			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
 
 			// Render background plane
 			mRenderService->renderObjects(render_target, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
-			
+
 			// Render displacement mesh
 			render_objects.clear();
 			render_objects.emplace_back(&mDisplacementEntity->getComponent<RenderableMeshComponentInstance>());
@@ -160,11 +163,13 @@ namespace nap
 
 			// Draw gui
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
-			
+
 			render_target.endRendering();
+
+			mRenderService->endRendering();
 		}
 
-		mRenderService->endRendering();
+		mRenderService->endFrame();
 	}
 
 
