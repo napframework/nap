@@ -1050,7 +1050,7 @@ namespace nap
 						const SequenceGUIControlPointData* data
 							= dynamic_cast<SequenceGUIControlPointData*>(mEditorAction.currentActionData.get());
 
-						if (data->controlPointIndex == i && data->curveIndex == v)
+						if (data->mControlIndex == i && data->mCurveIndex == v)
 						{
 							float timeAdjust = mMouseDelta.x / segmentWidth;
 							float valueAdjust = (mMouseDelta.y / mTrackHeight) * -1.0f;
@@ -1065,10 +1065,10 @@ namespace nap
 								v);
 
 							mController.changeCurvePoint<T>(
-								data->trackID,
-								data->segmentID,
-								data->controlPointIndex,
-								data->curveIndex,
+								data->mTrackID,
+								data->mSegmentID,
+								data->mControlIndex,
+								data->mCurveIndex,
 								timeAdjust,
 								valueAdjust);
 							mCurveCache.clear();
@@ -1225,9 +1225,9 @@ namespace nap
 						const SequenceGUIDragSegmentData* data =
 							dynamic_cast<SequenceGUIDragSegmentData*>(mEditorAction.currentActionData.get());
 
-						if (data->type == segmentType && 
-							data->segmentID == segment.mID &&
-							data->curveIndex == v)
+						if (data->mType == segmentType &&
+							data->mSegmentID == segment.mID &&
+							data->mCurveIndex == v)
 						{
 							mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 						}
@@ -1241,7 +1241,7 @@ namespace nap
 					const SequenceGUIDragSegmentData* data =
 						dynamic_cast<SequenceGUIDragSegmentData*>(mEditorAction.currentActionData.get());
 
-					if (data->type == segmentType && data->curveIndex == v)
+					if (data->mType == segmentType && data->mCurveIndex == v)
 					{
 						hovered = true;
 						showValue<T>(
@@ -1353,7 +1353,7 @@ namespace nap
 				}
 				else
 				{
-					mController.segmentDurationChange(segment.mID, amount);
+					mController.segmentDurationChange(track.mID, segment.mID, amount);
 				}
 				mCurveCache.clear();
 			}
@@ -1467,10 +1467,10 @@ namespace nap
 					const SequenceGUIDragTanPointData* data =
 						dynamic_cast<SequenceGUIDragTanPointData*>(mEditorAction.currentActionData.get());
 
-					if (data->segmentID == segment.mID && 
-						data->controlPointIndex == controlPointIndex &&
-						data->type == type &&
-						data->curveIndex == curveIndex)
+					if (data->mSegmentID == segment.mID &&
+						data->mControlPointIndex == controlPointIndex &&
+						data->mType == type &&
+						data->mCurveIndex == curveIndex)
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
@@ -1692,16 +1692,16 @@ namespace nap
 					default:
 						break;
 					case SequenceTrackTypes::FLOAT:
-						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 						break;
 					case SequenceTrackTypes::VEC2:
-						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID,  math::ECurveInterp::Linear);
 						break;
 					case SequenceTrackTypes::VEC3:
-						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 						break;
 					case SequenceTrackTypes::VEC4:
-						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Linear);
+						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 						break;
 					}
 
@@ -1719,16 +1719,16 @@ namespace nap
 					default:
 						break;
 					case SequenceTrackTypes::FLOAT:
-						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 						break;
 					case SequenceTrackTypes::VEC2:
-						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 						break;
 					case SequenceTrackTypes::VEC3:
-						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 						break;
 					case SequenceTrackTypes::VEC4:
-						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, data->mSelectedIndex, math::ECurveInterp::Bezier);
+						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 						break;
 					}
 
@@ -1952,18 +1952,18 @@ namespace nap
 			{
 				SequenceGUIInsertEventSegment& data = static_cast<SequenceGUIInsertEventSegment&>(*mEditorAction.currentActionData.get());
 				
-				int n = data.eventMessage.length();
+				int n = data.mEventMessage.length();
 				char buffer[256];
-				strcpy(buffer, data.eventMessage.c_str());
+				strcpy(buffer, data.mEventMessage.c_str());
 
 				if (ImGui::InputText("message", buffer, 256))
 				{
-					data.eventMessage = std::string(buffer);
+					data.mEventMessage = std::string(buffer);
 				}
 
 				if (ImGui::Button("Insert"))
 				{
-					mController.insertEventSegment(data.trackID, data.time, data.eventMessage);
+					mController.insertEventSegment(data.mTrackID, data.mTime, data.mEventMessage);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 				}
@@ -2257,7 +2257,7 @@ namespace nap
 						if (ImGui::IsMouseReleased(0))
 						{
 							const SequenceGUIDragPlayerData* data = dynamic_cast<SequenceGUIDragPlayerData*>( mEditorAction.currentActionData.get() );
-							if (data->playerWasPlaying && !data->playerWasPaused)
+							if (data->mPlayerWasPlaying && !data->mPlayerWasPaused)
 							{
 								player.setIsPlaying(true);
 							}
@@ -2349,14 +2349,14 @@ namespace nap
 
 				int index = 0;
 				Combo("Sequences",
-					&data->selectedShow,
+					&data->mSelectedShow,
 					shows);
 					
 				utility::ErrorState errorState;
 				if (ImGui::Button("Load"))
 				{
 					if (mController.getSequencePlayer().load(
-						showFiles[data->selectedShow], errorState))
+						showFiles[data->mSelectedShow], errorState))
 					{
 						mEditorAction.currentAction = NONE;
 						mEditorAction.currentActionData = nullptr;
@@ -2366,7 +2366,7 @@ namespace nap
 					else
 					{
 						ImGui::OpenPopup("Error");
-						data->errorString = errorState.toString();
+						data->mErrorString = errorState.toString();
 					}
 				}
 
@@ -2380,7 +2380,7 @@ namespace nap
 
 				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
-					ImGui::Text(data->errorString.c_str());
+					ImGui::Text(data->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
 						mEditorAction.currentAction = LOAD;
@@ -2431,10 +2431,10 @@ namespace nap
 				shows.push_back("<New...>");
 
 				if (Combo("Shows",
-					&data->selectedShow,
+					&data->mSelectedShow,
 					shows))
 				{
-					if (data->selectedShow == shows.size() - 1)
+					if (data->mSelectedShow == shows.size() - 1)
 					{
 						ImGui::OpenPopup("New");
 					}
@@ -2476,11 +2476,11 @@ namespace nap
 					utility::ErrorState errorState;
 					if (mController.getSequencePlayer().save(showDir + "/" + newShowFileName, errorState))
 					{
-						data->selectedShow = shows.size() - 2;
+						data->mSelectedShow = shows.size() - 2;
 					}
 					else
 					{
-						data->errorString = errorState.toString();
+						data->mErrorString = errorState.toString();
 						ImGui::OpenPopup("Error");
 					}
 				}
@@ -2489,17 +2489,17 @@ namespace nap
 				{
 					utility::ErrorState errorState;
 					ImGui::Text(("Are you sure you want to overwrite " + 
-						shows[data->selectedShow] + " ?").c_str());
+						shows[data->mSelectedShow] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
 						if (mController.getSequencePlayer().save(
-							shows[data->selectedShow],
+							shows[data->mSelectedShow],
 							errorState))
 						{
 						}
 						else
 						{
-							data->errorString = errorState.toString();
+							data->mErrorString = errorState.toString();
 							ImGui::OpenPopup("Error");
 						}
 
@@ -2516,7 +2516,7 @@ namespace nap
 
 				if (ImGui::BeginPopupModal("Error"))
 				{
-					ImGui::Text(data->errorString.c_str());
+					ImGui::Text(data->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
 						ImGui::CloseCurrentPopup();
@@ -2556,25 +2556,31 @@ namespace nap
 		const int resolution = 40;
 		bool curveSelected = false;
 
-		if (mCurveCache.find(segment.mID) == mCurveCache.end())
-		{
-			std::vector<ImVec2> points;
-			points.resize((resolution + 1)*segment.mCurves.size());
-			for (int v = 0; v < segment.mCurves.size(); v++)
-			{
-				for (int i = 0; i <= resolution; i++)
-				{
-					float value = 1.0f - segment.mCurves[v]->evaluate((float)i / resolution);
+		bool needsDrawing = ImGui::IsRectVisible( { trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mTrackHeight } );
 
-					points[i + v * (resolution+1)] =
+		if( needsDrawing )
+		{
+			if (mCurveCache.find(segment.mID) == mCurveCache.end())
+			{
+				std::vector<ImVec2> points;
+				points.resize((resolution + 1)*segment.mCurves.size());
+				for (int v = 0; v < segment.mCurves.size(); v++)
+				{
+					for (int i = 0; i <= resolution; i++)
 					{
-						trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-						trackTopLeft.y + value * mTrackHeight
-					};
+						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / resolution);
+
+						points[i + v * (resolution+1)] =
+							{
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
+								trackTopLeft.y + value * mTrackHeight
+							};
+					}
 				}
+				mCurveCache.emplace(segment.mID, points);
 			}
-			mCurveCache.emplace(segment.mID, points);
 		}
+
 
 		int selectedCurve = -1;
 		if (mIsWindowFocused)
@@ -2644,16 +2650,18 @@ namespace nap
 			}
 		}
 
-		for (int i = 0; i < segment.mCurves.size(); i++)
+		if( needsDrawing )
 		{
-			// draw points of curve
-			drawList->AddPolyline(
-				&*mCurveCache[segment.mID].begin() + i * ( resolution + 1 ), // points array
-				mCurveCache[segment.mID].size() / segment.mCurves.size(), // size of points array
-				guicolors::curvecolors[i], // color
-				false, // closed
-				selectedCurve == i ? 3.0f : 1.0f, // thickness
-				true); // anti-aliased
+			for (int i = 0; i < segment.mCurves.size(); i++)
+			{
+				// draw points of curve
+				drawList->AddPolyline(&*mCurveCache[segment.mID].begin() + i * (resolution + 1), // points array
+									  mCurveCache[segment.mID].size() / segment.mCurves.size(),	 // size of points array
+									  guicolors::curvecolors[i],								 // color
+									  false,													 // closed
+									  selectedCurve == i ? 3.0f : 1.0f,							 // thickness
+									  true);													 // anti-aliased
+			}
 		}
 	}
 

@@ -196,7 +196,7 @@ namespace nap
 		mAdapters.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createAdapter(track->mAssignedObjectIDs, track->mID);
+			createAdapter(track->mAssignedObjectIDs, track->mID, l);
 		}
 
 		mDefaultSequence = name;
@@ -332,7 +332,8 @@ namespace nap
 
 	bool SequencePlayer::createAdapter(
 		const std::string& objectID, 
-		const std::string& trackID)
+		const std::string& trackID,
+		const std::unique_lock<std::mutex>& l)
 	{
 		SequenceTrack* track = nullptr;
 

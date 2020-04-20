@@ -4,6 +4,7 @@
 #include "sequencetracksegmentevent.h"
 #include "sequencetrack.h"
 #include "sequenceplayerparametersetter.h"
+#include "sequencetracksegmentcurve.h"
 
 // external includes
 #include <nap/resource.h>

@@ -214,6 +214,408 @@ namespace nap
 	}
 
 
+	void SequencePlayerGUIView::drawEventTrack(const SequenceTrack &track,ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer)
+	{
+		// begin inspector
+		std::ostringstream inspectorIDStream;
+		inspectorIDStream << track.mID << "inspector";
+		std::string inspectorID = inspectorIDStream.str();
+
+		// manually set the cursor position before drawing new track window
+		cursorPos =
+			{
+				cursorPos.x ,
+				mTrackHeight + marginBetweenTracks + cursorPos.y
+			};
+
+		// manually set the cursor position before drawing inspector
+		ImVec2 inspectorCursorPos = { cursorPos.x , cursorPos.y };
+		ImGui::SetCursorPos(inspectorCursorPos);
+
+		// draw inspector window
+		if (ImGui::BeginChild(
+			inspectorID.c_str(), // id
+			{ mInspectorWidth , mTrackHeight + 5 }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+			// obtain drawlist
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			// store window size and position
+			const ImVec2 windowPos = ImGui::GetWindowPos();
+			const ImVec2 windowSize = ImGui::GetWindowSize();
+
+			// draw background & box
+			drawList->AddRectFilled(
+				windowPos,
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
+				guicolors::black);
+
+			drawList->AddRect(
+				windowPos,
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
+				guicolors::white);
+
+			//
+			ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
+			inspectorCursorPos.x += 5;
+			inspectorCursorPos.y += 5;
+			ImGui::SetCursorPos(inspectorCursorPos);
+
+			// scale down everything
+			float scale = 0.25f;
+			ImGui::GetStyle().ScaleAllSizes(scale);
+
+			// draw the assigned receiver
+			ImGui::Text("Assigned Receivers");
+
+			inspectorCursorPos = ImGui::GetCursorPos();
+			inspectorCursorPos.x += 5;
+			inspectorCursorPos.y += 5;
+			ImGui::SetCursorPos(inspectorCursorPos);
+
+			bool assigned = false;
+			std::string assignedID;
+			std::vector<std::string> dispatcherIDs;
+			int currentItem = 0;
+			dispatcherIDs.emplace_back("none");
+			int count = 0;
+			const SequenceEventReceiver* assignedParameterPtr = nullptr;
+			for (const auto& dispatcher : sequencePlayer.mEventReceivers)
+			{
+				count++;
+
+				if (dispatcher->mID == track.mAssignedObjectIDs)
+				{
+					assigned = true;
+					assignedID = dispatcher->mID;
+					currentItem = count;
+					assignedParameterPtr = dispatcher.get();
+				}
+
+				dispatcherIDs.emplace_back(dispatcher->mID);
+			}
+
+			ImGui::PushItemWidth(140.0f);
+			ImGui::Text(assignedID.c_str());
+
+			//
+			ImGui::PopItemWidth();
+
+			// pop scale
+			ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
+		}
+		ImGui::EndChild();
+
+		const ImVec2 windowCursorPos = { cursorPos.x + mInspectorWidth + 5, cursorPos.y };
+		ImGui::SetCursorPos(windowCursorPos);
+
+		// begin track
+		if (ImGui::BeginChild(
+			track.mID.c_str(), // id
+			{ mTimelineWidth + 5 , mTrackHeight + 5 }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+			// push id
+			ImGui::PushID(track.mID.c_str());
+
+			// get child focus
+			bool trackHasFocus = ImGui::IsMouseHoveringWindow();
+
+			// get window drawlist
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			// get current imgui cursor position
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+
+			// get window position
+			ImVec2 windowTopLeft = ImGui::GetWindowPos();
+
+			// calc beginning of timeline graphic
+			ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
+
+			// draw background of track
+			drawList->AddRectFilled(
+				trackTopLeft, // top left position
+				{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
+				guicolors::black); // color
+
+			// draw border of track
+			drawList->AddRect(
+				trackTopLeft, // top left position
+				{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
+				guicolors::white); // color
+
+			//
+			mMouseCursorTime = (mMousePos.x - trackTopLeft.x) / mStepSize;
+
+
+			float previousSegmentX = 0.0f;
+
+			SequenceTrackTypes::Types trackType = track.getTrackType();
+
+			int segmentCount = 0;
+			for (const auto& segment : track.mSegments)
+			{
+				float segmentX = (segment->mStartTime) * mStepSize;
+				float segmentWidth = segment->mDuration * mStepSize;
+
+				drawList->AddLine({trackTopLeft.x + segmentX , trackTopLeft.y}, {trackTopLeft.x + segmentX, trackTopLeft.y + mTrackHeight}, guicolors::white, 1.0f);
+
+				assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+				const auto& segmentEvent = static_cast<const SequenceTrackSegmentEvent&>(*segment.get());
+
+				drawList->AddText(
+					{ trackTopLeft.x + segmentX + 5, trackTopLeft.y + 5 },
+					guicolors::red,
+					segmentEvent.mMessage.c_str());
+
+				//
+				previousSegmentX = segmentX;
+
+				//
+				segmentCount++;
+			}
+
+			// pop id
+			ImGui::PopID();
+
+		}
+
+		ImGui::End();
+
+		//
+		ImGui::SetCursorPos(cursorPos);
+	}
+
+
+	template<typename T>
+	void SequencePlayerGUIView::drawCurveTrack(
+		const SequenceTrack &track,
+		ImVec2 &cursorPos,
+		const float marginBetweenTracks,
+		const SequencePlayer &sequencePlayer)
+	{
+		// begin inspector
+		std::ostringstream inspectorIDStream;
+		inspectorIDStream << track.mID << "inspector";
+		std::string inspectorID = inspectorIDStream.str();
+
+		// manually set the cursor position before drawing new track window
+		cursorPos =
+			{
+				cursorPos.x ,
+				mTrackHeight + marginBetweenTracks + cursorPos.y
+			};
+
+		// manually set the cursor position before drawing inspector
+		ImVec2 inspectorCursorPos = { cursorPos.x , cursorPos.y };
+		ImGui::SetCursorPos(inspectorCursorPos);
+
+		// draw inspector window
+		if (ImGui::BeginChild(
+			inspectorID.c_str(), // id
+			{ mInspectorWidth , mTrackHeight + 5 }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+			// obtain drawlist
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			// store window size and position
+			const ImVec2 windowPos = ImGui::GetWindowPos();
+			const ImVec2 windowSize = ImGui::GetWindowSize();
+
+			// draw background & box
+			drawList->AddRectFilled(
+				windowPos,
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
+				guicolors::black);
+
+			drawList->AddRect(
+				windowPos,
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
+				guicolors::white);
+
+			//
+			ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
+			inspectorCursorPos.x += 5;
+			inspectorCursorPos.y += 5;
+			ImGui::SetCursorPos(inspectorCursorPos);
+
+			// scale down everything
+			float scale = 0.25f;
+			ImGui::GetStyle().ScaleAllSizes(scale);
+
+			// draw the assigned parameter
+			ImGui::Text("Assigned Parameter");
+
+			inspectorCursorPos = ImGui::GetCursorPos();
+			inspectorCursorPos.x += 5;
+			inspectorCursorPos.y += 5;
+			ImGui::SetCursorPos(inspectorCursorPos);
+
+			bool assigned = false;
+			std::string assignedID;
+			std::vector<std::string> parameterIDs;
+			int currentItem = 0;
+			parameterIDs.emplace_back("none");
+			int count = 0;
+			const Parameter* assignedParameterPtr = nullptr;
+			for (const auto& parameter : sequencePlayer.mParameters)
+			{
+				count++;
+
+				if (parameter->mID == track.mAssignedObjectIDs)
+				{
+					assigned = true;
+					assignedID = parameter->mID;
+					currentItem = count;
+					assignedParameterPtr = parameter.get();
+				}
+
+				parameterIDs.emplace_back(parameter->mID);
+			}
+
+			ImGui::PushItemWidth(140.0f);
+			ImGui::Text(assignedID.c_str());
+			//
+			ImGui::PopItemWidth();
+
+			// delete track button
+			ImGui::Spacing();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+
+
+			// pop scale
+			ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
+		}
+		ImGui::EndChild();
+
+		const ImVec2 windowCursorPos = { cursorPos.x + mInspectorWidth + 5, cursorPos.y };
+		ImGui::SetCursorPos(windowCursorPos);
+
+		// begin track
+		if (ImGui::BeginChild(
+			track.mID.c_str(), // id
+			{ mTimelineWidth + 5 , mTrackHeight + 5 }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+			// push id
+			ImGui::PushID(track.mID.c_str());
+
+			// get child focus
+			bool trackHasFocus = ImGui::IsMouseHoveringWindow();
+
+			// get window drawlist
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			// get current imgui cursor position
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+
+			// get window position
+			ImVec2 windowTopLeft = ImGui::GetWindowPos();
+
+			// calc beginning of timeline graphic
+			ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
+
+			// draw background of track
+			drawList->AddRectFilled(
+				trackTopLeft, // top left position
+				{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
+				guicolors::black); // color
+
+			// draw border of track
+			drawList->AddRect(
+				trackTopLeft, // top left position
+				{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
+				guicolors::white); // color
+
+			//
+			mMouseCursorTime = (mMousePos.x - trackTopLeft.x) / mStepSize;
+
+			float previousSegmentX = 0.0f;
+
+			SequenceTrackTypes::Types trackType = track.getTrackType();
+
+			int segmentCount = 0;
+			for (const auto& segment : track.mSegments)
+			{
+				float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
+				float segmentWidth = segment->mDuration * mStepSize;
+
+				if (trackType == SequenceTrackTypes::Types::FLOAT)
+				{
+					drawSegmentContent<float>(
+						track,
+						*segment.get(),
+						trackTopLeft,
+						previousSegmentX,
+						segmentWidth,
+						segmentX,
+						drawList,
+						(segmentCount == 0));
+				}
+				else if (trackType == SequenceTrackTypes::Types::VEC3)
+				{
+					drawSegmentContent<glm::vec3>(
+						track,
+						*segment.get(),
+						trackTopLeft,
+						previousSegmentX,
+						segmentWidth,
+						segmentX,
+						drawList,
+						(segmentCount == 0));
+				}
+				else if (trackType == SequenceTrackTypes::Types::VEC2)
+				{
+					drawSegmentContent<glm::vec2>(
+						track,
+						*segment.get(),
+						trackTopLeft,
+						previousSegmentX,
+						segmentWidth,
+						segmentX,
+						drawList,
+						(segmentCount == 0));
+				}
+				else if (trackType == SequenceTrackTypes::Types::VEC4)
+				{
+					drawSegmentContent<glm::vec4>(
+						track,
+						*segment.get(),
+						trackTopLeft,
+						previousSegmentX,
+						segmentWidth,
+						segmentX,
+						drawList,
+						(segmentCount == 0));
+				}
+
+				//
+				previousSegmentX = segmentX;
+
+				//
+				segmentCount++;
+			}
+
+			// pop id
+			ImGui::PopID();
+
+		}
+
+		ImGui::End();
+
+		//
+		ImGui::SetCursorPos(cursorPos);
+	}
+
+
 	void SequencePlayerGUIView::drawTracks(
 		const SequencePlayer& sequencePlayer,
 		const Sequence &sequence)
@@ -228,195 +630,46 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
-			// begin inspector
-			std::ostringstream inspectorIDStream;
-			inspectorIDStream << track->mID << "inspector";
-			std::string inspectorID = inspectorIDStream.str();
-
-			// manually set the cursor position before drawing new track window
-			cursorPos =
+			switch (track->getTrackType())
 			{
-				cursorPos.x ,
-				mTrackHeight + marginBetweenTracks + cursorPos.y
-			};
-
-			// manually set the cursor position before drawing inspector
-			ImVec2 inspectorCursorPos = { cursorPos.x , cursorPos.y };
-			ImGui::SetCursorPos(inspectorCursorPos);
-
-			// draw inspector window
-			if (ImGui::BeginChild(
-				inspectorID.c_str(), // id
-				{ mInspectorWidth , mTrackHeight + 5 }, // size
-				false, // no border
-				ImGuiWindowFlags_NoMove)) // window flags
-			{
-				// obtain drawlist
-				ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-				// store window size and position
-				const ImVec2 windowPos = ImGui::GetWindowPos();
-				const ImVec2 windowSize = ImGui::GetWindowSize();
-
-				// draw background & box
-				drawList->AddRectFilled(
-					windowPos,
-					{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
-					guicolors::black);
-
-				drawList->AddRect(
-					windowPos,
-					{ windowPos.x + windowSize.x - 5, windowPos.y + mTrackHeight },
-					guicolors::white);
-
-				// 
-				ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
-				inspectorCursorPos.x += 5;
-				inspectorCursorPos.y += 5;
-				ImGui::SetCursorPos(inspectorCursorPos);
-
-				// scale down everything
-				float scale = 0.25f;
-				ImGui::GetStyle().ScaleAllSizes(scale);
-
-				// draw the assigned parameter
-				ImGui::Text("Assigned Parameter");
-
-				inspectorCursorPos = ImGui::GetCursorPos();
-				inspectorCursorPos.x += 5;
-				inspectorCursorPos.y += 5;
-				ImGui::SetCursorPos(inspectorCursorPos);
-
-				ImGui::PushItemWidth(200.0f);
-
-				std::string name = track->mAssignedObjectIDs;
-				if (name == "")
-					name = "none";
-				ImGui::Text(name.c_str());
-
-				//
-				ImGui::PopItemWidth();
-
-				// pop scale
-				ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
+			case SequenceTrackTypes::FLOAT:
+				drawCurveTrack<float>(
+					*track.get(),
+					cursorPos,
+					marginBetweenTracks,
+					sequencePlayer);
+				break;
+			case SequenceTrackTypes::VEC2:
+				drawCurveTrack<glm::vec2>(
+					*track.get(),
+					cursorPos,
+					marginBetweenTracks,
+					sequencePlayer);
+				break;;
+			case SequenceTrackTypes::VEC3:
+				drawCurveTrack<glm::vec3>(
+					*track.get(),
+					cursorPos,
+					marginBetweenTracks,
+					sequencePlayer);
+				break;
+			case SequenceTrackTypes::VEC4:
+				drawCurveTrack<glm::vec4>(
+					*track.get(),
+					cursorPos,
+					marginBetweenTracks,
+					sequencePlayer);
+				break;
+			case SequenceTrackTypes::EVENT:
+				drawEventTrack(
+					*track.get(),
+					cursorPos,
+					marginBetweenTracks,
+					sequencePlayer);
+				break;
+			default:
+				break;
 			}
-			ImGui::EndChild();
-
-			const ImVec2 windowCursorPos = { cursorPos.x + mInspectorWidth + 5, cursorPos.y };
-			ImGui::SetCursorPos(windowCursorPos);
-
-			// begin track
-			if (ImGui::BeginChild(
-				track->mID.c_str(), // id
-				{ mTimelineWidth + 5 , mTrackHeight + 5 }, // size
-				false, // no border
-				ImGuiWindowFlags_NoMove)) // window flags
-			{
-				// push id
-				ImGui::PushID(track->mID.c_str());
-
-				// get child focus
-				bool trackHasFocus = ImGui::IsMouseHoveringWindow();
-
-				// get window drawlist
-				ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-				// get current imgui cursor position
-				ImVec2 cursorPos = ImGui::GetCursorPos();
-
-				// get window position
-				ImVec2 windowTopLeft = ImGui::GetWindowPos();
-
-				// calc beginning of timeline graphic
-				ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
-
-				// draw background of track
-				drawList->AddRectFilled(
-					trackTopLeft, // top left position
-					{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
-					guicolors::black); // color 
-
-									   // draw border of track
-				drawList->AddRect(
-					trackTopLeft, // top left position
-					{ trackTopLeft.x + mTimelineWidth, trackTopLeft.y + mTrackHeight }, // bottom right position
-					guicolors::white); // color 
-
-				float previousSegmentX = 0.0f;
-
-				SequenceTrackTypes::Types trackType = track->getTrackType();
-
-				int segmentCount = 0;
-				for (const auto& segment : track->mSegments)
-				{
-					float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
-					float segmentWidth = segment->mDuration * mStepSize;
-
-					if (trackType == SequenceTrackTypes::Types::FLOAT)
-					{
-						drawSegmentContent<float>(
-							*track.get(),
-							*segment.get(),
-							trackTopLeft,
-							previousSegmentX,
-							segmentWidth,
-							segmentX,
-							drawList,
-							(segmentCount == 0));
-					}
-					else if (trackType == SequenceTrackTypes::Types::VEC3)
-					{
-						drawSegmentContent<glm::vec3>(
-							*track.get(),
-							*segment.get(),
-							trackTopLeft,
-							previousSegmentX,
-							segmentWidth,
-							segmentX,
-							drawList,
-							(segmentCount == 0));
-					}
-					else if (trackType == SequenceTrackTypes::Types::VEC2)
-					{
-						drawSegmentContent<glm::vec2>(
-							*track.get(),
-							*segment.get(),
-							trackTopLeft,
-							previousSegmentX,
-							segmentWidth,
-							segmentX,
-							drawList,
-							(segmentCount == 0));
-					}
-					else if (trackType == SequenceTrackTypes::Types::VEC4)
-					{
-						drawSegmentContent<glm::vec4>(
-							*track.get(),
-							*segment.get(),
-							trackTopLeft,
-							previousSegmentX,
-							segmentWidth,
-							segmentX,
-							drawList,
-							(segmentCount == 0));
-					}
-
-					//
-					previousSegmentX = segmentX;
-
-					//
-					segmentCount++;
-				}
-
-				// pop id
-				ImGui::PopID();
-
-			}
-
-			ImGui::End();
-
-			//
-			ImGui::SetCursorPos(cursorPos);
 
 			// increment track count
 			trackCount++;
@@ -734,36 +987,44 @@ namespace nap
 		const int resolution = 40;
 		bool curveSelected = false;
 
-		if (mCurveCache.find(segment.mID) == mCurveCache.end())
-		{
-			std::vector<ImVec2> points;
-			points.resize((resolution + 1)*segment.mCurves.size());
-			for (int v = 0; v < segment.mCurves.size(); v++)
-			{
-				for (int i = 0; i <= resolution; i++)
-				{
-					float value = 1.0f - segment.mCurves[v]->evaluate((float)i / resolution);
+		bool needsDrawing = ImGui::IsRectVisible( { trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mTrackHeight } );
 
-					points[i + v * (resolution + 1)] =
+		if( needsDrawing )
+		{
+			if (mCurveCache.find(segment.mID) == mCurveCache.end())
+			{
+				std::vector<ImVec2> points;
+				points.resize((resolution + 1)*segment.mCurves.size());
+				for (int v = 0; v < segment.mCurves.size(); v++)
+				{
+					for (int i = 0; i <= resolution; i++)
 					{
-						trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-						trackTopLeft.y + value * mTrackHeight
-					};
+						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / resolution);
+
+						points[i + v * (resolution + 1)] =
+							{
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
+								trackTopLeft.y + value * mTrackHeight
+							};
+					}
 				}
+				mCurveCache.emplace(segment.mID, points);
 			}
-			mCurveCache.emplace(segment.mID, points);
 		}
 
-		for (int i = 0; i < segment.mCurves.size(); i++)
+		if( needsDrawing )
 		{
-			// draw points of curve
-			drawList->AddPolyline(
-				&*mCurveCache[segment.mID].begin() + i * (resolution + 1), // points array
-				mCurveCache[segment.mID].size() / segment.mCurves.size(), // size of points array
-				guicolors::curvecolors[i], // color
-				false, // closed
-				1.0f, // thickness
-				true); // anti-aliased
+			for (int i = 0; i < segment.mCurves.size(); i++)
+			{
+				// draw points of curve
+				drawList->AddPolyline(
+					&*mCurveCache[segment.mID].begin() + i * (resolution + 1), // points array
+					mCurveCache[segment.mID].size() / segment.mCurves.size(), // size of points array
+					guicolors::curvecolors[i], // color
+					false, // closed
+					1.0f, // thickness
+					true); // anti-aliased
+			}
 		}
 	}
 
