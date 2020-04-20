@@ -13,11 +13,11 @@ namespace nap
 
 	void SequencePlayerEventAdapter::update(double time)
 	{
-		assert(mTrack.get_type().template is_derived_from(RTTI_OF(SequenceTrackEvent)));
+		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
 		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
 		for (const auto& eventSegment : eventTrack.mSegments)
 		{
-			assert(eventSegment.get()->get_type().template is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
+			assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
 			SequenceTrackSegmentEvent& event = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
 
 			if (time > event.mStartTime)
