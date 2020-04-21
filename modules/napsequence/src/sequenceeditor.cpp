@@ -326,6 +326,8 @@ namespace nap
 
 	void SequenceEditorController::deleteTrack(const std::string& deleteTrackID)
 	{
+		auto lock = mSequencePlayer.lock();
+
 		//
 		Sequence& sequence = mSequencePlayer.getSequence();
 

@@ -21,7 +21,7 @@ source_group("shaders" FILES ${SHADERS})
 # add executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER demos)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
 # Get our modules list from project.json
 project_json_to_cmake()

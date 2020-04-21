@@ -55,11 +55,7 @@ namespace nap
 			std::unordered_set<std::string> objectIDs;
 			mSequence = sequenceutils::createSequence(mReadObjects, objectIDs);
 
-			nap::Logger::info(*this, "Done creating default sequence, saving it");
-			if (errorState.check(!save(mDefaultSequence, errorState), "Error saving sequence"))
-			{
-				return false;
-			}
+			nap::Logger::info(*this, "Done creating default sequence");
 		}
 
 		return true;
