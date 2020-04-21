@@ -13,36 +13,18 @@ RTTI_BEGIN_STRUCT(nap::math::FloatFComplex)
 		RTTI_PROPERTY("Value",			&nap::math::FloatFComplex::mValue,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
-RTTI_BEGIN_STRUCT(nap::math::DoubleFComplex)
-	RTTI_PROPERTY("Time", &nap::math::DoubleFComplex::mTime, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Value", &nap::math::DoubleFComplex::mValue, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_STRUCT(nap::math::FloatFCurvePoint)
-RTTI_PROPERTY("Position", &nap::math::FloatFCurvePoint::mPos, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InTangent", &nap::math::FloatFCurvePoint::mInTan, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("OutTangent", &nap::math::FloatFCurvePoint::mOutTan, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InterpolationType", &nap::math::FloatFCurvePoint::mInterp, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("AlignedTangents", &nap::math::FloatFCurvePoint::mTangentsAligned, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
-RTTI_BEGIN_STRUCT(nap::math::DoubleFCurvePoint)
-RTTI_PROPERTY("Position", &nap::math::DoubleFCurvePoint::mPos, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InTangent", &nap::math::DoubleFCurvePoint::mInTan, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("OutTangent", &nap::math::DoubleFCurvePoint::mOutTan, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InterpolationType", &nap::math::DoubleFCurvePoint::mInterp, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("AlignedTangents", &nap::math::DoubleFCurvePoint::mTangentsAligned, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Position",			&nap::math::FloatFCurvePoint::mPos,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InTangent",			&nap::math::FloatFCurvePoint::mInTan,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OutTangent",			&nap::math::FloatFCurvePoint::mOutTan,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InterpolationType",	&nap::math::FloatFCurvePoint::mInterp,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AlignedTangents",	&nap::math::FloatFCurvePoint::mTangentsAligned, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::math::FloatFCurve)
 	RTTI_PROPERTY("Points",				&nap::math::FloatFCurve::mPoints,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::math::DoubleFCurve)
-	RTTI_PROPERTY("Points", &nap::math::DoubleFCurve::mPoints, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_DEFINE_BASE(nap::math::DoubleFCurvePoint);
 RTTI_DEFINE_BASE(nap::math::FloatFCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec2FCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec3FCurvePoint);
@@ -53,13 +35,6 @@ const static float defaultTanOffset = 0.1f;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFAULT CURVE CONSTRUCTORS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<>
-FCurve<float, double>::FCurve() {
-	mPoints.emplace_back(FCurvePoint<float, double>({ 0.0f, 0.0 }, { -defaultTanOffset, 0.0 }, { defaultTanOffset, 0.0 }));
-	mPoints.emplace_back(FCurvePoint<float, double>({ 1.0f, 1.0 }, { -defaultTanOffset, 0.0 }, { defaultTanOffset, 0.0 }));
-}
-
 
 
 template<>

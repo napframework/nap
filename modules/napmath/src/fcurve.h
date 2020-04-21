@@ -254,9 +254,6 @@ namespace nap
 		using Vec3FCurvePoint	= FCurvePoint<float, glm::vec3>;
 		using Vec4FCurvePoint	= FCurvePoint<float, glm::vec4>;
 
-		using DoubleFComplex	= FComplex<float, double>;
-		using DoubleFCurve		= FCurve<float, double>;
-		using DoubleFCurvePoint = FCurvePoint<float, double>;
 
 		//////////////////////////////////////////////////////////////////////////
 		// explicit MSVC template specialization exports
@@ -265,7 +262,7 @@ namespace nap
 		template class NAPAPI FCurve<float, glm::vec2>;
 		// template class NAPAPI FCurve<float, glm::vec3>;
 		// template class NAPAPI FCurve<float, glm::vec4>;
-		template class NAPAPI FCurve<float, double>;
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template Definitions

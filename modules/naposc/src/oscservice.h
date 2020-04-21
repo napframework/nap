@@ -56,12 +56,12 @@ namespace nap
 		/**
 		 * Registers an OSC receiver with the service
 		 */
-		void registerEventReceiver(OSCReceiver& receiver);
+		void registerReceiver(OSCReceiver& receiver);
 
 		/**
 		 * Removes an OSC receiver from the service
 		 */
-		void removeEventReceiver(OSCReceiver& receiver);
+		void removeReceiver(OSCReceiver& receiver);
 
 		/**
 		 *	Register an OSC input component with the service
@@ -74,7 +74,7 @@ namespace nap
 		void removeInputComponent(OSCInputComponentInstance& input);
 
 		// All the osc receivers currently registered in the system
-		std::vector<OSCReceiver*> mEventReceivers;
+		std::vector<OSCReceiver*> mReceivers;
 
 		// All the osc components currently available to the system
 		std::vector<OSCInputComponentInstance*> mInputs;

@@ -41,7 +41,7 @@ namespace nap
 		std::queue<OSCEventPtr> events;
 
 		// Forward every event to every input component of interest
-		for (auto& receiver : mEventReceivers)
+		for (auto& receiver : mReceivers)
 		{
 			receiver->consumeEvents(events);
 
@@ -80,20 +80,20 @@ namespace nap
 	}
 
 
-	void OSCService::registerEventReceiver(OSCReceiver& receiver)
+	void OSCService::registerReceiver(OSCReceiver& receiver)
 	{
-		mEventReceivers.emplace_back(&receiver);
+		mReceivers.emplace_back(&receiver);
 	}
 
 
-	void OSCService::removeEventReceiver(OSCReceiver& receiver)
+	void OSCService::removeReceiver(OSCReceiver& receiver)
 	{
-		auto found_it = std::find_if(mEventReceivers.begin(), mEventReceivers.end(), [&](const auto& it)
+		auto found_it = std::find_if(mReceivers.begin(), mReceivers.end(), [&](const auto& it)
 		{
 			return it == &receiver;
 		});
-		assert(found_it != mEventReceivers.end());
-		mEventReceivers.erase(found_it);
+		assert(found_it != mReceivers.end());
+		mReceivers.erase(found_it);
 	}
 
 

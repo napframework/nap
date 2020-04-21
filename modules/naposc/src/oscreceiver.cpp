@@ -32,7 +32,7 @@ namespace nap
 	bool OSCReceiver::start(utility::ErrorState& errorState)
 	{
 		// Register the receiver
-		mService->registerEventReceiver(*this);
+		mService->registerReceiver(*this);
 
 		// Create the socket, catch end point creation exception
 		// We allow the try catch here because of the 3rd party lib throwing an exception.
@@ -64,7 +64,7 @@ namespace nap
 		assert(mSocket != nullptr);
 		mSocket->stop();
 		mEventThread.join();
-		mService->removeEventReceiver(*this);
+		mService->removeReceiver(*this);
 		mSocket = nullptr;
 		nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 	}
