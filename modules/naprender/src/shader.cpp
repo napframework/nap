@@ -150,6 +150,11 @@ const TBuiltInResource defaultResource =
  *
  * So, our 'workaround': we make our own class that derives from TDefaultGlslIoResolver. This gives us the correct input/output mapping behavior.
  * Then, we override the resolveBinding function to replace the wrong binding numbering behavior from TDefaultGlslIoResolver with the correct one from TDefaultIoResolver.
+ * 
+ * Note that there is one important modification from the resolveBinding function from TDefaultGlslIoResolver: that version only assigns binding numbers to uniforms/samplers
+ * if they're actually used by the shader. If they're unused, they get a default binding of 0, which can then clash with another uniform that *is* used but gets the first binding
+ * slot (0) allocated to it. Our version instead just assigns binding numbers to *everything*, regardless of if they're used or not. This ensures all uniforms/samplers are always uniquely
+ * numbered.
  *
  * The net result is that this allows us to compile GLSL shaders, without bindings/locations, to a valid SPIR-V module with correctly auto-numbered bindings/locations.
  * This is useful so that less technical users of nap don't have to manually specify bindings/locations in the shader, but can keep working as if it's GLSL.
@@ -175,7 +180,7 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 				return ent.newBinding = reserveSlot(
 					set, getBaseBinding(resource, set) + type.getQualifier().layoutBinding, numBindings);
 			}
-			else if (ent.live && doAutoBindingMapping()) {
+			else if (doAutoBindingMapping()) {
 				// find free slot, the caller did make sure it passes all vars with binding
 				// first and now all are passed that do not have a binding and needs one
 				return ent.newBinding = getFreeSlot(set, getBaseBinding(resource, set), numBindings);

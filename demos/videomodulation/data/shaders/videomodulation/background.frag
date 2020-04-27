@@ -5,7 +5,7 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passPosition;					//< frag world space position 
 
 // uniform inputs
-layout(binding = 10) uniform sampler2D	videoTexture;
+uniform sampler2D	videoTexture;
 
 uniform UBO
 {

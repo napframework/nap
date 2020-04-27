@@ -7,13 +7,13 @@ layout(binding=0) uniform UniformBufferObject
 	mat4 modelMatrix;
 }matBuf;
 
-layout(location=0) in vec3	in_Position;
-layout(location=1) in vec4	in_Color0;
-layout(location=2) in vec3 	in_Normals;
-layout(location=3) in vec3	in_UV0;
+in vec3	in_Position;
+in vec4	in_Color0;
+in vec3	in_Normals;
+in vec3	in_UV0;
 
-layout(location=0) out vec4 pass_Color;
-layout(location=1) out vec3 pass_Uvs;
+out vec4 pass_Color;
+out vec3 pass_Uvs;
 
 void main(void)
 {

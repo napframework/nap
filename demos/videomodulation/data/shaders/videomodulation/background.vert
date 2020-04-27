@@ -16,7 +16,7 @@ out vec3 passUVs;					//< vetex uv's
 out vec3 passPosition;				//< vertex world space position
 
 // uniform inputs
-layout(binding = 11) uniform sampler2D	videoTexture;
+uniform sampler2D	videoTexture;
 
 void main(void)
 {

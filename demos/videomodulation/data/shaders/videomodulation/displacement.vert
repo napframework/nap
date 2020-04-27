@@ -29,7 +29,7 @@ uniform DisplacementUBO
 	float randomness;
 } displacement;
 
-layout(binding = 10) uniform sampler2D	videoTexture;
+uniform sampler2D	videoTexture;
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax)
 {

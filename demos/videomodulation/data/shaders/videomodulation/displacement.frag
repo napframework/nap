@@ -15,7 +15,7 @@ struct PointLight
 };
 
 // uniform inputs
-layout(binding = 11) uniform sampler2D	videoTexture;
+uniform sampler2D	videoTexture;
 
 uniform UBO
 {
