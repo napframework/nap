@@ -919,22 +919,6 @@ namespace nap
 	{
 		return SDL::getWindowPosition(mWindow);
 	}
-
-
-	void GLWindow::clear(opengl::EClearFlags flags)
-	{
-		mBackbuffer.bind();
-		mBackbuffer.clear(flags);
-		mBackbuffer.unbind();
-	}
-
-
-	void GLWindow::clear()
-	{
-		mBackbuffer.bind();
-		mBackbuffer.clear(opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
-		mBackbuffer.unbind();
-	}
 }
 
 RTTI_DEFINE_BASE(nap::GLWindow)

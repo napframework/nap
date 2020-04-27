@@ -48,18 +48,6 @@ namespace nap
         return mWindow->getBackbuffer().getSize().y;
     }
     
-    
-	void RenderWindow::clear(opengl::EClearFlags flags)
-	{
-		mWindow->clear(flags);
-	}
-
-
-	void RenderWindow::clear()
-	{
-		mWindow->clear();
-	}
-
 
 	int RenderWindow::getWidthPixels() const
     {

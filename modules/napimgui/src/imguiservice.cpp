@@ -265,7 +265,7 @@ namespace nap
 			VkBuffer vertex_buffers[1] = { g_VertexBuffer[g_FrameIndex] };
 			VkDeviceSize vertex_offset[1] = { 0 };
 			vkCmdBindVertexBuffers(g_CommandBuffer, 0, 1, vertex_buffers, vertex_offset);
-			vkCmdBindIndexBuffer(g_CommandBuffer, g_IndexBuffer[g_FrameIndex], 0, VK_INDEX_TYPE_UINT16);
+			vkCmdBindIndexBuffer(g_CommandBuffer, g_IndexBuffer[g_FrameIndex], 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 		}
 
 		// Setup viewport:
