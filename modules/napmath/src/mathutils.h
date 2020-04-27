@@ -96,6 +96,15 @@ namespace nap
 		T power(T value, T exp);
 
 		/**
+		 * Smoothly interpolates, using a Hermite polynomial, between 0 and 1
+		 * @param value value to interpolate
+		 * @param edge0 returns 0 if input is less than this value
+		 * @param edge1 returns 1 if input is higher than this value
+		 */
+		template<typename T>
+		T smoothStep(T value, T edge0, T edge1);
+
+		/**
 		 * @return absolute value.
 		 */
 		template<typename T>
@@ -263,9 +272,7 @@ namespace nap
 		glm::vec3 NAPAPI worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix);
 
 		/**
-		 * Generates a unique identifier.
-		 * TODO: Implement proper UUID generation, this is temp solution based on a random number generator.
-		 * @return a uuid as string
+		 * Generate a UUID4, random every time, based on host device and random distribution
 		 */
 		std::string NAPAPI generateUUID();
 
@@ -340,6 +347,13 @@ namespace nap
 		T bell(T t, T strength)
 		{
 			return power<T>(4.0f, strength) * power<T>(t *(1.0f - t), strength);
+		}
+
+		template<typename T>
+		T smoothStep(T value, T edge0, T edge1)
+		{
+			T x = math::clamp<T>((value - edge0) / (edge1 - edge0), 0, 1);
+			return x * x * (3 - 2 * x);
 		}
 
 		//////////////////////////////////////////////////////////////////////////

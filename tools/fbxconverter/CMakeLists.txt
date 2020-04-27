@@ -97,7 +97,7 @@ if (WIN32)
 elseif(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
     # Add extra modules for RPATH building on macOS, likely related to NAP-225
-    list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napparameter)
+    list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
                                                                             "${DEPENDENT_NAP_MODULES}" 

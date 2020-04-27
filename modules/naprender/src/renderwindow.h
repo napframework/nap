@@ -60,6 +60,20 @@ namespace nap
 		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
 
 		/**
+		 * Clears specific parts of the window using the given flags.
+		 * The flags can be bitmasked together, for example: EClearFlags::Color | EClearFlags::Color.
+		 * @param renderTarget the opengl target to clear.
+		 * @param flags what parts to clear.
+		 */
+		void clear(opengl::EClearFlags flags);
+
+		/**
+		 * Clears all the window associated flags (Color, Depth, Stencil)
+		 * @param renderTarget the opengl target to clear
+		 */
+		void clear();
+
+		/**
          * Returns the width of the window.
          * Note that on high DPI monitors this is not the same as the pixel count.
          * To get the width in pixels use the size of the backbuffer using getWidthPixels().

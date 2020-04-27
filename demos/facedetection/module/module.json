@@ -1,0 +1,8 @@
+{
+    "dependencies": 
+    [
+        "mod_naprender",
+        "mod_napopencv",
+        "mod_napcameracontrol"
+    ]
+}

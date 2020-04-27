@@ -464,12 +464,12 @@ namespace nap
 	{
 		// Get settings
 		RenderWindowSettings window_settings;
-		window_settings.width = window.mWidth;
-		window_settings.height = window.mHeight;
-		window_settings.borderless = window.mBorderless;
-		window_settings.resizable = window.mResizable;
-		window_settings.title = window.mTitle;
-		window_settings.sync = window.mSync;
+		window_settings.width		= window.mWidth;
+		window_settings.height		= window.mHeight;
+		window_settings.borderless	= window.mBorderless;
+		window_settings.resizable	= window.mResizable;
+		window_settings.title		= window.mTitle;
+		window_settings.sync		= window.mSync;
 		window_settings.highdpi = mSettings.mEnableHighDPIMode;
 
 #if 0
@@ -503,21 +503,21 @@ namespace nap
 
 	void RenderService::removeWindow(RenderWindow& window)
 	{
-		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
-		{
-			return val == &window;
+		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val == &window; 
 		});
-
+		
 		assert(pos != mWindows.end());
 		mWindows.erase(pos);
 	}
-
+	
 
 	RenderWindow* RenderService::findWindow(void* nativeWindow) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
-		{
-			return val->getWindow()->getNativeWindow() == nativeWindow;
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val->getWindow()->getNativeWindow() == nativeWindow; 
 		});
 
 		if (pos != mWindows.end())
@@ -528,9 +528,9 @@ namespace nap
 
 	RenderWindow* RenderService::findWindow(uint id) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
-		{
-			return val->getNumber() == id;
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
+		{ 
+			return val->getNumber() == id; 
 		});
 
 		if (pos != mWindows.end())
@@ -611,7 +611,7 @@ namespace nap
 			break;
 		}
 		case EDepthMode::NoReadWrite:
-		{
+	{
 			depth_stencil.depthTestEnable = VK_FALSE;
 			depth_stencil.depthWriteEnable = VK_FALSE;
 			break;
@@ -650,7 +650,7 @@ namespace nap
 			break;
 		}
 		case EBlendMode::Additive:
-		{
+	{
 			color_blend_attachment_state.blendEnable = VK_TRUE;
 			color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -675,7 +675,7 @@ namespace nap
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
 		uint32_t shader_attribute_binding = 0;
 		for (auto& kvp : shader.getAttributes())
-		{
+	{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
 			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
@@ -831,7 +831,7 @@ namespace nap
 				return RenderableMesh();
 
 			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-				return RenderableMesh();
+			return RenderableMesh();
 		}
 
 		return RenderableMesh(mesh, materialInstance);
@@ -874,7 +874,7 @@ namespace nap
 			{
 				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
-				for (const auto& comp : entity_render_comps)
+				for (const auto& comp : entity_render_comps) 
 				{
 					if (comp->isSupported(camera))
 						render_comps.emplace_back(comp);
@@ -901,7 +901,7 @@ namespace nap
 			if (renderable_mesh != nullptr)
 			{
 				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
 				if (blend_mode == EBlendMode::AlphaBlend)
 					back_to_front.emplace_back(component);
 				else
@@ -961,7 +961,7 @@ namespace nap
 		{
 			if (!comp->isSupported(camera))
 			{
-				nap::Logger::warn("unable to render component: %s, unsupported camera %s",
+				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
@@ -1064,7 +1064,7 @@ namespace nap
 
 		if (!createCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers, getMaxFramesInFlight(), errorState))
 			return false;
-
+		
 		if (!createSyncObjects(mDevice, mFrameInFlightFences, getMaxFramesInFlight(), errorState))
 			return false;
 
@@ -1073,7 +1073,7 @@ namespace nap
 
 		return true;
 	}
-
+	
 
 	void RenderService::transferTextures()
 	{
@@ -1155,7 +1155,7 @@ namespace nap
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
-
+	
 		mCurrentCommandBuffer = nullptr;
 	}
 
@@ -1185,7 +1185,7 @@ namespace nap
 	}
 
 	void RenderService::preUpdate(double deltaTime)
-	{
+		{
 		//	getPrimaryWindow().makeCurrent();
 	}
 
@@ -1193,7 +1193,7 @@ namespace nap
 	void RenderService::update(double deltaTime)
 	{
 		processEvents();
-	}
+		}
 
 
 	// Shut down renderer
@@ -1222,7 +1222,7 @@ namespace nap
 
 
 	VkImageAspectFlags RenderService::getDepthAspectFlags() const
-	{
+		{
 		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 		if (mDepthFormat != VK_FORMAT_D32_SFLOAT)
 			flags |= VK_IMAGE_ASPECT_STENCIL_BIT;

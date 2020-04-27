@@ -77,8 +77,8 @@ namespace nap
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 
 		// Bind textures to target
- 		mTarget.mColorTexture = resource->mOutputTexture;
- 		mTarget.mDepthTexture = &mDepthTexture;
+		mTarget.mColorTexture = resource->mOutputTexture;
+		mTarget.mDepthTexture = &mDepthTexture;
 
 		// Initialize target
 		if (!mTarget.init(errorState))
@@ -153,7 +153,7 @@ namespace nap
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		mTarget.beginRendering();
-		
+
 		// Call on draw
 		onDraw(mTarget, command_buffer, sIdentityMatrix, proj_matrix);
 
@@ -164,6 +164,12 @@ namespace nap
 	bool RenderToTextureComponentInstance::isSupported(nap::CameraComponentInstance& camera) const
 	{
 		return camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance));
+	}
+
+
+	nap::MaterialInstance& RenderToTextureComponentInstance::getMaterialInstance()
+	{
+		return mMaterialInstance;
 	}
 
 

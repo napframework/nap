@@ -64,6 +64,7 @@ def package(zip_release,
             clean, 
             include_timestamp_in_name, 
             build_label, 
+            build_projects,
             archive_source, 
             archive_source_zipped,
             archive_source_only,
@@ -122,13 +123,55 @@ def package(zip_release,
 
         # Do the packaging
         if android_build:
-            package_path = package_for_android(package_basename, timestamp, git_revision, build_label_out, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python)
+            package_path = package_for_android(package_basename, 
+                                               timestamp, 
+                                               git_revision, 
+                                               build_label_out, 
+                                               overwrite, 
+                                               zip_release, 
+                                               android_abis, 
+                                               android_ndk_root, 
+                                               android_enable_python
+                                               )
         elif platform.startswith('linux'):    
-            package_path = package_for_linux(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols)
+            package_path = package_for_linux(package_basename, 
+                                             timestamp, 
+                                             git_revision, 
+                                             build_label_out, 
+                                             overwrite, 
+                                             include_apps, 
+                                             single_app_to_include, 
+                                             include_docs, 
+                                             zip_release, 
+                                             include_debug_symbols,
+                                             build_projects
+                                             )
         elif platform == 'darwin':
-            package_path = package_for_macos(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols)
+            package_path = package_for_macos(package_basename, 
+                                             timestamp, 
+                                             git_revision, 
+                                             build_label_out, 
+                                             overwrite, 
+                                             include_apps, 
+                                             single_app_to_include, 
+                                             include_docs, 
+                                             zip_release, 
+                                             include_debug_symbols,
+                                             build_projects
+                                             )
         else:
-            package_path = package_for_win64(package_basename, timestamp, git_revision, build_label_out, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols)
+            package_path = package_for_win64(package_basename, 
+                                             timestamp, 
+                                             git_revision, 
+                                             build_label_out, 
+                                             overwrite, 
+                                             include_apps, 
+                                             single_app_to_include, 
+                                             include_docs, 
+                                             zip_release, 
+                                             include_debug_symbols,
+                                             build_projects
+                                             )
 
     # Archive source
     if archive_source:
@@ -201,7 +244,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             sys.exit(ERROR_PACKAGE_EXISTS)
 
 
-def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols):
+def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -216,7 +259,8 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
                            '-DBUILD_TIMESTAMP=%s' % timestamp,
                            '-DBUILD_GIT_REVISION=%s' % git_revision,
                            '-DBUILD_LABEL=%s' % build_label,
-                           '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols)
+                           '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
+                           '-DBUILD_PROJECTS=%s' % int(build_projects)
                            ])
 
         d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
@@ -236,7 +280,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols):
+def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -250,7 +294,8 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
-                       '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols)
+                       '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
+                       '-DBUILD_PROJECTS=%s' % int(build_projects)
                        ])
 
     # Build & install to packaging dir
@@ -275,7 +320,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols):
+def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -294,7 +339,8 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
-                       '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols)
+                       '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
+                       '-DBUILD_PROJECTS=%s' % int(build_projects)
                        ])
 
     # Build & install to packaging dir
@@ -727,6 +773,8 @@ if __name__ == '__main__':
                     help="Overwrite any existing framework or source package")
     core_group.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
+    core_group.add_argument("--build-projects", action="store_true",
+                        help="Build projects while packaging (does not include in package)")
 
     source_archive_group = parser.add_argument_group('Source Archiving')
     source_archive_group.add_argument("-as", "--archive-source", action="store_true",
@@ -768,7 +816,7 @@ if __name__ == '__main__':
 
     # If we're packaging a single Naivi app make sure it exists
     if args.include_single_naivi_app:
-        path = os.path.join(os.path.dirname(os.path.realpath(__file__)), APPS_SOURCE_DIR, args.include_single_naivi_app)
+        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_naivi_app)
         if not os.path.exists(path):
             print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
             sys.exit(ERROR_BAD_INPUT)
@@ -789,6 +837,7 @@ if __name__ == '__main__':
                                      or args.android_abis
                                      or args.android_enable_python
                                      or args.include_debug_symbols
+                                     or args.build_projects
                                      ):
         print("Error: You have specified options that don't make sense if only creating a source archive")
         sys.exit(ERROR_BAD_INPUT)
@@ -801,7 +850,8 @@ if __name__ == '__main__':
             args.include_single_naivi_app,
             args.clean, 
             not args.no_timestamp, 
-            args.label,             
+            args.label,
+            args.build_projects,
             args.archive_source or args.source_archive_only, 
             args.source_archive_zipped,
             args.source_archive_only,            

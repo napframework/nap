@@ -97,7 +97,7 @@ namespace nap
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
 			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
-				return false;
+					return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
 
@@ -124,13 +124,13 @@ namespace nap
 					sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderService->getDevice(), declaration, nullptr, SamplerChangedCallback());
 				else
 					sampler_instance = std::make_unique<Sampler2DInstance>(mRenderService->getDevice(), declaration, nullptr, SamplerChangedCallback());
-			}
-			
+					}
+
 			if (!sampler_instance->init(errorState))
-				return false;
+						return false;
 
 			addSamplerInstance(std::move(sampler_instance));
-		}
+			}
 
 		return true;
 	}

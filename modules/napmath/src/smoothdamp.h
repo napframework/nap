@@ -75,6 +75,14 @@ namespace nap
 			SmoothOperator(const T& currentValue, float smoothTime, float maxSpeed);
 
 			/**
+			 * Updates the current blend value based on the given targetValue
+			 * @param targetValue the value to blend to
+			 * @param deltaTime time in seconds it took to complete the last compute cycle
+			 * @return the current blend value
+			 */
+			T& update(const T& targetValue, float deltaTime);
+
+			/**
 			 * @return the current blend value
 			 */
 			const T& getValue() const								{ return mValue; }
@@ -83,6 +91,16 @@ namespace nap
 			 * @return the current blend value
 			 */
 			T& getValue()											{ return mValue; }
+
+			/**
+			 * @return the current target value
+			 */
+			const T& getTarget() const								{ return mTarget; }
+
+			/**
+			 * @return the current target value
+			 */
+			T& getTarget()											{ return mTarget; }
 
 			/**
 			 * @return current velocity
@@ -95,18 +113,10 @@ namespace nap
 			T& getVelocity()										{ return mVelocity; }
 
 			/**
-			 * Updates the current blend value based on the given targetValue
-			 * @param targetValue the value to blend to
-			 * @param deltaTime time in seconds it took to complete the last compute cycle
-			 * @return the current blend value
-			 */
-			T& update(const T& targetValue, float deltaTime);
-
-			/**
-			 * Sets the current blend value
+			 * Sets the current blend value.
 			 * @param value the value to set as blend value
 			 */
-			void setValue(const T& value)							{ mValue = value; }
+			void setValue(const T& value);
 
 		protected:
 			/**
@@ -116,6 +126,7 @@ namespace nap
 			void init();
 
 			T mValue;			// Current blend value
+			T mTarget;			// Current blend target
 			T mVelocity;		// Current velocity
 		};
 
@@ -127,6 +138,7 @@ namespace nap
 		template<typename T>
 		T& nap::math::SmoothOperator<T>::update(const T& targetValue, float deltaTime)
 		{
+			mTarget = targetValue;
 			nap::math::smooth<T>(mValue, targetValue, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
 			return mValue;
 		}
@@ -168,5 +180,17 @@ namespace nap
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<glm::vec4>::init();
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<float>::setValue(const float& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec3>::setValue(const glm::vec3& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec4>::setValue(const glm::vec4& value);
 	}
 }

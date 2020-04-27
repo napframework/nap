@@ -101,7 +101,7 @@ namespace nap
 		*/
 		void setDirty() { mDirty = true; }
 
-	private:
+	protected:
 		mutable glm::mat4x4				mProjectionMatrix;		// The composed projection matrix
 		mutable bool					mDirty = true;			// If the projection matrix needs to be recalculated
 		PerpCameraProperties			mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
