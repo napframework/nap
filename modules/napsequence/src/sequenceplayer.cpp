@@ -6,6 +6,7 @@
 // nap include
 #include <nap/logger.h>
 #include <parametervec.h>
+#include <parameternumeric.h>
 
 // external includes
 #include <utility/fileutils.h>

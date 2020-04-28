@@ -103,7 +103,8 @@ namespace nap
 	}
 
 
-    // Called when the window is going to render
+    // Called when the application is going to render.
+	// Draws the gui to the main window.
 	void SequencerApp::render()
 	{
 		// Activate current window for drawing

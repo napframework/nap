@@ -5,95 +5,6 @@ DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec2)
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec3)
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec4)
 
-template<typename T>   // primary template
-bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState& errorState)
-{
-	int curveCount = -1;
-	if (RTTI_OF(glm::vec2) == RTTI_OF(T))
-	{
-		curveCount = 2;
-	}
-	else if (RTTI_OF(glm::vec3) == RTTI_OF(T))
-	{
-		curveCount = 3;
-	}
-	else if (RTTI_OF(glm::vec4) == RTTI_OF(T))
-	{
-		curveCount = 4;
-	}
-	else if (RTTI_OF(float) == RTTI_OF(T))
-	{
-		curveCount = 1;
-	}
-	else
-	{
-		return errorState.check(false, "SequenceTrackSegmentCurve of unknown type!");
-	}
-
-
-	if (SequenceTrackSegment::init(errorState))
-	{
-		if (!errorState.check(mCurves.size() == curveCount, "size of curves must be %i", curveCount))
-		{
-			return false;
-		}
-		else
-		{
-			for (int i = 0; i < mCurves.size(); i++)
-			{
-				if (!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
-}
-
-template<typename T>   // primary template
-const T nap::SequenceTrackSegmentCurve<T>::getStartValue() const
-{
-	assert(false);
-
-	T value;
-	return value;
-}
-
-template<typename T>   // primary template
-const T nap::SequenceTrackSegmentCurve<T>::getEndValue() const
-{
-	assert(false);
-
-	T value;
-	return value;
-}
-
-template<typename T>   // primary template
-const T nap::SequenceTrackSegmentCurve<T>::getValue(float t) const
-{
-	assert(false);
-
-	T value;
-	return value;
-}
-
-template<typename T>   // primary template
-void nap::SequenceTrackSegmentCurve<T>::setStartValue(T value)
-{
-	assert(false);
-}
-
-template<typename T>   // primary template
-void nap::SequenceTrackSegmentCurve<T>::setEndValue(T value)
-{
-	assert(false);
-}
 
 template<>
 const float nap::SequenceTrackSegmentCurveFloat::getStartValue() const
@@ -329,7 +240,14 @@ void nap::SequenceTrackSegmentCurveVec4::setEndValue(glm::vec4 t)
 	}
 }
 
-template class NAPAPI nap::SequenceTrackSegmentCurve<float>;
-template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec2>;
-template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec3>;
-template class NAPAPI nap::SequenceTrackSegmentCurve<glm::vec4>;
+template<>
+int nap::SequenceTrackSegmentCurveFloat::getCurveCount()		{ return 1; }
+
+template<>
+int nap::SequenceTrackSegmentCurveVec2::getCurveCount()			{ return 2; }
+
+template<>
+int nap::SequenceTrackSegmentCurveVec3::getCurveCount()			{ return 3; }
+
+template<>
+int nap::SequenceTrackSegmentCurveVec4::getCurveCount()			{ return 4; }

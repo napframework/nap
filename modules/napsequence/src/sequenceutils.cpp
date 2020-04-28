@@ -63,36 +63,8 @@ namespace nap
 		}
 
 		template<typename T>
-		SequenceTrack* createSequenceCurveTrack(
-			std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
-			std::unordered_set<std::string>& objectIDs)
+		SequenceTrack* createSequenceCurveTrack(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, std::unordered_set<std::string>& objectIDs)
 		{
-			int curveCount = 0;
-			SequenceTrackTypes::Types trackType = SequenceTrackTypes::Types::UNKOWN;
-			if (RTTI_OF(T) == RTTI_OF(glm::vec4))
-			{
-				curveCount = 4;
-				trackType = SequenceTrackTypes::Types::VEC4;
-			}
-			else if (RTTI_OF(T) == RTTI_OF(glm::vec3))
-			{
-				curveCount = 3;
-				trackType = SequenceTrackTypes::Types::VEC3;
-			}
-			else if (RTTI_OF(T) == RTTI_OF(glm::vec2))
-			{
-				curveCount = 2;
-				trackType = SequenceTrackTypes::Types::VEC2;
-			}
-			else if (RTTI_OF(T) == RTTI_OF(float))
-			{
-				curveCount = 1;
-				trackType = SequenceTrackTypes::Types::FLOAT;
-			}
-
-			//
-			assert(trackType != SequenceTrackTypes::Types::UNKOWN);
-
 			// create one segment
 			std::unique_ptr<SequenceTrackSegmentCurve<T>> trackSegment = std::make_unique<SequenceTrackSegmentCurve<T>>();
 			trackSegment->mID = generateUniqueID(objectIDs);
@@ -100,8 +72,8 @@ namespace nap
 			trackSegment->mStartTime = 0.0;
 
 			// create default curves
-			trackSegment->mCurves.resize(curveCount);
-			for (int i = 0; i < curveCount; i++)
+			trackSegment->mCurves.resize(trackSegment->getCurveCount());
+			for (int i = 0; i < trackSegment->getCurveCount(); i++)
 			{
 				std::unique_ptr<math::FCurve<float, float>> segmentCurve = std::make_unique<math::FCurve<float, float>>();
 				segmentCurve->mID = generateUniqueID(objectIDs);
