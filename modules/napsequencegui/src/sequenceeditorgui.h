@@ -43,7 +43,7 @@ namespace nap
 		 * draw
 		 * Call this method to draw the GUI
 		 */
-		void draw();
+		void show();
 	public:
 		// properties
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
@@ -140,10 +140,9 @@ namespace nap
 		SequenceEditorGUIView(SequenceEditorController& controller, std::string id);
 
 		/**
-		 * draw
-		 * draws the gui
+		 * shows the editor interface
 		 */
-		virtual void draw();
+		virtual void show();
 	private:
 		/**
 		 * Draws the tracks of the sequence

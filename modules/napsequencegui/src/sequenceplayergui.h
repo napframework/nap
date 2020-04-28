@@ -43,7 +43,7 @@ namespace nap
 		 * draw
 		 * Call this method to draw the GUI
 		 */
-		void draw();
+		void show();
 	public:
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' link to player resource
 	protected:
@@ -108,10 +108,9 @@ namespace nap
 		SequencePlayerGUIView(SequencePlayer& player, std::string id);
 
 		/**
-		 * draw
-		 * draws the gui
+		 * shows the interface
 		 */
-		virtual void draw();
+		virtual void show();
 	private:
 		/**
 		 * Draws the tracks of the sequence
