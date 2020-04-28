@@ -23,7 +23,7 @@ namespace nap
 		/*
 		 * @return type of this sequence track
 		 */
-		virtual SequenceTrackTypes::Types getTrackType() const { return SequenceTrackTypes::Types::UNKOWN; }
+		virtual SequenceTrackTypes::Types getTrackType() const = 0;
 
 		std::string mAssignedObjectIDs;								///< Property: 'Assigned Object ID' Assigned object to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
