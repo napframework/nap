@@ -1,18 +1,17 @@
 // Local Includes
-#include "sequencer.h"
+#include "sequencerapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
 #include <napcolors.h>
-
 #include <sequenceeventreceiver.h>
 #include <sequenceevent.h>
 
 namespace nap 
 {    
-    bool CoreApp::init(utility::ErrorState& error)
+    bool SequencerApp::init(utility::ErrorState& error)
     {
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -73,7 +72,7 @@ namespace nap
 
 
     // Called when the window is going to render
-	void CoreApp::render()
+	void SequencerApp::render()
 	{
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
@@ -205,25 +204,25 @@ namespace nap
     }
 
 
-    void CoreApp::windowMessageReceived(WindowEventPtr windowEvent)
+    void SequencerApp::windowMessageReceived(WindowEventPtr windowEvent)
     {
 		mRenderService->addEvent(std::move(windowEvent));
     }
 
 
-    void CoreApp::inputMessageReceived(InputEventPtr inputEvent)
+    void SequencerApp::inputMessageReceived(InputEventPtr inputEvent)
     {
 		mInputService->addEvent(std::move(inputEvent));
     }
 
 
-    int CoreApp::shutdown()
+    int SequencerApp::shutdown()
     {
 		return 0;
     }
 
 
-    void CoreApp::update(double deltaTime)
+    void SequencerApp::update(double deltaTime)
     {
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);

@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "sequencer.h"
+#include "sequencerapp.h"
 
 // Nap includes
 #include <apprunner.h>
@@ -15,17 +15,10 @@ int main(int argc, char *argv[])
     nap::Core core;
 
     // Create app runner
-    nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> appRunner(core);
+    nap::AppRunner<nap::SequencerApp, nap::GUIAppEventHandler> appRunner(core);
 
     // Decide which file to load
-    if (argc >= 2) {
-        // Command line provided
-        appRunner.getApp().setFilename(argv[1]);
-    } else {
-        // Default
-        appRunner.getApp().setFilename("default.json");
-    }
-
+	appRunner.getApp().setFilename(argc >= 2 ? argv[1] : "default.json");
 
     // Start
     nap::utility::ErrorState error;

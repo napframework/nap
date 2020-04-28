@@ -13,10 +13,8 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
-
-//
-#include "sequenceeditorgui.h"
-#include "sequenceplayergui.h"
+#include <sequenceeditorgui.h>
+#include <sequenceplayergui.h>
 
 namespace nap 
 {
@@ -25,14 +23,14 @@ namespace nap
     /**
      * Main application called from within the main loop
      */
-    class CoreApp : public App 
+    class SequencerApp : public App 
 	{
     public:
 
 		/**
 		 * Constructor
 		 */
-        CoreApp(nap::Core& core) : App(core) {}
+        SequencerApp(nap::Core& core) : App(core) {}
 
         /**
          * Provide the app with the json file that will be loaded, must be called before initialization.
