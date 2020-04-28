@@ -128,6 +128,19 @@ namespace nap
 
     void SequencerApp::inputMessageReceived(InputEventPtr inputEvent)
     {
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			// Exit when esc is pressed
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit();
+
+			// If 'f' is pressed toggle fullscreen
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+				mRenderWindow->toggleFullscreen();
+		}
+
+		// Forward to input service
 		mInputService->addEvent(std::move(inputEvent));
     }
 
