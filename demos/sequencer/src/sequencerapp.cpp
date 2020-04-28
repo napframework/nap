@@ -59,10 +59,10 @@ namespace nap
 
 		eventReceiver->mSignal.connect([](const SequenceEvent &event)
 		{
-			if (event.getEventType() == SequenceEventTypes::Types::STRING)
+			if (event.get_type().is_derived_from(RTTI_OF(SequenceEventString)))
 			{
 				const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
-				nap::Logger::info("Event received with message : %s", eventString.mMessage.c_str());
+				nap::Logger::info("Event received with message : %s", eventString.getMessage().c_str());
 			}
 		});
 

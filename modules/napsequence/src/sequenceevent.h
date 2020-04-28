@@ -9,38 +9,31 @@
 namespace nap
 {
 	/**
-	 * SequenceEvent
-	 * Base class for events.
+	 * Base class for all sequence related events.
 	 */
 	class SequenceEvent : public Event
 	{
 		RTTI_ENABLE(Event)
-	public:
-		/**
-		 * getEventType
-		 * @return returns this event type
-		 */
-		virtual const SequenceEventTypes::Types getEventType() const { return SequenceEventTypes::UNKOWN; }
 	};
 
+
 	/**
-	 * SequenceEvent String
-	 * Event holding a message ( string )
+	 * Sequence event that contains a message.
 	 */
 	class SequenceEventString : public SequenceEvent
 	{
 		RTTI_ENABLE(SequenceEvent)
 	public:
-		std::string mMessage; ///< Property: 'Message' string containing message
+		SequenceEventString(const std::string& message) : mMessage(message) { }
 
 		/**
-		 * getEventType
-		 * @return returns this event type
+		 * @return message associated with event
 		 */
-		virtual const SequenceEventTypes::Types getEventType() const override
-		{
-			return SequenceEventTypes::STRING; 
-		}
+		const std::string& getMessage() const { return mMessage; }
+
+	private:
+		std::string mMessage;
+
 	};
 
 	using SequenceEventPtr = std::unique_ptr<SequenceEvent>;
