@@ -94,7 +94,7 @@ namespace nap
 	bool nap::SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
 	{
 		// Initialize base class
-		if (!SequenceTrack::init(errorState))
+		if (!BaseSequenceTrackCurve::init(errorState))
 			return false;
 
 		// Validate type of segment, needs to be of same type as this class!
