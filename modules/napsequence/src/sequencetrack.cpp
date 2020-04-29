@@ -37,15 +37,4 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	template<>
-	SequenceTrackTypes::Types nap::SequenceTrackCurveFloat::getTrackType() const	{ return SequenceTrackTypes::FLOAT; }
-
-	template<>
-	SequenceTrackTypes::Types nap::SequenceTrackCurveVec2::getTrackType() const		{ return SequenceTrackTypes::VEC2; }
-
-	template<>
-	SequenceTrackTypes::Types nap::SequenceTrackCurveVec3::getTrackType() const		{ return SequenceTrackTypes::VEC3; }
-
-	template<>
-	SequenceTrackTypes::Types nap::SequenceTrackCurveVec4::getTrackType() const		{ return SequenceTrackTypes::VEC4; }
 }

@@ -7,6 +7,7 @@
 // external includes
 #include <nap/logger.h>
 #include <fcurve.h>
+#include <functional>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
@@ -18,7 +19,7 @@ using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
-	
+
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -76,29 +77,9 @@ namespace nap
 				{
 					trackSegment->mDuration += amount;
 
-					switch (track->getTrackType())
-					{
-					default:
-						break;
-					case SequenceTrackTypes::UNKOWN:
-						break;
-					case SequenceTrackTypes::FLOAT:
-						updateSegments<float>(*track);
-						break;
-					case SequenceTrackTypes::VEC2:
-						updateSegments<glm::vec2>(*track);
-						break;
-					case SequenceTrackTypes::VEC3:
-						updateSegments<glm::vec3>(*track);
-						break;
-					case SequenceTrackTypes::VEC4:
-						updateSegments<glm::vec4>(*track);
-						break;
-					case SequenceTrackTypes::EVENT:
-						break;
-					}
+					updateSegmentsMap[track->get_type()](*this, *track);
+
 					updateTracks();
-						
 				}
 				break;
 			}
@@ -183,27 +164,7 @@ namespace nap
 						deleteObjectFromSequencePlayer(segmentID);
 
 						// update segments
-						switch (track->getTrackType())
-						{
-						default:
-							break;
-						case SequenceTrackTypes::UNKOWN:
-							break;
-						case SequenceTrackTypes::FLOAT:
-							updateSegments<float>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC2:
-							updateSegments<glm::vec2>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC3:
-							updateSegments<glm::vec3>(*track.get());
-							break;
-						case SequenceTrackTypes::VEC4:
-							updateSegments<glm::vec4>(*track.get());
-							break;
-						case SequenceTrackTypes::EVENT:
-							break;
-						}
+						updateSegmentsMap[track->get_type()](*this, *track);
 
 						break;
 					}
@@ -949,6 +910,15 @@ namespace nap
 		trackCurve->mMinimum = minimum;
 		trackCurve->mMaximum = maximum;
 	}
+
+	std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> SequenceEditorController::updateSegmentsMap
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<float>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec2),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec2>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec3),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec3>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec4),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec4>(track); } },
+			{ RTTI_OF(SequenceTrackEvent),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ } }
+		};
 
 	// explicit template declarations
 	template NAPAPI void nap::SequenceEditorController::addNewCurveTrack<float>();

@@ -237,6 +237,8 @@ namespace nap
 
 		// reference to service
 		SequenceService& mSequenceService;
+
+		static std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, const std::string&, const std::string&)>> createAdapterMap;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

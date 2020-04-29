@@ -302,5 +302,8 @@ namespace nap
 	protected:
 		// reference to player
 		SequencePlayer&		mSequencePlayer;
+	private:
+		static std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>>
+			updateSegmentsMap;
 	};
 }

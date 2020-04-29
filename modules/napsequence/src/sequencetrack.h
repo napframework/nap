@@ -7,7 +7,6 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <glm/glm.hpp>
-#include <sequencetracktypes.h>
 
 namespace nap
 {
@@ -19,11 +18,6 @@ namespace nap
 		RTTI_ENABLE(Resource)
 
 	public:
-
-		/*
-		 * @return type of this sequence track
-		 */
-		virtual SequenceTrackTypes::Types getTrackType() const = 0;
 
 		std::string mAssignedObjectIDs;								///< Property: 'Assigned Object ID' Assigned object to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
@@ -55,11 +49,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return type of track
-		 */
-		virtual SequenceTrackTypes::Types getTrackType() const override;
-
 		T mMaximum; ///< Property: 'Maximum' maximum value of track
 		T mMinimum; ///< Property: 'Minimum' minimum value of track
 	};
@@ -72,7 +61,6 @@ namespace nap
 	{
 		RTTI_ENABLE(SequenceTrack)
 	public:
-		virtual SequenceTrackTypes::Types getTrackType() const override		{ return SequenceTrackTypes::EVENT; }
 	};
 
 
@@ -110,21 +98,4 @@ namespace nap
 		}
 		return true;
 	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Forward Declarations
-	//////////////////////////////////////////////////////////////////////////
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveFloat::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec2::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec3::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec4::getTrackType() const;
 }

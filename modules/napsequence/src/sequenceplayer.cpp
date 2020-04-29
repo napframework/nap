@@ -519,7 +519,6 @@ namespace nap
 			break;
 		}
 
-		
 		return true;
 	}
 
