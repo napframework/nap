@@ -10,7 +10,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceTrack)
 	RTTI_PROPERTY("Parameter ID",	&nap::SequenceTrack::mAssignedObjectIDs, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-//RTTI_DEFINE_BASE(nap::BaseSequenceTrackCurve)
+RTTI_DEFINE_BASE(nap::BaseSequenceTrackCurve)
 
 RTTI_BEGIN_CLASS(nap::SequenceTrackEvent)
 RTTI_END_CLASS
