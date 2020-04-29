@@ -100,7 +100,7 @@ namespace nap
 		// Validate type of segment, needs to be of same type as this class!
 		for (const auto& segment : mSegments)
 		{
-			if (!errorState.check(segment->get_type().is_derived_from<SequenceTrackSegmentCurve<T>>(),
+			if (!errorState.check(segment->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(),
 				"segment not derived from correct type, expected: %s, got: %s",
 				get_type().get_name().to_string().c_str(),
 				segment->get_type().get_name().to_string().c_str()))
