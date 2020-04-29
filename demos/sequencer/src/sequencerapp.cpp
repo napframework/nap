@@ -14,10 +14,11 @@ namespace nap
     bool SequencerApp::init(utility::ErrorState& error)
     {
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
-		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderService		= getCore().getService<nap::RenderService>();
+		mSceneService		= getCore().getService<nap::SceneService>();
+		mInputService		= getCore().getService<nap::InputService>();
+		mGuiService			= getCore().getService<nap::IMGuiService>();
+		mParameterService	= getCore().getService<nap::ParameterService>();
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
@@ -59,19 +60,51 @@ namespace nap
 
 		eventReceiver->mSignal.connect([](const SequenceEvent &event)
 		{
-			if (event.getEventType() == SequenceEventTypes::Types::STRING)
+			if (event.get_type().is_derived_from(RTTI_OF(SequenceEventString)))
 			{
 				const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
-				nap::Logger::info("Event received with message : %s", eventString.mMessage.c_str());
+				nap::Logger::info("Event received with message : %s", eventString.getMessage().c_str());
 			}
 		});
+
+		// Create the parameter GUI, automatically shows a group of parameters in a window
+		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
 
 		// All done!
         return true;
     }
 
+	
+	/**
+	 * Forwards the received mouse and keyboard input events and shows the sequencer gui elements,
+	 * together with some general application information and the parameters.
+	 */
+	void SequencerApp::update(double deltaTime)
+	{
+		// Use a default input router to forward input events (recursively) to all input components in the default scene
+		nap::DefaultInputRouter input_router(true);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 
-    // Called when the window is going to render
+		// Show parameters
+		mParameterGUI->show(mParameterGroup.get(), true);
+
+		// Draw general application information
+		ImGui::Begin("Information");
+		ImGui::SameLine();
+		getCore().getFramerate();
+		ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(guicolors::red), "%.3f ms/frame (%.1f FPS)", 1000.0f / getCore().getFramerate(), getCore().getFramerate());
+		ImGui::End();
+
+		// Show sequence editor gui
+		mSequenceEditorGUI->show();
+
+		// Show sequence player gui
+		mSequencePlayerGUI->show();
+	}
+
+
+    // Called when the application is going to render.
+	// Draws the gui to the main window.
 	void SequencerApp::render()
 	{
 		// Activate current window for drawing
@@ -80,127 +113,11 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		ImGui::Begin("Parameters");
-
-		for (const auto& parameterResource : mParameterGroup->mParameters)
-		{
-			if (parameterResource->get_type().is_derived_from<ParameterFloat>())
-			{
-				ParameterFloat* parameter = static_cast<ParameterFloat*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				float value = parameter->mValue;
-				if (ImGui::SliderFloat(name.c_str(),
-					&value,
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}
-			else if (parameterResource->get_type().is_derived_from<ParameterInt>())
-			{
-				ParameterInt* parameter = static_cast<ParameterInt*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				int value = parameter->mValue;
-				if (ImGui::SliderInt(name.c_str(),
-					&value,
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}
-			else if (parameterResource->get_type().is_derived_from<ParameterDouble>())
-			{
-				ParameterDouble* parameter = static_cast<ParameterDouble*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				float value = static_cast<float>(parameter->mValue);
-				if (ImGui::SliderFloat(name.c_str(),
-					&value,
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}
-			else if (parameterResource->get_type().is_derived_from<ParameterLong>())
-			{
-				ParameterLong* parameter = static_cast<ParameterLong*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				int value = static_cast<int>(parameter->mValue);
-				if (ImGui::SliderInt(name.c_str(),
-					&value,
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}else if (parameterResource->get_type().is_derived_from<ParameterVec3>())
-			{
-				ParameterVec3* parameter = static_cast<ParameterVec3*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				glm::vec3 value = static_cast<glm::vec3>(parameter->mValue);
-				if (ImGui::SliderFloat3(name.c_str(),
-					&value[0],
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}
-			else if (parameterResource->get_type().is_derived_from<ParameterVec2>())
-			{
-				ParameterVec2* parameter = static_cast<ParameterVec2*>(parameterResource.get());
-
-				std::string name = parameter->getDisplayName();
-
-				glm::vec2 value = static_cast<glm::vec2>(parameter->mValue);
-				if (ImGui::SliderFloat2(
-					name.c_str(),
-					&value[0],
-					parameter->mMinimum,
-					parameter->mMaximum))
-				{
-					parameter->setValue(value);
-				}
-			}
-
-		}
-
-		// draw framerate
-		// Color used for highlights
-		getCore().getFramerate();
-
-		ImGui::Begin("Information");
-		ImGui::SameLine();
-		ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(guicolors::red), "%.3f ms/frame (%.1f FPS)", 1000.0f / getCore().getFramerate(), getCore().getFramerate());
-		ImGui::End();
-		
-		ImGui::End();
-			
-
-		// Draw sequence editor gui
-		mSequenceEditorGUI->draw();
-
-		//Draw sequence player gui
-		mSequencePlayerGUI->draw();
-
-		// Draw our gui
+		// Draw GUI to screen
 		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
-
     }
 
 
@@ -212,6 +129,19 @@ namespace nap
 
     void SequencerApp::inputMessageReceived(InputEventPtr inputEvent)
     {
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			// Exit when esc is pressed
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit();
+
+			// If 'f' is pressed toggle fullscreen
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+				mRenderWindow->toggleFullscreen();
+		}
+
+		// Forward to input service
 		mInputService->addEvent(std::move(inputEvent));
     }
 
@@ -219,13 +149,5 @@ namespace nap
     int SequencerApp::shutdown()
     {
 		return 0;
-    }
-
-
-    void SequencerApp::update(double deltaTime)
-    {
-		// Use a default input router to forward input events (recursively) to all input components in the default scene
-		nap::DefaultInputRouter input_router(true);
-		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
     }
 }

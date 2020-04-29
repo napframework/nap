@@ -40,10 +40,9 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUI::draw()
+	void SequenceEditorGUI::show()
 	{
-		//
-		mView->draw();
+		mView->show();
 	}
 
 
@@ -53,7 +52,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUIView::draw()
+	void SequenceEditorGUIView::show()
 	{
 		//
 		mInspectorWidth = 300.0f;

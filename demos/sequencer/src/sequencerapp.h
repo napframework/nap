@@ -9,12 +9,14 @@
 #include <imguiservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <parameterservice.h>
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
 #include <sequenceeditorgui.h>
 #include <sequenceplayergui.h>
+#include <parametergui.h>
 
 namespace nap 
 {
@@ -81,8 +83,10 @@ namespace nap
 		SceneService*			mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*			mInputService = nullptr;		///< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;			///< Manages GUI related update / draw calls
+		ParameterService*		mParameterService = nullptr;	///< Manages all the parameters
 		ObjectPtr<RenderWindow> mRenderWindow;					///< Pointer to the render window	
 		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
+		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;	//< Renders the parameters
 
 		ObjectPtr<SequencePlayerGUI>		mSequencePlayerGUI;
 		ObjectPtr<SequenceEditorGUI>		mSequenceEditorGUI;
