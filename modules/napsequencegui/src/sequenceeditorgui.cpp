@@ -20,6 +20,78 @@ using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
+
+	std::unordered_map<rttr::type, drawCurveTrackFunction> SequenceEditorGUIView::sDrawTracksMap{
+		{
+			RTTI_OF(SequenceTrackCurveFloat), [](SequenceEditorGUIView& view, const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player, bool& deleteTrack, std::string& deleteTrackID)
+			{
+				view.drawCurveTrack<float>(track, cursorPos, margin, player, deleteTrack, deleteTrackID);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec2), [](SequenceEditorGUIView& view, const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player, bool& deleteTrack, std::string& deleteTrackID)
+			{
+				view.drawCurveTrack<glm::vec2>(track, cursorPos, margin, player, deleteTrack, deleteTrackID);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec3), [](SequenceEditorGUIView& view, const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player, bool& deleteTrack, std::string& deleteTrackID)
+			{
+				view.drawCurveTrack<glm::vec3>(track, cursorPos, margin, player, deleteTrack, deleteTrackID);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec4), [](SequenceEditorGUIView& view, const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player, bool& deleteTrack, std::string& deleteTrackID)
+			{
+				view.drawCurveTrack<glm::vec4>(track, cursorPos, margin, player, deleteTrack, deleteTrackID);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackEvent), [](SequenceEditorGUIView& view, const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player, bool& deleteTrack, std::string& deleteTrackID)
+			{
+				view.drawEventTrack(track, cursorPos, margin, player, deleteTrack, deleteTrackID);
+			}
+		}
+	};
+
+	std::unordered_map<rttr::type, drawCurveSegmentFunction> SequenceEditorGUIView::sDrawSegmentsMap
+	{
+		{
+			RTTI_OF(SequenceTrackSegmentCurveFloat),
+			[](SequenceEditorGUIView& view, const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+				view.drawSegmentContent<float>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec2),
+			[](SequenceEditorGUIView& view, const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+			  view.drawSegmentContent<glm::vec2>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec3),
+			[](SequenceEditorGUIView& view, const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+			  view.drawSegmentContent<glm::vec3>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec4),
+			[](SequenceEditorGUIView& view, const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+			  view.drawSegmentContent<glm::vec4>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentEvent),
+			[](SequenceEditorGUIView& view, const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+			}
+		}
+	};
+
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -280,56 +352,9 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
-			switch (track->getTrackType())
-			{
-			case SequenceTrackTypes::FLOAT:
-				drawCurveTrack<float>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer,
-					deleteTrack,
-					deleteTrackID);
-				break;
-			case SequenceTrackTypes::VEC2:
-				drawCurveTrack<glm::vec2>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer,
-					deleteTrack,
-					deleteTrackID);
-				break;;
-			case SequenceTrackTypes::VEC3:
-				drawCurveTrack<glm::vec3>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer,
-					deleteTrack,
-					deleteTrackID);
-				break;
-			case SequenceTrackTypes::VEC4:
-				drawCurveTrack<glm::vec4>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer,
-					deleteTrack,
-					deleteTrackID);
-				break;
-			case SequenceTrackTypes::EVENT:
-				drawEventTrack(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer,
-					deleteTrack,
-					deleteTrackID);
-				break;
-			default:
-				break;
-			}
+			assert(sDrawTracksMap.find(track->get_type()) != sDrawTracksMap.end());
+
+			sDrawTracksMap[track->get_type()](*this, *track.get(), cursorPos, marginBetweenTracks, sequencePlayer, deleteTrack, deleteTrackID);
 
 			// increment track count
 			trackCount++;
@@ -537,7 +562,7 @@ namespace nap
 
 							//
 							mEditorAction.currentAction = OPEN_INSERT_SEGMENT_POPUP;
-							mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, static_cast<SequenceTrackTypes::Types>(track.getTrackType()));
+							mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, track.get_type());
 						}
 					}
 				}
@@ -546,12 +571,12 @@ namespace nap
 				if (mEditorAction.currentAction == SequenceGUIMouseActions::OPEN_INSERT_SEGMENT_POPUP || mEditorAction.currentAction == INSERTING_SEGMENT)
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mEditorAction.currentActionData.get());
-					if (data->trackID == track.mID)
+					if (data->mID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-						{ trackTopLeft.x + (float)data->time * mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)data->time * mStepSize, trackTopLeft.y + mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)data->mTime * mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)data->mTime * mStepSize, trackTopLeft.y + mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
@@ -559,8 +584,6 @@ namespace nap
 			}
 
 			float previousSegmentX = 0.0f;
-
-			SequenceTrackTypes::Types trackType = track.getTrackType();
 
 			int segmentCount = 0;
 			for (const auto& segment : track.mSegments)
@@ -801,7 +824,7 @@ namespace nap
 
 							//
 							mEditorAction.currentAction = OPEN_INSERT_SEGMENT_POPUP;
-							mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, static_cast<SequenceTrackTypes::Types>(track.getTrackType()));
+							mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, track.get_type());
 						}
 					}
 				}
@@ -810,12 +833,12 @@ namespace nap
 				if (mEditorAction.currentAction == SequenceGUIMouseActions::OPEN_INSERT_SEGMENT_POPUP || mEditorAction.currentAction == INSERTING_SEGMENT)
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mEditorAction.currentActionData.get());
-					if (data->trackID == track.mID)
+					if (data->mID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-						{ trackTopLeft.x + (float)data->time * mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)data->time * mStepSize, trackTopLeft.y + mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)data->mTime * mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)data->mTime * mStepSize, trackTopLeft.y + mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
@@ -824,62 +847,14 @@ namespace nap
 
 			float previousSegmentX = 0.0f;
 
-			SequenceTrackTypes::Types trackType = track.getTrackType();
-
 			int segmentCount = 0;
 			for (const auto& segment : track.mSegments)
 			{
 				float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
 				float segmentWidth = segment->mDuration * mStepSize;
 
-				if (trackType == SequenceTrackTypes::Types::FLOAT)
-				{
-					drawSegmentContent<float>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC3)
-				{
-					drawSegmentContent<glm::vec3>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC2)
-				{
-					drawSegmentContent<glm::vec2>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC4)
-				{
-					drawSegmentContent<glm::vec4>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
+				assert(sDrawSegmentsMap.find(segment.get_type()) != sDrawSegmentsMap.end());
+				sDrawSegmentsMap[segment.get_type()](*this, track, *segment.get(), trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, (segmentCount == 0));
 
 				// draw segment handlers
 				drawSegmentHandler(
@@ -1025,8 +1000,7 @@ namespace nap
 							track.mID, 
 							segment.mID, 
 							i,
-							v,
-							track.getTrackType());
+							v);
 						mEditorAction.currentObjectID = segment.mID;
 					}
 				}
@@ -1063,7 +1037,7 @@ namespace nap
 								curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
 								v);
 
-							mController.changeCurvePoint<T>(
+							mController.changeCurvePoint(
 								data->mTrackID,
 								data->mSegmentID,
 								data->mControlIndex,
@@ -1258,7 +1232,7 @@ namespace nap
 						{
 							float dragAmount = (mMouseDelta.y / mTrackHeight) * -1.0f;
 							
-							mController.changeCurveSegmentValue<T>(
+							mController.changeCurveSegmentValue(
 								track.mID,
 								segment.mID,
 								dragAmount,
@@ -1321,7 +1295,7 @@ namespace nap
 				std::unique_ptr<SequenceGUIEditSegmentData> editSegmentData = std::make_unique<SequenceGUIEditSegmentData>(
 					track.mID, 
 					segment.mID,
-					track.getTrackType());
+					segment.get_type());
 				mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_EDIT_SEGMENT_POPUP;
 				mEditorAction.currentObjectID = segment.mID;
 				mEditorAction.currentActionData = std::move(editSegmentData);
@@ -1346,7 +1320,7 @@ namespace nap
 			if (ImGui::IsMouseDown(0))
 			{
 				float amount = mMouseDelta.x / mStepSize;
-				if (track.getTrackType() == SequenceTrackTypes::EVENT)
+				if (track.get_type() == RTTI_OF(SequenceTrackEvent))
 				{
 					mController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
 				}
@@ -1483,7 +1457,7 @@ namespace nap
 							float time = mMouseDelta.x / mStepSize;
 							float value = (mMouseDelta.y / mTrackHeight) * -1.0f;
 
-							mController.changeTanPoint<T>(
+							mController.changeTanPoint(
 								track.mID,
 								segment.mID,
 								controlPointIndex,
@@ -1524,45 +1498,11 @@ namespace nap
 				if (ImGui::Button("Insert"))
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mEditorAction.currentActionData.get());
-					switch (data->trackType)
-					{
-					case SequenceTrackTypes::FLOAT:
-					{
-						mController.insertCurveSegment<float>(data->trackID, data->time);
-						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
-						mEditorAction.currentActionData = nullptr;
-					}
-						break;
-					case SequenceTrackTypes::VEC4:
-					{
-						mController.insertCurveSegment<glm::vec4>(data->trackID, data->time);
-						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
-						mEditorAction.currentActionData = nullptr;
-					}
-						break;;
-					case SequenceTrackTypes::VEC3:
-					{
-						mController.insertCurveSegment<glm::vec3>(data->trackID, data->time);
-						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
-						mEditorAction.currentActionData = nullptr;
-					}
-						break;
-					case SequenceTrackTypes::VEC2:
-					{
-						mController.insertCurveSegment<glm::vec2>(data->trackID, data->time);
-						mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
-						mEditorAction.currentActionData = nullptr;
-					}
-						break;
-					case SequenceTrackTypes::EVENT:
-					{
-						mEditorAction.currentAction = OPEN_INSERT_EVENT_SEGMENT_POPUP;
-						mEditorAction.currentActionData = std::make_unique<SequenceGUIInsertEventSegment>(data->trackID, data->time);
-					}
-						
-						break;
-					}
-					
+
+					mController.insertSegment(data->mID, data->mTime);
+					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
+					mEditorAction.currentActionData = nullptr;
+
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
@@ -1686,23 +1626,7 @@ namespace nap
 
 				if (ImGui::Button("Linear"))
 				{
-					switch (data->mSegmentType)
-					{
-					default:
-						break;
-					case SequenceTrackTypes::FLOAT:
-						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
-						break;
-					case SequenceTrackTypes::VEC2:
-						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID,  math::ECurveInterp::Linear);
-						break;
-					case SequenceTrackTypes::VEC3:
-						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
-						break;
-					case SequenceTrackTypes::VEC4:
-						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
-						break;
-					}
+					mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1713,23 +1637,7 @@ namespace nap
 
 				if (ImGui::Button("Bezier"))
 				{
-					switch (data->mSegmentType)
-					{
-					default:
-						break;
-					case SequenceTrackTypes::FLOAT:
-						mController.changeCurveType<float>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
-						break;
-					case SequenceTrackTypes::VEC2:
-						mController.changeCurveType<glm::vec2>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
-						break;
-					case SequenceTrackTypes::VEC3:
-						mController.changeCurveType<glm::vec3>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
-						break;
-					case SequenceTrackTypes::VEC4:
-						mController.changeCurveType<glm::vec4>(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
-						break;
-					}
+					mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1775,40 +1683,11 @@ namespace nap
 
 				if (ImGui::Button("Insert Point"))
 				{
-					switch (data.mSegmentType)
-					{
-					case SequenceTrackTypes::FLOAT:
-						mController.insertCurvePoint<float>(
-							data.mTrackID,
-							data.mSegmentID,
-							data.mPos,
-							data.mSelectedIndex);
-						break;
-					case SequenceTrackTypes::VEC2:
-						mController.insertCurvePoint<glm::vec2>(
-							data.mTrackID,
-							data.mSegmentID,
-							data.mPos,
-							data.mSelectedIndex);
-						break;
-					case SequenceTrackTypes::VEC3:
-						mController.insertCurvePoint<glm::vec3>(
-							data.mTrackID,
-							data.mSegmentID,
-							data.mPos,
-							data.mSelectedIndex);
-						break;
-					case SequenceTrackTypes::VEC4:
-						mController.insertCurvePoint<glm::vec4>(
-							data.mTrackID,
-							data.mSegmentID,
-							data.mPos,
-							data.mSelectedIndex);
-						break;
-					default:
-						assert(true);
-						break;
-					}
+					mController.insertCurvePoint(
+						data.mTrackID,
+						data.mSegmentID,
+						data.mPos,
+						data.mSelectedIndex);
 
 					mCurveCache.clear();
 
@@ -1828,7 +1707,6 @@ namespace nap
 						data.mTrackID,
 						data.mSegmentID, 
 						data.mSelectedIndex,
-						data.mSegmentType,
 						ImGui::GetWindowPos());
 					mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_CURVE_TYPE_POPUP;
 
@@ -1871,44 +1749,12 @@ namespace nap
 
 					assert(data != nullptr);
 
-					switch (data->mTrackType)
-					{
-					default:
-						assert(true);
-						break;
-					case SequenceTrackTypes::FLOAT:
-						mController.deleteCurvePoint<float>(
-							data->mTrackId,
-							data->mSegmentID,
-							data->mControlPointIndex,
-							data->mCurveIndex);
-						mCurveCache.clear();
-						break;
-					case SequenceTrackTypes::VEC2:
-						mController.deleteCurvePoint<glm::vec2>(
-							data->mTrackId,
-							data->mSegmentID,
-							data->mControlPointIndex,
-							data->mCurveIndex);
-						mCurveCache.clear();
-						break;
-					case SequenceTrackTypes::VEC3:
-						mController.deleteCurvePoint<glm::vec3>(
-							data->mTrackId,
-							data->mSegmentID,
-							data->mControlPointIndex,
-							data->mCurveIndex);
-						mCurveCache.clear();
-						break;
-					case SequenceTrackTypes::VEC4:
-						mController.deleteCurvePoint<glm::vec4>(
-							data->mTrackId,
-							data->mSegmentID,
-							data->mControlPointIndex,
-							data->mCurveIndex);
-						mCurveCache.clear();
-						break;
-					}
+					mController.deleteCurvePoint(
+						data->mTrackId,
+						data->mSegmentID,
+						data->mControlPointIndex,
+						data->mCurveIndex);
+					mCurveCache.clear();
 
 					mEditorAction.currentAction = NONE;
 					mEditorAction.currentActionData = nullptr;
@@ -2070,7 +1916,7 @@ namespace nap
 					mEditorAction.currentActionData = nullptr;
 				}
 
-				if (data->mTrackType == SequenceTrackTypes::EVENT)
+				if (data->mSegmentTypeInfo == RTTI_OF(SequenceTrackSegmentEvent))
 				{
 					if (ImGui::Button("Edit"))
 					{
@@ -2615,8 +2461,7 @@ namespace nap
 								track.mID,
 								segment.mID,
 								i, 
-								xInSegment,
-								track.getTrackType());
+								xInSegment);
 							mEditorAction.currentAction = OPEN_INSERT_CURVE_POINT_POPUP;
 						}
 						selectedCurve = i;

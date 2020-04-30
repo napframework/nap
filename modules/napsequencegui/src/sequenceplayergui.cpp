@@ -20,6 +20,92 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	std::unordered_map<rttr::type, drawSegmentContentFunction> SequencePlayerGUIView::sDrawSegmentsMap
+	{
+		{
+			RTTI_OF(SequenceTrackSegmentCurveFloat),
+				[](SequencePlayerGUIView& view, const SequenceTrack& track, const SequenceTrackSegment& segment,
+				   const ImVec2& trackTopLeft, float prevSegmentX, float segmentWidth, float segmentX,
+				   ImDrawList* drawList, bool drawStartValue) {
+					view.drawSegmentContent<float>(track, segment, trackTopLeft, prevSegmentX, segmentX, segmentWidth,
+												   drawList, drawStartValue);
+				}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec2),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, const SequenceTrackSegment& segment,
+			   const ImVec2& trackTopLeft, float prevSegmentX, float segmentWidth, float segmentX,
+			   ImDrawList* drawList, bool drawStartValue) {
+				view.drawSegmentContent<float>(track, segment, trackTopLeft, prevSegmentX, segmentX, segmentWidth,
+											   drawList, drawStartValue);
+			},
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec3),
+				[](SequencePlayerGUIView& view, const SequenceTrack& track, const SequenceTrackSegment& segment,
+				   const ImVec2& trackTopLeft, float prevSegmentX, float segmentWidth, float segmentX,
+				   ImDrawList* drawList, bool drawStartValue) {
+					view.drawSegmentContent<float>(track, segment, trackTopLeft, prevSegmentX, segmentX, segmentWidth,
+												   drawList, drawStartValue);
+				}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentCurveVec4),
+				[](SequencePlayerGUIView& view, const SequenceTrack& track, const SequenceTrackSegment& segment,
+				   const ImVec2& trackTopLeft, float prevSegmentX, float segmentWidth, float segmentX,
+				   ImDrawList* drawList, bool drawStartValue) {
+					view.drawSegmentContent<float>(track, segment, trackTopLeft, prevSegmentX, segmentX, segmentWidth,
+												   drawList, drawStartValue);
+				}
+		},
+		{
+			RTTI_OF(SequenceTrackSegmentEvent),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float prevSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
+			{
+			}
+		}
+	};
+
+	std::unordered_map<rttr::type, drawTrackFunction> SequencePlayerGUIView::sDrawTracksMap
+	{
+		{
+			RTTI_OF(SequenceTrackCurveFloat),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, ImVec2& cursorPos, const float margin, const SequencePlayer& player)
+			{
+				view.drawCurveTrack<float>(track, cursorPos, margin, player);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec2),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, ImVec2& cursorPos, const float margin, const SequencePlayer& player)
+			{
+			  	view.drawCurveTrack<glm::vec2>(track, cursorPos, margin, player);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec3),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, ImVec2& cursorPos, const float margin, const SequencePlayer& player)
+			{
+			  	view.drawCurveTrack<glm::vec3>(track, cursorPos, margin, player);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackCurveVec4),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, ImVec2& cursorPos, const float margin, const SequencePlayer& player)
+			{
+			  	view.drawCurveTrack<glm::vec4>(track, cursorPos, margin, player);
+			}
+		},
+		{
+			RTTI_OF(SequenceTrackEvent),
+			[](SequencePlayerGUIView& view, const SequenceTrack& track, ImVec2& cursorPos, const float margin, const SequencePlayer& player)
+			{
+				view.drawEventTrack(track, cursorPos, margin, player);
+			}
+		}
+	};
+
+
 	bool SequencePlayerGUI::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -353,8 +439,6 @@ namespace nap
 
 			float previousSegmentX = 0.0f;
 
-			SequenceTrackTypes::Types trackType = track.getTrackType();
-
 			int segmentCount = 0;
 			for (const auto& segment : track.mSegments)
 			{
@@ -539,62 +623,14 @@ namespace nap
 
 			float previousSegmentX = 0.0f;
 
-			SequenceTrackTypes::Types trackType = track.getTrackType();
-
 			int segmentCount = 0;
 			for (const auto& segment : track.mSegments)
 			{
 				float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
 				float segmentWidth = segment->mDuration * mStepSize;
 
-				if (trackType == SequenceTrackTypes::Types::FLOAT)
-				{
-					drawSegmentContent<float>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC3)
-				{
-					drawSegmentContent<glm::vec3>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC2)
-				{
-					drawSegmentContent<glm::vec2>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
-				else if (trackType == SequenceTrackTypes::Types::VEC4)
-				{
-					drawSegmentContent<glm::vec4>(
-						track,
-						*segment.get(),
-						trackTopLeft,
-						previousSegmentX,
-						segmentWidth,
-						segmentX,
-						drawList,
-						(segmentCount == 0));
-				}
+				assert(sDrawSegmentsMap.find(segment.get_type()) != sDrawSegmentsMap.end());
+				sDrawSegmentsMap[segment.get_type()](*this, track, *segment.get(), trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, (segmentCount == 0));
 
 				//
 				previousSegmentX = segmentX;
@@ -629,46 +665,8 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
-			switch (track->getTrackType())
-			{
-			case SequenceTrackTypes::FLOAT:
-				drawCurveTrack<float>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer);
-				break;
-			case SequenceTrackTypes::VEC2:
-				drawCurveTrack<glm::vec2>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer);
-				break;;
-			case SequenceTrackTypes::VEC3:
-				drawCurveTrack<glm::vec3>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer);
-				break;
-			case SequenceTrackTypes::VEC4:
-				drawCurveTrack<glm::vec4>(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer);
-				break;
-			case SequenceTrackTypes::EVENT:
-				drawEventTrack(
-					*track.get(),
-					cursorPos,
-					marginBetweenTracks,
-					sequencePlayer);
-				break;
-			default:
-				break;
-			}
+			assert(sDrawTracksMap.find(track->get_type()) != sDrawTracksMap.end());
+			sDrawTracksMap[track->get_type()](*this, *track.get(), cursorPos, marginBetweenTracks, sequencePlayer);
 
 			// increment track count
 			trackCount++;

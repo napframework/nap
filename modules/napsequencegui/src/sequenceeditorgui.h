@@ -122,6 +122,9 @@ namespace nap
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
 	};
 
+	//
+	using drawCurveTrackFunction = std::function<void(SequenceEditorGUIView&, const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&)>;
+	using drawCurveSegmentFunction = std::function<void(SequenceEditorGUIView&, const SequenceTrack&, const SequenceTrackSegment&, ImVec2&, const float, const float, const float, ImDrawList*, bool)>;
 
 	/**
 	 * SequenceEditorGUIView
@@ -459,6 +462,10 @@ namespace nap
 
 		// current time in sequence of mouse cursor
 		double mMouseCursorTime;
+
+		//
+		static std::unordered_map<rttr::type, drawCurveTrackFunction> sDrawTracksMap;
+		static std::unordered_map<rttr::type, drawCurveSegmentFunction> sDrawSegmentsMap;
 	};
 
 	/**
@@ -485,12 +492,12 @@ namespace nap
 	class SequenceGUIEditSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIEditSegmentData(std::string trackID, std::string segmentID, SequenceTrackTypes::Types trackType) :
-				mTrackID(trackID), mSegmentID(segmentID), mTrackType(trackType){}
+		SequenceGUIEditSegmentData(std::string trackID, std::string segmentID,  rttr::type typeInfo) :
+				mTrackID(trackID), mSegmentID(segmentID), mSegmentTypeInfo(typeInfo){}
 
 		std::string mTrackID;
 		std::string mSegmentID;
-		SequenceTrackTypes::Types mTrackType;
+		rttr::type mSegmentTypeInfo;
 	};
 
 	/**
@@ -499,11 +506,11 @@ namespace nap
 	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIInsertSegmentData(std::string id, double t, SequenceTrackTypes::Types type) : trackID(id), time(t), trackType(type) {}
+		SequenceGUIInsertSegmentData(std::string id, double t, rttr::type typeInfo) : mID(id), mTime(t), mTrackTypeInfo(typeInfo){}
 
-		double time = 0.0;
-		std::string trackID;
-		SequenceTrackTypes::Types trackType;
+		double mTime = 0.0;
+		std::string mID;
+		rttr::type mTrackTypeInfo;
 	};
 
 	/**
@@ -579,14 +586,13 @@ namespace nap
 	class SequenceGUIInsertCurvePointData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIInsertCurvePointData(std::string trackID, std::string segmentID, int index, float pos,SequenceTrackTypes::Types type) :
-			mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(index), mPos(pos), mSegmentType(type) {}
+		SequenceGUIInsertCurvePointData(std::string trackID, std::string segmentID, int index, float pos) :
+			mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(index), mPos(pos) {}
 
 		std::string mTrackID;
 		std::string mSegmentID;
 		int mSelectedIndex;
 		float mPos;
-		SequenceTrackTypes::Types mSegmentType;
 	};
 
 	/**
@@ -595,13 +601,12 @@ namespace nap
 	class SequenceGUIChangeCurveData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIChangeCurveData(std::string trackID, std::string segmentID, int index, SequenceTrackTypes::Types type, ImVec2 windowPos) :
-			mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(index), mSegmentType(type), mWindowPos(windowPos) {}
+		SequenceGUIChangeCurveData(std::string trackID, std::string segmentID, int index, ImVec2 windowPos) :
+			mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(index), mWindowPos(windowPos) {}
 
 		std::string mTrackID;
 		std::string mSegmentID;
 		int mSelectedIndex;
-		SequenceTrackTypes::Types mSegmentType;
 		ImVec2 mWindowPos;
 	};
 
@@ -626,15 +631,14 @@ namespace nap
 	class SequenceGUIControlPointActionData : public SequenceGUIActionData
 	{
 	public:
-		SequenceGUIControlPointActionData(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex,SequenceTrackTypes::Types trackType)
-			: mTrackId(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mTrackType(trackType)
+		SequenceGUIControlPointActionData(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex)
+			: mTrackId(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
 			{}
 
 		std::string mTrackId;
 		std::string mSegmentID;
 		int			mControlPointIndex;
 		int			mCurveIndex;
-		SequenceTrackTypes::Types mTrackType;
 	};
 
 	/**

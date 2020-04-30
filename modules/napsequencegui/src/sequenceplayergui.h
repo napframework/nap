@@ -92,6 +92,8 @@ namespace nap
 		std::unique_ptr<SequencePlayerGUIActionData> currentActionData = nullptr;
 	};
 
+	using drawSegmentContentFunction = std::function<void(SequencePlayerGUIView&, const SequenceTrack&, const SequenceTrackSegment &, const ImVec2& , float , float , float , ImDrawList* , bool)>;
+	using drawTrackFunction = std::function<void(SequencePlayerGUIView&, const SequenceTrack&, ImVec2&, const float, const SequencePlayer&)>;
 	/**
 	 * SequencePlayerGUIView
 	 * Responsible for draw the GUI for the sequence player
@@ -283,6 +285,10 @@ namespace nap
 
 		// current time in sequence of mouse cursor
 		double mMouseCursorTime;
+
+		//
+		static std::unordered_map<rttr::type, drawSegmentContentFunction> sDrawSegmentsMap;
+		static std::unordered_map<rttr::type, drawTrackFunction> sDrawTracksMap;
 	};
 
 	/**

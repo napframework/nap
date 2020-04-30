@@ -20,7 +20,6 @@ namespace nap
 	// forward declares
 	class SequenceService;
 
-
 	/**
 	 * SequencePlayer
 	 * The sequence player is responsible for loading / playing and saving a sequence
@@ -195,6 +194,9 @@ namespace nap
 		 */
 		std::unique_lock<std::mutex> lock();
 	private:
+		template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
+		std::unique_ptr<SequencePlayerAdapter> createParameterAdapter(SequenceTrack& track, Parameter& parameter);
+
 		// read objects from sequence
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
 
@@ -238,7 +240,19 @@ namespace nap
 		// reference to service
 		SequenceService& mSequenceService;
 
-		static std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, const std::string&, const std::string&)>> createAdapterMap;
+		struct PairHash
+		{
+			template <class T1, class T2>
+			std::size_t operator() (const std::pair<T1, T2> &pair) const
+			{
+				return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+			}
+		};
+
+		static std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)>> sCreateAdapterMap;
+		static std::unordered_map<std::pair<rttr::type, rttr::type>, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, Parameter&)>, PairHash> sCreateCurveAdapterMap;
+		static std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> sCreateCurveAdapterFunction;
+		static std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> sCreateEventAdapterFunction;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

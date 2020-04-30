@@ -28,6 +28,110 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)>> SequencePlayer::sCreateAdapterMap
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat), sCreateCurveAdapterFunction },
+			{ RTTI_OF(SequenceTrackCurveVec2), sCreateCurveAdapterFunction },
+			{ RTTI_OF(SequenceTrackCurveVec3), sCreateCurveAdapterFunction },
+			{ RTTI_OF(SequenceTrackCurveVec4), sCreateCurveAdapterFunction },
+			{ RTTI_OF(SequenceTrackEvent), sCreateEventAdapterFunction }
+		};
+
+
+	std::unordered_map<std::pair<rttr::type, rttr::type>, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, Parameter&)>, SequencePlayer::PairHash> SequencePlayer::sCreateCurveAdapterMap
+	{
+		{
+			{
+				RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterLong)
+			},
+				[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter) -> std::unique_ptr<SequencePlayerAdapter>
+			{
+				 return player.createParameterAdapter<float, ParameterLong, long>(track, parameter);
+			}
+		},
+		{
+			{
+				RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterFloat)
+			},
+			[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter)->std::unique_ptr<SequencePlayerAdapter>
+			{
+				return player.createParameterAdapter<float, ParameterFloat, float>(track, parameter);
+			}
+		},
+		{
+			{RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterDouble)},
+			[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter) -> std::unique_ptr<SequencePlayerAdapter>
+			{
+				return player.createParameterAdapter<float, ParameterDouble, double>(track,parameter);
+			},
+		},
+		{
+			{
+				RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterInt)
+			},
+			[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter)->std::unique_ptr<SequencePlayerAdapter>
+			{
+				return player.createParameterAdapter<float, ParameterInt, int>(track, parameter);
+			}
+		},
+		{
+			{
+				RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(ParameterVec2)
+			},
+			[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter)->std::unique_ptr<SequencePlayerAdapter>
+			{
+				return player.createParameterAdapter<glm::vec2, ParameterVec2, glm::vec2>(track, parameter);
+			}
+		},
+		{
+			{
+				RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(ParameterVec3)
+			},
+			[](SequencePlayer& player, SequenceTrack& track, Parameter& parameter)->std::unique_ptr<SequencePlayerAdapter>
+			{
+				return player.createParameterAdapter<glm::vec3, ParameterVec3, glm::vec3>(track, parameter);
+			}
+		}
+	};
+
+
+	std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> SequencePlayer::sCreateCurveAdapterFunction = [](SequencePlayer& player, SequenceTrack& track, const std::string& parameterID)->std::unique_ptr<SequencePlayerAdapter>
+	{
+		for(auto& parameter : player.mParameters)
+		{
+			if( parameter->mID == parameterID )
+			{
+				auto key = std::pair<rttr::type, rttr::type>(track.get_type(), parameter->get_type());
+				if( sCreateCurveAdapterMap.find(key) != sCreateCurveAdapterMap.end() )
+				{
+					return sCreateCurveAdapterMap[key](player, track, *parameter.get());
+				}
+				else
+				{
+					Logger::error("Couldn't find curve adapter for track type %s and parameter type %s", key.first.get_name().to_string().c_str(), key.second.get_name().to_string().c_str());
+				}
+			}
+		}
+
+		return nullptr;
+	};
+
+	std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> SequencePlayer::sCreateEventAdapterFunction = [](SequencePlayer& player, SequenceTrack& track, const std::string& eventReceiverID)->std::unique_ptr<SequencePlayerAdapter>
+	{
+		for (auto& receiver : player.mEventReceivers)
+		{
+			if (receiver->mID == eventReceiverID)
+			{
+				std::unique_ptr<SequencePlayerAdapter> adapter = std::make_unique<SequencePlayerEventAdapter>(track, *receiver.get());
+				return std::move(adapter);
+			}
+		}
+
+		return nullptr;
+	};
+
+
+
 	SequencePlayer::SequencePlayer(SequenceService& service)
 		:mSequenceService(service)
 	{
@@ -332,6 +436,7 @@ namespace nap
 		const std::string& trackID,
 		const std::unique_lock<std::mutex>& l)
 	{
+		// find track
 		SequenceTrack* track = nullptr;
 
 		for (auto& aTrack : mSequence->mTracks)
@@ -345,181 +450,52 @@ namespace nap
 
 		assert(track != nullptr);
 
+		// erase previous adapter
 		if (mAdapters.find(track->mID) != mAdapters.end())
 		{
 			mAdapters.erase(track->mID);
 		}
 
-		switch (track->getTrackType())
+		// find create adapter function for track type
+		if(sCreateAdapterMap.find(track->get_type()) == sCreateAdapterMap.end())
 		{
-		case SequenceTrackTypes::FLOAT:
-		case SequenceTrackTypes::VEC2:
-		case SequenceTrackTypes::VEC3:
-		case SequenceTrackTypes::VEC4:
-		{
-			Parameter* parameter = nullptr;
-			for (auto& ownedParameter : mParameters)
-			{
-				if (ownedParameter->mID == objectID)
-				{
-					parameter = ownedParameter.get();
-					break;
-				}
-			}
+			Logger::error("Couldn't find adapter creation function for track type %s", track->get_type().get_name().to_string().c_str());
 
-			if (mAdapters.find(trackID) != mAdapters.end())
-			{
-				mAdapters.erase(trackID);
-			}
-
-			// don't assign anything because we assign an empty parameter
-			if (objectID == "")
-			{
-				return true;
-			}
-
-			if (parameter == nullptr)
-			{
-				nap::Logger::error(*this, "Couldn't find parameter with id : %s", objectID.c_str());
-				return false;
-			}
-
-			for (auto& track : mSequence->mTracks)
-			{
-				if (track->mID == trackID)
-				{
-					switch (track->getTrackType())
-					{
-					case SequenceTrackTypes::FLOAT:
-					{
-						if (parameter->get_type().is_derived_from<ParameterFloat>())
-						{
-							ParameterFloat& target = static_cast<ParameterFloat&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(
-								*track.get(),
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-						else if (parameter->get_type().is_derived_from<ParameterDouble>())
-						{
-							ParameterDouble& target = static_cast<ParameterDouble&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(
-								*track.get(),
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-						else if (parameter->get_type().is_derived_from<ParameterInt>())
-						{
-							ParameterInt& target = static_cast<ParameterInt&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(
-								*track.get(), 
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-						else if (parameter->get_type().is_derived_from<ParameterLong>())
-						{
-							ParameterLong& target = static_cast<ParameterLong&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, int64_t>>(
-								*track.get(),
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-						else
-						{
-							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
-							return false;
-						}
-					}
-					break;
-					case SequenceTrackTypes::VEC4:
-					{
-						nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
-						return false;
-					}
-					case SequenceTrackTypes::VEC3:
-					{
-						if (parameter->get_type().is_derived_from<ParameterVec3>())
-						{
-							ParameterVec3& target = static_cast<ParameterVec3&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(
-								*track.get(),
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-
-						else
-						{
-							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
-							return false;
-						}
-					}
-					break;
-					case SequenceTrackTypes::VEC2:
-					{
-						if (parameter->get_type().is_derived_from<ParameterVec2>())
-						{
-							ParameterVec2& target = static_cast<ParameterVec2&>(*parameter);
-
-							auto processor = std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(
-								*track.get(),
-								target,
-								mSequenceService,
-								mSetParametersOnMainThread);
-							mAdapters.emplace(trackID, std::move(processor));
-						}
-
-						else
-						{
-							nap::Logger::error(*this, "Parameter with id %s is not derived from a valid type", objectID.c_str());
-							return false;
-						}
-					}
-					break;
-					}
-
-					break;
-				}
-			}
+			return false;
 		}
-			break;
-			case SequenceTrackTypes::EVENT:
-			{
-				for (auto& receiver : mEventReceivers)
-				{
-					if (receiver->mID == objectID)
-					{
-						if (mAdapters.find(trackID) != mAdapters.end())
-						{
-							mAdapters.erase(trackID);
-						}
+		else
+		{
+			// create adapter for track and object id
+			assert(sCreateAdapterMap.find(track->get_type()) != sCreateAdapterMap.end());
+			std::unique_ptr<SequencePlayerAdapter> adapter = sCreateAdapterMap[track->get_type()](*this, *track, objectID);
 
-						auto processor = std::make_unique<SequencePlayerEventAdapter>(*track, *receiver.get());
-						mAdapters.emplace(trackID, std::move(processor));
-					}
-				}
-				
+			if( adapter == nullptr )
+			{
+				Logger::error("Couldn't create adapter for track with id %s and object id %s", track->mID.c_str(), objectID.c_str());
+
+				return  false;
 			}
-				break;;
-		default:
-			break;
+
+			mAdapters.emplace(track->mID, std::move(adapter));
 		}
 
 		return true;
+	}
+
+
+	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
+	std::unique_ptr<SequencePlayerAdapter> SequencePlayer::createParameterAdapter(SequenceTrack& track, Parameter& parameter)
+	{
+		assert(parameter.get_type().is_derived_from<PARAMETER_TYPE>());
+		assert(track.get_type().is_derived_from<CURVE_TYPE>());
+
+		auto adapter = std::make_unique<SequencePlayerCurveAdapter<CURVE_TYPE, PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(
+			track,
+			static_cast<PARAMETER_TYPE&>(parameter),
+			mSequenceService,
+			mSetParametersOnMainThread);
+
+		return std::move(adapter);
 	}
 
 
