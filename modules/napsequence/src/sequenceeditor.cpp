@@ -19,20 +19,6 @@ using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
-	std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> SequenceEditorController::sUpdateSegmentsMap
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
-				 controller.updateCurveSegments<float>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec2),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
-				 controller.updateCurveSegments<glm::vec2>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec3),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
-				 controller.updateCurveSegments<glm::vec3>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec4),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
-				 controller.updateCurveSegments<glm::vec4>(track); } },
-			{ RTTI_OF(SequenceTrackEvent),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ } }
-		};
-
-
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
