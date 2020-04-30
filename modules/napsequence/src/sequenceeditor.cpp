@@ -19,6 +19,18 @@ using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
+	std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> SequenceEditorController::sUpdateSegmentsMap
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
+				 controller.updateCurveSegments<float>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec2),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
+				 controller.updateCurveSegments<glm::vec2>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec3),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
+				 controller.updateCurveSegments<glm::vec3>(track); } },
+			{ RTTI_OF(SequenceTrackCurveVec4),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){
+				 controller.updateCurveSegments<glm::vec4>(track); } },
+			{ RTTI_OF(SequenceTrackEvent),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ } }
+		};
 
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
@@ -77,7 +89,7 @@ namespace nap
 				{
 					trackSegment->mDuration += amount;
 
-					updateSegmentsMap[track->get_type()](*this, *track);
+					sUpdateSegmentsMap[track->get_type()](*this, *track);
 
 					updateTracks();
 				}
@@ -164,7 +176,7 @@ namespace nap
 						deleteObjectFromSequencePlayer(segmentID);
 
 						// update segments
-						updateSegmentsMap[track->get_type()](*this, *track);
+						sUpdateSegmentsMap[track->get_type()](*this, *track);
 
 						break;
 					}
@@ -355,7 +367,7 @@ namespace nap
 			mSequencePlayer.mReadObjectIDs);
 		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
 
-		updateSegments<T>(*newTrack);
+		updateCurveSegments<T>(*newTrack);
 	}
 
 	void SequenceEditorController::addNewEventTrack()
@@ -478,7 +490,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 						//
-						updateSegments<T>(*(track.get()));
+						updateCurveSegments<T>(*(track.get()));
 
 						break;
 					}
@@ -511,7 +523,7 @@ namespace nap
 						mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 						//
-						updateSegments<T>(*(track.get()));
+						updateCurveSegments<T>(*(track.get()));
 
 						break;
 					}
@@ -549,7 +561,7 @@ namespace nap
 					mSequencePlayer.mReadObjects.emplace_back(std::move(newSegment));
 
 					//
-					updateSegments<T>(*(track.get()));
+					updateCurveSegments<T>(*(track.get()));
 				}
 				break;
 			}
@@ -667,14 +679,11 @@ namespace nap
 		}
 
 		//
-		updateSegments<T>(*track);
+		updateCurveSegments<T>(*track);
 	}
-
-	/**
-	*
-	*/
+	
 	template<typename T>
-	void SequenceEditorController::updateSegments(SequenceTrack& track)
+	void SequenceEditorController::updateCurveSegments(SequenceTrack& track)
 	{
 		// update start time and duration of all segments
 		ResourcePtr<SequenceTrackSegmentCurve<T>> prevSeg = nullptr;
@@ -910,15 +919,6 @@ namespace nap
 		trackCurve->mMinimum = minimum;
 		trackCurve->mMaximum = maximum;
 	}
-
-	std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> SequenceEditorController::updateSegmentsMap
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<float>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec2),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec2>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec3),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec3>(track); } },
-			{ RTTI_OF(SequenceTrackCurveVec4),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ controller.updateSegments<glm::vec4>(track); } },
-			{ RTTI_OF(SequenceTrackEvent),  [](nap::SequenceEditorController& controller, nap::SequenceTrack& track){ } }
-		};
 
 	// explicit template declarations
 	template NAPAPI void nap::SequenceEditorController::addNewCurveTrack<float>();

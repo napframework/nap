@@ -293,17 +293,17 @@ namespace nap
 		void updateTracks();
 
 		/**
-		 * updateSegments
+		 * updateCurveSegments
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param track reference to sequence track
 		 */
 		template<typename T>
-		void updateSegments(SequenceTrack& track);
+		void updateCurveSegments(SequenceTrack& track);
 	protected:
 		// reference to player
 		SequencePlayer&		mSequencePlayer;
 	private:
 		static std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>>
-			updateSegmentsMap;
+			sUpdateSegmentsMap;
 	};
 }
