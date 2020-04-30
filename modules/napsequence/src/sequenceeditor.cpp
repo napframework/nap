@@ -32,6 +32,24 @@ namespace nap
 		return true;
 	}
 
+	SequenceEditorController::SequenceEditorController(SequencePlayer& player)
+		: mSequencePlayer(player)
+	{
+		{
+			mUpdateSegmentsMap =
+			{
+				{ RTTI_OF(SequenceTrackCurveFloat),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
+				controller.updateCurveSegments<float>(track); } },
+				{ RTTI_OF(SequenceTrackCurveVec2),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
+					controller.updateCurveSegments<glm::vec2>(track); } },
+				{ RTTI_OF(SequenceTrackCurveVec3),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
+					controller.updateCurveSegments<glm::vec3>(track); } },
+				{ RTTI_OF(SequenceTrackCurveVec4),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
+					controller.updateCurveSegments<glm::vec4>(track); } },
+				{ RTTI_OF(SequenceTrackEvent),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {} }
+			};
+		}
+	}
 
 	void SequenceEditorController::segmentDurationChange(
 		const std::string& trackID,
@@ -76,7 +94,7 @@ namespace nap
 				{
 					trackSegment->mDuration += amount;
 
-					sUpdateSegmentsMap[track->get_type()](*this, *track);
+					mUpdateSegmentsMap[track->get_type()](*this, *track);
 
 					updateTracks();
 				}
@@ -213,7 +231,7 @@ namespace nap
 						deleteObjectFromSequencePlayer(segmentID);
 
 						// update segments
-						sUpdateSegmentsMap[track->get_type()](*this, *track);
+						mUpdateSegmentsMap[track->get_type()](*this, *track);
 
 						break;
 					}

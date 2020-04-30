@@ -69,22 +69,8 @@ namespace nap
 		 * @param sequencePlayer reference to the sequence player
 		 * @param sequence reference to the sequence ( model )
 		 */
-		SequenceEditorController(SequencePlayer& sequencePlayer) 
-			: mSequencePlayer(sequencePlayer)
-		{
-			sUpdateSegmentsMap =
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
-					controller.updateCurveSegments<float>(track); } },
-				{ RTTI_OF(SequenceTrackCurveVec2),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
-					controller.updateCurveSegments<glm::vec2>(track); } },
-				{ RTTI_OF(SequenceTrackCurveVec3),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
-					controller.updateCurveSegments<glm::vec3>(track); } },
-				{ RTTI_OF(SequenceTrackCurveVec4),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {
-					controller.updateCurveSegments<glm::vec4>(track); } },
-				{ RTTI_OF(SequenceTrackEvent),  [this](nap::SequenceEditorController& controller, nap::SequenceTrack& track) {} }
-			};
-		}
+		SequenceEditorController(SequencePlayer& sequencePlayer);
+		
 
 		/**
 		 * segmentDurationChange
@@ -333,6 +319,6 @@ namespace nap
 		// reference to player
 		SequencePlayer&		mSequencePlayer;
 	private:
-		std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> sUpdateSegmentsMap;
+		std::unordered_map<rttr::type, std::function<void(nap::SequenceEditorController&,nap::SequenceTrack&)>> mUpdateSegmentsMap;
 	};
 }

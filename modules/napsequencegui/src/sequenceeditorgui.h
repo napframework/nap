@@ -123,8 +123,8 @@ namespace nap
 	};
 
 	//
-	using drawCurveTrackFunction = std::function<void(SequenceEditorGUIView&, const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&)>;
-	using drawCurveSegmentFunction = std::function<void(SequenceEditorGUIView&, const SequenceTrack&, const SequenceTrackSegment&, ImVec2&, const float, const float, const float, ImDrawList*, bool)>;
+	using drawCurveTrackFunction = std::function<void(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&)>;
+	using drawCurveSegmentFunction = std::function<void(const SequenceTrack&, const SequenceTrackSegment&, ImVec2&, const float, const float, const float, ImDrawList*, bool)>;
 
 	/**
 	 * SequenceEditorGUIView
@@ -464,8 +464,9 @@ namespace nap
 		double mMouseCursorTime;
 
 		//
-		static std::unordered_map<rttr::type, drawCurveTrackFunction> sDrawTracksMap;
-		static std::unordered_map<rttr::type, drawCurveSegmentFunction> sDrawSegmentsMap;
+		std::unordered_map<rttr::type, drawCurveTrackFunction> mDrawTracksMap;
+
+		std::unordered_map<rttr::type, drawCurveSegmentFunction> mDrawSegmentsMap;
 	};
 
 	/**

@@ -193,10 +193,14 @@ namespace nap
 		 * creates lock on mMutex
 		 */
 		std::unique_lock<std::mutex> lock();
-	private:
+
+		std::unique_ptr<SequencePlayerAdapter> createCurveAdapter(SequenceTrack& track, const std::string& parameterID);
+
+		std::unique_ptr<SequencePlayerAdapter> createEventAdapter(SequenceTrack& track, const std::string& eventReceiverID);
+
 		template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
 		std::unique_ptr<SequencePlayerAdapter> createParameterAdapter(SequenceTrack& track, Parameter& parameter);
-
+	private:
 		// read objects from sequence
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
 
@@ -249,10 +253,9 @@ namespace nap
 			}
 		};
 
-		static std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)>> sCreateAdapterMap;
-		static std::unordered_map<std::pair<rttr::type, rttr::type>, std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, Parameter&)>, PairHash> sCreateCurveAdapterMap;
-		static std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> sCreateCurveAdapterFunction;
-		static std::function<std::unique_ptr<SequencePlayerAdapter>(SequencePlayer&, SequenceTrack&, const std::string&)> sCreateEventAdapterFunction;
+		std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequenceTrack&, const std::string&)>> mCreateAdapterMap;
+
+		std::unordered_map<std::pair<rttr::type, rttr::type>, std::function<std::unique_ptr<SequencePlayerAdapter>(SequenceTrack&, Parameter&)>, PairHash> mCreateCurveAdapterMap;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;
