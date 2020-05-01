@@ -36,6 +36,10 @@ namespace nap
 
 		RTTI_ENABLE(Device)
 	public:
+		// Shortcuts for pointer to member functions of SequencePlayer, used in static maps
+		using CreateAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, const std::string&);
+		using CreateParameterAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, Parameter&);
+
 		/**
 		 * Constructor used by factory
 		 */
@@ -244,6 +248,7 @@ namespace nap
 		// reference to service
 		SequenceService& mSequenceService;
 
+		// pair hash used for hasing unorded map with key of two rttr::types
 		struct PairHash
 		{
 			template <class T1, class T2>
@@ -253,9 +258,11 @@ namespace nap
 			}
 		};
 
-		std::unordered_map<rttr::type, std::function<std::unique_ptr<SequencePlayerAdapter>(SequenceTrack&, const std::string&)>> mCreateAdapterMap;
+		// static map of pointer to member functions to create different adapters
+		static std::unordered_map<rttr::type, CreateAdapterMemFunPtr> sCreateAdapterMap;
 
-		std::unordered_map<std::pair<rttr::type, rttr::type>, std::function<std::unique_ptr<SequencePlayerAdapter>(SequenceTrack&, Parameter&)>, PairHash> mCreateCurveAdapterMap;
+		// static map of pointer to member functions to create different types of parameter adapters
+		static std::unordered_map<std::pair<rttr::type, rttr::type>, CreateParameterAdapterMemFunPtr, PairHash> sCreateCurveAdapterMap;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

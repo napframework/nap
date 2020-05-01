@@ -122,9 +122,6 @@ namespace nap
 		std::unique_ptr<SequenceGUIActionData> currentActionData;
 	};
 
-	//
-	using drawCurveTrackFunction = std::function<void(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&)>;
-	using drawCurveSegmentFunction = std::function<void(const SequenceTrack&, const SequenceTrackSegment&, ImVec2&, const float, const float, const float, ImDrawList*, bool)>;
 
 	/**
 	 * SequenceEditorGUIView
@@ -134,6 +131,9 @@ namespace nap
 	class NAPAPI SequenceEditorGUIView
 	{
 	public:
+		// shortcuts to member function pointers, used in static maps
+		using DrawTrackMemFunPtr = void(SequenceEditorGUIView::*)(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&);
+		using DrawCurveSegmentMemFunPtr = void(SequenceEditorGUIView::*)(const SequenceTrack&, const SequenceTrackSegment&, const ImVec2& , float, float, float, ImDrawList*, bool);
 
 		/**
 		 * Constructor
@@ -464,9 +464,9 @@ namespace nap
 		double mMouseCursorTime;
 
 		//
-		std::unordered_map<rttr::type, drawCurveTrackFunction> mDrawTracksMap;
+		static std::unordered_map<rttr::type, DrawTrackMemFunPtr> sDrawTracksMap;
 
-		std::unordered_map<rttr::type, drawCurveSegmentFunction> mDrawSegmentsMap;
+		static std::unordered_map<rttr::type, DrawCurveSegmentMemFunPtr> sDrawCurveSegmentsMap;
 	};
 
 	/**

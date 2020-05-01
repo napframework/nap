@@ -28,45 +28,30 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	std::unordered_map<rttr::type, SequencePlayer::CreateAdapterMemFunPtr> SequencePlayer::sCreateAdapterMap
+	{
+		{ RTTI_OF(SequenceTrackCurveFloat), &SequencePlayer::createCurveAdapter },
+		{ RTTI_OF(SequenceTrackCurveVec2), &SequencePlayer::createCurveAdapter },
+		{ RTTI_OF(SequenceTrackCurveVec3), &SequencePlayer::createCurveAdapter },
+		{ RTTI_OF(SequenceTrackCurveVec4), &SequencePlayer::createCurveAdapter },
+		{ RTTI_OF(SequenceTrackEvent), &SequencePlayer::createEventAdapter }
+	};
+
+
+	std::unordered_map<std::pair<rttr::type, rttr::type>, SequencePlayer::CreateParameterAdapterMemFunPtr, SequencePlayer::PairHash> SequencePlayer::sCreateCurveAdapterMap
+	{
+		{ { RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterLong) }, { &SequencePlayer::createParameterAdapter<float, ParameterLong, long> } },
+		{ { RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterFloat) },{ &SequencePlayer::createParameterAdapter<float, ParameterFloat, float> } },
+		{ { RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterDouble) },{ &SequencePlayer::createParameterAdapter<float, ParameterDouble, double> } },
+		{ { RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterInt) },{ &SequencePlayer::createParameterAdapter<float, ParameterInt, int> } },
+		{ { RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(ParameterVec2) },{ &SequencePlayer::createParameterAdapter<glm::vec2, ParameterVec2, glm::vec2> } },
+		{ { RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(ParameterVec3) },{ &SequencePlayer::createParameterAdapter<glm::vec3, ParameterVec3, glm::vec3> } }
+	};
+
+
 	SequencePlayer::SequencePlayer(SequenceService& service)
 		:mSequenceService(service)
 	{
-		mCreateAdapterMap = 
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat), [this](SequenceTrack& track, const std::string& parameterID)  { return createCurveAdapter(track, parameterID); } },
-			{ RTTI_OF(SequenceTrackCurveVec2), [this](SequenceTrack& track, const std::string& parameterID) { return createCurveAdapter(track, parameterID); } },
-			{ RTTI_OF(SequenceTrackCurveVec3), [this](SequenceTrack& track, const std::string& parameterID) { return createCurveAdapter(track, parameterID); } },
-			{ RTTI_OF(SequenceTrackCurveVec4), [this](SequenceTrack& track, const std::string& parameterID) { return createCurveAdapter(track, parameterID); } },
-			{ RTTI_OF(SequenceTrackEvent), [this](SequenceTrack& track, const std::string& eventReceiverID) { return createEventAdapter(track, eventReceiverID); } }
-		};
-
-		mCreateCurveAdapterMap =
-		{
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterLong) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<float, ParameterLong, long>(track, parameter); }
-			},
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterFloat) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<float, ParameterFloat, float>(track, parameter); }
-			},
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterDouble) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<float, ParameterDouble, double>(track, parameter); }
-			},
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(ParameterInt) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<float, ParameterInt, int>(track, parameter); }
-			},
-			{
-				{ RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(ParameterVec2) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<glm::vec2, ParameterVec2, glm::vec2>(track, parameter); }
-			},
-			{
-				{ RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(ParameterVec3) },
-				[this](SequenceTrack& track, Parameter& parameter) { return createParameterAdapter<glm::vec3, ParameterVec3, glm::vec3>(track, parameter); }
-			}
-		};
 	}
 
 	std::unique_ptr<SequencePlayerAdapter> SequencePlayer::createCurveAdapter(SequenceTrack& track, const std::string& parameterID)
@@ -76,9 +61,11 @@ namespace nap
 			if (parameter->mID == parameterID)
 			{
 				auto key = std::pair<rttr::type, rttr::type>(track.get_type(), parameter->get_type());
-				if (mCreateCurveAdapterMap.find(key) != mCreateCurveAdapterMap.end())
+
+				auto it = sCreateCurveAdapterMap.find(key);
+				if ( it != sCreateCurveAdapterMap.end())
 				{
-					return mCreateCurveAdapterMap[key](track, *parameter.get());
+					return (*this.*it->second)(track, *parameter.get());
 				}
 				else
 				{
@@ -424,7 +411,8 @@ namespace nap
 		}
 
 		// find create adapter function for track type
-		if(mCreateAdapterMap.find(track->get_type()) == mCreateAdapterMap.end())
+		auto it = sCreateAdapterMap.find(track->get_type());
+		if(it == sCreateAdapterMap.end())
 		{
 			Logger::error("Couldn't find adapter creation function for track type %s", track->get_type().get_name().to_string().c_str());
 
@@ -433,8 +421,7 @@ namespace nap
 		else
 		{
 			// create adapter for track and object id
-			assert(mCreateAdapterMap.find(track->get_type()) != mCreateAdapterMap.end());
-			std::unique_ptr<SequencePlayerAdapter> adapter = mCreateAdapterMap[track->get_type()](*track, objectID);
+			std::unique_ptr<SequencePlayerAdapter> adapter = (*this.*it->second)(*track, objectID);
 
 			if( adapter == nullptr )
 			{

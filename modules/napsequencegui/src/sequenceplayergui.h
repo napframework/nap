@@ -91,9 +91,6 @@ namespace nap
 		// current action data
 		std::unique_ptr<SequencePlayerGUIActionData> currentActionData = nullptr;
 	};
-
-	using drawSegmentContentFunction = std::function<void(const SequenceTrack&, const SequenceTrackSegment &, const ImVec2& , float , float , float , ImDrawList* , bool)>;
-	using drawTrackFunction = std::function<void(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&)>;
 	
 	/**
 	 * SequencePlayerGUIView
@@ -103,6 +100,9 @@ namespace nap
 	class NAPAPI SequencePlayerGUIView
 	{
 	public:
+		using DrawSegmentContentMemFunPtr = void(SequencePlayerGUIView::*)(const SequenceTrack&, const SequenceTrackSegment &, const ImVec2&, float, float, float, ImDrawList*, bool);
+		using DrawTrackMemFunPtr = void(SequencePlayerGUIView::*)(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&);
+
 		/**
 		 * Constructor
 		 * @param controller reference to player
@@ -288,10 +288,10 @@ namespace nap
 		double mMouseCursorTime;
 
 		//
-		std::unordered_map<rttr::type, drawSegmentContentFunction> mDrawSegmentsMap;
+		static std::unordered_map<rttr::type, DrawSegmentContentMemFunPtr> sDrawSegmentsMap;
 
 		//
-		std::unordered_map<rttr::type, drawTrackFunction> mDrawTracksMap;
+		static std::unordered_map<rttr::type, DrawTrackMemFunPtr> sDrawTracksMap;
 	};
 
 	/**

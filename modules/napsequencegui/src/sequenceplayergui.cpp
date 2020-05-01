@@ -46,81 +46,29 @@ namespace nap
 	}
 
 
+	std::unordered_map<rttr::type, SequencePlayerGUIView::DrawTrackMemFunPtr> SequencePlayerGUIView::sDrawTracksMap
+	{
+		{ RTTI_OF(SequenceTrackCurveFloat), &SequencePlayerGUIView::drawCurveTrack<float> },
+		{ RTTI_OF(SequenceTrackCurveVec2), &SequencePlayerGUIView::drawCurveTrack<glm::vec2> },
+		{ RTTI_OF(SequenceTrackCurveVec3), &SequencePlayerGUIView::drawCurveTrack<glm::vec3> },
+		{ RTTI_OF(SequenceTrackCurveVec4), &SequencePlayerGUIView::drawCurveTrack<glm::vec4> },
+		{ RTTI_OF(SequenceTrackEvent), &SequencePlayerGUIView::drawEventTrack }
+	};
+
+
+	std::unordered_map<rttr::type, SequencePlayerGUIView::DrawSegmentContentMemFunPtr> SequencePlayerGUIView::sDrawSegmentsMap
+	{
+		{ RTTI_OF(SequenceTrackSegmentCurveFloat),&SequencePlayerGUIView::drawSegmentContent<float> },
+		{ RTTI_OF(SequenceTrackSegmentCurveVec2),&SequencePlayerGUIView::drawSegmentContent<glm::vec2> },
+		{ RTTI_OF(SequenceTrackSegmentCurveVec3),&SequencePlayerGUIView::drawSegmentContent<glm::vec3> },
+		{ RTTI_OF(SequenceTrackSegmentCurveVec4),&SequencePlayerGUIView::drawSegmentContent<glm::vec4> }
+	};
+
+
 	SequencePlayerGUIView::SequencePlayerGUIView(SequencePlayer& player, std::string id)
 		: mPlayer(player), mID(id)
 	{
-		mDrawTracksMap =
-		{
-			{
-				RTTI_OF(SequenceTrackCurveFloat), [this](const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player)
-				{
-					drawCurveTrack<float>(track, cursorPos, margin, player);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackCurveVec2), [this](const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player)
-				{
-					drawCurveTrack<glm::vec2>(track, cursorPos, margin, player);
-				
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackCurveVec3), [this](const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player)
-				{
-					drawCurveTrack<glm::vec3>(track, cursorPos, margin, player);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackCurveVec4), [this](const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player)
-				{
-					drawCurveTrack<glm::vec4>(track, cursorPos, margin, player);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackEvent), [this](const SequenceTrack& track,ImVec2& cursorPos, const float margin, const SequencePlayer& player)
-				{
-					drawEventTrack(track, cursorPos, margin, player);
-				}
-			}
-		};
 
-		mDrawSegmentsMap =
-		{
-			{
-				RTTI_OF(SequenceTrackSegmentCurveFloat),
-				[this](const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
-				{
-					drawSegmentContent<float>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackSegmentCurveVec2),
-				[this](const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
-				{
-					drawSegmentContent<glm::vec2>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackSegmentCurveVec3),
-				[this](const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
-				{
-					drawSegmentContent<glm::vec3>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackSegmentCurveVec4),
-				[this](const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
-				{
-					drawSegmentContent<glm::vec4>(track, segment, trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, drawStartValue);
-				}
-			},
-			{
-				RTTI_OF(SequenceTrackSegmentEvent),
-				[this](const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue)
-				{
-				}
-			}
-		};
 	}
 
 
@@ -615,8 +563,11 @@ namespace nap
 				float segmentX = (segment->mStartTime + segment->mDuration) * mStepSize;
 				float segmentWidth = segment->mDuration * mStepSize;
 
-				assert(mDrawSegmentsMap.find(segment.get()->get_type()) != mDrawSegmentsMap.end());
-				mDrawSegmentsMap[segment.get()->get_type()](track, *segment.get(), trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, (segmentCount == 0));
+				auto it = sDrawSegmentsMap.find(segment.get()->get_type());
+				if (it != sDrawSegmentsMap.end())
+				{
+					(*this.*it->second)(track, *segment.get(), trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, (segmentCount == 0));
+				}
 
 				//
 				previousSegmentX = segmentX;
@@ -651,8 +602,11 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
-			assert(mDrawTracksMap.find(track->get_type()) != mDrawTracksMap.end());
-			mDrawTracksMap[track->get_type()](*track.get(), cursorPos, marginBetweenTracks, sequencePlayer);
+			auto it = sDrawTracksMap.find(track->get_type());
+			if (it != sDrawTracksMap.end())
+			{
+				(*this.*it->second)(*track.get(), cursorPos, marginBetweenTracks, sequencePlayer);
+			}
 
 			// increment track count
 			trackCount++;
