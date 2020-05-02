@@ -9,6 +9,7 @@
 #include "sequenceservice.h"
 #include "sequenceeventreceiver.h"
 #include "sequenceplayeradapter.h"
+#include "sequenceplayercurveadapter.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -28,6 +29,7 @@ namespace nap
 	{
 		factory.addObjectCreator(std::make_unique<SequenceReceiverObjectCreator>(*this));
 		factory.addObjectCreator(std::make_unique<SequencePlayerObjectCreator>(*this));
+		factory.addObjectCreator(std::make_unique<SequencePlayerCurveInputObjectCreator>(*this));
 	}
 
 	bool SequenceService::init(nap::utility::ErrorState& errorState)

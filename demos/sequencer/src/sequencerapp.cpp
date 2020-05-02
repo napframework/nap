@@ -46,10 +46,6 @@ namespace nap
 		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
 			return false;
 
-		mSequencePlayerGUI = mResourceManager->findObject<SequencePlayerGUI>("SequencePlayerGUI");
-		if (!error.check(mSequencePlayerGUI != nullptr, "unable to find SequencePlayerGUI with name: %s", "SequenceEditorGUI"))
-			return false;
-
 		mParameterGroup = mResourceManager->findObject<ParameterGroup>("ParameterGroup");
 		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
@@ -84,6 +80,18 @@ namespace nap
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+	}
+
+
+    // Called when the application is going to render.
+	// Draws the gui to the main window.
+	void SequencerApp::render()
+	{
+		// Activate current window for drawing
+		mRenderWindow->makeActive();
+
+		// Clear back-buffer
+		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 		// Show parameters
 		mParameterGUI->show(mParameterGroup.get(), true);
@@ -97,21 +105,6 @@ namespace nap
 
 		// Show sequence editor gui
 		mSequenceEditorGUI->show();
-
-		// Show sequence player gui
-		mSequencePlayerGUI->show();
-	}
-
-
-    // Called when the application is going to render.
-	// Draws the gui to the main window.
-	void SequencerApp::render()
-	{
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
-
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
 		// Draw GUI to screen
 		mGuiService->draw();

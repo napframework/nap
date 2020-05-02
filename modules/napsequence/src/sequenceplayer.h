@@ -19,6 +19,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// forward declares
 	class SequenceService;
+	class SequencePlayerInput;
 
 	/**
 	 * SequencePlayer
@@ -36,10 +37,6 @@ namespace nap
 
 		RTTI_ENABLE(Device)
 	public:
-		// Shortcuts to pointer to member functions of SequencePlayer, used in static maps
-		using CreateAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, const std::string&);
-		using CreateParameterAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, Parameter&);
-
 		/**
 		 * Constructor used by factory
 		 */
@@ -168,8 +165,7 @@ namespace nap
 		bool				mCreateDefaultShowOnFailure = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
 		float				mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		bool				mSetParametersOnMainThread = true;  ///< Property: 'Set parameters on main thread' when true, any animated parameters will be set on main thread and not player thread
-		std::vector<ResourcePtr<Parameter>> mParameters;  ///< Property: 'Parameters' linked parameters
-		std::vector<ResourcePtr<SequenceEventReceiver>> mEventReceivers; ///< Property: 'Event Receivers' linked event receivers
+		std::vector<ResourcePtr<SequencePlayerInput>> mInputs;  ///< Property: 'Inputs' linked inputs
 	private:
 		/**
 		 * getSequence
@@ -197,13 +193,6 @@ namespace nap
 		 * creates lock on mMutex
 		 */
 		std::unique_lock<std::mutex> lock();
-
-		std::unique_ptr<SequencePlayerAdapter> createCurveAdapter(SequenceTrack& track, const std::string& parameterID);
-
-		std::unique_ptr<SequencePlayerAdapter> createEventAdapter(SequenceTrack& track, const std::string& eventReceiverID);
-
-		template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-		std::unique_ptr<SequencePlayerAdapter> createParameterAdapter(SequenceTrack& track, Parameter& parameter);
 	private:
 		// read objects from sequence
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
@@ -247,22 +236,14 @@ namespace nap
 
 		// reference to service
 		SequenceService& mSequenceService;
+	};
 
-		// pair hash used for hasing unorded map with key of two rttr::types
-		struct PairHash
-		{
-			template <class T1, class T2>
-			std::size_t operator() (const std::pair<T1, T2> &pair) const
-			{
-				return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-			}
-		};
-
-		// static map of pointer to member functions to create different adapters
-		static std::unordered_map<rttr::type, CreateAdapterMemFunPtr> sCreateAdapterMap;
-
-		// static map of pointer to member functions to create different types of parameter adapters
-		static std::unordered_map<std::pair<rttr::type, rttr::type>, CreateParameterAdapterMemFunPtr, PairHash> sCreateCurveAdapterMap;
+	class NAPAPI SequencePlayerInput : public Resource
+	{
+		RTTI_ENABLE(Resource)
+	public:
+		SequencePlayerInput() = default;
+		virtual ~SequencePlayerInput() = default;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

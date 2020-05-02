@@ -91,23 +91,27 @@
             "Type": "nap::SequencePlayer",
             "mID": "SequencePlayer",
             "Default Show": "sequences/Default Show.json",
-            "Linked Parameters": [
-                "Float1",
-                "Float2",
-                "Int",
-                "Long",
-                "Vec3"
-            ],
-            "Linked Event Dispatcher": [
-                "SequenceEventReceiver"
+            "Inputs": [
+                {
+                    "Type": "nap::SequencePlayerEventInput",
+                    "mID": "SequencePlayerEventInput",
+                    "Event Receiver": "SequenceEventReceiver"
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveInput",
+                    "mID": "Float Input",
+                    "Parameter": "Float1",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveInput",
+                    "mID": "Vec3 Input",
+                    "Parameter": "Vec3",
+                    "Use Main Thread": true
+                }
             ],
             "Frequency": 1000.0,
-            "Set parameters on main thread": true
-        },
-        {
-            "Type": "nap::SequencePlayerGUI",
-            "mID": "SequencePlayerGUI",
-            "Sequence Player": "SequencePlayer"
+            "Set parameters on main thread": false
         }
     ]
 }

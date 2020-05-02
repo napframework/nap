@@ -391,6 +391,7 @@ namespace nap
 			dispatcherIDs.emplace_back("none");
 			int count = 0;
 			const SequenceEventReceiver* assignedParameterPtr = nullptr;
+			/*
 			for (const auto& dispatcher : sequencePlayer.mEventReceivers)
 			{
 				count++;
@@ -404,7 +405,7 @@ namespace nap
 				}
 
 				dispatcherIDs.emplace_back(dispatcher->mID);
-			}
+			}*/
 
 			ImGui::PushItemWidth(140.0f);
 			if (Combo(
@@ -649,6 +650,7 @@ namespace nap
 			parameterIDs.emplace_back("none");
 			int count = 0;
 			const Parameter* assignedParameterPtr = nullptr;
+			/*
 			for (const auto& parameter : sequencePlayer.mParameters)
 			{
 				count++;
@@ -662,7 +664,7 @@ namespace nap
 				}
 
 				parameterIDs.emplace_back(parameter->mID);
-			}
+			}*/
 
 			ImGui::PushItemWidth(140.0f);
 			if (Combo(

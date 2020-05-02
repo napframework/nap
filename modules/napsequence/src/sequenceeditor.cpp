@@ -26,8 +26,7 @@ namespace nap
 			return false;
 		}
 
-		mController = std::make_unique<SequenceEditorController>(
-			*mSequencePlayer.get());
+		mController = std::make_unique<SequenceEditorController>(*mSequencePlayer.get());
 
 		return true;
 	}

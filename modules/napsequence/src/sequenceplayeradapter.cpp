@@ -1,60 +1,49 @@
 #include "sequenceplayeradapter.h"
-#include "sequenceservice.h"
-#include "sequenceeventreceiver.h"
+#include "sequenceplayer.h"
 
 namespace nap
 {
-	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver)
-		: mTrack(track), mReceiver(receiver)
+	std::unordered_map <rttr::type, SequencePlayerAdapterFactoryFunc>& SequencePlayerAdapter::getFactoryMap()
 	{
-
+		static std::unordered_map <rttr::type, SequencePlayerAdapterFactoryFunc> map;
+		return map;
 	}
 
 
-	void SequencePlayerEventAdapter::update(double time)
+	bool SequencePlayerAdapter::registerFactory(rttr::type type, SequencePlayerAdapterFactoryFunc factory)
 	{
-		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
-		for (const auto& eventSegment : eventTrack.mSegments)
+		auto& map = getFactoryMap();
+		if (map.size() > 0)
 		{
-			assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
-			SequenceTrackSegmentEvent& event = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
-
-			if (time > event.mStartTime)
+			auto it = map.find(type);
+			assert(it == map.end()); // duplicate entry
+			if (it == map.end())
 			{
-				if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
-				{
-					mReceiver.addEvent(event.createEvent());
-					mDispatchedEvents.emplace(&event);
-				}
-			}
-			else if (time < event.mStartTime)
-			{
-				if (mDispatchedEvents.find(&event) != mDispatchedEvents.end())
-				{
-					mDispatchedEvents.erase(&event);
-				}
+				map.emplace(type, factory);
+				return true;
 			}
 		}
-
-		// remove dispatchedEvents that have been deleted
-		for (auto* dispatchedEvent : mDispatchedEvents)
+		else
 		{
-			bool foundSegment = false;
-			for (const auto& eventSegment : eventTrack.mSegments)
-			{
-				if (eventSegment.get() == dispatchedEvent)
-				{
-					foundSegment = true;
-					break;
-				}
-			}
-
-			if (!foundSegment)
-			{
-				mDispatchedEvents.erase(dispatchedEvent);
-				break;;
-			}
+			map.emplace(type, factory);
+			return true;
 		}
+
+		return false;
+	}
+
+
+	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, SequenceTrack& track, SequencePlayerInput& input)
+	{
+		auto& map = getFactoryMap();
+
+		auto it = map.find(type);
+		assert(it != map.end()); // factory method not present
+		if (it != map.end())
+		{
+			return it->second(track, input);
+		}
+
+		return nullptr;
 	}
 }

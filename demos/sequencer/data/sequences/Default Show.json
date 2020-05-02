@@ -23,7 +23,7 @@
                             "Message": "Hello world"
                         }
                     ],
-                    "Parameter ID": "SequenceEventReceiver"
+                    "Parameter ID": "SequencePlayerEventInput"
                 },
                 {
                     "Type": "nap::SequenceTrackCurveFloat",
@@ -70,7 +70,7 @@
                             "Curve Type": "Bezier"
                         }
                     ],
-                    "Parameter ID": "Float1",
+                    "Parameter ID": "Float Input",
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -115,7 +115,7 @@
                             "Curve Type": "Bezier"
                         }
                     ],
-                    "Parameter ID": "Vec3",
+                    "Parameter ID": "Vec3 Input",
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0,
