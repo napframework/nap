@@ -54,6 +54,7 @@ namespace nap
 	{
 	}
 
+
 	std::unique_ptr<SequencePlayerAdapter> SequencePlayer::createCurveAdapter(SequenceTrack& track, const std::string& parameterID)
 	{
 		for (auto& parameter : mParameters)
@@ -84,13 +85,14 @@ namespace nap
 		{
 			if (receiver->mID == eventReceiverID)
 			{
-				std::unique_ptr<SequencePlayerAdapter> adapter = std::make_unique<SequencePlayerEventAdapter>(track, *receiver.get());
+				auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, *receiver.get());
 				return std::move(adapter);
 			}
 		}
 
 		return nullptr;
 	}
+
 
 	bool SequencePlayer::init(utility::ErrorState& errorState)
 	{
@@ -119,6 +121,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	bool SequencePlayer::start(utility::ErrorState& errorState)
 	{
@@ -155,7 +158,6 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused = false;
 		}
-
 	}
 
 
@@ -270,6 +272,7 @@ namespace nap
 		return *mSequence;
 	}
 
+
 	double SequencePlayer::getDuration() const
 	{
 		return mSequence->mDuration;
@@ -283,6 +286,7 @@ namespace nap
 		mTime = time;
 		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
 	}
+
 
 	void SequencePlayer::setPlaybackSpeed(float speed)
 	{

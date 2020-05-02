@@ -36,7 +36,7 @@ namespace nap
 
 		RTTI_ENABLE(Device)
 	public:
-		// Shortcuts for pointer to member functions of SequencePlayer, used in static maps
+		// Shortcuts to pointer to member functions of SequencePlayer, used in static maps
 		using CreateAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, const std::string&);
 		using CreateParameterAdapterMemFunPtr = std::unique_ptr<SequencePlayerAdapter>(SequencePlayer::*)(SequenceTrack&, Parameter&);
 
