@@ -4,7 +4,7 @@
 #include "sequence.h"
 #include "sequenceeventreceiver.h"
 #include "sequenceplayeradapter.h"
-
+#include "sequenceplayerinput.h"
 
 // external includes
 #include <rtti/factory.h>
@@ -19,7 +19,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// forward declares
 	class SequenceService;
-	class SequencePlayerInput;
 
 	/**
 	 * SequencePlayer
@@ -236,14 +235,6 @@ namespace nap
 
 		// reference to service
 		SequenceService& mSequenceService;
-	};
-
-	class NAPAPI SequencePlayerInput : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		SequencePlayerInput() = default;
-		virtual ~SequencePlayerInput() = default;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

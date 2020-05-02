@@ -24,9 +24,6 @@ RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropert
 RTTI_PROPERTY("Set parameters on main thread", &nap::SequencePlayer::mSetParametersOnMainThread, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerInput)
-RTTI_END_CLASS
-
 //////////////////////////////////////////////////////////////////////////
 
 
