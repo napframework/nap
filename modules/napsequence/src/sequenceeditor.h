@@ -5,10 +5,12 @@
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
 #include "sequenceeditortypes.h"
+#include "sequencecontroller.h"
 
 // external includes
 #include <nap/resource.h>
 #include <parameter.h>
+#include <nap/logger.h>
 
 namespace nap
 {
@@ -16,6 +18,7 @@ namespace nap
 
 	// forward declares
 	class SequenceEditorController;
+	class SequenceController;
 
 	/**
 	 * SequenceEditor
@@ -36,6 +39,13 @@ namespace nap
 		 * @return returns true on successful initialization
 		*/
 		virtual bool init(utility::ErrorState& errorState);
+
+		template<typename T>
+		T& getController() 
+		{
+			assert(mControllers.find(RTTI_OF(T)) != mControllers.end()); // type not found
+			return static_cast<T&>(*mControllers[RTTI_OF(T)].get());
+		}
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
@@ -48,6 +58,8 @@ namespace nap
 	protected:
 		// the controller class
 		std::unique_ptr<SequenceEditorController> mController = nullptr;
+
+		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
 	private:
 
 		/**
@@ -73,7 +85,7 @@ namespace nap
 		 */
 		SequenceEditorController(SequencePlayer& sequencePlayer);
 		
-
+		/*
 		/**
 		 * segmentDurationChange
 		 * @param trackID the id of the track

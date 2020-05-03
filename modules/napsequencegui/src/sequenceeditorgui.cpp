@@ -1,6 +1,7 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
+#include "sequencecontrollerevent.h"
 
 // External Includes
 #include <entity.h>
@@ -30,6 +31,9 @@ namespace nap
 		mView = std::make_unique<SequenceEditorGUIView>(
 			mSequenceEditor->getController(),
 			mID);
+
+		auto& eventController = mSequenceEditor->getController<SequenceControllerEvent>();
+		eventController.test();
 
 		return true;
 	}

@@ -28,6 +28,12 @@ namespace nap
 
 		mController = std::make_unique<SequenceEditorController>(*mSequencePlayer.get());
 
+		auto& factory = SequenceController::getControllerFactory();
+		for (auto it : factory)
+		{
+			mControllers.emplace(it.first, it.second(*mSequencePlayer.get()));
+		}
+
 		return true;
 	}
 

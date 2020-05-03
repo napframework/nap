@@ -6,7 +6,7 @@
 
 namespace nap
 {
-	bool SequencePlayerEventAdapter::sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerInput& input)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerInput& input)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(input.get_type() == RTTI_OF(SequencePlayerEventInput)); // type mismatch
 
