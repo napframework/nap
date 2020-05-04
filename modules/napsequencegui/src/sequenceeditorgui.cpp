@@ -70,6 +70,10 @@ namespace nap
 	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id)
 		: mEditor(editor), mID(id)
 	{
+		for (auto& factory : SequenceTrackView::getFactoryMap())
+		{
+			mViews.emplace(factory.first, factory.second(*this));
+		}
 	}
 
 

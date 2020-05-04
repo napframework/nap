@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequenceeditor.h"
+#include "sequencetrackview.h"
 
 // external includes
 #include <nap/resource.h>
@@ -17,6 +18,7 @@ namespace nap
 	class SequenceEditorGUIView;
 	class SequenceEditorView;
 	class SequenceGUIActionData;
+	class SequenceTrackView;
 
 	/**
 	 * SequenceEditorGUI
@@ -51,6 +53,7 @@ namespace nap
 		// instantiated view
 		std::unique_ptr<SequenceEditorGUIView> mView = nullptr; 
 	};
+
 
 	/**
 	 * Types of possible interactions with GUI
@@ -127,6 +130,7 @@ namespace nap
 	 */
 	class NAPAPI SequenceEditorGUIView
 	{
+		friend class SequenceTrackDrawer;
 	public:
 		// shortcuts to member function pointers, used in static maps
 		using DrawTrackMemFunPtr = void(SequenceEditorGUIView::*)(const SequenceTrack&, ImVec2&, const float, const SequencePlayer&, bool&, std::string&);
@@ -459,6 +463,9 @@ namespace nap
 
 		// current time in sequence of mouse cursor
 		double mMouseCursorTime;
+
+		//
+		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
 
 		//
 		static std::unordered_map<rttr::type, DrawTrackMemFunPtr> sDrawTracksMap;
