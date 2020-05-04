@@ -62,10 +62,7 @@ namespace nap
 		SamplerInstance(device, declaration, samplerChangedCallback)
 	{
 		if (sampler2D != nullptr)
-		{
 			mTexture2D = sampler2D->mTexture;
-			mTexture2D->changed.connect(mTextureChangedSlot);
-		}
 	}
 
 	void Sampler2DInstance::onTextureChanged(const Texture2D&)
@@ -76,8 +73,6 @@ namespace nap
 	void Sampler2DInstance::setTexture(Texture2D& texture) 
 	{ 
 		mTexture2D = &texture;
-		mTextureChangedSlot.disconnect();
-		mTexture2D->changed.connect(mTextureChangedSlot);
 		raiseChanged(); 
 	}
 

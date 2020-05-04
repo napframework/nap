@@ -15,33 +15,6 @@ namespace nap
 {
 	namespace 
 	{
-		static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& colorImageViews, std::vector<VkImageView>& depthImageViews, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
-		{
-			framebuffers.resize(colorImageViews.size());
-
-			for (size_t i = 0; i < colorImageViews.size(); i++)
-			{
-				std::array<VkImageView, 2> attachments = {
-					colorImageViews[i],
-					depthImageViews[i]
-				};
-
-				VkFramebufferCreateInfo framebufferInfo = {};
-				framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferInfo.renderPass = renderPass;
-				framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-				framebufferInfo.pAttachments = attachments.data();
-				framebufferInfo.width = extent.width;
-				framebufferInfo.height = extent.height;
-				framebufferInfo.layers = 1;
-
-				if (!errorState.check(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
-					return false;
-			}
-
-			return true;
-		}
-
 		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
 			VkAttachmentDescription colorAttachment = {};
@@ -119,8 +92,8 @@ namespace nap
 
 	RenderTarget::~RenderTarget()
 	{
-		for (VkFramebuffer buffer : mFramebuffers)
-			vkDestroyFramebuffer(mRenderService->getDevice(), buffer, nullptr);
+		if (mFramebuffer != nullptr)
+			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffer, nullptr);
 	
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
@@ -139,14 +112,6 @@ namespace nap
 
 		glm::ivec2 size = mColorTexture->getSize();
 
-		std::vector<VkImageView> color_image_views;
-		std::vector<VkImageView> depth_image_views;
-		for (int i = 0; i < 2; ++i)
-		{
-			color_image_views.push_back(mColorTexture->getImageView(i));
-			depth_image_views.push_back(mDepthTexture->getImageView(i));
-		}
-
 		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mDepthTexture->getVulkanFormat(), mRenderPass, errorState))
 			return false;
 
@@ -154,7 +119,22 @@ namespace nap
 		framebuffer_size.width = size.x;
 		framebuffer_size.height = size.y;
 
-		if (!createFramebuffers(mRenderService->getDevice(), mFramebuffers, color_image_views, depth_image_views, mRenderPass, framebuffer_size, errorState))
+		std::array<VkImageView, 2> attachments = 
+		{
+			mColorTexture->getImageView(),
+			mDepthTexture->getImageView()
+		};
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = mRenderPass;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments = attachments.data();
+		framebufferInfo.width = framebuffer_size.width;
+		framebufferInfo.height = framebuffer_size.height;
+		framebufferInfo.layers = 1;
+
+		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
 			return false;
 
 		return true;
@@ -167,7 +147,7 @@ namespace nap
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = mFramebuffers[mRenderService->getCurrentFrameIndex()];
+		renderPassInfo.framebuffer = mFramebuffer;
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = { (uint32_t)size.x, (uint32_t)size.y };
 
@@ -200,8 +180,6 @@ namespace nap
 	void RenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
-		mColorTexture->notifyChanged();
-		mDepthTexture->notifyChanged();
 	}
 
 	const glm::ivec2 RenderTarget::getSize() const

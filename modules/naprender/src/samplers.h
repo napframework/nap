@@ -99,7 +99,6 @@ namespace nap
 		void onTextureChanged(const Texture2D&);
 
 	private:
-		Slot<const Texture2D&>			mTextureChangedSlot = { this, &Sampler2DInstance::onTextureChanged };
 		rtti::ObjectPtr<Texture2D>		mTexture2D;
 	};
 
