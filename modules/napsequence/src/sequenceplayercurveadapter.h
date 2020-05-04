@@ -4,6 +4,7 @@
 #include "sequenceplayeradapter.h"
 #include "sequenceplayer.h"
 #include "sequenceplayercurveinput.h"
+#include "sequencetrackcurve.h"
 
 // nap includes
 #include <nap/logger.h>

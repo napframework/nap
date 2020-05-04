@@ -1,6 +1,8 @@
 // local includes
 #include "sequenceutils.h"
 #include "sequence.h"
+#include "sequencetrackevent.h"
+#include "sequencetrackcurve.h"
 
 //////////////////////////////////////////////////////////////////////////
 

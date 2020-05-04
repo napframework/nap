@@ -7,6 +7,7 @@
 #include "sequenceplayereventinput.h"
 #include "sequenceplayercurveinput.h"
 
+
 // External Includes
 #include <entity.h>
 #include <imgui/imgui.h>
@@ -25,6 +26,24 @@ using namespace nap::SequenceEditorTypes;
 
 namespace nap
 {
+	static std::unordered_map<rttr::type, rttr::type>& getTrackViewTypeViewMap()
+	{
+		static std::unordered_map<rttr::type, rttr::type> map;
+		return map;
+	};
+
+
+	void SequenceEditorGUIView::registerTrackViewType(rttr::type trackType, rttr::type viewType)
+	{
+		auto& map = getTrackViewTypeViewMap();
+		auto it = map.find(trackType);
+		assert(it == map.end()); // duplicate entry
+		if (it == map.end())
+		{
+			map.emplace(trackType, viewType);
+		}
+	}
+
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -41,6 +60,9 @@ namespace nap
 	void SequenceEditorGUI::onDestroy()
 	{
 	}
+
+
+
 
 
 	void SequenceEditorGUI::show()

@@ -1,4 +1,5 @@
 #include "sequenceplayercurveadapter.h"
+#include "sequencetrackcurve.h"
 
 namespace nap
 {

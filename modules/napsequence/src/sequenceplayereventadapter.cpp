@@ -1,6 +1,7 @@
 #include "sequenceplayereventadapter.h"
 #include "sequenceeventreceiver.h"
 #include "sequenceplayer.h"
+#include "sequencetrackevent.h"
 
 #include <nap/logger.h>
 

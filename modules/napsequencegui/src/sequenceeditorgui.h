@@ -3,6 +3,8 @@
 // internal includes
 #include "sequenceeditor.h"
 #include "sequencetrackview.h"
+#include "sequencetrackcurve.h"
+#include "sequencetrackevent.h"
 
 // external includes
 #include <nap/resource.h>
@@ -147,6 +149,8 @@ namespace nap
 		 * shows the editor interface
 		 */
 		virtual void show();
+
+		static void registerTrackViewType(rttr::type trackType, rttr::type viewType);
 	private:
 		/**
 		 * Draws the tracks of the sequence

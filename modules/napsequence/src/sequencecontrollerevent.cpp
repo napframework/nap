@@ -1,5 +1,6 @@
 #include "sequencecontrollerevent.h"
 #include "sequenceutils.h"
+#include "sequencetrackevent.h"
 
 namespace nap
 {
