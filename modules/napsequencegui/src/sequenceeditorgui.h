@@ -56,42 +56,40 @@ namespace nap
 	 * Types of possible interactions with GUI
 	 * Used by the gui state to handle mouse input / popups / actions
 	 */
-	namespace SequenceGUIMouseActions
+	namespace SequenceGUIStates
 	{
-		enum Types
-		{
-			// ACTIONS
-			DRAGGING_SEGMENT,
-			INSERTING_SEGMENT,
-			OPEN_INSERT_SEGMENT_POPUP,
-			EDITING_SEGMENT,
-			OPEN_EDIT_SEGMENT_POPUP,
-			HOVERING_SEGMENT,
-			HOVERING_SEGMENT_VALUE,
-			DRAGGING_SEGMENT_VALUE,
-			HOVERING_CONTROL_POINT,
-			DRAGGING_CONTROL_POINT,
-			HOVERING_TAN_POINT,
-			DRAGGING_TAN_POINT,
-			HOVERING_CURVE,
-			HOVERING_PLAYER_TIME,
-			DRAGGING_PLAYER_TIME,
-			OPEN_INSERT_TRACK_POPUP,
-			INSERTING_TRACK,
-			OPEN_INSERT_EVENT_SEGMENT_POPUP,
-			INSERTING_EVENT_SEGMENT,
-			OPEN_EDIT_EVENT_SEGMENT_POPUP,
-			EDITING_EVENT_SEGMENT,
-			OPEN_INSERT_CURVE_POINT_POPUP,
-			INSERTING_CURVE_POINT,
-			OPEN_CURVE_POINT_ACTION_POPUP,
-			CURVE_POINT_ACTION_POPUP,
-			OPEN_CURVE_TYPE_POPUP,
-			CURVE_TYPE_POPUP,
-			LOAD,
-			SAVE_AS,
-			NONE
-		};
+		struct SequenceGUIAction { RTTI_ENABLE() };
+
+		struct None : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct DraggingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct InsertingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenInsertSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct EditingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenEditSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringSegmentValue : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct DraggingSegmentValue : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringControlPoint : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct DraggingControlPoint : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringTanPoint : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringCurve : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct HoveringPlayerTime : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct DraggingPlayerTime : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenInsertTrackPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct InsertingTrack : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenInsertEventSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct InsertingEventSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenEditEventSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct EditingEventSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenInsertCurvePointPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct InsertingCurvePoint : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenCurvePointActionPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct CurvePointActionPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct OpenCurveTypePopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct CurveTypePopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct LoadPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct SaveAsPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		struct DraggingTanPoint : SequenceGUIAction{ RTTI_ENABLE(SequenceGUIAction) };
 	}
 
 	/**
@@ -112,8 +110,7 @@ namespace nap
 		~SequenceEditorGUIState() {}
 
 		// current action
-		SequenceGUIMouseActions::Types currentAction
-			= SequenceGUIMouseActions::Types::NONE;
+		SequenceGUIStates::SequenceGUIAction currentAction = SequenceGUIStates::None();
 
 		// current object id, used to identify object with actions
 		std::string currentObjectID = "";

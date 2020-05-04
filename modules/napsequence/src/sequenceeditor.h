@@ -17,7 +17,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// forward declares
-	class SequenceEditorController;
 	class SequenceController;
 
 	/**
@@ -49,14 +48,7 @@ namespace nap
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
-	protected:
-		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
 	private:
-
-		/**
-		 * getController
-		 * @return reference to controller
-		 */
-		SequenceEditorController& getController();
+		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
 	};
 }
