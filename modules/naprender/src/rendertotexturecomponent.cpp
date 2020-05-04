@@ -11,7 +11,6 @@
 #include "indexbuffer.h"
 #include "renderglobals.h"
 #include "uniforminstances.h"
-#include "ntexture.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -64,7 +63,7 @@ namespace nap
 		mDepthTexture.mFormat = ERenderTargetFormat::Depth;
 		mDepthTexture.mWidth  = resource->mOutputTexture->getWidth();
 		mDepthTexture.mHeight = resource->mOutputTexture->getHeight();
-		mDepthTexture.mUsage = opengl::ETextureUsage::RenderTarget;
+		mDepthTexture.mUsage = ETextureUsage::RenderTarget;
 
 		// Initialize internally managed depth texture
 		mDepthTexture.mParameters.mMaxFilter = EFilterMode::Linear;

@@ -8,15 +8,7 @@
 
 namespace nap
 {
-	/**
-	 * Wrapper around VkDescriptorPool that maintains a use count for amount of sets that are allocated within the pool.
-	 */
-	struct DescriptorPool
-	{
-		VkDescriptorPool	mPool = nullptr;
-		int					mMaxNumSets = 0;		///< Maximum number of sets that can be allocated from the pool
-		int					mCurNumSets = 0;		///< Current number of sets that are allocated
-	};
+	struct DescriptorPool;
 
 	/**
 	 * Allocates DescriptorSets from a pool. Each pool is bound to a specific combination of UBOs and samplers,
@@ -31,6 +23,7 @@ namespace nap
 	{
 	public:
 		DescriptorSetAllocator(VkDevice device);
+		~DescriptorSetAllocator();
 
 		/**
 		 * Allocate a DescriptorSetLayout that is compatible with VkDescriptorSetLayout (same amount of UBOs and samplers).

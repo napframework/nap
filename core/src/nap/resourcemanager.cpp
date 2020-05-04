@@ -313,6 +313,9 @@ namespace nap
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
+		// Notify listeners
+		mPreResourcesLoadedSignal.trigger();
+
 		// Read objects from disk
 		DeserializeResult read_result;
 		if (!loadFileAndDeserialize(filename, read_result, errorState))
@@ -464,7 +467,7 @@ namespace nap
 		rollback_helper.clear();
 
 		// Notify listeners
-		mFileLoadedSignal.trigger(filename);
+		mPostResourcesLoadedSignal.trigger();
 
 		return true;
 	}

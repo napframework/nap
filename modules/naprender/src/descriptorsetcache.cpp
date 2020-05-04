@@ -29,6 +29,22 @@ namespace nap
 		mLayout(layout),
 		mDescriptorSetAllocator(&descriptorSetAllocator)
 	{
+		mUsedList.resize(mRenderService->getMaxFramesInFlight());
+	}
+
+	
+	DescriptorSetCache::~DescriptorSetCache()
+	{
+		// We assume the cache is destroyed after all rendering has completed, so it is safe to assume we can move any 'used' sets to the freelist
+		for (int frame = 0; frame < mUsedList.size(); ++frame)
+			release(frame);
+
+		// Now free all buffers for the allocated sets
+		for (DescriptorSet& descriptor_set : mFreeList)
+		{
+			for (DescriptorSetBuffer& buffer : descriptor_set.mBuffers)
+				vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
+		}
 	}
 
 

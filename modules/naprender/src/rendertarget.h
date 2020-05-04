@@ -22,6 +22,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		RenderTarget(Core& core);
+		~RenderTarget();
 
 		/**
 		* Creates internal OpengL render target, bound to color and depth textures.

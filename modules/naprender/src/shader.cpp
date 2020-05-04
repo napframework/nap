@@ -570,6 +570,18 @@ namespace nap
 
 	}
 
+	Shader::~Shader()
+	{
+		if (mDescriptorSetLayout != nullptr)
+			vkDestroyDescriptorSetLayout(mRenderService->getDevice(), mDescriptorSetLayout, nullptr);
+
+		if (mVertexModule != nullptr)
+			vkDestroyShaderModule(mRenderService->getDevice(), mVertexModule, nullptr);
+
+		if (mFragmentModule != nullptr)
+			vkDestroyShaderModule(mRenderService->getDevice(), mFragmentModule, nullptr);
+	}
+
 	// Store path and create display names
 	bool Shader::init(utility::ErrorState& errorState)
 	{

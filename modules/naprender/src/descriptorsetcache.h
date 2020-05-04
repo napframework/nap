@@ -49,6 +49,7 @@ namespace nap
 	{
 	public:
 		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator);
+		~DescriptorSetCache();
 
 		/**
 		 * Acquires a DescriptorSet from the cache (or allocated it if not in the cache). For new DescriptorSets,
@@ -68,7 +69,7 @@ namespace nap
 
 	private:
 		using DescriptorSetList = std::list<DescriptorSet>;
-		using DescriptorSetFrameList = std::array<DescriptorSetList, 2>;
+		using DescriptorSetFrameList = std::vector<DescriptorSetList>;
 		
 		RenderService*			mRenderService;
 		DescriptorSetAllocator* mDescriptorSetAllocator;	///< Allocator that is used to allocate new Descriptors

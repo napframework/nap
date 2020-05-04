@@ -223,9 +223,14 @@ namespace nap
 		Core&								mCore;							// Core
 
 		/**
-		 *	Signal that is emitted when a file has been successfully loaded
+		 *	Signal that is emitted when a file is about to be loaded
 		 */
-		nap::Signal<const std::string&> mFileLoadedSignal;
+		nap::Signal<> mPreResourcesLoadedSignal;
+
+		/**
+		 *	Signal that is emitted after a file has been successfully loaded
+		 */
+		nap::Signal<> mPostResourcesLoadedSignal;
 	};
 
 	template<class T>

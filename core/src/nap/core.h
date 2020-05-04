@@ -216,12 +216,18 @@ namespace nap
 		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
-		* Occurs when a file has been successfully loaded by the resource manager
+		* Occurs when resources are about to be loaded by the resource manager
 		* Forwards the call to all interested services.
 		* This can only be called when the services have been initialized
-		* @param file the currently loaded resource file
 		*/
-		void resourceFileChanged(const std::string& file);
+		void preResourcesLoaded();
+
+		/**
+		* Occurs when resources have been successfully loaded by the resource manager
+		* Forwards the call to all interested services.
+		* This can only be called when the services have been initialized
+		*/
+		void postResourcesLoaded();
 
 		/**
 		 *	Calculates the framerate over time
@@ -271,8 +277,8 @@ namespace nap
 		// Interface associated with this instance of core.
 		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = {
-			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		nap::Slot<> mPreResourcesLoadedSlot = { [&]() -> void { preResourcesLoaded(); }};
+		nap::Slot<> mPostResourcesLoadedSlot = { [&]() -> void { postResourcesLoaded(); }};
 	};
 }
 

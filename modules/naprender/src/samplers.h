@@ -50,6 +50,7 @@ namespace nap
 
 	public:
 		SamplerInstance(VkDevice device, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
+		virtual ~SamplerInstance();
 
 		bool init(utility::ErrorState& errorState);
 

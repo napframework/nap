@@ -1075,7 +1075,7 @@ namespace nap
 		mYTexture->mHeight = yHeight;
 		mYTexture->mFormat = ERenderTargetFormat::R8;
 		mYTexture->mParameters = parameters;
-		mYTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mYTexture->mUsage = ETextureUsage::DynamicWrite;
 		mYTexture->mColorSpace = EColorSpace::Linear;
 		if (!mYTexture->init(errorState))
 			return false;
@@ -1085,7 +1085,7 @@ namespace nap
 		mUTexture->mHeight = uvHeight;
 		mUTexture->mFormat = ERenderTargetFormat::R8;
 		mUTexture->mParameters = parameters;
-		mUTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mUTexture->mUsage = ETextureUsage::DynamicWrite;
 		mUTexture->mColorSpace = EColorSpace::Linear;
 		if (!mUTexture->init(errorState))
 			return false;
@@ -1095,7 +1095,7 @@ namespace nap
 		mVTexture->mHeight = uvHeight;
 		mVTexture->mFormat = ERenderTargetFormat::R8;
 		mVTexture->mParameters = parameters;
-		mVTexture->mUsage = opengl::ETextureUsage::DynamicWrite;
+		mVTexture->mUsage = ETextureUsage::DynamicWrite;
 		mVTexture->mColorSpace = EColorSpace::Linear;
 		if (!mVTexture->init(errorState))
 			return false;

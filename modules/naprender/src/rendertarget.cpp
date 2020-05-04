@@ -117,12 +117,21 @@ namespace nap
 	{
 	}
 
+	RenderTarget::~RenderTarget()
+	{
+		for (VkFramebuffer buffer : mFramebuffers)
+			vkDestroyFramebuffer(mRenderService->getDevice(), buffer, nullptr);
+	
+		if (mRenderPass != nullptr)
+			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
+	}
+
 	bool RenderTarget::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mColorTexture->mUsage == opengl::ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
+		if (!errorState.check(mColorTexture->mUsage == ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
 			return false;
 
-		if (!errorState.check(mDepthTexture->mUsage == opengl::ETextureUsage::RenderTarget, "The depth texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
+		if (!errorState.check(mDepthTexture->mUsage == ETextureUsage::RenderTarget, "The depth texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
 			return false;
 
 		if (!errorState.check(mColorTexture->getSize() == mDepthTexture->getSize(), "The color & depth textures used by a RenderTarget must have the same size."))

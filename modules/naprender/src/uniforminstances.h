@@ -21,6 +21,8 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
+		virtual ~UniformInstance() = default;
+
 		virtual const UniformDeclaration& getDeclaration() const = 0;
 	};
 

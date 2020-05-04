@@ -183,7 +183,7 @@ namespace nap
 
 		// Fetch index buffer (holding drawing order
 		const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
-		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
+		//GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 		nap::utility::ErrorState error;
 
 		// Get uniforms to push in loop

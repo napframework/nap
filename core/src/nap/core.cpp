@@ -129,17 +129,25 @@ namespace nap
 
 		// Listen to potential resource file changes and 
 		// forward those to all registered services
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+		mResourceManager->mPreResourcesLoadedSignal.connect(mPreResourcesLoadedSlot);
+		mResourceManager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
 
 		return true;
 	}
 
-
-	void Core::resourceFileChanged(const std::string& file)
+	void Core::preResourcesLoaded()
 	{
 		for (auto& service : mServices)
 		{
-			service->resourcesLoaded();
+			service->preResourcesLoaded();
+		}
+	}
+
+	void Core::postResourcesLoaded()
+	{
+		for (auto& service : mServices)
+		{
+			service->postResourcesLoaded();
 		}
 	}
 
@@ -206,8 +214,19 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		// Call pre-shutdown on services to give them a chance to reset any state they need
+		// before resources are destroyed.
+		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
+		{
+			Service& service = **it;
+			service.preShutdown();
+		}
+
+		// Destroy the resource manager, which will destroy all loaded resources
 		mResourceManager.reset();
 
+		// Shutdown services after all resources have been destroyed.
+		// This order ensures that resources can still make use of services during destruction
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;

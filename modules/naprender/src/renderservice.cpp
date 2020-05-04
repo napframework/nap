@@ -102,6 +102,13 @@ namespace nap
 		}
 	}
 
+	void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
+	{
+		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+		if (func != nullptr)
+			func(instance, pCallback, nullptr);
+	}
+
 	/**
 	*	Sets up the vulkan messaging callback specified above
 	*/
@@ -675,7 +682,7 @@ namespace nap
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
 		uint32_t shader_attribute_binding = 0;
 		for (auto& kvp : shader.getAttributes())
-	{
+		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
 			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
@@ -850,7 +857,6 @@ namespace nap
 	// Shut down render service
 	RenderService::~RenderService()
 	{
-		shutdown();
 	}
 
 
@@ -1050,8 +1056,6 @@ namespace nap
 
 		vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0, &mGraphicsQueue);
 
-		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
-
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice;
 		allocatorInfo.device = mDevice;
@@ -1059,19 +1063,100 @@ namespace nap
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
 
-		if (!initEmptyTexture(errorState))
-			return false;
+		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
 
-		if (!createCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers, getMaxFramesInFlight(), errorState))
+		if (!initEmptyTexture(errorState))
 			return false;
 		
 		if (!createSyncObjects(mDevice, mFrameInFlightFences, getMaxFramesInFlight(), errorState))
+			return false;
+
+		if (!createCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers, getMaxFramesInFlight(), errorState))
 			return false;
 
 		if (!createCommandBuffers(mDevice, mCommandPool, mHeadlessCommandBuffers, getMaxFramesInFlight(), errorState))
 			return false;
 
 		return true;
+	}
+
+
+	void RenderService::preShutdown()
+	{
+		// When we're shutting down, we need to ensure all vulkan resources are no longer in use
+		// Otherwise, during resource destruction, the vulkan specific resources will not be freed correctly.
+		// To do this, we wait for the device to be idle
+		VkResult result = vkDeviceWaitIdle(mDevice);
+		assert(result == VK_SUCCESS);
+	}
+
+
+	void RenderService::preResourcesLoaded()
+	{
+		// When we're reloading resources during realtime edit, we need to ensure all vulkan resources are no longer in use
+		// Otherwise, when vulkan resources are edited, the vulkan specific resources will not be freed correctly.
+		// To do this, we wait for the device to be idle
+		VkResult result = vkDeviceWaitIdle(mDevice);
+		assert(result == VK_SUCCESS);
+	}
+
+
+	// Shut down renderer
+	void RenderService::shutdown()
+	{
+		for (auto kvp : mPipelineCache)
+		{
+			vkDestroyPipeline(mDevice, kvp.second.mPipeline, nullptr);
+			vkDestroyPipelineLayout(mDevice, kvp.second.mLayout, nullptr);
+		}
+		mPipelineCache.clear();
+
+		vkFreeCommandBuffers(mDevice, mCommandPool, mHeadlessCommandBuffers.size(), mHeadlessCommandBuffers.data());
+		mHeadlessCommandBuffers.clear();
+
+		vkFreeCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers.size(), mTransferCommandBuffers.data());
+		mTransferCommandBuffers.clear();
+
+		for (VkFence fence : mFrameInFlightFences)
+			vkDestroyFence(mDevice, fence, nullptr);
+
+		mFrameInFlightFences.clear();
+		mEmptyTexture.reset();
+		mDescriptorSetCaches.clear();
+		mDescriptorSetAllocator.reset();
+
+		if (mVulkanAllocator != nullptr)
+		{
+			vmaDestroyAllocator(mVulkanAllocator);
+			mVulkanAllocator = nullptr;
+		}
+
+		if (mCommandPool != nullptr)
+		{
+			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+			mCommandPool = nullptr;
+		}
+
+		if (mDevice != nullptr)
+		{
+			vkDestroyDevice(mDevice, nullptr);
+			mDevice = nullptr;
+		}
+
+		if (mDebugCallback != nullptr)
+		{
+			destroyDebugReportCallbackEXT(mInstance, mDebugCallback);
+			mDebugCallback = nullptr;
+		}
+
+		if (mInstance != nullptr)
+		{
+			vkDestroyInstance(mInstance, nullptr);
+			mInstance = nullptr;
+		}
+
+		ShFinalize();
+		SDL::shutdownVideo();
 	}
 	
 
@@ -1185,7 +1270,7 @@ namespace nap
 	}
 
 	void RenderService::preUpdate(double deltaTime)
-		{
+	{
 		//	getPrimaryWindow().makeCurrent();
 	}
 
@@ -1193,13 +1278,6 @@ namespace nap
 	void RenderService::update(double deltaTime)
 	{
 		processEvents();
-		}
-
-
-	// Shut down renderer
-	void RenderService::shutdown()
-	{
-		SDL::shutdownVideo();
 	}
 
 

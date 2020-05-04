@@ -3,11 +3,34 @@
 
 namespace nap
 {
+	/**
+	 * Wrapper around VkDescriptorPool that maintains a use count for amount of sets that are allocated within the pool.
+	 */
+	struct DescriptorPool
+	{
+		using DescriptorSetList = std::vector<VkDescriptorSet>;
+
+		VkDescriptorPool	mPool = VK_NULL_HANDLE;		///< The managed descriptor pool
+		DescriptorSetList	mAllocatedDescriptorSets;	///< The sets that have been allocated from this pool
+		int					mMaxNumSets = 0;			///< Maximum number of sets that can be allocated from the pool
+	};
+
 	DescriptorSetAllocator::DescriptorSetAllocator(VkDevice device) :
 		mDevice(device)
 	{
 	}
 
+	DescriptorSetAllocator::~DescriptorSetAllocator()
+	{
+		for (auto kvp : mDescriptorPools)
+		{
+			for (DescriptorPool& pool : kvp.second)
+			{
+				vkFreeDescriptorSets(mDevice, pool.mPool, pool.mAllocatedDescriptorSets.size(), pool.mAllocatedDescriptorSets.data());
+				vkDestroyDescriptorPool(mDevice, pool.mPool, nullptr);
+			}
+		}
+	}
 
 	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
 	{
@@ -25,7 +48,7 @@ namespace nap
 			{
 				DescriptorPool& descriptor_pool = pools[i];
 
-				if (descriptor_pool.mCurNumSets < descriptor_pool.mMaxNumSets)
+				if (descriptor_pool.mAllocatedDescriptorSets.size() < descriptor_pool.mMaxNumSets)
 				{
 					free_descriptor_pool = &descriptor_pool;
 					break;
@@ -53,9 +76,9 @@ namespace nap
 			poolInfo.poolSizeCount = pool_sizes.size();
 			poolInfo.pPoolSizes = pool_sizes.data();
 			poolInfo.maxSets = maxSets;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 			DescriptorPool new_descriptor_pool;
-			new_descriptor_pool.mCurNumSets = 0;
 			new_descriptor_pool.mMaxNumSets = maxSets;
 
 			VkResult result = vkCreateDescriptorPool(mDevice, &poolInfo, nullptr, &new_descriptor_pool.mPool);
@@ -77,7 +100,7 @@ namespace nap
 		vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptor_set);
 		assert(descriptor_set != nullptr);
 
-		++free_descriptor_pool->mCurNumSets;
+		free_descriptor_pool->mAllocatedDescriptorSets.push_back(descriptor_set);
 
 		return descriptor_set;
 	}

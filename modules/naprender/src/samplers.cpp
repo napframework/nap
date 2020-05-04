@@ -30,6 +30,12 @@ namespace nap
 	{
 	}
 
+	SamplerInstance::~SamplerInstance()
+	{
+		if (mSampler != nullptr)
+			vkDestroySampler(mDevice, mSampler, nullptr);
+	}
+
 	bool SamplerInstance::init(utility::ErrorState& errorState)
 	{
 		VkSamplerCreateInfo samplerInfo = {};

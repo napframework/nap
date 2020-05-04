@@ -16,10 +16,11 @@ namespace nap
 	{
 	public:
 		GPUBuffer(VmaAllocator vmaAllocator);
+
 		/**
 		 * Default destructor
 		 */
-		virtual ~GPUBuffer() {}
+		virtual ~GPUBuffer();
 
 		GPUBuffer(const GPUBuffer& other) = delete;
 		GPUBuffer& operator=(const GPUBuffer& other) = delete;
@@ -30,10 +31,9 @@ namespace nap
 		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
 
 	private:
-		VmaAllocator		mVmaAllocator;
-		VmaAllocation		mAllocation;
-		VmaAllocationInfo	mAllocationInfo;
-		VkBuffer			mBuffer;
+		VmaAllocator		mVmaAllocator = VK_NULL_HANDLE;
+		VmaAllocation		mAllocation = VK_NULL_HANDLE;
+		VkBuffer			mBuffer = VK_NULL_HANDLE;
 		size_t				mCurCapacity = 0;			// Amount of memory reserved
 		size_t				mCurSize = 0;				// defines the number of points in the buffer
 	};

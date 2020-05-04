@@ -109,7 +109,6 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
-add_subdirectory(nrender)
 add_subdirectory(qt)
 
 # tools targets

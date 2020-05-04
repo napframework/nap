@@ -14,6 +14,12 @@ namespace nap
 	}
 
 
+	GPUBuffer::~GPUBuffer()
+	{
+		if (mBuffer != VK_NULL_HANDLE)
+			vmaDestroyBuffer(mVmaAllocator, mBuffer, mAllocation);
+	}
+
 	// Uploads the data block to the GPU
 	void GPUBuffer::setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage)
 	{
@@ -32,7 +38,7 @@ namespace nap
 		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 		allocInfo.flags = 0;
 
-		VkResult result = vmaCreateBuffer(mVmaAllocator, &bufferInfo, &allocInfo, &mBuffer, &mAllocation, &mAllocationInfo);
+		VkResult result = vmaCreateBuffer(mVmaAllocator, &bufferInfo, &allocInfo, &mBuffer, &mAllocation, nullptr);
 		if (result != VK_SUCCESS)
 		{
 			// TODO: error handling

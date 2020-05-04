@@ -20,6 +20,13 @@ RTTI_BEGIN_ENUM(nap::EWrapMode)
 	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::ETextureUsage)
+	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicRead,	"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite"),
+	RTTI_ENUM_VALUE(nap::ETextureUsage::RenderTarget,	"RenderTarget")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::TextureParameters)
 	RTTI_PROPERTY("MinFilter",			&nap::TextureParameters::mMinFilter,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxFilter",			&nap::TextureParameters::mMaxFilter,		nap::rtti::EPropertyMetaData::Default)
@@ -36,68 +43,68 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-/**
-* openglFilterMap
-*
-* Maps Filter modes to supported GL formats
-*/
-using OpenglFilterMap = std::unordered_map<nap::EFilterMode, GLint>;
-static const OpenglFilterMap openglFilterMap =
-{
-	{ nap::EFilterMode::Nearest,					GL_NEAREST},
-	{ nap::EFilterMode::Linear,						GL_LINEAR },
-	{ nap::EFilterMode::NearestMipmapNearest,		GL_NEAREST_MIPMAP_NEAREST },
-	{ nap::EFilterMode::LinearMipmapNearest,		GL_LINEAR_MIPMAP_NEAREST },
-	{ nap::EFilterMode::NearestMipmapLinear,		GL_NEAREST_MIPMAP_LINEAR },
-	{ nap::EFilterMode::LinearMipmapLinear,			GL_LINEAR_MIPMAP_LINEAR}
-};
-
-
-/**
- *	openglWrapMap
- *
- * Maps Wrap modes to supported GL formats
- */
-using OpenglWrapMap = std::unordered_map<nap::EWrapMode, GLint>;
-static const OpenglWrapMap openglWrapMap =
-{	 
-	{ nap::EWrapMode::Repeat,						GL_REPEAT },
-	{ nap::EWrapMode::MirroredRepeat,				GL_MIRRORED_REPEAT },
-	{ nap::EWrapMode::ClampToEdge,					GL_CLAMP_TO_EDGE },
-	{ nap::EWrapMode::ClampToBorder,				GL_CLAMP_TO_BORDER }
-};
-
-
-/**
- *	@return the opengl filter based on @filter
- */
-static GLint getGLFilterMode(nap::EFilterMode filter)
-{
-	auto it = openglFilterMap.find(filter);
-	assert(it != openglFilterMap.end());
-	return it->second;
-}
-
-
-/**
- *	@return the opengl wrap mode based on @wrapmode
- */
-static GLint getGLWrapMode(nap::EWrapMode wrapmode)
-{
-	auto it = openglWrapMap.find(wrapmode);
-	assert(it != openglWrapMap.end());
-	return it->second;
-}
-
-
-static void convertTextureParameters(const nap::TextureParameters& input, opengl::TextureParameters& output)
-{
-	output.minFilter	=	getGLFilterMode(input.mMinFilter);
-	output.maxFilter	=	getGLFilterMode(input.mMaxFilter);
-	output.wrapVertical =	getGLWrapMode(input.mWrapVertical);
-	output.wrapHorizontal = getGLWrapMode(input.mWrapHorizontal);
-	output.maxLodLevel =	input.mMaxLodLevel;
-}
+// /**
+// * openglFilterMap
+// *
+// * Maps Filter modes to supported GL formats
+// */
+// using OpenglFilterMap = std::unordered_map<nap::EFilterMode, GLint>;
+// static const OpenglFilterMap openglFilterMap =
+// {
+// 	{ nap::EFilterMode::Nearest,					GL_NEAREST},
+// 	{ nap::EFilterMode::Linear,						GL_LINEAR },
+// 	{ nap::EFilterMode::NearestMipmapNearest,		GL_NEAREST_MIPMAP_NEAREST },
+// 	{ nap::EFilterMode::LinearMipmapNearest,		GL_LINEAR_MIPMAP_NEAREST },
+// 	{ nap::EFilterMode::NearestMipmapLinear,		GL_NEAREST_MIPMAP_LINEAR },
+// 	{ nap::EFilterMode::LinearMipmapLinear,			GL_LINEAR_MIPMAP_LINEAR}
+// };
+// 
+// 
+// /**
+//  *	openglWrapMap
+//  *
+//  * Maps Wrap modes to supported GL formats
+//  */
+// using OpenglWrapMap = std::unordered_map<nap::EWrapMode, GLint>;
+// static const OpenglWrapMap openglWrapMap =
+// {	 
+// 	{ nap::EWrapMode::Repeat,						GL_REPEAT },
+// 	{ nap::EWrapMode::MirroredRepeat,				GL_MIRRORED_REPEAT },
+// 	{ nap::EWrapMode::ClampToEdge,					GL_CLAMP_TO_EDGE },
+// 	{ nap::EWrapMode::ClampToBorder,				GL_CLAMP_TO_BORDER }
+// };
+// 
+// 
+// /**
+//  *	@return the opengl filter based on @filter
+//  */
+// static GLint getGLFilterMode(nap::EFilterMode filter)
+// {
+// 	auto it = openglFilterMap.find(filter);
+// 	assert(it != openglFilterMap.end());
+// 	return it->second;
+// }
+// 
+// 
+// /**
+//  *	@return the opengl wrap mode based on @wrapmode
+//  */
+// static GLint getGLWrapMode(nap::EWrapMode wrapmode)
+// {
+// 	auto it = openglWrapMap.find(wrapmode);
+// 	assert(it != openglWrapMap.end());
+// 	return it->second;
+// }
+// 
+// 
+// static void convertTextureParameters(const nap::TextureParameters& input, opengl::TextureParameters& output)
+// {
+// 	output.minFilter	=	getGLFilterMode(input.mMinFilter);
+// 	output.maxFilter	=	getGLFilterMode(input.mMaxFilter);
+// 	output.wrapVertical =	getGLWrapMode(input.mWrapVertical);
+// 	output.wrapHorizontal = getGLWrapMode(input.mWrapHorizontal);
+// 	output.maxLodLevel =	input.mMaxLodLevel;
+// }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -287,28 +294,16 @@ namespace nap
 		return VK_FORMAT_UNDEFINED;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-
-	Texture2D::Texture2D(Core& core) :
-		mRenderService(core.getService<RenderService>())
-	{
-	}
-
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
-	{
-		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-	}
-
-	static int getNumStagingBuffers(opengl::ETextureUsage textureUsage)
+	static int getNumStagingBuffers(ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case opengl::ETextureUsage::DynamicWrite:
+		case ETextureUsage::DynamicWrite:
 			return 3;
-		case opengl::ETextureUsage::Static:
-		case opengl::ETextureUsage::DynamicRead:
+		case ETextureUsage::Static:
+		case ETextureUsage::DynamicRead:
 			return 1;
-		case opengl::ETextureUsage::RenderTarget:
+		case ETextureUsage::RenderTarget:
 			return 0;
 		}
 
@@ -316,20 +311,44 @@ namespace nap
 		return 0;
 	}
 
-	static int getNumImages(opengl::ETextureUsage textureUsage)
+	static int getNumImages(ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case opengl::ETextureUsage::DynamicWrite:
-		case opengl::ETextureUsage::RenderTarget:
+		case ETextureUsage::DynamicWrite:
+		case ETextureUsage::RenderTarget:
 			return 2;
-		case opengl::ETextureUsage::Static:
-		case opengl::ETextureUsage::DynamicRead:
+		case ETextureUsage::Static:
+		case ETextureUsage::DynamicRead:
 			return 1;
 		}
-		
+
 		assert(false);
 		return 0;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	Texture2D::Texture2D(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{
+	}
+
+	Texture2D::~Texture2D()
+	{
+		for (ImageData& image_data : mImageData)
+		{
+			vkDestroyImageView(mRenderService->getDevice(), image_data.mTextureView, nullptr);
+			vmaDestroyImage(mRenderService->getVulkanAllocator(), image_data.mTextureImage, image_data.mTextureAllocation);
+		}
+		
+		for (StagingBuffer& buffer : mStagingBuffers)
+			vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
+	}
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
+	{
+		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 	}
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
@@ -454,7 +473,7 @@ namespace nap
 	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
-		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+		assert(mUsage == ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
 		assert(mDescriptor.mWidth == width && mDescriptor.mHeight == height);
 
 		// We use a staging buffer that is guaranteed to be free
@@ -488,7 +507,8 @@ namespace nap
 
 	nap::uint Texture2D::getHandle() const
 	{
-		return getTexture().getTextureId();
+		return 0;
+		//return getTexture().getTextureId();
 	}
 
 

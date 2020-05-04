@@ -28,13 +28,13 @@ namespace nap
 
 	void Image::startGetData()
 	{
-		getTexture().asyncStartGetData();
+		//getTexture().asyncStartGetData();
 	}
 
 
 	Bitmap& Image::endGetData()
 	{
-		endGetData(mBitmap);
+		//endGetData(mBitmap);
 		return mBitmap;
 	}
 }

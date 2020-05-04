@@ -560,6 +560,20 @@ namespace nap
 
 	GLWindow::~GLWindow()
 	{	
+		for (VkSemaphore semaphore : mImageAvailableSemaphores)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+
+		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+
+		if (!mCommandBuffers.empty())
+			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers.size(), mCommandBuffers.data());
+
+		destroySwapChainResources();
+
+		if (mSurface != nullptr)
+			vkDestroySurfaceKHR(mRenderService->getVulkanInstance(), mSurface, nullptr);
+
 		if (mWindow != nullptr)
 			SDL_DestroyWindow(mWindow);
 	}
@@ -623,25 +637,40 @@ namespace nap
 
 		mSwapChainFramebuffers.clear();
 
-		vkDestroyImageView(mDevice, mDepthImageView, nullptr);
-		mDepthImageView = nullptr;
+		if (mDepthImageView != nullptr)
+		{
+			vkDestroyImageView(mDevice, mDepthImageView, nullptr);
+			mDepthImageView = nullptr;
+		}
 
-		vkDestroyImage(mDevice, mDepthImage, nullptr);
-		mDepthImage = nullptr;
+		if (mDepthImage != nullptr)
+		{
+			vkDestroyImage(mDevice, mDepthImage, nullptr);
+			mDepthImage = nullptr;
+		}
 
-		vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
-		mDepthImageMemory = nullptr;
+		if (mDepthImageMemory != nullptr)
+		{
+			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
+			mDepthImageMemory = nullptr;
+		}
 
 		for (VkImageView image_view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, image_view, nullptr);
 
 		mSwapChainImageViews.clear();
 
-		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
-		mRenderPass = nullptr;
+		if (mRenderPass != nullptr)
+		{
+			vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+			mRenderPass = nullptr;
+		}
 
-		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-		mSwapchain = nullptr;
+		if (mSwapchain != nullptr)
+		{
+			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+			mSwapchain = nullptr;
+		}
 	}
 
 	bool GLWindow::init(const RenderWindowSettings& settings, RenderService& renderService, nap::utility::ErrorState& errorState)

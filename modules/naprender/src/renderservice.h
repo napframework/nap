@@ -102,7 +102,6 @@ namespace nap
 		bool beginRendering(RenderWindow& renderWindow);
 		void endRendering();
 
-
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
@@ -237,6 +236,20 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * This is called before shutdown() and before the resources are destroyed.
+		 * Use this function if your service needs to reset its state before resources 
+		 * are destroyed
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void preShutdown();
+
+		/**
+		 * Invoked when the resource manager is about to load resources
+		 */
+		virtual void preResourcesLoaded() override;
+
+		/**
 		 * Called before update, ensures the primary window is the active window before update is called.
 		 * @param deltaTime time in seconds in between frames.
 		 */
@@ -274,7 +287,7 @@ namespace nap
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
 
-		VmaAllocator							mVulkanAllocator;
+		VmaAllocator							mVulkanAllocator = nullptr;
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 		

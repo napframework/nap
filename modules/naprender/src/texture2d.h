@@ -3,7 +3,6 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-#include <ntexture2d.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
 #include "rtti/factory.h"
@@ -43,6 +42,17 @@ namespace nap
 	};
 
 	/**
+	 * Flag that determines how the texture is used at runtime.
+	 */
+	enum class ETextureUsage
+	{
+		Static,				///< Texture does not change
+		DynamicRead,		///< Texture is frequently read from GPU to CPU
+		DynamicWrite,		///< Texture is frequently updated from CPU to GPU
+		RenderTarget		///< Texture is used as output for a RenderTarget
+	};
+
+	/**
 	 * Parameters associated with a texture
 	 */
 	struct NAPAPI TextureParameters
@@ -66,6 +76,7 @@ namespace nap
 	public:
 		Texture2D() = default;
 		Texture2D(Core& core);
+		~Texture2D();
 
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.
@@ -144,18 +155,7 @@ namespace nap
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
-		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
-
-	protected:
-		/**
-		 *	@return the opengl texture
-		 */
-		opengl::Texture2D& getTexture()												{ return mTexture; }
-
-		/**
-		 *	@return the opengl texture
-		 */
-		const opengl::Texture2D& getTexture() const									{ return mTexture; }
+		ETextureUsage		mUsage = ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	private:
 		friend class RenderTarget;
@@ -180,7 +180,6 @@ namespace nap
 		using StagingBufferList = std::vector<StagingBuffer>;
 
 		RenderService*				mRenderService = nullptr;
-		opengl::Texture2D			mTexture;
 		std::vector<uint8_t>		mTextureData;
 		ImageDataList				mImageData;
 		StagingBufferList			mStagingBuffers;

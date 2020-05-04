@@ -62,6 +62,7 @@ namespace nap
 
 		Shader();
 		Shader(Core& core);
+		~Shader();
 
 		/**
 		 * Creates and inits opengl shader.

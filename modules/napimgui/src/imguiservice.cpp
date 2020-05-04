@@ -9,7 +9,6 @@
 #include <inputservice.h>
 #include <nap/core.h>
 #include <color.h>
-#include <GL/glew.h>
 #include <SDL_clipboard.h>
 #include <SDL_syswm.h>
 #include "SDL_mouse.h"
@@ -24,7 +23,6 @@ RTTI_END_CLASS
 // Static data associated with IMGUI: TODO: Use own render classes and remove global state!
 static bool         gMousePressed[3] = { false, false, false };
 static float        gMouseWheel = 0.0f;
-static GLuint       gFontTexture = 0;
 static int          gShaderHandle = 0, gVertHandle = 0, gFragHandle = 0;
 static int          gAttribLocationTex = 0, gAttribLocationProjMtx = 0;
 static int          gAttribLocationPosition = 0, gAttribLocationUV = 0, gAttribLocationColor = 0;
@@ -564,9 +562,15 @@ namespace nap
 		if (g_FontImage) { vkDestroyImage(g_Device, g_FontImage, g_Allocator); g_FontImage = VK_NULL_HANDLE; }
 		if (g_FontMemory) { vkFreeMemory(g_Device, g_FontMemory, g_Allocator); g_FontMemory = VK_NULL_HANDLE; }
 		if (g_FontSampler) { vkDestroySampler(g_Device, g_FontSampler, g_Allocator); g_FontSampler = VK_NULL_HANDLE; }
+		if (g_DescriptorSet) { vkFreeDescriptorSets(g_Device, g_DescriptorPool, 1, &g_DescriptorSet); g_DescriptorSet = VK_NULL_HANDLE; }
 		if (g_DescriptorSetLayout) { vkDestroyDescriptorSetLayout(g_Device, g_DescriptorSetLayout, g_Allocator); g_DescriptorSetLayout = VK_NULL_HANDLE; }
 		if (g_PipelineLayout) { vkDestroyPipelineLayout(g_Device, g_PipelineLayout, g_Allocator); g_PipelineLayout = VK_NULL_HANDLE; }
 		if (g_Pipeline) { vkDestroyPipeline(g_Device, g_Pipeline, g_Allocator); g_Pipeline = VK_NULL_HANDLE; }
+
+		if (g_VertModule) { vkDestroyShaderModule(g_Device, g_VertModule, g_Allocator); g_VertModule = VK_NULL_HANDLE; }
+		if (g_FragModule) { vkDestroyShaderModule(g_Device, g_FragModule, g_Allocator); g_FragModule= VK_NULL_HANDLE; }
+
+		if (g_DescriptorPool) { vkDestroyDescriptorPool(g_Device, g_DescriptorPool, g_Allocator); g_DescriptorPool = VK_NULL_HANDLE; }
 	}
 
 
@@ -1003,6 +1007,7 @@ namespace nap
 		poolInfo.poolSizeCount = 1;
 		poolInfo.pPoolSizes = &pool_size;
 		poolInfo.maxSets = 1;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VkResult result = vkCreateDescriptorPool(g_Device, &poolInfo, nullptr, &g_DescriptorPool);
 		assert(result == VK_SUCCESS);
