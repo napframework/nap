@@ -51,10 +51,8 @@ namespace nap
 		rtti::ObjectPtr<RenderTexture2D>	mDepthTexture;
 
 	private:
-		using FramebufferList = std::vector<VkFramebuffer>;
-
 		RenderService*				mRenderService;
-		FramebufferList				mFramebuffers;
+		VkFramebuffer				mFramebuffer;
 		VkRenderPass				mRenderPass = nullptr;
 	};
 }

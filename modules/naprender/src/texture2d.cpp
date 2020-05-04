@@ -316,21 +316,6 @@ namespace nap
 		return 0;
 	}
 
-	static int getNumImages(opengl::ETextureUsage textureUsage)
-	{
-		switch (textureUsage)
-		{
-		case opengl::ETextureUsage::DynamicWrite:
-		case opengl::ETextureUsage::RenderTarget:
-			return 2;
-		case opengl::ETextureUsage::Static:
-		case opengl::ETextureUsage::DynamicRead:
-			return 1;
-		}
-		
-		assert(false);
-		return 0;
-	}
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
@@ -381,20 +366,13 @@ namespace nap
 		}
 
 		// We create images and imageviews for the amount of frames in flight
-		mImageData.resize(getNumImages(mUsage));
-		for (int index = 0; index < mImageData.size(); ++index)
-		{
-			ImageData& imageData = mImageData[index];
+		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+			return false;
 
-			if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_IMAGE_TILING_OPTIMAL, usage, imageData.mTextureImage, imageData.mTextureAllocation, imageData.mTextureAllocationInfo, errorState))
-				return false;
+		VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (!createImageView(device, mImageData.mTextureImage, mVulkanFormat, aspect_flags, mImageData.mTextureView, errorState))
+			return false;
 
-			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
-			if (!createImageView(device, imageData.mTextureImage, mVulkanFormat, aspect_flags, imageData.mTextureView, errorState))
-				return false;
-		}
-
-		mCurrentImageIndex = 0;
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
@@ -425,36 +403,25 @@ namespace nap
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 		
-		// We must pre-increment the image index, because mCurrentImageIndex is used here and later in getImageView.
-		// We cannot bump the index between upload and getImageView.
-		mCurrentImageIndex = (mCurrentImageIndex + 1) % mImageData.size();
-		ImageData& imageData = mImageData[mCurrentImageIndex];
-
-		transitionImageLayout(commandBuffer, imageData.mTextureImage, imageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, imageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, imageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		imageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		notifyChanged();
+		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
-	void Texture2D::notifyChanged()
-	{
-		// Notify listeners such as Samplers, so that they can use another ImageView for this texture.
-		changed(*this);
-	}
 
 	void Texture2D::update(const void* data, const SurfaceDescriptor& surfaceDescriptor)
 	{
 		update(data, surfaceDescriptor.getWidth(), surfaceDescriptor.getHeight(), surfaceDescriptor.getPitch(), surfaceDescriptor.getChannels());
 	}
 
+
 	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
-		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData[0].mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+		assert(mUsage == opengl::ETextureUsage::DynamicWrite || mImageData.mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
 		assert(mDescriptor.mWidth == width && mDescriptor.mHeight == height);
 
 		// We use a staging buffer that is guaranteed to be free
@@ -489,20 +456,6 @@ namespace nap
 	nap::uint Texture2D::getHandle() const
 	{
 		return getTexture().getTextureId();
-	}
-
-
-	VkImageView Texture2D::getImageView() const
-	{ 
-		assert(mCurrentImageIndex != -1);
-		return mImageData[mCurrentImageIndex].mTextureView; 
-	}
-
-
-	VkImageView Texture2D::getImageView(int index) const
-	{
-		assert(index >= 0 && index < mImageData.size());
-		return mImageData[index].mTextureView;
 	}
 
 

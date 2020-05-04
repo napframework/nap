@@ -105,8 +105,6 @@ namespace nap
 
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
-		void notifyChanged();
-
 		VkFormat getVulkanFormat() const { return mVulkanFormat; }
 
 		/**
@@ -136,11 +134,7 @@ namespace nap
 		*/
 		void endGetData(Bitmap& bitmap);
 
-		VkImageView getImageView() const;
-
-		VkImageView getImageView(int index) const;
-
-		nap::Signal<const Texture2D&> changed;
+		VkImageView getImageView() const { return mImageData.mTextureView; }
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
@@ -176,16 +170,14 @@ namespace nap
 			VkImageLayout				mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		};
 
-		using ImageDataList = std::vector<ImageData>;
 		using StagingBufferList = std::vector<StagingBuffer>;
 
 		RenderService*				mRenderService = nullptr;
 		opengl::Texture2D			mTexture;
 		std::vector<uint8_t>		mTextureData;
-		ImageDataList				mImageData;
+		ImageData					mImageData;
 		StagingBufferList			mStagingBuffers;
 		int							mCurrentStagingBufferIndex = -1;
-		int							mCurrentImageIndex = -1;
 		size_t						mImageSizeInBytes = -1;
 		SurfaceDescriptor			mDescriptor;
 		VkFormat					mVulkanFormat = VK_FORMAT_UNDEFINED;
