@@ -16,6 +16,8 @@ namespace nap
 	public:
 		SequenceController(SequencePlayer& player) : mPlayer(player) {};
 
+		Sequence& getSequence() { return mPlayer.getSequence(); }
+
 		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& SequenceController::getControllerFactory();
 
 		static bool registerControllerFactory(rttr::type, SequenceControllerFactoryFunc);

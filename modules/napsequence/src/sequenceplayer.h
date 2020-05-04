@@ -31,8 +31,9 @@ namespace nap
 	class NAPAPI SequencePlayer : public Device
 	{
 		friend class SequenceEditor;
-		friend class SequenceEditorController;
+		friend class SequenceController;
 		friend class SequenceService;
+		friend class SequenceEditorController;
 
 		RTTI_ENABLE(Device)
 	public:

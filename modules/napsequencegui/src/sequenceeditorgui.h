@@ -140,7 +140,7 @@ namespace nap
 		 * @param controller reference to editor controller
 		 * @param id id of the GUI resource, used to push ID by IMGUI
 		 */
-		SequenceEditorGUIView(SequenceEditorController& controller, std::string id);
+		SequenceEditorGUIView(SequenceEditor& editor, std::string id);
 
 		/**
 		 * shows the editor interface
@@ -407,7 +407,7 @@ namespace nap
 		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
 
 		// reference to controller
-		SequenceEditorController& mController;
+		SequenceEditor& mEditor;
 	protected:
 		// action information
 		SequenceEditorGUIState mEditorAction;

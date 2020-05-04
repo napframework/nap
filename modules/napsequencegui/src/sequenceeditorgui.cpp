@@ -2,6 +2,7 @@
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
 #include "sequencecontrollerevent.h"
+#include "sequencecontrollerplayer.h"
 
 // External Includes
 #include <entity.h>
@@ -29,11 +30,8 @@ namespace nap
 		}
 
 		mView = std::make_unique<SequenceEditorGUIView>(
-			mSequenceEditor->getController(),
+			*mSequenceEditor.get(),
 			mID);
-
-		auto& eventController = mSequenceEditor->getController<SequenceControllerEvent>();
-		eventController.test();
 
 		return true;
 	}
@@ -68,8 +66,8 @@ namespace nap
 	};
 
 
-	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditorController& controller, std::string id)
-		: mController(controller), mID(id)
+	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id)
+		: mEditor(editor), mID(id)
 	{
 	}
 
@@ -84,9 +82,12 @@ namespace nap
 		mMouseDelta = { mMousePos.x - mPreviousMousePos.x, mMousePos.y - mPreviousMousePos.y };
 		mPreviousMousePos = mMousePos;
 
+		// temp
+		SequenceControllerPlayer& playerController = mEditor.getController<SequenceControllerPlayer>();
+
 		//
-		const Sequence& sequence = mController.getSequence();
-		SequencePlayer& sequencePlayer = mController.getSequencePlayer();
+		const Sequence& sequence = playerController.getSequence();
+		SequencePlayer& sequencePlayer = playerController.getSequencePlayer();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -134,7 +135,7 @@ namespace nap
 			//
 			if (ImGui::Button("Save"))
 			{
-				mController.save();
+				//mController.save();
 			}
 
 			ImGui::SameLine();
@@ -315,7 +316,7 @@ namespace nap
 		// delete the track if we did a delete track action
 		if (deleteTrack)
 		{
-			mController.deleteTrack(deleteTrackID);
+			//mController.deleteTrack(deleteTrackID);
 			mCurveCache.clear();
 		}
 	}
@@ -417,10 +418,12 @@ namespace nap
 				&currentItem,
 				dispatcherIDs))
 			{
+				/*
 				if (currentItem != 0)
 					mController.assignNewObjectID(track.mID, dispatcherIDs[currentItem]);
 				else
 					mController.assignNewObjectID(track.mID, "");
+					*/
 
 			}
 
@@ -676,11 +679,12 @@ namespace nap
 				&currentItem,
 				parameterIDs))
 			{
+				/*
 				if (currentItem != 0)
 					mController.assignNewObjectID(track.mID, parameterIDs[currentItem]);
 				else
 					mController.assignNewObjectID(track.mID, "");
-
+					*/
 			}
 
 			//
@@ -993,14 +997,14 @@ namespace nap
 								curvePoint.mPos.mTime,
 								curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
 								v);
-
+							/*
 							mController.changeCurvePoint(
 								data->mTrackID,
 								data->mSegmentID,
 								data->mControlIndex,
 								data->mCurveIndex,
 								timeAdjust,
-								valueAdjust);
+								valueAdjust);*/
 							mCurveCache.clear();
 
 							if (ImGui::IsMouseReleased(0))
@@ -1189,12 +1193,13 @@ namespace nap
 						{
 							float dragAmount = (mMouseDelta.y / mTrackHeight) * -1.0f;
 							
+							/*
 							mController.changeCurveSegmentValue(
 								track.mID,
 								segment.mID,
 								dragAmount,
 								v,
-								segmentType);
+								segmentType);*/
 							mCurveCache.clear();
 						}
 					}
@@ -1279,11 +1284,11 @@ namespace nap
 				float amount = mMouseDelta.x / mStepSize;
 				if (track.get_type() == RTTI_OF(SequenceTrackEvent))
 				{
-					mController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
+					//mController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
 				}
 				else
 				{
-					mController.segmentDurationChange(track.mID, segment.mID, amount);
+					//mController.segmentDurationChange(track.mID, segment.mID, amount);
 				}
 				mCurveCache.clear();
 			}
@@ -1414,6 +1419,7 @@ namespace nap
 							float time = mMouseDelta.x / mStepSize;
 							float value = (mMouseDelta.y / mTrackHeight) * -1.0f;
 
+							/*
 							mController.changeTanPoint(
 								track.mID,
 								segment.mID,
@@ -1421,7 +1427,7 @@ namespace nap
 								curveIndex,
 								type,
 								time,
-								value);
+								value);*/
 							mCurveCache.clear();
 						}
 					}
@@ -1456,7 +1462,7 @@ namespace nap
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mEditorAction.currentActionData.get());
 
-					mController.insertSegment(data->mID, data->mTime);
+					//mController.insertSegment(data->mID, data->mTime);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 
@@ -1504,35 +1510,35 @@ namespace nap
 
 				if (ImGui::Button("Vector 4"))
 				{
-					mController.addNewCurveTrack<glm::vec4>();
+					//mController.addNewCurveTrack<glm::vec4>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Vector 3"))
 				{
-					mController.addNewCurveTrack<glm::vec3>();
+					//mController.addNewCurveTrack<glm::vec3>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Vector 2"))
 				{
-					mController.addNewCurveTrack<glm::vec2>();
+					//mController.addNewCurveTrack<glm::vec2>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Float"))
 				{
-					mController.addNewCurveTrack<float>();
+					//mController.addNewCurveTrack<float>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Event"))
 				{
-					mController.addNewEventTrack();
+					//mController.addNewEventTrack();
 					mCurveCache.clear();
 					closePopup = true;
 				}
@@ -1583,7 +1589,7 @@ namespace nap
 
 				if (ImGui::Button("Linear"))
 				{
-					mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
+					//mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1594,7 +1600,7 @@ namespace nap
 
 				if (ImGui::Button("Bezier"))
 				{
-					mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
+					//mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1640,11 +1646,12 @@ namespace nap
 
 				if (ImGui::Button("Insert Point"))
 				{
+					/*
 					mController.insertCurvePoint(
 						data.mTrackID,
 						data.mSegmentID,
 						data.mPos,
-						data.mSelectedIndex);
+						data.mSelectedIndex);*/
 
 					mCurveCache.clear();
 
@@ -1706,11 +1713,12 @@ namespace nap
 
 					assert(data != nullptr);
 
+					/*
 					mController.deleteCurvePoint(
 						data->mTrackId,
 						data->mSegmentID,
 						data->mControlPointIndex,
-						data->mCurveIndex);
+						data->mCurveIndex);*/
 					mCurveCache.clear();
 
 					mEditorAction.currentAction = NONE;
@@ -1765,7 +1773,7 @@ namespace nap
 
 				if (ImGui::Button("Insert"))
 				{
-					mController.insertSegment(data.mTrackID, data.mTime);
+					//mController.insertSegment(data.mTrackID, data.mTime);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 				}
@@ -1820,7 +1828,7 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					mController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
+					//mController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 				}
@@ -1865,7 +1873,7 @@ namespace nap
 
 				if (ImGui::Button("Delete"))
 				{
-					mController.deleteSegment(data->mTrackID, data->mSegmentID);
+					//mController.deleteSegment(data->mTrackID, data->mSegmentID);
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
@@ -1877,6 +1885,7 @@ namespace nap
 				{
 					if (ImGui::Button("Edit"))
 					{
+						/*
 						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(mController.getSegment(data->mTrackID, data->mSegmentID));
 						assert(eventSegment != nullptr);
 
@@ -1886,7 +1895,7 @@ namespace nap
 							data->mSegmentID,
 							eventSegment->mMessage,
 							ImGui::GetWindowPos());
-
+							*/
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -1994,7 +2003,7 @@ namespace nap
 					if (timestampPos.y >= parentWindowPos.y &&
 						timestampPos.y < parentWindowSize.y + parentWindowPos.y)
 					{
-						double timeInPlayer = mController.getSequence().mDuration * (float)((float)i / steps);
+						double timeInPlayer = 0.0;// mPlayer.mDuration * (float)((float)i / steps);
 						std::string formattedTimeString = formatTimeString(timeInPlayer);
 						drawList->AddText(timestampPos, guicolors::white, formattedTimeString.c_str());
 
@@ -2157,6 +2166,7 @@ namespace nap
 				utility::ErrorState errorState;
 				if (ImGui::Button("Load"))
 				{
+					/*
 					if (mController.getSequencePlayer().load(
 						showFiles[data->mSelectedShow], errorState))
 					{
@@ -2169,7 +2179,7 @@ namespace nap
 					{
 						ImGui::OpenPopup("Error");
 						data->mErrorString = errorState.toString();
-					}
+					}*/
 				}
 
 				ImGui::SameLine();
@@ -2276,6 +2286,7 @@ namespace nap
 					shows.insert(shows.end() - 1, newShowFileName);
 
 					utility::ErrorState errorState;
+					/*
 					if (mController.getSequencePlayer().save(showDir + "/" + newShowFileName, errorState))
 					{
 						data->mSelectedShow = shows.size() - 2;
@@ -2284,7 +2295,7 @@ namespace nap
 					{
 						data->mErrorString = errorState.toString();
 						ImGui::OpenPopup("Error");
-					}
+					}*/
 				}
 
 				if (ImGui::BeginPopupModal("Overwrite"))
@@ -2294,6 +2305,7 @@ namespace nap
 						shows[data->mSelectedShow] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
+						/*
 						if (mController.getSequencePlayer().save(
 							shows[data->mSelectedShow],
 							errorState))
@@ -2303,7 +2315,7 @@ namespace nap
 						{
 							data->mErrorString = errorState.toString();
 							ImGui::OpenPopup("Error");
-						}
+						}*/
 
 						ImGui::CloseCurrentPopup();
 					}
@@ -2542,7 +2554,7 @@ namespace nap
 		ImGui::SetCursorPosX(dragFloatX);
 		if (inputFloat<T>(min, 3))
 		{
-			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+//			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -2552,7 +2564,7 @@ namespace nap
 		ImGui::SetCursorPosX(dragFloatX);
 		if (inputFloat<T>(max, 3))
 		{
-			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+//			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
