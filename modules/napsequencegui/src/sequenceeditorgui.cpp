@@ -3,6 +3,9 @@
 #include "napcolors.h"
 #include "sequencecontrollerevent.h"
 #include "sequencecontrollerplayer.h"
+#include "sequencecontrollercurve.h"
+#include "sequenceplayereventinput.h"
+#include "sequenceplayercurveinput.h"
 
 // External Includes
 #include <entity.h>
@@ -29,9 +32,7 @@ namespace nap
 			return false;
 		}
 
-		mView = std::make_unique<SequenceEditorGUIView>(
-			*mSequenceEditor.get(),
-			mID);
+		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID);
 
 		return true;
 	}
@@ -83,11 +84,12 @@ namespace nap
 		mPreviousMousePos = mMousePos;
 
 		// temp
-		SequenceControllerPlayer& playerController = mEditor.getController<SequenceControllerPlayer>();
+		SequenceControllerCurve& curveController = mEditor.getController<SequenceControllerCurve>();
+		SequenceControllerEvent& eventController = mEditor.getController<SequenceControllerEvent>();
 
 		//
-		const Sequence& sequence = playerController.getSequence();
-		SequencePlayer& sequencePlayer = playerController.getSequencePlayer();
+		const Sequence& sequence = mEditor.mSequencePlayer->getSequence();
+		SequencePlayer& sequencePlayer = *mEditor.mSequencePlayer.get();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -316,7 +318,9 @@ namespace nap
 		// delete the track if we did a delete track action
 		if (deleteTrack)
 		{
-			//mController.deleteTrack(deleteTrackID);
+			SequenceControllerPlayer& playerController = mEditor.getController<SequenceControllerPlayer>();
+			playerController.deleteTrack(deleteTrackID);
+
 			mCurveCache.clear();
 		}
 	}
@@ -391,39 +395,44 @@ namespace nap
 
 			bool assigned = false;
 			std::string assignedID;
-			std::vector<std::string> dispatcherIDs;
+			std::vector<std::string> eventInputs;
 			int currentItem = 0;
-			dispatcherIDs.emplace_back("none");
+			eventInputs.emplace_back("none");
 			int count = 0;
-			const SequenceEventReceiver* assignedParameterPtr = nullptr;
-			/*
-			for (const auto& dispatcher : sequencePlayer.mEventReceivers)
+			const SequenceEventReceiver* assignedEventReceiver = nullptr;
+			
+			for (const auto& input : sequencePlayer.mInputs)
 			{
-				count++;
-
-				if (dispatcher->mID == track.mAssignedObjectIDs)
+				if (input.get()->get_type() == RTTI_OF(SequencePlayerEventInput))
 				{
-					assigned = true;
-					assignedID = dispatcher->mID;
-					currentItem = count;
-					assignedParameterPtr = dispatcher.get();
-				}
+					count++;
 
-				dispatcherIDs.emplace_back(dispatcher->mID);
-			}*/
+					if (input->mID == track.mAssignedObjectIDs)
+					{
+						assigned = true;
+						assignedID = input->mID;
+						currentItem = count;
+
+						assert(input.get()->get_type() == RTTI_OF(SequencePlayerEventInput)); // type mismatch
+						assignedEventReceiver = static_cast<SequencePlayerEventInput*>(input.get())->mReceiver.get();
+					}
+
+					eventInputs.emplace_back(input->mID);
+				}
+			}
 
 			ImGui::PushItemWidth(140.0f);
 			if (Combo(
 				"",
 				&currentItem,
-				dispatcherIDs))
+				eventInputs))
 			{
-				/*
+				SequenceControllerPlayer& playerController = mEditor.getController<SequenceControllerPlayer>();
+				
 				if (currentItem != 0)
-					mController.assignNewObjectID(track.mID, dispatcherIDs[currentItem]);
+					playerController.assignNewObjectID(track.mID, eventInputs[currentItem]);
 				else
-					mController.assignNewObjectID(track.mID, "");
-					*/
+					playerController.assignNewObjectID(track.mID, "");
 
 			}
 
@@ -652,39 +661,44 @@ namespace nap
 
 			bool assigned = false;
 			std::string assignedID;
-			std::vector<std::string> parameterIDs;
+			std::vector<std::string> curveInputs;
 			int currentItem = 0;
-			parameterIDs.emplace_back("none");
+			curveInputs.emplace_back("none");
 			int count = 0;
-			const Parameter* assignedParameterPtr = nullptr;
-			/*
-			for (const auto& parameter : sequencePlayer.mParameters)
+			const Parameter* assignedParameter = nullptr;
+
+			for (const auto& input : sequencePlayer.mInputs)
 			{
-				count++;
-
-				if (parameter->mID == track.mAssignedObjectIDs)
+				if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput))
 				{
-					assigned = true;
-					assignedID = parameter->mID;
-					currentItem = count;
-					assignedParameterPtr = parameter.get();
-				}
+					count++;
 
-				parameterIDs.emplace_back(parameter->mID);
-			}*/
+					if (input->mID == track.mAssignedObjectIDs)
+					{
+						assigned = true;
+						assignedID = input->mID;
+						currentItem = count;
+
+						assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput)); // type mismatch
+						assignedParameter = static_cast<SequencePlayerCurveInput*>(input.get())->mParameter.get();
+					}
+
+					curveInputs.emplace_back(input->mID);
+				}
+			}
 
 			ImGui::PushItemWidth(140.0f);
 			if (Combo(
 				"",
 				&currentItem,
-				parameterIDs))
+				curveInputs))
 			{
-				/*
+				SequenceControllerPlayer& playerController = mEditor.getController<SequenceControllerPlayer>();
+
 				if (currentItem != 0)
-					mController.assignNewObjectID(track.mID, parameterIDs[currentItem]);
+					playerController.assignNewObjectID(track.mID, curveInputs[currentItem]);
 				else
-					mController.assignNewObjectID(track.mID, "");
-					*/
+					playerController.assignNewObjectID(track.mID, "");
 			}
 
 			//
@@ -997,14 +1011,18 @@ namespace nap
 								curvePoint.mPos.mTime,
 								curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
 								v);
-							/*
-							mController.changeCurvePoint(
+
+						
+							SequenceControllerCurve& curveController = mEditor.getController<SequenceControllerCurve>();
+
+							curveController.changeCurvePoint(
 								data->mTrackID,
 								data->mSegmentID,
 								data->mControlIndex,
 								data->mCurveIndex,
 								timeAdjust,
-								valueAdjust);*/
+								valueAdjust);
+
 							mCurveCache.clear();
 
 							if (ImGui::IsMouseReleased(0))
@@ -1193,13 +1211,14 @@ namespace nap
 						{
 							float dragAmount = (mMouseDelta.y / mTrackHeight) * -1.0f;
 							
-							/*
-							mController.changeCurveSegmentValue(
+							SequenceControllerCurve& curveController = mEditor.getController<SequenceControllerCurve>();
+
+							curveController.changeCurveSegmentValue(
 								track.mID,
 								segment.mID,
 								dragAmount,
 								v,
-								segmentType);*/
+								segmentType);
 							mCurveCache.clear();
 						}
 					}
@@ -1284,11 +1303,13 @@ namespace nap
 				float amount = mMouseDelta.x / mStepSize;
 				if (track.get_type() == RTTI_OF(SequenceTrackEvent))
 				{
-					//mController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
+					SequenceControllerEvent& eventController = mEditor.getController<SequenceControllerEvent>();
+					eventController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
 				}
 				else
 				{
-					//mController.segmentDurationChange(track.mID, segment.mID, amount);
+					SequenceControllerCurve& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.segmentDurationChange(track.mID, segment.mID, amount);
 				}
 				mCurveCache.clear();
 			}
@@ -1419,15 +1440,15 @@ namespace nap
 							float time = mMouseDelta.x / mStepSize;
 							float value = (mMouseDelta.y / mTrackHeight) * -1.0f;
 
-							/*
-							mController.changeTanPoint(
+							auto& curveController = mEditor.getController<SequenceControllerCurve>();
+							curveController.changeTanPoint(
 								track.mID,
 								segment.mID,
 								controlPointIndex,
 								curveIndex,
 								type,
 								time,
-								value);*/
+								value);
 							mCurveCache.clear();
 						}
 					}
@@ -1462,6 +1483,7 @@ namespace nap
 				{
 					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mEditorAction.currentActionData.get());
 
+					//auto& curveController = mEditor.getController<SequenceControllerPlayer>();
 					//mController.insertSegment(data->mID, data->mTime);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
@@ -1510,35 +1532,40 @@ namespace nap
 
 				if (ImGui::Button("Vector 4"))
 				{
-					//mController.addNewCurveTrack<glm::vec4>();
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.addNewCurveTrack<glm::vec4>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Vector 3"))
 				{
-					//mController.addNewCurveTrack<glm::vec3>();
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.addNewCurveTrack<glm::vec3>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Vector 2"))
 				{
-					//mController.addNewCurveTrack<glm::vec2>();
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.addNewCurveTrack<glm::vec2>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Float"))
 				{
-					//mController.addNewCurveTrack<float>();
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.addNewCurveTrack<float>();
 					mCurveCache.clear();
 					closePopup = true;
 				}
 
 				if (ImGui::Button("Event"))
 				{
-					//mController.addNewEventTrack();
+					auto& eventController = mEditor.getController<SequenceControllerEvent>();
+					eventController.addNewEventTrack();
 					mCurveCache.clear();
 					closePopup = true;
 				}
@@ -1589,7 +1616,8 @@ namespace nap
 
 				if (ImGui::Button("Linear"))
 				{
-					//mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1600,7 +1628,8 @@ namespace nap
 
 				if (ImGui::Button("Bezier"))
 				{
-					//mController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
@@ -1646,12 +1675,12 @@ namespace nap
 
 				if (ImGui::Button("Insert Point"))
 				{
-					/*
-					mController.insertCurvePoint(
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.insertCurvePoint(
 						data.mTrackID,
 						data.mSegmentID,
 						data.mPos,
-						data.mSelectedIndex);*/
+						data.mSelectedIndex);
 
 					mCurveCache.clear();
 
@@ -1713,12 +1742,12 @@ namespace nap
 
 					assert(data != nullptr);
 
-					/*
-					mController.deleteCurvePoint(
+					auto& curveController = mEditor.getController<SequenceControllerCurve>();
+					curveController.deleteCurvePoint(
 						data->mTrackId,
 						data->mSegmentID,
 						data->mControlPointIndex,
-						data->mCurveIndex);*/
+						data->mCurveIndex);
 					mCurveCache.clear();
 
 					mEditorAction.currentAction = NONE;
@@ -1773,7 +1802,8 @@ namespace nap
 
 				if (ImGui::Button("Insert"))
 				{
-					//mController.insertSegment(data.mTrackID, data.mTime);
+					auto& eventController = mEditor.getController<SequenceControllerEvent>();
+					eventController.insertSegment(data.mTrackID, data.mTime);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 				}
@@ -1828,7 +1858,8 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					//mController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
+					auto& eventController = mEditor.getController<SequenceControllerEvent>();
+					eventController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
 					mEditorAction.currentAction = SequenceGUIMouseActions::NONE;
 					mEditorAction.currentActionData = nullptr;
 				}
@@ -1885,8 +1916,8 @@ namespace nap
 				{
 					if (ImGui::Button("Edit"))
 					{
-						/*
-						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(mController.getSegment(data->mTrackID, data->mSegmentID));
+						auto& eventController = mEditor.getController<SequenceControllerEvent>();
+						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(eventController.getSegment(data->mTrackID, data->mSegmentID));
 						assert(eventSegment != nullptr);
 
 						mEditorAction.currentAction = SequenceGUIMouseActions::OPEN_EDIT_EVENT_SEGMENT_POPUP;
@@ -1895,7 +1926,7 @@ namespace nap
 							data->mSegmentID,
 							eventSegment->mMessage,
 							ImGui::GetWindowPos());
-							*/
+							
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -2166,8 +2197,8 @@ namespace nap
 				utility::ErrorState errorState;
 				if (ImGui::Button("Load"))
 				{
-					/*
-					if (mController.getSequencePlayer().load(
+					
+					if (mEditor.mSequencePlayer->load(
 						showFiles[data->mSelectedShow], errorState))
 					{
 						mEditorAction.currentAction = NONE;
@@ -2179,7 +2210,7 @@ namespace nap
 					{
 						ImGui::OpenPopup("Error");
 						data->mErrorString = errorState.toString();
-					}*/
+					}
 				}
 
 				ImGui::SameLine();
@@ -2286,8 +2317,8 @@ namespace nap
 					shows.insert(shows.end() - 1, newShowFileName);
 
 					utility::ErrorState errorState;
-					/*
-					if (mController.getSequencePlayer().save(showDir + "/" + newShowFileName, errorState))
+					
+					if (mEditor.mSequencePlayer->save(showDir + "/" + newShowFileName, errorState))
 					{
 						data->mSelectedShow = shows.size() - 2;
 					}
@@ -2295,7 +2326,7 @@ namespace nap
 					{
 						data->mErrorString = errorState.toString();
 						ImGui::OpenPopup("Error");
-					}*/
+					}
 				}
 
 				if (ImGui::BeginPopupModal("Overwrite"))
@@ -2305,8 +2336,7 @@ namespace nap
 						shows[data->mSelectedShow] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
-						/*
-						if (mController.getSequencePlayer().save(
+						if (mEditor.mSequencePlayer->save(
 							shows[data->mSelectedShow],
 							errorState))
 						{
@@ -2315,7 +2345,7 @@ namespace nap
 						{
 							data->mErrorString = errorState.toString();
 							ImGui::OpenPopup("Error");
-						}*/
+						}
 
 						ImGui::CloseCurrentPopup();
 					}
@@ -2554,7 +2584,8 @@ namespace nap
 		ImGui::SetCursorPosX(dragFloatX);
 		if (inputFloat<T>(min, 3))
 		{
-//			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			auto& curveController = mEditor.getController<SequenceControllerCurve>();
+			curveController.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -2564,7 +2595,8 @@ namespace nap
 		ImGui::SetCursorPosX(dragFloatX);
 		if (inputFloat<T>(max, 3))
 		{
-//			mController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			auto& curveController = mEditor.getController<SequenceControllerCurve>();
+			curveController.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();

@@ -15,7 +15,6 @@
 #include <entity.h>
 #include <app.h>
 #include <sequenceeditorgui.h>
-#include <sequenceplayergui.h>
 #include <parametergui.h>
 
 namespace nap 
@@ -88,7 +87,6 @@ namespace nap
 		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
 		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;	//< Renders the parameters
 
-		ObjectPtr<SequencePlayerGUI>		mSequencePlayerGUI;
 		ObjectPtr<SequenceEditorGUI>		mSequenceEditorGUI;
 		ObjectPtr<ParameterGroup>			mParameterGroup;
 	};

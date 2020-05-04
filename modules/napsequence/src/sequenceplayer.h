@@ -166,7 +166,7 @@ namespace nap
 		float				mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		bool				mSetParametersOnMainThread = true;  ///< Property: 'Set parameters on main thread' when true, any animated parameters will be set on main thread and not player thread
 		std::vector<ResourcePtr<SequencePlayerInput>> mInputs;  ///< Property: 'Inputs' linked inputs
-	private:
+		public:
 		/**
 		 * getSequence
 		 * returns reference to sequence
@@ -193,13 +193,13 @@ namespace nap
 		 * creates lock on mMutex
 		 */
 		std::unique_lock<std::mutex> lock();
-	private:
+
 		// read objects from sequence
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
 
 		// read object ids from sequence
 		std::unordered_set<std::string>				mReadObjectIDs;
-
+	private:
 		// the update task
 		std::future<void>	mUpdateTask;
 
