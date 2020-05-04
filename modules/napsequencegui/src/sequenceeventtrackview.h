@@ -9,7 +9,7 @@ namespace nap
 	public:
 		SequenceEventTrackView(SequenceEditorGUIView& view);
 
-		virtual void drawTrack(SequenceTrack& track) override {}
+		virtual void drawTrack(const SequenceTrack& track) override {}
 
 		virtual void handleActions() override {}
 	};

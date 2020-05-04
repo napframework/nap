@@ -17,7 +17,7 @@ namespace nap
 	public:
 		SequenceTrackView(SequenceEditorGUIView& view);
 
-		virtual void drawTrack(SequenceTrack& track) = 0;
+		virtual void drawTrack(const SequenceTrack& track) = 0;
 
 		virtual void handleActions() = 0;
 

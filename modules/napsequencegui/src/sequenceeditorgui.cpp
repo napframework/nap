@@ -33,7 +33,7 @@ namespace nap
 	};
 
 
-	void SequenceEditorGUIView::registerTrackViewType(rttr::type trackType, rttr::type viewType)
+	bool SequenceEditorGUIView::registerTrackViewType(rttr::type trackType, rttr::type viewType)
 	{
 		auto& map = getTrackViewTypeViewMap();
 		auto it = map.find(trackType);
@@ -41,7 +41,10 @@ namespace nap
 		if (it == map.end())
 		{
 			map.emplace(trackType, viewType);
+			return true;
 		}
+
+		return false;
 	}
 
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
@@ -331,6 +334,22 @@ namespace nap
 		int trackCount = 0;
 		for (const auto& track : sequence.mTracks)
 		{
+			{
+				auto track_type = track.get()->get_type();
+				auto view_map = getTrackViewTypeViewMap();
+				auto it = view_map.find(track_type);
+				assert(it != view_map.end()); // no view type for track
+				if (it != view_map.end())
+				{
+					auto it2 = mViews.find(it->second);
+					assert(it2 != mViews.end()); // no view class created for this view type
+					if (it2 != mViews.end())
+					{
+						it2->second->drawTrack(*track.get());
+					}
+				}
+			}
+
 			auto it = sDrawTracksMap.find(track->get_type());
 			if (it != sDrawTracksMap.end())
 			{

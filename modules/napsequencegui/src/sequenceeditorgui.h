@@ -150,7 +150,7 @@ namespace nap
 		 */
 		virtual void show();
 
-		static void registerTrackViewType(rttr::type trackType, rttr::type viewType);
+		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
 	private:
 		/**
 		 * Draws the tracks of the sequence
