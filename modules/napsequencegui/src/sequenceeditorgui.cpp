@@ -1,7 +1,6 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
-#include "sequencecontrollerplayer.h"
 
 
 // External Includes

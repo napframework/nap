@@ -57,7 +57,7 @@ namespace nap
 		 */
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
 
-		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& SequenceController::getControllerFactory();
+		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
 
 		static bool registerControllerFactory(rttr::type, SequenceControllerFactoryFunc);
 	protected:
