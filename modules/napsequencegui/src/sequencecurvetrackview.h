@@ -6,164 +6,6 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIActions
-	{
-		class HoveringControlPoint : public Action
-		{
-			RTTI_ENABLE(Action)
-		public:
-			HoveringControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
-			{
-
-			}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mControlPointIndex;
-			int mCurveIndex;
-		};
-
-		class DraggingControlPoint : public Action
-		{
-			RTTI_ENABLE(Action)
-		public:
-			DraggingControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
-			{
-
-			}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mControlPointIndex;
-			int mCurveIndex;
-		};
-
-		class HoveringTanPoint : public Action
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			HoveringTanPoint(std::string tanPointID) : mTanPointID(tanPointID) {}
-			std::string mTanPointID;
-		};
-
-		class HoveringCurve : public Action
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			HoveringCurve(std::string trackId, std::string segmentID, int curveIndex)
-				: mTrackID(trackId), mSegmentID(segmentID), mCurveIndex(curveIndex) {}
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mCurveIndex;
-		};
-
-		class OpenInsertCurvePointPopup : public Action
-		{ 
-			RTTI_ENABLE(Action) 
-		public:
-			OpenInsertCurvePointPopup(std::string trackID, std::string segmentID, int selectedCurve, float pos)
-				: mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(selectedCurve), mPos(pos) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mSelectedIndex;
-			float mPos;
-		};
-
-		class InsertingCurvePoint : public Action 
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			InsertingCurvePoint(std::string trackID, std::string segmentID, int selectedCurve, float pos)
-				: mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(selectedCurve), mPos(pos) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mSelectedIndex;
-			float mPos;
-		};
-
-		class OpenCurvePointActionPopup : public Action 
-		{
-			RTTI_ENABLE(Action) 
-		public:
-			OpenCurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
-			{
-
-			}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mControlPointIndex;
-			int mCurveIndex;
-		};
-
-		class CurvePointActionPopup : public Action
-		{
-			RTTI_ENABLE(Action)
-		public:
-			CurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
-			{
-
-			}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mControlPointIndex;
-			int mCurveIndex;
-		};
-
-		class OpenCurveTypePopup : public Action 
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			OpenCurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
-				mTrackID(trackID), 
-				mSegmentID(segmentID), 
-				mCurveIndex(index), 
-				mPos(pos),
-				mWindowPos(windowPos) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mCurveIndex;
-			float mPos;
-			ImVec2 mWindowPos;
-		};
-
-		class CurveTypePopup : public Action
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			CurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
-				mTrackID(trackID), mSegmentID(segmentID), mCurveIndex(index), mPos(pos), mWindowPos(windowPos) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mCurveIndex;
-			float mPos;
-			ImVec2 mWindowPos;
-		};
-
-		class DraggingTanPoint : public Action 
-		{ 
-			RTTI_ENABLE(Action)
-		public:
-			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex, SequenceEditorTypes::TanPointTypes type)
-				: mTrackID(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			int mControlPointIndex;
-			SequenceEditorTypes::TanPointTypes mType;
-			int mCurveIndex;
-		};
-	}
-
 	class SequenceCurveTrackView : public SequenceTrackView
 	{
 	public:
@@ -347,4 +189,192 @@ namespace nap
 
 		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr> sDrawCurveSegmentsMap;
 	};
+
+	namespace SequenceGUIActions
+	{
+		class HoveringControlPoint : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			HoveringControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+		};
+
+		class DraggingControlPoint : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			DraggingControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+		};
+
+		class HoveringTanPoint : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			HoveringTanPoint(std::string tanPointID) : mTanPointID(tanPointID) {}
+			std::string mTanPointID;
+		};
+
+		class HoveringCurve : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			HoveringCurve(std::string trackId, std::string segmentID, int curveIndex)
+				: mTrackID(trackId), mSegmentID(segmentID), mCurveIndex(curveIndex) {}
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mCurveIndex;
+		};
+
+		class OpenInsertCurvePointPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenInsertCurvePointPopup(std::string trackID, std::string segmentID, int selectedCurve, float pos)
+				: mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(selectedCurve), mPos(pos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mSelectedIndex;
+			float mPos;
+		};
+
+		class InsertingCurvePoint : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingCurvePoint(std::string trackID, std::string segmentID, int selectedCurve, float pos)
+				: mTrackID(trackID), mSegmentID(segmentID), mSelectedIndex(selectedCurve), mPos(pos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mSelectedIndex;
+			float mPos;
+		};
+
+		class OpenCurvePointActionPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenCurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+		};
+
+		class CurvePointActionPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			CurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+		};
+
+		class OpenCurveTypePopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenCurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
+				mTrackID(trackID),
+				mSegmentID(segmentID),
+				mCurveIndex(index),
+				mPos(pos),
+				mWindowPos(windowPos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mCurveIndex;
+			float mPos;
+			ImVec2 mWindowPos;
+		};
+
+		class CurveTypePopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			CurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
+				mTrackID(trackID), mSegmentID(segmentID), mCurveIndex(index), mPos(pos), mWindowPos(windowPos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mCurveIndex;
+			float mPos;
+			ImVec2 mWindowPos;
+		};
+
+		class DraggingTanPoint : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex, SequenceEditorTypes::TanPointTypes type)
+				: mTrackID(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			SequenceEditorTypes::TanPointTypes mType;
+			int mCurveIndex;
+		};
+
+		class OpenEditCurveSegmentPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, rttr::type segmentType)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			rttr::type mSegmentType;
+		};
+
+		class EditingCurveSegment : public Action {
+			RTTI_ENABLE(Action)
+		public:
+			EditingCurveSegment(std::string trackID, std::string segmentID, rttr::type segmentType)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			rttr::type mSegmentType;
+		};
+	}
+
 }

@@ -54,6 +54,11 @@ namespace nap
 
 		mState = &state;
 
+		if (mState->mDirty)
+		{
+			mCurveCache.clear();
+		}
+
 		auto it = sDrawTracksMap.find(track.get_type());
 		assert(it != sDrawTracksMap.end()); // track type not found
 		if (it != sDrawTracksMap.end())
@@ -748,57 +753,42 @@ namespace nap
 	{
 		// segment handler
 		if (mState->mIsWindowFocused &&
-			(mState->mAction->isAction<OpenInsertSegmentPopup>() ||
-				(mState->mAction->isAction<HoveringSegment>())) &&
+			!mState->mAction->isAction<DraggingSegment>() &&
 				ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
 					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
 		{
-			bool isThisSegment = false;
-			if (mState->mAction->isAction<HoveringSegment>())
-			{
-				isThisSegment = mState->mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID;
-			}
-			else
-			{
-				isThisSegment = true;
-			}
-
-			if (isThisSegment)
-			{
-				// draw handler of segment duration
-				drawList->AddLine(
-				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
-					guicolors::white, // color
-					3.0f); // thickness
-
-				// we are hovering this segment with the mouse
-				mState->mAction = createAction<HoveringSegment>(track.mID, segment.mID);
-
-				ImGui::BeginTooltip();
-				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-				ImGui::EndTooltip();
-
-				// left mouse is start dragging
-				if (ImGui::IsMouseDown(0))
-				{
-					mState->mAction = createAction<DraggingSegment>(track.mID, segment.mID);
-				}
-				// right mouse in deletion popup
-				else if (ImGui::IsMouseDown(1))
-				{
-					mState->mAction = createAction <OpenEditSegmentPopup>(
-						track.mID,
-						segment.mID,
-						segment.get_type()
-					);
-				}
-			}
 			
+			// draw handler of segment duration
+			drawList->AddLine(
+			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+				guicolors::white, // color
+				3.0f); // thickness
+
+			// we are hovering this segment with the mouse
+			mState->mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+
+			ImGui::BeginTooltip();
+			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+			ImGui::EndTooltip();
+
+			// left mouse is start dragging
+			if (ImGui::IsMouseDown(0))
+			{
+				mState->mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+			}
+			// right mouse in deletion popup
+			else if (ImGui::IsMouseDown(1))
+			{
+				mState->mAction = createAction <OpenEditCurveSegmentPopup>(
+					track.mID,
+					segment.mID,
+					segment.get_type()
+				);
+			}
 		}
-		else if (
-			mState->mAction->isAction<DraggingSegment>())
+		else if (mState->mAction->isAction<DraggingSegment>())
 		{
 			auto* action = mState->mAction->getDerived<DraggingSegment>();
 			if (action->mSegmentID == segment.mID)
@@ -831,7 +821,15 @@ namespace nap
 					mState->mAction = createAction<None>();
 				}
 			}
-
+			else
+			{
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					1.0f); // thickness
+			}
 		}
 		else
 		{
@@ -842,8 +840,8 @@ namespace nap
 				guicolors::white, // color
 				1.0f); // thickness
 
-					   // release if we are not hovering this segment
-			if (mState->mAction->isAction<SequenceGUIActions::HoveringSegment>()
+			// release if we are not hovering this segment
+			if (mState->mAction->isAction<HoveringSegment>()
 				&& mState->mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)
 			{
 				mState->mAction = createAction<None>();
@@ -975,45 +973,61 @@ namespace nap
 	{
 		if (mState->mAction->isAction<OpenInsertSegmentPopup>())
 		{
-			// invoke insert sequence popup
-			ImGui::OpenPopup("Insert Segment");
-
 			auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
 
-			mState->mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
+			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec4))
+			{
+				// invoke insert sequence popup
+				ImGui::OpenPopup("Insert Segment");
+
+				auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+
+				mState->mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
+			}
 		}
 
 		// handle insert segment popup
 		if (mState->mAction->isAction<InsertingSegment>())
 		{
-			if (ImGui::BeginPopup("Insert Segment"))
+			auto* action = mState->mAction->getDerived<InsertingSegment>();
+
+			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ||
+				action->mTrackType == RTTI_OF(SequenceTrackCurveVec4))
 			{
-				if (ImGui::Button("Insert"))
+				if (ImGui::BeginPopup("Insert Segment"))
 				{
-					auto* action = mState->mAction->getDerived<InsertingSegment>();
+					if (ImGui::Button("Insert"))
+					{
+						auto* action = mState->mAction->getDerived<InsertingSegment>();
 
-					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.insertSegment(action->mTrackID, action->mTime);
-					mState->mAction = createAction<None>();
+						auto& curveController = getEditor().getController<SequenceControllerCurve>();
+						curveController.insertSegment(action->mTrackID, action->mTime);
+						mState->mAction = createAction<None>();
 
-					mCurveCache.clear();
+						mCurveCache.clear();
 
-					ImGui::CloseCurrentPopup();
+						ImGui::CloseCurrentPopup();
 
+					}
+
+					if (ImGui::Button("Cancel"))
+					{
+						ImGui::CloseCurrentPopup();
+						mState->mAction = createAction<None>();
+					}
+
+					ImGui::EndPopup();
 				}
-
-				if (ImGui::Button("Cancel"))
+				else
 				{
-					ImGui::CloseCurrentPopup();
+					// click outside popup so cancel action
 					mState->mAction = createAction<None>();
 				}
-
-				ImGui::EndPopup();
-			}
-			else
-			{
-				// click outside popup so cancel action
-				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -1032,7 +1046,7 @@ namespace nap
 				action->mSegmentID,
 				action->mCurveIndex, 
 				action->mPos,
-				ImGui::GetWindowPos());
+				action->mWindowPos);
 		}
 
 		// handle insert segment popup
@@ -1199,13 +1213,14 @@ namespace nap
 
 	void SequenceCurveTrackView::handleDeleteSegmentPopup()
 	{
-		if (mState->mAction->isAction<OpenEditSegmentPopup>())
+		if (mState->mAction->isAction<OpenEditCurveSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			auto* action = mState->mAction->getDerived<OpenEditSegmentPopup>();
-			mState->mAction = createAction<EditingSegment>(
+			auto* action = mState->mAction->getDerived<OpenEditCurveSegmentPopup>();
+
+			mState->mAction = createAction<EditingCurveSegment>(
 				action->mTrackID,
 				action->mSegmentID,
 				action->mSegmentType
@@ -1213,11 +1228,11 @@ namespace nap
 		}
 
 		// handle delete segment popup
-		if (mState->mAction->isAction<EditingSegment>())
+		if (mState->mAction->isAction<EditingCurveSegment>())
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
-				auto* action = mState->mAction->getDerived<EditingSegment>();
+				auto* action = mState->mAction->getDerived<EditingCurveSegment>();
 
 				if (ImGui::Button("Delete"))
 				{

@@ -256,21 +256,9 @@ namespace nap
 			}
 
 			// handle popups
-			for (int i = 0; i < sequence.mTracks.size(); i++)
+			for (auto& it : mViews)
 			{
-				auto track_type = sequence.mTracks[i].get()->get_type();
-				auto view_map = getTrackViewTypeViewMap();
-				auto it = view_map.find(track_type);
-				assert(it != view_map.end()); // no view type for track
-				if (it != view_map.end())
-				{
-					auto it2 = mViews.find(it->second);
-					assert(it2 != mViews.end()); // no view class created for this view type
-					if (it2 != mViews.end())
-					{
-						it2->second->handlePopups(mState);
-					}
-				}
+				it.second->handlePopups(mState);
 			}
 
 			//

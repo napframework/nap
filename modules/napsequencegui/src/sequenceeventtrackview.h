@@ -6,58 +6,6 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIActions
-	{
-		class OpenInsertEventSegmentPopup : public Action
-		{ 
-			RTTI_ENABLE(Action) 
-		public:
-			OpenInsertEventSegmentPopup(std::string trackID, double time)
-				: mTrackID(trackID), mTime(time) {}
-
-			std::string mTrackID;
-			double mTime;
-		};
-
-		class InsertingEventSegment : public Action
-		{
-			RTTI_ENABLE(Action)
-		public:
-			InsertingEventSegment(std::string trackID, double time)
-				: mTrackID(trackID), mTime(time) {}
-
-			std::string mTrackID;
-			double mTime;
-			std::string mMessage = "hello world";
-		};
-
-		class OpenEditEventSegmentPopup : public Action 
-		{ 
-			RTTI_ENABLE(Action) 
-		public:
-			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, std::string message)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mMessage(message) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			ImVec2 mWindowPos;
-			std::string mMessage;
-		};
-
-		class EditingEventSegment : public Action 
-		{
-			RTTI_ENABLE(Action)
-		public:
-			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos) {}
-
-			std::string mTrackID;
-			std::string mSegmentID;
-			std::string mMessage = "hello world";
-			ImVec2 mWindowPos;
-		};
-	}
-
 	class SequenceEventTrackView : public SequenceTrackView
 	{
 	public:
@@ -105,4 +53,56 @@ namespace nap
 
 		void handleDeleteSegmentPopup();
 	};
+
+	namespace SequenceGUIActions
+	{
+		class OpenInsertEventSegmentPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenInsertEventSegmentPopup(std::string trackID, double time)
+				: mTrackID(trackID), mTime(time) {}
+
+			std::string mTrackID;
+			double mTime;
+		};
+
+		class InsertingEventSegment : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingEventSegment(std::string trackID, double time)
+				: mTrackID(trackID), mTime(time) {}
+
+			std::string mTrackID;
+			double mTime;
+			std::string mMessage = "hello world";
+		};
+
+		class OpenEditEventSegmentPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, std::string message)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mMessage(message) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			ImVec2 mWindowPos;
+			std::string mMessage;
+		};
+
+		class EditingEventSegment : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			std::string mMessage = "hello world";
+			ImVec2 mWindowPos;
+		};
+	}
 }
