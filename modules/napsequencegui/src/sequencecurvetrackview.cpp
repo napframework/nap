@@ -753,8 +753,8 @@ namespace nap
 	{
 		// segment handler
 		if (mState->mIsWindowFocused &&
-			!mState->mAction->isAction<DraggingSegment>() &&
-				ImGui::IsMouseHoveringRect(
+			(!mState->mAction->isAction<DraggingSegment>() && !mState->mAction->isAction<DraggingSegmentValue>() && !mState->mAction->isAction<HoveringSegmentValue>())
+			&& ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
 					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
 		{
