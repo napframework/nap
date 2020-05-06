@@ -39,6 +39,8 @@ namespace nap
 		 */
 		void deleteTrack(const std::string& deleteTrackID);
 
+		virtual void insertTrack(rttr::type type) {}
+
 		/**
 		 * generic insert segment method
 		 * type of track will be deduced from track id and a new segment of the right type will be inserted

@@ -39,12 +39,16 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState);
 
+		SequenceController* getControllerWithTrackType(rttr::type type);
+
 		template<typename T>
 		T& getController() 
 		{
 			assert(mControllers.find(RTTI_OF(T)) != mControllers.end()); // type not found
 			return static_cast<T&>(*mControllers[RTTI_OF(T)].get());
 		}
+
+		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player

@@ -1,10 +1,13 @@
 #include "sequencecontrollerevent.h"
 #include "sequenceutils.h"
 #include "sequencetrackevent.h"
+#include "sequenceeditor.h"
 
 namespace nap
 {
 	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerEvent), [](SequencePlayer& player)->std::unique_ptr<SequenceController> { return std::make_unique<SequenceControllerEvent>(player); });
+
+	static bool sRegisterControllerType = SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent));
 
 	void SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float amount)
 	{
@@ -130,5 +133,11 @@ namespace nap
 				}
 			}
 		}
+	}
+
+
+	void SequenceControllerEvent::insertTrack(rttr::type type)
+	{
+		addNewEventTrack();
 	}
 }

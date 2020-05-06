@@ -35,4 +35,42 @@ namespace nap
 
 		return true;
 	}
+
+	std::unordered_map<rttr::type, rttr::type>& getControllerTrackTypeMap()
+	{
+		static std::unordered_map<rttr::type, rttr::type> map;
+		return map;
+	}
+
+
+	bool SequenceEditor::registerControllerForTrackType(rttr::type trackType, rttr::type controllerType)
+	{
+		auto& map = getControllerTrackTypeMap();
+		assert(map.find(controllerType) == map.end()); // duplicate entry
+		if (map.find(controllerType) == map.end())
+		{
+			map.emplace(trackType, controllerType);
+			return true;
+		}
+
+		return false;
+	}
+
+
+	SequenceController* SequenceEditor::getControllerWithTrackType(rttr::type type)
+	{
+		auto& map = getControllerTrackTypeMap();
+		if (map.find(type) != map.end())
+		{
+			auto it = getControllerTrackTypeMap().find(type);
+
+			if (mControllers.find(it->second) != mControllers.end())
+			{
+				return mControllers[it->second].get();
+			}
+		}
+		
+		return nullptr;
+	}
+
 }

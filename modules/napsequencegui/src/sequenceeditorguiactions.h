@@ -185,9 +185,15 @@ namespace nap
 			bool mWasPlaying; bool mWasPaused;
 		};
 
-		class OpenInsertTrackPopup : public Action { RTTI_ENABLE(Action) };
+		class OpenInsertTrackPopup : public Action 
+		{ 
+			RTTI_ENABLE(Action) 
+		};
 
-		class InsertingTrack : public Action { RTTI_ENABLE(Action) };
+		class InsertingTrackPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		};
 
 		class LoadPopup : public Action
 		{

@@ -29,6 +29,8 @@ namespace nap
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 
 		void addNewEventTrack();
+
+		virtual void insertTrack(rttr::type type) override;
 	private:
 	};
 }

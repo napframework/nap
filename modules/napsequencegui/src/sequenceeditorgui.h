@@ -101,6 +101,11 @@ namespace nap
 		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
 
 		/**
+		 * Handles insertion of track popup
+		 */
+		void handleInsertTrackPopup();
+
+		/**
 		 * handleLoadPopup
 		 * handles load popup
 		 */

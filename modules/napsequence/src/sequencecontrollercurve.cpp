@@ -1,10 +1,20 @@
 #include "sequencecontrollercurve.h"
 #include "sequenceutils.h"
 #include "sequencetrackcurve.h"
+#include "sequenceeditor.h"
 
 namespace nap
 {
 	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player)->std::unique_ptr<SequenceController> { return std::make_unique<SequenceControllerCurve>(player); });
+
+	static bool sRegisterControllerTypes[4]
+	{
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
+	};
+
 
 	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> SequenceControllerCurve::sUpdateSegmentFunctionMap
 	{
@@ -756,6 +766,19 @@ namespace nap
 		}
 
 		curveSegment.mCurves[curveIndex]->invalidate();
+	}
+
+
+	void SequenceControllerCurve::insertTrack(rttr::type type)
+	{
+		if( type == RTTI_OF(SequenceTrackCurveFloat))
+			addNewCurveTrack<float>();
+		if (type == RTTI_OF(SequenceTrackCurveVec2))
+			addNewCurveTrack<glm::vec2>();
+		if (type == RTTI_OF(SequenceTrackCurveVec3))
+			addNewCurveTrack<glm::vec3>();
+		if (type == RTTI_OF(SequenceTrackCurveVec4))
+			addNewCurveTrack<glm::vec4>();
 	}
 
 

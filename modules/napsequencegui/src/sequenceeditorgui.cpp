@@ -250,8 +250,7 @@ namespace nap
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
-				//ImGui::OpenPopup("Insert New Track");
-				//mState.mAction = createAction<openins)
+				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
 			// handle popups
@@ -259,6 +258,9 @@ namespace nap
 			{
 				it.second->handlePopups(mState);
 			}
+
+			//
+			handleInsertTrackPopup();
 
 			//
 			handleLoadPopup();
@@ -725,6 +727,49 @@ namespace nap
 				}
 
 				ImGui::EndPopup();
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleInsertTrackPopup()
+	{
+		if (mState.mAction->isAction<OpenInsertTrackPopup>())
+		{
+			mState.mAction = createAction<InsertingTrackPopup>();
+			ImGui::OpenPopup("Insert New Track");
+		}
+
+		if (mState.mAction->isAction<InsertingTrackPopup>())
+		{
+			if (ImGui::BeginPopup("Insert New Track"))
+			{
+				for (auto& it : getTrackViewTypeViewMap())
+				{
+					const auto& name = it.first.get_name().to_string();
+					if (ImGui::Button(name.c_str()))
+					{
+						auto* controller = mEditor.getControllerWithTrackType(it.first);
+						assert(controller != nullptr);
+						if (controller != nullptr)
+						{
+							controller->insertTrack(it.first);
+						}
+					}
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// clicked outside so exit popup
+				mState.mAction = createAction<None>();
 			}
 		}
 	}

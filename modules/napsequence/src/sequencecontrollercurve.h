@@ -113,6 +113,8 @@ namespace nap
 		virtual void insertSegment(const std::string& trackID, double time) override;
 
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
+	
+		virtual void insertTrack(rttr::type type) override;
 	private:
 		/**
 		 * updateCurveSegments
