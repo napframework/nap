@@ -52,7 +52,7 @@ namespace nap
 		}
 
 		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID);
-
+		
 		return true;
 	}
 
@@ -75,6 +75,8 @@ namespace nap
 		{
 			mViews.emplace(factory.first, factory.second(*this));
 		}
+
+		mState.mAction = createAction<None>();
 	}
 
 
@@ -146,8 +148,7 @@ namespace nap
 			if (ImGui::Button("Save As"))
 			{
 				ImGui::OpenPopup("Save As");
-				mState.mAction.currentAction = SequenceGUIActions::SaveAsPopup();
-				mState.mAction.currentActionData = std::make_unique<SequenceGUISaveShowData>();
+				mState.mAction = createAction<SaveAsPopup>();
 			}
 
 			ImGui::SameLine();
@@ -155,8 +156,7 @@ namespace nap
 			if (ImGui::Button("Load"))
 			{
 				ImGui::OpenPopup("Load");
-				mState.mAction.currentAction = SequenceGUIActions::LoadPopup();
-				mState.mAction.currentActionData = std::make_unique<SequenceGUILoadShowData>();
+				mState.mAction = createAction<LoadPopup>();
 			}
 
 			ImGui::SameLine();
@@ -251,8 +251,26 @@ namespace nap
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
-				ImGui::OpenPopup("Insert New Track");
-				mState.mAction.currentAction = SequenceGUIActions::OpenInsertTrackPopup();
+				//ImGui::OpenPopup("Insert New Track");
+				//mState.mAction = createAction<openins)
+			}
+
+			// handle popups
+			for (int i = 0; i < sequence.mTracks.size(); i++)
+			{
+				auto track_type = sequence.mTracks[i].get()->get_type();
+				auto view_map = getTrackViewTypeViewMap();
+				auto it = view_map.find(track_type);
+				assert(it != view_map.end()); // no view type for track
+				if (it != view_map.end())
+				{
+					auto it2 = mViews.find(it->second);
+					assert(it2 != mViews.end()); // no view class created for this view type
+					if (it2 != mViews.end())
+					{
+						it2->second->handlePopups(mState);
+					}
+				}
 			}
 
 			//
@@ -400,8 +418,7 @@ namespace nap
 
 			if (mState.mIsWindowFocused)
 			{
-				if (mState.mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>() ||
-					mState.mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringPlayerTime>())
+				if (mState.mAction->isAction<None>()|| mState.mAction->isAction<HoveringPlayerTime>())
 				{
 					if (ImGui::IsMouseHoveringRect(startPos, 
 					{
@@ -409,7 +426,7 @@ namespace nap
 						startPos.y + timelineControllerHeight
 					}))
 					{
-						mState.mAction.currentAction = SequenceGUIActions::HoveringPlayerTime();
+						mState.mAction = createAction<HoveringPlayerTime>();
 
 						if (ImGui::IsMouseDown(0))
 						{
@@ -417,12 +434,7 @@ namespace nap
 							bool playerWasPlaying = player.getIsPlaying();
 							bool playerWasPaused = player.getIsPaused();
 
-							mState.mAction.currentAction = SequenceGUIActions::DraggingPlayerTime();
-							mState.mAction.currentActionData = std::make_unique<SequenceGUIDragPlayerData>(
-								playerWasPlaying,
-								playerWasPaused
-								);
-
+							mState.mAction = createAction<DraggingPlayerTime>(playerWasPlaying, playerWasPaused);
 							if (playerWasPlaying)
 							{
 								player.setIsPaused(true);
@@ -436,9 +448,9 @@ namespace nap
 					else
 					{
 						
-						mState.mAction.currentAction = SequenceGUIActions::None();
+						mState.mAction = createAction<None>();
 					}
-				}else if (mState.mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingPlayerTime>())
+				}else if (mState.mAction->isAction<DraggingPlayerTime>())
 				{
 					if (ImGui::IsMouseDown(0))
 					{
@@ -449,13 +461,14 @@ namespace nap
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
-							const SequenceGUIDragPlayerData* data = dynamic_cast<SequenceGUIDragPlayerData*>( mState.mAction.currentActionData.get() );
-							if (data->mPlayerWasPlaying && !data->mPlayerWasPaused)
+							const auto* dragAction = mState.mAction->getDerived<DraggingPlayerTime>();
+							assert(dragAction != nullptr); 
+							if (dragAction->mWasPlaying && !dragAction->mWasPaused)
 							{
 								player.setIsPlaying(true);
 							}
 
-							mState.mAction.currentAction = SequenceGUIActions::None();
+							mState.mAction = createAction<None>();
 						}
 					}
 				}
@@ -507,17 +520,16 @@ namespace nap
 
 	void SequenceEditorGUIView::handleLoadPopup()
 	{
-		if (mState.mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::LoadPopup>())
+		if (mState.mAction->isAction<LoadPopup>())
 		{
+			auto* loadAction = mState.mAction->getDerived<LoadPopup>();
+
 			//
 			if (ImGui::BeginPopupModal(
 				"Load",
 				nullptr,
 				ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				//
-				SequenceGUILoadShowData* data = dynamic_cast<SequenceGUILoadShowData*>(mState.mAction.currentActionData.get());
-
 				//
 				const std::string showDir = "sequences/";
 
@@ -542,7 +554,7 @@ namespace nap
 
 				int index = 0;
 				SequenceTrackView::Combo("Sequences",
-					&data->mSelectedShow,
+					&loadAction->mSelectedShowIndex,
 					shows);
 					
 				utility::ErrorState errorState;
@@ -550,34 +562,32 @@ namespace nap
 				{
 					
 					if (mEditor.mSequencePlayer->load(
-						showFiles[data->mSelectedShow], errorState))
+						showFiles[loadAction->mSelectedShowIndex], errorState))
 					{
-						mState.mAction.currentAction = SequenceGUIActions::None();
-						mState.mAction.currentActionData = nullptr;
+						mState.mAction = createAction<None>();
 						mState.mDirty = true;
 						ImGui::CloseCurrentPopup();
 					}
 					else
 					{
 						ImGui::OpenPopup("Error");
-						data->mErrorString = errorState.toString();
+						loadAction->mErrorString = errorState.toString();
 					}
 				}
 
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel"))
 				{
-					mState.mAction.currentAction = SequenceGUIActions::None();
-					mState.mAction.currentActionData = nullptr;
+					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
-					ImGui::Text(data->mErrorString.c_str());
+					ImGui::Text(loadAction->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
-						mState.mAction.currentAction = SequenceGUIActions::LoadPopup();
+						mState.mAction = createAction<LoadPopup>();
 						ImGui::CloseCurrentPopup();
 					}
 
@@ -592,8 +602,10 @@ namespace nap
 
 	void SequenceEditorGUIView::handleSaveAsPopup()
 	{
-		if (mState.mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::SaveAsPopup>())
+		if (mState.mAction->isAction<SaveAsPopup>())
 		{
+			auto* saveAsAction = mState.mAction->getDerived<SaveAsPopup>();
+
 			// save as popup
 			if (ImGui::BeginPopupModal(
 				"Save As",
@@ -601,9 +613,6 @@ namespace nap
 				ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				//
-				SequenceGUISaveShowData* data =
-					dynamic_cast<SequenceGUISaveShowData*>(mState.mAction.currentActionData.get());
-
 				const std::string showDir = "sequences";
 
 				// Find all files in the preset directory
@@ -625,10 +634,10 @@ namespace nap
 				shows.push_back("<New...>");
 
 				if (SequenceTrackView::Combo("Shows",
-					&data->mSelectedShow,
+					&saveAsAction->mSelectedShowIndex,
 					shows))
 				{
-					if (data->mSelectedShow == shows.size() - 1)
+					if (saveAsAction->mSelectedShowIndex == shows.size() - 1)
 					{
 						ImGui::OpenPopup("New");
 					}
@@ -671,11 +680,11 @@ namespace nap
 					
 					if (mEditor.mSequencePlayer->save(showDir + "/" + newShowFileName, errorState))
 					{
-						data->mSelectedShow = shows.size() - 2;
+						saveAsAction->mSelectedShowIndex = shows.size() - 2;
 					}
 					else
 					{
-						data->mErrorString = errorState.toString();
+						saveAsAction->mErrorString = errorState.toString();
 						ImGui::OpenPopup("Error");
 					}
 				}
@@ -684,17 +693,17 @@ namespace nap
 				{
 					utility::ErrorState errorState;
 					ImGui::Text(("Are you sure you want to overwrite " + 
-						shows[data->mSelectedShow] + " ?").c_str());
+						shows[saveAsAction->mSelectedShowIndex] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
 						if (mEditor.mSequencePlayer->save(
-							shows[data->mSelectedShow],
+							shows[saveAsAction->mSelectedShowIndex],
 							errorState))
 						{
 						}
 						else
 						{
-							data->mErrorString = errorState.toString();
+							saveAsAction->mErrorString = errorState.toString();
 							ImGui::OpenPopup("Error");
 						}
 
@@ -711,7 +720,7 @@ namespace nap
 
 				if (ImGui::BeginPopupModal("Error"))
 				{
-					ImGui::Text(data->mErrorString.c_str());
+					ImGui::Text(saveAsAction->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
 						ImGui::CloseCurrentPopup();
@@ -724,8 +733,7 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					mState.mAction.currentAction = SequenceGUIActions::None();
-					mState.mAction.currentActionData = nullptr;
+					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 

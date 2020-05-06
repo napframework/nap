@@ -82,6 +82,7 @@ namespace nap
 		handleCurvePointActionPopup();
 	}
 
+	using namespace SequenceGUIActions;
 
 	template<typename T>
 	void SequenceCurveTrackView::drawCurveTrack(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID)
@@ -256,7 +257,7 @@ namespace nap
 			if (mState->mIsWindowFocused)
 			{
 				// handle insertion of segment
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>())
+				if (mState->mAction->isAction<None>())
 				{
 					if (ImGui::IsMouseHoveringRect(
 						trackTopLeft, // top left position
@@ -281,23 +282,38 @@ namespace nap
 							double time = mState->mMouseCursorTime;
 
 							//
-							mState->mAction.currentAction = SequenceGUIActions::OpenInsertSegmentPopup();
-							mState->mAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, track.get_type());
+							mState->mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
 						}
 					}
 				}
 
 				// draw line in track while in inserting segment popup
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertSegmentPopup>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::InsertingSegment>())
+				if (mState->mAction->isAction<OpenInsertSegmentPopup>())
 				{
-					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState->mAction.currentActionData.get());
-					if (data->mID == track.mID)
+					auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+
+					if (action->mTrackID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-							{ trackTopLeft.x + (float)data->mTime * mState->mStepSize, trackTopLeft.y }, // top left
-							{ trackTopLeft.x + (float)data->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+							{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+							guicolors::lightGrey, // color
+							1.0f); // thickness
+					}
+				}
+
+				// draw line in track while in inserting segment popup
+				if (mState->mAction->isAction<InsertingSegment>())
+				{
+					auto* action = mState->mAction->getDerived<InsertingSegment>();
+
+					if (action->mTrackID == track.mID)
+					{
+						// position of insertion in track
+						drawList->AddLine(
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
@@ -418,9 +434,9 @@ namespace nap
 				bool hovered = false;
 				if (mState->mIsWindowFocused)
 				{
-					if ((mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>() ||
-						mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringControlPoint>() ||
-						mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringCurve>())
+					if ((mState->mAction->isAction<None>() ||
+						mState->mAction->isAction<HoveringControlPoint>() ||
+						mState->mAction->isAction<HoveringCurve>())
 						&& ImGui::IsMouseHoveringRect(
 							{ circlePoint.x - 5, circlePoint.y - 5 },
 							{ circlePoint.x + 5, circlePoint.y + 5 }))
@@ -432,8 +448,11 @@ namespace nap
 				if (hovered)
 				{
 					// if we are hovering this point, store ID
-					mState->mAction.currentAction = SequenceGUIActions::HoveringControlPoint();
-					mState->mAction.currentObjectID = pointID;
+					mState->mAction = createAction<HoveringControlPoint>(
+						track.mID,
+						segment.mID,
+						i,
+						v);
 
 					//
 					showValue<T>(
@@ -446,76 +465,75 @@ namespace nap
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
 					{
-						mState->mAction.currentAction = SequenceGUIActions::DraggingControlPoint();
-						mState->mAction.currentActionData = std::make_unique<SequenceGUIControlPointData>(
+						mState->mAction = createAction<DraggingControlPoint>(
 							track.mID,
 							segment.mID,
 							i,
 							v);
-						mState->mAction.currentObjectID = segment.mID;
 					}
 					// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mState->mAction.currentAction = SequenceGUIActions::OpenCurvePointActionPopup();
-						mState->mAction.currentActionData = std::make_unique<SequenceGUIControlPointActionData>(
+						mState->mAction = createAction<OpenCurvePointActionPopup>(
 							track.mID,
 							segment.mID,
 							i,
 							v);
-						mState->mAction.currentObjectID = segment.mID;
 					}
 				}
 				else
 				{
 					// otherwise, if we where hovering but not anymore, stop hovering
-					if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringControlPoint>() &&
-						pointID == mState->mAction.currentObjectID)
+					if (mState->mAction->isAction<HoveringControlPoint>())
 					{
-						mState->mAction.currentAction = SequenceGUIActions::None();
+						auto* action = mState->mAction->getDerived<HoveringControlPoint>();
+						if (action->mControlPointIndex == i && track.mID == action->mTrackID && segment.mID == action->mSegmentID && v == action->mCurveIndex)
+						{
+							mState->mAction = createAction<None>();
+						}
 					}
 				}
 
 				if (mState->mIsWindowFocused)
 				{
 					// handle dragging of control point
-					if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingControlPoint>() &&
-						segment.mID == mState->mAction.currentObjectID)
+					if (mState->mAction->isAction<DraggingControlPoint>())
 					{
-						const SequenceGUIControlPointData* data
-							= dynamic_cast<SequenceGUIControlPointData*>(mState->mAction.currentActionData.get());
+						auto* action = mState->mAction->getDerived<DraggingControlPoint>();
 
-						if (data->mControlIndex == i && data->mCurveIndex == v)
+						if (action->mSegmentID == segment.mID)
 						{
-							float timeAdjust = mState->mMouseDelta.x / segmentWidth;
-							float valueAdjust = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
-
-							hovered = true;
-
-							showValue<T>(
-								track,
-								segment,
-								curvePoint.mPos.mTime,
-								curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
-								v);
-
-
-							SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
-
-							curveController.changeCurvePoint(
-								data->mTrackID,
-								data->mSegmentID,
-								data->mControlIndex,
-								data->mCurveIndex,
-								timeAdjust,
-								valueAdjust);
-
-							mCurveCache.clear();
-
-							if (ImGui::IsMouseReleased(0))
+							if (action->mControlPointIndex == i && action->mCurveIndex == v)
 							{
-								mState->mAction.currentAction = SequenceGUIActions::None();
-								mState->mAction.currentActionData = nullptr;
+								float timeAdjust = mState->mMouseDelta.x / segmentWidth;
+								float valueAdjust = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
+
+								hovered = true;
+
+								showValue<T>(
+									track,
+									segment,
+									curvePoint.mPos.mTime,
+									curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
+									v);
+
+
+								SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+
+								curveController.changeCurvePoint(
+									action->mTrackID,
+									action->mSegmentID,
+									action->mControlPointIndex,
+									action->mCurveIndex,
+									timeAdjust,
+									valueAdjust);
+
+								mCurveCache.clear();
+
+								if (ImGui::IsMouseReleased(0))
+								{
+									mState->mAction = createAction<None>();
+								}
 							}
 						}
 					}
@@ -628,17 +646,16 @@ namespace nap
 			if (mState->mIsWindowFocused)
 			{
 				// check if we are hovering this value
-				if ((mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegmentValue>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegment>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringCurve>())
+				if ((mState->mAction->isAction<None>() ||
+					mState->mAction->isAction<HoveringSegmentValue>() ||
+					mState->mAction->isAction<HoveringSegment>() ||
+					mState->mAction->isAction<HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect(
 						{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
 						{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
 				{
 					hovered = true;
-					mState->mAction.currentAction = SequenceGUIActions::HoveringSegmentValue();
-					mState->mAction.currentActionData = std::make_unique<SequenceGUIDragSegmentData>(
+					mState->mAction = createAction<HoveringSegmentValue>(
 						track.mID,
 						segment.mID,
 						segmentType,
@@ -646,8 +663,11 @@ namespace nap
 
 					if (ImGui::IsMouseDown(0))
 					{
-						mState->mAction.currentAction = SequenceGUIActions::DraggingSegmentValue();
-						mState->mAction.currentObjectID = segment.mID;
+						mState->mAction = createAction<DraggingSegmentValue>(
+							track.mID,
+							segment.mID,
+							segmentType,
+							v);
 					}
 
 					showValue<T>(
@@ -657,54 +677,55 @@ namespace nap
 						segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 						v);
 				}
-				else if (!mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingSegmentValue>())
+				else if (!mState->mAction->isAction<DraggingSegmentValue>())
 				{
-					if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegmentValue>())
+					if (mState->mAction->isAction<HoveringSegmentValue>())
 					{
-						const SequenceGUIDragSegmentData* data = dynamic_cast<SequenceGUIDragSegmentData*>(mState->mAction.currentActionData.get());
+						auto* action = mState->mAction->getDerived<HoveringSegmentValue>();
 
-						if (data->mType == segmentType &&
-							data->mSegmentID == segment.mID &&
-							data->mCurveIndex == v)
+						if (action->mType == segmentType &&
+							action->mSegmentID == segment.mID &&
+							action->mCurveIndex == v)
 						{
-							mState->mAction.currentAction = SequenceGUIActions::None();
+							mState->mAction = createAction<None>();
 						}
 					}
 				}
 
 				// handle dragging segment value
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingSegmentValue>() &&
-					mState->mAction.currentObjectID == segment.mID)
+				if (mState->mAction->isAction<DraggingSegmentValue>())
 				{
-					const SequenceGUIDragSegmentData* data = dynamic_cast<SequenceGUIDragSegmentData*>(mState->mAction.currentActionData.get());
-
-					if (data->mType == segmentType && data->mCurveIndex == v)
+					auto* action = mState->mAction->getDerived<DraggingSegmentValue>();
+					if (action->mSegmentID == segment.mID)
 					{
-						hovered = true;
-						showValue<T>(
-							track,
-							segment,
-							segmentType == SequenceEditorTypes::BEGIN ? 0.0f : 1.0f,
-							segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
-							v);
-
-						if (ImGui::IsMouseReleased(0))
+						if (action->mType == segmentType && action->mCurveIndex == v)
 						{
-							mState->mAction.currentAction = SequenceGUIActions::None();
-						}
-						else
-						{
-							float dragAmount = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
+							hovered = true;
+							showValue<T>(
+								track,
+								segment,
+								segmentType == SequenceEditorTypes::BEGIN ? 0.0f : 1.0f,
+								segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+								v);
 
-							SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+							if (ImGui::IsMouseReleased(0))
+							{
+								mState->mAction = createAction<None>();
+							}
+							else
+							{
+								float dragAmount = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
 
-							curveController.changeCurveSegmentValue(
-								track.mID,
-								segment.mID,
-								dragAmount,
-								v,
-								segmentType);
-							mCurveCache.clear();
+								SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+
+								curveController.changeCurveSegmentValue(
+									track.mID,
+									segment.mID,
+									dragAmount,
+									v,
+									segmentType);
+								mCurveCache.clear();
+							}
 						}
 					}
 				}
@@ -727,76 +748,90 @@ namespace nap
 	{
 		// segment handler
 		if (mState->mIsWindowFocused &&
-			(mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertSegmentPopup>() ||
-			(mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegment>() && mState->mAction.currentObjectID == segment.mID)) &&
-			ImGui::IsMouseHoveringRect(
-				{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
-				{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
+			(mState->mAction->isAction<OpenInsertSegmentPopup>() ||
+				(mState->mAction->isAction<HoveringSegment>())) &&
+				ImGui::IsMouseHoveringRect(
+					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
+					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
 		{
-			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
-
-					   // we are hovering this segment with the mouse
-			mState->mAction.currentAction = SequenceGUIActions::HoveringSegment();
-			mState->mAction.currentObjectID = segment.mID;
-
-			ImGui::BeginTooltip();
-			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-			ImGui::EndTooltip();
-
-			// left mouse is start dragging
-			if (ImGui::IsMouseDown(0))
+			bool isThisSegment = false;
+			if (mState->mAction->isAction<HoveringSegment>())
 			{
-				mState->mAction.currentAction = SequenceGUIActions::DraggingSegment();
-				mState->mAction.currentObjectID = segment.mID;
+				isThisSegment = mState->mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID;
 			}
-			// right mouse in deletion popup
-			else if (ImGui::IsMouseDown(1))
+			else
 			{
-				std::unique_ptr<SequenceGUIEditSegmentData> editSegmentData = std::make_unique<SequenceGUIEditSegmentData>(
-					track.mID,
-					segment.mID,
-					segment.get_type());
-				mState->mAction.currentAction = SequenceGUIActions::OpenEditSegmentPopup();
-				mState->mAction.currentObjectID = segment.mID;
-				mState->mAction.currentActionData = std::move(editSegmentData);
+				isThisSegment = true;
 			}
+
+			if (isThisSegment)
+			{
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					3.0f); // thickness
+
+				// we are hovering this segment with the mouse
+				mState->mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+
+				ImGui::BeginTooltip();
+				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+				ImGui::EndTooltip();
+
+				// left mouse is start dragging
+				if (ImGui::IsMouseDown(0))
+				{
+					mState->mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+				}
+				// right mouse in deletion popup
+				else if (ImGui::IsMouseDown(1))
+				{
+					mState->mAction = createAction <OpenEditSegmentPopup>(
+						track.mID,
+						segment.mID,
+						segment.get_type()
+					);
+				}
+			}
+			
 		}
 		else if (
-			mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingSegment>() &&
-			mState->mAction.currentObjectID == segment.mID)
+			mState->mAction->isAction<DraggingSegment>())
 		{
-			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
-
-			ImGui::BeginTooltip();
-			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-			ImGui::EndTooltip();
-
-			// do we have the mouse still held down ? drag the segment
-			if (ImGui::IsMouseDown(0))
+			auto* action = mState->mAction->getDerived<DraggingSegment>();
+			if (action->mSegmentID == segment.mID)
 			{
-				float amount = mState->mMouseDelta.x / mState->mStepSize;
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					3.0f); // thickness
 
-				auto& editor = getEditor();
-				SequenceControllerCurve& curveController = editor.getController<SequenceControllerCurve>();
-				curveController.segmentDurationChange(track.mID, segment.mID, amount);
-				
-				mCurveCache.clear();
+				ImGui::BeginTooltip();
+				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+				ImGui::EndTooltip();
+
+				// do we have the mouse still held down ? drag the segment
+				if (ImGui::IsMouseDown(0))
+				{
+					float amount = mState->mMouseDelta.x / mState->mStepSize;
+
+					auto& editor = getEditor();
+					SequenceControllerCurve& curveController = editor.getController<SequenceControllerCurve>();
+					curveController.segmentDurationChange(track.mID, segment.mID, amount);
+
+					mCurveCache.clear();
+				}
+				// otherwise... release!
+				else if (ImGui::IsMouseReleased(0))
+				{
+					mState->mAction = createAction<None>();
+				}
 			}
-			// otherwise... release!
-			else if (ImGui::IsMouseReleased(0))
-			{
-				mState->mAction.currentAction = SequenceGUIActions::None();
-			}
+
 		}
 		else
 		{
@@ -808,10 +843,10 @@ namespace nap
 				1.0f); // thickness
 
 					   // release if we are not hovering this segment
-			if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegment>()
-				&& mState->mAction.currentObjectID == segment.mID)
+			if (mState->mAction->isAction<SequenceGUIActions::HoveringSegment>()
+				&& mState->mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)
 			{
-				mState->mAction.currentAction = SequenceGUIActions::None();
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -851,35 +886,31 @@ namespace nap
 			if (mState->mIsWindowFocused)
 			{
 				// check if hovered
-				if ((mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringCurve>())
-					&& ImGui::IsMouseHoveringRect(
-				{ tanPoint.x - 5, tanPoint.y - 5 },
-				{ tanPoint.x + 5, tanPoint.y + 5 }))
+				if ((mState->mAction->isAction<None>() || mState->mAction->isAction<HoveringCurve>())
+					&& ImGui::IsMouseHoveringRect({ tanPoint.x - 5, tanPoint.y - 5 }, { tanPoint.x + 5, tanPoint.y + 5 }))
 				{
-					mState->mAction.currentAction = SequenceGUIActions::HoveringTanPoint();
-					mState->mAction.currentObjectID = tanStream.str();
+					mState->mAction = createAction<HoveringTanPoint>(tanStream.str());
 					tanPointHovered = true;
 				}
 				else if (
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringTanPoint>())
+					mState->mAction->isAction<HoveringTanPoint>())
 				{
+					auto* action = mState->mAction->getDerived<HoveringTanPoint>();
+
 					// if we hare already hovering, check if its this point
-					if (mState->mAction.currentObjectID == tanStream.str())
+					if (action->mTanPointID == tanStream.str())
 					{
 						if (ImGui::IsMouseHoveringRect(
-						{ tanPoint.x - 5, tanPoint.y - 5 },
-						{ tanPoint.x + 5, tanPoint.y + 5 }))
+							{ tanPoint.x - 5, tanPoint.y - 5 },
+							{ tanPoint.x + 5, tanPoint.y + 5 }))
 						{
 							// still hovering
 							tanPointHovered = true;
 
 							// start dragging if mouse down
-							if (ImGui::IsMouseDown(0) && mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringTanPoint>())
+							if (ImGui::IsMouseDown(0))
 							{
-								mState->mAction.currentAction = SequenceGUIActions::DraggingTanPoint();
-
-								mState->mAction.currentActionData = std::make_unique<SequenceGUIDragTanPointData>(
+								mState->mAction = createAction<DraggingTanPoint>(
 									track.mID,
 									segment.mID,
 									controlPointIndex,
@@ -890,26 +921,24 @@ namespace nap
 						else
 						{
 							// otherwise, release!
-							mState->mAction.currentAction = SequenceGUIActions::None();
+							mState->mAction = createAction<None>();
 						}
 					}
 				}
 
 				// handle dragging of tan point
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingTanPoint>())
+				if (mState->mAction->isAction<DraggingTanPoint>())
 				{
-					const SequenceGUIDragTanPointData* data =
-						dynamic_cast<SequenceGUIDragTanPointData*>(mState->mAction.currentActionData.get());
+					auto* action = mState->mAction->getDerived<DraggingTanPoint>();
 
-					if (data->mSegmentID == segment.mID &&
-						data->mControlPointIndex == controlPointIndex &&
-						data->mType == type &&
-						data->mCurveIndex == curveIndex)
+					if (action->mSegmentID == segment.mID &&
+						action->mControlPointIndex == controlPointIndex &&
+						action->mType == type &&
+						action->mCurveIndex == curveIndex)
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
-							mState->mAction.currentAction = SequenceGUIActions::None();
-							mState->mAction.currentActionData = nullptr;
+							mState->mAction = createAction<None>();
 						}
 						else
 						{
@@ -944,27 +973,28 @@ namespace nap
 
 	void SequenceCurveTrackView::handleInsertSegmentPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertSegmentPopup>())
+		if (mState->mAction->isAction<OpenInsertSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Insert Segment");
 
-			mState->mAction.currentAction = SequenceGUIActions::InsertingSegment();
+			auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+
+			mState->mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
 		}
 
 		// handle insert segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::InsertingSegment>())
+		if (mState->mAction->isAction<InsertingSegment>())
 		{
 			if (ImGui::BeginPopup("Insert Segment"))
 			{
 				if (ImGui::Button("Insert"))
 				{
-					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState->mAction.currentActionData.get());
+					auto* action = mState->mAction->getDerived<InsertingSegment>();
 
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.insertSegment(data->mID, data->mTime);
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					curveController.insertSegment(action->mTrackID, action->mTime);
+					mState->mAction = createAction<None>();
 
 					mCurveCache.clear();
 
@@ -975,8 +1005,7 @@ namespace nap
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -984,8 +1013,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -993,32 +1021,36 @@ namespace nap
 
 	void SequenceCurveTrackView::handleCurveTypePopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenCurveTypePopup>())
+		if (mState->mAction->isAction<OpenCurveTypePopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Change Curve Type");
 
-			mState->mAction.currentAction = SequenceGUIActions::CurveTypePopup();
+			auto* action = mState->mAction->getDerived<OpenCurveTypePopup>();
+			mState->mAction = createAction<CurveTypePopup>(
+				action->mTrackID, 
+				action->mSegmentID,
+				action->mCurveIndex, 
+				action->mPos,
+				ImGui::GetWindowPos());
 		}
 
 		// handle insert segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::CurveTypePopup>())
+		if (mState->mAction->isAction<CurveTypePopup>())
 		{
-			SequenceGUIChangeCurveData* data = dynamic_cast<SequenceGUIChangeCurveData*>(mState->mAction.currentActionData.get());
-			assert(data != nullptr);
+			auto* action = mState->mAction->getDerived<CurveTypePopup>();
 
 			if (ImGui::BeginPopup("Change Curve Type"))
 			{
-				ImGui::SetWindowPos(data->mWindowPos);
+				ImGui::SetWindowPos(action->mWindowPos);
 
 				if (ImGui::Button("Linear"))
 				{
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Linear);
+					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 					mCurveCache.clear();
 
 				}
@@ -1026,19 +1058,17 @@ namespace nap
 				if (ImGui::Button("Bezier"))
 				{
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.changeCurveType(data->mTrackID, data->mSegmentID, math::ECurveInterp::Bezier);
+					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 					mCurveCache.clear();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1046,8 +1076,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -1055,35 +1084,34 @@ namespace nap
 
 	void SequenceCurveTrackView::handleInsertCurvePointPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertCurvePointPopup>())
+		if (mState->mAction->isAction<OpenInsertCurvePointPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Insert Curve Point");
 
-			mState->mAction.currentAction = SequenceGUIActions::InsertingCurvePoint();
+			auto* action = mState->mAction->getDerived<OpenInsertCurvePointPopup>();
+			mState->mAction = createAction<InsertingCurvePoint>(action->mTrackID, action->mSegmentID, action->mSelectedIndex, action->mPos);
 		}
 
 		// handle insert segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::InsertingCurvePoint>())
+		if (mState->mAction->isAction<InsertingCurvePoint>())
 		{
 			if (ImGui::BeginPopup("Insert Curve Point"))
 			{
-				SequenceGUIInsertCurvePointData& data = static_cast<SequenceGUIInsertCurvePointData&>(*mState->mAction.currentActionData.get());
-
+				auto* action = mState->mAction->getDerived<InsertingCurvePoint>();
 				if (ImGui::Button("Insert Point"))
 				{
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
 					curveController.insertCurvePoint(
-						data.mTrackID,
-						data.mSegmentID,
-						data.mPos,
-						data.mSelectedIndex);
+						action->mTrackID,
+						action->mSegmentID,
+						action->mPos,
+						action->mSelectedIndex);
 
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 
 				}
 
@@ -1091,22 +1119,18 @@ namespace nap
 				{
 					ImGui::CloseCurrentPopup();
 
-					SequenceGUIInsertCurvePointData& data = static_cast<SequenceGUIInsertCurvePointData&>(*mState->mAction.currentActionData.get());
-
-					mState->mAction.currentActionData = std::make_unique<SequenceGUIChangeCurveData>(
-						data.mTrackID,
-						data.mSegmentID,
-						data.mSelectedIndex,
+					mState->mAction = createAction<OpenCurveTypePopup>(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mSelectedIndex,
+						action->mPos,
 						ImGui::GetWindowPos());
-					mState->mAction.currentAction = SequenceGUIActions::OpenCurveTypePopup();
-
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1114,8 +1138,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -1123,40 +1146,43 @@ namespace nap
 
 	void SequenceCurveTrackView::handleCurvePointActionPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenCurvePointActionPopup>())
+		if (mState->mAction->isAction<OpenCurvePointActionPopup>())
 		{
-			mState->mAction.currentAction = SequenceGUIActions::CurvePointActionPopup();
+			auto* action = mState->mAction->getDerived<OpenCurvePointActionPopup>();
+			mState->mAction = createAction<CurvePointActionPopup>(
+					action->mTrackID,
+					action->mSegmentID,
+					action->mControlPointIndex,
+					action->mCurveIndex
+				);
 			ImGui::OpenPopup("Curve Point Actions");
 		}
 
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::CurvePointActionPopup>())
+		if (mState->mAction->isAction<CurvePointActionPopup>())
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
 				if (ImGui::Button("Delete"))
 				{
-					const SequenceGUIControlPointActionData* data
-						= dynamic_cast<SequenceGUIControlPointActionData*>(mState->mAction.currentActionData.get());
-
-					assert(data != nullptr);
+					auto* action = mState->mAction->getDerived<CurvePointActionPopup>();
 
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
 					curveController.deleteCurvePoint(
-						data->mTrackId,
-						data->mSegmentID,
-						data->mControlPointIndex,
-						data->mCurveIndex);
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex);
 					mCurveCache.clear();
 
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
+
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
+
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -1165,8 +1191,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -1174,37 +1199,41 @@ namespace nap
 
 	void SequenceCurveTrackView::handleDeleteSegmentPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenEditSegmentPopup>())
+		if (mState->mAction->isAction<OpenEditSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			mState->mAction.currentAction = SequenceGUIActions::EditingSegment();
+			auto* action = mState->mAction->getDerived<OpenEditSegmentPopup>();
+			mState->mAction = createAction<EditingSegment>(
+				action->mTrackID,
+				action->mSegmentID,
+				action->mSegmentType
+			);
 		}
 
 		// handle delete segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::EditingSegment>())
+		if (mState->mAction->isAction<EditingSegment>())
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
-				const SequenceGUIEditSegmentData* data = dynamic_cast<SequenceGUIEditSegmentData*>(mState->mAction.currentActionData.get());
-				assert(data != nullptr);
+				auto* action = mState->mAction->getDerived<EditingSegment>();
 
 				if (ImGui::Button("Delete"))
 				{
-					getEditor().getController<SequenceControllerCurve>().deleteSegment(data->mTrackID, data->mSegmentID);
+					getEditor().getController<SequenceControllerCurve>().deleteSegment(
+						action->mTrackID,
+						action->mSegmentID);
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1212,8 +1241,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -1265,11 +1293,10 @@ namespace nap
 		if (mState->mIsWindowFocused)
 		{
 			// determine if mouse is hovering curve
-			if ((mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>() ||
-				mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringCurve>())
+			if ((mState->mAction->isAction<None>() || mState->mAction->isAction<HoveringCurve>())
 				&& ImGui::IsMouseHoveringRect(
-			{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }))  // bottom right 
+					{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }))  // bottom right 
 			{
 				// translate mouse position to position in curve
 				ImVec2 mousePos = ImGui::GetMousePos();
@@ -1285,18 +1312,18 @@ namespace nap
 					const float maxDist = 0.1f;
 					if (abs(yInCurve - yInSegment) < maxDist)
 					{
-						mState->mAction.currentAction = SequenceGUIActions::HoveringCurve();
-						mState->mAction.currentObjectID = segment.mID;
-						mState->mAction.currentActionData = std::make_unique<SequenceGUIHoveringCurveData>(i);
+						mState->mAction = createAction<HoveringCurve>(
+							track.mID,
+							segment.mID,
+							i);
 
 						if (ImGui::IsMouseClicked(1))
 						{
-							mState->mAction.currentActionData = std::make_unique<SequenceGUIInsertCurvePointData>(
+							mState->mAction = createAction<OpenInsertCurvePointPopup>(
 								track.mID,
 								segment.mID,
 								i,
 								xInSegment);
-							mState->mAction.currentAction = SequenceGUIActions::OpenInsertCurvePointPopup();
 						}
 						selectedCurve = i;
 					}
@@ -1304,8 +1331,7 @@ namespace nap
 
 				if (selectedCurve == -1)
 				{
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 				else
 				{
@@ -1319,11 +1345,14 @@ namespace nap
 			}
 			else
 			{
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringCurve>() &&
-					mState->mAction.currentObjectID == segment.mID)
+				if (mState->mAction->isAction<HoveringCurve>())
 				{
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					auto* action = mState->mAction->getDerived<HoveringCurve>();
+
+					if (action->mSegmentID == segment.mID)
+					{
+						mState->mAction = createAction<None>();
+					}
 				}
 			}
 		}
@@ -1592,154 +1621,4 @@ namespace nap
 		ImGui::PushItemWidth(225.0f);
 		return ImGui::InputFloat4("", &v[0], precision);
 	}
-
-	/**
-	* drawSegmentContent
-	* draws the contents of a segment
-	* @tparam T the type of this segment
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param trackTopLeft topleft position of track
-	* @param previousSegmentX the x position of the previous segment
-	* @param segmentWidth the width of this segment
-	* @param segmentX the x position of this segment
-	* @param drawList pointer to drawlist of this track window
-	* @param drawStartValue should we draw the start value ? only used in first segment of track
-	*/
-	template<typename T>
-	void drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
-
-	/**
-	* drawSegmentValue
-	* draws a segments value
-	* @tparam T type of segment
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param trackTopLeft tracks topleft position
-	* @param segmentX segment x position
-	* @param segmentWidth width of segment
-	* @param segmentType type of segment
-	* @param drawList pointer to window drawlist
-	*/
-	template<typename T>
-	void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceEditorTypes::SegmentValueTypes segmentType, ImDrawList* drawList);
-
-	/**
-	* drawSegmentHandler
-	* draws segment handler
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param trackTopLeft tracks topleft position
-	* @param segmentX segment x position
-	* @param segmentWidth width of segment
-	* @param drawList pointer to window drawlist
-	*/
-	void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
-
-	/**
-	* drawControlPoints
-	* draws control points of curve segment
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param trackTopLeft tracks topleft position
-	* @param segmentX segment x position
-	* @param segmentWidth width of segment
-	* @param drawList pointer to window drawlist
-	*/
-	template<typename T>
-	void drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
-
-	/**
-	* drawCurves
-	* draws curves of segment
-	* @tparam T the type of this segment
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param trackTopLeft topleft position of track
-	* @param previousSegmentX the x position of the previous segment
-	* @param segmentWidth the width of this segment
-	* @param segmentX the x position of this segment
-	* @param drawList pointer to drawlist of this track window
-	*/
-	template<typename T>
-	void drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
-
-	/**
-	* drawTanHandler
-	* draws handlers of curve point
-	* @tparam T type of segment
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param stringStream stringstream, used to keep track of object id
-	* @param segmentWidth width of segment
-	* @param curvePoint reference to curvePoint
-	* @param circlePoint circlePoint position
-	* @param controlPointIndex index of control point
-	* @param curveIndex index of curve
-	* @param type tangent type ( in or out )
-	* @param drawList pointer to window drawlist
-	*/
-	template<typename T>
-	void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceEditorTypes::TanPointTypes type, ImDrawList* drawList);
-
-	/**
-	* handleInsertSegmentPopup
-	* handles insert segment popup
-	*/
-	void handleInsertSegmentPopup();
-
-	/**
-	* handleDeleteSegmentPopup
-	* handles delete segment popup
-	*/
-	void handleDeleteSegmentPopup();
-
-	/**
-	* handleInsertCurvePointPopup
-	* handles insert curve point popup
-	*/
-	void handleInsertCurvePointPopup();
-
-	/**
-	* handleCurvePointActionPopup
-	* handles curvepoint action popup
-	*/
-	void handleCurvePointActionPopup();
-
-	/**
-	* handleCurveTypePopup
-	* handles curve type popup
-	*/
-	void handleCurveTypePopup();
-
-	/**
-	* drawInspectorRange
-	* Draws min/max range of inspector
-	* @tparam T type
-	* @param track reference to track
-	*/
-	template<typename T>
-	void drawInspectorRange(const SequenceTrack& track);
-
-	/**
-	* showValue
-	* @tparam T type of value
-	* @param track reference to track
-	* @param segment reference to segment
-	* @param x value to display
-	* @param time time in segment
-	* @param curveIndex curve index
-	*/
-	template<typename T>
-	void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
-
-	/**
-	* inputFloat
-	* input float that takes type T as input
-	* @tparam T type of inputFloat
-	* @param precision decimal precision
-	* @return true if dragged
-	*/
-	template<typename T>
-	bool inputFloat(T &, int precision);
 }

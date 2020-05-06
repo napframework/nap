@@ -11,6 +11,8 @@
 
 namespace nap
 {
+	using namespace SequenceGUIActions;
+
 	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view)
 		: SequenceTrackView(view)
 	{
@@ -224,7 +226,7 @@ namespace nap
 			if (mState->mIsWindowFocused)
 			{
 				// handle insertion of segment
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::None>())
+				if (mState->mAction->isAction<None>())
 				{
 					if (ImGui::IsMouseHoveringRect(
 						trackTopLeft, // top left position
@@ -247,23 +249,38 @@ namespace nap
 							double time = mState->mMouseCursorTime;
 
 							//
-							mState->mAction.currentAction = SequenceGUIActions::OpenInsertSegmentPopup();
-							mState->mAction.currentActionData = std::make_unique<SequenceGUIInsertSegmentData>(track.mID, time, track.get_type());
+							mState->mAction = createAction<OpenInsertSegmentPopup>(
+								track.mID, 
+								time, 
+								track.get_type());
 						}
 					}
 				}
 
 				// draw line in track while in inserting segment popup
-				if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertSegmentPopup>() ||
-					mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::InsertingSegment>())
+				if (mState->mAction->isAction<OpenInsertSegmentPopup>())
 				{
-					const SequenceGUIInsertSegmentData* data = dynamic_cast<SequenceGUIInsertSegmentData*>(mState->mAction.currentActionData.get());
-					if (data->mID == track.mID)
+					auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+					if (action->mTrackID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-						{ trackTopLeft.x + (float)data->mTime * mState->mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)data->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+							guicolors::lightGrey, // color
+							1.0f); // thickness
+					}
+				}
+
+				if ( mState->mAction->isAction<InsertingSegment>())
+				{
+					auto* action = mState->mAction->getDerived<InsertingSegment>();
+					if (action->mTrackID == track.mID)
+					{
+						// position of insertion in track
+						drawList->AddLine(
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
@@ -316,44 +333,43 @@ namespace nap
 
 	void SequenceEventTrackView::handleInsertEventSegmentPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertEventSegmentPopup>())
+		if (mState->mAction->isAction<OpenInsertEventSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Insert Event");
 
-			mState->mAction.currentAction = SequenceGUIActions::InsertingSegment();
+			auto* action = mState->mAction->getDerived<OpenInsertEventSegmentPopup>();
+			mState->mAction = createAction<InsertingEventSegment>(action->mTrackID, action->mTime);
 		}
 
 		// handle insert segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::InsertingSegment>())
+		if (mState->mAction->isAction<InsertingSegment>())
 		{
 			if (ImGui::BeginPopup("Insert Event"))
 			{
-				SequenceGUIInsertEventSegment& data = static_cast<SequenceGUIInsertEventSegment&>(*mState->mAction.currentActionData.get());
-				
-				int n = data.mEventMessage.length();
+				auto* action = mState->mAction->getDerived<InsertingEventSegment>();
+
+				int n = action->mMessage.length();
 				char buffer[256];
-				strcpy(buffer, data.mEventMessage.c_str());
+				strcpy(buffer, action->mMessage.c_str());
 
 				if (ImGui::InputText("message", buffer, 256))
 				{
-					data.mEventMessage = std::string(buffer);
+					action->mMessage = std::string(buffer);
 				}
 
 				if (ImGui::Button("Insert"))
 				{
 					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.insertSegment(data.mTrackID, data.mTime);
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					eventController.insertSegment(action->mTrackID, action->mTime);
+					mState->mAction = createAction<None>();
 				}
 
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -361,8 +377,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -378,74 +393,96 @@ namespace nap
 	{
 		// segment handler
 		if (mState->mIsWindowFocused &&
-			(mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenInsertSegmentPopup>() ||
-			(mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegment>() && mState->mAction.currentObjectID == segment.mID)) &&
-			ImGui::IsMouseHoveringRect(
-		{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
-		{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
+			(mState->mAction->isAction<HoveringSegment>()) &&
+				ImGui::IsMouseHoveringRect(
+					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
+				{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
 		{
-			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
+			std::string segmentID = mState->mAction->getDerived<HoveringSegment>()->mSegmentID;
 
-					   // we are hovering this segment with the mouse
-			mState->mAction.currentAction = SequenceGUIActions::HoveringSegment();
-			mState->mAction.currentObjectID = segment.mID;
-
-			ImGui::BeginTooltip();
-			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-			ImGui::EndTooltip();
-
-			// left mouse is start dragging
-			if (ImGui::IsMouseDown(0))
+			if (segmentID == segment.mID)
 			{
-				mState->mAction.currentAction = SequenceGUIActions::DraggingSegment();
-				mState->mAction.currentObjectID = segment.mID;
-			}
-			// right mouse in deletion popup
-			else if (ImGui::IsMouseDown(1))
-			{
-				std::unique_ptr<SequenceGUIEditSegmentData> editSegmentData = std::make_unique<SequenceGUIEditSegmentData>(
-					track.mID,
-					segment.mID,
-					segment.get_type());
-				mState->mAction.currentAction = SequenceGUIActions::OpenEditSegmentPopup();
-				mState->mAction.currentObjectID = segment.mID;
-				mState->mAction.currentActionData = std::move(editSegmentData);
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					3.0f); // thickness
+
+			    // we are hovering this segment with the mouse
+				mState->mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+
+				ImGui::BeginTooltip();
+				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+				ImGui::EndTooltip();
+
+				// left mouse is start dragging
+				if (ImGui::IsMouseDown(0))
+				{
+					mState->mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+				}
+				// right mouse in deletion popup
+				else if (ImGui::IsMouseDown(1))
+				{
+					mState->mAction = createAction<OpenEditSegmentPopup>(track.mID, segment.mID, segment.get_type());
+				}
 			}
 		}
-		else if (
-			mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::DraggingSegment>() &&
-			mState->mAction.currentObjectID == segment.mID)
+		else if (mState->mAction->isAction<DraggingSegment>())
 		{
-			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
-				guicolors::white, // color
-				3.0f); // thickness
+			auto* action = mState->mAction->getDerived<DraggingSegment>();
+			std::string segmentID = action->mSegmentID;
 
-			ImGui::BeginTooltip();
-			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-			ImGui::EndTooltip();
-
-			// do we have the mouse still held down ? drag the segment
-			if (ImGui::IsMouseDown(0))
+			if (segmentID == segment.mID)
 			{
-				float amount = mState->mMouseDelta.x / mState->mStepSize;
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					3.0f); // thickness
 
-				auto& editor = getEditor();
-				SequenceControllerEvent& eventController = editor.getController<SequenceControllerEvent>();
-				eventController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
+				ImGui::BeginTooltip();
+				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+				ImGui::EndTooltip();
+
+				// do we have the mouse still held down ? drag the segment
+				if (ImGui::IsMouseDown(0))
+				{
+					float amount = mState->mMouseDelta.x / mState->mStepSize;
+
+					auto& editor = getEditor();
+					SequenceControllerEvent& eventController = editor.getController<SequenceControllerEvent>();
+					eventController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
+				}
+				// otherwise... release!
+				else if (ImGui::IsMouseReleased(0))
+				{
+					mState->mAction = createAction<None>();
+				}
 			}
-			// otherwise... release!
-			else if (ImGui::IsMouseReleased(0))
+			else
 			{
-				mState->mAction.currentAction = SequenceGUIActions::None();
+				// draw handler of segment duration
+				drawList->AddLine(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+					guicolors::white, // color
+					1.0f); // thickness
+
+			 // release if we are not hovering this segment
+				if (mState->mAction->isAction<HoveringSegment>())
+				{
+					auto* action = mState->mAction->getDerived<HoveringSegment>();
+					std::string segmentID = action->mSegmentID;
+
+					if (segmentID == segment.mID)
+					{
+						mState->mAction = createAction<None>();
+					}
+				}
 			}
+			
 		}
 		else
 		{
@@ -456,11 +493,16 @@ namespace nap
 				guicolors::white, // color
 				1.0f); // thickness
 
-					   // release if we are not hovering this segment
-			if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::HoveringSegment>()
-				&& mState->mAction.currentObjectID == segment.mID)
+			// release if we are not hovering this segment
+			if (mState->mAction->isAction<HoveringSegment>())
 			{
-				mState->mAction.currentAction = SequenceGUIActions::None();
+				auto* action = mState->mAction->getDerived<HoveringSegment>();
+				std::string segmentID = action->mSegmentID;
+
+				if (segmentID == segment.mID)
+				{
+					mState->mAction = createAction<None>();
+				}
 			}
 		}
 	}
@@ -468,47 +510,45 @@ namespace nap
 	
 	void SequenceEventTrackView::handleEditEventSegmentPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenEditEventSegmentPopup>())
+		if (mState->mAction->isAction<OpenEditEventSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Edit Event");
 
-			mState->mAction.currentAction = SequenceGUIActions::EditingEventSegment();
+			auto* action = mState->mAction->getDerived<OpenEditEventSegmentPopup>();
+			mState->mAction = createAction<EditingEventSegment>(action->mTrackID, action->mSegmentID, action->mWindowPos);
 		}
 
 		// handle insert segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::EditingEventSegment>())
+		if (mState->mAction->isAction<EditingEventSegment>())
 		{
 			if (ImGui::BeginPopup("Edit Event"))
 			{
-				SequenceGUIEditEventSegment* data = dynamic_cast<SequenceGUIEditEventSegment*>(mState->mAction.currentActionData.get());
-				assert(data != nullptr);
+				auto* action = mState->mAction->getDerived<EditingEventSegment>();
 
-				ImGui::SetWindowPos(data->mWindowPos);
+				ImGui::SetWindowPos(action->mWindowPos);
 
-				int n = data->mMessage.length();
+				int n = action->mMessage.length();
 				char buffer[256];
-				strcpy(buffer, data->mMessage.c_str());
+				strcpy(buffer, action->mMessage.c_str());
 
 				if (ImGui::InputText("message", buffer, 256))
 				{
-					data->mMessage = std::string(buffer);
+					action->mMessage = std::string(buffer);
 				}
 
 				if (ImGui::Button("Done"))
 				{
 					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.editEventSegment(data->mTrackID, data->mSegmentID, data->mMessage);
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					eventController.editEventSegment(action->mTrackID, action->mSegmentID, action->mMessage);
+					mState->mAction = createAction<None>();
 				}
 
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -516,8 +556,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}
@@ -525,46 +564,44 @@ namespace nap
 	
 	void SequenceEventTrackView::handleDeleteSegmentPopup()
 	{
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::OpenEditSegmentPopup>())
+		if (mState->mAction->isAction<OpenEditSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			mState->mAction.currentAction = SequenceGUIActions::EditingSegment();
+			auto* action = mState->mAction->getDerived<OpenEditSegmentPopup>();
+			mState->mAction = createAction<EditingSegment>(action->mTrackID, action->mSegmentID, action->mSegmentType);
 		}
 
 		// handle delete segment popup
-		if (mState->mAction.currentAction.get_type().is_derived_from<SequenceGUIActions::EditingSegment>())
+		if (mState->mAction->isAction<EditingSegment>())
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
-				const SequenceGUIEditSegmentData* data = dynamic_cast<SequenceGUIEditSegmentData*>(mState->mAction.currentActionData.get());
-				assert(data != nullptr);
-
+				auto* action = mState->mAction->getDerived<EditingSegment>();
 				if (ImGui::Button("Delete"))
 				{
-					//mController.deleteSegment(data->mTrackID, data->mSegmentID);
+					auto& controller = getEditor().getController<SequenceControllerEvent>();
+					controller.deleteSegment(action->mTrackID, action->mSegmentID);
 					mState->mDirty = true;
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
-				if (data->mSegmentTypeInfo == RTTI_OF(SequenceTrackSegmentEvent))
+				if (action->mSegmentType == RTTI_OF(SequenceTrackSegmentEvent))
 				{
 					if (ImGui::Button("Edit"))
 					{
 						auto& eventController = getEditor().getController<SequenceControllerEvent>();
-						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(eventController.getSegment(data->mTrackID, data->mSegmentID));
+						const SequenceTrackSegmentEvent *eventSegment = dynamic_cast<const SequenceTrackSegmentEvent*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
 						assert(eventSegment != nullptr);
 
-						mState->mAction.currentAction = SequenceGUIActions::OpenEditEventSegmentPopup();
-						mState->mAction.currentActionData = std::make_unique<SequenceGUIEditEventSegment>(
-							data->mTrackID,
-							data->mSegmentID,
-							eventSegment->mMessage,
-							ImGui::GetWindowPos());
+						mState->mAction = createAction<OpenEditEventSegmentPopup>(
+							action->mTrackID,
+							action->mSegmentID,
+							ImGui::GetWindowPos(),
+							eventSegment->mMessage);
 							
 						ImGui::CloseCurrentPopup();
 					}
@@ -573,8 +610,7 @@ namespace nap
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction.currentAction = SequenceGUIActions::None();
-					mState->mAction.currentActionData = nullptr;
+					mState->mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -582,8 +618,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction.currentAction = SequenceGUIActions::None();
-				mState->mAction.currentActionData = nullptr;
+				mState->mAction = createAction<None>();
 			}
 		}
 	}

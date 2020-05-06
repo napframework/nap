@@ -8,10 +8,54 @@ namespace nap
 
 	namespace SequenceGUIActions
 	{
-		struct OpenInsertEventSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct InsertingEventSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct OpenEditEventSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct EditingEventSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+		class OpenInsertEventSegmentPopup : public Action
+		{ 
+			RTTI_ENABLE(Action) 
+		public:
+			OpenInsertEventSegmentPopup(std::string trackID, double time)
+				: mTrackID(trackID), mTime(time) {}
+
+			std::string mTrackID;
+			double mTime;
+		};
+
+		class InsertingEventSegment : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingEventSegment(std::string trackID, double time)
+				: mTrackID(trackID), mTime(time) {}
+
+			std::string mTrackID;
+			double mTime;
+			std::string mMessage = "hello world";
+		};
+
+		class OpenEditEventSegmentPopup : public Action 
+		{ 
+			RTTI_ENABLE(Action) 
+		public:
+			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, std::string message)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mMessage(message) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			ImVec2 mWindowPos;
+			std::string mMessage;
+		};
+
+		class EditingEventSegment : public Action 
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			std::string mMessage = "hello world";
+			ImVec2 mWindowPos;
+		};
 	}
 
 	class SequenceEventTrackView : public SequenceTrackView
@@ -60,38 +104,5 @@ namespace nap
 		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
 		void handleDeleteSegmentPopup();
-	};
-
-	/**
-	* Data needed for handling insertion of event segments
-	*/
-	class SequenceGUIInsertEventSegment : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIInsertEventSegment(std::string id, double aTime)
-			: mTrackID(id), mTime(aTime) {}
-
-		std::string mTrackID;
-		double mTime;
-		std::string mEventMessage = "Hello world";
-	};
-
-	/**
-	* Data needed for editing event segments
-	*/
-	class SequenceGUIEditEventSegment : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIEditEventSegment(std::string trackId, std::string segmentID, std::string message, ImVec2 windowPos)
-			:
-			mTrackID(trackId),
-			mSegmentID(segmentID),
-			mMessage(message),
-			mWindowPos(windowPos) {}
-
-		std::string mTrackID;
-		std::string mSegmentID;
-		std::string mMessage;
-		ImVec2 mWindowPos;
 	};
 }

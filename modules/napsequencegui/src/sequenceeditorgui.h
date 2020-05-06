@@ -61,55 +61,176 @@ namespace nap
 	 */
 	namespace SequenceGUIActions
 	{
-		struct SequenceGUIAction { RTTI_ENABLE() };
+		class Action
+		{
+			RTTI_ENABLE()
+		public:
+			template<typename T>
+			bool isAction()
+			{
+				return this->get_type() == RTTI_OF(T);
+			}
 
-		struct None : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct DraggingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct InsertingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct OpenInsertSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct EditingSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct OpenEditSegmentPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct HoveringSegment : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct HoveringSegmentValue : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct DraggingSegmentValue : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct HoveringPlayerTime : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct DraggingPlayerTime : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct OpenInsertTrackPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct InsertingTrack : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct LoadPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
-		struct SaveAsPopup : SequenceGUIAction { RTTI_ENABLE(SequenceGUIAction) };
+			template<typename T>
+			T* getDerived()
+			{
+				assert(this->get_type() == RTTI_OF(T));
+				return dynamic_cast<T*>(this);
+			}
+		};
+
+		using SequenceActionPtr = std::unique_ptr<Action>;
+
+		template<typename T, typename... Args>
+		static SequenceActionPtr createAction(Args... args)
+		{
+			return std::make_unique<T>(args...);
+		}
+
+		class None : public Action { RTTI_ENABLE() };
+
+		class DraggingSegment : public Action
+		{ 
+			RTTI_ENABLE(Action)
+		public:
+			DraggingSegment(std::string trackId, std::string segmentID)
+				: mTrackID(trackId), mSegmentID(segmentID) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+
+		};
+
+		class InsertingSegment :
+			public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingSegment(std::string id, double time, rttr::type type)
+				: mTrackID(id), mTime(time), mTrackType(type) {}
+
+			std::string mTrackID;
+			double mTime;
+			rttr::type mTrackType;
+		};
+
+
+		class OpenInsertSegmentPopup :
+			public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenInsertSegmentPopup(std::string id, double time, rttr::type type)
+				: mTrackID(id), mTime(time), mTrackType(type) {}
+
+			std::string mTrackID;
+			double mTime;
+			rttr::type mTrackType;
+		};
+
+		class EditingSegment : public Action { 
+			RTTI_ENABLE(Action)
+		public:
+			EditingSegment(std::string trackID, std::string segmentID, rttr::type segmentType)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			rttr::type mSegmentType;
+		};
+
+		class OpenEditSegmentPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditSegmentPopup(std::string trackID, std::string segmentID, rttr::type segmentType)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			{
+
+			}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			rttr::type mSegmentType;
+		};
+		
+		class HoveringSegment : public Action 
+		{
+			RTTI_ENABLE(Action) 
+		public:
+			HoveringSegment(std::string trackId, std::string segmentID)
+				: mTrackID(trackId), mSegmentID(segmentID) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+		};
+
+		class HoveringSegmentValue : public Action 
+		{ 
+			RTTI_ENABLE(Action) 
+		public:
+			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceEditorTypes::SegmentValueTypes type, int curveIndex)
+				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			SequenceEditorTypes::SegmentValueTypes mType;
+			int mCurveIndex;
+		};
+
+		class DraggingSegmentValue : 
+			public Action 
+		{ 
+			RTTI_ENABLE(Action) 
+		public:
+			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceEditorTypes::SegmentValueTypes type, int curveIndex)
+				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			SequenceEditorTypes::SegmentValueTypes mType;
+			int mCurveIndex;
+		};
+
+		class HoveringPlayerTime : public Action { RTTI_ENABLE(Action) };
+		class DraggingPlayerTime : public Action 
+		{ 
+			RTTI_ENABLE(Action)
+		public:
+			DraggingPlayerTime(bool wasPlaying, bool wasPaused)
+				: mWasPlaying(wasPlaying), mWasPaused(wasPaused) {}
+			
+			bool mWasPlaying; bool mWasPaused;
+		};
+
+		class OpenInsertTrackPopup : public Action { RTTI_ENABLE(Action) };
+		class InsertingTrack : public Action { RTTI_ENABLE(Action) };
+
+		class LoadPopup : public Action 
+		{ 
+			RTTI_ENABLE(Action) 
+		public:
+			int mSelectedShowIndex = 0;
+			std::string mErrorString;
+		};
+
+		class SaveAsPopup : public Action 
+		{
+			RTTI_ENABLE(Action)
+		public:
+			int mSelectedShowIndex = 0;
+			std::string mErrorString;
+		};
 	}
-
-	/**
-	 */
-	class SequenceEditorGUIAction
-	{
-	public:
-		/**
-		 * default constructor
-		 */
-		SequenceEditorGUIAction() = default;
-
-		/**
-		 * deconstructor
-		 */
-		~SequenceEditorGUIAction() {}
-
-		// current action
-		SequenceGUIActions::SequenceGUIAction currentAction = SequenceGUIActions::None();
-
-		// current object id, used to identify object with actions
-		std::string currentObjectID = "";
-
-		// current action data
-		std::unique_ptr<SequenceGUIActionData> currentActionData = nullptr;
-	};
 
 	struct SequenceEditorGUIState
 	{
 	public:
 		// action information
-		SequenceEditorGUIAction mAction;
+		SequenceGUIActions::SequenceActionPtr mAction = nullptr;
 
 		//
 		bool mDirty = false;
@@ -234,87 +355,5 @@ namespace nap
 
 		//
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
-	};
-
-	/**
-	 * SequenceGUIActionData
-	 * Base class for data needed for handling GUI actions
-	 */
-	class SequenceGUIActionData
-	{
-	public:
-		/**
-		 * Constructor
-		 */
-		SequenceGUIActionData() {}
-
-		/**
-		 * Deconstructor
-		 */
-		virtual ~SequenceGUIActionData() {}
-	};
-
-	/**
-	 * Data needed for editing segment
-	 */
-	class SequenceGUIEditSegmentData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIEditSegmentData(std::string trackID, std::string segmentID,  rttr::type typeInfo) :
-				mTrackID(trackID), mSegmentID(segmentID), mSegmentTypeInfo(typeInfo){}
-
-		std::string mTrackID;
-		std::string mSegmentID;
-		rttr::type mSegmentTypeInfo;
-	};
-
-	/**
-	 * Data needed for inserting segments
-	 */
-	class SequenceGUIInsertSegmentData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIInsertSegmentData(std::string id, double t, rttr::type typeInfo) : mID(id), mTime(t), mTrackTypeInfo(typeInfo){}
-
-		double mTime = 0.0;
-		std::string mID;
-		rttr::type mTrackTypeInfo;
-	};
-
-	/**
-	 * Data needed for dragging player position
-	 */
-	class SequenceGUIDragPlayerData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUIDragPlayerData(bool playerWasPlaying,bool playerWasPaused)
-			:	mPlayerWasPlaying(playerWasPlaying), mPlayerWasPaused(playerWasPaused){}
-
-		bool mPlayerWasPlaying;
-		bool mPlayerWasPaused;
-	};
-
-	/**
-	 * Data needed for loading shows
-	 */
-	class SequenceGUILoadShowData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUILoadShowData() {}
-
-		int mSelectedShow = 0;
-		std::string mErrorString;
-	};
-
-	/**
-	 * Data needed for handling saving of sequences
-	 */
-	class SequenceGUISaveShowData : public SequenceGUIActionData
-	{
-	public:
-		SequenceGUISaveShowData() {}
-
-		int mSelectedShow = 0;
-		std::string mErrorString;
 	};
 }
