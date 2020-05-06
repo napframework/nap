@@ -1,6 +1,9 @@
 #pragma once
 
+// Local Includes
 #include "sequenceeditorgui.h"
+#include "sequenceeditorguiactions.h"
+#include "sequenceeditorguistate.h"
 
 // nap includes
 #include <nap/core.h>
@@ -13,7 +16,6 @@ namespace nap
 	class SequenceTrack;
 	class SequenceTrackView;
 	class SequenceEditorGUIView;
-	struct SequenceEditorGUIState;
 
 	// shortcut to factory function
 	using SequenceTrackViewFactoryFunc = std::unique_ptr<SequenceTrackView>(*)(SequenceEditorGUIView&);
