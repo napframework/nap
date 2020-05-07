@@ -19,12 +19,6 @@ namespace nap
 		Sequence& getSequence() { return mPlayer.getSequence(); }
 
 		/**
-		 * save
-		 * saves the sequence
-		 */
-		void save();
-
-		/**
 		 * assignNewObjectID
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
 		 * @param trackID the track id that gets an assigned object

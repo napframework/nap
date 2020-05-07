@@ -29,8 +29,8 @@ namespace nap
 		return false;
 	}
 
-	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view) :
-		mView(view)
+	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
+		mView(view), mState(state)
 	{
 
 	}

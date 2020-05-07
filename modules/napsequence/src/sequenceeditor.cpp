@@ -73,4 +73,24 @@ namespace nap
 		return nullptr;
 	}
 
+
+	void SequenceEditor::save(const std::string& file)
+	{
+		utility::ErrorState errorState;
+		if(!mSequencePlayer->save(file, errorState))
+		{
+			nap::Logger::error(errorState.toString());
+		}
+	}
+
+
+	void SequenceEditor::load(const std::string& file)
+	{
+		utility::ErrorState errorState;
+		if(!mSequencePlayer->load(file, errorState) )
+		{
+			nap::Logger::error(errorState.toString());
+		}
+	}
+
 }

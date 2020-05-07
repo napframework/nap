@@ -70,17 +70,20 @@ namespace nap
 	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id)
 		: mEditor(editor), mID(id)
 	{
+		mState.mAction = createAction<None>();
+
 		for (auto& factory : SequenceTrackView::getFactoryMap())
 		{
-			mViews.emplace(factory.first, factory.second(*this));
+			mViews.emplace(factory.first, factory.second(*this, mState));
 		}
-
-		mState.mAction = createAction<None>();
 	}
 
 
 	void SequenceEditorGUIView::show()
 	{
+		//
+		bool resetDirtyFlag = mState.mDirty;
+
 		//
 		mState.mInspectorWidth = 300.0f;
 
@@ -139,7 +142,7 @@ namespace nap
 			//
 			if (ImGui::Button("Save"))
 			{
-				//mController.save();
+				mEditor.save(mEditor.mSequencePlayer->mDefaultSequence);
 			}
 
 			ImGui::SameLine();
@@ -256,7 +259,7 @@ namespace nap
 			// handle popups
 			for (auto& it : mViews)
 			{
-				it.second->handlePopups(mState);
+				it.second->handlePopups();
 			}
 
 			//
@@ -274,8 +277,10 @@ namespace nap
 		// pop id
 		ImGui::PopID();
 
-		//
-		mState.mDirty = false;
+		if( resetDirtyFlag )
+		{
+			mState.mDirty = false;
+		}
 	}
 
 
@@ -300,7 +305,7 @@ namespace nap
 				assert(it2 != mViews.end()); // no view class created for this view type
 				if (it2 != mViews.end())
 				{
-					it2->second->drawTrack(*sequence.mTracks[i].get(), mState);
+					it2->second->drawTrack(*sequence.mTracks[i].get());
 				}
 			}
 		}
@@ -549,9 +554,7 @@ namespace nap
 				utility::ErrorState errorState;
 				if (ImGui::Button("Load"))
 				{
-					
-					if (mEditor.mSequencePlayer->load(
-						showFiles[loadAction->mSelectedShowIndex], errorState))
+					if (mEditor.mSequencePlayer->load(showFiles[loadAction->mSelectedShowIndex], errorState))
 					{
 						mState.mAction = createAction<None>();
 						mState.mDirty = true;
@@ -576,6 +579,7 @@ namespace nap
 					ImGui::Text(loadAction->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
+						mState.mDirty = true;
 						mState.mAction = createAction<LoadPopup>();
 						ImGui::CloseCurrentPopup();
 					}
@@ -670,9 +674,11 @@ namespace nap
 					if (mEditor.mSequencePlayer->save(showDir + "/" + newShowFileName, errorState))
 					{
 						saveAsAction->mSelectedShowIndex = shows.size() - 2;
+						mState.mDirty = true;
 					}
 					else
 					{
+						mState.mDirty = true;
 						saveAsAction->mErrorString = errorState.toString();
 						ImGui::OpenPopup("Error");
 					}
@@ -696,6 +702,8 @@ namespace nap
 							ImGui::OpenPopup("Error");
 						}
 
+						mState.mDirty = true;
+
 						ImGui::CloseCurrentPopup();
 					}
 
@@ -712,6 +720,7 @@ namespace nap
 					ImGui::Text(saveAsAction->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
+						mState.mDirty = true;
 						ImGui::CloseCurrentPopup();
 					}
 

@@ -9,11 +9,11 @@ namespace nap
 	class SequenceCurveTrackView : public SequenceTrackView
 	{
 	public:
-		SequenceCurveTrackView(SequenceEditorGUIView& view);
+		SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
-		virtual void drawTrack(const SequenceTrack& track, SequenceEditorGUIState& state) override;
+		virtual void drawTrack(const SequenceTrack& track) override;
 
-		virtual void handlePopups(SequenceEditorGUIState& state) override;
+		virtual void handlePopups() override;
 	private:
 		/**
 		 * drawCurveTrack

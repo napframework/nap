@@ -32,12 +32,18 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		/**
-		 * init
 		 * initializes editor
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
 		*/
 		virtual bool init(utility::ErrorState& errorState);
+
+		/**
+		 * saves the sequence
+		 */
+		void save(const std::string& file);
+
+		void load(const std::string& file);
 
 		SequenceController* getControllerWithTrackType(rttr::type type);
 

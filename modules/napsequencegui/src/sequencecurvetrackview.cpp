@@ -10,15 +10,14 @@
 
 namespace nap
 {
-	SequenceCurveTrackView::SequenceCurveTrackView(SequenceEditorGUIView& view)
-		: SequenceTrackView(view)
+	SequenceCurveTrackView::SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
+		: SequenceTrackView(view, state)
 	{
-		nap::Logger::info("curve track");
 	}
 
-	static bool registerCurveTrackView = SequenceTrackView::registerFactory(RTTI_OF(SequenceCurveTrackView), [](SequenceEditorGUIView& view)->std::unique_ptr<SequenceTrackView>
+	static bool registerCurveTrackView = SequenceTrackView::registerFactory(RTTI_OF(SequenceCurveTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
 	{
-		return std::make_unique<SequenceCurveTrackView>(view);
+		return std::make_unique<SequenceCurveTrackView>(view, state);
 	});
 
 	static bool curveViewRegistrations[4]
@@ -47,14 +46,12 @@ namespace nap
 	};
 
 
-	void SequenceCurveTrackView::drawTrack(const SequenceTrack& track, SequenceEditorGUIState& state)
+	void SequenceCurveTrackView::drawTrack(const SequenceTrack& track)
 	{
 		std::string deleteTrackID;
 		bool deleteTrack = false;
 
-		mState = &state;
-
-		if (mState->mDirty)
+		if (mState.mDirty)
 		{
 			mCurveCache.clear();
 		}
@@ -63,7 +60,7 @@ namespace nap
 		assert(it != sDrawTracksMap.end()); // track type not found
 		if (it != sDrawTracksMap.end())
 		{
-			(*this.*it->second)(track, mState->mCursorPos, 10.0f, getPlayer(), deleteTrack, deleteTrackID);
+			(*this.*it->second)(track, mState.mCursorPos, 10.0f, getPlayer(), deleteTrack, deleteTrackID);
 		}
 
 		if (deleteTrack)
@@ -74,7 +71,7 @@ namespace nap
 	}
 
 
-	void SequenceCurveTrackView::handlePopups(SequenceEditorGUIState& state)
+	void SequenceCurveTrackView::handlePopups()
 	{
 		handleInsertSegmentPopup();
 
@@ -101,7 +98,7 @@ namespace nap
 		cursorPos =
 		{
 			cursorPos.x ,
-			mState->mTrackHeight + marginBetweenTracks + cursorPos.y
+			mState.mTrackHeight + marginBetweenTracks + cursorPos.y
 		};
 
 		// manually set the cursor position before drawing inspector
@@ -111,7 +108,7 @@ namespace nap
 		// draw inspector window
 		if (ImGui::BeginChild(
 			inspectorID.c_str(), // id
-			{ mState->mInspectorWidth , mState->mTrackHeight + 5 }, // size
+			{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -125,12 +122,12 @@ namespace nap
 			// draw background & box
 			drawList->AddRectFilled(
 				windowPos,
-				{ windowPos.x + windowSize.x - 5, windowPos.y + mState->mTrackHeight },
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mState.mTrackHeight },
 				guicolors::black);
 
 			drawList->AddRect(
 				windowPos,
-				{ windowPos.x + windowSize.x - 5, windowPos.y + mState->mTrackHeight },
+				{ windowPos.x + windowSize.x - 5, windowPos.y + mState.mTrackHeight },
 				guicolors::white);
 
 			// 
@@ -216,13 +213,13 @@ namespace nap
 		}
 		ImGui::EndChild();
 
-		const ImVec2 windowCursorPos = { cursorPos.x + mState->mInspectorWidth + 5, cursorPos.y };
+		const ImVec2 windowCursorPos = { cursorPos.x + mState.mInspectorWidth + 5, cursorPos.y };
 		ImGui::SetCursorPos(windowCursorPos);
 
 		// begin track
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
-			{ mState->mTimelineWidth + 5 , mState->mTrackHeight + 5 }, // size
+			{ mState.mTimelineWidth + 5 , mState.mTrackHeight + 5 }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -247,78 +244,78 @@ namespace nap
 			// draw background of track
 			drawList->AddRectFilled(
 				trackTopLeft, // top left position
-				{ trackTopLeft.x + mState->mTimelineWidth, trackTopLeft.y + mState->mTrackHeight }, // bottom right position
+				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
 				guicolors::black); // color 
 
 			 // draw border of track
 			drawList->AddRect(
 				trackTopLeft, // top left position
-				{ trackTopLeft.x + mState->mTimelineWidth, trackTopLeft.y + mState->mTrackHeight }, // bottom right position
+				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
 				guicolors::white); // color 
 
 		   //
-			mState->mMouseCursorTime = (mState->mMousePos.x - trackTopLeft.x) / mState->mStepSize;
+			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
 
-			if (mState->mIsWindowFocused)
+			if (mState.mIsWindowFocused)
 			{
 				// handle insertion of segment
-				if (mState->mAction->isAction<None>())
+				if (mState.mAction->isAction<None>())
 				{
 					if (ImGui::IsMouseHoveringRect(
 						trackTopLeft, // top left position
-						{ trackTopLeft.x + mState->mTimelineWidth, trackTopLeft.y + mState->mTrackHeight }))
+						{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
 					{
 						// position of mouse in track
 						drawList->AddLine(
-							{ mState->mMousePos.x, trackTopLeft.y }, // top left
-							{ mState->mMousePos.x, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+							{ mState.mMousePos.x, trackTopLeft.y }, // top left
+							{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 
 						ImGui::BeginTooltip();
 
-						ImGui::Text(formatTimeString(mState->mMouseCursorTime).c_str());
+						ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
 
 						ImGui::EndTooltip();
 
 						// right mouse down
 						if (ImGui::IsMouseClicked(1))
 						{
-							double time = mState->mMouseCursorTime;
+							double time = mState.mMouseCursorTime;
 
 							//
-							mState->mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
+							mState.mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
 						}
 					}
 				}
 
 				// draw line in track while in inserting segment popup
-				if (mState->mAction->isAction<OpenInsertSegmentPopup>())
+				if (mState.mAction->isAction<OpenInsertSegmentPopup>())
 				{
-					auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+					auto* action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
 
 					if (action->mTrackID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-							{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
-							{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+							{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
+							{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
 				}
 
 				// draw line in track while in inserting segment popup
-				if (mState->mAction->isAction<InsertingSegment>())
+				if (mState.mAction->isAction<InsertingSegment>())
 				{
-					auto* action = mState->mAction->getDerived<InsertingSegment>();
+					auto* action = mState.mAction->getDerived<InsertingSegment>();
 
 					if (action->mTrackID == track.mID)
 					{
 						// position of insertion in track
 						drawList->AddLine(
-						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)action->mTime * mState->mStepSize, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 							guicolors::lightGrey, // color
 							1.0f); // thickness
 					}
@@ -330,8 +327,8 @@ namespace nap
 			int segmentCount = 0;
 			for (const auto& segment : track.mSegments)
 			{
-				float segmentX = (segment->mStartTime + segment->mDuration) * mState->mStepSize;
-				float segmentWidth = segment->mDuration * mState->mStepSize;
+				float segmentX = (segment->mStartTime + segment->mDuration) * mState.mStepSize;
+				float segmentWidth = segment->mDuration * mState.mStepSize;
 
 				auto it = sDrawCurveSegmentsMap.find(segment.get()->get_type());
 				if (it != sDrawCurveSegmentsMap.end())
@@ -390,7 +387,7 @@ namespace nap
 
 				ImVec2 circlePoint =
 				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-					trackTopLeft.y + mState->mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
 
 				drawTanHandler<T>(
 					track,
@@ -433,15 +430,15 @@ namespace nap
 				// determine the point at where to draw the control point
 				ImVec2 circlePoint =
 				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-					trackTopLeft.y + mState->mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
 
 				// handle mouse hovering
 				bool hovered = false;
-				if (mState->mIsWindowFocused)
+				if (mState.mIsWindowFocused)
 				{
-					if ((mState->mAction->isAction<None>() ||
-						mState->mAction->isAction<HoveringControlPoint>() ||
-						mState->mAction->isAction<HoveringCurve>())
+					if ((mState.mAction->isAction<None>() ||
+						mState.mAction->isAction<HoveringControlPoint>() ||
+						mState.mAction->isAction<HoveringCurve>())
 						&& ImGui::IsMouseHoveringRect(
 							{ circlePoint.x - 5, circlePoint.y - 5 },
 							{ circlePoint.x + 5, circlePoint.y + 5 }))
@@ -453,7 +450,7 @@ namespace nap
 				if (hovered)
 				{
 					// if we are hovering this point, store ID
-					mState->mAction = createAction<HoveringControlPoint>(
+					mState.mAction = createAction<HoveringControlPoint>(
 						track.mID,
 						segment.mID,
 						i,
@@ -470,7 +467,7 @@ namespace nap
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
 					{
-						mState->mAction = createAction<DraggingControlPoint>(
+						mState.mAction = createAction<DraggingControlPoint>(
 							track.mID,
 							segment.mID,
 							i,
@@ -479,7 +476,7 @@ namespace nap
 					// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mState->mAction = createAction<OpenCurvePointActionPopup>(
+						mState.mAction = createAction<OpenCurvePointActionPopup>(
 							track.mID,
 							segment.mID,
 							i,
@@ -489,29 +486,29 @@ namespace nap
 				else
 				{
 					// otherwise, if we where hovering but not anymore, stop hovering
-					if (mState->mAction->isAction<HoveringControlPoint>())
+					if (mState.mAction->isAction<HoveringControlPoint>())
 					{
-						auto* action = mState->mAction->getDerived<HoveringControlPoint>();
+						auto* action = mState.mAction->getDerived<HoveringControlPoint>();
 						if (action->mControlPointIndex == i && track.mID == action->mTrackID && segment.mID == action->mSegmentID && v == action->mCurveIndex)
 						{
-							mState->mAction = createAction<None>();
+							mState.mAction = createAction<None>();
 						}
 					}
 				}
 
-				if (mState->mIsWindowFocused)
+				if (mState.mIsWindowFocused)
 				{
 					// handle dragging of control point
-					if (mState->mAction->isAction<DraggingControlPoint>())
+					if (mState.mAction->isAction<DraggingControlPoint>())
 					{
-						auto* action = mState->mAction->getDerived<DraggingControlPoint>();
+						auto* action = mState.mAction->getDerived<DraggingControlPoint>();
 
 						if (action->mSegmentID == segment.mID)
 						{
 							if (action->mControlPointIndex == i && action->mCurveIndex == v)
 							{
-								float timeAdjust = mState->mMouseDelta.x / segmentWidth;
-								float valueAdjust = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
+								float timeAdjust = mState.mMouseDelta.x / segmentWidth;
+								float valueAdjust = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 								hovered = true;
 
@@ -537,7 +534,7 @@ namespace nap
 
 								if (ImGui::IsMouseReleased(0))
 								{
-									mState->mAction = createAction<None>();
+									mState.mAction = createAction<None>();
 								}
 							}
 						}
@@ -591,7 +588,7 @@ namespace nap
 
 			ImVec2 circlePoint =
 			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-				trackTopLeft.y + mState->mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+				trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
 
 			drawTanHandler<T>(
 				track,
@@ -619,7 +616,7 @@ namespace nap
 		}
 
 		//
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState->mTrackHeight);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mTrackHeight);
 	}
 
 	template<typename T>
@@ -641,26 +638,26 @@ namespace nap
 			ImVec2 segmentValuePos =
 			{
 				trackTopLeft.x + segmentX - (segmentType == SequenceEditorTypes::BEGIN ? segmentWidth : 0.0f),
-				trackTopLeft.y + mState->mTrackHeight * (1.0f - ((segmentType == SequenceEditorTypes::BEGIN ?
+				trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == SequenceEditorTypes::BEGIN ?
 					(float)segment.mCurves[v]->mPoints[0].mPos.mValue :
 					(float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size() - 1].mPos.mValue) / 1.0f))
 			};
 
 			bool hovered = false;
 
-			if (mState->mIsWindowFocused)
+			if (mState.mIsWindowFocused)
 			{
 				// check if we are hovering this value
-				if ((mState->mAction->isAction<None>() ||
-					mState->mAction->isAction<HoveringSegmentValue>() ||
-					mState->mAction->isAction<HoveringSegment>() ||
-					mState->mAction->isAction<HoveringCurve>())
+				if ((mState.mAction->isAction<None>() ||
+					mState.mAction->isAction<HoveringSegmentValue>() ||
+					mState.mAction->isAction<HoveringSegment>() ||
+					mState.mAction->isAction<HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect(
 						{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
 						{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
 				{
 					hovered = true;
-					mState->mAction = createAction<HoveringSegmentValue>(
+					mState.mAction = createAction<HoveringSegmentValue>(
 						track.mID,
 						segment.mID,
 						segmentType,
@@ -668,7 +665,7 @@ namespace nap
 
 					if (ImGui::IsMouseDown(0))
 					{
-						mState->mAction = createAction<DraggingSegmentValue>(
+						mState.mAction = createAction<DraggingSegmentValue>(
 							track.mID,
 							segment.mID,
 							segmentType,
@@ -682,25 +679,25 @@ namespace nap
 						segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 						v);
 				}
-				else if (!mState->mAction->isAction<DraggingSegmentValue>())
+				else if (!mState.mAction->isAction<DraggingSegmentValue>())
 				{
-					if (mState->mAction->isAction<HoveringSegmentValue>())
+					if (mState.mAction->isAction<HoveringSegmentValue>())
 					{
-						auto* action = mState->mAction->getDerived<HoveringSegmentValue>();
+						auto* action = mState.mAction->getDerived<HoveringSegmentValue>();
 
 						if (action->mType == segmentType &&
 							action->mSegmentID == segment.mID &&
 							action->mCurveIndex == v)
 						{
-							mState->mAction = createAction<None>();
+							mState.mAction = createAction<None>();
 						}
 					}
 				}
 
 				// handle dragging segment value
-				if (mState->mAction->isAction<DraggingSegmentValue>())
+				if (mState.mAction->isAction<DraggingSegmentValue>())
 				{
-					auto* action = mState->mAction->getDerived<DraggingSegmentValue>();
+					auto* action = mState.mAction->getDerived<DraggingSegmentValue>();
 					if (action->mSegmentID == segment.mID)
 					{
 						if (action->mType == segmentType && action->mCurveIndex == v)
@@ -715,11 +712,11 @@ namespace nap
 
 							if (ImGui::IsMouseReleased(0))
 							{
-								mState->mAction = createAction<None>();
+								mState.mAction = createAction<None>();
 							}
 							else
 							{
-								float dragAmount = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
+								float dragAmount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 								SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
 
@@ -752,22 +749,22 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		// segment handler
-		if (mState->mIsWindowFocused &&
-			(!mState->mAction->isAction<DraggingSegment>() && !mState->mAction->isAction<DraggingSegmentValue>() && !mState->mAction->isAction<HoveringSegmentValue>())
+		if (mState.mIsWindowFocused &&
+			(!mState.mAction->isAction<DraggingSegment>() && !mState.mAction->isAction<DraggingSegmentValue>() && !mState.mAction->isAction<HoveringSegmentValue>())
 			&& ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
-					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState->mTrackHeight + 10 }))  // bottom right 
+					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 }))  // bottom right 
 		{
 			
 			// draw handler of segment duration
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				guicolors::white, // color
 				3.0f); // thickness
 
 			// we are hovering this segment with the mouse
-			mState->mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+			mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
 
 			ImGui::BeginTooltip();
 			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
@@ -776,27 +773,27 @@ namespace nap
 			// left mouse is start dragging
 			if (ImGui::IsMouseDown(0))
 			{
-				mState->mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+				mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID);
 			}
 			// right mouse in deletion popup
 			else if (ImGui::IsMouseDown(1))
 			{
-				mState->mAction = createAction <OpenEditCurveSegmentPopup>(
+				mState.mAction = createAction <OpenEditCurveSegmentPopup>(
 					track.mID,
 					segment.mID,
 					segment.get_type()
 				);
 			}
 		}
-		else if (mState->mAction->isAction<DraggingSegment>())
+		else if (mState.mAction->isAction<DraggingSegment>())
 		{
-			auto* action = mState->mAction->getDerived<DraggingSegment>();
+			auto* action = mState.mAction->getDerived<DraggingSegment>();
 			if (action->mSegmentID == segment.mID)
 			{
 				// draw handler of segment duration
 				drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 					guicolors::white, // color
 					3.0f); // thickness
 
@@ -807,7 +804,7 @@ namespace nap
 				// do we have the mouse still held down ? drag the segment
 				if (ImGui::IsMouseDown(0))
 				{
-					float amount = mState->mMouseDelta.x / mState->mStepSize;
+					float amount = mState.mMouseDelta.x / mState.mStepSize;
 
 					auto& editor = getEditor();
 					SequenceControllerCurve& curveController = editor.getController<SequenceControllerCurve>();
@@ -818,7 +815,7 @@ namespace nap
 				// otherwise... release!
 				else if (ImGui::IsMouseReleased(0))
 				{
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 			}
 			else
@@ -826,7 +823,7 @@ namespace nap
 				// draw handler of segment duration
 				drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 					guicolors::white, // color
 					1.0f); // thickness
 			}
@@ -836,15 +833,15 @@ namespace nap
 			// draw handler of segment duration
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }, // bottom right
+			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				guicolors::white, // color
 				1.0f); // thickness
 
 			// release if we are not hovering this segment
-			if (mState->mAction->isAction<HoveringSegment>()
-				&& mState->mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)
+			if (mState.mAction->isAction<HoveringSegment>()
+				&& mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)
 			{
-				mState->mAction = createAction<None>();
+				mState.mAction = createAction<None>();
 			}
 		}
 	}
@@ -875,25 +872,25 @@ namespace nap
 			// get the offset from the tan
 			ImVec2 offset =
 			{ (segmentWidth * tanComplex.mTime) / (float)segment.mDuration,
-				(mState->mTrackHeight *  (float)tanComplex.mValue * -1.0f) };
+				(mState.mTrackHeight *  (float)tanComplex.mValue * -1.0f) };
 			ImVec2 tanPoint = { circlePoint.x + offset.x, circlePoint.y + offset.y };
 
 			// set if we are hoverting this point with the mouse
 			bool tanPointHovered = false;
 
-			if (mState->mIsWindowFocused)
+			if (mState.mIsWindowFocused)
 			{
 				// check if hovered
-				if ((mState->mAction->isAction<None>() || mState->mAction->isAction<HoveringCurve>())
+				if ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect({ tanPoint.x - 5, tanPoint.y - 5 }, { tanPoint.x + 5, tanPoint.y + 5 }))
 				{
-					mState->mAction = createAction<HoveringTanPoint>(tanStream.str());
+					mState.mAction = createAction<HoveringTanPoint>(tanStream.str());
 					tanPointHovered = true;
 				}
 				else if (
-					mState->mAction->isAction<HoveringTanPoint>())
+					mState.mAction->isAction<HoveringTanPoint>())
 				{
-					auto* action = mState->mAction->getDerived<HoveringTanPoint>();
+					auto* action = mState.mAction->getDerived<HoveringTanPoint>();
 
 					// if we hare already hovering, check if its this point
 					if (action->mTanPointID == tanStream.str())
@@ -908,7 +905,7 @@ namespace nap
 							// start dragging if mouse down
 							if (ImGui::IsMouseDown(0))
 							{
-								mState->mAction = createAction<DraggingTanPoint>(
+								mState.mAction = createAction<DraggingTanPoint>(
 									track.mID,
 									segment.mID,
 									controlPointIndex,
@@ -919,15 +916,15 @@ namespace nap
 						else
 						{
 							// otherwise, release!
-							mState->mAction = createAction<None>();
+							mState.mAction = createAction<None>();
 						}
 					}
 				}
 
 				// handle dragging of tan point
-				if (mState->mAction->isAction<DraggingTanPoint>())
+				if (mState.mAction->isAction<DraggingTanPoint>())
 				{
-					auto* action = mState->mAction->getDerived<DraggingTanPoint>();
+					auto* action = mState.mAction->getDerived<DraggingTanPoint>();
 
 					if (action->mSegmentID == segment.mID &&
 						action->mControlPointIndex == controlPointIndex &&
@@ -936,14 +933,14 @@ namespace nap
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
-							mState->mAction = createAction<None>();
+							mState.mAction = createAction<None>();
 						}
 						else
 						{
 							tanPointHovered = true;
 
-							float time = mState->mMouseDelta.x / mState->mStepSize;
-							float value = (mState->mMouseDelta.y / mState->mTrackHeight) * -1.0f;
+							float time = mState.mMouseDelta.x / mState.mStepSize;
+							float value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 							auto& curveController = getEditor().getController<SequenceControllerCurve>();
 							curveController.changeTanPoint(
@@ -971,9 +968,9 @@ namespace nap
 
 	void SequenceCurveTrackView::handleInsertSegmentPopup()
 	{
-		if (mState->mAction->isAction<OpenInsertSegmentPopup>())
+		if (mState.mAction->isAction<OpenInsertSegmentPopup>())
 		{
-			auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+			auto* action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
 
 			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
 				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
@@ -983,16 +980,16 @@ namespace nap
 				// invoke insert sequence popup
 				ImGui::OpenPopup("Insert Segment");
 
-				auto* action = mState->mAction->getDerived<OpenInsertSegmentPopup>();
+				auto* action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
 
-				mState->mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
+				mState.mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
 			}
 		}
 
 		// handle insert segment popup
-		if (mState->mAction->isAction<InsertingSegment>())
+		if (mState.mAction->isAction<InsertingSegment>())
 		{
-			auto* action = mState->mAction->getDerived<InsertingSegment>();
+			auto* action = mState.mAction->getDerived<InsertingSegment>();
 
 			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
 				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
@@ -1003,11 +1000,11 @@ namespace nap
 				{
 					if (ImGui::Button("Insert"))
 					{
-						auto* action = mState->mAction->getDerived<InsertingSegment>();
+						auto* action = mState.mAction->getDerived<InsertingSegment>();
 
 						auto& curveController = getEditor().getController<SequenceControllerCurve>();
 						curveController.insertSegment(action->mTrackID, action->mTime);
-						mState->mAction = createAction<None>();
+						mState.mAction = createAction<None>();
 
 						mCurveCache.clear();
 
@@ -1018,7 +1015,7 @@ namespace nap
 					if (ImGui::Button("Cancel"))
 					{
 						ImGui::CloseCurrentPopup();
-						mState->mAction = createAction<None>();
+						mState.mAction = createAction<None>();
 					}
 
 					ImGui::EndPopup();
@@ -1026,7 +1023,7 @@ namespace nap
 				else
 				{
 					// click outside popup so cancel action
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 			}
 		}
@@ -1035,13 +1032,13 @@ namespace nap
 
 	void SequenceCurveTrackView::handleCurveTypePopup()
 	{
-		if (mState->mAction->isAction<OpenCurveTypePopup>())
+		if (mState.mAction->isAction<OpenCurveTypePopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Change Curve Type");
 
-			auto* action = mState->mAction->getDerived<OpenCurveTypePopup>();
-			mState->mAction = createAction<CurveTypePopup>(
+			auto* action = mState.mAction->getDerived<OpenCurveTypePopup>();
+			mState.mAction = createAction<CurveTypePopup>(
 				action->mTrackID, 
 				action->mSegmentID,
 				action->mCurveIndex, 
@@ -1050,9 +1047,9 @@ namespace nap
 		}
 
 		// handle insert segment popup
-		if (mState->mAction->isAction<CurveTypePopup>())
+		if (mState.mAction->isAction<CurveTypePopup>())
 		{
-			auto* action = mState->mAction->getDerived<CurveTypePopup>();
+			auto* action = mState.mAction->getDerived<CurveTypePopup>();
 
 			if (ImGui::BeginPopup("Change Curve Type"))
 			{
@@ -1064,7 +1061,7 @@ namespace nap
 					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 					mCurveCache.clear();
 
 				}
@@ -1075,14 +1072,14 @@ namespace nap
 					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 					mCurveCache.clear();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1090,7 +1087,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction = createAction<None>();
+				mState.mAction = createAction<None>();
 			}
 		}
 	}
@@ -1098,21 +1095,21 @@ namespace nap
 
 	void SequenceCurveTrackView::handleInsertCurvePointPopup()
 	{
-		if (mState->mAction->isAction<OpenInsertCurvePointPopup>())
+		if (mState.mAction->isAction<OpenInsertCurvePointPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Insert Curve Point");
 
-			auto* action = mState->mAction->getDerived<OpenInsertCurvePointPopup>();
-			mState->mAction = createAction<InsertingCurvePoint>(action->mTrackID, action->mSegmentID, action->mSelectedIndex, action->mPos);
+			auto* action = mState.mAction->getDerived<OpenInsertCurvePointPopup>();
+			mState.mAction = createAction<InsertingCurvePoint>(action->mTrackID, action->mSegmentID, action->mSelectedIndex, action->mPos);
 		}
 
 		// handle insert segment popup
-		if (mState->mAction->isAction<InsertingCurvePoint>())
+		if (mState.mAction->isAction<InsertingCurvePoint>())
 		{
 			if (ImGui::BeginPopup("Insert Curve Point"))
 			{
-				auto* action = mState->mAction->getDerived<InsertingCurvePoint>();
+				auto* action = mState.mAction->getDerived<InsertingCurvePoint>();
 				if (ImGui::Button("Insert Point"))
 				{
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
@@ -1125,7 +1122,7 @@ namespace nap
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 
 				}
 
@@ -1133,7 +1130,7 @@ namespace nap
 				{
 					ImGui::CloseCurrentPopup();
 
-					mState->mAction = createAction<OpenCurveTypePopup>(
+					mState.mAction = createAction<OpenCurveTypePopup>(
 						action->mTrackID,
 						action->mSegmentID,
 						action->mSelectedIndex,
@@ -1144,7 +1141,7 @@ namespace nap
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1152,7 +1149,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction = createAction<None>();
+				mState.mAction = createAction<None>();
 			}
 		}
 	}
@@ -1160,10 +1157,10 @@ namespace nap
 
 	void SequenceCurveTrackView::handleCurvePointActionPopup()
 	{
-		if (mState->mAction->isAction<OpenCurvePointActionPopup>())
+		if (mState.mAction->isAction<OpenCurvePointActionPopup>())
 		{
-			auto* action = mState->mAction->getDerived<OpenCurvePointActionPopup>();
-			mState->mAction = createAction<CurvePointActionPopup>(
+			auto* action = mState.mAction->getDerived<OpenCurvePointActionPopup>();
+			mState.mAction = createAction<CurvePointActionPopup>(
 					action->mTrackID,
 					action->mSegmentID,
 					action->mControlPointIndex,
@@ -1172,13 +1169,13 @@ namespace nap
 			ImGui::OpenPopup("Curve Point Actions");
 		}
 
-		if (mState->mAction->isAction<CurvePointActionPopup>())
+		if (mState.mAction->isAction<CurvePointActionPopup>())
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
 				if (ImGui::Button("Delete"))
 				{
-					auto* action = mState->mAction->getDerived<CurvePointActionPopup>();
+					auto* action = mState.mAction->getDerived<CurvePointActionPopup>();
 
 					auto& curveController = getEditor().getController<SequenceControllerCurve>();
 					curveController.deleteCurvePoint(
@@ -1188,14 +1185,14 @@ namespace nap
 						action->mCurveIndex);
 					mCurveCache.clear();
 
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -1205,7 +1202,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction = createAction<None>();
+				mState.mAction = createAction<None>();
 			}
 		}
 	}
@@ -1213,14 +1210,14 @@ namespace nap
 
 	void SequenceCurveTrackView::handleDeleteSegmentPopup()
 	{
-		if (mState->mAction->isAction<OpenEditCurveSegmentPopup>())
+		if (mState.mAction->isAction<OpenEditCurveSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			auto* action = mState->mAction->getDerived<OpenEditCurveSegmentPopup>();
+			auto* action = mState.mAction->getDerived<OpenEditCurveSegmentPopup>();
 
-			mState->mAction = createAction<EditingCurveSegment>(
+			mState.mAction = createAction<EditingCurveSegment>(
 				action->mTrackID,
 				action->mSegmentID,
 				action->mSegmentType
@@ -1228,11 +1225,11 @@ namespace nap
 		}
 
 		// handle delete segment popup
-		if (mState->mAction->isAction<EditingCurveSegment>())
+		if (mState.mAction->isAction<EditingCurveSegment>())
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
-				auto* action = mState->mAction->getDerived<EditingCurveSegment>();
+				auto* action = mState.mAction->getDerived<EditingCurveSegment>();
 
 				if (ImGui::Button("Delete"))
 				{
@@ -1242,13 +1239,13 @@ namespace nap
 					mCurveCache.clear();
 
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 
 				ImGui::EndPopup();
@@ -1256,7 +1253,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState->mAction = createAction<None>();
+				mState.mAction = createAction<None>();
 			}
 		}
 	}
@@ -1278,7 +1275,7 @@ namespace nap
 		const int resolution = 40;
 		bool curveSelected = false;
 
-		bool needsDrawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState->mTrackHeight });
+		bool needsDrawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
 		if (needsDrawing)
 		{
@@ -1295,7 +1292,7 @@ namespace nap
 						points[i + v * (resolution + 1)] =
 						{
 							trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-							trackTopLeft.y + value * mState->mTrackHeight
+							trackTopLeft.y + value * mState.mTrackHeight
 						};
 					}
 				}
@@ -1305,18 +1302,18 @@ namespace nap
 
 
 		int selectedCurve = -1;
-		if (mState->mIsWindowFocused)
+		if (mState.mIsWindowFocused)
 		{
 			// determine if mouse is hovering curve
-			if ((mState->mAction->isAction<None>() || mState->mAction->isAction<HoveringCurve>())
+			if ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurve>())
 				&& ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState->mTrackHeight }))  // bottom right 
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }))  // bottom right 
 			{
 				// translate mouse position to position in curve
 				ImVec2 mousePos = ImGui::GetMousePos();
-				float xInSegment = ((mousePos.x - (trackTopLeft.x + segmentX - segmentWidth)) / mState->mStepSize) / segment.mDuration;
-				float yInSegment = 1.0f - ((mousePos.y - trackTopLeft.y) / mState->mTrackHeight);
+				float xInSegment = ((mousePos.x - (trackTopLeft.x + segmentX - segmentWidth)) / mState.mStepSize) / segment.mDuration;
+				float yInSegment = 1.0f - ((mousePos.y - trackTopLeft.y) / mState.mTrackHeight);
 
 				for (int i = 0; i < segment.mCurves.size(); i++)
 				{
@@ -1327,14 +1324,14 @@ namespace nap
 					const float maxDist = 0.1f;
 					if (abs(yInCurve - yInSegment) < maxDist)
 					{
-						mState->mAction = createAction<HoveringCurve>(
+						mState.mAction = createAction<HoveringCurve>(
 							track.mID,
 							segment.mID,
 							i);
 
 						if (ImGui::IsMouseClicked(1))
 						{
-							mState->mAction = createAction<OpenInsertCurvePointPopup>(
+							mState.mAction = createAction<OpenInsertCurvePointPopup>(
 								track.mID,
 								segment.mID,
 								i,
@@ -1346,7 +1343,7 @@ namespace nap
 
 				if (selectedCurve == -1)
 				{
-					mState->mAction = createAction<None>();
+					mState.mAction = createAction<None>();
 				}
 				else
 				{
@@ -1354,19 +1351,19 @@ namespace nap
 						track,
 						segment,
 						xInSegment,
-						mState->mMouseCursorTime,
+						mState.mMouseCursorTime,
 						selectedCurve);
 				}
 			}
 			else
 			{
-				if (mState->mAction->isAction<HoveringCurve>())
+				if (mState.mAction->isAction<HoveringCurve>())
 				{
-					auto* action = mState->mAction->getDerived<HoveringCurve>();
+					auto* action = mState.mAction->getDerived<HoveringCurve>();
 
 					if (action->mSegmentID == segment.mID)
 					{
-						mState->mAction = createAction<None>();
+						mState.mAction = createAction<None>();
 					}
 				}
 			}

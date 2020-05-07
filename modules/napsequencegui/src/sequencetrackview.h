@@ -18,7 +18,7 @@ namespace nap
 	class SequenceEditorGUIView;
 
 	// shortcut to factory function
-	using SequenceTrackViewFactoryFunc = std::unique_ptr<SequenceTrackView>(*)(SequenceEditorGUIView&);
+	using SequenceTrackViewFactoryFunc = std::unique_ptr<SequenceTrackView>(*)(SequenceEditorGUIView&, SequenceEditorGUIState& state);
 
 	/**
 	 * Base class of track views
@@ -32,20 +32,20 @@ namespace nap
 		 * Constructor
 		 * @param view reference to view
 		 */
-		SequenceTrackView(SequenceEditorGUIView& view);
+		SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
 		 * draws track 
 		 * given track derived class is expected to be of track type that is used by this view
 		 * @param track reference to sequence track
 		 */
-		virtual void drawTrack(const SequenceTrack& track, SequenceEditorGUIState& state) = 0;
+		virtual void drawTrack(const SequenceTrack& track) = 0;
 
 		/**
 		 * handles popups
 		 * popups must be handled after all tracks are drawn
 		 */
-		virtual void handlePopups(SequenceEditorGUIState& state) = 0;
+		virtual void handlePopups() = 0;
 
 		/////////////////////////////////////////////////////////////////////////////
 		// static factory methods
@@ -103,6 +103,6 @@ namespace nap
 
 		SequenceEditor& getEditor();
 
-		SequenceEditorGUIState* mState = nullptr;
+		SequenceEditorGUIState& mState;
 	};
 }

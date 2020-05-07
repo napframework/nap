@@ -9,11 +9,11 @@ namespace nap
 	class SequenceEventTrackView : public SequenceTrackView
 	{
 	public:
-		SequenceEventTrackView(SequenceEditorGUIView& view);
+		SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
-		virtual void drawTrack(const SequenceTrack& track, SequenceEditorGUIState& state) override;
+		virtual void drawTrack(const SequenceTrack& track) override;
 
-		virtual void handlePopups(SequenceEditorGUIState& state) override;
+		virtual void handlePopups() override;
 	protected:
 		/**
 		 * handlerInsertEventSegmentPopup

@@ -28,17 +28,6 @@ namespace nap
 	}
 
 
-	void SequenceController::save()
-	{
-		// save
-		utility::ErrorState errorState;
-		if (!errorState.check(mPlayer.save(mPlayer.mDefaultSequence, errorState), "Error saving show!"))
-		{
-			nap::Logger::error(errorState.toString());
-		}
-	}
-
-
 	void SequenceController::updateTracks()
 	{
 		double longestTrackDuration = 0.0;

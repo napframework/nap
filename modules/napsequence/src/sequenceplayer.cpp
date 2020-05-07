@@ -117,7 +117,7 @@ namespace nap
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
 
-		std::string show_path = name;
+		std::string show_path = dir + '/' + name;
 
 		// Serialize current set of parameters to json
 		rtti::JSONWriter writer;
@@ -125,7 +125,7 @@ namespace nap
 			return false;
 
 		// Open output file
-		std::ofstream output(show_path, std::ios::binary | std::ios::out);
+		std::ofstream output(show_path, std::ios::binary | std::ios::out | std::ios::trunc);
 		if (!errorState.check(output.is_open() && output.good(), "Failed to open %s for writing", show_path.c_str()))
 			return false;
 
