@@ -74,6 +74,11 @@ namespace nap
 		 * @return true on succesfull registration
 		 */
 		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
+
+		/**
+		 * @return duration of sequence
+		 */
+		double getDuration();
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player

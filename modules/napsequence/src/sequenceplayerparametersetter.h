@@ -12,7 +12,6 @@ namespace nap
 	class SequenceEventBase;
 
 	/**
-	 * SequencePlayerParameterSetter
 	 * Base class of parameter setter
 	 * Parameter setters are used to sync SequenceCurveTracks values send to parameters with the main thread
 	 */

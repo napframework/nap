@@ -514,8 +514,12 @@ namespace nap
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
 			{
-				// we are hovering this segment with the mouse
-				mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+				if(!ImGui::IsMouseDragging(0))
+				{
+					// we are hovering this segment with the mouse
+					mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+				}
+
 			}
 
 			ImGui::BeginTooltip();
@@ -525,9 +529,12 @@ namespace nap
 			// left mouse is start dragging
 			if (!isAlreadyDragging)
 			{
-				if (ImGui::IsMouseDown(0))
+				if(  !mState.mAction->isAction<DraggingSegment>() )
 				{
-					mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+					if (ImGui::IsMouseDown(0))
+					{
+						mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+					}
 				}
 			}
 			else

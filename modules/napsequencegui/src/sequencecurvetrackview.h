@@ -181,7 +181,7 @@ namespace nap
 		template<typename T>
 		bool inputFloat(T &, int precision);
 
-		std::unordered_map<std::string, std::vector<ImVec2>> mCurveCache;
+		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
 
 		using DrawTrackMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID);
 		using DrawSegmentMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);

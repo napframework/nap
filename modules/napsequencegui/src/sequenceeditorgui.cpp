@@ -396,7 +396,7 @@ namespace nap
 					if (timestampPos.y >= parentWindowPos.y &&
 						timestampPos.y < parentWindowSize.y + parentWindowPos.y)
 					{
-						double timeInPlayer = 0.0;// mPlayer.mDuration * (float)((float)i / steps);
+						double timeInPlayer = this->mEditor.getDuration() * (float)((float)i / steps);
 						std::string formattedTimeString = SequenceTrackView::formatTimeString(timeInPlayer);
 						drawList->AddText(timestampPos, guicolors::white, formattedTimeString.c_str());
 
@@ -763,6 +763,8 @@ namespace nap
 						if (controller != nullptr)
 						{
 							controller->insertTrack(it.first);
+							mState.mAction = createAction<None>();
+							ImGui::CloseCurrentPopup();
 						}
 					}
 				}

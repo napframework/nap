@@ -93,4 +93,9 @@ namespace nap
 		}
 	}
 
+
+	double SequenceEditor::getDuration()
+	{
+		return mSequencePlayer->mSequence->mDuration;
+	}
 }

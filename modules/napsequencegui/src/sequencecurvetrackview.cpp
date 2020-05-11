@@ -1,3 +1,4 @@
+// local includes
 #include "sequencecurvetrackview.h"
 #include "sequenceeditorgui.h"
 #include "sequencetrackcurve.h"
@@ -5,7 +6,12 @@
 #include "sequencecontrollercurve.h"
 #include "sequenceplayercurveinput.h"
 
+// nap includes
 #include <nap/logger.h>
+#include <parametervec.h>
+#include <parameternumeric.h>
+
+// external includes
 #include <iostream>
 
 namespace nap
@@ -45,6 +51,27 @@ namespace nap
 		{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceCurveTrackView::drawSegmentContent<glm::vec4> }
 	};
 
+	static std::unordered_map<rttr::type, std::vector<rttr::type>> sParameterTypesForCurveType
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt) } } },
+			{ RTTI_OF(SequenceTrackCurveVec2), { { RTTI_OF(ParameterVec2) } } },
+			{ RTTI_OF(SequenceTrackCurveVec3), { { RTTI_OF(ParameterVec3) } } }
+		};
+
+	static bool isParameterTypeAllowed(rttr::type curveType, rttr::type parameterType)
+	{
+		auto it = sParameterTypesForCurveType.find(curveType);
+		if(it!=sParameterTypesForCurveType.end())
+		{
+			for(auto& type : sParameterTypesForCurveType[curveType])
+			{
+				if(parameterType == type)
+					return true;
+			}
+		}
+
+		return false;
+	}
 
 	void SequenceCurveTrackView::drawTrack(const SequenceTrack& track)
 	{
@@ -160,19 +187,27 @@ namespace nap
 			{
 				if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput))
 				{
-					count++;
+					auto& curveInput = static_cast<SequencePlayerCurveInput&>(*input.get());
 
-					if (input->mID == track.mAssignedObjectIDs)
+					if(curveInput.mParameter != nullptr)
 					{
-						assigned = true;
-						assignedID = input->mID;
-						currentItem = count;
+						if(isParameterTypeAllowed(track.get_type(), curveInput.mParameter.get()->get_type()))
+						{
+							count++;
 
-						assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput)); // type mismatch
-						assignedParameter = static_cast<SequencePlayerCurveInput*>(input.get())->mParameter.get();
+							if (input->mID == track.mAssignedObjectIDs)
+							{
+								assigned = true;
+								assignedID = input->mID;
+								currentItem = count;
+
+								assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput)); // type mismatch
+								assignedParameter = static_cast<SequencePlayerCurveInput*>(input.get())->mParameter.get();
+							}
+
+							curveInputs.emplace_back(input->mID);
+						}
 					}
-
-					curveInputs.emplace_back(input->mID);
 				}
 			}
 
@@ -399,7 +434,7 @@ namespace nap
 					circlePoint,
 					0,
 					v,
-								  SequenceCurveEnums::TanPointTypes::IN,
+					SequenceCurveEnums::TanPointTypes::IN,
 					drawList);
 
 				drawTanHandler<T>(
@@ -411,7 +446,7 @@ namespace nap
 					circlePoint,
 					0,
 					v,
-								  SequenceCurveEnums::TanPointTypes::OUT,
+					SequenceCurveEnums::TanPointTypes::OUT,
 					drawList);
 			}
 		}
@@ -542,7 +577,6 @@ namespace nap
 					}
 				}
 
-
 				// draw the control point
 				drawList->AddCircleFilled(
 					circlePoint,
@@ -559,7 +593,7 @@ namespace nap
 					circlePoint,
 					i,
 					v,
-								  SequenceCurveEnums::TanPointTypes::IN,
+					SequenceCurveEnums::TanPointTypes::IN,
 					drawList);
 
 				drawTanHandler<T>(
@@ -571,7 +605,7 @@ namespace nap
 					circlePoint,
 					i,
 					v,
-								  SequenceCurveEnums::TanPointTypes::OUT,
+					SequenceCurveEnums::TanPointTypes::OUT,
 					drawList);
 			}
 		}
@@ -600,7 +634,7 @@ namespace nap
 				circlePoint,
 				controlPointIndex,
 				v,
-							  SequenceCurveEnums::TanPointTypes::IN,
+				SequenceCurveEnums::TanPointTypes::IN,
 				drawList);
 
 			drawTanHandler<T>(
@@ -612,7 +646,7 @@ namespace nap
 				circlePoint,
 				controlPointIndex,
 				v,
-							  SequenceCurveEnums::TanPointTypes::OUT,
+				SequenceCurveEnums::TanPointTypes::OUT,
 				drawList);
 		}
 
@@ -1273,34 +1307,41 @@ namespace nap
 		const SequenceTrackSegmentCurve<T>& segment
 			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
-		const int resolution = 40;
+		const float pointsPerPixel = 0.5f;
 		bool curveSelected = false;
 
 		bool needsDrawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
 		if (needsDrawing)
 		{
+			// if no cache present, create new curve
 			if (mCurveCache.find(segment.mID) == mCurveCache.end())
 			{
-				std::vector<ImVec2> points;
-				points.resize((resolution + 1)*segment.mCurves.size());
+				const int pointNum = (int) ( pointsPerPixel * segmentWidth );
+				std::vector<std::vector<ImVec2>> curves;
 				for (int v = 0; v < segment.mCurves.size(); v++)
 				{
-					for (int i = 0; i <= resolution; i++)
+					std::vector<ImVec2> curve;
+					for (int i = 0; i <= pointNum; i++)
 					{
-						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / resolution);
+						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / pointNum);
 
-						points[i + v * (resolution + 1)] =
+						ImVec2 point =
+							{
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / pointNum),
+								trackTopLeft.y + value * mState.mTrackHeight
+							};
+
+						if( ImGui::IsRectVisible(point, { point.x + 1, point.y + 1 }) )
 						{
-							trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / resolution),
-							trackTopLeft.y + value * mState.mTrackHeight
-						};
+							curve.emplace_back(point);
+						}
 					}
+					curves.emplace_back(curve);
 				}
-				mCurveCache.emplace(segment.mID, points);
+				mCurveCache.emplace(segment.mID, curves);
 			}
 		}
-
 
 		int selectedCurve = -1;
 		if (mState.mIsWindowFocused)
@@ -1375,12 +1416,13 @@ namespace nap
 			for (int i = 0; i < segment.mCurves.size(); i++)
 			{
 				// draw points of curve
-				drawList->AddPolyline(&*mCurveCache[segment.mID].begin() + i * (resolution + 1), // points array
-					mCurveCache[segment.mID].size() / segment.mCurves.size(),	 // size of points array
-					guicolors::curvecolors[i],								 // color
-					false,													 // closed
-					selectedCurve == i ? 3.0f : 1.0f,							 // thickness
-					true);													 // anti-aliased
+				drawList->AddPolyline(
+					&*mCurveCache[segment.mID][i].begin(), // points array
+					mCurveCache[segment.mID][i].size(),	 // size of points array
+					guicolors::curvecolors[i],  // color
+					false, // closed
+					selectedCurve == i ? 3.0f : 1.0f, // thickness
+					true); // anti-aliased
 			}
 		}
 	}

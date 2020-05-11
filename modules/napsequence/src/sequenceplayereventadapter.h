@@ -12,7 +12,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * SequencePlayerEventAdapter
 	 * Adapter responsible for handling events from an event track and sync them with the main thread using a
 	 * sequence event receiver intermediate class.
 	 */
@@ -32,16 +31,18 @@ namespace nap
 		virtual ~SequencePlayerEventAdapter() {}
 
 		/**
-		 * update
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
 		virtual void update(double time);
 	private:
-		SequenceTrack& mTrack;
-		SequenceEventReceiver& mReceiver;
-		std::unordered_set<SequenceTrackSegmentEventBase*> mDispatchedEvents;
+		// reference to track linked to adapter
+		SequenceTrack& 			mTrack;
 
-		static bool	sRegisteredInFactory;
+		// reference to receiver linked to adapter
+		SequenceEventReceiver& 	mReceiver;
+
+		// list of dispatched events
+		std::unordered_set<SequenceTrackSegmentEventBase*> mDispatchedEvents;
 	};
 }

@@ -12,8 +12,8 @@
 namespace nap
 {
 	/**
-	* Event track, holds a collection of SequenceTrackSegmentEvents
-	*/
+	 * Event track, holds a collection of SequenceTrackSegmentEvents
+	 */
 	class NAPAPI SequenceTrackEvent : public SequenceTrack
 	{
 		RTTI_ENABLE(SequenceTrack)

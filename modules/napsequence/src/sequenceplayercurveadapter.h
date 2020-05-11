@@ -47,6 +47,10 @@ namespace nap
 			if (mUseMainThread)
 			{
 				mSetter = std::make_unique<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(service, mParameter);
+				mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
+			}else
+			{
+				mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
 			}
 		}
 
@@ -73,24 +77,38 @@ namespace nap
 					CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
 					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
-					if (!mUseMainThread)
-						mParameter.setValue(value);
-					else
-					{
-						assert(mSetter != nullptr);
-						mSetter->storeValue(value);
-					}
+					(*this.*mSetFunction)(value);
 
 					break;
 				}
 			}
 		}
 	private:
+		/**
+		 * Directly sets parameter value, not thread safe
+		 * @param value the value
+		 */
+		void setParameterValue(PARAMETER_VALUE_TYPE& value)
+		{
+			mParameter.setValue(value);
+		}
+
+		/**
+		 * Uses parameter setter to set parameter value, value will be set from main thread, thread safe
+		 * @param value the value
+		 */
+		void storeParameterValue(PARAMETER_VALUE_TYPE& value)
+		{
+			mSetter->storeValue(value);
+		}
+
 		PARAMETER_TYPE&									mParameter;
 		SequenceTrackCurve<CURVE_TYPE>*					mTrack;
 		bool											mUseMainThread;
 		SequenceService&								mService;
 		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
+
+		void (SequencePlayerCurveAdapter::*mSetFunction)(PARAMETER_VALUE_TYPE& value);
 	};
 
 
