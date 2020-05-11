@@ -14,7 +14,7 @@ namespace nap
 		 * @param objectIDs reference to collections of id's 
 		 * @param baseID base id
 		 */
-		const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
+		NAPAPI const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
 
 
 		/**
@@ -23,6 +23,6 @@ namespace nap
 		 * @param objectIDs a list of unique ids, used to created unique ids for each object in this sequence
 		 * @return a raw pointer to the newly created sequence
 		 */
-		Sequence* createEmptySequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, std::unordered_set<std::string>& objectIDs);
+		NAPAPI Sequence* createEmptySequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, std::unordered_set<std::string>& objectIDs);
 	}
 }

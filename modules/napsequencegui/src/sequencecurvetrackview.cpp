@@ -1415,14 +1415,17 @@ namespace nap
 		{
 			for (int i = 0; i < segment.mCurves.size(); i++)
 			{
-				// draw points of curve
-				drawList->AddPolyline(
-					&*mCurveCache[segment.mID][i].begin(), // points array
-					mCurveCache[segment.mID][i].size(),	 // size of points array
-					guicolors::curvecolors[i],  // color
-					false, // closed
-					selectedCurve == i ? 3.0f : 1.0f, // thickness
-					true); // anti-aliased
+				if (mCurveCache[segment.mID][i].size() > 0)
+				{
+					// draw points of curve
+					drawList->AddPolyline(
+						&*mCurveCache[segment.mID][i].begin(), // points array
+						mCurveCache[segment.mID][i].size(),	 // size of points array
+						guicolors::curvecolors[i],  // color
+						false, // closed
+						selectedCurve == i ? 3.0f : 1.0f, // thickness
+						true); // anti-aliased
+				}
 			}
 		}
 	}
