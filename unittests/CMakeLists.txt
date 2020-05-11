@@ -20,7 +20,6 @@ set(UNITTEST_LIBS
     napcore
     napkin_lib
 	mod_emography
-    nrender
     )
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})

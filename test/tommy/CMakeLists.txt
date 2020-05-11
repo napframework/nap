@@ -27,7 +27,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 # Get our modules list from project.json
 project_json_to_cmake()
 
-target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
 
 # Package into release, export FBX, other shared source project fixes
 nap_source_project_packaging_and_shared_postprocessing(FALSE FALSE "unused" FALSE)
