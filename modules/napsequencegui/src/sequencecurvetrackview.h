@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sequencetrackview.h"
+#include "sequencetracksegmentcurve.h"
 
 namespace nap
 {
@@ -59,7 +60,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceEditorTypes::SegmentValueTypes segmentType, ImDrawList* drawList);
+		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
 		 * drawSegmentHandler
@@ -117,7 +118,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceEditorTypes::TanPointTypes type, ImDrawList* drawList);
+		void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
 	
 		/**
 		 * handleInsertSegmentPopup
@@ -337,13 +338,14 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex, SequenceEditorTypes::TanPointTypes type)
+			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex,
+							 SequenceCurveEnums::TanPointTypes type)
 				: mTrackID(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			int mControlPointIndex;
-			SequenceEditorTypes::TanPointTypes mType;
+			SequenceCurveEnums::TanPointTypes mType;
 			int mCurveIndex;
 		};
 

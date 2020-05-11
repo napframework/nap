@@ -1,7 +1,7 @@
 #pragma once
 
-// internal includes
-#include "sequencetracksegmentcurve.h"
+// local includes
+#include "sequencetracksegment.h"
 
 // external includes
 #include <nap/resource.h>

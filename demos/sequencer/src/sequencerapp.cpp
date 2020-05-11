@@ -54,12 +54,20 @@ namespace nap
 		if (!error.check(eventReceiver != nullptr, "unable to find SequenceEventReceiver with name: %s", "SequenceEventReceiver"))
 			return false;
 
-		eventReceiver->mSignal.connect([](const SequenceEvent &event)
+		eventReceiver->mSignal.connect([](const SequenceEventBase&event)
 		{
 			if (event.get_type().is_derived_from(RTTI_OF(SequenceEventString)))
 			{
 				const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
-				nap::Logger::info("Event received with message : %s", eventString.getMessage().c_str());
+				nap::Logger::info("Event received with value : %s", eventString.getValue().c_str());
+			}else if (event.get_type().is_derived_from(RTTI_OF(SequenceEventFloat)))
+			{
+				const SequenceEventFloat& eventString = static_cast<const SequenceEventFloat&>(event);
+				nap::Logger::info("Event received with value : %f", eventString.getValue());
+			}else if (event.get_type().is_derived_from(RTTI_OF(SequenceEventInt)))
+			{
+				const SequenceEventInt& eventString = static_cast<const SequenceEventInt&>(event);
+				nap::Logger::info("Event received with value : %i", eventString.getValue());
 			}
 		});
 

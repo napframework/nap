@@ -25,6 +25,7 @@ namespace nap
 		 * handleEditEventSegmentPopup
 		 * handles event segment popup
 		 */
+		template<typename T>
 		void handleEditEventSegmentPopup();
 
 		/**
@@ -54,6 +55,15 @@ namespace nap
 		void handleDeleteSegmentPopup();
 	};
 
+	template<>
+	void SequenceEventTrackView::handleEditEventSegmentPopup<float>();
+
+	template<>
+	void SequenceEventTrackView::handleEditEventSegmentPopup<int>();
+
+	template<>
+	void SequenceEventTrackView::handleEditEventSegmentPopup<std::string>();
+
 	namespace SequenceGUIActions
 	{
 		class OpenInsertEventSegmentPopup : public Action
@@ -79,29 +89,31 @@ namespace nap
 			std::string mMessage = "hello world";
 		};
 
+		template<typename T>
 		class OpenEditEventSegmentPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, std::string message)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mMessage(message) {}
+			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, T value)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			ImVec2 mWindowPos;
-			std::string mMessage;
+			T mValue;
 		};
 
+		template<typename T>
 		class EditingEventSegment : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
-			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos) {}
+			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos, T value)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
-			std::string mMessage = "hello world";
+			T mValue;
 			ImVec2 mWindowPos;
 		};
 	}

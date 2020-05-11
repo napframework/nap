@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 * Signal will be triggered from main thread
 		 */
-		nap::Signal<const SequenceEvent&> mSignal;
+		nap::Signal<const SequenceEventBase&> mSignal;
 	private:
 		/**
 		 * consumeEvents

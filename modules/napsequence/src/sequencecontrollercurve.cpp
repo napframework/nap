@@ -1,7 +1,11 @@
+// Local Includes
 #include "sequencecontrollercurve.h"
 #include "sequenceutils.h"
 #include "sequencetrackcurve.h"
 #include "sequenceeditor.h"
+
+// Nap Includes
+#include <mathutils.h>
 
 namespace nap
 {
@@ -166,12 +170,14 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = mPlayer.lock();
 
-		Sequence& sequence = mPlayer.getSequence();
+		// create sequence track
+		std::unique_ptr<SequenceTrackCurve<T>> sequenceTrack = std::make_unique<SequenceTrackCurve<T>>();
+		sequenceTrack->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs );
 
-		SequenceTrack* newTrack = sequenceutils::createSequenceCurveTrack<T>(mPlayer.mReadObjects, mPlayer.mReadObjectIDs);
-		sequence.mTracks.emplace_back(ResourcePtr<SequenceTrack>(newTrack));
+		//
+		mPlayer.getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequenceTrack.get()));
 
-		updateCurveSegments<T>(*newTrack);
+		mPlayer.mReadObjects.emplace_back(std::move(sequenceTrack));
 	}
 
 
@@ -398,9 +404,10 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType)
+	void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex,
+														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, SequenceEditorTypes::SegmentValueTypes)> changeSegmentValueMap
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, SequenceCurveEnums::SegmentValueTypes)> changeSegmentValueMap
 		{
 			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurveSegmentValue<float> },
 			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec2> },
@@ -433,20 +440,21 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType)
+	void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		SequenceTrackSegmentCurve<T>& curveSegment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 
 		switch (valueType)
 		{
-		case SequenceEditorTypes::BEGIN:
+		case SequenceCurveEnums::BEGIN:
 		{
 			curveSegment.mCurves[curveIndex]->mPoints[0].mPos.mValue += amount;
 			curveSegment.mCurves[curveIndex]->mPoints[0].mPos.mValue = math::clamp<float>(curveSegment.mCurves[curveIndex]->mPoints[0].mPos.mValue, 0.0f, 1.0f);
 		}
 		break;
-		case SequenceEditorTypes::END:
+		case SequenceCurveEnums::END:
 		{
 			int lastPoint = curveSegment.mCurves[curveIndex]->mPoints.size() - 1;
 			curveSegment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue += amount;
@@ -666,10 +674,12 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value)
+	void SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex,
+												 SequenceCurveEnums::TanPointTypes tanType, float time, float value)
 	{
 		//
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int, SequenceEditorTypes::TanPointTypes, float, float)> changeCurvePointMap
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
+												  SequenceCurveEnums::TanPointTypes, float, float)> changeCurvePointMap
 		{
 			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
 			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },
@@ -698,7 +708,8 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value)
+	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+												 SequenceCurveEnums::TanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curveSegment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
@@ -709,7 +720,7 @@ namespace nap
 		auto& curvePoint = curveSegment.mCurves[curveIndex]->mPoints[pointIndex];
 		switch (tanType)
 		{
-		case SequenceEditorTypes::TanPointTypes::IN:
+		case SequenceCurveEnums::TanPointTypes::IN:
 		{
 			if (curvePoint.mInTan.mTime + time < curvePoint.mOutTan.mTime)
 			{
@@ -724,7 +735,7 @@ namespace nap
 			}
 		}
 		break;
-		case SequenceEditorTypes::TanPointTypes::OUT:
+		case SequenceCurveEnums::TanPointTypes::OUT:
 		{
 			if (curvePoint.mOutTan.mTime + time > curvePoint.mInTan.mTime)
 			{
@@ -817,15 +828,23 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::changeCurvePoint<glm::vec3>(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
 	template NAPAPI void SequenceControllerCurve::changeCurvePoint<glm::vec4>(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
 
-	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<float>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType);
-	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec2>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType);
-	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec3>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType);
-	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec4>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex, SequenceEditorTypes::SegmentValueTypes valueType);
+	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<float>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+															SequenceCurveEnums::SegmentValueTypes valueType);
+	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec2>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+																SequenceCurveEnums::SegmentValueTypes valueType);
+	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec3>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+																SequenceCurveEnums::SegmentValueTypes valueType);
+	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec4>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+																SequenceCurveEnums::SegmentValueTypes valueType);
 
-	template NAPAPI void SequenceControllerCurve::changeTanPoint<float>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value);
-	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec2>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value);
-	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec3>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value);
-	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec4>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceEditorTypes::TanPointTypes tanType, float time, float value);
+	template NAPAPI void SequenceControllerCurve::changeTanPoint<float>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+																		SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec2>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+																			SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec3>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+																			SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+	template NAPAPI void SequenceControllerCurve::changeTanPoint<glm::vec4>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+																			SequenceCurveEnums::TanPointTypes tanType, float time, float value);
 
 	template NAPAPI void SequenceControllerCurve::deleteCurvePoint<float>(SequenceTrackSegment& segment, const int index, int curveIndex);
 	template NAPAPI void SequenceControllerCurve::deleteCurvePoint<glm::vec2>(SequenceTrackSegment& segment, const int index, int curveIndex);

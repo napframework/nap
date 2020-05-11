@@ -1,15 +1,10 @@
 #pragma once
 
 // local includes
-#include "sequencetracksegmentevent.h"
 #include "sequencetrack.h"
-#include "sequenceplayerparametersetter.h"
-#include "sequencetracksegmentcurve.h"
 
 // external includes
 #include <nap/resource.h>
-#include <parameter.h>
-#include <parametervec.h>
 
 namespace nap
 {

@@ -49,7 +49,7 @@ namespace nap
 			// Keep forwarding events until the queue runs out
 			while (!(events.empty()))
 			{
-				SequenceEvent& sequence_event = *(events.front());
+				SequenceEventBase& sequence_event = *(events.front());
 				receiver->mSignal.trigger(sequence_event);
 
 				events.pop();

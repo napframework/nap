@@ -206,6 +206,7 @@ namespace nap
 			{
 				deleteTrack = true;
 				deleteTrackID = track.mID;
+				mState.mDirty = true;
 			}
 
 			// pop scale
@@ -398,7 +399,7 @@ namespace nap
 					circlePoint,
 					0,
 					v,
-					SequenceEditorTypes::TanPointTypes::IN,
+								  SequenceCurveEnums::TanPointTypes::IN,
 					drawList);
 
 				drawTanHandler<T>(
@@ -410,7 +411,7 @@ namespace nap
 					circlePoint,
 					0,
 					v,
-					SequenceEditorTypes::TanPointTypes::OUT,
+								  SequenceCurveEnums::TanPointTypes::OUT,
 					drawList);
 			}
 		}
@@ -558,7 +559,7 @@ namespace nap
 					circlePoint,
 					i,
 					v,
-					SequenceEditorTypes::TanPointTypes::IN,
+								  SequenceCurveEnums::TanPointTypes::IN,
 					drawList);
 
 				drawTanHandler<T>(
@@ -570,7 +571,7 @@ namespace nap
 					circlePoint,
 					i,
 					v,
-					SequenceEditorTypes::TanPointTypes::OUT,
+								  SequenceCurveEnums::TanPointTypes::OUT,
 					drawList);
 			}
 		}
@@ -599,7 +600,7 @@ namespace nap
 				circlePoint,
 				controlPointIndex,
 				v,
-				SequenceEditorTypes::TanPointTypes::IN,
+							  SequenceCurveEnums::TanPointTypes::IN,
 				drawList);
 
 			drawTanHandler<T>(
@@ -611,7 +612,7 @@ namespace nap
 				circlePoint,
 				controlPointIndex,
 				v,
-				SequenceEditorTypes::TanPointTypes::OUT,
+							  SequenceCurveEnums::TanPointTypes::OUT,
 				drawList);
 		}
 
@@ -626,7 +627,7 @@ namespace nap
 		const ImVec2 &trackTopLeft,
 		const float segmentX,
 		const float segmentWidth,
-		const SequenceEditorTypes::SegmentValueTypes segmentType,
+		const SequenceCurveEnums::SegmentValueTypes segmentType,
 		ImDrawList* drawList)
 	{
 		const SequenceTrackSegmentCurve<T>& segment =
@@ -637,8 +638,8 @@ namespace nap
 			// calculate point of this value in the window
 			ImVec2 segmentValuePos =
 			{
-				trackTopLeft.x + segmentX - (segmentType == SequenceEditorTypes::BEGIN ? segmentWidth : 0.0f),
-				trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == SequenceEditorTypes::BEGIN ?
+				trackTopLeft.x + segmentX - (segmentType == SequenceCurveEnums::BEGIN ? segmentWidth : 0.0f),
+				trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == SequenceCurveEnums::BEGIN ?
 					(float)segment.mCurves[v]->mPoints[0].mPos.mValue :
 					(float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size() - 1].mPos.mValue) / 1.0f))
 			};
@@ -675,8 +676,8 @@ namespace nap
 					showValue<T>(
 						track,
 						segment,
-						segmentType == SequenceEditorTypes::BEGIN ? 0.0f : 1.0f,
-						segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+						segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
+						segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 						v);
 				}
 				else if (!mState.mAction->isAction<DraggingSegmentValue>())
@@ -706,8 +707,8 @@ namespace nap
 							showValue<T>(
 								track,
 								segment,
-								segmentType == SequenceEditorTypes::BEGIN ? 0.0f : 1.0f,
-								segmentType == SequenceEditorTypes::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+								segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
+								segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 								v);
 
 							if (ImGui::IsMouseReleased(0))
@@ -856,18 +857,18 @@ namespace nap
 		const ImVec2 &circlePoint,
 		const int controlPointIndex,
 		const int curveIndex,
-		const SequenceEditorTypes::TanPointTypes type,
+		const SequenceCurveEnums::TanPointTypes type,
 		ImDrawList* drawList)
 	{
 		// draw tan handlers
 		{
 			// create a string stream to create identifier of this object
 			std::ostringstream tanStream;
-			tanStream << stringStream.str() << (type == SequenceEditorTypes::TanPointTypes::IN) ? "inTan" : "outTan";
+			tanStream << stringStream.str() << (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan";
 
 			//
 			const math::FComplex<float, float>& tanComplex
-				= (type == SequenceEditorTypes::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
+				= (type == SequenceCurveEnums::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
 			ImVec2 offset =
@@ -1426,7 +1427,7 @@ namespace nap
 				trackTopLeft,
 				segmentX,
 				segmentWidth,
-				SequenceEditorTypes::SegmentValueTypes::BEGIN,
+								SequenceCurveEnums::SegmentValueTypes::BEGIN,
 				drawList);
 		}
 
@@ -1437,7 +1438,7 @@ namespace nap
 			trackTopLeft,
 			segmentX,
 			segmentWidth,
-			SequenceEditorTypes::SegmentValueTypes::END,
+							SequenceCurveEnums::SegmentValueTypes::END,
 			drawList);
 	}
 

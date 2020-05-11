@@ -5,6 +5,7 @@
 #include "sequenceplayer.h"
 #include "sequenceplayercurveinput.h"
 #include "sequencetrackcurve.h"
+#include "sequenceplayerparametersetter.h"
 
 // nap includes
 #include <nap/logger.h>

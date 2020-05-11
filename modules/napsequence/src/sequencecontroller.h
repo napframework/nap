@@ -6,20 +6,24 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	// forward declares
 	class SequenceController;
 
+	// shortcut to factory method
 	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&);
 
 	class NAPAPI SequenceController
 	{
 	public:
+		/**
+		 * Constructor
+		 * @param player reference to player being used
+		 */
 		SequenceController(SequencePlayer& player) : mPlayer(player) {};
 
-		Sequence& getSequence() { return mPlayer.getSequence(); }
-
 		/**
-		 * assignNewObjectID
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
 		 * @param trackID the track id that gets an assigned object
 		 * @param objectID the object that is assigned to the track and used to create the adapter
@@ -33,32 +37,54 @@ namespace nap
 		 */
 		void deleteTrack(const std::string& deleteTrackID);
 
-		virtual void insertTrack(rttr::type type) {}
+		/**
+		 * inserts track that corresponds to type of controller, must be overloaded
+		 * @param type the type of track
+		 */
+		virtual void insertTrack(rttr::type type) = 0;
 
 		/**
-		 * generic insert segment method
-		 * type of track will be deduced from track id and a new segment of the right type will be inserted
+		 * inserts segment in track, must be overloaded
 		 * @param trackID the trackID in which to insert new segment
 		 * @param time the time at which to insert the segment
 		 */
 		virtual void insertSegment(const std::string& trackID, double time) = 0;
 
+		/**
+		 * deleted segment from track, must be overloaded
+		 * @param trackID the track
+		 * @param segmentID the segment
+		 */
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) = 0;
 
 		/**
-		 * getSegment
+		 * returns const segment pointer to specific segment, nullptr when not found
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
 		 * @return const pointer to tracksegment, returns nullptr when not found
 		 */
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
 
+		/**
+		 * @return returns reference to sequence of player
+		 */
+		Sequence& getSequence() { return mPlayer.getSequence(); }
+
+		/**
+		 * static method that returns factory method for creating a controller
+		 * @return reference to factory method
+		 */
 		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
 
-		static bool registerControllerFactory(rttr::type, SequenceControllerFactoryFunc);
+		 /**
+		  * registers the factory method for a type of controller
+		  * @param type the type of controller
+		  * @param factoryFunc the factory method
+		  * @return true on successfull registration
+		  */
+		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**
-		 * findSegment
 		 * finds segment
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
@@ -67,7 +93,6 @@ namespace nap
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 
 		/**
-		 * findTrack
 		 * finds segment
 		 * @param trackID the trackID
 	  	 * @return raw pointer to track, returns nullptr when not found
@@ -75,18 +100,17 @@ namespace nap
 		SequenceTrack* findTrack(const std::string& trackID);
 
 		/**
-		 * deleteObjectFromSequencePlayer
 		 * deletes an object owned by sequenceplayer from sequenceplayer
 		 * @param id object id
 		 */
 		void deleteObjectFromSequencePlayer(const std::string& id);
 
 		/**
-		 * updateTrack
 		 * updates duration of sequence by longest track
 		 */
 		void updateTracks();
 
+		// reference to player
 		SequencePlayer& mPlayer;
 	};
 }

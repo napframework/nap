@@ -1,9 +1,6 @@
 // local includes
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
-#include "sequencetracksegmentcurve.h"
-#include "sequenceplayercurveadapter.h"
-#include "sequenceplayereventadapter.h"
 
 // nap include
 #include <nap/logger.h>
@@ -21,7 +18,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultSequence, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_PROPERTY("Inputs", &nap::SequencePlayer::mInputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Set parameters on main thread", &nap::SequencePlayer::mSetParametersOnMainThread, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,7 +38,7 @@ namespace nap
 			return false;
 		}
 
-		if (!mCreateDefaultShowOnFailure)
+		if (!mCreateEmptySequenceOnLoadFail)
 		{
 			if (errorState.check(load(mDefaultSequence, errorState), "Error loading default sequence"))
 			{
@@ -55,7 +51,7 @@ namespace nap
 			nap::Logger::info(*this, "Error loading default show, creating default sequence");
 		
 			std::unordered_set<std::string> objectIDs;
-			mSequence = sequenceutils::createSequence(mReadObjects, objectIDs);
+			mSequence = sequenceutils::createEmptySequence(mReadObjects, objectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence");
 		}

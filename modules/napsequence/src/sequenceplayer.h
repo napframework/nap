@@ -2,15 +2,12 @@
 
 // internal includes
 #include "sequence.h"
-#include "sequenceeventreceiver.h"
 #include "sequenceplayeradapter.h"
 #include "sequenceplayerinput.h"
 
 // external includes
 #include <rtti/factory.h>
 #include <nap/device.h>
-#include <parameter.h>
-#include <parametervec.h>
 #include <future>
 #include <mutex>
 
@@ -162,9 +159,8 @@ namespace nap
 	public:
 		// properties
 		std::string			mDefaultSequence; ///< Property: 'Default Sequence' linked default Sequence file
-		bool				mCreateDefaultShowOnFailure = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
+		bool 				mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
 		float				mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
-		bool				mSetParametersOnMainThread = true;  ///< Property: 'Set parameters on main thread' when true, any animated parameters will be set on main thread and not player thread
 		std::vector<ResourcePtr<SequencePlayerInput>> mInputs;  ///< Property: 'Inputs' linked inputs
 		public:
 		/**

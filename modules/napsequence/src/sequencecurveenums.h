@@ -2,7 +2,7 @@
 
 namespace nap
 {
-	namespace SequenceEditorTypes
+	namespace SequenceCurveEnums
 	{
 		enum TanPointTypes
 		{

@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "sequenceeditortypes.h"
+#include "sequencecurveenums.h"
 
 // External Includes
 #include <rtti/rtti.h>
@@ -150,12 +150,12 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceEditorTypes::SegmentValueTypes type, int curveIndex)
+			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
 				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
-			SequenceEditorTypes::SegmentValueTypes mType;
+			SequenceCurveEnums::SegmentValueTypes mType;
 			int mCurveIndex;
 		};
 
@@ -164,12 +164,12 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceEditorTypes::SegmentValueTypes type, int curveIndex)
+			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
 				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
-			SequenceEditorTypes::SegmentValueTypes mType;
+			SequenceCurveEnums::SegmentValueTypes mType;
 			int mCurveIndex;
 		};
 

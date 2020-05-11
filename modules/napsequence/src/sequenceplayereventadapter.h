@@ -4,6 +4,8 @@
 #include "sequenceplayer.h"
 #include "sequenceplayeradapter.h"
 #include "sequenceplayereventinput.h"
+#include "sequenceplayereventadapter.h"
+#include "sequencetracksegmentevent.h"
 
 namespace nap
 {
@@ -38,7 +40,7 @@ namespace nap
 	private:
 		SequenceTrack& mTrack;
 		SequenceEventReceiver& mReceiver;
-		std::unordered_set<SequenceTrackSegmentEvent*> mDispatchedEvents;
+		std::unordered_set<SequenceTrackSegmentEventBase*> mDispatchedEvents;
 
 		static bool	sRegisteredInFactory;
 	};

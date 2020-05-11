@@ -30,8 +30,8 @@ namespace nap
 		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
 		for (const auto& eventSegment : eventTrack.mSegments)
 		{
-			assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEvent)));
-			SequenceTrackSegmentEvent& event = static_cast<SequenceTrackSegmentEvent&>(*eventSegment.get());
+			assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
+			SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*eventSegment.get());
 
 			if (time > event.mStartTime)
 			{

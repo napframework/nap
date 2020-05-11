@@ -17,7 +17,7 @@ RTTI_END_CLASS
 //////////////////////////////////////////////////////////////////////////
 
 using namespace nap::SequenceGUIActions;
-using namespace nap::SequenceEditorTypes;
+using namespace nap::SequenceCurveEnums;
 
 namespace nap
 {

@@ -9,7 +9,7 @@ namespace nap
 
 	class SequenceService;
 	class SequenceEventReceiver;
-	class SequenceEvent;
+	class SequenceEventBase;
 
 	/**
 	 * SequencePlayerParameterSetter

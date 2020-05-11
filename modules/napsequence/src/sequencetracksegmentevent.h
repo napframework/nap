@@ -11,31 +11,45 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequencePlayerProcessorEvent;
-
-	/**
-	 * SequenceTrackSegmentEvent
-	 * A SequenceTrackEvent that holds an event that can be trigger on a SequenceTrack
-	 */
-	class SequenceTrackSegmentEvent : public SequenceTrackSegment
+	class SequenceTrackSegmentEventBase : public SequenceTrackSegment
 	{
 		friend class SequencePlayerEventAdapter;
 
 		RTTI_ENABLE(SequenceTrackSegment)
 	public:
-		std::string mMessage; ///< Property: 'Message' string of this message
-
-		/**
-		 * @return event type of this event
-		 */
-		virtual const SequenceEventTypes::Types getEventType() const { return SequenceEventTypes::STRING; }
-		
 	private:
 		/**
-		 * creates an SequenceEventPtr. 
+		 * creates an SequenceEventPtr.
 		 * This method is called by SequencePlayerEventAdapter when a type of this event needs to be given to the main thread
 		 */
-		virtual SequenceEventPtr createEvent() ;
+		virtual SequenceEventPtr createEvent() = 0;
 	};
+
+	template <typename T>
+	class SequenceTrackSegmentEvent : public SequenceTrackSegmentEventBase
+	{
+		RTTI_ENABLE(SequenceTrackSegmentEventBase)
+	public:
+		T mValue;
+	private:
+		virtual SequenceEventPtr createEvent() override ;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Definitions of all supported sequence track event segments
+	//////////////////////////////////////////////////////////////////////////
+
+	using SequenceTrackSegmentEventString = SequenceTrackSegmentEvent<std::string>;
+	using SequenceTrackSegmentEventFloat = SequenceTrackSegmentEvent<float>;
+	using SequenceTrackSegmentEventInt = SequenceTrackSegmentEvent<int>;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	SequenceEventPtr SequenceTrackSegmentEvent<T>::createEvent()
+	{
+		return std::make_unique<SequenceEvent<T>>(mValue);
+	}
 }
