@@ -84,7 +84,10 @@ namespace nap
 		 */
 		void removeParameterSetter(SequencePlayerParameterSetterBase& setter);
 
+		// sequence event receivers
 		std::vector<SequenceEventReceiver*>			mEventReceivers;
+
+		// parameter setters
 		std::vector<SequencePlayerParameterSetterBase*> mParameterSetters;
 	};
 }

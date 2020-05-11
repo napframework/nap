@@ -11,6 +11,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * SequencePlayerEventInput is used to link an SequenceEventReceiver to a SequenceEventTrack
+	 */
 	class NAPAPI SequencePlayerEventInput : public SequencePlayerInput
 	{
 		RTTI_ENABLE(SequencePlayerInput)

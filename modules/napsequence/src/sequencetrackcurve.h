@@ -12,8 +12,8 @@
 namespace nap
 {
 	/**
-	* Base class of all curve tracks
-	*/
+	 * Base class of all curve tracks
+	 */
 	class NAPAPI BaseSequenceTrackCurve : public SequenceTrack
 	{
 		RTTI_ENABLE(SequenceTrack)
@@ -21,19 +21,19 @@ namespace nap
 
 
 	/**
-	* Represents a track that holds a collection of segments, where T is the data represented by the track.
-	* There are currently four supported SequenceTrackCurve types ( float, vec2, vec3, vec4 )
-	*/
+	 * Represents a track that holds a collection of segments, where T is the data represented by the track.
+	 * There are currently four supported SequenceTrackCurve types ( float, vec2, vec3, vec4 )
+	 */
 	template<typename T>
 	class SequenceTrackCurve : public BaseSequenceTrackCurve
 	{
 		RTTI_ENABLE(BaseSequenceTrackCurve)
 	public:
 		/**
-		* initializes the curve segment and validates its data.
-		* @param errorState contains any errors
-		* @return returns true on successful initialization
-		*/
+		 * initializes the curve segment and validates its data.
+		 * @param errorState contains any errors
+		 * @return returns true on successful initialization
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		T mMaximum; ///< Property: 'Maximum' maximum value of track

@@ -189,11 +189,11 @@ namespace nap
 			return false;
 		}
 
-		// create processors
+		// create adapters
 		mAdapters.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createAdapter(track->mAssignedObjectIDs, track->mID, l);
+			createAdapter(track->mAssignedInputID, track->mID, l);
 		}
 
 		mSequenceFileName = name;

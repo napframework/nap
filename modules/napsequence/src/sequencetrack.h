@@ -16,10 +16,8 @@ namespace nap
 	class NAPAPI SequenceTrack : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
-
-		std::string mAssignedObjectIDs;								///< Property: 'Assigned Object ID' Assigned object to this track id
+		std::string mAssignedInputID;	///< Property: 'Assigned Input ID' Assigned input to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
 	};
 }

@@ -133,7 +133,7 @@ namespace nap
 		{
 			if (mPlayer.createAdapter(objectID, trackID, l))
 			{
-				track->mAssignedObjectIDs = objectID;
+				track->mAssignedInputID = objectID;
 			}
 		}
 	}

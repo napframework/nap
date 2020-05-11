@@ -7,6 +7,7 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	// forward declares
 	class SequenceService;
 	class SequenceEventReceiver;
 	class SequenceEventBase;
@@ -30,12 +31,14 @@ namespace nap
 		virtual ~SequencePlayerParameterSetterBase();
 
 		/**
-		 * setValue
 		 * setValue is called from the update function of the SequenceService
 		 */
 		virtual void setValue() = 0;
 	protected:
+		// reference to service
 		SequenceService&		mService;
+
+		// mutex
 		std::mutex				mMutex;
 	};
 
@@ -63,7 +66,6 @@ namespace nap
 		virtual ~SequencePlayerParameterSetter() {}
 
 		/**
-		 * storeValue
 		 * Called from a SequencePlayerAdapter and thus the sequence player thread
 		 * @value value that the parameter needs to have
 		 */
@@ -75,7 +77,6 @@ namespace nap
 		}
 
 		/**
-		 * setValue
 		 * Called from the SequenceService main thread update loop.
 		 * This sets the value of the Parameter
 		 */
@@ -86,7 +87,10 @@ namespace nap
 			mParameter.setValue(mValue);
 		}
 	private:
+		// reference to parameter
 		PARAMETER_TYPE&						mParameter;
+
+		// the value
 		PARAMETER_VALUE_TYPE				mValue;
 	};
 }

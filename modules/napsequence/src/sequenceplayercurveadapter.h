@@ -37,9 +37,9 @@ namespace nap
 			PARAMETER_TYPE& parameter,
 			SequenceService &service,
 			bool useMainThread)
-			: mParameter(parameter),
-			mUseMainThread(useMainThread),
-			mService(service)
+			:	mParameter(parameter),
+				mUseMainThread(useMainThread),
+				mService(service)
 		{
 			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
 			mTrack = static_cast<SequenceTrackCurve<CURVE_TYPE>*>(&track);

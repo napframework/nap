@@ -177,7 +177,7 @@ namespace nap
 				{
 					count++;
 
-					if (input->mID == track.mAssignedObjectIDs)
+					if (input->mID == track.mAssignedInputID)
 					{
 						assigned = true;
 						assignedID = input->mID;

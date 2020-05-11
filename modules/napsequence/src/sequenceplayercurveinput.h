@@ -12,14 +12,24 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * SequencePlayerCurveInput is used to link a parameter to a curve track
+	 */
 	class NAPAPI SequencePlayerCurveInput : public SequencePlayerInput
 	{
 		RTTI_ENABLE(SequencePlayerInput)
 	public:
+		/**
+		 * Constructor
+		 * @param service reference to SequenceService
+		 */
 		SequencePlayerCurveInput(SequenceService& service);
-
-		ResourcePtr<Parameter>	mParameter;
-		bool					mUseMainThread;
-		SequenceService*		mSequenceService;
+	public:
+		// properties
+		ResourcePtr<Parameter>	mParameter; ///< Property: 'Parameter' parameter resource
+		bool					mUseMainThread; ///< Property: 'Use Main Thread' update in main thread or player thread
+	
+		// pointer to service
+		SequenceService*		mSequenceService; 
 	};
 }
