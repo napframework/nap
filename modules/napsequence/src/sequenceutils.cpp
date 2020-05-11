@@ -28,7 +28,7 @@ namespace nap
 		{
 			// create the sequence
 			std::unique_ptr<Sequence> sequence = std::make_unique<Sequence>();
-			sequence->mID = generateUniqueID(objectIDs);
+			sequence->mID = sequenceutils::generateUniqueID(objectIDs);
 			sequence->mDuration = 1.0;
 
 			//

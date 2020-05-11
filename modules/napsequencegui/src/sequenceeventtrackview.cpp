@@ -13,18 +13,54 @@ namespace nap
 {
 	using namespace SequenceGUIActions;
 
-	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
-		: SequenceTrackView(view, state)
-	{
-	}
-
-
 	static bool trackViewRegistration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
 
 	static bool registerCurveTrackView = SequenceTrackView::registerFactory(RTTI_OF(SequenceEventTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
 	{
 		return std::make_unique<SequenceEventTrackView>(view, state);
 	});
+
+	static std::vector<rttr::type> sEventTypes
+		{
+			RTTI_OF(SequenceTrackSegmentEventString),
+			RTTI_OF(SequenceTrackSegmentEventFloat),
+			RTTI_OF(SequenceTrackSegmentEventInt),
+			RTTI_OF(SequenceTrackSegmentEventVec2),
+			RTTI_OF(SequenceTrackSegmentEventVec3)
+		};
+
+	static std::unordered_map<rttr::type, void(*)(SequenceControllerEvent&, std::string&, double)> sInsertSegmentMap
+		{
+			{ RTTI_OF(SequenceTrackSegmentEventString), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<std::string>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventFloat), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<float>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventInt), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<int>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventVec2), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec2>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventVec3), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec3>(trackID, time); }}
+		};
+
+	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> SequenceEventTrackView::sHandlePopupsMap
+		{
+			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::handleEditEventSegmentPopup<std::string> },
+			{ RTTI_OF(SequenceTrackSegmentEventFloat), &SequenceEventTrackView::handleEditEventSegmentPopup<float> },
+			{ RTTI_OF(SequenceTrackSegmentEventInt), &SequenceEventTrackView::handleEditEventSegmentPopup<int> },
+			{ RTTI_OF(SequenceTrackSegmentEventVec2), &SequenceEventTrackView::handleEditEventSegmentPopup<glm::vec2>},
+			{ RTTI_OF(SequenceTrackSegmentEventVec3), &SequenceEventTrackView::handleEditEventSegmentPopup<glm::vec3> }
+		};
+
+	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> SequenceEventTrackView::sEditActionMap
+		{
+			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::createEditAction<std::string> },
+			{ RTTI_OF(SequenceTrackSegmentEventFloat), &SequenceEventTrackView::createEditAction<float> },
+			{ RTTI_OF(SequenceTrackSegmentEventInt), &SequenceEventTrackView::createEditAction<int> },
+			{ RTTI_OF(SequenceTrackSegmentEventVec2), &SequenceEventTrackView::createEditAction<glm::vec2>},
+			{ RTTI_OF(SequenceTrackSegmentEventVec3), &SequenceEventTrackView::createEditAction<glm::vec3> }
+		};
+
+	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
+		: SequenceTrackView(view, state)
+	{
+	}
+
 
 	void SequenceEventTrackView::drawTrack(const SequenceTrack& track)
 	{
@@ -48,11 +84,15 @@ namespace nap
 
 		handleDeleteSegmentPopup();
 
-		handleEditEventSegmentPopup<float>();
-
-		handleEditEventSegmentPopup<std::string>();
-
-		handleEditEventSegmentPopup<int>();
+		for(auto& type : sEventTypes)
+		{
+			auto it = sHandlePopupsMap.find(type);
+			assert(it != sHandlePopupsMap.end()); // type not found
+			if( it != sHandlePopupsMap.end())
+			{
+				(*this.*it->second)();
+			}
+		}
 	}
 
 
@@ -342,6 +382,22 @@ namespace nap
 							  { topLeft.x + x + 5, topLeft.y + 5 },
 							  guicolors::red,
 							  segmentEvent.mValue.c_str());
+						} },
+						{ RTTI_OF(SequenceTrackSegmentEventVec2), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
+							const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
+
+							std::ostringstream stringStream;
+							stringStream << segmentEvent.mValue.x << ", " << segmentEvent.mValue.y;
+
+							drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red, stringStream.str().c_str());
+						} },
+						{ RTTI_OF(SequenceTrackSegmentEventVec3), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
+							const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
+
+							std::ostringstream stringStream;
+							stringStream << segmentEvent.mValue.x << ", " << segmentEvent.mValue.y << ", " << segmentEvent.mValue.z;
+
+							drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red, stringStream.str().c_str());
 						} }
 					};
 
@@ -390,28 +446,20 @@ namespace nap
 			{
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
-				if (ImGui::Button("Insert string"))
+				for(auto& type : sEventTypes)
 				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.insertEventSegment<std::string>(action->mTrackID, action->mTime);
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				if (ImGui::Button("Insert float"))
-				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.insertEventSegment<float>(action->mTrackID, action->mTime);
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				if (ImGui::Button("Insert int"))
-				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.insertEventSegment<int>(action->mTrackID, action->mTime);
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
+					std::string buttonString = "Insert " + type.get_name().to_string();
+					if( ImGui::Button(buttonString.c_str()))
+					{
+						auto it = sInsertSegmentMap.find(type);
+						assert(it!=sInsertSegmentMap.end()); // type not found
+						if( it != sInsertSegmentMap.end() )
+						{
+							it->second(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
+							ImGui::CloseCurrentPopup();
+							mState.mAction = createAction<None>();
+						}
+					}
 				}
 
 				if (ImGui::Button("Cancel"))
@@ -440,9 +488,10 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		// segment handler
-		if (mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
-					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
-					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 }))  // bottom right 
+		if ((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
+					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 },
+					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 })) ||
+			( mState.mAction->isAction<DraggingSegment>() &&  mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID) )
 		{
 			bool isAlreadyHovering = false;
 			if (mState.mAction->isAction<HoveringSegment>())
@@ -530,155 +579,7 @@ namespace nap
 		}
 	}
 
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<std::string>()
-	{
-		if (mState.mAction->isAction<OpenEditEventSegmentPopup<std::string>>())
-		{
-			// invoke insert sequence popup
-			ImGui::OpenPopup("Edit Event");
 
-			auto* action = mState.mAction->getDerived<OpenEditEventSegmentPopup<std::string>>();
-			mState.mAction = createAction<EditingEventSegment<std::string>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue);
-		}
-
-		// handle insert segment popup
-		if (mState.mAction->isAction<EditingEventSegment<std::string>>())
-		{
-			if (ImGui::BeginPopup("Edit Event"))
-			{
-				auto* action = mState.mAction->getDerived<EditingEventSegment<std::string>>();
-
-				ImGui::SetWindowPos(action->mWindowPos);
-
-				int n = action->mValue.length();
-				char buffer[256];
-				strcpy(buffer, action->mValue.c_str());
-
-				if (ImGui::InputText("message", buffer, 256))
-				{
-					action->mValue = std::string(buffer);
-				}
-
-				if (ImGui::Button("Done"))
-				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.editEventSegment<std::string>(action->mTrackID, action->mSegmentID, action->mValue);
-					mState.mAction = createAction<None>();
-				}
-
-
-				if (ImGui::Button("Cancel"))
-				{
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				ImGui::EndPopup();
-			}
-			else
-			{
-				// click outside popup so cancel action
-				mState.mAction = createAction<None>();
-			}
-		}
-	}
-
-
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<float>()
-	{
-		if (mState.mAction->isAction<OpenEditEventSegmentPopup<float>>())
-		{
-			// invoke insert sequence popup
-			ImGui::OpenPopup("Edit Event");
-
-			auto* action = mState.mAction->getDerived<OpenEditEventSegmentPopup<float>>();
-			mState.mAction = createAction<EditingEventSegment<float>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue);
-		}
-
-		// handle insert segment popup
-		if (mState.mAction->isAction<EditingEventSegment<float>>())
-		{
-			if (ImGui::BeginPopup("Edit Event"))
-			{
-				auto* action = mState.mAction->getDerived<EditingEventSegment<float>>();
-
-				ImGui::SetWindowPos(action->mWindowPos);
-
-				if (ImGui::InputFloat("Value", &action->mValue));
-
-				if (ImGui::Button("Done"))
-				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.editEventSegment<float>(action->mTrackID, action->mSegmentID, action->mValue);
-					mState.mAction = createAction<None>();
-				}
-
-				if (ImGui::Button("Cancel"))
-				{
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				ImGui::EndPopup();
-			}
-			else
-			{
-				// click outside popup so cancel action
-				mState.mAction = createAction<None>();
-			}
-		}
-	}
-
-
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<int>()
-	{
-		if (mState.mAction->isAction<OpenEditEventSegmentPopup<int>>())
-		{
-			// invoke insert sequence popup
-			ImGui::OpenPopup("Edit Event");
-
-			auto* action = mState.mAction->getDerived<OpenEditEventSegmentPopup<int>>();
-			mState.mAction = createAction<EditingEventSegment<int>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue);
-		}
-
-		// handle insert segment popup
-		if (mState.mAction->isAction<EditingEventSegment<int>>())
-		{
-			if (ImGui::BeginPopup("Edit Event"))
-			{
-				auto* action = mState.mAction->getDerived<EditingEventSegment<int>>();
-
-				ImGui::SetWindowPos(action->mWindowPos);
-
-				if (ImGui::InputInt("Value", &action->mValue));
-
-				if (ImGui::Button("Done"))
-				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.editEventSegment<int>(action->mTrackID, action->mSegmentID, action->mValue);
-					mState.mAction = createAction<None>();
-				}
-
-				if (ImGui::Button("Cancel"))
-				{
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				ImGui::EndPopup();
-			}
-			else
-			{
-				// click outside popup so cancel action
-				mState.mAction = createAction<None>();
-			}
-		}
-	}
-
-	
 	void SequenceEventTrackView::handleDeleteSegmentPopup()
 	{
 		if (mState.mAction->isAction<OpenEditSegmentPopup>())
@@ -715,30 +616,16 @@ namespace nap
 							const SequenceTrackSegmentEventBase *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
 							assert(eventSegment != nullptr);
 
-							if(eventSegment->get_type() == RTTI_OF(SequenceTrackSegmentEventFloat))
+							if( eventSegment != nullptr)
 							{
-								const SequenceTrackSegmentEventFloat *floatEvent = static_cast<const SequenceTrackSegmentEventFloat*>(eventSegment);
-								mState.mAction = createAction<OpenEditEventSegmentPopup<float>>(
-									action->mTrackID,
-									action->mSegmentID,
-									ImGui::GetWindowPos(),
-									floatEvent->mValue);
-							}else if(eventSegment->get_type() == RTTI_OF(SequenceTrackSegmentEventInt))
-							{
-								const SequenceTrackSegmentEventInt * intEvent = static_cast<const SequenceTrackSegmentEventInt*>(eventSegment);
-								mState.mAction = createAction<OpenEditEventSegmentPopup<int>>(
-									action->mTrackID,
-									action->mSegmentID,
-									ImGui::GetWindowPos(),
-									   intEvent->mValue);
-							}else if(eventSegment->get_type() == RTTI_OF(SequenceTrackSegmentEventString))
-							{
-								const SequenceTrackSegmentEventString *stringEvent = static_cast<const SequenceTrackSegmentEventString*>(eventSegment);
-								mState.mAction = createAction<OpenEditEventSegmentPopup<std::string>>(
-									action->mTrackID,
-									action->mSegmentID,
-									ImGui::GetWindowPos(),
-									stringEvent->mValue);
+								rttr::type type = eventSegment->get_type();
+
+								auto it = sEditActionMap.find(type);
+								assert(it!=sEditActionMap.end()); // type not found
+								if(it!=sEditActionMap.end())
+								{
+									(*this.*it->second)(eventSegment, action->mTrackID, action->mSegmentID);
+								}
 							}
 
 							ImGui::CloseCurrentPopup();

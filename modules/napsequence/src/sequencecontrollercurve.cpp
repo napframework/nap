@@ -93,9 +93,9 @@ namespace nap
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(const std::string&, double)> insertSegmentMap
 		{
 			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float> },
-			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
-			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<glm::vec3> },
-			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<glm::vec4> }
+			{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
+			{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::insertCurveSegment<glm::vec3> },
+			{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::insertCurveSegment<glm::vec4> }
 		};
 
 		auto* track = findTrack(trackID);

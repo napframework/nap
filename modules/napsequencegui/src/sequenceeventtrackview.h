@@ -1,6 +1,8 @@
 #pragma once
 
 #include "sequencetrackview.h"
+#include "sequencecontrollerevent.h"
+#include "sequencetracksegment.h"
 
 namespace nap
 {
@@ -53,16 +55,14 @@ namespace nap
 		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
 		void handleDeleteSegmentPopup();
+
+		template<typename T>
+		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
+
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> sHandlePopupsMap;
+
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> sEditActionMap;
 	};
-
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<float>();
-
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<int>();
-
-	template<>
-	void SequenceEventTrackView::handleEditEventSegmentPopup<std::string>();
 
 	namespace SequenceGUIActions
 	{
@@ -116,5 +116,118 @@ namespace nap
 			T mValue;
 			ImVec2 mWindowPos;
 		};
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	void SequenceEventTrackView::handleEditEventSegmentPopup()
+	{
+		if (mState.mAction->isAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>())
+		{
+			// invoke insert sequence popup
+			ImGui::OpenPopup("Edit Event");
+
+			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditEventSegmentPopup<T>>();
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue);
+		}
+
+		// handle insert segment popup
+		if (mState.mAction->isAction<SequenceGUIActions::EditingEventSegment<T>>())
+		{
+			if (ImGui::BeginPopup("Edit Event"))
+			{
+				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingEventSegment<T>>();
+
+				ImGui::SetWindowPos(action->mWindowPos);
+
+				static std::unordered_map<rttr::type, void(*)(SequenceGUIActions::Action&)> sHandleMap
+					{
+						{ RTTI_OF(std::string), [](SequenceGUIActions::Action& action)
+						{
+							 auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<std::string>>();
+							 std::string& message = static_cast<std::string&>(editAction->mValue);
+
+							 int n = message.length();
+							 char buffer[256];
+							 strcpy(buffer, message.c_str());
+
+							 if (ImGui::InputText("message", buffer, 256))
+							 {
+								 message = std::string(buffer);
+							 }
+						}},
+						{ RTTI_OF(int), [](SequenceGUIActions::Action& action)
+						{
+						  	auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<int>>();
+						  	int& value = static_cast<int&>(editAction->mValue);
+
+						  	ImGui::InputInt("Value", &value);
+						}},
+						{ RTTI_OF(float), [](SequenceGUIActions::Action& action)
+						{
+						  	auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<float>>();
+						  	float& value = static_cast<float&>(editAction->mValue);
+
+						  	ImGui::InputFloat("Value", &value);
+						}},
+						{ RTTI_OF(glm::vec2), [](SequenceGUIActions::Action& action)
+						{
+							auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec2>>();
+						  	glm::vec2& value = static_cast<glm::vec2&>(editAction->mValue);
+
+							ImGui::InputFloat2("Value", &value.x);
+						}},
+						{ RTTI_OF(glm::vec3), [](SequenceGUIActions::Action& action)
+						{
+							auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec3>>();
+						  	glm::vec3& value = static_cast<glm::vec3&>(editAction->mValue);
+
+							ImGui::InputFloat3("Value", &value.x);
+						}},
+					};
+
+				auto it = sHandleMap.find(RTTI_OF(T));
+				assert(it!=sHandleMap.end()); // type not found
+				if( it != sHandleMap.end())
+				{
+					it->second(*action);
+				}
+
+				if (ImGui::Button("Done"))
+				{
+					auto& eventController = getEditor().getController<SequenceControllerEvent>();
+					eventController.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+				}
+
+
+				if (ImGui::Button("Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+			}
+		}
+	}
+
+	template<typename T>
+	void SequenceEventTrackView::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
+	{
+		const SequenceTrackSegmentEvent<T> *event = static_cast<const SequenceTrackSegmentEvent<T>*>(segment);
+		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(
+			trackID,
+			segmentID,
+			ImGui::GetWindowPos(), event->mValue);
 	}
 }

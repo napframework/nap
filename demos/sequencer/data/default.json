@@ -90,7 +90,7 @@
         {
             "Type": "nap::SequencePlayer",
             "mID": "SequencePlayer",
-            "Default Show": "sequences/Default Show.json",
+            "Default Show": "Default Show.json",
             "Inputs": [
                 {
                     "Type": "nap::SequencePlayerEventInput",
@@ -110,8 +110,7 @@
                     "Use Main Thread": true
                 }
             ],
-            "Frequency": 1000.0,
-            "Set parameters on main thread": false
+            "Frequency": 1000.0
         }
     ]
 }

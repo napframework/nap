@@ -15,7 +15,7 @@
 #include <fstream>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
-RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mDefaultSequence, nap::rtti::EPropertyMetaData::FileLink)
+RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Inputs", &nap::SequencePlayer::mInputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -40,18 +40,17 @@ namespace nap
 
 		if (!mCreateEmptySequenceOnLoadFail)
 		{
-			if (errorState.check(load(mDefaultSequence, errorState), "Error loading default sequence"))
+			if (errorState.check(load(mSequenceFileName, errorState), "Error loading default sequence"))
 			{
 				return false;
 			}
 		}
-		else if (!load(mDefaultSequence, errorState))
+		else if (!load(mSequenceFileName, errorState))
 		{
 			nap::Logger::info(*this, errorState.toString());
 			nap::Logger::info(*this, "Error loading default show, creating default sequence");
-		
-			std::unordered_set<std::string> objectIDs;
-			mSequence = sequenceutils::createEmptySequence(mReadObjects, objectIDs);
+
+			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
 
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
@@ -140,13 +139,17 @@ namespace nap
 		//
 		rtti::DeserializeResult result;
 
+		const std::string dir = "sequences";
+		utility::makeDirs(utility::getAbsolutePath(dir));
+		std::string show_path = dir + '/' + name;
+
 		//
 		std::string timelineName = utility::getFileNameWithoutExtension(name);
 
 		// 
 		rtti::Factory factory;
 		if (!rtti::readJSONFile(
-			name,
+			show_path,
 			rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::NoRawPointers,
 			factory,
@@ -193,7 +196,7 @@ namespace nap
 			createAdapter(track->mAssignedObjectIDs, track->mID, l);
 		}
 
-		mDefaultSequence = name;
+		mSequenceFileName = name;
 
 		return true;
 	}

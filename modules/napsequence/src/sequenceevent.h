@@ -2,6 +2,8 @@
 
 // external includes
 #include <nap/event.h>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace nap
 {
@@ -72,4 +74,6 @@ namespace nap
 	using SequenceEventString = SequenceEvent<std::string>;
 	using SequenceEventFloat = SequenceEvent<float>;
 	using SequenceEventInt = SequenceEvent<int>;
+	using SequenceEventVec2 = SequenceEvent<glm::vec2>;
+	using SequenceEventVec3 = SequenceEvent<glm::vec3>;
 }

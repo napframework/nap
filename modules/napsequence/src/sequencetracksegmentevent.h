@@ -42,6 +42,8 @@ namespace nap
 	using SequenceTrackSegmentEventString = SequenceTrackSegmentEvent<std::string>;
 	using SequenceTrackSegmentEventFloat = SequenceTrackSegmentEvent<float>;
 	using SequenceTrackSegmentEventInt = SequenceTrackSegmentEvent<int>;
+	using SequenceTrackSegmentEventVec2 = SequenceTrackSegmentEvent<glm::vec2>;
+	using SequenceTrackSegmentEventVec3 = SequenceTrackSegmentEvent<glm::vec3>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions

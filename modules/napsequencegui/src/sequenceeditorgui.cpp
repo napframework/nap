@@ -142,7 +142,7 @@ namespace nap
 			//
 			if (ImGui::Button("Save"))
 			{
-				mEditor.save(mEditor.mSequencePlayer->mDefaultSequence);
+				mEditor.save(mEditor.mSequencePlayer->mSequenceFileName);
 			}
 
 			ImGui::SameLine();
@@ -554,7 +554,7 @@ namespace nap
 				utility::ErrorState errorState;
 				if (ImGui::Button("Load"))
 				{
-					if (mEditor.mSequencePlayer->load(showFiles[loadAction->mSelectedShowIndex], errorState))
+					if (mEditor.mSequencePlayer->load(utility::getFileName(showFiles[loadAction->mSelectedShowIndex]), errorState))
 					{
 						mState.mAction = createAction<None>();
 						mState.mDirty = true;
@@ -671,7 +671,7 @@ namespace nap
 
 					utility::ErrorState errorState;
 					
-					if (mEditor.mSequencePlayer->save(showDir + "/" + newShowFileName, errorState))
+					if (mEditor.mSequencePlayer->save(utility::getFileName(newShowFileName), errorState))
 					{
 						saveAsAction->mSelectedShowIndex = shows.size() - 2;
 						mState.mDirty = true;
@@ -692,7 +692,7 @@ namespace nap
 					if (ImGui::Button("OK"))
 					{
 						if (mEditor.mSequencePlayer->save(
-							shows[saveAsAction->mSelectedShowIndex],
+							utility::getFileName(shows[saveAsAction->mSelectedShowIndex]),
 							errorState))
 						{
 						}
