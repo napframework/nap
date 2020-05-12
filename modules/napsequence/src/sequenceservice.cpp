@@ -7,9 +7,7 @@
 
 // Local Includes
 #include "sequenceservice.h"
-#include "sequenceeventreceiver.h"
 #include "sequenceplayeradapter.h"
-#include "sequenceplayercurveadapter.h"
 #include "sequenceplayerinput.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
