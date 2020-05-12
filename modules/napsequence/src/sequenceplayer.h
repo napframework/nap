@@ -30,7 +30,6 @@ namespace nap
 		friend class SequenceEditor;
 		friend class SequenceController;
 		friend class SequenceService;
-		friend class SequenceEditorController;
 
 		RTTI_ENABLE(Device)
 	public:
@@ -40,7 +39,6 @@ namespace nap
 		SequencePlayer(SequenceService& service);
 
 		/**
-		 * init 
 		 * evaluates the data of the player. It loads the linked default sequence. 
 		 * Upon failure of loading show, it creates a new default ( empty ) sequence
 		 *
@@ -50,7 +48,6 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * save
 		 * Saves current sequence to disk
 		 * @param name of the sequence
 		 * @param errorState contains error upon failure
@@ -59,7 +56,6 @@ namespace nap
 		bool save(const std::string& name, utility::ErrorState& errorState);
 
 		/**
-		 * load
 		 * Load a sequence
 		 * @param name of the sequence
 		 * @param errorState contains error upon failure
@@ -68,91 +64,77 @@ namespace nap
 		bool load(const std::string& name, utility::ErrorState& errorState);
 
 		/**
-		 * setIsPlaying
 		 * Play or stop the player. Note that player can still be paused, so adapters will be called but time will not advance
 		 * @param isPlaying true is start playing
 		 */
 		void setIsPlaying(bool isPlaying);
 
 		/**
-		 * setIsPaused
 		 * Pauses the player. Note that if we are still playing, adapters will still get called but time will not advance ( when paused )
 		 * @param isPaused paused
 		 */
 		void setIsPaused(bool isPaused);
 
 		/**
-		 * setIsLooping
 		 * Start from beginning when player reaches end of sequence
 		 * @param isLooping loop
 		 */
 		void setIsLooping(bool isLooping);
 
 		/**
-		 * setPlayingTime
 		 * sets player time manually
 		 * @param time the new time
 		 */
 		void setPlayerTime(double time);
 
 		/**
-		 * setPlaybackSpeed
 		 * sets playback speed ( 1.0 is normal speed )
 		 * @param speed speed
 		 */
 		void setPlaybackSpeed(float speed);
 
 		/**
-		 * getPlayerTime
 		 * @return the current player time
 		 */
 		double getPlayerTime() const;
 
 		/**
-		 * getDuration
 		 * @return gets sequence total duration
 		 */
 		double getDuration() const;
 
 		/**
-		 * getIsPlaying
 		 * @return are we playing?
 		 */
 		bool getIsPlaying() const;
 
 		/**
-		 * getIsLooping
 		 * @return are we looping?
 		 */
 		bool getIsLooping() const;
 
 		/**
-		 * getIsPaused
 		 * @return are we paused ?
 		 */
 		bool getIsPaused() const;
 
 		/**
-		 * getPlaybackSpeed
 		 * @return current playback speed
 		 */
 		float getPlaybackSpeed() const;
 
 		/**
-		 * stop
 		 * called before deconstruction. This stops the actual player thread. To stop the player but NOT the player thread call setIsPlaying( false )
 		 */
 		virtual void stop() override;
 
 		/**
-		 * start
 		 * starts player thread, called after successfully initialization
 		 * This starts the actual player thread
 		 */
 		virtual bool start(utility::ErrorState& errorState) override;
 
 		/**
-		 * getSequenceConst
 		 * @return get const reference to sequence
 		 */
 		const Sequence& getSequenceConst() const;
@@ -162,7 +144,13 @@ namespace nap
 		bool 				mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
 		float				mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		std::vector<ResourcePtr<SequencePlayerInput>> mInputs;  ///< Property: 'Inputs' linked inputs
-		public:
+	private:
+		/**
+		 * lock
+		 * creates lock on mMutex
+		 */
+		std::unique_lock<std::mutex> lock();
+
 		/**
 		 * getSequence
 		 * returns reference to sequence
@@ -183,12 +171,6 @@ namespace nap
 		 * The threaded update function
 		 */
 		void onUpdate();
-
-		/**
-		 * lock
-		 * creates lock on mMutex
-		 */
-		std::unique_lock<std::mutex> lock();
 
 		// read objects from sequence
 		std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;

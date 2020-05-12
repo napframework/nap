@@ -10,6 +10,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Controller class for event tracks
+	 */
 	class NAPAPI SequenceControllerEvent : public SequenceController
 	{
 	public:
@@ -70,12 +73,12 @@ namespace nap
 	template<typename T>
 	void SequenceControllerEvent::insertEventSegment(const std::string& trackID, double time)
 	{
-		auto l = mPlayer.lock();
+		auto l = lock();
 
 		// create new segment & set parameters
 		std::unique_ptr<SequenceTrackSegmentEvent<T>> newSegment = std::make_unique<SequenceTrackSegmentEvent<T>>();
 		newSegment->mStartTime = time;
-		newSegment->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+		newSegment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 		newSegment->mDuration = 0.0;
 
 		//
@@ -86,7 +89,7 @@ namespace nap
 		{
 			track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent<T>>(newSegment.get()));
 
-			mPlayer.mReadObjects.emplace_back(std::move(newSegment));
+			getPlayerOwnedObjects().emplace_back(std::move(newSegment));
 		}
 	}
 
@@ -94,7 +97,7 @@ namespace nap
 	template<typename T>
 	void SequenceControllerEvent::editEventSegment(const std::string& trackID, const std::string& segmentID, const T& value)
 	{
-		auto l = mPlayer.lock();
+		auto l = lock();
 
 		SequenceTrack* track = findTrack(trackID);
 		assert(track != nullptr); // track not found

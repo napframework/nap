@@ -13,7 +13,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Sequence
 	 * Sequence holds all the information needed by the player to play a Sequence and link it to the right parameters
 	 */
 	class NAPAPI Sequence : public Resource

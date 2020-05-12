@@ -20,7 +20,6 @@ namespace nap
 	class SequenceController;
 
 	/**
-	 * SequenceEditor
 	 * The SequenceEditor is responsible for editing the sequence (model) and makes sure the model stays valid during editing.
 	 * It also holds a resource ptr to a player, to make sure that editing the sequence stays thread safe.
 	 */
@@ -37,14 +36,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 *
-		 * @param file
+		 * saves sequence of player to file
+		 * @param file filename
 		 */
 		void save(const std::string& file);
 
 		/**
-		 *
-		 * @param file
+		 * loads sequence of file
+		 * @param file filename
 		 */
 		void load(const std::string& file);
 

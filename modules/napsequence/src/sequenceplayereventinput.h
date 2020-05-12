@@ -18,6 +18,6 @@ namespace nap
 	{
 		RTTI_ENABLE(SequencePlayerInput)
 	public:
-		ResourcePtr<SequenceEventReceiver> mReceiver;
+		ResourcePtr<SequenceEventReceiver> mReceiver; ///< Property: 'Event Receiver' event receiver resource
 	};
 }

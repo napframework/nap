@@ -32,10 +32,10 @@ namespace nap
 	void SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float amount)
 	{
 		// lock
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		//
-		Sequence& sequence = mPlayer.getSequence();
+		Sequence& sequence = getSequence();
 
 		//
 		SequenceTrack* track = findTrack(trackID);
@@ -116,10 +116,10 @@ namespace nap
 	void SequenceControllerCurve::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		// pause player thread
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		//
-		Sequence& sequence = mPlayer.getSequence();
+		Sequence& sequence = getSequence();
 
 		for (auto& track : sequence.mTracks)
 		{
@@ -168,23 +168,23 @@ namespace nap
 	template<typename T>
 	void SequenceControllerCurve::addNewCurveTrack()
 	{
-		std::unique_lock<std::mutex> l = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// create sequence track
 		std::unique_ptr<SequenceTrackCurve<T>> sequenceTrack = std::make_unique<SequenceTrackCurve<T>>();
-		sequenceTrack->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs );
+		sequenceTrack->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs() );
 
 		//
-		mPlayer.getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequenceTrack.get()));
+		getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequenceTrack.get()));
 
-		mPlayer.mReadObjects.emplace_back(std::move(sequenceTrack));
+		getPlayerOwnedObjects().emplace_back(std::move(sequenceTrack));
 	}
 
 
 	template<typename T>
 	void SequenceControllerCurve::insertCurveSegment(const std::string& trackID, double time)
 	{
-		auto l = mPlayer.lock();
+		auto l = lock();
 
 		static std::unordered_map<rttr::type, int> curveCountMap
 		{
@@ -203,7 +203,7 @@ namespace nap
 		assert(curveCount > 0); // invalid curvecount
 
 		//
-		Sequence& sequence = mPlayer.getSequence();
+		Sequence& sequence = getSequence();
 
 		// find the right track
 		for (auto& track : sequence.mTracks)
@@ -229,13 +229,13 @@ namespace nap
 						for (int i = 0; i < curveCount; i++)
 						{
 							std::unique_ptr<math::FCurve<float, float>> segmentCurve = std::make_unique<math::FCurve<float, float>>();
-							segmentCurve->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+							segmentCurve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 							// assign curve
 							newSegment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segmentCurve.get());
 
 							// move ownership
-							mPlayer.mReadObjects.emplace_back(std::move(segmentCurve));
+							getPlayerOwnedObjects().emplace_back(std::move(segmentCurve));
 						}
 
 						//
@@ -268,14 +268,14 @@ namespace nap
 						segment->mDuration = newSegment->mStartTime - segment->mStartTime;
 
 						// generate unique id
-						newSegment->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+						newSegment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 						// wrap it in a resource ptr and insert it into the track
 						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
 						track->mSegments.insert(track->mSegments.begin() + segmentCount, newSegmentResourcePtr);
 
 						// move ownership to sequence player
-						mPlayer.mReadObjects.emplace_back(std::move(newSegment));
+						getPlayerOwnedObjects().emplace_back(std::move(newSegment));
 
 						//
 						updateCurveSegments<T>(*(track.get()));
@@ -295,20 +295,20 @@ namespace nap
 						for (int v = 0; v < curveCount; v++)
 						{
 							std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
-							newCurve->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+							newCurve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 							newSegment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
-							mPlayer.mReadObjects.emplace_back(std::move(newCurve));
+							getPlayerOwnedObjects().emplace_back(std::move(newCurve));
 						}
 
 						// generate unique id
-						newSegment->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+						newSegment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 						// wrap it in a resource ptr and insert it into the track
 						ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
 						track->mSegments.emplace_back(newSegmentResourcePtr);
 
 						// move ownership to sequence player
-						mPlayer.mReadObjects.emplace_back(std::move(newSegment));
+						getPlayerOwnedObjects().emplace_back(std::move(newSegment));
 
 						//
 						updateCurveSegments<T>(*(track.get()));
@@ -333,20 +333,20 @@ namespace nap
 					for (int v = 0; v < curveCount; v++)
 					{
 						std::unique_ptr<math::FCurve<float, float>> newCurve = std::make_unique<math::FCurve<float, float>>();
-						newCurve->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+						newCurve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 						newSegment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(newCurve.get());
-						mPlayer.mReadObjects.emplace_back(std::move(newCurve));
+						getPlayerOwnedObjects().emplace_back(std::move(newCurve));
 					}
 
 					// generate unique id
-					newSegment->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+					newSegment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 					// wrap it in a resource ptr and insert it into the track
 					ResourcePtr<SequenceTrackSegment> newSegmentResourcePtr(newSegment.get());
 					track->mSegments.emplace_back(newSegmentResourcePtr);
 
 					// move ownership to sequence player
-					mPlayer.mReadObjects.emplace_back(std::move(newSegment));
+					getPlayerOwnedObjects().emplace_back(std::move(newSegment));
 
 					//
 					updateCurveSegments<T>(*(track.get()));
@@ -367,7 +367,7 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurveType<glm::vec4> },
 		};
 
-		auto l = mPlayer.lock();
+		auto l = lock();
 
 		auto* segment = findSegment(trackID, segmentID);
 		assert(segment != nullptr); // segment not found
@@ -416,7 +416,7 @@ namespace nap
 		};
 
 		//
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		SequenceTrack* track = findTrack(trackID);
 		assert(track != nullptr); // track not found
@@ -517,7 +517,7 @@ namespace nap
 		};
 
 		//
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
@@ -585,7 +585,7 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::deleteCurvePoint<glm::vec4> },
 		};
 
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
@@ -638,7 +638,7 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurvePoint<glm::vec4> },
 		};
 
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
@@ -689,7 +689,7 @@ namespace nap
 
 
 		//
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// find segment
 		SequenceTrackSegment* segment = findSegment(trackID, segmentID);
@@ -796,7 +796,7 @@ namespace nap
 	template<typename T>
 	void SequenceControllerCurve::changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum)
 	{
-		auto l = mPlayer.lock();
+		auto l = lock();
 
 		SequenceTrack* track = findTrack(trackID);
 		assert(track != nullptr); // track not found

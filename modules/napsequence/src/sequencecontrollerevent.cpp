@@ -12,7 +12,7 @@ namespace nap
 	void SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float amount)
 	{
 		// pause player thread
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		auto* segment = findSegment(trackID, segmentID);
 		assert(segment != nullptr); // segment not found
@@ -42,10 +42,10 @@ namespace nap
 	void SequenceControllerEvent::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		// pause player thread
-		std::unique_lock<std::mutex> lock = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		//
-		Sequence& sequence = mPlayer.getSequence();
+		Sequence& sequence = getSequence();
 
 		//
 		auto* track = findTrack(trackID);
@@ -75,17 +75,17 @@ namespace nap
 
 	void SequenceControllerEvent::addNewEventTrack()
 	{
-		std::unique_lock<std::mutex> l = mPlayer.lock();
+		std::unique_lock<std::mutex> l = lock();
 
 		// create sequence track
 		std::unique_ptr<SequenceTrackEvent> sequenceTrack = std::make_unique<SequenceTrackEvent>();
-		sequenceTrack->mID = sequenceutils::generateUniqueID(mPlayer.mReadObjectIDs);
+		sequenceTrack->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 		//
-		mPlayer.getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequenceTrack.get()));
+		getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequenceTrack.get()));
 
 		// move ownership of unique ptrs
-		mPlayer.mReadObjects.emplace_back(std::move(sequenceTrack));
+		getPlayerOwnedObjects().emplace_back(std::move(sequenceTrack));
 	}
 
 

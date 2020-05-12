@@ -24,6 +24,7 @@ namespace nap
 			return unique_id;
 		}
 
+
 		Sequence* createEmptySequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, std::unordered_set<std::string>& objectIDs)
 		{
 			// create the sequence

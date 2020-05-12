@@ -95,7 +95,7 @@ namespace nap
 		mState.mPreviousMousePos = mState.mMousePos;
 
 		//
-		const Sequence& sequence = mEditor.mSequencePlayer->getSequence();
+		const Sequence& sequence = mEditor.mSequencePlayer->getSequenceConst();
 		SequencePlayer& sequencePlayer = *mEditor.mSequencePlayer.get();
 
 		// push id

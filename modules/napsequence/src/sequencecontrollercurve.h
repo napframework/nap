@@ -7,6 +7,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Controller class for curve tracks
+	 */
 	class NAPAPI SequenceControllerCurve : public SequenceController
 	{
 	public:

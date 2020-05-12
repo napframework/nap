@@ -11,6 +11,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Base class for event segments
+	 */
 	class SequenceTrackSegmentEventBase : public SequenceTrackSegment
 	{
 		friend class SequencePlayerEventAdapter;
@@ -25,6 +28,10 @@ namespace nap
 		virtual SequenceEventPtr createEvent() = 0;
 	};
 
+	/**
+	 * Event segments holding a value of type T
+	 * @tparam T value type of event
+	 */
 	template <typename T>
 	class SequenceTrackSegmentEvent : public SequenceTrackSegmentEventBase
 	{

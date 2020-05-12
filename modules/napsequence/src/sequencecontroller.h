@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sequenceplayer.h"
+#include "sequence.h"
 
 #include <nap/core.h>
 
@@ -14,6 +15,9 @@ namespace nap
 	// shortcut to factory method
 	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&);
 
+	/**
+	 * Base class for controllers for specific track types
+	 */
 	class NAPAPI SequenceController
 	{
 	public:
@@ -109,6 +113,18 @@ namespace nap
 		 * updates duration of sequence by longest track
 		 */
 		void updateTracks();
+
+		/**
+		 * locks player thread
+		 * creates lock on mMutex
+		 */
+		std::unique_lock<std::mutex> lock() { return mPlayer.lock(); }
+
+		// objects owned by sequence player
+		std::vector<std::unique_ptr<rtti::Object>>&	getPlayerOwnedObjects(){ return mPlayer.mReadObjects; };
+
+		// read object ids from sequence
+		std::unordered_set<std::string>& getPlayerReadObjectIDs(){ return mPlayer.mReadObjectIDs; };
 
 		// reference to player
 		SequencePlayer& mPlayer;
