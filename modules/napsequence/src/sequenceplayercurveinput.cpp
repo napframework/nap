@@ -1,4 +1,6 @@
 #include "sequenceplayercurveinput.h"
+#include "sequenceplayerparametersetter.h"
+#include "sequenceservice.h"
 
 #include <nap/logger.h>
 
@@ -9,8 +11,59 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayerCurveInput::SequencePlayerCurveInput(SequenceService& service)
-		: mSequenceService(&service)
+	static bool registerObjectCreator = SequenceService::registerObjectCreator([](SequenceService* service)->std::unique_ptr<rtti::IObjectCreator>
 	{
+		return std::make_unique<SequencePlayerCurveInputObjectCreator>(*service);
+	});
+
+
+	SequencePlayerCurveInput::SequencePlayerCurveInput(SequenceService& service)
+		: SequencePlayerInput(service)
+	{
+		nap::Logger::info("yey");
+	}
+
+
+	void SequencePlayerCurveInput::update(double deltaTime)
+	{
+		for(auto* setter : mSetters)
+		{
+			setter->setValue();
+		}
+	}
+
+
+	void SequencePlayerCurveInput::registerParameterSetter(SequencePlayerParameterSetterBase* parameterSetter)
+	{
+		auto found_it = std::find_if(mSetters.begin(), mSetters.end(), [&](const auto& it)
+		{
+		  return it == parameterSetter;
+		});
+		assert(found_it == mSetters.end()); // duplicate entry
+
+		if(found_it == mSetters.end())
+		{
+			mSetters.emplace_back(parameterSetter);
+		}
+	}
+
+
+	void SequencePlayerCurveInput::removeParameterSetter(SequencePlayerParameterSetterBase* parameterSetter)
+	{
+		auto found_it = std::find_if(mSetters.begin(), mSetters.end(), [&](const auto& it)
+		{
+			return it == parameterSetter;
+		});
+
+		if(found_it != mSetters.end())
+		{
+			mSetters.erase(found_it);
+		}
+	}
+
+
+	SequenceService* SequencePlayerCurveInput::getService()
+	{
+		return mService;
 	}
 }

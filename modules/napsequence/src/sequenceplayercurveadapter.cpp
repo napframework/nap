@@ -1,5 +1,6 @@
 #include "sequenceplayercurveadapter.h"
 #include "sequencetrackcurve.h"
+#include "sequenceplayercurveinput.h"
 
 namespace nap
 {
@@ -13,22 +14,22 @@ namespace nap
 
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterFloat))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, static_cast<ParameterFloat&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, static_cast<ParameterFloat&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterLong))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, static_cast<ParameterLong&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, static_cast<ParameterLong&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterDouble))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, static_cast<ParameterDouble&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, static_cast<ParameterDouble&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterInt))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, static_cast<ParameterInt&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, static_cast<ParameterInt&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		assert(false); // no correct parameter type found!
@@ -47,7 +48,7 @@ namespace nap
 		assert(curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterVec2)); // type mismatch
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, static_cast<ParameterVec2&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, static_cast<ParameterVec2&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		return nullptr;
@@ -65,7 +66,7 @@ namespace nap
 		assert(curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterVec3)); // type mismatch
 		if (curveInput.mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, static_cast<ParameterVec3&>(*curveInput.mParameter.get()), *curveInput.mSequenceService, curveInput.mUseMainThread));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, static_cast<ParameterVec3&>(*curveInput.mParameter.get()), curveInput.mUseMainThread, curveInput));
 		}
 
 		return nullptr;

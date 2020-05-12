@@ -1,4 +1,5 @@
 #pragma once
+
 // Local Includes
 #include "sequenceplayer.h"
 
@@ -6,6 +7,7 @@
 #include <nap/service.h>
 #include <entity.h>
 #include <nap/datetime.h>
+#include <rtti/factory.h>
 
 namespace nap
 {
@@ -25,6 +27,7 @@ namespace nap
 	{
 		friend class SequenceEventReceiver;
 		friend class SequencePlayerParameterSetterBase;
+		friend class SequencePlayerInput;
 
 		RTTI_ENABLE(Service)
 	public:
@@ -34,6 +37,7 @@ namespace nap
 		// Default Destructor
 		virtual ~SequenceService();
 
+		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService*));
 	protected:
 		/**
 		 * Registers all objects that need a specific way of construction
@@ -57,37 +61,18 @@ namespace nap
 		virtual void update(double deltaTime) override;
 	private:
 		/**
-		 * registerEventReceiver
-		 * registers a new event receiver
-		 * @param receiver reference to event receiver
+		 * registers an input
+		 * @param input reference to input
 		 */
-		void registerEventReceiver(SequenceEventReceiver& receiver);
+		void registerInput(SequencePlayerInput& input);
 
 		/**
-		 * registerEventReceiver
-		 * removes a registered event receiver
-		 * @param receiver reference to event receiver
+		 * removes an input
+		 * @param input reference to input
 		 */
-		void removeEventReceiver(SequenceEventReceiver& receiver);
+		void removeInput(SequencePlayerInput& input);
 
-		/**
-		 * registerParameterSetter
-		 * registers a new parameter setter 
-		 * @param setter reference to parameter setter
-		 */
-		void registerParameterSetter(SequencePlayerParameterSetterBase& setter);
-
-		/**
-		 * removeParameterSetter
-		 * removes a registered parameter setter 
-		 * @param setter reference to parameter setter to be removed
-		 */
-		void removeParameterSetter(SequencePlayerParameterSetterBase& setter);
-
-		// sequence event receivers
-		std::vector<SequenceEventReceiver*>			mEventReceivers;
-
-		// parameter setters
-		std::vector<SequencePlayerParameterSetterBase*> mParameterSetters;
+		//
+		std::vector<SequencePlayerInput*> mInputs;
 	};
 }

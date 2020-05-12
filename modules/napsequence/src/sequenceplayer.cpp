@@ -14,7 +14,7 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
+RTTI_BEGIN_CLASS(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Inputs", &nap::SequencePlayer::mInputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
@@ -25,8 +25,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayer::SequencePlayer(SequenceService& service)
-		:mSequenceService(service)
+	SequencePlayer::SequencePlayer()
 	{
 	}
 

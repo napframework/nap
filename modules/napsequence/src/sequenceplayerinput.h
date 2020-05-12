@@ -2,10 +2,12 @@
 
 // nap includes
 #include <nap/resource.h>
+#include <rtti/factory.h>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequenceService;
 
 	/**
 	 * SequencePlayerInput is the base class for inputs for the sequenceplayer
@@ -14,16 +16,35 @@ namespace nap
 	 */
 	class NAPAPI SequencePlayerInput : public Resource
 	{
+		friend class SequenceService;
+
 		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to SequenceService
 		 */
-		SequencePlayerInput() = default;
+		SequencePlayerInput(SequenceService& service);
 
 		/**
-		 * Deconstructor
+		 * upon initialisation input registers itself to the service
+		 * @param errorState contains any errors
+		 * @return true if succeed
 		 */
-		virtual ~SequencePlayerInput() = default;
+		virtual bool init(utility::ErrorState& errorState) override ;
+
+		/**
+		 * upon destruction, removes itself from service
+		 */
+		virtual void onDestroy() override ;
+	protected:
+		/**
+		 * called from sequenceservice update loop main thread
+		 * @param deltaTime time since last update call
+		 */
+		virtual void update(double deltaTime){};
+
+		// ptr to service
+		SequenceService* mService = nullptr;
 	};
 }

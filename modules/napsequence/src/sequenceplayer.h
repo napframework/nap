@@ -29,14 +29,13 @@ namespace nap
 	{
 		friend class SequenceEditor;
 		friend class SequenceController;
-		friend class SequenceService;
 
 		RTTI_ENABLE(Device)
 	public:
 		/**
 		 * Constructor used by factory
 		 */
-		SequencePlayer(SequenceService& service);
+		SequencePlayer();
 
 		/**
 		 * evaluates the data of the player. It loads the linked default sequence. 
@@ -211,9 +210,6 @@ namespace nap
 
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
-
-		// reference to service
-		SequenceService& mSequenceService;
 	};
 
 	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;

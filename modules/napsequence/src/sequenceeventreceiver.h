@@ -2,6 +2,7 @@
 
 // internal includes
 #include "sequenceevent.h"
+#include "sequenceplayereventinput.h"
 
 // external includes
 #include <nap/resource.h>
@@ -13,33 +14,19 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// forward declars
+	// forward declares
 	class SequenceService;
 
 	/**
-	 * SequenceEventReceiver
-	 * Receives events from a SequencePlayerEventAdapter and SequenceService dispatches them from the main thread
+	 * Receives events from a SequencePlayerEventAdapter and SequencePlayerEventInput dispatches them from the main thread
 	 */
 	class NAPAPI SequenceEventReceiver : public Resource
 	{
 		friend class SequencePlayerEventAdapter;
-		friend class SequenceService;
+		friend class SequencePlayerEventInput;
 
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 * Constructor
-		 * Upon construction, this receiver registers itself to the service
-		 * @param service reference to SequenceService
-		 */
-		SequenceEventReceiver(SequenceService& service);
-
-		/**
-		 * Deconstructor
-		 * Upon deconstruction receiver removes itself from service
-		 */
-		virtual ~SequenceEventReceiver();
-
 		/**
 		 * Signal will be triggered from main thread
 		 */
@@ -64,10 +51,5 @@ namespace nap
 
 		// thread mutex
 		std::mutex mEventMutex;
-
-		// pointer to service
-		SequenceService* mService;
 	};
-
-	using SequenceReceiverObjectCreator = rtti::ObjectCreator<SequenceEventReceiver, SequenceService>;
 }

@@ -3,15 +3,15 @@
 
 namespace nap
 {
-	SequencePlayerParameterSetterBase::SequencePlayerParameterSetterBase(SequenceService& service)
-		: mService(service)
+	SequencePlayerParameterSetterBase::SequencePlayerParameterSetterBase(SequencePlayerCurveInput& input)
+		: mInput(input)
 	{
-		mService.registerParameterSetter(*this);
+		mInput.registerParameterSetter(this);
 	}
 
 
 	SequencePlayerParameterSetterBase::~SequencePlayerParameterSetterBase()
 	{
-		mService.removeParameterSetter(*this);
+		mInput.removeParameterSetter(this);
 	}
 }

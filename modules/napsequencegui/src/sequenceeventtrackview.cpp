@@ -5,6 +5,7 @@
 #include "napcolors.h"
 #include "sequenceplayereventinput.h"
 #include "sequencecontrollerevent.h"
+#include "sequenceeventreceiver.h"
 
 #include <nap/logger.h>
 #include <iostream>
@@ -93,7 +94,8 @@ namespace nap
 					currentItem = count;
 
 					assert(input.get()->get_type() == RTTI_OF(SequencePlayerEventInput)); // type mismatch
-					assignedEventReceiver = static_cast<SequencePlayerEventInput*>(input.get())->mReceiver.get();
+					SequencePlayerEventInput* eventInput = static_cast<SequencePlayerEventInput*>(input.get());
+					assignedEventReceiver = eventInput->mReceiver.get();
 				}
 
 				eventInputs.emplace_back(input->mID);

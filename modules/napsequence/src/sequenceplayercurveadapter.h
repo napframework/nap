@@ -3,9 +3,9 @@
 // local includes
 #include "sequenceplayeradapter.h"
 #include "sequenceplayer.h"
-#include "sequenceplayercurveinput.h"
 #include "sequencetrackcurve.h"
 #include "sequenceplayerparametersetter.h"
+#include "sequenceplayercurveinput.h"
 
 // nap includes
 #include <nap/logger.h>
@@ -35,18 +35,17 @@ namespace nap
 		SequencePlayerCurveAdapter(
 			SequenceTrack& track,
 			PARAMETER_TYPE& parameter,
-			SequenceService &service,
-			bool useMainThread)
+			bool useMainThread,
+			SequencePlayerCurveInput& input)
 			:	mParameter(parameter),
-				mUseMainThread(useMainThread),
-				mService(service)
+				mUseMainThread(useMainThread)
 		{
 			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
 			mTrack = static_cast<SequenceTrackCurve<CURVE_TYPE>*>(&track);
 
 			if (mUseMainThread)
 			{
-				mSetter = std::make_unique<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(service, mParameter);
+				mSetter = std::make_unique<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(input, mParameter);
 				mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
 			}else
 			{
@@ -105,12 +104,8 @@ namespace nap
 		PARAMETER_TYPE&									mParameter;
 		SequenceTrackCurve<CURVE_TYPE>*					mTrack;
 		bool											mUseMainThread;
-		SequenceService&								mService;
 		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
 
 		void (SequencePlayerCurveAdapter::*mSetFunction)(PARAMETER_VALUE_TYPE& value);
 	};
-
-
-	using SequencePlayerCurveInputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveInput, SequenceService>;
 }
