@@ -20,7 +20,6 @@ namespace nap
 	SequencePlayerCurveInput::SequencePlayerCurveInput(SequenceService& service)
 		: SequencePlayerInput(service)
 	{
-		nap::Logger::info("yey");
 	}
 
 
@@ -59,11 +58,5 @@ namespace nap
 		{
 			mSetters.erase(found_it);
 		}
-	}
-
-
-	SequenceService* SequencePlayerCurveInput::getService()
-	{
-		return mService;
 	}
 }
