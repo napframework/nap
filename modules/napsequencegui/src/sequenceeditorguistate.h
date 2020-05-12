@@ -9,13 +9,17 @@
 
 namespace nap
 {
+	/**
+	 * Holds information about the state of the editor
+	 * Shared between GUI editor and view classes
+	 */
 	struct SequenceEditorGUIState
 	{
 	public:
 		// action 
 		SequenceGUIActions::SequenceActionPtr mAction = nullptr;
 
-		//
+		// dirty means view has changed, and potentially content of tracks need to be redrawn and cached
 		bool mDirty = false;
 
 		// previous mouse pos

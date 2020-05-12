@@ -305,7 +305,7 @@ namespace nap
 				assert(it2 != mViews.end()); // no view class created for this view type
 				if (it2 != mViews.end())
 				{
-					it2->second->drawTrack(*sequence.mTracks[i].get());
+					it2->second->show(*sequence.mTracks[i].get());
 				}
 			}
 		}

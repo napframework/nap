@@ -7,32 +7,25 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * SequenceCurveTrackView shows and handles contents for curve tracks
+	 */
 	class SequenceCurveTrackView : public SequenceTrackView
 	{
 	public:
+		/**
+		 * Constructor
+		 * @param view reference to editor view
+		 * @param state reference to editor state
+		 */
 		SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
-		virtual void drawTrack(const SequenceTrack& track) override;
-
+		/**
+		 * Handles popups
+		 */
 		virtual void handlePopups() override;
 	private:
 		/**
-		 * drawCurveTrack
-		 * draws a track containing curves
-		 * @tparam T the curve type ( float, glm::vec2, glm::vec3, glm::vec4 )
-		 * @param track reference to track
-		 * @param cursorPos the current IMGUI cursorposition
-		 * @param marginBetweenTracks y margin between tracks
-		 * @param sequencePlayer reference to player
-		 * @param deleteTrack set to true when delete track button is pressed
-		 * @param deleteTrackID the id of track that needs to be deleted
-		 */
-		template<typename T>
-		void drawCurveTrack(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID);
-
-
-		/**
-		 * drawSegmentContent
 		 * draws the contents of a segment
 		 * @tparam T the type of this segment
 		 * @param track reference to track
@@ -48,7 +41,6 @@ namespace nap
 		void drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
 	
 		/**
-		 * drawSegmentValue
 		 * draws a segments value
 		 * @tparam T type of segment
 		 * @param track reference to track
@@ -63,7 +55,6 @@ namespace nap
 		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
-		 * drawSegmentHandler
 		 * draws segment handler
 		 * @param track reference to track
 		 * @param segment reference to segment
@@ -75,7 +66,6 @@ namespace nap
 		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 	
 		/**
-		 * drawControlPoints
 		 * draws control points of curve segment
 		 * @param track reference to track
 		 * @param segment reference to segment
@@ -88,7 +78,6 @@ namespace nap
 		void drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
 		/**
-		 * drawCurves
 		 * draws curves of segment
 		 * @tparam T the type of this segment
 		 * @param track reference to track
@@ -103,7 +92,6 @@ namespace nap
 		void drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
 
 		/**
-		 * drawTanHandler
 		 * draws handlers of curve point
 		 * @tparam T type of segment
 		 * @param track reference to track
@@ -121,37 +109,31 @@ namespace nap
 		void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
 	
 		/**
-		 * handleInsertSegmentPopup
 		 * handles insert segment popup
 		 */
 		void handleInsertSegmentPopup();
 
 		/**
-		 * handleDeleteSegmentPopup
 		 * handles delete segment popup
 		 */
 		void handleDeleteSegmentPopup();
 
 		/**
-		 * handleInsertCurvePointPopup
 		 * handles insert curve point popup
 		 */
 		void handleInsertCurvePointPopup();
 
 		/**
-		 * handleCurvePointActionPopup
 		 * handles curvepoint action popup
 		 */
 		void handleCurvePointActionPopup();
 
 		/**
-		 * handleCurveTypePopup
 		 * handles curve type popup
 		 */
 		void handleCurveTypePopup();
 
 		/**
-		 * drawInspectorRange
 		 * Draws min/max range of inspector
 		 * @tparam T type
 		 * @param track reference to track
@@ -160,7 +142,6 @@ namespace nap
 		void drawInspectorRange(const SequenceTrack& track);
 
 		/**
-		 * showValue
 		 * @tparam T type of value
 		 * @param track reference to track
 		 * @param segment reference to segment
@@ -172,7 +153,6 @@ namespace nap
 		void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
 	
 		/**
-		 * inputFloat
 		 * input float that takes type T as input
 		 * @tparam T type of inputFloat
 		 * @param precision decimal precision
@@ -181,13 +161,26 @@ namespace nap
 		template<typename T>
 		bool inputFloat(T &, int precision);
 
+		/**
+		 * show inspector content
+		 * @param track reference to track
+		 */
+		virtual void showInspectorContent(const SequenceTrack &track) override;
+
+		/**
+		 * shows track content
+		 * @param track reference to track
+		 * @param trackTopLeft orientation
+		 */
+		virtual void showTrackContent(const SequenceTrack &track, const ImVec2& trackTopLeft) override;
+
+		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
 
-		using DrawTrackMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID);
+		// short curt to member function drawSegmentContent
 		using DrawSegmentMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
-	
-		static std::unordered_map<rttr::type, DrawTrackMemFunPtr> sDrawTracksMap;
 
+		// static map of member function pointers
 		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr> sDrawCurveSegmentsMap;
 	};
 

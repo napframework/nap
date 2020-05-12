@@ -22,7 +22,6 @@ namespace nap
 	class SequenceTrackView;
 
 	/**
-	 * SequenceEditorGUI
 	 * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
 	 */
 	class NAPAPI SequenceEditorGUI : public Resource
@@ -53,9 +52,8 @@ namespace nap
 	};
 
 	/**
-	 * SequenceEditorGUIView
 	 * Responsible for drawing the GUI for the sequence editor
-	 * Needs reference to controller
+	 * Needs reference to editor
 	 */
 	class NAPAPI SequenceEditorGUIView
 	{
@@ -86,14 +84,12 @@ namespace nap
 		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
 		/**
-		 * drawPlayerController
 		 * draws player controller bar
 		 * @param player reference to player
 		 */
 		void drawPlayerController(SequencePlayer& player);
 
 		/**
-		 * drawTimelinePlayerPosition
 		 * draws line of player position
 		 * @param sequence reference to sequence
 		 * @param player reference to player

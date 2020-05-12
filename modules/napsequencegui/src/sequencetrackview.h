@@ -39,7 +39,7 @@ namespace nap
 		 * given track derived class is expected to be of track type that is used by this view
 		 * @param track reference to sequence track
 		 */
-		virtual void drawTrack(const SequenceTrack& track) = 0;
+		void show(const SequenceTrack& track);
 
 		/**
 		 * handles popups
@@ -96,13 +96,42 @@ namespace nap
 		 */
 		static std::string formatTimeString(double time);
 	protected:
+		/**
+		 * shows inspector block
+		 * @param track reference to track
+		 * @param deleteTrack reference to bool to indicate whether delete is pressed
+		 */
+		void showInspector(const SequenceTrack& track, bool& deleteTrack);
+
+		/**
+		 * shows track contents
+		 * @param track reference to track
+		 */
+		void showTrack(const SequenceTrack& track);
+
+		/**
+		 * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
+		 * @param track reference to track
+		 */
+		virtual void showInspectorContent(const SequenceTrack& track) = 0;
+
+		/**
+		 * this method needs to be overloaded, contents for the track can be drawn in this function
+		 * @param track reference to track
+		 * @param trackTopLeft orientation for drawing stuff in track window
+		 */
+		virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) = 0;
+
 		// reference to gui view
 		SequenceEditorGUIView& mView;
 
+		// reference to sequence player
 		const SequencePlayer& getPlayer();
 
+		// reference to editor
 		SequenceEditor& getEditor();
 
+		// reference to gui state
 		SequenceEditorGUIState& mState;
 	};
 }

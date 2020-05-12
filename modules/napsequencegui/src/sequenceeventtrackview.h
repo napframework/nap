@@ -8,30 +8,49 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * SequenceEventTrackView is a view for event tracks
+	 */
 	class SequenceEventTrackView : public SequenceTrackView
 	{
 	public:
+		/**
+		 * Constructor
+		 * @param view reference to editor view
+		 * @param state reference to editor state
+		 */
 		SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
-		virtual void drawTrack(const SequenceTrack& track) override;
-
+		/**
+		 * handles popups
+		 */
 		virtual void handlePopups() override;
 	protected:
 		/**
-		 * handlerInsertEventSegmentPopup
+		 * shows inspector content
+		 * @param track reference to track
+		 */
+		virtual void showInspectorContent(const SequenceTrack& track) override ;
+
+		/**
+		 * shows track contents
+		 * @param track reference to track
+		 * @param trackTopLeft orientation
+		 */
+		virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
+
+		/**
 		 * handles insert event segment popup
 		 */
 		void handleInsertEventSegmentPopup();
 
 		/**
-		 * handleEditEventSegmentPopup
 		 * handles event segment popup
 		 */
 		template<typename T>
 		void handleEditEventSegmentPopup();
 
 		/**
-		 * drawEventTrack
 		 * draws event track
 		 * @param track reference to track
 		 * @param cursorPos imgui cursorposition
@@ -43,7 +62,6 @@ namespace nap
 		void drawEventTrack(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID);
 
 		/**
-		 * drawSegmentHandler
 		 * draws segment handler
 		 * @param track reference to track
 		 * @param segment reference to segment
@@ -54,13 +72,25 @@ namespace nap
 		 */
 		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
+		/**
+		 * handles delete segment popup
+		 */
 		void handleDeleteSegmentPopup();
 
+		/**
+		 * creates an event edit action of specified type
+		 * @tparam T type of event action
+		 * @param segment base class of event segment
+		 * @param trackID track id
+		 * @param segmentID segment id
+		 */
 		template<typename T>
 		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
 
+		// static map of popup function pointers
 		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> sHandlePopupsMap;
 
+		// static map of edit action function pointers
 		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> sEditActionMap;
 	};
 
