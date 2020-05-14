@@ -36,7 +36,7 @@ namespace nap
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
-		virtual void update(double time);
+		virtual void tick(double time);
 	private:
 		// reference to track linked to adapter
 		SequenceTrack& 			mTrack;

@@ -39,7 +39,7 @@ namespace nap
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
-		virtual void update(double time) = 0;
+		virtual void tick(double time) = 0;
 
 		/**
 		 * registers factory method for specific track type

@@ -15,6 +15,10 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Base class for curve adapters
+	 * setValue must be called from main thread to set value of parameter on main thread
+	 */
 	class SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
 	{
 		friend class SequencePlayerCurveOutput;
@@ -24,7 +28,8 @@ namespace nap
 
 	/**
 	 * Responsible for translating the value read on a curve track, to a parameter
-	 * When the user wants to do this on the main thread, it uses a SequencePlayerParameterSetter as an intermediate class to ensure thread safety,
+	 * When the user wants to do this on the main thread, it uses a SequencePlayerCurveOutput as an intermediate class to ensure thread safety,
+	 * SequencePlayerCurveOutput will then call setValue()
 	 * otherwise it sets the parameter value directly from the sequence player thread
 	 */
 	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
@@ -34,9 +39,7 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param track reference to sequence track that holds curve information
-		 * @param parameter reference to parameter that is assigned to this track
-		 * @param service reference to the sequence service, needed to sync with main thread
-		 * @param useMain thread, whether to sync with the main thread or not
+		 * @param output reference to curve output
 		 */
 		SequencePlayerCurveAdapter(SequenceTrack& track, SequencePlayerCurveOutput& output)
 			:	mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
@@ -63,23 +66,26 @@ namespace nap
 		}
 
 		/**
-		 * update
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
-		virtual void update(double time) override
+		virtual void tick(double time) override
 		{
 			for (const auto& segment : mTrack->mSegments)
 			{
-				if (time >= segment->mStartTime &&
-					time < segment->mStartTime + segment->mDuration)
+				if (time >= segment->mStartTime && time < segment->mStartTime + segment->mDuration)
 				{
+					// get the segment we need
 					assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
 					const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
+					// retrieve the source value
 					CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
+
+					// cast it to a parameter value
 					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
+					// call set or store function
 					(*this.*mSetFunction)(value);
 
 					break;
@@ -87,6 +93,9 @@ namespace nap
 			}
 		}
 	private:
+		/**
+		 * setValue gets called from main thread and sets the parameter value
+		 */
 		virtual void setValue() override
 		{
 			std::unique_lock<std::mutex> l(mMutex);
@@ -103,7 +112,7 @@ namespace nap
 		}
 
 		/**
-		 * Uses parameter setter to set parameter value, value will be set from main thread, thread safe
+		 * Uses SequencePlayerCurveOutput  to set parameter value, value will be set from main thread with function setValue(), thread safe
 		 * @param value the value
 		 */
 		void storeParameterValue(PARAMETER_VALUE_TYPE& value)

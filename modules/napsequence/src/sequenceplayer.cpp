@@ -318,7 +318,7 @@ namespace nap
 
 					for (auto& adapter : mAdapters)
 					{
-						adapter.second->update(mTime);
+						adapter.second->tick(mTime);
 					}
 				}
 			}
