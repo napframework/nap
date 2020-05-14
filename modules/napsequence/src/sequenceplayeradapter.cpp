@@ -33,7 +33,8 @@ namespace nap
 	}
 
 
-	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, SequenceTrack& track, SequencePlayerInput& input)
+	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, SequenceTrack& track,
+																				SequencePlayerOutput& input)
 	{
 		auto& map = getFactoryMap();
 

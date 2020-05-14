@@ -11,11 +11,12 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// forward declares
-	class SequencePlayerInput;
+	class SequencePlayerOutput;
 	class SequencePlayerAdapter;
 
 	// shortcut to factory function
-	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(SequenceTrack&, SequencePlayerInput&);
+	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(SequenceTrack&,
+																						SequencePlayerOutput&);
 
 	/**
 	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
@@ -55,7 +56,8 @@ namespace nap
 		 * @param input reference to input
 		 * @return unique ptr to created adapter, nullptr upon failure
 		 */
-		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(rttr::type type, SequenceTrack& track, SequencePlayerInput& input);
+		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(rttr::type type, SequenceTrack& track,
+																	SequencePlayerOutput& input);
 	private:
 		// returns factory map
 		static std::unordered_map <rttr::type, SequencePlayerAdapterFactoryFunc>& getFactoryMap();

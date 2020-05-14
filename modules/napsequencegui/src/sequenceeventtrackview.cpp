@@ -1,11 +1,9 @@
 #include "sequenceeventtrackview.h"
-#include "sequenceeditorgui.h"
-#include "sequencetrackevent.h"
-#include "sequencecontrollerevent.h"
 #include "napcolors.h"
-#include "sequenceplayereventinput.h"
 #include "sequencecontrollerevent.h"
-#include "sequenceeventreceiver.h"
+#include "sequenceeditorgui.h"
+#include "sequenceplayereventoutput.h"
+#include "sequencetrackevent.h"
 
 #include <nap/logger.h>
 #include <iostream>
@@ -79,26 +77,25 @@ namespace nap
 		int currentItem = 0;
 		eventInputs.emplace_back("none");
 		int count = 0;
-		const SequenceEventReceiver* assignedEventReceiver = nullptr;
+		const SequencePlayerEventOutput* event_output = nullptr;
 
-		for (const auto& input : getEditor().mSequencePlayer->mInputs)
+		for (const auto& output : getEditor().mSequencePlayer->mOutputs)
 		{
-			if (input.get()->get_type() == RTTI_OF(SequencePlayerEventInput))
+			if (output.get()->get_type() == RTTI_OF(SequencePlayerEventOutput))
 			{
 				count++;
 
-				if (input->mID == track.mAssignedInputID)
+				if (output->mID == track.mAssignedInputID)
 				{
 					assigned = true;
-					assignedID = input->mID;
+					assignedID = output->mID;
 					currentItem = count;
 
-					assert(input.get()->get_type() == RTTI_OF(SequencePlayerEventInput)); // type mismatch
-					SequencePlayerEventInput* eventInput = static_cast<SequencePlayerEventInput*>(input.get());
-					assignedEventReceiver = eventInput->mReceiver.get();
+					assert(output.get()->get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
+					event_output = static_cast<SequencePlayerEventOutput*>(output.get());
 				}
 
-				eventInputs.emplace_back(input->mID);
+				eventInputs.emplace_back(output->mID);
 			}
 		}
 

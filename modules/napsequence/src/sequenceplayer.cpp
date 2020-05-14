@@ -16,7 +16,7 @@
 
 RTTI_BEGIN_CLASS(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Inputs", &nap::SequencePlayer::mInputs, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -330,7 +330,7 @@ namespace nap
 
 	bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID, const std::unique_lock<std::mutex>& l)
 	{
-		// bail if empty input id
+		// bail if empty output id
 		if (inputID == "")
 			return false;
 
@@ -346,7 +346,6 @@ namespace nap
 			}
 		}
 
-		assert(track != nullptr); // no track found with id
 		if (track == nullptr)
 		{
 			nap::Logger::error("No track found with id %s", trackID.c_str());
@@ -359,29 +358,27 @@ namespace nap
 			mAdapters.erase(track->mID);
 		}
 
-		SequencePlayerInput* input = nullptr;
-		for (auto& aInput : mInputs)
+		SequencePlayerOutput* output = nullptr;
+		for (auto& aInput : mOutputs)
 		{
 			if (aInput->mID == inputID)
 			{
-				input = aInput.get();
+				output = aInput.get();
 				break;
 			}
 		}
 
-		assert(input != nullptr); // no input found with id
-		if (input == nullptr)
+		if (output == nullptr)
 		{
-			nap::Logger::error("No input found with id %s", inputID.c_str());
+			nap::Logger::error("No output found with id %s", inputID.c_str());
 			return false;
 		}
 
-		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *input);
+		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *output);
 
-		assert(adapter != nullptr); // unable to create adapter
 		if (adapter == nullptr)
 		{
-			nap::Logger::error("Unable to create adapter with track id %s and input id %s", trackID.c_str(), inputID.c_str());
+			nap::Logger::error("Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
 			return false;
 		}
 

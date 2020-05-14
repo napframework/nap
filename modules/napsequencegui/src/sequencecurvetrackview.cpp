@@ -1,10 +1,10 @@
 // local includes
 #include "sequencecurvetrackview.h"
-#include "sequenceeditorgui.h"
-#include "sequencetrackcurve.h"
 #include "napcolors.h"
 #include "sequencecontrollercurve.h"
-#include "sequenceplayercurveinput.h"
+#include "sequenceeditorgui.h"
+#include "sequenceplayercurveoutput.h"
+#include "sequencetrackcurve.h"
 
 // nap includes
 #include <nap/logger.h>
@@ -98,21 +98,21 @@ namespace nap
 
 		bool assigned = false;
 		std::string assignedID;
-		std::vector<std::string> curveInputs;
+		std::vector<std::string> curveOutputs;
 		int currentItem = 0;
-		curveInputs.emplace_back("none");
+		curveOutputs.emplace_back("none");
 		int count = 0;
 		const Parameter* assignedParameter = nullptr;
 
-		for (const auto& input : getEditor().mSequencePlayer->mInputs)
+		for (const auto& input : getEditor().mSequencePlayer->mOutputs)
 		{
-			if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput))
+			if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput))
 			{
-				auto& curveInput = static_cast<SequencePlayerCurveInput&>(*input.get());
+				auto& curveOutput = static_cast<SequencePlayerCurveOutput&>(*input.get());
 
-				if(curveInput.mParameter != nullptr)
+				if(curveOutput.mParameter != nullptr)
 				{
-					if(isParameterTypeAllowed(track.get_type(), curveInput.mParameter.get()->get_type()))
+					if(isParameterTypeAllowed(track.get_type(), curveOutput.mParameter.get()->get_type()))
 					{
 						count++;
 
@@ -122,11 +122,11 @@ namespace nap
 							assignedID = input->mID;
 							currentItem = count;
 
-							assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveInput)); // type mismatch
-							assignedParameter = static_cast<SequencePlayerCurveInput*>(input.get())->mParameter.get();
+							assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput)); // type mismatch
+							assignedParameter = static_cast<SequencePlayerCurveOutput*>(input.get())->mParameter.get();
 						}
 
-						curveInputs.emplace_back(input->mID);
+						curveOutputs.emplace_back(input->mID);
 					}
 				}
 			}
@@ -135,13 +135,12 @@ namespace nap
 		ImGui::PushItemWidth(140.0f);
 		if (Combo(
 			"",
-			&currentItem,
-			curveInputs))
+			&currentItem, curveOutputs))
 		{
 			SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
 
 			if (currentItem != 0)
-				curveController.assignNewObjectID(track.mID, curveInputs[currentItem]);
+				curveController.assignNewObjectID(track.mID, curveOutputs[currentItem]);
 			else
 				curveController.assignNewObjectID(track.mID, "");
 		}

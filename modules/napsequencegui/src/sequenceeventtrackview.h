@@ -234,7 +234,6 @@ namespace nap
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 				}
 
-
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
@@ -251,13 +250,11 @@ namespace nap
 		}
 	}
 
+
 	template<typename T>
 	void SequenceEventTrackView::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
 	{
 		const SequenceTrackSegmentEvent<T> *event = static_cast<const SequenceTrackSegmentEvent<T>*>(segment);
-		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(
-			trackID,
-			segmentID,
-			ImGui::GetWindowPos(), event->mValue);
+		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue);
 	}
 }

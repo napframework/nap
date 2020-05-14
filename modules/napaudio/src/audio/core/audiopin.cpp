@@ -109,7 +109,7 @@ namespace nap
         {
             std::vector<SampleBuffer*> result;
             
-            auto inputs = mInputs; // we make a copy of mInputs because its contents can be changed while traversing the loop!
+            auto inputs = mInputs; // we make a copy of mOutputs because its contents can be changed while traversing the loop!
             for (auto& input : inputs)
                 result.emplace_back(input->pull());
             

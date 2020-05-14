@@ -1,5 +1,5 @@
 #include "sequenceplayereventadapter.h"
-#include "sequenceeventreceiver.h"
+#include "sequenceplayereventoutput.h"
 #include "sequenceplayer.h"
 #include "sequencetrackevent.h"
 
@@ -7,19 +7,19 @@
 
 namespace nap
 {
-	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerInput& input)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerOutput& output)->std::unique_ptr<SequencePlayerAdapter>
 	{
-		assert(input.get_type() == RTTI_OF(SequencePlayerEventInput)); // type mismatch
+		assert(output.get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
 
-		auto& eventInput = static_cast<SequencePlayerEventInput&>(input);
+		auto& eventOutput = static_cast<SequencePlayerEventOutput&>(output);
 
-		auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, *eventInput.mReceiver.get());
+		auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, eventOutput);
 		return std::move(adapter);
 	});
 
 
-	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver)
-		: mTrack(track), mReceiver(receiver)
+	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output)
+		: mTrack(track), mOutput(output)
 	{
 	}
 
@@ -37,7 +37,7 @@ namespace nap
 			{
 				if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
 				{
-					mReceiver.addEvent(event.createEvent());
+					mOutput.addEvent(event.createEvent());
 					mDispatchedEvents.emplace(&event);
 				}
 			}

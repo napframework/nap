@@ -3,13 +3,15 @@
 // local includes
 #include "sequenceplayer.h"
 #include "sequenceplayeradapter.h"
-#include "sequenceplayereventinput.h"
-#include "sequenceplayereventadapter.h"
+#include "sequenceplayereventoutput.h"
 #include "sequencetracksegmentevent.h"
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+
+	//
+	class SequencePlayerEventOutput;
 
 	/**
 	 * Adapter responsible for handling events from an event track and sync them with the main thread using a
@@ -23,7 +25,7 @@ namespace nap
 		 * @param track reference to sequence event track
 		 * @param receiver reference to event receiver
 		 */
-		SequencePlayerEventAdapter(SequenceTrack& track, SequenceEventReceiver& receiver);
+		SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output);
 
 		/**
 		 * Deconstructor
@@ -40,7 +42,7 @@ namespace nap
 		SequenceTrack& 			mTrack;
 
 		// reference to receiver linked to adapter
-		SequenceEventReceiver& 	mReceiver;
+		SequencePlayerEventOutput& 	mOutput;
 
 		// list of dispatched events
 		std::unordered_set<SequenceTrackSegmentEventBase*> mDispatchedEvents;

@@ -35,7 +35,6 @@ namespace nap
 		void assignNewObjectID(const std::string& trackID, const std::string& objectID);
 
 		/**
-		 * deleteTrack
 		 * deletes a track
 		 * @param deleteTrackID the id of the track that needs to be deleted
 		 */

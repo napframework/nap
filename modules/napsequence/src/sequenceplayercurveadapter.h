@@ -1,11 +1,10 @@
 #pragma once
 
 // local includes
-#include "sequenceplayeradapter.h"
 #include "sequenceplayer.h"
+#include "sequenceplayeradapter.h"
+#include "sequenceplayercurveoutput.h"
 #include "sequencetrackcurve.h"
-#include "sequenceplayerparametersetter.h"
-#include "sequenceplayercurveinput.h"
 
 // nap includes
 #include <nap/logger.h>
@@ -16,13 +15,20 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	class SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
+	{
+		friend class SequencePlayerCurveOutput;
+	private:
+		virtual void setValue() = 0;
+	};
+
 	/**
 	 * Responsible for translating the value read on a curve track, to a parameter
 	 * When the user wants to do this on the main thread, it uses a SequencePlayerParameterSetter as an intermediate class to ensure thread safety,
 	 * otherwise it sets the parameter value directly from the sequence player thread
 	 */
 	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-	class SequencePlayerCurveAdapter : public SequencePlayerAdapter
+	class SequencePlayerCurveAdapter : public SequencePlayerCurveAdapterBase
 	{
 	public:
 		/**
@@ -32,21 +38,16 @@ namespace nap
 		 * @param service reference to the sequence service, needed to sync with main thread
 		 * @param useMain thread, whether to sync with the main thread or not
 		 */
-		SequencePlayerCurveAdapter(
-			SequenceTrack& track,
-			PARAMETER_TYPE& parameter,
-			bool useMainThread,
-			SequencePlayerCurveInput& input)
-			:	mParameter(parameter),
-				mUseMainThread(useMainThread)
+		SequencePlayerCurveAdapter(SequenceTrack& track, SequencePlayerCurveOutput& output)
+			:	mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
 		{
 			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
 			mTrack = static_cast<SequenceTrackCurve<CURVE_TYPE>*>(&track);
 
-			if (mUseMainThread)
+			if (mOutput.mUseMainThread)
 			{
-				mSetter = std::make_unique<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>(input, mParameter);
 				mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
+				mOutput.registerAdapter(this);
 			}else
 			{
 				mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
@@ -56,7 +57,10 @@ namespace nap
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequencePlayerCurveAdapter() {}
+		virtual ~SequencePlayerCurveAdapter()
+		{
+			mOutput.removeAdapter(this);
+		}
 
 		/**
 		 * update
@@ -83,6 +87,12 @@ namespace nap
 			}
 		}
 	private:
+		virtual void setValue() override
+		{
+			std::unique_lock<std::mutex> l(mMutex);
+			mParameter.setValue(mStoredValue);
+		}
+
 		/**
 		 * Directly sets parameter value, not thread safe
 		 * @param value the value
@@ -98,13 +108,16 @@ namespace nap
 		 */
 		void storeParameterValue(PARAMETER_VALUE_TYPE& value)
 		{
-			mSetter->storeValue(value);
+			std::unique_lock<std::mutex> l(mMutex);
+			mStoredValue = value;
 		}
 
 		PARAMETER_TYPE&									mParameter;
 		SequenceTrackCurve<CURVE_TYPE>*					mTrack;
 		bool											mUseMainThread;
-		std::unique_ptr<SequencePlayerParameterSetter<PARAMETER_TYPE, PARAMETER_VALUE_TYPE>>	mSetter;
+		SequencePlayerCurveOutput&						mOutput;
+		std::mutex										mMutex;
+		PARAMETER_VALUE_TYPE							mStoredValue;
 
 		void (SequencePlayerCurveAdapter::*mSetFunction)(PARAMETER_VALUE_TYPE& value);
 	};

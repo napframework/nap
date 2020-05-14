@@ -6,9 +6,9 @@
 #include <utility/stringutils.h>
 
 // Local Includes
-#include "sequenceservice.h"
 #include "sequenceplayeradapter.h"
-#include "sequenceplayerinput.h"
+#include "sequenceplayeroutput.h"
+#include "sequenceservice.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -22,19 +22,23 @@ namespace nap
 		return vector;
 	}
 
+
 	bool SequenceService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService* service))
 	{
 		getObjectCreators().emplace_back(objectCreator);
 		return true;
 	}
 
+
 	SequenceService::SequenceService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
 	}
 
+
 	SequenceService::~SequenceService()
 	{ }
+
 
 	void SequenceService::registerObjectCreators(rtti::Factory& factory)
 	{
@@ -44,10 +48,12 @@ namespace nap
 		}
 	}
 
+
 	bool SequenceService::init(nap::utility::ErrorState& errorState)
 	{
 		return true;
 	}
+
 
 	void SequenceService::update(double deltaTime)
 	{
@@ -58,7 +64,7 @@ namespace nap
 	}
 
 
-	void SequenceService::registerInput(SequencePlayerInput& input)
+	void SequenceService::registerInput(SequencePlayerOutput& input)
 	{
 		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
 		{
@@ -73,13 +79,12 @@ namespace nap
 	}
 
 
-	void SequenceService::removeInput(SequencePlayerInput& input)
+	void SequenceService::removeInput(SequencePlayerOutput& input)
 	{
 		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
 		{
 		  return it == &input;
 		});
-		//assert(found_it != mInputs.end()); // not found
 
 		if(found_it != mInputs.end())
 		{

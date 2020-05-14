@@ -11,6 +11,7 @@ namespace nap
 {
 	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player)->std::unique_ptr<SequenceController> { return std::make_unique<SequenceControllerCurve>(player); });
 
+
 	static bool sRegisterControllerTypes[4]
 	{
 		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
@@ -25,7 +26,7 @@ namespace nap
 		{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
 		{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
 		{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
-		{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> },
+		{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
 	};
 
 
@@ -43,20 +44,20 @@ namespace nap
 
 		if (track != nullptr)
 		{
-			ResourcePtr<SequenceTrackSegment> previousSegment = nullptr;
-			for (auto trackSegment : track->mSegments)
+			ResourcePtr<SequenceTrackSegment> previous_segment = nullptr;
+			for (auto track_segment : track->mSegments)
 			{
-				if (trackSegment->mID == segmentID)
+				if (track_segment->mID == segmentID)
 				{
 					// check if new duration is valid
 					bool valid = true;
-					double newDuration = trackSegment->mDuration + amount;
+					double new_duration = track_segment->mDuration + amount;
 
-					if (newDuration > 0.0)
+					if (new_duration > 0.0)
 					{
-						if (previousSegment != nullptr)
+						if (previous_segment != nullptr)
 						{
-							if (trackSegment->mStartTime + newDuration < previousSegment->mStartTime + previousSegment->mDuration)
+							if (track_segment->mStartTime + new_duration < previous_segment->mStartTime + previous_segment->mDuration)
 							{
 								valid = false;
 							}
@@ -69,7 +70,7 @@ namespace nap
 
 					if (valid)
 					{
-						trackSegment->mDuration += amount;
+						track_segment->mDuration += amount;
 
 						auto it = sUpdateSegmentFunctionMap.find(track->get_type());
 						if (it != sUpdateSegmentFunctionMap.end())
@@ -82,7 +83,7 @@ namespace nap
 					break;
 				}
 
-				previousSegment = trackSegment;
+				previous_segment = track_segment;
 			}
 		}
 	}

@@ -3,7 +3,7 @@
 // internal includes
 #include "sequence.h"
 #include "sequenceplayeradapter.h"
-#include "sequenceplayerinput.h"
+#include "sequenceplayeroutput.h"
 
 // external includes
 #include <rtti/factory.h>
@@ -139,19 +139,17 @@ namespace nap
 		const Sequence& getSequenceConst() const;
 	public:
 		// properties
-		std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
-		bool 				mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
-		float				mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
-		std::vector<ResourcePtr<SequencePlayerInput>> mInputs;  ///< Property: 'Inputs' linked inputs
+		std::string 			mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
+		bool 					mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
+		float					mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
+		std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
 	private:
 		/**
-		 * lock
 		 * creates lock on mMutex
 		 */
 		std::unique_lock<std::mutex> lock();
 
 		/**
-		 * getSequence
 		 * returns reference to sequence
 		 */
 		Sequence& getSequence();

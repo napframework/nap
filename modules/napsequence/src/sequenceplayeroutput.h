@@ -10,11 +10,11 @@ namespace nap
 	class SequenceService;
 
 	/**
-	 * SequencePlayerInput is the base class for inputs for the sequenceplayer
+	 * SequencePlayerOutput is the base class for inputs for the sequenceplayer
 	 * Inputs can be used by SequencePlayerAdapters to link tracks to objects.
-	 * F.E SequencePlayerCurveInput can link a parameter to a curve track
+	 * F.E SequencePlayerCurveOutput can link a parameter to a curve track
 	 */
-	class NAPAPI SequencePlayerInput : public Resource
+	class NAPAPI SequencePlayerOutput : public Resource
 	{
 		friend class SequenceService;
 
@@ -24,7 +24,7 @@ namespace nap
 		 * Constructor
 		 * @param service reference to SequenceService
 		 */
-		SequencePlayerInput(SequenceService& service);
+		SequencePlayerOutput(SequenceService& service);
 
 		/**
 		 * upon initialisation input registers itself to the service

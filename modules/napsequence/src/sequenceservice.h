@@ -27,7 +27,7 @@ namespace nap
 	{
 		friend class SequenceEventReceiver;
 		friend class SequencePlayerParameterSetterBase;
-		friend class SequencePlayerInput;
+		friend class SequencePlayerOutput;
 
 		RTTI_ENABLE(Service)
 	public:
@@ -64,15 +64,15 @@ namespace nap
 		 * registers an input
 		 * @param input reference to input
 		 */
-		void registerInput(SequencePlayerInput& input);
+		void registerInput(SequencePlayerOutput& input);
 
 		/**
 		 * removes an input
 		 * @param input reference to input
 		 */
-		void removeInput(SequencePlayerInput& input);
+		void removeInput(SequencePlayerOutput& input);
 
 		//
-		std::vector<SequencePlayerInput*> mInputs;
+		std::vector<SequencePlayerOutput*> mInputs;
 	};
 }

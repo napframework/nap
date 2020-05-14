@@ -6,7 +6,7 @@
 #include <nap/logger.h>
 #include <inputrouter.h>
 #include <napcolors.h>
-#include <sequenceeventreceiver.h>
+#include <sequenceplayereventoutput.h>
 #include <sequenceevent.h>
 
 namespace nap 
@@ -50,25 +50,64 @@ namespace nap
 		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
 
-		const ObjectPtr<SequenceEventReceiver> eventReceiver = mResourceManager->findObject<SequenceEventReceiver>("SequenceEventReceiver");
-		if (!error.check(eventReceiver != nullptr, "unable to find SequenceEventReceiver with name: %s", "SequenceEventReceiver"))
+		const ObjectPtr<SequencePlayerEventOutput> eventOutput = mResourceManager->findObject<SequencePlayerEventOutput>("SequencePlayerEventOutput");
+		if (!error.check(eventOutput != nullptr, "unable to find SequenceEventReceiver with name: %s", "SequencePlayerEventOutput"))
 			return false;
 
-		eventReceiver->mSignal.connect([](const SequenceEventBase&event)
-		{
-			if (event.get_type().is_derived_from(RTTI_OF(SequenceEventString)))
+		eventOutput->mSignal.connect([](const SequenceEventBase& event)
+	    {
+			 static std::unordered_map<rttr::type, void(*)(const SequenceEventBase&)> sHandleEventMap
 			{
-				const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
-				nap::Logger::info("Event received with value : %s", eventString.getValue().c_str());
-			}else if (event.get_type().is_derived_from(RTTI_OF(SequenceEventFloat)))
-			{
-				const SequenceEventFloat& eventString = static_cast<const SequenceEventFloat&>(event);
-				nap::Logger::info("Event received with value : %f", eventString.getValue());
-			}else if (event.get_type().is_derived_from(RTTI_OF(SequenceEventInt)))
-			{
-				const SequenceEventInt& eventString = static_cast<const SequenceEventInt&>(event);
-				nap::Logger::info("Event received with value : %i", eventString.getValue());
-			}
+				{
+				 	RTTI_OF(SequenceEventString),
+					[](const SequenceEventBase& event)
+					{
+					  const SequenceEventString& eventString = static_cast<const SequenceEventString&>(event);
+					  nap::Logger::info("Event received with value : %s", eventString.getValue().c_str());
+				 	}
+		 		},
+				{
+					RTTI_OF(SequenceEventFloat),
+					[](const SequenceEventBase& event)
+					{
+					  const SequenceEventFloat& eventFloat = static_cast<const SequenceEventFloat&>(event);
+					  nap::Logger::info("Event received with value : %f", eventFloat.getValue());
+					}
+				},
+				{
+					RTTI_OF(SequenceEventInt),
+					[](const SequenceEventBase& event)
+					{
+					  const SequenceEventInt& eventInt = static_cast<const SequenceEventInt&>(event);
+					  nap::Logger::info("Event received with value : %i", eventInt.getValue());
+					}
+				},
+				{
+					RTTI_OF(SequenceEventVec2),
+					[](const SequenceEventBase& event)
+					{
+					  const SequenceEventVec2& eventVec2 = static_cast<const SequenceEventVec2&>(event);
+					  nap::Logger::info("Event received with value : %f %f", eventVec2.getValue().x,
+										eventVec2.getValue().y);
+					}
+				},
+				{
+					RTTI_OF(SequenceEventVec3),
+					[](const SequenceEventBase& event)
+					{
+					  const SequenceEventVec3& eventVec3 = static_cast<const SequenceEventVec3&>(event);
+					  nap::Logger::info("Event received with value : %f %f %f", eventVec3.getValue().x,
+										eventVec3.getValue().y, eventVec3.getValue().z);
+					}
+				}
+			};
+
+			 auto it = sHandleEventMap.find(event.get_type());
+			 assert(it!=sHandleEventMap.end()); // type not found
+			 if(it!=sHandleEventMap.end())
+			 {
+				 it->second(event);
+			 }
 		});
 
 		// Create the parameter GUI, automatically shows a group of parameters in a window
