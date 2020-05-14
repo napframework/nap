@@ -175,6 +175,19 @@ namespace nap
 		// read object ids from sequence
 		std::unordered_set<std::string>				mReadObjectIDs;
 	private:
+		/**
+		 * creates adapters for all assigned adapter ids for tracks
+		 * this function gets called by the player when player starts playing
+		 * @param lock reference to locked mutex to ensure thread safety with player thread
+		 */
+		void createAdapters(std::unique_lock<std::mutex>& lock);
+
+		/**
+		 * destroys all created adapters, gets called on stop
+		 * @param lock reference to locked mutex to ensure thread safety with player thread
+		 */
+		void destroyAdapters(std::unique_lock<std::mutex>& lock);
+
 		// the update task
 		std::future<void>	mUpdateTask;
 

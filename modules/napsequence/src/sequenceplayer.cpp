@@ -83,13 +83,20 @@ namespace nap
 	{
 		std::unique_lock<std::mutex> l = lock();
 
+		bool was_playing = mIsPlaying;
+
 		if (isPlaying)
 		{
+			if( !was_playing )
+				createAdapters(l);
+
 			mIsPlaying = true;
 			mIsPaused = false;
 		}
 		else
 		{
+			destroyAdapters(l);
+
 			mIsPlaying = false;
 			mIsPaused = false;
 		}
@@ -143,7 +150,7 @@ namespace nap
 		std::string show_path = dir + '/' + name;
 
 		//
-		std::string timelineName = utility::getFileNameWithoutExtension(name);
+		std::string timeline_name = utility::getFileNameWithoutExtension(name);
 
 		// 
 		rtti::Factory factory;
@@ -163,22 +170,22 @@ namespace nap
 		// Move ownership of read objects
 		mReadObjects.clear();
 		mReadObjectIDs.clear();
-		for (auto& readObject : result.mReadObjects)
+		for (auto& read_object : result.mReadObjects)
 		{
 			//
-			if (readObject->get_type().is_derived_from<Sequence>())
+			if (read_object->get_type().is_derived_from<Sequence>())
 			{
-				mSequence = dynamic_cast<Sequence*>(readObject.get());
+				mSequence = dynamic_cast<Sequence*>(read_object.get());
 			}
 
-			mReadObjectIDs.emplace(readObject->mID);
-			mReadObjects.emplace_back(std::move(readObject));
+			mReadObjectIDs.emplace(read_object->mID);
+			mReadObjects.emplace_back(std::move(read_object));
 		}
 
 		// init objects
-		for (auto& objectPtr : mReadObjects)
+		for (auto& object_ptr : mReadObjects)
 		{
-			if (!objectPtr->init(errorState))
+			if (!object_ptr->init(errorState))
 				return false;
 		}
 
@@ -188,16 +195,26 @@ namespace nap
 			return false;
 		}
 
+		mSequenceFileName = name;
+
+		return true;
+	}
+
+
+	void SequencePlayer::createAdapters(std::unique_lock<std::mutex>& lock)
+	{
 		// create adapters
 		mAdapters.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createAdapter(track->mAssignedInputID, track->mID, l);
+			createAdapter(track->mAssignedOutputID, track->mID, lock);
 		}
+	}
 
-		mSequenceFileName = name;
 
-		return true;
+	void SequencePlayer::destroyAdapters(std::unique_lock<std::mutex>& lock)
+	{
+		mAdapters.clear();
 	}
 
 
@@ -337,11 +354,11 @@ namespace nap
 		// find track
 		SequenceTrack* track = nullptr;
 
-		for (auto& aTrack : mSequence->mTracks)
+		for (auto& a_track : mSequence->mTracks)
 		{
-			if (aTrack->mID == trackID)
+			if (a_track->mID == trackID)
 			{
-				track = aTrack.get();
+				track = a_track.get();
 				break;
 			}
 		}
@@ -359,11 +376,11 @@ namespace nap
 		}
 
 		SequencePlayerOutput* output = nullptr;
-		for (auto& aInput : mOutputs)
+		for (auto& a_output : mOutputs)
 		{
-			if (aInput->mID == inputID)
+			if (a_output->mID == inputID)
 			{
-				output = aInput.get();
+				output = a_output.get();
 				break;
 			}
 		}

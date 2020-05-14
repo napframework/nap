@@ -25,8 +25,8 @@ namespace nap
 
 			if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
 			{
-				auto& segmentEvent = static_cast<SequenceTrackSegmentEventBase&>(*segment);
-				segmentEvent.mStartTime += amount;
+				auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
+				segment_event.mStartTime += amount;
 			}
 
 		}
@@ -55,13 +55,13 @@ namespace nap
 
 		if (track != nullptr)
 		{
-			int segmentIndex = 0;
+			int segment_index = 0;
 			for (auto& segment : track->mSegments)
 			{
 				if (segment->mID == segmentID)
 				{
 					// erase it from the list
-					track->mSegments.erase(track->mSegments.begin() + segmentIndex);
+					track->mSegments.erase(track->mSegments.begin() + segment_index);
 
 					deleteObjectFromSequencePlayer(segmentID);
 
@@ -69,7 +69,7 @@ namespace nap
 				}
 
 				updateTracks();
-				segmentIndex++;
+				segment_index++;
 			}
 		}
 	}
@@ -80,14 +80,14 @@ namespace nap
 		std::unique_lock<std::mutex> l = lock();
 
 		// create sequence track
-		std::unique_ptr<SequenceTrackEvent> sequenceTrack = std::make_unique<SequenceTrackEvent>();
-		sequenceTrack->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+		std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
+		sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 		//
-		getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequenceTrack.get()));
+		getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
 
 		// move ownership of unique ptrs
-		getPlayerOwnedObjects().emplace_back(std::move(sequenceTrack));
+		getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
 	}
 
 

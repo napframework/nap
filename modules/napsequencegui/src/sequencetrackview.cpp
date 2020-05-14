@@ -69,25 +69,25 @@ namespace nap
 		int seconds = (int)time % 60;
 		int milliseconds = (int)(time * 100.0f) % 100;
 
-		std::stringstream stringStream;
+		std::stringstream string_stream;
 
-		stringStream << std::setw(2) << std::setfill('0') << seconds;
-		std::string secondsString = stringStream.str();
+		string_stream << std::setw(2) << std::setfill('0') << seconds;
+		std::string secondsString = string_stream.str();
 
-		stringStream = std::stringstream();
-		stringStream << std::setw(2) << std::setfill('0') << minutes;
-		std::string minutesString = stringStream.str();
+		string_stream = std::stringstream();
+		string_stream << std::setw(2) << std::setfill('0') << minutes;
+		std::string minutesString = string_stream.str();
 
-		stringStream = std::stringstream();
-		stringStream << std::setw(2) << std::setfill('0') << milliseconds;
-		std::string millisecondsStrings = stringStream.str();
+		string_stream = std::stringstream();
+		string_stream << std::setw(2) << std::setfill('0') << milliseconds;
+		std::string millisecondsStrings = string_stream.str();
 
 		std::string hoursString = "";
 		if (hours > 0)
 		{
-			stringStream = std::stringstream();
-			stringStream << std::setw(2) << std::setfill('0') << hours;
-			hoursString = stringStream.str() + ":";
+			string_stream = std::stringstream();
+			string_stream << std::setw(2) << std::setfill('0') << hours;
+			hoursString = string_stream.str() + ":";
 		}
 
 		return hoursString + minutesString + ":" + secondsString + ":" + millisecondsStrings;
@@ -97,51 +97,48 @@ namespace nap
 	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack)
 	{
 		// begin inspector
-		std::ostringstream inspectorIDStream;
-		inspectorIDStream << track.mID << "inspector";
-		std::string inspectorID = inspectorIDStream.str();
+		std::ostringstream inspector_id_stream;
+		inspector_id_stream << track.mID << "inspector";
+		std::string inspector_id = inspector_id_stream.str();
 
 		// manually set the cursor position before drawing new track window
-		ImVec2 cursorPos =
+		ImVec2 cursor_pos =
 			{
 				ImGui::GetCursorPosX() ,
 				mState.mTrackHeight + 10.0f + ImGui::GetCursorPosY()
 			};
 
 		// manually set the cursor position before drawing inspector
-		ImVec2 inspectorCursorPos = { cursorPos.x , cursorPos.y };
-		ImGui::SetCursorPos(inspectorCursorPos);
+		ImVec2 inspector_cursor_pos = {cursor_pos.x , cursor_pos.y };
+		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		// draw inspector window
-		if (ImGui::BeginChild(
-			inspectorID.c_str(), // id
+		if (ImGui::BeginChild(inspector_id.c_str(), // id
 			{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
 			// obtain drawlist
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			// store window size and position
-			const ImVec2 windowPos = ImGui::GetWindowPos();
-			const ImVec2 windowSize = ImGui::GetWindowSize();
+			const ImVec2 window_pos = ImGui::GetWindowPos();
+			const ImVec2 window_size = ImGui::GetWindowSize();
 
 			// draw background & box
-			drawList->AddRectFilled(
-				windowPos,
-				{ windowPos.x + windowSize.x - 5, windowPos.y + mState.mTrackHeight },
+			draw_list->AddRectFilled(window_pos,
+				{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
 				guicolors::black);
 
-			drawList->AddRect(
-				windowPos,
-				{ windowPos.x + windowSize.x - 5, windowPos.y + mState.mTrackHeight },
+			draw_list->AddRect(window_pos,
+				{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
 				guicolors::white);
 
 			//
-			ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
-			inspectorCursorPos.x += 5;
-			inspectorCursorPos.y += 5;
-			ImGui::SetCursorPos(inspectorCursorPos);
+			ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+			inspector_cursor_pos.x += 5;
+			inspector_cursor_pos.y += 5;
+			ImGui::SetCursorPos(inspector_cursor_pos);
 
 			// scale down everything
 			float scale = 0.25f;
@@ -166,19 +163,19 @@ namespace nap
 		}
 		ImGui::EndChild();
 
-		ImGui::SetCursorPos(cursorPos);
+		ImGui::SetCursorPos(cursor_pos);
 	}
 
 
 	void SequenceTrackView::show(const SequenceTrack& track)
 	{
-		bool deleteTrack = false;
+		bool delete_track = false;
 
-		showInspector(track, deleteTrack);
+		showInspector(track, delete_track);
 
 		showTrack(track);
 
-		if (deleteTrack)
+		if (delete_track)
 		{
 			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
 			assert(controller!= nullptr); // controller not found
@@ -193,10 +190,10 @@ namespace nap
 
 	void SequenceTrackView::showTrack(const SequenceTrack& track)
 	{
-		ImVec2 cursorPos = ImGui::GetCursorPos();
+		ImVec2 cursor_pos = ImGui::GetCursorPos();
 
-		const ImVec2 windowCursorPos = { cursorPos.x + mState.mInspectorWidth + 5, cursorPos.y };
-		ImGui::SetCursorPos(windowCursorPos);
+		const ImVec2 window_cursor_pos = {cursor_pos.x + mState.mInspectorWidth + 5, cursor_pos.y };
+		ImGui::SetCursorPos(window_cursor_pos);
 
 		// begin track
 		if (ImGui::BeginChild(
@@ -209,31 +206,39 @@ namespace nap
 			ImGui::PushID(track.mID.c_str());
 
 			// get child focus
-			bool trackHasFocus = ImGui::IsMouseHoveringWindow();
+			bool track_has_focus = ImGui::IsMouseHoveringWindow();
 
 			// get window drawlist
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			// get current imgui cursor position
-			ImVec2 cursorPos = ImGui::GetCursorPos();
+			ImVec2 cursor_pos = ImGui::GetCursorPos();
 
 			// get window position
-			ImVec2 windowTopLeft = ImGui::GetWindowPos();
+			ImVec2 window_top_left = ImGui::GetWindowPos();
 
 			// calc beginning of timeline graphic
-			ImVec2 trackTopLeft = { windowTopLeft.x + cursorPos.x, windowTopLeft.y + cursorPos.y };
+			ImVec2 trackTopLeft = {window_top_left.x + cursor_pos.x, window_top_left.y + cursor_pos.y };
 
 			// draw background of track
-			drawList->AddRectFilled(
+			draw_list->AddRectFilled(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
 				guicolors::black); // color
 
 			// draw border of track
-			drawList->AddRect(
+			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
 				guicolors::white); // color
+
+			// draw timestamp every 100 pixels
+			const float timestamp_interval = 100.0f;
+			int steps = mState.mTimelineWidth / timestamp_interval;
+			for (int i = 0; i < steps; i++)
+			{
+				draw_list->AddLine({ trackTopLeft.x + i * timestamp_interval, trackTopLeft.y }, { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y + mState.mTrackHeight}, guicolors::darkGrey);
+			}
 
 			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
 
@@ -246,7 +251,7 @@ namespace nap
 		ImGui::End();
 
 		//
-		ImGui::SetCursorPos({ cursorPos.x, cursorPos.y } );
+		ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y } );
 	}
 
 	const SequencePlayer& SequenceTrackView::getPlayer() { return *mView.mEditor.mSequencePlayer.get(); }

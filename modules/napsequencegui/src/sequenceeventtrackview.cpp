@@ -66,16 +66,16 @@ namespace nap
 		// draw the assigned receiver
 		ImGui::Text("Assigned Receivers");
 
-		ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
-		inspectorCursorPos.x += 5;
-		inspectorCursorPos.y += 5;
-		ImGui::SetCursorPos(inspectorCursorPos);
+		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+		inspector_cursor_pos.x += 5;
+		inspector_cursor_pos.y += 5;
+		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		bool assigned = false;
-		std::string assignedID;
-		std::vector<std::string> eventInputs;
-		int currentItem = 0;
-		eventInputs.emplace_back("none");
+		std::string assigned_id;
+		std::vector<std::string> event_outputs;
+		int current_item = 0;
+		event_outputs.emplace_back("none");
 		int count = 0;
 		const SequencePlayerEventOutput* event_output = nullptr;
 
@@ -85,32 +85,31 @@ namespace nap
 			{
 				count++;
 
-				if (output->mID == track.mAssignedInputID)
+				if (output->mID == track.mAssignedOutputID)
 				{
 					assigned = true;
-					assignedID = output->mID;
-					currentItem = count;
+					assigned_id = output->mID;
+					current_item = count;
 
 					assert(output.get()->get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
 					event_output = static_cast<SequencePlayerEventOutput*>(output.get());
 				}
 
-				eventInputs.emplace_back(output->mID);
+				event_outputs.emplace_back(output->mID);
 			}
 		}
 
 		ImGui::PushItemWidth(140.0f);
 		if (Combo(
 			"",
-			&currentItem,
-			eventInputs))
+			&current_item, event_outputs))
 		{
-			auto& eventController = getEditor().getController<SequenceControllerEvent>();
+			auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 
-			if (currentItem != 0)
-				eventController.assignNewObjectID(track.mID, eventInputs[currentItem]);
+			if (current_item != 0)
+				event_controller.assignNewObjectID(track.mID, event_outputs[current_item]);
 			else
-				eventController.assignNewObjectID(track.mID, "");
+				event_controller.assignNewObjectID(track.mID, "");
 
 		}
 		ImGui::PopItemWidth();
@@ -119,7 +118,7 @@ namespace nap
 
 	void SequenceEventTrackView::showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft)
 	{
-		ImDrawList *drawList = ImGui::GetWindowDrawList();
+		ImDrawList * draw_list = ImGui::GetWindowDrawList();
 
 		if (mState.mIsWindowFocused)
 		{
@@ -131,7 +130,7 @@ namespace nap
 					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
 				{
 					// position of mouse in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -161,7 +160,7 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -175,7 +174,7 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -184,87 +183,85 @@ namespace nap
 			}
 		}
 
-		float previousSegmentX = 0.0f;
+		float prev_segment_x = 0.0f;
 
-		int segmentCount = 0;
+		int segment_count = 0;
 		for (const auto& segment : track.mSegments)
 		{
-			float segmentX = (segment->mStartTime) * mState.mStepSize;
-			float segmentWidth = segment->mDuration * mState.mStepSize;
+			float segment_x	   = (segment->mStartTime) * mState.mStepSize;
+			float segment_width = segment->mDuration * mState.mStepSize;
 
 			// draw segment handlers
 			drawSegmentHandler(
 				track,
 				*segment.get(),
-				trackTopLeft,
-				segmentX,
-				0.0f,
-				drawList);
+				trackTopLeft, segment_x,
+				0.0f, draw_list);
 
 			// static map of draw functions for different event types
-			static std::unordered_map<rttr::type, void(*)(const SequenceTrackSegment& segment, ImDrawList*, const ImVec2&, const float)> sDrawMap
-				{
+			static std::unordered_map<rttr::type, void(*)(const SequenceTrackSegment& segment, ImDrawList*, const ImVec2&, const float)>
+				s_draw_map{
 					{ RTTI_OF(SequenceTrackSegmentEventFloat), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
+					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
 
-					  std::ostringstream stringStream;
-					  stringStream << segmentEvent.mValue;
+					  std::ostringstream string_stream;
+					  string_stream << segment_event.mValue;
 
 					  drawList->AddText(
 						  { topLeft.x + x + 5, topLeft.y + 5 },
 						  guicolors::red,
-						  stringStream.str().c_str());
+										string_stream.str().c_str());
 					} },
 					{ RTTI_OF(SequenceTrackSegmentEventInt), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventInt&>(segment);
+					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventInt&>(segment);
 
-					  std::ostringstream stringStream;
-					  stringStream << segmentEvent.mValue;
+					  std::ostringstream string_stream;
+					  string_stream << segment_event.mValue;
 
 					  drawList->AddText(
 						  { topLeft.x + x + 5, topLeft.y + 5 },
 						  guicolors::red,
-						  stringStream.str().c_str());
+										string_stream.str().c_str());
 					} },
 					{ RTTI_OF(SequenceTrackSegmentEventString), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
 
-					  const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventString&>(segment);
+					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
 					  drawList->AddText(
 						  { topLeft.x + x + 5, topLeft.y + 5 },
-						  guicolors::red,
-						  segmentEvent.mValue.c_str());
+						  guicolors::red, segment_event.mValue.c_str());
 					} },
 					{ RTTI_OF(SequenceTrackSegmentEventVec2), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
+					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
 
-					  std::ostringstream stringStream;
-					  stringStream << segmentEvent.mValue.x << ", " << segmentEvent.mValue.y;
+					  std::ostringstream string_stream;
+					  string_stream << segment_event.mValue.x << ", " << segment_event.mValue.y;
 
-					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red, stringStream.str().c_str());
+					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
 					} },
 					{ RTTI_OF(SequenceTrackSegmentEventVec3), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segmentEvent = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
+					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
 
-					  std::ostringstream stringStream;
-					  stringStream << segmentEvent.mValue.x << ", " << segmentEvent.mValue.y << ", " << segmentEvent.mValue.z;
+					  std::ostringstream string_stream;
+					  string_stream << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z;
 
-					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red, stringStream.str().c_str());
+					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
+										string_stream.str().c_str());
 					} }
 				};
 
 			//
-			auto it = sDrawMap.find(segment.get()->get_type());
-			assert(it != sDrawMap.end()); // type not found
-			if( it != sDrawMap.end())
+			auto it = s_draw_map.find(segment.get()->get_type());
+			assert(it != s_draw_map.end()); // type not found
+			if( it != s_draw_map.end())
 			{
-				it->second(*segment.get(), drawList, trackTopLeft, segmentX);
+				it->second(*segment.get(), draw_list, trackTopLeft, segment_x);
 			}
 
 			//
-			previousSegmentX = segmentX;
+			prev_segment_x = segment_x;
 
 			//
-			segmentCount++;
+			segment_count++;
 		}
 	}
 

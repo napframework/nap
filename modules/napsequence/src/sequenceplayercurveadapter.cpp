@@ -9,27 +9,27 @@ namespace nap
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveFloat)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-		auto& curveTrack = static_cast<SequenceTrackCurveFloat&>(track);
-		auto& curveOutput = static_cast<SequencePlayerCurveOutput&>(output);
+		auto& curve_track = static_cast<SequenceTrackCurveFloat&>(track);
+		auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterFloat))
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterFloat))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, curve_output));
 		}
 
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterLong))
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterLong))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, curve_output));
 		}
 
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterDouble))
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterDouble))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, curve_output));
 		}
 
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterInt))
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterInt))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, curve_output));
 		}
 
 		assert(false); // no correct parameter type found!
@@ -42,13 +42,13 @@ namespace nap
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec2)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-		auto& curveTrack = static_cast<SequenceTrackCurveVec2&>(track);
-		auto& curveOutput = static_cast<SequencePlayerCurveOutput&>(output);
+		auto& curve_track = static_cast<SequenceTrackCurveVec2&>(track);
+		auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-		assert(curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterVec2)); // type mismatch
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
+		assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2)); // type mismatch
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, curve_output));
 		}
 
 		return nullptr;
@@ -60,13 +60,13 @@ namespace nap
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec3)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-		auto& curveTrack = static_cast<SequenceTrackCurveVec3&>(track);
-		auto& curveOutput = static_cast<SequencePlayerCurveOutput&>(output);
+		auto& curve_track = static_cast<SequenceTrackCurveVec3&>(track);
+		auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-		assert(curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterVec3)); // type mismatch
-		if (curveOutput.mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+		assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3)); // type mismatch
+		if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
 		{
-			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, curveOutput));
+			return std::move(std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, curve_output));
 		}
 
 		return nullptr;

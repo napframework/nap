@@ -17,7 +17,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::string mAssignedInputID;	///< Property: 'Assigned Input ID' Assigned input to this track id
+		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
 	};
 }

@@ -80,10 +80,10 @@ namespace nap
 					const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
 					// retrieve the source value
-					CURVE_TYPE sourceValue = source.getValue((time - source.mStartTime) / source.mDuration);
+					CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
 
 					// cast it to a parameter value
-					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(sourceValue * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
+					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
 					// call set or store function
 					(*this.*mSetFunction)(value);

@@ -24,14 +24,14 @@ namespace nap
 	}
 
 
-	void SequencePlayerEventAdapter::update(double time)
+	void SequencePlayerEventAdapter::tick(double time)
 	{
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-		auto& eventTrack = static_cast<SequenceTrackEvent&>(mTrack);
-		for (const auto& eventSegment : eventTrack.mSegments)
+		auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+		for (const auto& event_segment : event_track.mSegments)
 		{
-			assert(eventSegment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
-			SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*eventSegment.get());
+			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
+			SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
 
 			if (time > event.mStartTime)
 			{
@@ -51,21 +51,21 @@ namespace nap
 		}
 
 		// remove dispatchedEvents that have been deleted
-		for (auto* dispatchedEvent : mDispatchedEvents)
+		for (auto* dispatched_event : mDispatchedEvents)
 		{
-			bool foundSegment = false;
-			for (const auto& eventSegment : eventTrack.mSegments)
+			bool found_segment = false;
+			for (const auto& event_segment : event_track.mSegments)
 			{
-				if (eventSegment.get() == dispatchedEvent)
+				if (event_segment.get() == dispatched_event)
 				{
-					foundSegment = true;
+					found_segment = true;
 					break;
 				}
 			}
 
-			if (!foundSegment)
+			if (!found_segment)
 			{
-				mDispatchedEvents.erase(dispatchedEvent);
+				mDispatchedEvents.erase(dispatched_event);
 				break;
 			}
 		}

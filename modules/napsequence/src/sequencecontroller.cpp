@@ -30,30 +30,30 @@ namespace nap
 
 	void SequenceController::updateTracks()
 	{
-		double longestTrackDuration = 0.0;
+		double longest_track_duration = 0.0;
 		for (auto& track : mPlayer.mSequence->mTracks)
 		{
-			double trackDuration = 0.0;
-			double highestSegment = 0.0;
+			double track_duration = 0.0;
+			double longest_segment = 0.0;
 
 			for (const auto& segment : track->mSegments)
 			{
-				if (segment->mStartTime + segment->mDuration > highestSegment)
+				if (segment->mStartTime + segment->mDuration > longest_segment)
 				{
-					highestSegment = segment->mStartTime + segment->mDuration;
-					trackDuration = highestSegment;
+					longest_segment = segment->mStartTime + segment->mDuration;
+					track_duration = longest_segment;
 				}
 			}
 
-			if (trackDuration > longestTrackDuration)
+			if (track_duration > longest_track_duration)
 			{
-				longestTrackDuration = trackDuration;
+				longest_track_duration = track_duration;
 			}
 		}
 
 		for (auto& track : mPlayer.mSequence->mTracks)
 		{
-			mPlayer.mSequence->mDuration = longestTrackDuration;
+			mPlayer.mSequence->mDuration = longest_track_duration;
 		}
 	}
 
@@ -131,11 +131,10 @@ namespace nap
 
 		if (track != nullptr)
 		{
-			if (mPlayer.createAdapter(objectID, trackID, l))
-			{
-				track->mAssignedInputID = objectID;
-			}
+			track->mAssignedOutputID = objectID;
 		}
+
+		mPlayer.createAdapters(l);
 	}
 
 

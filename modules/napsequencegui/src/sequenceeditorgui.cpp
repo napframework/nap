@@ -82,7 +82,7 @@ namespace nap
 	void SequenceEditorGUIView::show()
 	{
 		//
-		bool resetDirtyFlag = mState.mDirty;
+		bool reset_dirty_flag = mState.mDirty;
 
 		//
 		mState.mInspectorWidth = 300.0f;
@@ -96,7 +96,7 @@ namespace nap
 
 		//
 		const Sequence& sequence = mEditor.mSequencePlayer->getSequenceConst();
-		SequencePlayer& sequencePlayer = *mEditor.mSequencePlayer.get();
+		SequencePlayer& sequence_player = *mEditor.mSequencePlayer.get();
 
 		// push id
 		ImGui::PushID(mID.c_str());
@@ -163,34 +163,34 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (sequencePlayer.getIsPlaying())
+			if (sequence_player.getIsPlaying())
 			{
 				if (ImGui::Button("Stop"))
 				{
-					sequencePlayer.setIsPlaying(false);
+					sequence_player.setIsPlaying(false);
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Play"))
 				{
-					sequencePlayer.setIsPlaying(true);
+					sequence_player.setIsPlaying(true);
 				}
 			}
 
 			ImGui::SameLine();
-			if (sequencePlayer.getIsPaused())
+			if (sequence_player.getIsPaused())
 			{
 				if (ImGui::Button("Unpause"))
 				{
-					sequencePlayer.setIsPaused(false);
+					sequence_player.setIsPaused(false);
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Pause"))
 				{
-					sequencePlayer.setIsPaused(true);
+					sequence_player.setIsPaused(true);
 				}
 			}
 			
@@ -198,23 +198,23 @@ namespace nap
 			ImGui::SameLine();
 			if (ImGui::Button("Rewind"))
 			{
-				sequencePlayer.setPlayerTime(0.0);
+				sequence_player.setPlayerTime(0.0);
 			}
 
 			ImGui::SameLine();
-			bool isLooping = sequencePlayer.getIsLooping();
+			bool isLooping = sequence_player.getIsLooping();
 			if (ImGui::Checkbox("Loop", &isLooping))
 			{
-				sequencePlayer.setIsLooping(isLooping);
+				sequence_player.setIsLooping(isLooping);
 			}
 
 			ImGui::SameLine();
-			float playbackSpeed = sequencePlayer.getPlaybackSpeed();
+			float playback_speed = sequence_player.getPlaybackSpeed();
 			ImGui::PushItemWidth(50.0f);
-			if (ImGui::DragFloat("speed", &playbackSpeed, 0.01f, -10.0f, 10.0f, "%.1f"))
+			if (ImGui::DragFloat("speed", &playback_speed, 0.01f, -10.0f, 10.0f, "%.1f"))
 			{
-				playbackSpeed = math::clamp(playbackSpeed, -10.0f, 10.0f);
-				sequencePlayer.setPlaybackSpeed(playbackSpeed);
+				playback_speed = math::clamp(playback_speed, -10.0f, 10.0f);
+				sequence_player.setPlaybackSpeed(playback_speed);
 			}
 			ImGui::PopItemWidth();
 
@@ -238,16 +238,16 @@ namespace nap
 			
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position 
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
-			drawPlayerController(sequencePlayer);
+			drawPlayerController(sequence_player);
 
 			// move a little bit more up to align tracks nicely with timelinecontroller
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mVerticalResolution - 10);
 
 			// draw tracks
-			drawTracks(sequencePlayer, sequence);
+			drawTracks(sequence_player, sequence);
 				
 			// on top of everything, draw time line player position
-			drawTimelinePlayerPosition(sequence, sequencePlayer);
+			drawTimelinePlayerPosition(sequence, sequence_player);
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
@@ -277,7 +277,7 @@ namespace nap
 		// pop id
 		ImGui::PopID();
 
-		if( resetDirtyFlag )
+		if(reset_dirty_flag)
 		{
 			mState.mDirty = false;
 		}
@@ -314,97 +314,88 @@ namespace nap
 
 	void SequenceEditorGUIView::drawPlayerController(SequencePlayer& player)
 	{
-		const float timelineControllerHeight = 30.0f;
+		const float sequence_controller_height = 30.0f;
 
-		std::ostringstream stringStream;
-		stringStream << mID << "timelinecontroller";
-		std::string idString = stringStream.str();
+		std::ostringstream string_stream;
+		string_stream << mID << "sequencecontroller";
+		std::string id_string = string_stream.str();
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mInspectorWidth + 5.0f);
-		ImGui::PushID(idString.c_str());
+		ImGui::PushID(id_string.c_str());
 
 		// used for culling ( is stuff inside the parent window ??? )
-		ImVec2 parentWindowPos = ImGui::GetWindowPos();
-		ImVec2 parentWindowSize = ImGui::GetWindowSize();
+		ImVec2 parent_window_pos = ImGui::GetWindowPos();
+		ImVec2 parent_window_size = ImGui::GetWindowSize();
 
 		// draw timeline controller
-		if (ImGui::BeginChild(
-			idString.c_str(), // id
-			{ mState.mTimelineWidth + 5 , timelineControllerHeight }, // size
+		if (ImGui::BeginChild(id_string.c_str(), // id
+			{ mState.mTimelineWidth + 5 , sequence_controller_height}, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
-			ImVec2 cursorPos = ImGui::GetCursorPos();
-			ImVec2 windowTopLeft = ImGui::GetWindowPos();
-			ImVec2 startPos =
+			ImVec2 cursor_pos	 = ImGui::GetCursorPos();
+			ImVec2 window_top_left = ImGui::GetWindowPos();
+			ImVec2 start_pos	   =
 			{
-				windowTopLeft.x + cursorPos.x,
-				windowTopLeft.y + cursorPos.y + 15,
+				   window_top_left.x + cursor_pos.x,
+				   window_top_left.y + cursor_pos.y + 15,
 			};
 
-			cursorPos.y += 5;
+			cursor_pos.y += 5;
 
 			// get window drawlist
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			// draw backgroundbox of controller
-			drawList->AddRectFilled(
-				startPos,
-				{
-					startPos.x + mState.mTimelineWidth,
-					startPos.y + timelineControllerHeight - 15
+			draw_list->AddRectFilled(
+				start_pos,
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15
 				}, guicolors::black);
 
 			// draw box of controller
-			drawList->AddRect(
-				startPos,
-				{
-					startPos.x + mState.mTimelineWidth,
-					startPos.y + timelineControllerHeight - 15
+			draw_list->AddRect(start_pos,
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15
 				}, guicolors::white);
 
 			// draw handler of player position
-			const double playerTime = player.getPlayerTime();
-			const ImVec2 playerTimeRectTopLeft =
+			const double player_time = player.getPlayerTime();
+			const ImVec2 player_time_top_rect_left =
 			{
-				startPos.x + (float)(playerTime / player.getDuration()) * mState.mTimelineWidth - 5,
-				startPos.y
+				start_pos.x + (float)(player_time / player.getDuration()) * mState.mTimelineWidth - 5, start_pos.y
 			};
-			const ImVec2 playerTimeRectBottomRight =
+			const ImVec2 player_time_rect_bottom_right =
 			{
-				startPos.x + (float)(playerTime / player.getDuration()) * mState.mTimelineWidth + 5,
-				startPos.y + timelineControllerHeight,
+				start_pos.x + (float)(player_time / player.getDuration()) * mState.mTimelineWidth + 5,
+				start_pos.y + sequence_controller_height,
 			};
 
-			drawList->AddRectFilled(
-				playerTimeRectTopLeft,
-				playerTimeRectBottomRight,
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right,
 				guicolors::red);
 
 			// draw timestamp text every 100 pixels
-			const float timestampInterval = 100.0f;
-			int steps = mState.mTimelineWidth / timestampInterval;
+			const float timestamp_interval = 100.0f;
+			int steps = mState.mTimelineWidth / timestamp_interval;
 			for (int i = 0; i < steps; i++)
 			{
-				ImVec2 timestampPos;
-				timestampPos.x = i * timestampInterval + startPos.x;
-				timestampPos.y = startPos.y - 18;
+				ImVec2 timestamp_pos;
+				timestamp_pos.x = i * timestamp_interval + start_pos.x;
+				timestamp_pos.y = start_pos.y - 18;
 
-				if (timestampPos.x < parentWindowSize.x + parentWindowPos.x &&
-					timestampPos.x >= parentWindowPos.x)
+				if (timestamp_pos.x < parent_window_size.x + parent_window_pos.x &&
+					timestamp_pos.x >= parent_window_pos.x)
 				{
-					if (timestampPos.y >= parentWindowPos.y &&
-						timestampPos.y < parentWindowSize.y + parentWindowPos.y)
+					if (timestamp_pos.y >= parent_window_pos.y &&
+						timestamp_pos.y < parent_window_size.y + parent_window_pos.y)
 					{
-						double timeInPlayer = this->mEditor.getDuration() * (float)((float)i / steps);
-						std::string formattedTimeString = SequenceTrackView::formatTimeString(timeInPlayer);
-						drawList->AddText(timestampPos, guicolors::white, formattedTimeString.c_str());
+						double time_in_player			= this->mEditor.getDuration() * (float)((float)i / steps);
+						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
+						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
 
 						if (i != 0)
 						{
-							drawList->AddLine(
-							{ timestampPos.x, timestampPos.y + 18 },
-							{ timestampPos.x, timestampPos.y + timelineControllerHeight + 2 }, guicolors::darkGrey);
+							draw_list->AddLine(
+							{timestamp_pos.x, timestamp_pos.y + 18 },
+							{timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, guicolors::darkGrey);
 						}
 					}
 				}
@@ -414,28 +405,26 @@ namespace nap
 			{
 				if (mState.mAction->isAction<None>()|| mState.mAction->isAction<HoveringPlayerTime>())
 				{
-					if (ImGui::IsMouseHoveringRect(startPos, 
-					{
-						startPos.x + mState.mTimelineWidth,
-						startPos.y + timelineControllerHeight
-					}))
+					if (ImGui::IsMouseHoveringRect(
+							start_pos,
+					{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height}))
 					{
 						mState.mAction = createAction<HoveringPlayerTime>();
 
 						if (ImGui::IsMouseDown(0))
 						{
 							//
-							bool playerWasPlaying = player.getIsPlaying();
-							bool playerWasPaused = player.getIsPaused();
+							bool player_was_playing = player.getIsPlaying();
+							bool player_was_paused	= player.getIsPaused();
 
-							mState.mAction = createAction<DraggingPlayerTime>(playerWasPlaying, playerWasPaused);
-							if (playerWasPlaying)
+							mState.mAction = createAction<DraggingPlayerTime>(player_was_playing, player_was_paused);
+							if (player_was_playing)
 							{
 								player.setIsPaused(true);
 							}
 							
 							// snap to mouse position
-							double time = ((ImGui::GetMousePos().x - startPos.x) / mState.mTimelineWidth) * player.getDuration();
+							double time = ((ImGui::GetMousePos().x - start_pos.x) / mState.mTimelineWidth) * player.getDuration();
 							player.setPlayerTime(time);
 						}
 					}
@@ -449,15 +438,15 @@ namespace nap
 					if (ImGui::IsMouseDown(0))
 					{
 						double delta = (mState.mMouseDelta.x / mState.mTimelineWidth) * player.getDuration();
-						player.setPlayerTime(playerTime + delta);
+						player.setPlayerTime(player_time + delta);
 					}
 					else
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
-							const auto* dragAction = mState.mAction->getDerived<DraggingPlayerTime>();
-							assert(dragAction != nullptr); 
-							if (dragAction->mWasPlaying && !dragAction->mWasPaused)
+							const auto* drag_action = mState.mAction->getDerived<DraggingPlayerTime>();
+							assert(drag_action != nullptr);
+							if (drag_action->mWasPlaying && !drag_action->mWasPaused)
 							{
 								player.setIsPlaying(true);
 							}
@@ -479,12 +468,12 @@ namespace nap
 		const Sequence& sequence,
 		SequencePlayer& player)
 	{
-		std::ostringstream stringStream;
-		stringStream << mID << "timelineplayerposition";
-		std::string idString = stringStream.str();
+		std::ostringstream string_stream;
+		string_stream << mID << "timelineplayerposition";
+		std::string id_string = string_stream.str();
 
 		// store cursorpos
-		ImVec2 cursorPos = ImGui::GetCursorPos();
+		ImVec2 cursor_pos = ImGui::GetCursorPos();
 
 		ImGui::SetCursorPos(
 		{
@@ -495,8 +484,7 @@ namespace nap
 		});
 
 		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::red);
-		if (ImGui::BeginChild(
-			idString.c_str(), // id
+		if (ImGui::BeginChild(id_string.c_str(), // id
 			{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
@@ -508,7 +496,7 @@ namespace nap
 		ImGui::PopStyleColor();
 
 		// pop cursorpos
-		ImGui::SetCursorPos(cursorPos);
+		ImGui::SetCursorPos(cursor_pos);
 	}
 
 
@@ -516,7 +504,7 @@ namespace nap
 	{
 		if (mState.mAction->isAction<LoadPopup>())
 		{
-			auto* loadAction = mState.mAction->getDerived<LoadPopup>();
+			auto* load_action = mState.mAction->getDerived<LoadPopup>();
 
 			//
 			if (ImGui::BeginPopupModal(
@@ -525,14 +513,14 @@ namespace nap
 				ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				//
-				const std::string showDir = "sequences/";
+				const std::string show_dir = "sequences/";
 
 				// Find all files in the preset directory
 				std::vector<std::string> files_in_directory;
-				utility::listDir(showDir.c_str(), files_in_directory);
+				utility::listDir(show_dir.c_str(), files_in_directory);
 
 				std::vector<std::string> shows;
-				std::vector<std::string> showFiles;
+				std::vector<std::string> show_files;
 				for (const auto& filename : files_in_directory)
 				{
 					// Ignore directories
@@ -542,19 +530,20 @@ namespace nap
 					if (utility::getFileExtension(filename) == "json")
 					{
 						shows.emplace_back(utility::getFileName(filename));
-						showFiles.emplace_back(filename);
+						show_files.emplace_back(filename);
 					}
 				}
 
 				int index = 0;
 				SequenceTrackView::Combo("Sequences",
-					&loadAction->mSelectedShowIndex,
+					&load_action->mSelectedShowIndex,
 					shows);
 					
-				utility::ErrorState errorState;
+				utility::ErrorState error_state;
 				if (ImGui::Button("Load"))
 				{
-					if (mEditor.mSequencePlayer->load(utility::getFileName(showFiles[loadAction->mSelectedShowIndex]), errorState))
+					if (mEditor.mSequencePlayer->load(utility::getFileName(show_files[load_action->mSelectedShowIndex]),
+													  error_state))
 					{
 						mState.mAction = createAction<None>();
 						mState.mDirty = true;
@@ -563,7 +552,7 @@ namespace nap
 					else
 					{
 						ImGui::OpenPopup("Error");
-						loadAction->mErrorString = errorState.toString();
+						load_action->mErrorString = error_state.toString();
 					}
 				}
 
@@ -576,7 +565,7 @@ namespace nap
 
 				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
-					ImGui::Text(loadAction->mErrorString.c_str());
+					ImGui::Text(load_action->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
 						mState.mDirty = true;
@@ -597,7 +586,7 @@ namespace nap
 	{
 		if (mState.mAction->isAction<SaveAsPopup>())
 		{
-			auto* saveAsAction = mState.mAction->getDerived<SaveAsPopup>();
+			auto* save_as_action = mState.mAction->getDerived<SaveAsPopup>();
 
 			// save as popup
 			if (ImGui::BeginPopupModal(
@@ -606,11 +595,11 @@ namespace nap
 				ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				//
-				const std::string showDir = "sequences";
+				const std::string show_dir = "sequences";
 
 				// Find all files in the preset directory
 				std::vector<std::string> files_in_directory;
-				utility::listDir(showDir.c_str(), files_in_directory);
+				utility::listDir(show_dir.c_str(), files_in_directory);
 
 				std::vector<std::string> shows;
 				for (const auto& filename : files_in_directory)
@@ -627,10 +616,10 @@ namespace nap
 				shows.push_back("<New...>");
 
 				if (SequenceTrackView::Combo("Shows",
-					&saveAsAction->mSelectedShowIndex,
+					&save_as_action->mSelectedShowIndex,
 					shows))
 				{
-					if (saveAsAction->mSelectedShowIndex == shows.size() - 1)
+					if (save_as_action->mSelectedShowIndex == shows.size() - 1)
 					{
 						ImGui::OpenPopup("New");
 					}
@@ -641,7 +630,7 @@ namespace nap
 				}
 
 				// new show popup
-				std::string newShowFileName;
+				std::string new_show_filename;
 				bool done = false;
 				if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
@@ -650,8 +639,8 @@ namespace nap
 
 					if (ImGui::Button("OK") && strlen(name) != 0)
 					{
-						newShowFileName = std::string(name, strlen(name));
-						newShowFileName += ".json";
+						new_show_filename = std::string(name, strlen(name));
+						new_show_filename += ".json";
 
 						ImGui::CloseCurrentPopup();
 						done = true;
@@ -667,38 +656,37 @@ namespace nap
 				if (done)
 				{
 					// Insert before the '<new...>' item
-					shows.insert(shows.end() - 1, newShowFileName);
+					shows.insert(shows.end() - 1, new_show_filename);
 
-					utility::ErrorState errorState;
+					utility::ErrorState error_state;
 					
-					if (mEditor.mSequencePlayer->save(utility::getFileName(newShowFileName), errorState))
+					if (mEditor.mSequencePlayer->save(utility::getFileName(new_show_filename), error_state))
 					{
-						saveAsAction->mSelectedShowIndex = shows.size() - 2;
+						save_as_action->mSelectedShowIndex = shows.size() - 2;
 						mState.mDirty = true;
 					}
 					else
 					{
 						mState.mDirty = true;
-						saveAsAction->mErrorString = errorState.toString();
+						save_as_action->mErrorString = error_state.toString();
 						ImGui::OpenPopup("Error");
 					}
 				}
 
 				if (ImGui::BeginPopupModal("Overwrite"))
 				{
-					utility::ErrorState errorState;
+					utility::ErrorState error_state;
 					ImGui::Text(("Are you sure you want to overwrite " + 
-						shows[saveAsAction->mSelectedShowIndex] + " ?").c_str());
+						shows[save_as_action->mSelectedShowIndex] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
 						if (mEditor.mSequencePlayer->save(
-							utility::getFileName(shows[saveAsAction->mSelectedShowIndex]),
-							errorState))
+							utility::getFileName(shows[save_as_action->mSelectedShowIndex]), error_state))
 						{
 						}
 						else
 						{
-							saveAsAction->mErrorString = errorState.toString();
+							save_as_action->mErrorString = error_state.toString();
 							ImGui::OpenPopup("Error");
 						}
 
@@ -717,7 +705,7 @@ namespace nap
 
 				if (ImGui::BeginPopupModal("Error"))
 				{
-					ImGui::Text(saveAsAction->mErrorString.c_str());
+					ImGui::Text(save_as_action->mErrorString.c_str());
 					if (ImGui::Button("OK"))
 					{
 						mState.mDirty = true;

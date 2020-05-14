@@ -109,12 +109,12 @@ namespace nap
 
 			if (segment != nullptr)
 			{
-				SequenceTrackSegmentEvent<T>* eventSegment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
-				assert(eventSegment != nullptr); // type mismatch
+				SequenceTrackSegmentEvent<T>* event_segment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
+				assert(event_segment != nullptr); // type mismatch
 
-				if (eventSegment != nullptr)
+				if (event_segment != nullptr)
 				{
-					eventSegment->mValue = value;
+					event_segment->mValue = value;
 				}
 			}
 		}

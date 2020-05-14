@@ -76,20 +76,20 @@ namespace nap
 
 	void SequenceEditor::save(const std::string& file)
 	{
-		utility::ErrorState errorState;
-		if(!mSequencePlayer->save(file, errorState))
+		utility::ErrorState error_state;
+		if(!mSequencePlayer->save(file, error_state))
 		{
-			nap::Logger::error(errorState.toString());
+			nap::Logger::error(error_state.toString());
 		}
 	}
 
 
 	void SequenceEditor::load(const std::string& file)
 	{
-		utility::ErrorState errorState;
-		if(!mSequencePlayer->load(file, errorState) )
+		utility::ErrorState error_state;
+		if(!mSequencePlayer->load(file, error_state) )
 		{
-			nap::Logger::error(errorState.toString());
+			nap::Logger::error(error_state.toString());
 		}
 	}
 

@@ -91,42 +91,42 @@ namespace nap
 		// draw the assigned parameter
 		ImGui::Text("Assigned Parameter");
 
-		ImVec2 inspectorCursorPos = ImGui::GetCursorPos();
-		inspectorCursorPos.x += 5;
-		inspectorCursorPos.y += 5;
-		ImGui::SetCursorPos(inspectorCursorPos);
+		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+		inspector_cursor_pos.x += 5;
+		inspector_cursor_pos.y += 5;
+		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		bool assigned = false;
-		std::string assignedID;
-		std::vector<std::string> curveOutputs;
-		int currentItem = 0;
-		curveOutputs.emplace_back("none");
+		std::string assigned_id;
+		std::vector<std::string> curve_outputs;
+		int current_item = 0;
+		curve_outputs.emplace_back("none");
 		int count = 0;
-		const Parameter* assignedParameter = nullptr;
+		const Parameter* assigned_parameter = nullptr;
 
 		for (const auto& input : getEditor().mSequencePlayer->mOutputs)
 		{
 			if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput))
 			{
-				auto& curveOutput = static_cast<SequencePlayerCurveOutput&>(*input.get());
+				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(*input.get());
 
-				if(curveOutput.mParameter != nullptr)
+				if(curve_output.mParameter != nullptr)
 				{
-					if(isParameterTypeAllowed(track.get_type(), curveOutput.mParameter.get()->get_type()))
+					if(isParameterTypeAllowed(track.get_type(), curve_output.mParameter.get()->get_type()))
 					{
 						count++;
 
-						if (input->mID == track.mAssignedInputID)
+						if (input->mID == track.mAssignedOutputID)
 						{
 							assigned = true;
-							assignedID = input->mID;
-							currentItem = count;
+							assigned_id = input->mID;
+							current_item = count;
 
 							assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput)); // type mismatch
-							assignedParameter = static_cast<SequencePlayerCurveOutput*>(input.get())->mParameter.get();
+							assigned_parameter = static_cast<SequencePlayerCurveOutput*>(input.get())->mParameter.get();
 						}
 
-						curveOutputs.emplace_back(input->mID);
+						curve_outputs.emplace_back(input->mID);
 					}
 				}
 			}
@@ -135,22 +135,21 @@ namespace nap
 		ImGui::PushItemWidth(140.0f);
 		if (Combo(
 			"",
-			&currentItem, curveOutputs))
+			&current_item, curve_outputs))
 		{
-			SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+			SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
 
-			if (currentItem != 0)
-				curveController.assignNewObjectID(track.mID, curveOutputs[currentItem]);
+			if (current_item != 0)
+				curve_controller.assignNewObjectID(track.mID, curve_outputs[current_item]);
 			else
-				curveController.assignNewObjectID(track.mID, "");
+				curve_controller.assignNewObjectID(track.mID, "");
 		}
 
 		//
 		ImGui::PopItemWidth();
 
 		// map of inspectors ranges for curve types
-		static std::unordered_map<rttr::type, void(SequenceCurveTrackView::*)(const SequenceTrack&)> sInspectors
-			{
+		static std::unordered_map<rttr::type, void(SequenceCurveTrackView::*)(const SequenceTrack&)> s_inspectors{
 				{ RTTI_OF(SequenceTrackCurveFloat) , &SequenceCurveTrackView::drawInspectorRange<float> },
 				{ RTTI_OF(SequenceTrackCurveVec2) , &SequenceCurveTrackView::drawInspectorRange<glm::vec2> },
 				{ RTTI_OF(SequenceTrackCurveVec3) , &SequenceCurveTrackView::drawInspectorRange<glm::vec3> },
@@ -158,9 +157,9 @@ namespace nap
 			};
 
 		// draw inspector
-		auto it = sInspectors.find(track.get_type());
-		assert(it!=sInspectors.end()); // type not found
-		if(it != sInspectors.end())
+		auto it = s_inspectors.find(track.get_type());
+		assert(it!= s_inspectors.end()); // type not found
+		if(it != s_inspectors.end())
 		{
 			(*this.*it->second)(track);
 		}
@@ -180,7 +179,7 @@ namespace nap
 			mCurveCache.clear();
 		}
 
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 		if (mState.mIsWindowFocused)
 		{
@@ -192,7 +191,7 @@ namespace nap
 					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
 				{
 					// position of mouse in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -223,7 +222,7 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -239,7 +238,7 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					drawList->AddLine(
+					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						guicolors::lightGrey, // color
@@ -248,34 +247,32 @@ namespace nap
 			}
 		}
 
-		float previousSegmentX = 0.0f;
+		float previous_segment_x = 0.0f;
 
-		int segmentCount = 0;
+		int segment_count = 0;
 		for (const auto& segment : track.mSegments)
 		{
-			float segmentX = (segment->mStartTime + segment->mDuration) * mState.mStepSize;
-			float segmentWidth = segment->mDuration * mState.mStepSize;
+			float segment_x	   = (segment->mStartTime + segment->mDuration) * mState.mStepSize;
+			float segment_width = segment->mDuration * mState.mStepSize;
 
 			auto it = sDrawCurveSegmentsMap.find(segment.get()->get_type());
 			if (it != sDrawCurveSegmentsMap.end())
 			{
-				(*this.*it->second)(track, *segment.get(), trackTopLeft, previousSegmentX, segmentWidth, segmentX, drawList, (segmentCount == 0));
+				(*this.*it->second)(track, *segment.get(), trackTopLeft, previous_segment_x, segment_width, segment_x,
+									draw_list, (segment_count == 0));
 			}
 
 			// draw segment handlers
 			drawSegmentHandler(
 				track,
 				*segment.get(),
-				trackTopLeft,
-				segmentX,
-				segmentWidth,
-				drawList);
+				trackTopLeft, segment_x, segment_width, draw_list);
 
 			//
-			previousSegmentX = segmentX;
+			previous_segment_x = segment_x;
 
 			//
-			segmentCount++;
+			segment_count++;
 		}
 	}
 
@@ -298,21 +295,18 @@ namespace nap
 		{
 			for (int v = 0; v < segment.mCurves.size(); v++)
 			{
-				const auto& curvePoint = segment.mCurves[v]->mPoints[0];
-				std::ostringstream stringStream;
-				stringStream << segment.mID << "_point_" << 0 << "_curve_" << v;
+				const auto& curve_point = segment.mCurves[v]->mPoints[0];
+				std::ostringstream string_stream;
+				string_stream << segment.mID << "_point_" << 0 << "_curve_" << v;
 
-				ImVec2 circlePoint =
-				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+				ImVec2 circle_point =
+				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 				drawTanHandler<T>(
 					track,
-					segment,
-					stringStream,
-					segmentWidth,
-					curvePoint,
-					circlePoint,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point,
 					0,
 					v,
 					SequenceCurveEnums::TanPointTypes::IN,
@@ -320,11 +314,8 @@ namespace nap
 
 				drawTanHandler<T>(
 					track,
-					segment,
-					stringStream,
-					segmentWidth,
-					curvePoint,
-					circlePoint,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point,
 					0,
 					v,
 					SequenceCurveEnums::TanPointTypes::OUT,
@@ -339,15 +330,15 @@ namespace nap
 			for (int i = 1; i < segment.mCurves[v]->mPoints.size() - 1; i++)
 			{
 				// get the curvepoint and generate a unique ID for the control point
-				const auto& curvePoint = segment.mCurves[v]->mPoints[i];
-				std::ostringstream stringStream;
-				stringStream << segment.mID << "_point_" << i << "_curve_" << v;
-				std::string pointID = stringStream.str();
+				const auto& curve_point = segment.mCurves[v]->mPoints[i];
+				std::ostringstream string_stream;
+				string_stream << segment.mID << "_point_" << i << "_curve_" << v;
+				std::string point_id = string_stream.str();
 
 				// determine the point at where to draw the control point
-				ImVec2 circlePoint =
-				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+				ImVec2 circle_point =
+				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 				// handle mouse hovering
 				bool hovered = false;
@@ -357,8 +348,8 @@ namespace nap
 						mState.mAction->isAction<HoveringControlPoint>() ||
 						mState.mAction->isAction<HoveringCurve>())
 						&& ImGui::IsMouseHoveringRect(
-							{ circlePoint.x - 5, circlePoint.y - 5 },
-							{ circlePoint.x + 5, circlePoint.y + 5 }))
+							{circle_point.x - 5, circle_point.y - 5 },
+							{circle_point.x + 5, circle_point.y + 5 }))
 					{
 						hovered = true;
 					}
@@ -376,9 +367,8 @@ namespace nap
 					//
 					showValue<T>(
 						track,
-						segment,
-						curvePoint.mPos.mTime,
-						curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
+						segment, curve_point.mPos.mTime,
+								 curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
 						v);
 
 					// is the mouse held down, then we are dragging
@@ -424,28 +414,26 @@ namespace nap
 						{
 							if (action->mControlPointIndex == i && action->mCurveIndex == v)
 							{
-								float timeAdjust = mState.mMouseDelta.x / segmentWidth;
-								float valueAdjust = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+								float time_adjust = mState.mMouseDelta.x / segmentWidth;
+								float value_adjust = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 								hovered = true;
 
 								showValue<T>(
 									track,
-									segment,
-									curvePoint.mPos.mTime,
-									curvePoint.mPos.mTime * segment.mDuration + segment.mStartTime,
+									segment, curve_point.mPos.mTime,
+											 curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
 									v);
 
 
-								SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+								SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
 
-								curveController.changeCurvePoint(
+								curve_controller.changeCurvePoint(
 									action->mTrackID,
 									action->mSegmentID,
 									action->mControlPointIndex,
 									action->mCurveIndex,
-									timeAdjust,
-									valueAdjust);
+									time_adjust, value_adjust);
 
 								mCurveCache.clear();
 
@@ -459,19 +447,15 @@ namespace nap
 				}
 
 				// draw the control point
-				drawList->AddCircleFilled(
-					circlePoint,
+				drawList->AddCircleFilled(circle_point,
 					4.0f,
 					hovered ? guicolors::white : guicolors::lightGrey);
 
 				// draw the handlers
 				drawTanHandler<T>(
 					track,
-					segment,
-					stringStream,
-					segmentWidth,
-					curvePoint,
-					circlePoint,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point,
 					i,
 					v,
 					SequenceCurveEnums::TanPointTypes::IN,
@@ -479,11 +463,8 @@ namespace nap
 
 				drawTanHandler<T>(
 					track,
-					segment,
-					stringStream,
-					segmentWidth,
-					curvePoint,
-					circlePoint,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point,
 					i,
 					v,
 					SequenceCurveEnums::TanPointTypes::OUT,
@@ -495,37 +476,29 @@ namespace nap
 		{
 			// handle last control point
 			// overlaps with endvalue so only draw tan handlers
-			const int controlPointIndex = segment.mCurves[v]->mPoints.size() - 1;
-			const auto& curvePoint = segment.mCurves[v]->mPoints[controlPointIndex];
+			const int control_point_index = segment.mCurves[v]->mPoints.size() - 1;
+			const auto& curve_point		  = segment.mCurves[v]->mPoints[control_point_index];
 
-			std::ostringstream stringStream;
-			stringStream << segment.mID << "_point_" << controlPointIndex << "_curve_" << v;
-			std::string pointID = stringStream.str();
+			std::ostringstream string_stream;
+			string_stream << segment.mID << "_point_" << control_point_index << "_curve_" << v;
+			std::string point_id = string_stream.str();
 
-			ImVec2 circlePoint =
-			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curvePoint.mPos.mTime,
-				trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curvePoint.mPos.mValue) };
+			ImVec2 circle_point =
+			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
+				trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 			drawTanHandler<T>(
 				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				circlePoint,
-				controlPointIndex,
+				segment, string_stream,
+				segmentWidth, curve_point, circle_point, control_point_index,
 				v,
 				SequenceCurveEnums::TanPointTypes::IN,
 				drawList);
 
 			drawTanHandler<T>(
 				track,
-				segment,
-				stringStream,
-				segmentWidth,
-				curvePoint,
-				circlePoint,
-				controlPointIndex,
+				segment, string_stream,
+				segmentWidth, curve_point, circle_point, control_point_index,
 				v,
 				SequenceCurveEnums::TanPointTypes::OUT,
 				drawList);
@@ -551,7 +524,7 @@ namespace nap
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
 			// calculate point of this value in the window
-			ImVec2 segmentValuePos =
+			ImVec2 segment_value_pos =
 			{
 				trackTopLeft.x + segmentX - (segmentType == SequenceCurveEnums::BEGIN ? segmentWidth : 0.0f),
 				trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == SequenceCurveEnums::BEGIN ?
@@ -569,8 +542,8 @@ namespace nap
 					mState.mAction->isAction<HoveringSegment>() ||
 					mState.mAction->isAction<HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect(
-						{ segmentValuePos.x - 12, segmentValuePos.y - 12 }, // top left
-						{ segmentValuePos.x + 12, segmentValuePos.y + 12 }))  // bottom right 
+						{segment_value_pos.x - 12, segment_value_pos.y - 12 }, // top left
+						{segment_value_pos.x + 12, segment_value_pos.y + 12 }))  // bottom right
 				{
 					hovered = true;
 					mState.mAction = createAction<HoveringSegmentValue>(
@@ -632,14 +605,13 @@ namespace nap
 							}
 							else
 							{
-								float dragAmount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+								float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
-								SequenceControllerCurve& curveController = getEditor().getController<SequenceControllerCurve>();
+								SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
 
-								curveController.changeCurveSegmentValue(
+								curve_controller.changeCurveSegmentValue(
 									track.mID,
-									segment.mID,
-									dragAmount,
+									segment.mID, drag_amount,
 									v,
 									segmentType);
 								mCurveCache.clear();
@@ -650,9 +622,9 @@ namespace nap
 			}
 
 			if (hovered)
-				drawList->AddCircleFilled(segmentValuePos, 5.0f, guicolors::curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, 5.0f, guicolors::curvecolors[v]);
 			else
-				drawList->AddCircle(segmentValuePos, 5.0f, guicolors::curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, 5.0f, guicolors::curvecolors[v]);
 		}
 	}
 
@@ -723,8 +695,8 @@ namespace nap
 					float amount = mState.mMouseDelta.x / mState.mStepSize;
 
 					auto& editor = getEditor();
-					SequenceControllerCurve& curveController = editor.getController<SequenceControllerCurve>();
-					curveController.segmentDurationChange(track.mID, segment.mID, amount);
+					SequenceControllerCurve& curve_controller = editor.getController<SequenceControllerCurve>();
+					curve_controller.segmentDurationChange(track.mID, segment.mID, amount);
 
 					mCurveCache.clear();
 				}
@@ -778,45 +750,43 @@ namespace nap
 		// draw tan handlers
 		{
 			// create a string stream to create identifier of this object
-			std::ostringstream tanStream;
-			tanStream << stringStream.str() << (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan";
+			std::ostringstream tan_stream;
+			tan_stream << stringStream.str() << (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan";
 
 			//
-			const math::FComplex<float, float>& tanComplex
-				= (type == SequenceCurveEnums::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
+			const math::FComplex<float, float>& tan_complex = (type == SequenceCurveEnums::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
 			ImVec2 offset =
-			{ (segmentWidth * tanComplex.mTime) / (float)segment.mDuration,
-				(mState.mTrackHeight *  (float)tanComplex.mValue * -1.0f) };
-			ImVec2 tanPoint = { circlePoint.x + offset.x, circlePoint.y + offset.y };
+			{ (segmentWidth * tan_complex.mTime) / (float)segment.mDuration,
+				(mState.mTrackHeight *  (float)tan_complex.mValue * -1.0f) };
+			ImVec2 tan_point = { circlePoint.x + offset.x, circlePoint.y + offset.y };
 
 			// set if we are hoverting this point with the mouse
-			bool tanPointHovered = false;
+			bool tan_point_hovered = false;
 
 			if (mState.mIsWindowFocused)
 			{
 				// check if hovered
 				if ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurve>())
-					&& ImGui::IsMouseHoveringRect({ tanPoint.x - 5, tanPoint.y - 5 }, { tanPoint.x + 5, tanPoint.y + 5 }))
+					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = createAction<HoveringTanPoint>(tanStream.str());
-					tanPointHovered = true;
+					mState.mAction = createAction<HoveringTanPoint>(tan_stream.str());
+					tan_point_hovered = true;
 				}
-				else if (
-					mState.mAction->isAction<HoveringTanPoint>())
+				else if (mState.mAction->isAction<HoveringTanPoint>())
 				{
 					auto* action = mState.mAction->getDerived<HoveringTanPoint>();
 
 					// if we hare already hovering, check if its this point
-					if (action->mTanPointID == tanStream.str())
+					if (action->mTanPointID == tan_stream.str())
 					{
 						if (ImGui::IsMouseHoveringRect(
-							{ tanPoint.x - 5, tanPoint.y - 5 },
-							{ tanPoint.x + 5, tanPoint.y + 5 }))
+							{tan_point.x - 5, tan_point.y - 5 },
+							{tan_point.x + 5, tan_point.y + 5 }))
 						{
 							// still hovering
-							tanPointHovered = true;
+							tan_point_hovered = true;
 
 							// start dragging if mouse down
 							if (ImGui::IsMouseDown(0))
@@ -853,7 +823,7 @@ namespace nap
 						}
 						else
 						{
-							tanPointHovered = true;
+							tan_point_hovered = true;
 
 							float time = mState.mMouseDelta.x / mState.mStepSize;
 							float value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
@@ -874,10 +844,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tanPoint, tanPointHovered ? guicolors::white : guicolors::darkGrey, 1.0f);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? guicolors::white : guicolors::darkGrey, 1.0f);
 
 			// draw handler
-			drawList->AddCircleFilled(tanPoint, 3.0f, tanPointHovered ? guicolors::white : guicolors::darkGrey);
+			drawList->AddCircleFilled(tan_point, 3.0f, tan_point_hovered ? guicolors::white : guicolors::darkGrey);
 		}
 	}
 
@@ -918,8 +888,8 @@ namespace nap
 					{
 						auto* action = mState.mAction->getDerived<InsertingSegment>();
 
-						auto& curveController = getEditor().getController<SequenceControllerCurve>();
-						curveController.insertSegment(action->mTrackID, action->mTime);
+						auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+						curve_controller.insertSegment(action->mTrackID, action->mTime);
 						mState.mAction = createAction<None>();
 
 						mCurveCache.clear();
@@ -973,8 +943,8 @@ namespace nap
 
 				if (ImGui::Button("Linear"))
 				{
-					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear);
 
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -984,8 +954,8 @@ namespace nap
 
 				if (ImGui::Button("Bezier"))
 				{
-					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier);
 
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -1028,8 +998,8 @@ namespace nap
 				auto* action = mState.mAction->getDerived<InsertingCurvePoint>();
 				if (ImGui::Button("Insert Point"))
 				{
-					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.insertCurvePoint(
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.insertCurvePoint(
 						action->mTrackID,
 						action->mSegmentID,
 						action->mPos,
@@ -1093,8 +1063,8 @@ namespace nap
 				{
 					auto* action = mState.mAction->getDerived<CurvePointActionPopup>();
 
-					auto& curveController = getEditor().getController<SequenceControllerCurve>();
-					curveController.deleteCurvePoint(
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.deleteCurvePoint(
 						action->mTrackID,
 						action->mSegmentID,
 						action->mControlPointIndex,
@@ -1188,28 +1158,28 @@ namespace nap
 		const SequenceTrackSegmentCurve<T>& segment
 			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
-		const float pointsPerPixel = 0.5f;
-		bool curveSelected = false;
+		const float points_per_pixel = 0.5f;
+		bool curve_selected			 = false;
 
-		bool needsDrawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
+		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
-		if (needsDrawing)
+		if (needs_drawing)
 		{
 			// if no cache present, create new curve
 			if (mCurveCache.find(segment.mID) == mCurveCache.end())
 			{
-				const int pointNum = (int) ( pointsPerPixel * segmentWidth );
+				const int point_num = (int) (points_per_pixel * segmentWidth );
 				std::vector<std::vector<ImVec2>> curves;
 				for (int v = 0; v < segment.mCurves.size(); v++)
 				{
 					std::vector<ImVec2> curve;
-					for (int i = 0; i <= pointNum; i++)
+					for (int i = 0; i <= point_num; i++)
 					{
-						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / pointNum);
+						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / point_num);
 
 						ImVec2 point =
 							{
-								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / pointNum),
+								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / point_num),
 								trackTopLeft.y + value * mState.mTrackHeight
 							};
 
@@ -1224,7 +1194,7 @@ namespace nap
 			}
 		}
 
-		int selectedCurve = -1;
+		int selected_curve = -1;
 		if (mState.mIsWindowFocused)
 		{
 			// determine if mouse is hovering curve
@@ -1234,18 +1204,18 @@ namespace nap
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }))  // bottom right 
 			{
 				// translate mouse position to position in curve
-				ImVec2 mousePos = ImGui::GetMousePos();
-				float xInSegment = ((mousePos.x - (trackTopLeft.x + segmentX - segmentWidth)) / mState.mStepSize) / segment.mDuration;
-				float yInSegment = 1.0f - ((mousePos.y - trackTopLeft.y) / mState.mTrackHeight);
+				ImVec2 mouse_pos = ImGui::GetMousePos();
+				float x_in_segment = ((mouse_pos.x - (trackTopLeft.x + segmentX - segmentWidth)) / mState.mStepSize) / segment.mDuration;
+				float y_in_segment = 1.0f - ((mouse_pos.y - trackTopLeft.y) / mState.mTrackHeight);
 
 				for (int i = 0; i < segment.mCurves.size(); i++)
 				{
 					// evaluate curve at x position
-					float yInCurve = segment.mCurves[i]->evaluate(xInSegment);
+					float y_in_curve = segment.mCurves[i]->evaluate(x_in_segment);
 
 					// insert curve point on click
 					const float maxDist = 0.1f;
-					if (abs(yInCurve - yInSegment) < maxDist)
+					if (abs(y_in_curve - y_in_segment) < maxDist)
 					{
 						mState.mAction = createAction<HoveringCurve>(
 							track.mID,
@@ -1257,14 +1227,13 @@ namespace nap
 							mState.mAction = createAction<OpenInsertCurvePointPopup>(
 								track.mID,
 								segment.mID,
-								i,
-								xInSegment);
+								i, x_in_segment);
 						}
-						selectedCurve = i;
+						selected_curve = i;
 					}
 				}
 
-				if (selectedCurve == -1)
+				if (selected_curve == -1)
 				{
 					mState.mAction = createAction<None>();
 				}
@@ -1272,10 +1241,8 @@ namespace nap
 				{
 					showValue<T>(
 						track,
-						segment,
-						xInSegment,
-						mState.mMouseCursorTime,
-						selectedCurve);
+						segment, x_in_segment,
+						mState.mMouseCursorTime, selected_curve);
 				}
 			}
 			else
@@ -1292,7 +1259,7 @@ namespace nap
 			}
 		}
 
-		if (needsDrawing)
+		if (needs_drawing)
 		{
 			for (int i = 0; i < segment.mCurves.size(); i++)
 			{
@@ -1304,7 +1271,7 @@ namespace nap
 						mCurveCache[segment.mID][i].size(),	 // size of points array
 						guicolors::curvecolors[i],  // color
 						false, // closed
-						selectedCurve == i ? 3.0f : 1.0f, // thickness
+										  selected_curve == i ? 3.0f : 1.0f, // thickness
 						true); // anti-aliased
 				}
 			}
@@ -1372,34 +1339,34 @@ namespace nap
 	template<typename T>
 	void SequenceCurveTrackView::drawInspectorRange(const SequenceTrack& track)
 	{
-		const SequenceTrackCurve<T>& curveTrack = static_cast<const SequenceTrackCurve<T>&>(track);
+		const SequenceTrackCurve<T>& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
 
-		T min = curveTrack.mMinimum;
-		T max = curveTrack.mMaximum;
+		T min = curve_track.mMinimum;
+		T max = curve_track.mMaximum;
 
 		//
 		ImGui::PushID(track.mID.c_str());
 
-		float dragFloatX = ImGui::GetCursorPosX() + 40;
+		float drag_float_x = ImGui::GetCursorPosX() + 40;
 		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + 5, ImGui::GetCursorPosY() + 5 });
 		ImGui::Text("Min:"); ImGui::SameLine();
 		ImGui::PushID("min");
-		ImGui::SetCursorPosX(dragFloatX);
+		ImGui::SetCursorPosX(drag_float_x);
 		if (inputFloat<T>(min, 3))
 		{
-			auto& curveController = getEditor().getController<SequenceControllerCurve>();
-			curveController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
 		ImGui::Text("Max:"); ImGui::SameLine();
 		ImGui::PushID("max");
-		ImGui::SetCursorPosX(dragFloatX);
+		ImGui::SetCursorPosX(drag_float_x);
 		if (inputFloat<T>(max, 3))
 		{
-			auto& curveController = getEditor().getController<SequenceControllerCurve>();
-			curveController.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -1426,12 +1393,12 @@ namespace nap
 		double time,
 		int curveIndex)
 	{
-		const SequenceTrackCurve<float>& curveTrack = static_cast<const SequenceTrackCurve<float>&>(track);
+		const SequenceTrackCurve<float>& curve_track = static_cast<const SequenceTrackCurve<float>&>(track);
 
 		ImGui::BeginTooltip();
 
 		ImGui::Text(formatTimeString(time).c_str());
-		ImGui::Text("%.3f", segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum);
+		ImGui::Text("%.3f", segment.getValue(x) * (curve_track.mMaximum - curve_track.mMinimum) + curve_track.mMinimum);
 
 		ImGui::EndTooltip();
 	}
@@ -1447,11 +1414,11 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 2);
 
-		const SequenceTrackCurve<glm::vec2>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec2>&>(track);
+		const SequenceTrackCurve<glm::vec2>& curve_track = static_cast<const SequenceTrackCurve<glm::vec2>&>(track);
 
 		ImGui::BeginTooltip();
 
-		glm::vec2 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+		glm::vec2 value = segment.getValue(x) * (curve_track.mMaximum - curve_track.mMinimum) + curve_track.mMinimum;
 
 		static std::string names[2] =
 		{
@@ -1476,11 +1443,11 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 3);
 
-		const SequenceTrackCurve<glm::vec3>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec3>&>(track);
+		const SequenceTrackCurve<glm::vec3>& curve_track = static_cast<const SequenceTrackCurve<glm::vec3>&>(track);
 
 		ImGui::BeginTooltip();
 
-		glm::vec3 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+		glm::vec3 value = segment.getValue(x) * (curve_track.mMaximum - curve_track.mMinimum) + curve_track.mMinimum;
 
 		static std::string names[3] =
 		{
@@ -1506,11 +1473,11 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 4);
 
-		const SequenceTrackCurve<glm::vec4>& curveTrack = static_cast<const SequenceTrackCurve<glm::vec4>&>(track);
+		const SequenceTrackCurve<glm::vec4>& curve_track = static_cast<const SequenceTrackCurve<glm::vec4>&>(track);
 
 		ImGui::BeginTooltip();
 
-		glm::vec4 value = segment.getValue(x) * (curveTrack.mMaximum - curveTrack.mMinimum) + curveTrack.mMinimum;
+		glm::vec4 value = segment.getValue(x) * (curve_track.mMaximum - curve_track.mMinimum) + curve_track.mMinimum;
 
 		static std::string names[4] =
 		{

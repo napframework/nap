@@ -174,12 +174,11 @@ namespace nap
 
 				ImGui::SetWindowPos(action->mWindowPos);
 
-				static std::unordered_map<rttr::type, void(*)(SequenceGUIActions::Action&)> sHandleMap
-					{
+				static std::unordered_map<rttr::type, void(*)(SequenceGUIActions::Action&)> s_handle_map{
 						{ RTTI_OF(std::string), [](SequenceGUIActions::Action& action)
 						{
-							 auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<std::string>>();
-							 std::string& message = static_cast<std::string&>(editAction->mValue);
+							 auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<std::string>>();
+							 std::string& message = static_cast<std::string&>(edit_action->mValue);
 
 							 int n = message.length();
 							 char buffer[256];
@@ -192,8 +191,8 @@ namespace nap
 						}},
 						{ RTTI_OF(int), [](SequenceGUIActions::Action& action)
 						{
-						  	auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<int>>();
-						  	int& value = static_cast<int&>(editAction->mValue);
+						  	auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<int>>();
+						  	int& value = static_cast<int&>(edit_action->mValue);
 
 						  	ImGui::InputInt("Value", &value);
 						}},
@@ -206,31 +205,31 @@ namespace nap
 						}},
 						{ RTTI_OF(glm::vec2), [](SequenceGUIActions::Action& action)
 						{
-							auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec2>>();
-						  	glm::vec2& value = static_cast<glm::vec2&>(editAction->mValue);
+							auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec2>>();
+						  	glm::vec2& value = static_cast<glm::vec2&>(edit_action->mValue);
 
 							ImGui::InputFloat2("Value", &value.x);
 						}},
 						{ RTTI_OF(glm::vec3), [](SequenceGUIActions::Action& action)
 						{
-							auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec3>>();
-						  	glm::vec3& value = static_cast<glm::vec3&>(editAction->mValue);
+							auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec3>>();
+						  	glm::vec3& value = static_cast<glm::vec3&>(edit_action->mValue);
 
 							ImGui::InputFloat3("Value", &value.x);
 						}},
 					};
 
-				auto it = sHandleMap.find(RTTI_OF(T));
-				assert(it!=sHandleMap.end()); // type not found
-				if( it != sHandleMap.end())
+				auto it = s_handle_map.find(RTTI_OF(T));
+				assert(it!= s_handle_map.end()); // type not found
+				if( it != s_handle_map.end())
 				{
 					it->second(*action);
 				}
 
 				if (ImGui::Button("Done"))
 				{
-					auto& eventController = getEditor().getController<SequenceControllerEvent>();
-					eventController.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
+					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
+					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 				}
 

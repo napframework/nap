@@ -33,13 +33,13 @@ namespace nap
 			sequence->mDuration = 1.0;
 
 			//
-			Sequence* returnPtr = sequence.get();
+			Sequence* return_ptr = sequence.get();
 
 			// move ownership
 			createdObjects.emplace_back(std::move(sequence));
 
 			// finally return
-			return returnPtr;
+			return return_ptr;
 		}
 	}
 }
