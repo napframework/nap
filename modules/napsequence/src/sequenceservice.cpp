@@ -57,38 +57,38 @@ namespace nap
 
 	void SequenceService::update(double deltaTime)
 	{
-		for(auto& input : mInputs)
+		for(auto& output : mOutputs)
 		{
-			input->update(deltaTime);
+			output->update(deltaTime);
 		}
 	}
 
 
-	void SequenceService::registerInput(SequencePlayerOutput& input)
+	void SequenceService::registerOutput(SequencePlayerOutput& input)
 	{
-		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
+		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
 		{
 		  return it == &input;
 		});
-		assert(found_it == mInputs.end()); // duplicate entry
+		assert(found_it == mOutputs.end()); // duplicate entry
 
-		if(found_it == mInputs.end())
+		if(found_it == mOutputs.end())
 		{
-			mInputs.emplace_back(&input);
+			mOutputs.emplace_back(&input);
 		}
 	}
 
 
-	void SequenceService::removeInput(SequencePlayerOutput& input)
+	void SequenceService::removeOutput(SequencePlayerOutput& input)
 	{
-		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
+		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
 		{
 		  return it == &input;
 		});
 
-		if(found_it != mInputs.end())
+		if(found_it != mOutputs.end())
 		{
-			mInputs.erase(found_it);
+			mOutputs.erase(found_it);
 		}
 	}
 }

@@ -61,18 +61,18 @@ namespace nap
 		virtual void update(double deltaTime) override;
 	private:
 		/**
-		 * registers an input
-		 * @param input reference to input
+		 * registers an output
+		 * @param input reference to output
 		 */
-		void registerInput(SequencePlayerOutput& input);
+		void registerOutput(SequencePlayerOutput& output);
 
 		/**
 		 * removes an input
 		 * @param input reference to input
 		 */
-		void removeInput(SequencePlayerOutput& input);
+		void removeOutput(SequencePlayerOutput& output);
 
 		//
-		std::vector<SequencePlayerOutput*> mInputs;
+		std::vector<SequencePlayerOutput*> mOutputs;
 	};
 }

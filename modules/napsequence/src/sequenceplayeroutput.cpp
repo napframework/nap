@@ -15,7 +15,7 @@ namespace  nap
 
 	bool SequencePlayerOutput::init(utility::ErrorState& errorState)
 	{
-		mService->registerInput(*this);
+		mService->registerOutput(*this);
 
 		return true;
 	}
@@ -23,6 +23,6 @@ namespace  nap
 
 	void SequencePlayerOutput::onDestroy()
 	{
-		mService->removeInput(*this);
+		mService->removeOutput(*this);
 	}
 }
