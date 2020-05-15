@@ -218,7 +218,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 windowSize, bool sync, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get properties of surface, necessary for creation of swap-chain
 		VkSurfaceCapabilitiesKHR surface_properties;
@@ -226,7 +226,7 @@ namespace nap
 			return false;
 
 		// Get the image presentation mode (synced, immediate etc.)
-		VkPresentModeKHR presentation_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+		VkPresentModeKHR presentation_mode = sync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 		if (!getPresentationMode(surface, physicalDevice, presentation_mode, errorState))
 			return false;
 
@@ -601,7 +601,7 @@ namespace nap
 	bool GLWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
 		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
+		if (!createSwapChain(getSize(), mSync, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -684,14 +684,21 @@ namespace nap
 		if (mWindow == nullptr)
 			return false;
 
+		// Set size and store for future reference
 		setSize(glm::vec2(settings.width, settings.height));
 		mPreviousWindowSize = glm::ivec2(settings.width, settings.height);
 
+		// Store v-sync option
+		mSync = settings.sync;
+
+		// acquire handle to physical device
 		VkPhysicalDevice physicalDevice = renderService.getPhysicalDevice();
 
+		// Create render surface for window
 		if (!createSurface(mWindow, renderService.getVulkanInstance(), physicalDevice, renderService.getGraphicsQueueIndex(), mSurface, errorState))
 			return false;
 
+		// Create swapchain and associated resources
 		if (!createSwapChainResources(errorState))
 			return false;
 

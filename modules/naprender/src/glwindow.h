@@ -190,6 +190,7 @@ namespace nap
 		VkImageView										mDepthImageView = nullptr;
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
+		bool											mSync = false;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 
 		/**
