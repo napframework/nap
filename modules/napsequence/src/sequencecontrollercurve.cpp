@@ -640,7 +640,7 @@ namespace nap
 		float time,
 		float value)
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, const int, float, float)> changeCurvePointMap
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, const int, float, float)> change_curve_point_map
 		{
 			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurvePoint<float> },
 			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurvePoint<glm::vec2> },
@@ -656,9 +656,9 @@ namespace nap
 
 			if (segment != nullptr)
 			{
-			  auto it = changeCurvePointMap.find(segment->get_type());
-			  assert(it != changeCurvePointMap.end()); // type not found
-			  if (it != changeCurvePointMap.end())
+			  auto it = change_curve_point_map.find(segment->get_type());
+			  assert(it != change_curve_point_map.end()); // type not found
+			  if (it != change_curve_point_map.end())
 			  {
 				  (*this.*it->second)(*segment, pointIndex, curveIndex, time, value);
 			  }
@@ -690,7 +690,7 @@ namespace nap
 	{
 		//
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
-												  SequenceCurveEnums::TanPointTypes, float, float)> changeCurvePointMap
+												  SequenceCurveEnums::TanPointTypes, float, float)> change_curve_point_map
 		{
 			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
 			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },
@@ -706,10 +706,11 @@ namespace nap
 
 			if (segment != nullptr)
 			{
-				auto it = changeCurvePointMap.find(segment->get_type());
-				assert(it != changeCurvePointMap.end()); // type not found
-				if (it != changeCurvePointMap.end())
+				auto it = change_curve_point_map.find(segment->get_type());
+				assert(it != change_curve_point_map.end()); // type not found
+				if (it != change_curve_point_map.end())
 				{
+					// call appropriate function
 					(*this.*it->second)(*segment, trackID, pointIndex, curveIndex, tanType, time, value);
 				}
 			}

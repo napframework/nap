@@ -112,6 +112,9 @@ namespace nap
 
 	bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
 	{
+		//
+		auto lock = std::unique_lock<std::mutex>(mMutex);
+
 		// Ensure the presets directory exists
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
@@ -138,6 +141,7 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
+		//
 		auto lock = std::unique_lock<std::mutex>(mMutex);
 
 		//
@@ -221,6 +225,7 @@ namespace nap
 		return *mSequence;
 	}
 
+
 	const Sequence& SequencePlayer::getSequenceConst() const
 	{
 		return *mSequence;
@@ -288,7 +293,7 @@ namespace nap
 	void SequencePlayer::onUpdate()
 	{
 		// Compute sleep time in microseconds 
-		float sleep_time_microf = 000.0f / static_cast<float>(mFrequency);
+		float sleep_time_microf = 1000.0f / static_cast<float>(mFrequency);
 		long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
 
 		while (mUpdateThreadRunning)

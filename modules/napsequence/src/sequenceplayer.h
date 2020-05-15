@@ -18,12 +18,10 @@ namespace nap
 	class SequenceService;
 
 	/**
-	 * SequencePlayer
 	 * The sequence player is responsible for loading / playing and saving a sequence
 	 * The player dispatches a thread which reads the sequence. Actions for each track of the sequence are handle by SequencePlayerAdapters
 	 * A Sequence can only be edited by a derived class from SequenceController
 	 * Sequence Player owns all Sequence objects 
-	 * GUI can be linked to a SequencePlayer ( see SequencePlayerGUI )
 	 */
 	class NAPAPI SequencePlayer : public Device
 	{
@@ -38,7 +36,7 @@ namespace nap
 		SequencePlayer();
 
 		/**
-		 * evaluates the data of the player. It loads the linked default sequence. 
+		 * Evaluates the data of the player. It loads the linked default sequence. 
 		 * Upon failure of loading show, it creates a new default ( empty ) sequence
 		 *
 		 * @param errorState contains information about eventual failure 
@@ -221,6 +219,4 @@ namespace nap
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
 	};
-
-	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;
 }
