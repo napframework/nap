@@ -50,11 +50,6 @@ namespace nap
 		GLWindow* getWindow() const												{ return mWindow.get(); }
 
 		/**
-		 * Swaps window buffers
-		 */
-		void swap() const														{ mWindow->swap(); }
-
-		/**
 		 * Makes this window active, calls activate afterwards
 		 */
 		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
@@ -184,6 +179,7 @@ namespace nap
 
 	private:
 		void handleEvent(const Event& event);
+		void swap() const						{ mWindow->swap(); }
 
 	public:
 		int										mWidth			= 512;							///< Property: 'Width' of the window in pixels
