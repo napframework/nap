@@ -4,6 +4,7 @@
 #include "sequence.h"
 
 #include <nap/core.h>
+#include <functional>
 
 namespace nap
 {
@@ -114,10 +115,10 @@ namespace nap
 		void updateTracks();
 
 		/**
-		 * locks player thread
-		 * creates lock on mMutex
+		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe
+		 * @param action the edit action
 		 */
-		std::unique_lock<std::mutex> lock() { return mPlayer.lock(); }
+		void performEditAction(std::function<void()> action);
 
 		// objects owned by sequence player
 		std::vector<std::unique_ptr<rtti::Object>>&	getPlayerOwnedObjects(){ return mPlayer.mReadObjects; };
@@ -127,5 +128,8 @@ namespace nap
 
 		// reference to player
 		SequencePlayer& mPlayer;
+
+		// used to make sure we don't have two edit actions at the "same" time
+		bool mPerformingEditAction = false;
 	};
 }

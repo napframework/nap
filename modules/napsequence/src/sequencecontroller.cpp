@@ -124,45 +124,47 @@ namespace nap
 
 	void SequenceController::assignNewObjectID(const std::string& trackID, const std::string& objectID)
 	{
-		std::unique_lock<std::mutex> l = mPlayer.lock();
-
-		SequenceTrack* track = findTrack(trackID);
-		assert(track != nullptr); // track not found
-
-		if (track != nullptr)
+		performEditAction([this, trackID, objectID]()
 		{
-			track->mAssignedOutputID = objectID;
-		}
+			SequenceTrack* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
 
-		mPlayer.createAdapters(l);
+			if (track != nullptr)
+			{
+				track->mAssignedOutputID = objectID;
+			}
+
+			mPlayer.createAdapters();
+		});
 	}
 
 
 	void SequenceController::deleteTrack(const std::string& deleteTrackID)
 	{
-		auto lock = mPlayer.lock();
-
-		//
-		Sequence& sequence = mPlayer.getSequence();
-
-		int index = 0;
-		for (const auto& track : sequence.mTracks)
+		performEditAction([this, deleteTrackID]()
 		{
-			if (track->mID == deleteTrackID)
+			//
+			Sequence& sequence = mPlayer.getSequence();
+
+			int index = 0;
+			for (const auto& track : sequence.mTracks)
 			{
-				if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
+				if (track->mID == deleteTrackID)
 				{
-					mPlayer.mAdapters.erase(track->mID);
+				  if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
+				  {
+					  mPlayer.mAdapters.erase(track->mID);
+				  }
+
+				  sequence.mTracks.erase(sequence.mTracks.begin() + index);
+
+				  deleteObjectFromSequencePlayer(deleteTrackID);
+
+				  break;
 				}
-
-				sequence.mTracks.erase(sequence.mTracks.begin() + index);
-
-				deleteObjectFromSequencePlayer(deleteTrackID);
-
-				break;
+			  index++;
 			}
-			index++;
-		}
+		});
 	}
 
 
@@ -180,6 +182,18 @@ namespace nap
 				mPlayer.mReadObjects.erase(mPlayer.mReadObjects.begin() + i);
 				break;
 			}
+		}
+	}
+
+
+	void SequenceController::performEditAction(std::function<void()> action)
+	{
+		assert(!mPerformingEditAction); // already performing action, cannot perform an action INSIDE another action
+		if(!mPerformingEditAction)
+		{
+			mPerformingEditAction = true;
+			mPlayer.performEditAction(action);
+			mPerformingEditAction = false;
 		}
 	}
 }

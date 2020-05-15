@@ -346,8 +346,10 @@ namespace nap
 		// segment handler
 		if ((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 },
-					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 })) ||
-			( mState.mAction->isAction<DraggingSegment>() &&  mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID) )
+					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 })) &&
+			( mState.mAction->isAction<None>() || ( mState.mAction->isAction<HoveringSegment>() && mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID))
+			||
+			( mState.mAction->isAction<DraggingSegment>() &&  mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID))
 		{
 			bool isAlreadyHovering = false;
 			if (mState.mAction->isAction<HoveringSegment>())

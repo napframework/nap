@@ -13,25 +13,25 @@ namespace nap
 
 	void SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float amount)
 	{
-		// pause player thread
-		std::unique_lock<std::mutex> l = lock();
-
-		auto* segment = findSegment(trackID, segmentID);
-		assert(segment != nullptr); // segment not found
-
-		if (segment != nullptr)
+		performEditAction([this, trackID, segmentID, amount]()
 		{
-			assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase))); // type mismatch
+			auto* segment = findSegment(trackID, segmentID);
+			assert(segment != nullptr); // segment not found
 
-			if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
+			if (segment != nullptr)
 			{
-				auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
-				segment_event.mStartTime += amount;
+				assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase))); // type mismatch
+
+				if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
+				{
+					auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
+					segment_event.mStartTime += amount;
+				}
+
 			}
 
-		}
-
-		updateTracks();
+			updateTracks();
+		});
 	}
 
 
@@ -43,51 +43,52 @@ namespace nap
 
 	void SequenceControllerEvent::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
-		// pause player thread
-		std::unique_lock<std::mutex> l = lock();
-
-		//
-		Sequence& sequence = getSequence();
-
-		//
-		auto* track = findTrack(trackID);
-		assert(track != nullptr); // track not found
-
-		if (track != nullptr)
+		performEditAction([this, trackID, segmentID]()
 		{
-			int segment_index = 0;
-			for (auto& segment : track->mSegments)
+			//
+			Sequence& sequence = getSequence();
+
+			//
+			auto* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
+
+			if (track != nullptr)
 			{
-				if (segment->mID == segmentID)
+				int segment_index = 0;
+				for (auto& segment : track->mSegments)
 				{
-					// erase it from the list
-					track->mSegments.erase(track->mSegments.begin() + segment_index);
+					if (segment->mID == segmentID)
+					{
+						// erase it from the list
+						track->mSegments.erase(track->mSegments.begin() + segment_index);
 
-					deleteObjectFromSequencePlayer(segmentID);
+						deleteObjectFromSequencePlayer(segmentID);
 
-					break;
+						break;
+					}
+
+					updateTracks();
+					segment_index++;
 				}
-
-				updateTracks();
-				segment_index++;
 			}
-		}
+		});
 	}
 
 
 	void SequenceControllerEvent::addNewEventTrack()
 	{
-		std::unique_lock<std::mutex> l = lock();
+		performEditAction([this]()
+		{
+			// create sequence track
+			std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
+			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-		// create sequence track
-		std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
-		sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			//
+			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
 
-		//
-		getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
-
-		// move ownership of unique ptrs
-		getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
+			// move ownership of unique ptrs
+			getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
+		});
 	}
 
 

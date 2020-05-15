@@ -144,10 +144,9 @@ namespace nap
 		float					mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
 	private:
-		/**
-		 * creates lock on mMutex
-		 */
-		std::unique_lock<std::mutex> lock();
+		void beginEditAction();
+
+		void endEditAction();
 
 		/**
 		 * returns reference to sequence
@@ -159,9 +158,8 @@ namespace nap
 		 * creates an adapter with string objectID for track with trackid. This searches the list of appropriate adapter types for the corresponding track id and creates it if available
 		 * @param objectID the id of the adapter object
 		 * @param trackID the id of the track
-		 * @param player lock, the player needs to be locked, to ensure this, pass a unique lock
 		 */
-		bool createAdapter(const std::string& objectID, const std::string& trackID, const std::unique_lock<std::mutex>& playerLock);
+		bool createAdapter(const std::string& objectID, const std::string& trackID);
 
 		/**
 		 * onUpdate
@@ -178,21 +176,25 @@ namespace nap
 		/**
 		 * creates adapters for all assigned adapter ids for tracks
 		 * this function gets called by the player when player starts playing
-		 * @param lock reference to locked mutex to ensure thread safety with player thread
 		 */
-		void createAdapters(std::unique_lock<std::mutex>& lock);
+		void createAdapters();
 
 		/**
 		 * destroys all created adapters, gets called on stop
-		 * @param lock reference to locked mutex to ensure thread safety with player thread
 		 */
-		void destroyAdapters(std::unique_lock<std::mutex>& lock);
+		void destroyAdapters();
+
+		/**
+		 * performs given action when mutex is unlocked, makes sure edit action on sequence are thread safe
+		 * @param action the edit action
+		 */
+		void performEditAction(std::function<void()> action);
 
 		// the update task
 		std::future<void>	mUpdateTask;
 
 		// mutex
-		std::mutex			mLock;
+		std::mutex mMutex;
 
 		// raw pointer to loaded sequence
 		Sequence* mSequence = nullptr;

@@ -81,39 +81,37 @@ namespace nap
 
 	void SequencePlayer::setIsPlaying(bool isPlaying)
 	{
-		std::unique_lock<std::mutex> l = lock();
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 
 		bool was_playing = mIsPlaying;
 
 		if (isPlaying)
 		{
 			if( !was_playing )
-				createAdapters(l);
+				createAdapters();
 
 			mIsPlaying = true;
 			mIsPaused = false;
 		}
 		else
 		{
-			destroyAdapters(l);
+			destroyAdapters();
 
 			mIsPlaying = false;
-			mIsPaused = false;
+			mIsPaused  = false;
 		}
 	}
 
 
 	void SequencePlayer::setIsPaused(bool isPaused)
 	{
-		std::unique_lock<std::mutex> l = lock();
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mIsPaused = isPaused;
 	}
 
 
 	bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
 	{
-		std::unique_lock<std::mutex> l = lock();
-
 		// Ensure the presets directory exists
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
@@ -140,7 +138,7 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
-		std::unique_lock<std::mutex> l = lock();
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 
 		//
 		rtti::DeserializeResult result;
@@ -201,18 +199,18 @@ namespace nap
 	}
 
 
-	void SequencePlayer::createAdapters(std::unique_lock<std::mutex>& lock)
+	void SequencePlayer::createAdapters()
 	{
 		// create adapters
 		mAdapters.clear();
 		for (auto& track : mSequence->mTracks)
 		{
-			createAdapter(track->mAssignedOutputID, track->mID, lock);
+			createAdapter(track->mAssignedOutputID, track->mID);
 		}
 	}
 
 
-	void SequencePlayer::destroyAdapters(std::unique_lock<std::mutex>& lock)
+	void SequencePlayer::destroyAdapters()
 	{
 		mAdapters.clear();
 	}
@@ -237,8 +235,7 @@ namespace nap
 
 	void SequencePlayer::setPlayerTime(double time)
 	{
-		std::unique_lock<std::mutex> l = lock();
-
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mTime = time;
 		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
 	}
@@ -246,8 +243,7 @@ namespace nap
 
 	void SequencePlayer::setPlaybackSpeed(float speed)
 	{
-		std::unique_lock<std::mutex> l = lock();
-
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mSpeed = speed;
 	}
 
@@ -272,8 +268,7 @@ namespace nap
 
 	void SequencePlayer::setIsLooping(bool isLooping)
 	{
-		std::unique_lock<std::mutex> l = lock();
-
+		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mIsLooping = isLooping;
 	}
 
@@ -298,16 +293,15 @@ namespace nap
 
 		while (mUpdateThreadRunning)
 		{
-			// stack push for lock
+			// advance time
+			std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+			std::chrono::nanoseconds elapsed = now - mBefore;
+			float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
+			mBefore = now;
+
 			{
 				// lock
-				std::unique_lock<std::mutex> l = lock();
-
-				// advance time
-				std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-				std::chrono::nanoseconds elapsed = now - mBefore;
-				float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
-				mBefore = now;
+				auto lock = std::unique_lock<std::mutex>(mMutex);
 
 				//
 				if (mIsPlaying)
@@ -345,7 +339,7 @@ namespace nap
 	}
 
 
-	bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID, const std::unique_lock<std::mutex>& l)
+	bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID)
 	{
 		// bail if empty output id
 		if (inputID == "")
@@ -405,8 +399,9 @@ namespace nap
 	}
 
 
-	std::unique_lock<std::mutex> SequencePlayer::lock()
+	void SequencePlayer::performEditAction(std::function<void()> action)
 	{
-		return std::unique_lock<std::mutex>(mLock);
+		auto lock = std::unique_lock<std::mutex>(mMutex);
+		action();
 	}
 }

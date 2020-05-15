@@ -638,8 +638,8 @@ namespace nap
 	{
 		// segment handler
 		if (mState.mIsWindowFocused &&
-			(!mState.mAction->isAction<DraggingSegment>() && !mState.mAction->isAction<DraggingSegmentValue>() && !mState.mAction->isAction<HoveringSegmentValue>())
-			&& ImGui::IsMouseHoveringRect(
+			(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) &&
+			ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
 					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 }))  // bottom right 
 		{
@@ -1173,21 +1173,25 @@ namespace nap
 				for (int v = 0; v < segment.mCurves.size(); v++)
 				{
 					std::vector<ImVec2> curve;
-					for (int i = 0; i <= point_num; i++)
+					if(point_num>0)
 					{
-						float value = 1.0f - segment.mCurves[v]->evaluate((float)i / point_num);
-
-						ImVec2 point =
-							{
-								trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / point_num),
-								trackTopLeft.y + value * mState.mTrackHeight
-							};
-
-						if( ImGui::IsRectVisible(point, { point.x + 1, point.y + 1 }) )
+						for (int i = 0; i <= point_num; i++)
 						{
-							curve.emplace_back(point);
+							float value = 1.0f - segment.mCurves[v]->evaluate((float)i / point_num);
+
+							ImVec2 point =
+								{
+									trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / point_num),
+									trackTopLeft.y + value * mState.mTrackHeight
+								};
+
+							if( ImGui::IsRectVisible(point, { point.x + 1, point.y + 1 }) )
+							{
+								curve.emplace_back(point);
+							}
 						}
 					}
+
 					curves.emplace_back(curve);
 				}
 				mCurveCache.emplace(segment.mID, curves);
