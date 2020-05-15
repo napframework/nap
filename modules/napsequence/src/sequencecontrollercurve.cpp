@@ -3,6 +3,7 @@
 #include "sequenceutils.h"
 #include "sequencetrackcurve.h"
 #include "sequenceeditor.h"
+#include "sequencetracksegmentcurve.h"
 
 // Nap Includes
 #include <mathutils.h>
@@ -802,6 +803,38 @@ namespace nap
 	}
 
 
+	template<>
+	void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum)
+	{
+		performEditAction([this, trackID, minimum, maximum]()
+		{
+			SequenceTrack* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
+
+			SequenceTrackCurveFloat* track_curve = static_cast<SequenceTrackCurveFloat*>(track);
+
+			for(auto& segment : track_curve->mSegments)
+			{
+				SequenceTrackSegmentCurveFloat& curve_segment = static_cast<SequenceTrackSegmentCurveFloat&>(*segment.get());
+				int curve_count = 0;
+				for(auto& curve : curve_segment.mCurves)
+				{
+					for(auto& point : curve->mPoints)
+					{
+						float value = point.mPos.mValue * ( track_curve->mMaximum - track_curve->mMinimum) + track_curve->mMinimum;
+
+						point.mPos.mValue = ( value - minimum ) / ( maximum - minimum ) ;
+						point.mPos.mValue = math::clamp<float>(point.mPos.mValue, 0, 1);
+					}
+					curve_count++;
+				}
+			}
+
+			track_curve->mMinimum = minimum;
+			track_curve->mMaximum = maximum;
+		});
+	}
+
 	template<typename T>
 	void SequenceControllerCurve::changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum)
 	{
@@ -811,6 +844,24 @@ namespace nap
 			assert(track != nullptr); // track not found
 
 			SequenceTrackCurve<T>* track_curve = static_cast<SequenceTrackCurve<T>*>(track);
+
+			for(auto& segment : track_curve->mSegments)
+			{
+				SequenceTrackSegmentCurve<T>& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+				int curve_count = 0;
+				for(auto& curve : curve_segment.mCurves)
+				{
+					for(auto& point : curve->mPoints)
+					{
+						float value = point.mPos.mValue * ( track_curve->mMaximum[curve_count] - track_curve->mMinimum[curve_count] ) + track_curve->mMinimum[curve_count] ;
+
+						point.mPos.mValue = ( value - minimum[curve_count] ) / ( maximum[curve_count] - minimum[curve_count] ) ;
+						point.mPos.mValue = math::clamp<float>(point.mPos.mValue, 0, 1);
+					}
+					curve_count++;
+				}
+			}
+
 			track_curve->mMinimum = minimum;
 			track_curve->mMaximum = maximum;
 		});

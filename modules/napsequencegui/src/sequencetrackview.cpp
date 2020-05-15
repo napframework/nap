@@ -235,9 +235,9 @@ namespace nap
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
-			for (int i = 0; i < steps; i++)
+			for (int i = 1; i < steps; i++)
 			{
-				draw_list->AddLine({ trackTopLeft.x + i * timestamp_interval, trackTopLeft.y }, { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y + mState.mTrackHeight}, guicolors::darkGrey);
+				draw_list->AddLine({ trackTopLeft.x + i * timestamp_interval, trackTopLeft.y }, { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y + mState.mTrackHeight}, guicolors::darkerGrey);
 			}
 
 			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;

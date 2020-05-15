@@ -89,7 +89,7 @@ namespace nap
 	void SequenceCurveTrackView::showInspectorContent(const SequenceTrack &track)
 	{
 		// draw the assigned parameter
-		ImGui::Text("Assigned Parameter");
+		ImGui::Text("Assigned Output");
 
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
 		inspector_cursor_pos.x += 5;
@@ -1075,7 +1075,7 @@ namespace nap
 
 					ImGui::CloseCurrentPopup();
 				}
-
+				
 				if (ImGui::Button("Cancel"))
 				{
 					mState.mAction = createAction<None>();
@@ -1360,6 +1360,7 @@ namespace nap
 		{
 			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			mState.mDirty = true;
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -1371,6 +1372,7 @@ namespace nap
 		{
 			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			mState.mDirty = true;
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();

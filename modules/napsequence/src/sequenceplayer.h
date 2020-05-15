@@ -144,9 +144,6 @@ namespace nap
 		float					mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
 	private:
-		void beginEditAction();
-
-		void endEditAction();
 
 		/**
 		 * returns reference to sequence

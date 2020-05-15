@@ -107,6 +107,14 @@ namespace nap
 		// calc width of content in timeline window
 		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
 
+		//
+		ImVec2 windowSize = ImGui::GetWindowSize();
+		if( windowSize.x != mState.mWindowSize.x || windowSize.y != mState.mWindowSize.y )
+		{
+			mState.mDirty = true;
+			mState.mWindowSize = windowSize;
+		}
+
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution);
 

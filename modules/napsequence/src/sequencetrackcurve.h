@@ -36,8 +36,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		T mMaximum; ///< Property: 'Maximum' maximum value of track
-		T mMinimum; ///< Property: 'Minimum' minimum value of track
+		T mMaximum = T(1); ///< Property: 'Maximum' maximum value of track
+		T mMinimum = T(0); ///< Property: 'Minimum' minimum value of track
 	};
 
 	//////////////////////////////////////////////////////////////////////////

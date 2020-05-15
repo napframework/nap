@@ -11,6 +11,7 @@ namespace nap
 		const ImU32 white = 4288711819;
 		const ImU32 lightGrey = 4285750877;
 		const ImU32 darkGrey = 4285158482;
+		const ImU32 darkerGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(0.160784319f, 0.164705887f, 0.207843155f, 1));
 
 		const ImU32 curvecolors[4] =
 		{

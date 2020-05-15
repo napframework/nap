@@ -64,7 +64,7 @@ namespace nap
 	void SequenceEventTrackView::showInspectorContent(const SequenceTrack& track)
 	{
 		// draw the assigned receiver
-		ImGui::Text("Assigned Receivers");
+		ImGui::Text("Assigned Output");
 
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
 		inspector_cursor_pos.x += 5;
