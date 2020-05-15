@@ -11,8 +11,9 @@
 #include <color.h>
 #include <SDL_clipboard.h>
 #include <SDL_syswm.h>
-#include "SDL_mouse.h"
-#include "SDL_keyboard.h"
+#include <SDL_mouse.h> 
+#include <SDL_keyboard.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -1068,7 +1069,11 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		// Create new GUI frame
+		if (mUserWindow == nullptr)
+		{
+			nap::Logger::error("No GUI target window specified, make sure to call `selectWindow()` first");
+			return;
+		}
 		newFrame(*mUserWindow->getWindow());
 	};
 

@@ -14,6 +14,7 @@
 #include <imgui/imgui.h>
 #include <mathutils.h>
 #include <meshutils.h>
+#include <uniforminstances.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -49,6 +50,9 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mSphereEntity = scene->findEntity("Sphere");
 		mPlaneEntity = scene->findEntity("Plane");
+
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -79,20 +83,22 @@ namespace nap
 
 		// Find the camera location uniform in the material of the sphere
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = sphere_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		nap::UniformStructInstance* uniform_instance =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		UniformVec3Instance* cam_loc_uniform = uniform_instance->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
 
 		// Set it to the current camera location
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform.setValue(global_pos);
+		cam_loc_uniform->setValue(global_pos);
 
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformFloat& animator_uniform = plane_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformFloat>("animationValue");
+		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		UniformFloatInstance* animator_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 
 		// Set it to the current animation value of the sphere.
 		nap::AnimatorComponentInstance& animator_comp = mSphereEntity->getComponent<nap::AnimatorComponentInstance>();
-		animator_uniform.setValue(animator_comp.getCurveValue());
+		animator_uniform->setValue(animator_comp.getCurveValue());
 	}
 
 	
@@ -103,24 +109,27 @@ namespace nap
 	 */
 	void CurveballApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame. 
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		if (mRenderService->beginRendering(*mRenderWindow))
+		{
+			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
+			backbuffer.beginRendering();
+			
+			// Render all objects in the scene at once
+			// This includes the line + normals and the laser canvas
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Draw gui to screen
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-		// Render all objects in the scene at once
-		// This includes the line + normals and the laser canvas
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			backbuffer.endRendering();
 
-		// Draw gui to screen
-		mGuiService->draw();
+			mRenderService->endRendering();
+		}
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+		mRenderService->endFrame();
 	}
 	
 	

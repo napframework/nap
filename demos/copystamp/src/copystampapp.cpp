@@ -43,6 +43,7 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldEntity  = scene->findEntity("World");
 
+		// Tell the gui service to which window we are going to render
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;

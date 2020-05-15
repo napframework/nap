@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input
 in vec3 passUVs;						//< frag Uv's
@@ -13,9 +13,13 @@ struct PointLight
 	float 		mIntensity;
 };
 
-// uniform inputs
-uniform vec3 		inCameraPosition;		//< Camera World Space Position
-uniform PointLight	light;
+// Uniform inputs
+uniform UBO
+{
+	uniform vec3 		inCameraPosition;		//< Camera World Space Position
+	uniform PointLight	light;
+} ubo;
+
 
 // output
 out vec4 out_Color;
@@ -37,24 +41,24 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(light.mPosition - ws_position);
+	vec3 surfaceToLight = normalize(ubo.light.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(inCameraPosition - ws_position);
+	vec3 surfaceToCamera = normalize(ubo.inCameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * light.mIntensity;
+	vec3 diffuse = diffuseCoefficient * color * ubo.light.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * light.mIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * specularColor * ubo.light.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;
