@@ -10,7 +10,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * SequenceTrackSegment
 	 * Base class for track segments. Holds information about the start time of the segment in the track. And the duration.
 	 */
 	class NAPAPI SequenceTrackSegment : public Resource
@@ -19,7 +18,6 @@ namespace nap
 	public:
 		/**
 		 * init evaluates the data of the segment
-		 *
 		 * @param errorState contains information about eventual failure of evaluation
 		 * @return true if data valid
 		 */

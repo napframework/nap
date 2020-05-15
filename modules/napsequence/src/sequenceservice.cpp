@@ -6,9 +6,9 @@
 #include <utility/stringutils.h>
 
 // Local Includes
-#include "sequenceservice.h"
-#include "sequenceeventreceiver.h"
 #include "sequenceplayeradapter.h"
+#include "sequenceplayeroutput.h"
+#include "sequenceservice.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -16,79 +16,79 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceService*)>& getObjectCreators()
+	{
+		static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceService* service)> vector;
+		return vector;
+	}
+
+
+	bool SequenceService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService* service))
+	{
+		getObjectCreators().emplace_back(objectCreator);
+		return true;
+	}
+
+
 	SequenceService::SequenceService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
 	}
 
+
 	SequenceService::~SequenceService()
 	{ }
 
+
 	void SequenceService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<SequenceReceiverObjectCreator>(*this));
-		factory.addObjectCreator(std::make_unique<SequencePlayerObjectCreator>(*this));
+		for(auto& objectCreator : getObjectCreators())
+		{
+			factory.addObjectCreator(objectCreator(this));
+		}
 	}
+
 
 	bool SequenceService::init(nap::utility::ErrorState& errorState)
 	{
 		return true;
 	}
 
+
 	void SequenceService::update(double deltaTime)
 	{
-		std::queue<SequenceEventPtr> events;
-
-		// Forward every event to every input component of interest
-		for (auto& receiver : mEventReceivers)
+		for(auto& output : mOutputs)
 		{
-			receiver->consumeEvents(events);
-
-			// Keep forwarding events until the queue runs out
-			while (!(events.empty()))
-			{
-				SequenceEvent& sequence_event = *(events.front());
-				receiver->mSignal.trigger(sequence_event);
-
-				events.pop();
-			}
-		}
-
-		//
-		for (auto& setter : mParameterSetters)
-		{
-			setter->setValue();
+			output->update(deltaTime);
 		}
 	}
 
-	void SequenceService::registerEventReceiver(SequenceEventReceiver& receiver)
-	{
-		mEventReceivers.emplace_back(&receiver);
-	}
 
-
-	void SequenceService::removeEventReceiver(SequenceEventReceiver& receiver)
+	void SequenceService::registerOutput(SequencePlayerOutput& input)
 	{
-		auto found_it = std::find_if(mEventReceivers.begin(), mEventReceivers.end(), [&](const auto& it)
+		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
 		{
-			return it == &receiver;
+		  return it == &input;
 		});
-		assert(found_it != mEventReceivers.end());
-		mEventReceivers.erase(found_it);
-	}
+		assert(found_it == mOutputs.end()); // duplicate entry
 
-	void SequenceService::registerParameterSetter(SequencePlayerParameterSetterBase& setter)
-	{
-		mParameterSetters.emplace_back(&setter);
-	}
-
-	void SequenceService::removeParameterSetter(SequencePlayerParameterSetterBase& setter)
-	{
-		auto found_it = std::find_if(mParameterSetters.begin(), mParameterSetters.end(), [&](const auto& it)
+		if(found_it == mOutputs.end())
 		{
-			return it == &setter;
+			mOutputs.emplace_back(&input);
+		}
+	}
+
+
+	void SequenceService::removeOutput(SequencePlayerOutput& input)
+	{
+		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
+		{
+		  return it == &input;
 		});
-		assert(found_it != mParameterSetters.end());
-		mParameterSetters.erase(found_it);
+
+		if(found_it != mOutputs.end())
+		{
+			mOutputs.erase(found_it);
+		}
 	}
 }

@@ -1,0 +1,25 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Sequence",
+            "mID": "Generated",
+            "Sequence Tracks": [
+                {
+                    "Type": "nap::SequenceTrackEvent",
+                    "mID": "Generated",
+                    "Segments": [
+                        {
+                            "Type": "nap::SequenceTrackSegmentEventString",
+                            "mID": "Generated_2",
+                            "Start Time": 0.3199999928474426,
+                            "Duration": 0.0,
+                            "Value": "<zx<zx"
+                        }
+                    ],
+                    "Parameter ID": ""
+                }
+            ],
+            "Duration": 0.3199999928474426
+        }
+    ]
+}

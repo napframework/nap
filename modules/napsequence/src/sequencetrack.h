@@ -1,130 +1,23 @@
 #pragma once
 
-// internal includes
-#include "sequencetracksegmentcurve.h"
+// local includes
+#include "sequencetracksegment.h"
 
 // external includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <glm/glm.hpp>
-#include <sequencetracktypes.h>
 
 namespace nap
 {
 	/**
-	 * Holds a collection of track segments
-	 */
+	* Holds a collection of track segments
+	*/
 	class NAPAPI SequenceTrack : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
-
-		/*
-		 * @return type of this sequence track
-		 */
-		virtual SequenceTrackTypes::Types getTrackType() const = 0;
-
-		std::string mAssignedObjectIDs;								///< Property: 'Assigned Object ID' Assigned object to this track id
+		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
 	};
-
-
-	/**
-	 * Base class of all curve tracks
-	 */
-	class NAPAPI BaseSequenceTrackCurve : public SequenceTrack
-	{
-		RTTI_ENABLE(SequenceTrack)
-	};
-
-
-	/**
-	 * Represents a track that holds a collection of segments, where T is the data represented by the track.
-	 * There are currently four supported SequenceTrackCurve types ( float, vec2, vec3, vec4 )
-	 */
-	template<typename T>
-	class SequenceTrackCurve : public BaseSequenceTrackCurve
-	{
-		RTTI_ENABLE(BaseSequenceTrackCurve)
-	public:
-		/**
-		 * initializes the curve segment and validates its data.
-		 * @param errorState contains any errors
-		 * @return returns true on successful initialization
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * @return type of track
-		 */
-		virtual SequenceTrackTypes::Types getTrackType() const override;
-
-		T mMaximum; ///< Property: 'Maximum' maximum value of track
-		T mMinimum; ///< Property: 'Minimum' minimum value of track
-	};
-
-
-	/**
-	 * Event track, holds a collection of SequenceTrackSegmentEvents
-	 */
-	class NAPAPI SequenceTrackEvent : public SequenceTrack
-	{
-		RTTI_ENABLE(SequenceTrack)
-	public:
-		virtual SequenceTrackTypes::Types getTrackType() const override		{ return SequenceTrackTypes::EVENT; }
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Definitions of all supported Sequence Curve Tracks
-	//////////////////////////////////////////////////////////////////////////
-
-	using SequenceTrackCurveFloat	= SequenceTrackCurve<float>;
-	using SequenceTrackCurveVec2	= SequenceTrackCurve<glm::vec2>;
-	using SequenceTrackCurveVec3	= SequenceTrackCurve<glm::vec3>;
-	using SequenceTrackCurveVec4	= SequenceTrackCurve<glm::vec4>;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	bool nap::SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
-	{
-		// Initialize base class
-		if (!BaseSequenceTrackCurve::init(errorState))
-			return false;
-
-		// Validate type of segment, needs to be of same type as this class!
-		for (const auto& segment : mSegments)
-		{
-			if (!errorState.check(segment->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(),
-				"segment not derived from correct type, expected: %s, got: %s",
-				get_type().get_name().to_string().c_str(),
-				segment->get_type().get_name().to_string().c_str()))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Forward Declarations
-	//////////////////////////////////////////////////////////////////////////
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveFloat::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec2::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec3::getTrackType() const;
-
-	template<>
-	NAPAPI SequenceTrackTypes::Types nap::SequenceTrackCurveVec4::getTrackType() const;
 }
