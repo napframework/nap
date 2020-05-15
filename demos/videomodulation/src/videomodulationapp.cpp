@@ -112,7 +112,7 @@ namespace nap
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 
 		// Video render target
-		if (mRenderService->beginHeadlessRendering())
+		if (mRenderService->beginHeadlessRecording())
 		{
 			// Get objects to render
 			std::vector<RenderableComponentInstance*> render_objects;
@@ -129,11 +129,11 @@ namespace nap
 				to_tex_comp.draw();
 			}
 
-			mRenderService->endHeadlessRendering(); 
+			mRenderService->endHeadlessRecording(); 
 		}
 
 		// Render everything to screen
-		if (mRenderService->beginRendering(*mRenderWindow))
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Clear target
 			BackbufferRenderTarget& render_target = mRenderWindow->getBackbuffer();
@@ -166,7 +166,7 @@ namespace nap
 
 			render_target.endRendering();
 
-			mRenderService->endRendering();
+			mRenderService->endRecording();
 		}
 
 		mRenderService->endFrame();

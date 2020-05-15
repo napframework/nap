@@ -1210,7 +1210,7 @@ namespace nap
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
 	}
 
-	bool RenderService::beginHeadlessRendering()
+	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
 
@@ -1226,7 +1226,7 @@ namespace nap
 		return true;
 	}
 
-	void RenderService::endHeadlessRendering()
+	void RenderService::endHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 
@@ -1244,7 +1244,7 @@ namespace nap
 		mCurrentCommandBuffer = nullptr;
 	}
 
-	bool RenderService::beginRendering(RenderWindow& renderWindow)
+	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
 		assert(mCurrentCommandBuffer == nullptr);
 		assert(mCurrentRenderWindow == nullptr);
@@ -1254,11 +1254,10 @@ namespace nap
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
-
 		return true;
 	}
 
-	void RenderService::endRendering()
+	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 		assert(mCurrentRenderWindow != nullptr);

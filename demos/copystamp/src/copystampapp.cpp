@@ -83,12 +83,13 @@ namespace nap
 	 */
 	void CopystampApp::render()
 	{
-		// Activate current window for drawing
-
+		// Tell the render service we want to start rendering (recording) a new frame
 		mRenderService->beginFrame();
 
-		if (mRenderService->beginRendering(*mRenderWindow))
+		// Start recording render steps for render window target
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
+			// Start render pass
 			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 			backbuffer.beginRendering();
 
@@ -111,11 +112,14 @@ namespace nap
 			// Draw gui
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
+			// End render pass
 			backbuffer.endRendering();
 
-			mRenderService->endRendering();
+			// End recording phase
+			mRenderService->endRecording();
 		}
 
+		// submit the queue to GPU for render
 		mRenderService->endFrame();
 	}
 	

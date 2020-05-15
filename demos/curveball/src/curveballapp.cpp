@@ -112,7 +112,7 @@ namespace nap
 		// Signal the beginning of a new frame. 
 		mRenderService->beginFrame();
 
-		if (mRenderService->beginRendering(*mRenderWindow))
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 			backbuffer.beginRendering();
@@ -126,7 +126,7 @@ namespace nap
 
 			backbuffer.endRendering();
 
-			mRenderService->endRendering();
+			mRenderService->endRecording();
 		}
 
 		mRenderService->endFrame();

@@ -96,11 +96,11 @@ namespace nap
 		void beginFrame();
 		void endFrame();
 
-		bool beginHeadlessRendering();
-		void endHeadlessRendering();
+		bool beginHeadlessRecording();
+		void endHeadlessRecording();
 
-		bool beginRendering(RenderWindow& renderWindow);
-		void endRendering();
+		bool beginRecording(RenderWindow& renderWindow);
+		void endRecording();
 
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
