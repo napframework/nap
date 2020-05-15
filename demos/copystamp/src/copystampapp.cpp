@@ -83,16 +83,15 @@ namespace nap
 	 */
 	void CopystampApp::render()
 	{
-		// Tell the render service we want to start rendering (recording) a new frame
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Start recording render steps for render window target
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Start render pass
-			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-			backbuffer.beginRendering();
-
 			// Get perspective camera
 			PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
@@ -105,6 +104,9 @@ namespace nap
 			UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 			cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
+			// Begin render pass
+			mRenderWindow->beginRendering();
+
 			// Render all copied meshes
 			std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
@@ -113,7 +115,7 @@ namespace nap
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
 			// End render pass
-			backbuffer.endRendering();
+			mRenderWindow->endRendering();
 
 			// End recording phase
 			mRenderService->endRecording();

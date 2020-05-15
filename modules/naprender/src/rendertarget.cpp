@@ -201,6 +201,4 @@ namespace nap
 	{
 		return mDepthTexture->getVulkanFormat();
 	}
-
-
 } // nap

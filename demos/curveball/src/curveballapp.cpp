@@ -109,14 +109,21 @@ namespace nap
 	 */
 	void CurveballApp::render()
 	{
-		// Signal the beginning of a new frame. 
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-			backbuffer.beginRendering();
-			
+			// Set clear color
+			mRenderWindow->setClearColor({ 1.0f, 0.0f, 0.0f, 0.0f });
+
+			// Start render pass
+			mRenderWindow->beginRendering();
+
 			// Render all objects in the scene at once
 			// This includes the line + normals and the laser canvas
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
@@ -124,8 +131,10 @@ namespace nap
 			// Draw gui to screen
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-			backbuffer.endRendering();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
+			// Stop recording commands
 			mRenderService->endRecording();
 		}
 
@@ -173,4 +182,5 @@ namespace nap
 	{
 		return 0;
 	}
+
 }

@@ -92,6 +92,12 @@ namespace nap
 	}
 
 
+	void RenderWindow::setClearColor(const glm::vec4& color)
+	{
+		mClearColor = color;
+	}
+
+
 	void RenderWindow::setPosition(const glm::ivec2& position)
 	{
 		mWindow->setPosition(position);
@@ -133,6 +139,7 @@ namespace nap
 		return mWindow->getBackbuffer();
 	}
 
+
 	void RenderWindow::handleEvent(const Event& event)
 	{
 		// Update window size when resizing
@@ -141,6 +148,18 @@ namespace nap
 		{
 			mWindow->setSize(glm::ivec2(resized_event->mX, resized_event->mY));
 		}
+	}
+
+
+	void RenderWindow::beginRendering()
+	{
+		mWindow->getBackbuffer().beginRendering();
+	}
+
+
+	void RenderWindow::endRendering()
+	{
+		mWindow->getBackbuffer().endRendering();
 	}
 }
 

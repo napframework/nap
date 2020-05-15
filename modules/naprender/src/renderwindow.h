@@ -130,6 +130,12 @@ namespace nap
 		void setHeight(int height);
 
 		/**
+		 * Sets the window clear color.
+		 * @param color the new clear color
+		 */
+		void setClearColor(const glm::vec4& color);
+
+		/**
 		 * Sets the position of the window on screen
 		 * @param position the new screen position in pixel coordinates
 		 */
@@ -176,6 +182,16 @@ namespace nap
 		* @return the back buffer associated with this window
 		*/
 		BackbufferRenderTarget& getBackbuffer();
+
+		/**
+		 * Starts a render pass. Only call this when recording is enabled.
+		 */
+		void beginRendering();
+
+		/**
+		 * Ends a render pass. Always call this after beginRendering().
+		 */
+		void endRendering();
 
 	private:
 		void handleEvent(const Event& event);
