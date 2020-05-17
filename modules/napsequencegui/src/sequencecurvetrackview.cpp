@@ -82,7 +82,21 @@ namespace nap
 
 		handleDeleteSegmentPopup();
 
-		handleCurvePointActionPopup();
+		handleCurvePointActionPopup<float>();
+
+		handleCurvePointActionPopup<glm::vec2>();
+
+		handleCurvePointActionPopup<glm::vec3>();
+
+		handleCurvePointActionPopup<glm::vec4>();
+
+		handleSegmentValueActionPopup<float>();
+
+		handleSegmentValueActionPopup<glm::vec2>();
+
+		handleSegmentValueActionPopup<glm::vec3>();
+
+		handleSegmentValueActionPopup<glm::vec4>();
 	}
 
 
@@ -368,7 +382,7 @@ namespace nap
 					showValue<T>(
 						track,
 						segment, curve_point.mPos.mTime,
-								 curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
+						curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
 						v);
 
 					// is the mouse held down, then we are dragging
@@ -383,11 +397,15 @@ namespace nap
 					// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mState.mAction = createAction<OpenCurvePointActionPopup>(
+						mState.mAction = createAction<OpenCurvePointActionPopup<T>>(
 							track.mID,
 							segment.mID,
 							i,
-							v);
+							v,
+							curve_point.mPos.mValue,
+							curve_point.mPos.mTime,
+							static_cast<const SequenceTrackCurve<T>&>(track).mMinimum,
+							static_cast<const SequenceTrackCurve<T>&>(track).mMaximum);
 					}
 				}
 				else
@@ -422,7 +440,7 @@ namespace nap
 								showValue<T>(
 									track,
 									segment, curve_point.mPos.mTime,
-											 curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
+									curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
 									v);
 
 
@@ -433,7 +451,8 @@ namespace nap
 									action->mSegmentID,
 									action->mControlPointIndex,
 									action->mCurveIndex,
-									time_adjust, value_adjust);
+									curve_point.mPos.mTime + time_adjust,
+									curve_point.mPos.mValue + value_adjust);
 
 								mCurveCache.clear();
 
@@ -560,6 +579,20 @@ namespace nap
 							segmentType,
 							v);
 					}
+					else if (ImGui::IsMouseDown(1))
+					{
+						const SequenceTrackSegmentCurve<T>& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
+						const SequenceTrackCurve<T>& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
+
+						mState.mAction = createAction<OpenEditSegmentCurveValuePopup<T>>(
+							track.mID,
+							segment.mID,
+							segmentType,
+							v,
+							(segmentType == SequenceCurveEnums::SegmentValueTypes::BEGIN) ? curve_segment.getStartValue() : curve_segment.getEndValue(),
+							curve_track.mMinimum,
+							curve_track.mMaximum);
+					}
 
 					showValue<T>(
 						track,
@@ -581,6 +614,13 @@ namespace nap
 							mState.mAction = createAction<None>();
 						}
 					}
+
+					showValue<T>(
+						track,
+						segment,
+						segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
+						segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+						v);
 				}
 
 				// handle dragging segment value
@@ -607,11 +647,29 @@ namespace nap
 							{
 								float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
+								static std::unordered_map<rttr::type, float(*)(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)> get_value_map
+								{
+									{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
+										return static_cast<const SequenceTrackSegmentCurve<float>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
+									}},
+									{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+										return static_cast<const SequenceTrackSegmentCurve<glm::vec2>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+									} },
+									{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+										return static_cast<const SequenceTrackSegmentCurve<glm::vec3>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+									}},
+									{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+										return static_cast<const SequenceTrackSegmentCurve<glm::vec4>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+									}}
+								};
+
 								SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
+								float value = get_value_map[RTTI_OF(T)](segment, v, segmentType);
 
 								curve_controller.changeCurveSegmentValue(
 									track.mID,
-									segment.mID, drag_amount,
+									segment.mID, 
+									value + drag_amount,
 									v,
 									segmentType);
 								mCurveCache.clear();
@@ -987,7 +1045,11 @@ namespace nap
 			ImGui::OpenPopup("Insert Curve Point");
 
 			auto* action = mState.mAction->getDerived<OpenInsertCurvePointPopup>();
-			mState.mAction = createAction<InsertingCurvePoint>(action->mTrackID, action->mSegmentID, action->mSelectedIndex, action->mPos);
+			mState.mAction = createAction<InsertingCurvePoint>(
+				action->mTrackID, 
+				action->mSegmentID, 
+				action->mSelectedIndex, 
+				action->mPos);
 		}
 
 		// handle insert segment popup
@@ -1040,29 +1102,33 @@ namespace nap
 		}
 	}
 
-
-	void SequenceCurveTrackView::handleCurvePointActionPopup()
+	template<>
+	void SequenceCurveTrackView::handleCurvePointActionPopup<float>()
 	{
-		if (mState.mAction->isAction<OpenCurvePointActionPopup>())
+		if (mState.mAction->isAction<OpenCurvePointActionPopup<float>>())
 		{
-			auto* action = mState.mAction->getDerived<OpenCurvePointActionPopup>();
-			mState.mAction = createAction<CurvePointActionPopup>(
+			auto* action = mState.mAction->getDerived<OpenCurvePointActionPopup<float>>();
+			mState.mAction = createAction<CurvePointActionPopup<float>>(
 					action->mTrackID,
 					action->mSegmentID,
 					action->mControlPointIndex,
-					action->mCurveIndex
+					action->mCurveIndex,
+					action->mValue,
+					action->mTime,
+					action->mMinimum,
+					action->mMaximum
 				);
 			ImGui::OpenPopup("Curve Point Actions");
 		}
 
-		if (mState.mAction->isAction<CurvePointActionPopup>())
+		if (mState.mAction->isAction<CurvePointActionPopup<float>>())
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
+				auto* action = mState.mAction->getDerived<CurvePointActionPopup<float>>();
+
 				if (ImGui::Button("Delete"))
 				{
-					auto* action = mState.mAction->getDerived<CurvePointActionPopup>();
-
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 					curve_controller.deleteCurvePoint(
 						action->mTrackID,
@@ -1075,7 +1141,22 @@ namespace nap
 
 					ImGui::CloseCurrentPopup();
 				}
-				
+
+				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
+				if (ImGui::InputFloat("value", &value))
+				{
+					float translated_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurvePoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex,
+						action->mTime,
+						value);
+					mState.mDirty = true;
+				}
+
 				if (ImGui::Button("Cancel"))
 				{
 					mState.mAction = createAction<None>();
@@ -1092,6 +1173,196 @@ namespace nap
 			}
 		}
 	}
+
+
+	template<typename T>
+	void SequenceCurveTrackView::handleCurvePointActionPopup()
+	{
+		if (mState.mAction->isAction<OpenCurvePointActionPopup<T>>())
+		{
+			auto* action = mState.mAction->getDerived<OpenCurvePointActionPopup<T>>();
+			mState.mAction = createAction<CurvePointActionPopup<T>>(
+				action->mTrackID,
+				action->mSegmentID,
+				action->mControlPointIndex,
+				action->mCurveIndex,
+				action->mValue,
+				action->mTime,
+				action->mMinimum,
+				action->mMaximum
+				);
+			ImGui::OpenPopup("Curve Point Actions");
+		}
+
+		if (mState.mAction->isAction<CurvePointActionPopup<T>>())
+		{
+			if (ImGui::BeginPopup("Curve Point Actions"))
+			{
+				auto* action = mState.mAction->getDerived<CurvePointActionPopup<T>>();
+				int curveIndex = action->mCurveIndex;
+
+				if (ImGui::Button("Delete"))
+				{
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.deleteCurvePoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex);
+					mCurveCache.clear();
+
+					mState.mAction = createAction<None>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				float value = action->mValue * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) + action->mMinimum[curveIndex];
+				if (ImGui::InputFloat("value", &value))
+				{
+					float translated_value = (value - action->mMinimum[curveIndex]) / (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurvePoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex,
+						action->mTime,
+						value);
+					mState.mDirty = true;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	template<typename T>
+	void SequenceCurveTrackView::handleSegmentValueActionPopup()
+	{
+		if (mState.mAction->isAction<OpenEditSegmentCurveValuePopup<T>>())
+		{
+			auto* action = mState.mAction->getDerived<OpenEditSegmentCurveValuePopup<T>>();
+			mState.mAction = createAction<EditingSegmentCurveValue<T>>(
+				action->mTrackID,
+				action->mSegmentID,
+				action->mType,
+				action->mCurveIndex,
+				action->mValue,
+				action->mMinimum,
+				action->mMaximum
+				);
+			ImGui::OpenPopup("Segment Value Actions");
+		}
+
+		if (mState.mAction->isAction<EditingSegmentCurveValue<T>>())
+		{
+			if (ImGui::BeginPopup("Segment Value Actions"))
+			{
+				auto* action = mState.mAction->getDerived<EditingSegmentCurveValue<T>>();
+				int curveIndex = action->mCurveIndex;
+
+				float value = action->mValue[curveIndex] * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) + action->mMinimum[curveIndex];
+				if (ImGui::InputFloat("value", &value))
+				{
+					float translated_value = (value - action->mMinimum[curveIndex]) / (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurveSegmentValue(
+						action->mTrackID,
+						action->mSegmentID,
+						translated_value,
+						curveIndex,
+						action->mType);
+					mState.mDirty = true;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	template<>
+	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>()
+	{
+		if (mState.mAction->isAction<OpenEditSegmentCurveValuePopup<float>>())
+		{
+			auto* action = mState.mAction->getDerived<OpenEditSegmentCurveValuePopup<float>>();
+			mState.mAction = createAction<EditingSegmentCurveValue<float>>(
+				action->mTrackID,
+				action->mSegmentID,
+				action->mType,
+				action->mCurveIndex,
+				action->mValue,
+				action->mMinimum,
+				action->mMaximum
+				);
+			ImGui::OpenPopup("Segment Value Actions");
+		}
+
+		if (mState.mAction->isAction<EditingSegmentCurveValue<float>>())
+		{
+			if (ImGui::BeginPopup("Segment Value Actions"))
+			{
+				auto* action = mState.mAction->getDerived<EditingSegmentCurveValue<float>>();
+				int curveIndex = action->mCurveIndex;
+
+				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
+				if (ImGui::InputFloat("value", &value))
+				{
+					float translated_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeCurveSegmentValue(
+						action->mTrackID,
+						action->mSegmentID,
+						translated_value,
+						curveIndex,
+						action->mType
+					);
+					mState.mDirty = true;
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
 
 
 	void SequenceCurveTrackView::handleDeleteSegmentPopup()
@@ -1324,7 +1595,7 @@ namespace nap
 				trackTopLeft,
 				segmentX,
 				segmentWidth,
-								SequenceCurveEnums::SegmentValueTypes::BEGIN,
+				SequenceCurveEnums::SegmentValueTypes::BEGIN,
 				drawList);
 		}
 

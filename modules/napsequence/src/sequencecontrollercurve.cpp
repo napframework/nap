@@ -447,7 +447,7 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+	void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
@@ -457,14 +457,14 @@ namespace nap
 		{
 		case SequenceCurveEnums::BEGIN:
 		{
-			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue += amount;
+			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = newValue;
 			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = math::clamp<float>(curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue, 0.0f, 1.0f);
 		}
 		break;
 		case SequenceCurveEnums::END:
 		{
 			int lastPoint = curve_segment.mCurves[curveIndex]->mPoints.size() - 1;
-			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue += amount;
+			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue = newValue;
 			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue = math::clamp<float>(curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue, 0.0f, 1.0f);
 		}
 		break;
@@ -678,8 +678,8 @@ namespace nap
 
 		//
 		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
-		curve_point.mPos.mTime += time;
-		curve_point.mPos.mValue += value;
+		curve_point.mPos.mTime = time;
+		curve_point.mPos.mValue = value;
 		curve_point.mPos.mValue = math::clamp<float>(curve_point.mPos.mValue, 0.0f, 1.0f);
 		curve_segment.mCurves[curveIndex]->invalidate();
 	}

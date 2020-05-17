@@ -126,7 +126,14 @@ namespace nap
 		/**
 		 * handles curvepoint action popup
 		 */
+		template<typename T>
 		void handleCurvePointActionPopup();
+
+		/**
+		 * handles segment value actions
+		 */
+		template<typename T>
+		void handleSegmentValueActionPopup();
 
 		/**
 		 * handles curve type popup
@@ -263,12 +270,13 @@ namespace nap
 			float mPos;
 		};
 
+		template<typename T>
 		class OpenCurvePointActionPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenCurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			OpenCurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mValue(value), mTime(time), mMinimum(minimum), mMaximum(maximum)
 			{
 
 			}
@@ -277,14 +285,21 @@ namespace nap
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
+			float mValue;
+			float mTime;
+			T mMaximum;
+			T mMinimum;
 		};
 
+		template<typename T>
 		class CurvePointActionPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
-			CurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex)
+			CurvePointActionPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
+				: mTrackID(trackID), mSegmentID(segmentID), 
+				mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex),
+				mValue(value), mMinimum(minimum), mMaximum(maximum), mTime(time)
 			{
 
 			}
@@ -293,6 +308,10 @@ namespace nap
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
+			float mValue;
+			float mTime;
+			T mMaximum;
+			T mMinimum;
 		};
 
 		class OpenCurveTypePopup : public Action
@@ -370,6 +389,60 @@ namespace nap
 			std::string mSegmentID;
 			rttr::type mSegmentType;
 		};
+
+		template<typename T>
+		class OpenEditSegmentCurveValuePopup :
+			public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditSegmentCurveValuePopup(
+				std::string trackId,
+				std::string segmentID,
+				SequenceCurveEnums::SegmentValueTypes type,
+				int curveIndex,
+				T value,
+				T minimum,
+				T maximum) :
+				mTrackID(trackId),
+				mSegmentID(segmentID),
+				mType(type),
+				mCurveIndex(curveIndex),
+				mValue(value),
+				mMinimum(minimum),
+				mMaximum(maximum) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			SequenceCurveEnums::SegmentValueTypes mType;
+			int mCurveIndex;
+			T mValue;
+			T mMinimum;
+			T mMaximum;
+		};
+
+		template<typename T>
+		class EditingSegmentCurveValue :
+			public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingSegmentCurveValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
+				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex), mValue(value), mMinimum(minimum), mMaximum(maximum) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			SequenceCurveEnums::SegmentValueTypes mType;
+			int mCurveIndex;
+			T mValue;
+			T mMinimum;
+			T mMaximum;
+		};
 	}
 
+	template<>
+	void SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+
+	template<>
+	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
 }

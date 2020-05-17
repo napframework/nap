@@ -410,7 +410,7 @@ namespace nap
 			// right mouse in deletion popup
 			if (ImGui::IsMouseDown(1))
 			{
-				mState.mAction = createAction<OpenEditSegmentPopup>(track.mID, segment.mID, segment.get_type());
+				mState.mAction = createAction<OpenEditSegmentValuePopup>(track.mID, segment.mID, segment.get_type());
 			}
 		}
 		else 
@@ -447,12 +447,12 @@ namespace nap
 
 	void SequenceEventTrackView::handleDeleteSegmentPopup()
 	{
-		if (mState.mAction->isAction<OpenEditSegmentPopup>())
+		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Delete Segment");
 
-			auto* action = mState.mAction->getDerived<OpenEditSegmentPopup>();
+			auto* action = mState.mAction->getDerived<OpenEditSegmentValuePopup>();
 			mState.mAction = createAction<EditingSegment>(action->mTrackID, action->mSegmentID, action->mSegmentType);
 		}
 

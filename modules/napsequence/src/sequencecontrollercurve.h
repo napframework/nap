@@ -44,11 +44,11 @@ namespace nap
 		 * changes start or end value of segment of type T
 		 * @param trackID the track id
 		 * @param segmentID id of segment
-		 * @param amount the amount that the value needs to change
+		 * @param the new value
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
-		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
+		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
 	
 		/**
 		 * insert point in curve of segment
@@ -74,8 +74,8 @@ namespace nap
 		 * @param segmentID the segmentID
 		 * @param pointIndex the point index
 		 * @param curveIndex the curve index
-		 * @param time offset for new time
-		 * @param value offset for new value
+		 * @param time new time
+		 * @param value new value
 		 */
 		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
 

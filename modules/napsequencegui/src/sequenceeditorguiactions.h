@@ -120,11 +120,11 @@ namespace nap
 			rttr::type mSegmentType;
 		};
 
-		class OpenEditSegmentPopup : public Action
+		class OpenEditSegmentValuePopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditSegmentPopup(std::string trackID, std::string segmentID, rttr::type segmentType)
+			OpenEditSegmentValuePopup(std::string trackID, std::string segmentID, rttr::type segmentType)
 				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
 			{
 

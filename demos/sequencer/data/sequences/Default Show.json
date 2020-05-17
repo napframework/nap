@@ -90,7 +90,7 @@
                             "Type": "nap::SequenceTrackSegmentCurveVec2",
                             "mID": "Generated_31",
                             "Start Time": 3.440000057220459,
-                            "Duration": 1.369999833405018,
+                            "Duration": 1.3699998334050179,
                             "Curves": [
                                 "Generated_29",
                                 "Generated_30"
@@ -219,7 +219,7 @@
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
                             "mID": "Generated_44",
                             "Start Time": 0.0,
-                            "Duration": 4.8900000266730789,
+                            "Duration": 4.890000026673079,
                             "Curves": [
                                 "Generated_43"
                             ],
@@ -228,7 +228,7 @@
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
                             "mID": "Generated_46",
-                            "Start Time": 4.8900000266730789,
+                            "Start Time": 4.890000026673079,
                             "Duration": 4.88000014051795,
                             "Curves": [
                                 "Generated_45"
@@ -250,7 +250,7 @@
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.0
+                        "Value": 1.0
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
