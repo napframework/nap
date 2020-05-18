@@ -1254,7 +1254,6 @@ namespace nap
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
-		mCurrentRenderWindow->getBackbuffer().beginRendering();
 
 		return true;
 	}
