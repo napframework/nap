@@ -70,11 +70,6 @@ namespace nap
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
 
 		/**
-		 * @return returns reference to sequence of player
-		 */
-		Sequence& getSequence() { return mPlayer.getSequence(); }
-
-		/**
 		 * static method that returns factory method for creating a controller
 		 * @return reference to factory method
 		 */
@@ -88,6 +83,11 @@ namespace nap
 		  */
 		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
+		/**
+		 * @return returns reference to sequence of player
+		 */
+		Sequence& getSequence() { return mPlayer.getSequence(); }
+
 		/**
 		 * finds segment
 		 * @param trackID the trackID

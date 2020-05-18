@@ -22,17 +22,17 @@ namespace nap
 		/**
 		 * @param trackID the id of the track
 		 * @param segmentID the id of the segment we need to edit
-		 * @param amount the amount that the duration of this segment should change
+		 * @param duration the new duration
 	 	 */
-		void segmentDurationChange(const std::string& trackID, const std::string& segmentID, float amount);
+		void segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
 		/**
 		 * changes start time of segment
 		 * @param trackID the trackID of track containing segment
 		 * @param segmentID the segmentID
-		 * @param amount the amount the starttime needs to change
+		 * @param value the new start time
 		 */
-		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float amount);
+		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
 	
 		/**
 		 * adds a new curve track of type T ( float, vec2, vec3, vec4 )

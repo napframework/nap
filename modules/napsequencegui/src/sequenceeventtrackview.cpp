@@ -403,7 +403,7 @@ namespace nap
 
 					auto& editor = getEditor();
 					SequenceControllerEvent& eventController = editor.getController<SequenceControllerEvent>();
-					eventController.segmentEventStartTimeChange(track.mID, segment.mID, amount);
+					eventController.segmentEventStartTimeChange(track.mID, segment.mID, segment.mStartTime + amount);
 				}
 			}
 

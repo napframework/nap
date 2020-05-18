@@ -31,10 +31,10 @@ namespace nap
 	};
 
 
-	void SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float amount)
+	void SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
 	{
 		// lock
-		performEditAction([this, trackID, segmentID, amount]()
+		performEditAction([this, trackID, segmentID, duration]()
 		{
 			//
 			Sequence& sequence = getSequence();
@@ -52,7 +52,7 @@ namespace nap
 				  {
 					  // check if new duration is valid
 					  bool valid = true;
-					  double new_duration = track_segment->mDuration + amount;
+					  double new_duration = duration;
 
 					  if (new_duration > 0.0)
 					  {
@@ -71,7 +71,7 @@ namespace nap
 
 					  if (valid)
 					  {
-						  track_segment->mDuration += amount;
+						  track_segment->mDuration = duration;
 
 						  auto it = sUpdateSegmentFunctionMap.find(track->get_type());
 						  if (it != sUpdateSegmentFunctionMap.end())
@@ -410,7 +410,7 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float amount, int curveIndex,
+	void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex,
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, SequenceCurveEnums::SegmentValueTypes)> change_segment_value_map
@@ -422,7 +422,7 @@ namespace nap
 		};
 
 		//
-		performEditAction([this, trackID, segmentID, amount, curveIndex, valueType]()
+		performEditAction([this, trackID, segmentID, newValue, curveIndex, valueType]()
 		{
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
@@ -438,7 +438,7 @@ namespace nap
 					assert(it != change_segment_value_map.end()); // type not found
 					if (it != change_segment_value_map.end())
 					{
-						(*this.*it->second)(*track, *segment, amount, curveIndex, valueType);
+						(*this.*it->second)(*track, *segment, newValue, curveIndex, valueType);
 					}
 				}
 			}
@@ -735,8 +735,8 @@ namespace nap
 		{
 			if (curve_point.mInTan.mTime + time < curve_point.mOutTan.mTime)
 			{
-				curve_point.mInTan.mTime += time;
-				curve_point.mInTan.mValue += value;
+				curve_point.mInTan.mTime = time;
+				curve_point.mInTan.mValue = value;
 
 				if (curve_point.mTangentsAligned)
 				{
@@ -750,8 +750,8 @@ namespace nap
 		{
 			if (curve_point.mOutTan.mTime + time > curve_point.mInTan.mTime)
 			{
-				curve_point.mOutTan.mTime += time;
-				curve_point.mOutTan.mValue += value;
+				curve_point.mOutTan.mTime = time;
+				curve_point.mOutTan.mValue = value;
 
 				if (curve_point.mTangentsAligned)
 				{

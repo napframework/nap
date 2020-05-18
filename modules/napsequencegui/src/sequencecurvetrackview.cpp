@@ -537,8 +537,7 @@ namespace nap
 		const SequenceCurveEnums::SegmentValueTypes segmentType,
 		ImDrawList* drawList)
 	{
-		const SequenceTrackSegmentCurve<T>& segment =
-			static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
+		const SequenceTrackSegmentCurve<T>& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -612,15 +611,15 @@ namespace nap
 							action->mCurveIndex == v)
 						{
 							mState.mAction = createAction<None>();
+
+							showValue<T>(
+								track,
+								segment,
+								segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
+								segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+								v);
 						}
 					}
-
-					showValue<T>(
-						track,
-						segment,
-						segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
-						segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
-						v);
 				}
 
 				// handle dragging segment value
@@ -754,7 +753,7 @@ namespace nap
 
 					auto& editor = getEditor();
 					SequenceControllerCurve& curve_controller = editor.getController<SequenceControllerCurve>();
-					curve_controller.segmentDurationChange(track.mID, segment.mID, amount);
+					curve_controller.segmentDurationChange(track.mID, segment.mID, segment.mDuration + amount);
 
 					mCurveCache.clear();
 				}
@@ -883,8 +882,23 @@ namespace nap
 						{
 							tan_point_hovered = true;
 
-							float time = mState.mMouseDelta.x / mState.mStepSize;
-							float value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+							float delta_time = mState.mMouseDelta.x / mState.mStepSize;
+							float delta_value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+
+							const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
+
+							float new_time;
+							float new_value;
+							if( type == SequenceCurveEnums::TanPointTypes::IN )
+							{
+								new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mTime + delta_time;
+								new_value= curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mValue + delta_value;
+							}
+							else
+							{
+								new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mTime + delta_time;
+								new_value= curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mValue + delta_value;
+							}
 
 							auto& curveController = getEditor().getController<SequenceControllerCurve>();
 							curveController.changeTanPoint(
@@ -893,9 +907,9 @@ namespace nap
 								controlPointIndex,
 								curveIndex,
 								type,
-								time,
-								value);
-							mCurveCache.clear();
+								new_time,
+								new_value);
+							mState.mDirty = true;
 						}
 					}
 				}
