@@ -23,8 +23,9 @@ namespace nap
 		 * @param trackID the id of the track
 		 * @param segmentID the id of the segment we need to edit
 		 * @param duration the new duration
+		 * @param new duration of segment
 	 	 */
-		void segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
+		double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
 		/**
 		 * changes start time of segment

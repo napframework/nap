@@ -365,8 +365,8 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, rttr::type segmentType, double startTime, double duration)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration)
 			{
 
 			}
@@ -374,13 +374,15 @@ namespace nap
 			std::string mTrackID;
 			std::string mSegmentID;
 			rttr::type mSegmentType;
+			double mStartTime;
+			double mDuration;
 		};
 
 		class EditingCurveSegment : public Action {
 			RTTI_ENABLE(Action)
 		public:
-			EditingCurveSegment(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			EditingCurveSegment(std::string trackID, std::string segmentID, rttr::type segmentType, double startTime, double duration)
+				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration)
 			{
 
 			}
@@ -388,6 +390,8 @@ namespace nap
 			std::string mTrackID;
 			std::string mSegmentID;
 			rttr::type mSegmentType;
+			double mStartTime;
+			double mDuration;
 		};
 
 		template<typename T>

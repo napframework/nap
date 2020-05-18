@@ -712,7 +712,7 @@ namespace nap
 			mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
 
 			ImGui::BeginTooltip();
-			ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+			ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 			ImGui::EndTooltip();
 
 			// left mouse is start dragging
@@ -726,7 +726,9 @@ namespace nap
 				mState.mAction = createAction <OpenEditCurveSegmentPopup>(
 					track.mID,
 					segment.mID,
-					segment.get_type()
+					segment.get_type(),
+					segment.mStartTime,
+					segment.mDuration
 				);
 			}
 		}
@@ -743,7 +745,7 @@ namespace nap
 					3.0f); // thickness
 
 				ImGui::BeginTooltip();
-				ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 				ImGui::EndTooltip();
 
 				// do we have the mouse still held down ? drag the segment
@@ -1391,7 +1393,9 @@ namespace nap
 			mState.mAction = createAction<EditingCurveSegment>(
 				action->mTrackID,
 				action->mSegmentID,
-				action->mSegmentType
+				action->mSegmentType,
+				action->mStartTime,
+				action->mDuration
 			);
 		}
 
@@ -1400,11 +1404,12 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Delete Segment"))
 			{
+				auto& controller = getEditor().getController<SequenceControllerCurve>();
 				auto* action = mState.mAction->getDerived<EditingCurveSegment>();
 
 				if (ImGui::Button("Delete"))
 				{
-					getEditor().getController<SequenceControllerCurve>().deleteSegment(
+					controller.deleteSegment(
 						action->mTrackID,
 						action->mSegmentID);
 					mCurveCache.clear();
@@ -1413,7 +1418,41 @@ namespace nap
 					mState.mAction = createAction<None>();
 				}
 
-				if (ImGui::Button("Cancel"))
+				int time_milseconds = (int) ( ( action->mStartTime + action->mDuration ) * 100.0 ) % 100;
+				int time_seconds = (int) ( action->mStartTime + action->mDuration ) % 60;
+				int time_minutes = (int) ( action->mStartTime + action->mDuration ) / 60;
+
+				bool edit_time = false;
+
+				ImGui::Separator();
+
+				ImGui::PushItemWidth(100.0f);
+
+				int time_array[3] =
+					{
+						time_minutes,
+						time_seconds,
+						time_milseconds
+					};
+
+				edit_time = ImGui::InputInt3("Time", &time_array[0]);
+				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+				if( edit_time )
+				{
+					double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+					double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, new_time - action->mStartTime);
+					action->mDuration = new_duration;
+					mState.mDirty = true;
+				}
+
+				ImGui::PopItemWidth();
+
+				ImGui::Separator();
+
+				if (ImGui::Button("Done"))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();

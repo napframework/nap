@@ -31,10 +31,11 @@ namespace nap
 	};
 
 
-	void SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
+	double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
 	{
-		// lock
-		performEditAction([this, trackID, segmentID, duration]()
+		double return_duration = duration;
+
+		performEditAction([this, trackID, segmentID, duration, &return_duration]()
 		{
 			//
 			Sequence& sequence = getSequence();
@@ -81,6 +82,8 @@ namespace nap
 
 						  updateTracks();
 					  }
+
+					  return_duration = track_segment->mDuration;
 					  break;
 				  }
 
@@ -88,6 +91,8 @@ namespace nap
 			  }
 			}
 		});
+
+		return return_duration;
 	}
 
 

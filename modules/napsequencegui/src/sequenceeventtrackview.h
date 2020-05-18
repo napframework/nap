@@ -124,13 +124,14 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, T value)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value) {}
+			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			ImVec2 mWindowPos;
 			T mValue;
+			double mStartTime;
 		};
 
 		template<typename T>
@@ -138,13 +139,14 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos, T value)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value) {}
+			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			T mValue;
 			ImVec2 mWindowPos;
+			double mStartTime;
 		};
 	}
 
@@ -162,7 +164,7 @@ namespace nap
 			ImGui::OpenPopup("Edit Event");
 
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditEventSegmentPopup<T>>();
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue);
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue, action->mStartTime);
 		}
 
 		// handle insert segment popup
@@ -226,6 +228,42 @@ namespace nap
 					it->second(*action);
 				}
 
+				// time
+				int time_milseconds = (int) ( ( action->mStartTime ) * 100.0 ) % 100;
+				int time_seconds = (int) ( action->mStartTime ) % 60;
+				int time_minutes = (int) ( action->mStartTime ) / 60;
+
+				bool edit_time = false;
+
+				ImGui::Separator();
+
+				ImGui::PushItemWidth(100.0f);
+
+				int time_array[3] =
+					{
+						time_minutes,
+						time_seconds,
+						time_milseconds
+					};
+
+				edit_time = ImGui::InputInt3("Time", &time_array[0]);
+				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+				ImGui::PopItemWidth();
+
+				ImGui::Separator();
+
+				if( edit_time )
+				{
+					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
+					double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+					double time = event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
+					action->mStartTime = time;
+					mState.mDirty = true;
+				}
+
 				if (ImGui::Button("Done"))
 				{
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
@@ -254,6 +292,6 @@ namespace nap
 	void SequenceEventTrackView::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
 	{
 		const SequenceTrackSegmentEvent<T> *event = static_cast<const SequenceTrackSegmentEvent<T>*>(segment);
-		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue);
+		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
 	}
 }

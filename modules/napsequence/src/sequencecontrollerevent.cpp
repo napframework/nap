@@ -11,9 +11,10 @@ namespace nap
 	static bool sRegisterControllerType = SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent));
 
 
-	void SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time)
+	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time)
 	{
-		performEditAction([this, trackID, segmentID, time]()
+		double return_time = time;
+		performEditAction([this, trackID, segmentID, time, &return_time]()
 		{
 			auto* segment = findSegment(trackID, segmentID);
 			assert(segment != nullptr); // segment not found
@@ -26,12 +27,15 @@ namespace nap
 				{
 					auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
 					segment_event.mStartTime = time;
+					return_time = segment_event.mStartTime;
 				}
 
 			}
 
 			updateTracks();
 		});
+
+		return return_time;
 	}
 
 

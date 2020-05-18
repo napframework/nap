@@ -37,7 +37,7 @@ namespace nap
 		 * @param segmentID the segmentID
 		 * @param time the new time
 		 */
-		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
+		 double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
 
 		/**
 		 * overloaded insert segment message
@@ -120,7 +120,5 @@ namespace nap
 				}
 			}
 		});
-
 	}
-
 }
