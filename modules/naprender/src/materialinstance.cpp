@@ -158,7 +158,7 @@ namespace nap
 			{
 				const Texture2D& texture = sampler_2d_array->getTexture(index);
 
-				VkDescriptorImageInfo& imageInfo = mSamplerImages[imageStartIndex + index];
+				VkDescriptorImageInfo& imageInfo = mSamplerWriteDescriptors[imageStartIndex + index];
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo.imageView = texture.getImageView();
 				imageInfo.sampler = vk_sampler;
@@ -168,7 +168,7 @@ namespace nap
 		{
 			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
 
-			VkDescriptorImageInfo& imageInfo = mSamplerImages[imageStartIndex];
+			VkDescriptorImageInfo& imageInfo = mSamplerWriteDescriptors[imageStartIndex];
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getImageView();
 			imageInfo.sampler = vk_sampler;
@@ -213,7 +213,7 @@ namespace nap
 		imageInfo.imageView = texture2D.getImageView();
 		imageInfo.sampler = sampler;
 
-		mSamplerImages.push_back(imageInfo);
+		mSamplerWriteDescriptors.push_back(imageInfo);
 	}
 
 	bool MaterialInstance::initSamplers(utility::ErrorState& errorState)
@@ -226,8 +226,8 @@ namespace nap
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 			num_sampler_images += declaration.mNumArrayElements;
 
-		mSamplerDescriptors.resize(sampler_declarations.size());
-		mSamplerImages.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
+		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
+		mSamplerWriteDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 		
 		Texture2D& emptyTexture = mRenderService->getEmptyTexture();
 
@@ -263,9 +263,9 @@ namespace nap
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerImages.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerImages.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -280,7 +280,7 @@ namespace nap
 			}
 
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
-			size_t sampler_image_start_index = mSamplerImages.size();
+			size_t sampler_descriptor_start_index = mSamplerWriteDescriptors.size();
 			VkSampler vk_sampler = sampler_instance->getSampler();
 			if (is_array)
 			{
@@ -307,14 +307,14 @@ namespace nap
 			}
 
 			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.
-			VkWriteDescriptorSet& write_descriptor_set = mSamplerDescriptors[sampler_index];
+			VkWriteDescriptorSet& write_descriptor_set = mSamplerWriteDescriptorSets[sampler_index];
 			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write_descriptor_set.dstSet = nullptr;
 			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
 			write_descriptor_set.dstArrayElement = 0;
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write_descriptor_set.descriptorCount = mSamplerImages.size() - sampler_image_start_index;
-			write_descriptor_set.pImageInfo = mSamplerImages.data() + sampler_image_start_index;
+			write_descriptor_set.descriptorCount = mSamplerWriteDescriptors.size() - sampler_descriptor_start_index;
+			write_descriptor_set.pImageInfo = mSamplerWriteDescriptors.data() + sampler_descriptor_start_index;
 		}
 
 		return true;
@@ -369,10 +369,10 @@ namespace nap
 		// The actual latest images were already set correctly in mSamplerDescriptors during init and when setting
 		// a new texture for a sampler. We just need to call VkUpdateDescriptors with the correct descriptorSet and
 		// latest image info.
-		for (VkWriteDescriptorSet& write_descriptor : mSamplerDescriptors)
+		for (VkWriteDescriptorSet& write_descriptor : mSamplerWriteDescriptorSets)
 			write_descriptor.dstSet = descriptorSet.mSet;
 
-		vkUpdateDescriptorSets(mDevice, mSamplerDescriptors.size(), mSamplerDescriptors.data(), 0, nullptr);
+		vkUpdateDescriptorSets(mDevice, mSamplerWriteDescriptorSets.size(), mSamplerWriteDescriptorSets.data(), 0, nullptr);
 	}
 
 
@@ -403,8 +403,7 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		int num_samplers = getMaterial().getShader().getSamplerDeclarations().size();
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, num_samplers);
+		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
 
 		updateUniforms(descriptor_set);
 		updateSamplers(descriptor_set);

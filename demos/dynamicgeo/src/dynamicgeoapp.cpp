@@ -39,6 +39,9 @@ namespace nap
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity				= scene->findEntity("ParticleEmitterEntity");
+
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -77,24 +80,27 @@ namespace nap
 	 */
 	void DynamicGeoApp::render()
 	{
-		// Get rid of unnecessary resources
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		if (mRenderService->beginRendering(*mRenderWindow))
+		{
+			// Clear window back-buffer
+			IRenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
 
-		// Clear window back-buffer
-		IRenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
-		mRenderService->clearRenderTarget(backbuffer);
+			backbuffer.beginRendering();
 
-		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-		mRenderService->renderObjects(backbuffer, frame_cam);
+			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(backbuffer, frame_cam);
 
-		// Render GUI elements
-		mGuiService->draw();
+			// Render GUI elements
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-		// Swap back buffer
-		mRenderWindow->swap();
+			backbuffer.endRendering();
+
+			mRenderService->endRendering();
+		}
+
+		mRenderService->endFrame();
 	}
 	
 

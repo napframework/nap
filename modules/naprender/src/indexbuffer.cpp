@@ -6,8 +6,8 @@
 
 namespace nap
 {
-	IndexBuffer::IndexBuffer(VmaAllocator vmaAllocator) :
-		GPUBuffer(vmaAllocator)
+	IndexBuffer::IndexBuffer(RenderService& renderService, EMeshDataUsage usage) :
+		GPUBuffer(renderService, usage)
 	{
 	}
 

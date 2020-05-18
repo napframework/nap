@@ -3,15 +3,16 @@
 
 namespace nap
 {
-	GPUMesh::GPUMesh(VmaAllocator vmaAllocator) :
-		mVmaAllocator(vmaAllocator)
+	GPUMesh::GPUMesh(RenderService& renderService, EMeshDataUsage inUsage) :
+		mRenderService(&renderService),
+		mUsage(inUsage)
 	{
 	}
 
 
 	void GPUMesh::addVertexAttribute(const std::string& id, VkFormat format)
 	{
-		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(mVmaAllocator, format)));
+		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(*mRenderService, format, mUsage)));
 	}
 
 
@@ -38,7 +39,7 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 		
-		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(mVmaAllocator);
+		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(*mRenderService, mUsage);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 
 		return *mIndexBuffers.back();

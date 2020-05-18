@@ -658,7 +658,7 @@ namespace nap
 		{
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 			samplerLayoutBinding.binding = declaration.mBinding;
-			samplerLayoutBinding.descriptorCount = 1;
+			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
 			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			samplerLayoutBinding.pImmutableSamplers = nullptr;
 			samplerLayoutBinding.stageFlags = declaration.mStage;

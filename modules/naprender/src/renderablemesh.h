@@ -26,6 +26,10 @@ namespace nap
 		 */
 		RenderableMesh() = default;
 
+		RenderableMesh(const RenderableMesh& rhs);
+
+		RenderableMesh& operator=(const RenderableMesh& rhs);
+
 		/**
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
 		* of a mesh match the vertex attributes of a shader.
@@ -52,7 +56,7 @@ namespace nap
 		 */
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
-		const std::vector<VkBuffer>& getVertexBuffers() const { return mVertexBuffers; }
+		const std::vector<VkBuffer>& getVertexBuffers();
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const { return mVertexBufferOffsets; }
 
 	protected:
@@ -65,10 +69,16 @@ namespace nap
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance);
 
 	private:
+		void onVertexBufferDataChanged();
+
+	private:
 		MaterialInstance*			mMaterialInstance = nullptr;	///< Material instance
 		IMesh*						mMesh = nullptr;				///< Mesh
 		std::vector<VkBuffer>		mVertexBuffers;
 		std::vector<VkDeviceSize>	mVertexBufferOffsets;
+		bool						mVertexBuffersDirty = true;
+
+		nap::Slot<>					mVertexBufferDataChangedSlot = { [&]() { onVertexBufferDataChanged(); } };
 	};
 
 }
