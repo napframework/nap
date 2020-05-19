@@ -16,6 +16,7 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${NAP_ROOT}/bin/${CMAKE_BUILD_TYPE}/napkin")
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
@@ -87,24 +88,24 @@ set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION tools/platform/napkin/Release
+        DESTINATION tools/napkin
         CONFIGURATIONS Release)
 if(APPLE)
     # Remove thirdparty from framework release at install time
-    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/Release/napkin
+    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                     ${THIRDPARTY_DIR}  
                                                     Release)
 endif()
 if(MSVC AND PACKAGE_PDBS)
-    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/platform/napkin/$<CONFIG>)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
 endif()        
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
-        DESTINATION tools/platform/napkin/)
+        DESTINATION tools/napkin/)
 
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
-set(PATH_TO_THIRDPARTY "../../../../thirdparty")
+set(PATH_TO_THIRDPARTY "../../thirdparty")
 if(APPLE)
     set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
@@ -139,6 +140,6 @@ elseif(UNIX)
         list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
         list(APPEND EXTRA_RPATH lib)
 
-        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
     endif()
 endif()
