@@ -204,6 +204,9 @@ void main()
 	// Apply lights and specular
 	vec3 lit_color = applyLight(color, normal, passPosition);
 
+	normal = normalize(normal);
+
 	// Set fragment color output
 	out_Color =  vec4(lit_color,1.0);
+	//out_Color =  vec4(normal.x,normal.y,normal.z,1.0);
 }

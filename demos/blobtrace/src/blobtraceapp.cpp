@@ -73,29 +73,48 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Actual velocity
+		float vel = math::fit(glm::length(mUVSmoother.getVelocity()), 0.0f, 0.66f, 0.0f, 1.0f);
+
 		// Get vertex shader uniform buffer object
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformStructInstance* vert_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOVert");
+		if (vert_ubo != nullptr)
+		{
+			// Set mouse pos in vert shader
+			UniformVec3Instance* blob_uniform = vert_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+			if (blob_uniform != nullptr)
+				blob_uniform->setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
 
-		// Set mouse pos in shader
-		UniformVec3Instance* uv_uniform = vert_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
-		uv_uniform->setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
+			// Set time in vert shader
+			UniformFloatInstance* time_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			if(time_uniform != nullptr)
+				time_uniform->setValue(mTime);
 
-		// Set time in shader
-		UniformFloatInstance* time_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
-		time_uniform->setValue(mTime);
-
-		// Set velocity in shader
-		UniformFloatInstance* vel_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
-		float vel = math::fit(glm::length(mUVSmoother.getVelocity()), 0.0f, 0.66f, 0.0f,1.0f);
-		vel_uniform->setValue(vel);
+			// Set velocity in vert shader
+			UniformFloatInstance* vel_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			if (vel_uniform != nullptr)
+				vel_uniform->setValue(vel);
+		}
 
 		// Get fragment shader uniform buffer object
 		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
+		if (frag_ubo != nullptr)
+		{
+			// Set mouse position in frag shader
+			UniformVec3Instance* mou_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inMousePosition");
+			if(mou_uniform != nullptr)
+				mou_uniform->setValue(mMouseUvPosition);
 
-		// Set mouse position
-		UniformVec3Instance* mou_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inMousePosition");
-		mou_uniform->setValue(mMouseUvPosition);
+			// Set blob position in frag shader
+			UniformVec3Instance* blob_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+				blob_uniform->setValue(mUVSmoother.getValue());
+
+			// Set velocity in frag shader
+			UniformFloatInstance* vel_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			if (vel_uniform != nullptr)
+				vel_uniform->setValue(vel);
+		}
 
 		// Increment time based on velocity
 		mTime += (deltaTime * math::fit<float>(vel, 0.0f, 1.0f, 1.0f, 3.0f));
@@ -125,11 +144,16 @@ namespace nap
 		// Get fragment shader uniform buffer object
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
-		nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
-
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
+		if (frag_ubo != nullptr)
+		{
+			nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+			if (cam_loc_uniform != nullptr)
+			{
+				nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+				glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+				cam_loc_uniform->setValue(global_pos);
+			}
+		}
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
