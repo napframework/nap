@@ -73,6 +73,8 @@ endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 if (MSVC)
     include(GenerateExportheader)

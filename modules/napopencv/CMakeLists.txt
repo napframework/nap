@@ -25,6 +25,8 @@ endif()
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${OpenCV_INCLUDE_DIRS})

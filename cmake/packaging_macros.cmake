@@ -391,14 +391,12 @@ macro(package_module)
 
     # Package module.json
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/)
-    if (WIN32)
+    if (WIN32 OR APPLE)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME ${PROJECT_NAME}.json)
-    elseif(APPLE)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME lib${PROJECT_NAME}.json)
     elseif(ANDROID)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/ RENAME lib${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/ RENAME ${PROJECT_NAME}.json)
     else()
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME lib${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME ${PROJECT_NAME}.json)
     endif()
    
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 

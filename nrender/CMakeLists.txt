@@ -62,6 +62,8 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # compile shared lib as target
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
