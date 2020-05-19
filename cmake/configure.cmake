@@ -1,15 +1,13 @@
 if(MSVC OR APPLE)
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
-
         # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${OUTPUT_CONFIG})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${OUTPUT_CONFIG})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${OUTPUTCONFIG})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${OUTPUTCONFIG})
         else()
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${OUTPUT_CONFIG})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUT_CONFIG})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${OUTPUTCONFIG})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG})
         endif()
 
         string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
