@@ -36,25 +36,13 @@ namespace nap
 
 	bool ModuleManager::folderNameContainsBuildConfiguration(const std::string& folderName)
 	{
-		std::vector<std::string> configParts;
-		utility::splitString(folderName, '-', configParts);
-		// If we don't have enough parts we're not looking at a build folder
-		if (configParts.size() != 3)
-			return false;
-		
-#if defined(__APPLE__) || defined(_WIN32)
-		const std::string folderBuildType = configParts[2];
-#elif __unix__
-		const std::string folderBuildType = configParts[1];
-#endif
-
 #ifdef NDEBUG
 		const std::string runningBuildType = "Release";
 #else
 		const std::string runningBuildType = "Debug";
 #endif
 	
-		if (runningBuildType != folderBuildType)
+		if (runningBuildType != folderName)
 			return false;
 		
 		return true;

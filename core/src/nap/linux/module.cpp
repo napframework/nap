@@ -40,8 +40,6 @@ namespace nap
 	{
 		assert(isModule(path));
 		std::string moduleName = utility::getFileNameWithoutExtension(path);
-		assert(moduleName.substr(0, 3) == "lib");
-		moduleName = moduleName.substr(3, std::string::npos);
 		return moduleName;
 	}
 
