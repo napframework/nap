@@ -5,11 +5,11 @@ if(MSVC OR APPLE)
         # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${OUTPUT_CONFIG})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${OUTPUT_CONFIG})
         else()
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${OUTPUT_CONFIG})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUT_CONFIG})
         endif()
 
         string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
@@ -22,7 +22,7 @@ else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
     else()
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+        set(BUILD_CONF ${CMAKE_BUILD_TYPE})
     endif()
 
     # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
@@ -46,9 +46,9 @@ endif()
 # SRCDIR: The directory to work in
 macro(export_fbx_in_place SRCDIR)
     if (MSVC OR APPLE)
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+        set(BUILD_CONF $<CONFIG>)
     else()
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+        set(BUILD_CONF ${CMAKE_BUILD_TYPE})
     endif()
 
     # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
