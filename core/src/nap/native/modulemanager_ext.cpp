@@ -145,7 +145,7 @@ namespace nap
 		const std::string exeDir = utility::getExecutableDir();
 		
 		// Check if we're running a packaged project (on macOS or Linux)
-		if (utility::fileExists(exeDir + "/lib/libnapcore." + getModuleExtension()))
+		if (utility::fileExists(exeDir + "/lib/napcore." + getModuleExtension()))
 		{
 			searchDirectories.push_back(exeDir + "/lib");
 		}
