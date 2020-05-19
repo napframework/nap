@@ -6,7 +6,8 @@
 			"mID" : "Window0",
 			"Width" : 256,
 			"Height" : 256,
-			"Title" : "Window 1"
+			"Title" : "Window 1",
+			"PresentationMode":"Mailbox"
 		},
 
 		{
@@ -14,7 +15,8 @@
 			"mID" : "Window1",
 			"Width" : 512,
 			"Height" : 512,
-			"Title" : "Window 2"
+			"Title" : "Window 2",
+			"PresentationMode":"Mailbox"
 		},
 
 		{

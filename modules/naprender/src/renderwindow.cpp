@@ -2,6 +2,12 @@
 #include <windowevent.h>
 #include "nap/core.h"
 
+RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Immediate"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Mailbox"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "FIFO")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,			nap::rtti::EPropertyMetaData::Default)
@@ -9,7 +15,7 @@ RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sync",			&nap::RenderWindow::mSync,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Mode",			&nap::RenderWindow::mMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

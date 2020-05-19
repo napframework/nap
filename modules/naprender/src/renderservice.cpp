@@ -469,15 +469,18 @@ namespace nap
 
 	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
-		// Get settings
+		// Create settings
 		RenderWindowSettings window_settings;
 		window_settings.width		= window.mWidth;
 		window_settings.height		= window.mHeight;
 		window_settings.borderless	= window.mBorderless;
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
-		window_settings.sync		= window.mSync;
-		window_settings.highdpi = mSettings.mEnableHighDPIMode;
+		window_settings.highdpi		= mSettings.mEnableHighDPIMode;
+
+		// Select mode
+		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
+			window.mMode == RenderWindow::EPresentationMode::Mailbox ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 
 #if 0
 			// The primary window always exists. This is necessary to initialize openGL, and we need a window and an associated GL context for creating

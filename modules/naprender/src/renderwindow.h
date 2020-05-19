@@ -27,6 +27,17 @@ namespace nap
 	public:
 		friend class RenderService;
 
+		/**
+		 * The various image presentation modes.
+		 * Controls the way in which images are presented to screen. 
+		 */
+		enum class EPresentationMode : int
+		{
+			Immediate,					///< The new image immediately replaces the display image, screen tearing may occur.
+			Mailbox,					///< The new image replaces the one image waiting in the queue, becoming the first to be displayed. No screen tearing occurs. Could result in not-shown images, but ensures CPU does not stall.
+			FIFO,						///< Based on first in first out, where every image is presented in order. No screen tearing occurs when drawing faster than monitor refresh rate. CPU could stall.
+		};
+
 		// Default constructor
 		RenderWindow() = default;
 		
@@ -202,7 +213,7 @@ namespace nap
 		int										mHeight			= 512;							///< Property: 'Height' of the window in pixels
 		bool									mBorderless		= false;						///< Property: 'Borderless' if the window has any borders
 		bool									mResizable		= true;							///< Property: 'Resizable' if the window is resizable
-		bool									mSync			= true;							///< Property: 'Sync' If v-sync is enabled
+		EPresentationMode						mMode			= EPresentationMode::Mailbox;	///< Property: 'Mode' the image presentation mode to use
 		std::string								mTitle			= "";							///< Property: 'Title' window title
 		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
 

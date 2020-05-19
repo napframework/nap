@@ -38,16 +38,16 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		std::string		title;										///< Name of the window
-		int				x				= SDL_WINDOWPOS_CENTERED;	///< Position
-		int				y				= SDL_WINDOWPOS_CENTERED;	///< Position
-		int				width			= 512;						//< Width of the window
-		int				height			= 512;						///< Height of the window
-		bool			borderless		= false;					///< If the window is borderless
-		bool			resizable		= true;						///< If the window is resizable
-		bool			visible			= true;						///< If the window is visible or not
-		bool			sync			= true;						///< If v-sync is turned on for the window
-		bool			highdpi			= true;						///< If high-dpi mode is enabled
+		std::string			title;											///< Name of the window
+		int					x				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int					y				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int					width			= 512;							//< Width of the window
+		int					height			= 512;							///< Height of the window
+		bool				borderless		= false;						///< If the window is borderless
+		bool				resizable		= true;							///< If the window is resizable
+		bool				visible			= true;							///< If the window is visible or not
+		VkPresentModeKHR	mode			= VK_PRESENT_MODE_MAILBOX_KHR;	///< Presentation mode
+		bool				highdpi			= true;							///< If high-dpi mode is enabled
 	};
 
 
@@ -190,7 +190,7 @@ namespace nap
 		VkImageView										mDepthImageView = nullptr;
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
-		bool											mSync = false;
+		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 
 		/**
