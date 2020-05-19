@@ -179,7 +179,7 @@ namespace nap
 		// Preference would work
 		if (found_formats.size() == 1 && found_formats[0].format == VK_FORMAT_UNDEFINED)
 		{
-			outFormat.format = VK_FORMAT_B8G8R8A8_SRGB;
+			outFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
 			outFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 			return true;
 		}
@@ -188,7 +188,7 @@ namespace nap
 		for (const auto& found_format_outer : found_formats)
 		{
 			// Format found
-			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_SRGB)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but it appears that the previous OpenGl implementation didn't use it, so some colors could be washed out
+			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_UNORM)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but it appears that the previous OpenGl implementation didn't use it, so some colors could be washed out
 			{
 				outFormat.format = found_format_outer.format;
 				for (const auto& found_format_inner : found_formats)

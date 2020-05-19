@@ -45,7 +45,7 @@ namespace nap
 
 	public:
 		SurfaceDescriptor() = default;
-		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::sRGB);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::Linear);
 
 		int getWidth() const { return mWidth; }
 		int getHeight() const { return mHeight; }
@@ -67,7 +67,7 @@ namespace nap
 		uint32_t			mHeight = 0;								///< Property: 'Height' specifies the height of the texture
 		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;	///< Property: 'DataType' specifies the amount of bytes in a single channel
 		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Property: 'Channels' specifies the channels and their order
-		EColorSpace			mColorSpace = EColorSpace::sRGB;			///< Property: 'ColorSpace' specifies linear or SRGB space. Only applicable to BYTE datatypes
+		EColorSpace			mColorSpace = EColorSpace::Linear;			///< Property: 'ColorSpace' specifies linear or SRGB space. Only applicable to BYTE datatypes
 	};
 }
 

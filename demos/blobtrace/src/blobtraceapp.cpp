@@ -114,6 +114,11 @@ namespace nap
 			UniformFloatInstance* vel_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
 			if (vel_uniform != nullptr)
 				vel_uniform->setValue(vel);
+
+			// Set time in frag shader
+			UniformFloatInstance* time_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			if (time_uniform != nullptr)
+				time_uniform->setValue(mTime);
 		}
 
 		// Increment time based on velocity
