@@ -34,7 +34,6 @@
 			"Rows" : 256,
 			"Columns" : 256
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "DripMaterial",
@@ -57,41 +56,49 @@
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "inCameraPosition",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 4.0
-					}
-				},
-				{
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_af2d9fe4",
-                    "Name": "inLight",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_de59dce3",
-                            "Name": "mPosition",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 2.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformVec3_dfee004c",
-                            "Name": "mIntensity",
-                            "Value": 1.0
-                        }
+
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "inCameraPosition",
+							"Value" : 
+							{
+								"x" : 0.0,
+								"y" : 0.0,
+								"z" : 4.0
+							}
+						},
+						{
+                    		"Type": "nap::UniformStruct",
+                    		"mID": "UniformStruct_af2d9fe4",
+                    		"Name": "inLight",
+                    		"Uniforms": [
+                        		{
+                            		"Type": "nap::UniformVec3",
+                            		"mID": "UniformVec3_de59dce3",
+                            		"Name": "mPosition",
+                            		"Value": {
+                                		"x": 0.0,
+                                		"y": 2.0,
+                                		"z": 1.0
+                            		}
+                        		},
+                        		{
+                            		"Type": "nap::UniformFloat",
+                            		"mID": "UniformVec3_dfee004c",
+                            		"Name": "mIntensity",
+                            		"Value": 1.0
+                        		}
+                    		]
+                		}
                     ]
                 }
 			]			
 		},
-
 		{
 			"Type" : "nap::Scene",
 			"mID": "Scene",		
@@ -105,7 +112,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "Plane",

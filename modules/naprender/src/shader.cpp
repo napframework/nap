@@ -307,6 +307,7 @@ static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const std::s
 	glslang::TGlslIoMapper io_mapper;
 
 	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
+	const char* info_log = program.getInfoLog();
 	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
 		return false;
 

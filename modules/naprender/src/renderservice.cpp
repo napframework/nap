@@ -1257,7 +1257,6 @@ namespace nap
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
-
 		return true;
 	}
 
