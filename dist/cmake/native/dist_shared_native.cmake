@@ -423,3 +423,25 @@ macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
         endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})        
     endforeach(SEARCH_MODULE ${SEARCH_MODULES})
 endmacro()
+
+# Linux: At install time add an additional RPATH onto a file
+# FILEPATH: The file to update
+# EXTRA_RPATH: The new RPATH entry
+macro(linux_append_rpath_at_install_time FILEPATH EXTRA_RPATH)
+    install(CODE "if(EXISTS ${FILEPATH})
+                      execute_process(COMMAND sh -c \"patchelf --print-rpath ${FILEPATH}\"
+                                      OUTPUT_VARIABLE ORIG_RPATH)
+                      set(NEW_RPATH \"\")
+                      if(NOT \${ORIG_RPATH} STREQUAL \"\")
+                          string(STRIP \${ORIG_RPATH} NEW_RPATH)
+                          string(APPEND NEW_RPATH \":\")
+                      endif()
+                      string(APPEND NEW_RPATH \${EXTRA_RPATH})
+                      execute_process(COMMAND patchelf
+                                              --set-rpath
+                                              \"\${NEW_RPATH}\"
+                                              \${FILEPATH}
+                                      ERROR_QUIET)
+                  endif()
+                  ")
+endmacro()

@@ -152,7 +152,7 @@ if(NOT WIN32)
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
 endif()
 
-# Package napkin if we're doing a build from againat released NAP or we're packaging a project with napkin
+# Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin
 if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
     include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
 endif()
