@@ -64,9 +64,6 @@ macro(package_nap)
             package_python()
         endif ()
 
-        # Package Qt into release
-        package_qt()
-
         # Package documentation
         if(INCLUDE_DOCS)
             find_package(Doxygen REQUIRED)
@@ -192,7 +189,7 @@ macro(package_qt)
         endforeach()
 
         # Install plugins
-        install(FILES  ${QT_DIR}/plugins/platforms/qwindowsd.dll
+        install(FILES ${QT_DIR}/plugins/platforms/qwindowsd.dll
                 DESTINATION thirdparty/Qt/plugins/Debug/platforms/
                 CONFIGURATIONS Release)
 
@@ -225,7 +222,7 @@ macro(package_qt)
             macos_replace_qt_framework_links("${QT_FRAMEWORKS}" Qt${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
         endforeach()
 
-        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/Qt/lib")
+        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../thirdparty/Qt/lib")
 
         # Install plugins
         install(FILES ${QT_DIR}/plugins/platforms/libqcocoa.dylib
@@ -633,7 +630,7 @@ endmacro()
 # CONFIG: The build configuration
 # PATH_TO_ADD: The path to check/add
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
-    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
+    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/${MODULE_NAME}.dylib)
     ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 

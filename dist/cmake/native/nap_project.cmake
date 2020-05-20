@@ -138,9 +138,9 @@ export_fbx(${CMAKE_SOURCE_DIR}/data/)
 # Package into packaged project on *nix
 if(NOT WIN32)
     # Set RPATH to search in ./lib
-    if (APPLE)
+    if(APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
-        # install available propery list files if present
+        # Install Information Propertly List file if present
         if(INFO_PLIST)
             install(FILES ${INFO_PLIST} DESTINATION .)
         endif()

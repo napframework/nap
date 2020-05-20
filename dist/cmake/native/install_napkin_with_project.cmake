@@ -145,7 +145,7 @@ if(WIN32)
         )
     endif()
 elseif(APPLE)
-#   list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
+    list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
 #   # Deploy Qt plugins from thirdparty on macOS for running against packaged NAP
 #   add_custom_command(TARGET ${PROJECT_NAME}
@@ -223,14 +223,14 @@ elseif(APPLE)
     # Update paths to Qt frameworks in libqcocoa plugin
     macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
                                                   "libqcocoa"
-                                                  ${CMAKE_INSTALL_PREFIX}/plugins/platforms/libqcocoa.dylib
+                                                  ${CMAKE_INSTALL_PREFIX}/napkin/plugins/platforms/libqcocoa.dylib
                                                   "@loader_path/../../lib/"
                                                   )
 
     # Update paths to Qt frameworks in napkin
     macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
                                                   "napkin"
-                                                  ${CMAKE_INSTALL_PREFIX}/napkin
+                                                  ${CMAKE_INSTALL_PREFIX}/napkin/napkin
                                                   "@loader_path/lib/"
                                                   )
 else()

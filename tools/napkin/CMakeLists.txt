@@ -93,6 +93,10 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMENT "Copy Resources")
 
 # Package into release build
+
+# Package Qt into release
+package_qt()
+
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
 include(${NAP_ROOT}/cmake/packaging_macros.cmake)
@@ -117,6 +121,8 @@ set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
 set(PATH_TO_THIRDPARTY "../../thirdparty")
 if(APPLE)
+    list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
+
     set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
@@ -134,10 +140,49 @@ if(APPLE)
     foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
                                                                                 "${NAP_MODULES_USAGE_DEPENDENCIES}" 
-                                                                                ${CMAKE_INSTALL_PREFIX}/tools/platform/napkin/${MODULECONFIG}/napkin
-                                                                                "../../../.."
+                                                                                ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
+                                                                                "../.."
                                                                                 "${EXTRA_RPATH}")
     endforeach()
+
+    # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
+    # remotely (from thirdparty)
+    install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins
+            DESTINATION tools/napkin/
+            CONFIGURATIONS Release
+            )
+
+    # Update paths to Qt frameworks in Napkin. Using explicit paths in an attempt to avoid loading
+    # any installed Qt library.
+    macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
+                                                  UNUSED
+                                                  ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
+                                                  "@rpath"
+                                                  )
+
+#   ######### TODO review the need for an equivalent of these in Napkin relocation ############
+
+#   set(PATH_TO_NAP_ROOT "@executable_path/../../../..")
+
+#   # Add core libs path to RPATH
+#   add_custom_command(TARGET ${PROJECT_NAME}
+#                      POST_BUILD
+#                      COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+#                              -add_rpath ${PATH_TO_NAP_ROOT}/lib/Release
+#                              ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
+#                      )
+
+#   # Add module paths to RPATH
+#   foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
+#       add_custom_command(TARGET ${PROJECT_NAME}
+#                          POST_BUILD
+#                          COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+#                                  -add_rpath ${PATH_TO_NAP_ROOT}/modules/${MODULE_NAME}/lib/Release
+#                                  ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
+#                          )
+#   endforeach()
+
+#   ###########################################################################################
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
