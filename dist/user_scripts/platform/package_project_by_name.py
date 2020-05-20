@@ -253,16 +253,16 @@ def process_project_info(project_path):
             return (None, None)
 
     # Some simple validation on loaded JSON
-    if not 'version' in project_info:
-        print("Missing 'version' in %s" % PROJECT_INFO_FILE)
+    if not 'Version' in project_info:
+        print("Missing 'Version' in %s" % PROJECT_INFO_FILE)
         return (None, None)
-    if not 'title' in project_info:
-        print("Missing 'title' in %s" % PROJECT_INFO_FILE)
+    if not 'Title' in project_info:
+        print("Missing 'Title' in %s" % PROJECT_INFO_FILE)
         return (None, None)
 
     # Read our version
-    version = project_info['version']
-    full_project_name = project_info['title']
+    version = project_info['Version']
+    full_project_name = project_info['Title']
 
     # Return version for population into package name
     return (version, full_project_name)
