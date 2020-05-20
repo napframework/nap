@@ -163,17 +163,17 @@ namespace nap
 		}
 		
 		// Basic validation
-		rapidjson::Value::ConstMemberIterator dependenciesElement = document.FindMember("dependencies");
-		if (!errorState.check(dependenciesElement != document.MemberEnd(), "Unable to find required 'dependencies' module info field"))
+		rapidjson::Value::ConstMemberIterator dependenciesElement = document.FindMember("RequiredModules");
+		if (!errorState.check(dependenciesElement != document.MemberEnd(), "Unable to find required 'RequiredModules' module info field"))
 			return false;
-		if (!errorState.check(dependenciesElement->value.IsArray(), "'dependencies' module info field must be an array"))
+		if (!errorState.check(dependenciesElement->value.IsArray(), "'RequiredModules' module info field must be an array"))
 			return false;
 		
 		// Populate the output list
 		for (std::size_t index = 0; index < dependenciesElement->value.Size(); ++index)
 		{
 			const rapidjson::Value& json_element = dependenciesElement->value[index];
-			if (!errorState.check(json_element.IsString(), "Entries in 'dependencies' array in module info field must be a strings"))
+			if (!errorState.check(json_element.IsString(), "Entries in 'RequiredModules' array in module info field must be a strings"))
 				return false;
 			
 			dependencies.push_back(json_element.GetString());

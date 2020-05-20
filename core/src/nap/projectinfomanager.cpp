@@ -37,23 +37,23 @@ namespace nap
 		}
 		
 		// Basic validation
-		rapidjson::Value::ConstMemberIterator modules = document.FindMember("modules");
-		if (!errorState.check(modules != document.MemberEnd(), "Unable to find required 'modules' project info field"))
+		rapidjson::Value::ConstMemberIterator modules = document.FindMember("RequiredModules");
+		if (!errorState.check(modules != document.MemberEnd(), "Unable to find required 'RequiredModules' project info field"))
 			return false;
 		
-		if (!errorState.check(modules->value.IsArray(), "'modules' project info field must be an array"))
+		if (!errorState.check(modules->value.IsArray(), "'RequiredModules' project info field must be an array"))
 			return false;
 
-		if (!errorState.check(document.HasMember("title"), "Unable to find required 'title' project info field"))
+		if (!errorState.check(document.HasMember("Title"), "Unable to find required 'Title' project info field"))
 			return false;
 		
-		if (!errorState.check(document["title"].IsString(), "'version' project info field must be a string"))
+		if (!errorState.check(document["Title"].IsString(), "'Title' project info field must be a string"))
 			return false;
 
-		if (!errorState.check(document.HasMember("version"), "Unable to find required 'version' project info field"))
+		if (!errorState.check(document.HasMember("Version"), "Unable to find required 'Version' project info field"))
 			return false;
 
-		if (!errorState.check(document["version"].IsString(), "'version' project info field must be a string"))
+		if (!errorState.check(document["Version"].IsString(), "'Version' project info field must be a string"))
 			return false;
 	
 		// Populate into info struct and return
@@ -63,14 +63,14 @@ namespace nap
 		for (std::size_t index = 0; index < modules->value.Size(); ++index)
 		{
 			const rapidjson::Value& json_element = modules->value[index];
-			if (!errorState.check(json_element.IsString(), "Entries in 'modules' array in project info field must be a strings"))
+			if (!errorState.check(json_element.IsString(), "Entries in 'RequiredModules' array in project info field must be a strings"))
 				return false;
 			
 			result.mModules.push_back(json_element.GetString());
 		}
 		
-		result.mTitle = document["title"].GetString();
-		result.mVersion = document["version"].GetString();
+		result.mTitle = document["Title"].GetString();
+		result.mVersion = document["Version"].GetString();
 		
 		return true;
 	}
