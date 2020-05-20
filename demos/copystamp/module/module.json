@@ -1,7 +1,10 @@
 {
-    "dependencies": [
-        "mod_naprender",
-        "mod_napmath",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_naprender", 
+        "mod_napmath", 
         "mod_napscene"
-    ]
+    ], 
+    "WindowsDllSearchPaths": []
 }

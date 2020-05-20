@@ -1,6 +1,9 @@
 {
-    "dependencies": [
-		"mod_napparameter",
-		"mod_napimgui"
-    ]
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napparameter", 
+        "mod_napimgui"
+    ], 
+    "WindowsDllSearchPaths": []
 }

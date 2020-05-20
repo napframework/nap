@@ -1,5 +1,8 @@
 {
-    "dependencies": [
-    	"mod_napscene"
-    ]
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": []
 }

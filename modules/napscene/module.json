@@ -1,5 +1,8 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
         "mod_napmath"
-    ]
+    ], 
+    "WindowsDllSearchPaths": []
 }

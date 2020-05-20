@@ -1,6 +1,9 @@
 {
-    "dependencies": [
-        "mod_napinput",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napinput", 
         "mod_napapp"
-    ]
+    ], 
+    "WindowsDllSearchPaths": []
 }
