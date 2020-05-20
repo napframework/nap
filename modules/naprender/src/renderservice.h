@@ -313,6 +313,7 @@ namespace nap
 		VkCommandPool							mCommandPool = nullptr;
 		VkFormat								mDepthFormat;
 		unsigned int							mGraphicsQueueIndex = -1;
+		VkSampleCountFlagBits					mMaxSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
 	};

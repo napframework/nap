@@ -47,8 +47,28 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
-	*	@return the set of layers to be initialized with Vulkan
-	*/
+	 * @return max sample count associated with the given physical device
+	 */
+	static VkSampleCountFlagBits getMaxSampleCount(VkPhysicalDevice physicalDevice)
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & VK_SAMPLE_COUNT_64_BIT)	{ return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT)	{ return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT)	{ return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT)		{ return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT)		{ return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT)		{ return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
+
+	/**
+	 *	@return the set of layers to be initialized with Vulkan
+	 */
 	const std::set<std::string>& getRequestedLayerNames()
 	{
 		static std::set<std::string> layers;
@@ -248,12 +268,12 @@ namespace nap
 
 
 	/**
-	* Allows the user to select a GPU (physical device)
-	* @return if query, selection and assignment was successful
-	* @param outDevice the selected physical device (gpu)
-	* @param outQueueFamilyIndex queue command family that can handle graphics commands
-	*/
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, uint32_t& outDeviceVersion, unsigned int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	 * Allows the user to select a GPU (physical device)
+	 * @return if query, selection and assignment was successful
+	 * @param outDevice the selected physical device (gpu)
+	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
+	 */
+	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, uint32_t& outDeviceVersion, unsigned int& outQueueFamilyIndex, VkSampleCountFlagBits& outMaxSamples, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -308,6 +328,8 @@ namespace nap
 		outDevice = selected_device;
 		outDeviceVersion = physical_device_properties[0].apiVersion;	// The actual version of the device, which may be different from what we requested in the ApplicationInfo
 		outQueueFamilyIndex = queue_node_index;
+		outMaxSamples = getMaxSampleCount(selected_device);
+
 		return true;
 	}
 
@@ -1044,7 +1066,7 @@ namespace nap
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
 		// Select GPU after succsessful creation of a vulkan instance
-		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceVersion, mGraphicsQueueIndex, errorState))
+		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceVersion, mGraphicsQueueIndex, mMaxSamples, errorState))
 			return false;
 
 		// Create a logical device that interfaces with the physical device
@@ -1190,6 +1212,7 @@ namespace nap
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 	}
+
 
 	void RenderService::beginFrame()
 	{
