@@ -434,3 +434,24 @@ macro(copy_module_json_to_bin)
                            COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
     endif()
 endmacro()
+
+# Copy appropriate path mapping in cached location alongside binary
+function(deploy_single_path_mapping)
+    if(WIN32)
+        set(MAPPINGS_PREFIX win64)
+    else()
+        set(MAPPINGS_PREFIX unix)
+    endif()
+    set(SOURCE_MAPPING ${NAP_ROOT}/build_tools/path_mappings/${MAPPINGS_PREFIX}/source.json)
+    if(APPLE OR WIN32)
+        # Multi build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
+    else()
+        # Single build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>/cache/path_mapping.json)
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_MAPPING} ${DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping")
+endfunction()

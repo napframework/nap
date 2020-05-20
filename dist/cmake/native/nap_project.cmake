@@ -135,6 +135,9 @@ endif()
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
+# Copy path mapping
+deploy_single_path_mapping()
+
 # Package into packaged project on *nix
 if(NOT WIN32)
     # Set RPATH to search in ./lib

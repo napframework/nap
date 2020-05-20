@@ -445,3 +445,23 @@ macro(linux_append_rpath_at_install_time FILEPATH EXTRA_RPATH)
                   endif()
                   ")
 endmacro()
+
+# Deploy appropriate path mapping to cache location alongside binary, and install
+# in packaged app
+function(deploy_single_path_mapping)
+    set(SOURCE_MAPPING ${NAP_ROOT}/tools/platform/path_mappings/framework_release.json)
+    if(APPLE OR WIN32)
+        # Multi build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
+    else()
+        # Single build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>/cache/path_mapping.json)
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_MAPPING} ${DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping")
+
+    set(SOURCE_MAPPING ${NAP_ROOT}/tools/platform/path_mappings/packaged_app.json)
+    install(FILES ${SOURCE_MAPPING} DESTINATION cache RENAME path_mapping.json)
+endfunction()

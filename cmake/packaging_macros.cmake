@@ -38,6 +38,9 @@ macro(package_nap)
         file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/user_scripts/platform/*py")
         install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
 
+        # Path mappings
+        package_path_mappings()
+
         # Package project directory package & regenerate shortcuts
         package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
 
@@ -668,6 +671,11 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
         add_macos_glew_rpath()
     endif()
 
+    # Provide path mapping
+    if(NOT NAP_PACKAGED_BUILD)
+        deploy_single_path_mapping()
+    endif()
+
     # Run FBX converter
     if(${RUN_FBX_CONVERTER} AND NOT NAP_PACKAGED_BUILD)
         export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
@@ -696,3 +704,15 @@ function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
         endif()
     endif()
 endfunction() 
+
+# Package path mappings, for appropriate platform
+function(package_path_mappings)
+    if(WIN32)
+        set(MAPPINGS_PREFIX win64)
+    else()
+        set(MAPPINGS_PREFIX unix)
+    endif()
+    install(DIRECTORY ${NAP_ROOT}/build_tools/path_mappings/${MAPPINGS_PREFIX}/ 
+            DESTINATION tools/platform/path_mappings 
+            PATTERN "source.json" EXCLUDE)
+endfunction()
