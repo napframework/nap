@@ -16,15 +16,19 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
-
-if(NOT DEFINED NAP_PACKAGED_BUILD)
-    if(APPLE OR MSVC)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/Release/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/Debug/napkin)
-    else()
-        set(NAPKIN_OUTPUT_PATH ${NAP_ROOT}/bin/${CMAKE_BUILD_TYPE}/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${NAPKIN_OUTPUT_PATH})
-        file(MAKE_DIRECTORY ${NAPKIN_OUTPUT_PATH})
+if(MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/Release/napkin)
+    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/Debug/napkin)
+else()
+    if(NOT DEFINED NAP_PACKAGED_BUILD)
+        if(APPLE)
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/Release/napkin)
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/Debug/napkin)
+        else()
+            set(NAPKIN_OUTPUT_PATH ${NAP_ROOT}/bin/${CMAKE_BUILD_TYPE}/napkin)
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${NAPKIN_OUTPUT_PATH})
+            file(MAKE_DIRECTORY ${NAPKIN_OUTPUT_PATH})
+        endif()
     endif()
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
@@ -93,39 +97,44 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMENT "Copy Resources")
 
 if(MSVC)
+    if(DEFINED NAP_PACKAGED_BUILD)
+        set(NAPKIN_COPY_SRC ${NAP_ROOT}/packaging_bin)
+    else()
+        set(NAPKIN_COPY_SRC ${NAP_ROOT}/bin)
+    endif()
+
     # Deploy dependent modules on Win64
     foreach(MODULE_NAME ${NAP_MODULES_USAGE_DEPENDENCIES})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
                                    -E copy
-                                   ${NAP_ROOT}/bin/$<CONFIG>/${MODULE_NAME}.dll
+                                   ${NAPKIN_COPY_SRC}/$<CONFIG>/${MODULE_NAME}.dll
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
-
-# TODO build a source version of this? or put in temporary specific DLL-copying until
-#      we match source structures
-#       # Run any module_extra to install module dependent DLLs
-#       set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
-#       if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
-#           include(${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
-#       endif()
-#       unset(INSTALLING_MODULE_FOR_NAPKIN)
     endforeach()
+
+    # Deploy Qt plugins from thirdparty on Win64. Unlike macOS, Windows won't find 
+    # the plugins under a plugins folder, the categories need to sit beside the binary.
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${QTDIR}/plugins/platforms $<TARGET_FILE_DIR:${PROJECT_NAME}>/platforms
+        )
 
     # NAP RTTI
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/bin/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-    )
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
 
     # NAP core 
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/bin/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-    )
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
 
     # Copy freeimage DLL to build directory
     find_package(freeimage REQUIRED)
@@ -143,6 +152,39 @@ if(MSVC)
 
     # Python
     copy_windows_python_dlls_to_bin()
+
+
+    # Transitional thirdparty DLL copying until source and framework release 
+    # structures are aligned (and we can use a shared module_extra.cmake) ##
+
+    # mod_napvideo
+    copy_windows_ffmpeg_dlls()
+
+    # mod_napfont
+    if(NOT DEFINED FREETYPE_INCLUDE_DIRS)
+        find_package(freetype REQUIRED)
+    endif()
+    copy_freetype_dll()
+
+    # mod_napaudio
+    if(NOT DEFINED LIBSNDFILE_LIB_DIR)
+        find_package(libsndfile REQUIRED)
+    endif()
+    if(NOT DEFINED PORTAUDIO_LIB_DIR)
+        find_package(portaudio REQUIRED)
+    endif()
+    if(NOT DEFINED LIBMPG123_LIB_DIR)
+        find_package(libmpg123 REQUIRED)
+    endif()
+    set(FILES_TO_COPY
+        ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
+        ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
+        ${LIBMPG123_LIB_DIR}/libmpg123.dll
+        )
+    copy_files_to_bin(${FILES_TO_COPY})
+
+    ########################################################################
+
 endif()               
 
 # Package into release build
@@ -154,9 +196,19 @@ set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
 include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 
-install(TARGETS ${PROJECT_NAME}
-        DESTINATION tools/napkin
-        CONFIGURATIONS Release)
+if(MSVC)
+    # On Windows, for now, dump our whole napkin directory from packaging_bin
+    # into the release as it contains the required DLLs (as we loaded them in 
+    # there for running Napkin against source from its own directory)
+    install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release/napkin
+            DESTINATION tools/)
+else()
+    # Deploy Napkin binary into release on *nix
+    install(TARGETS ${PROJECT_NAME}
+            DESTINATION tools/napkin
+            CONFIGURATIONS Release)
+endif()
+
 if(APPLE)
     # Remove thirdparty from framework release at install time
     macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
