@@ -72,11 +72,10 @@ namespace nap
 	const std::set<std::string>& getRequestedLayerNames()
 	{
 		static std::set<std::string> layers;
+#ifndef NDEBUG
 		if (layers.empty())
-		{
-			layers.emplace("VK_LAYER_NV_optimus");
 			layers.emplace("VK_LAYER_LUNARG_standard_validation");
-		}
+#endif // NDEBUG
 		return layers;
 	}
 
@@ -157,7 +156,6 @@ namespace nap
 		std::vector<VkLayerProperties> instance_layers(instance_layer_count);
 		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers.data()) == VK_SUCCESS, "Unable to retrieve vulkan instance layer names"))
 			return false;
-
 		Logger::info("Found %d instance layers:", instance_layer_count);
 
 		const std::set<std::string>& requested_layers = getRequestedLayerNames();
@@ -788,9 +786,10 @@ namespace nap
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
 		/*
-		// multisampling.rasterizationSamples = sampleCount; ///< BREAKS???
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampling.sampleShadingEnable = static_cast<int>(enableMultisampling);
+		multisampling.rasterizationSamples = sampleCount; ///< BREAKS???
 		multisampling.pNext = nullptr;
 		multisampling.flags = 0;
 		multisampling.minSampleShading = 1.0f;
@@ -1074,8 +1073,8 @@ namespace nap
 			return false;
 
 		// Warn when not all requested layers could be found
-		if (!errorState.check(found_layers.size() == getRequestedLayerNames().size(), "Not all requested layers were found"))
-			return false;
+		if (found_layers.size() != getRequestedLayerNames().size())
+			nap::Logger::warn("Not all requested layers were found");
 
 		// Create Vulkan Instance
 		if (!createVulkanInstance(found_layers, found_extensions, mInstance, errorState))
