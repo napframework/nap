@@ -810,7 +810,7 @@ namespace nap
 		{
 			// create a string stream to create identifier of this object
 			std::ostringstream tan_stream;
-			tan_stream << stringStream.str() << (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan";
+			tan_stream << stringStream.str() << ( (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan" );
 
 			//
 			const math::FComplex<float, float>& tan_complex = (type == SequenceCurveEnums::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
@@ -1161,7 +1161,6 @@ namespace nap
 				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
 				if (ImGui::InputFloat("value", &value))
 				{
-					float translated_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 					curve_controller.changeCurvePoint(
 						action->mTrackID,
@@ -1235,7 +1234,6 @@ namespace nap
 				float value = action->mValue * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) + action->mMinimum[curveIndex];
 				if (ImGui::InputFloat("value", &value))
 				{
-					float translated_value = (value - action->mMinimum[curveIndex]) / (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]);
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 					curve_controller.changeCurvePoint(
 						action->mTrackID,
@@ -1483,7 +1481,6 @@ namespace nap
 			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		const float points_per_pixel = 0.5f;
-		bool curve_selected			 = false;
 
 		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 

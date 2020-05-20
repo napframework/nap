@@ -25,6 +25,8 @@ namespace nap
 		 * @param service reference to SequenceService
 		 */
 		SequencePlayerOutput(SequenceService& service);
+        
+        virtual ~SequencePlayerOutput(){};
 
 		/**
 		 * upon initialisation input registers itself to the service

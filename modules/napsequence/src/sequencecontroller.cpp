@@ -51,10 +51,7 @@ namespace nap
 			}
 		}
 
-		for (auto& track : mPlayer.mSequence->mTracks)
-		{
-			mPlayer.mSequence->mDuration = longest_track_duration;
-		}
+        mPlayer.mSequence->mDuration = longest_track_duration;
 	}
 
 

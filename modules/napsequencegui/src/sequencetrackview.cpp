@@ -205,9 +205,6 @@ namespace nap
 			// push id
 			ImGui::PushID(track.mID.c_str());
 
-			// get child focus
-			bool track_has_focus = ImGui::IsMouseHoveringWindow();
-
 			// get window drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 

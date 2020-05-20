@@ -34,6 +34,8 @@ namespace nap
 		 */
 		SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
+        virtual ~SequenceTrackView(){};
+        
 		/**
 		 * draws track 
 		 * given track derived class is expected to be of track type that is used by this view

@@ -18,5 +18,6 @@ namespace nap
 	{
 		RTTI_ENABLE(SequenceTrack)
 	public:
+         virtual ~SequenceTrackEvent(){};
 	};
 }

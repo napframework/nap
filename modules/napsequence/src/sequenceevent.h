@@ -16,6 +16,8 @@ namespace nap
 	{
 		RTTI_ENABLE(Event)
 	public:
+        virtual ~SequenceEventBase(){};
+        
 		/**
 		 * checks wether this event is of type T
 		 * @tparam T the event type

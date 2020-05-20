@@ -27,6 +27,8 @@ namespace nap
 		 * @param player reference to player being used
 		 */
 		SequenceController(SequencePlayer& player) : mPlayer(player) {};
+        
+        virtual ~SequenceController(){};
 
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track

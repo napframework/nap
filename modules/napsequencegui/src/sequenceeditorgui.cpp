@@ -542,7 +542,6 @@ namespace nap
 					}
 				}
 
-				int index = 0;
 				SequenceTrackView::Combo("Sequences",
 					&load_action->mSelectedShowIndex,
 					shows);

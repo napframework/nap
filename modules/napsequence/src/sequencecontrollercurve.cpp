@@ -38,9 +38,6 @@ namespace nap
 		performEditAction([this, trackID, segmentID, duration, &return_duration]()
 		{
 			//
-			Sequence& sequence = getSequence();
-
-			//
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
@@ -918,7 +915,6 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::deleteCurvePoint<glm::vec3>(SequenceTrackSegment& segment, const int index, int curveIndex);
 	template NAPAPI void SequenceControllerCurve::deleteCurvePoint<glm::vec4>(SequenceTrackSegment& segment, const int index, int curveIndex);
 
-	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum);
 	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<glm::vec2>(const std::string& trackID, glm::vec2 minimum, glm::vec2 maximum);
 	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<glm::vec3>(const std::string& trackID, glm::vec3 minimum, glm::vec3 maximum);
 	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<glm::vec4>(const std::string& trackID, glm::vec4 minimum, glm::vec4 maximum);

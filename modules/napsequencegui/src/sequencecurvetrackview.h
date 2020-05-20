@@ -287,8 +287,8 @@ namespace nap
 			int mCurveIndex;
 			float mValue;
 			float mTime;
+            T mMinimum;
 			T mMaximum;
-			T mMinimum;
 		};
 
 		template<typename T>
@@ -309,9 +309,9 @@ namespace nap
 			int mControlPointIndex;
 			int mCurveIndex;
 			float mValue;
-			float mTime;
+            T mMinimum;
 			T mMaximum;
-			T mMinimum;
+            float mTime;
 		};
 
 		class OpenCurveTypePopup : public Action
@@ -357,8 +357,8 @@ namespace nap
 			std::string mTrackID;
 			std::string mSegmentID;
 			int mControlPointIndex;
+            int mCurveIndex;
 			SequenceCurveEnums::TanPointTypes mType;
-			int mCurveIndex;
 		};
 
 		class OpenEditCurveSegmentPopup : public Action

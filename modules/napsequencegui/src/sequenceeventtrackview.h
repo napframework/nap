@@ -144,8 +144,8 @@ namespace nap
 
 			std::string mTrackID;
 			std::string mSegmentID;
-			T mValue;
-			ImVec2 mWindowPos;
+            ImVec2 mWindowPos;
+			T mValue;			
 			double mStartTime;
 		};
 	}
@@ -182,7 +182,6 @@ namespace nap
 							 auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<std::string>>();
 							 std::string& message = static_cast<std::string&>(edit_action->mValue);
 
-							 int n = message.length();
 							 char buffer[256];
 							 strcpy(buffer, message.c_str());
 

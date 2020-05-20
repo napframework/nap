@@ -50,9 +50,6 @@ namespace nap
 		performEditAction([this, trackID, segmentID]()
 		{
 			//
-			Sequence& sequence = getSequence();
-
-			//
 			auto* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 

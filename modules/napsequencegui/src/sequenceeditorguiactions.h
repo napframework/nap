@@ -21,6 +21,8 @@ namespace nap
 		{
 			RTTI_ENABLE()
 		public:
+            virtual ~Action(){}
+            
 			/**
 			 * @return true of action is of type
 			 */

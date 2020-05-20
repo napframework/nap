@@ -22,6 +22,8 @@ namespace nap
 		 * @return true if data valid
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+        
+        virtual ~SequenceTrackSegment(){};
 	public:
 		double mStartTime = 0.0; ///< Property: 'Start time' start time of segment in track
 		double mDuration = 1.0; ///< Property: 'Duration' duration of segment
