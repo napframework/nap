@@ -92,6 +92,59 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
+if(MSVC)
+    # Deploy dependent modules on Win64
+    foreach(MODULE_NAME ${NAP_MODULES_USAGE_DEPENDENCIES})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} 
+                                   -E copy
+                                   ${NAP_ROOT}/bin/$<CONFIG>/${MODULE_NAME}.dll
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           )
+
+# TODO build a source version of this? or put in temporary specific DLL-copying until
+#      we match source structures
+#       # Run any module_extra to install module dependent DLLs
+#       set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
+#       if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
+#           include(${NAP_ROOT}/modules/${MODULE_NAME}/module_extra.cmake)
+#       endif()
+#       unset(INSTALLING_MODULE_FOR_NAPKIN)
+    endforeach()
+
+    # NAP RTTI
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/bin/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+
+    # NAP core 
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/bin/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+
+    # Copy freeimage DLL to build directory
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over Windows graphics DLLs to build directory
+    copy_base_windows_graphics_dlls()
+
+    # Copy over Assimp to build directory
+    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
+
+    # RTTR
+    find_rttr()
+    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+
+    # Python
+    copy_windows_python_dlls_to_bin()
+endif()               
+
 # Package into release build
 
 # Package Qt into release
