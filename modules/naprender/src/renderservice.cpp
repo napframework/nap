@@ -273,7 +273,7 @@ namespace nap
 	 * @param outDevice the selected physical device (gpu)
 	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
 	 */
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, uint32_t& outDeviceVersion, unsigned int& outQueueFamilyIndex, VkSampleCountFlagBits& outMaxSamples, utility::ErrorState& errorState)
+	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -287,18 +287,25 @@ namespace nap
 
 		// Show device information
 		Logger::info("Found %d GPUs:", physical_device_count);
-
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
+		int discrete_gpu_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
 			VkPhysicalDevice physical_device = physical_devices[index];
 			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-
 			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+
+			// Detect if it's a discrete GPU
+			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && discrete_gpu_idx < 0)
+				discrete_gpu_idx = index;
 		}
 
-		VkPhysicalDevice selected_device = physical_devices[0];
+		// Select first available discrete GPU if present
+		int gpu_idx = discrete_gpu_idx >= 0 ? discrete_gpu_idx : 0;
+
+		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
+		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
 
 		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
 		unsigned int family_queue_count(0);
@@ -311,7 +318,7 @@ namespace nap
 		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, queue_properties.data());
 
 		// Make sure the family of commands contains an option to issue graphical commands.
-		unsigned int queue_node_index = -1;
+		int queue_node_index = -1;
 		for (unsigned int i = 0; i < family_queue_count; i++)
 		{
 			if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -320,15 +327,17 @@ namespace nap
 				break;
 			}
 		}
-
 		if (!errorState.check(queue_node_index >= 0, "Unable to find graphics command queue on device"))
 			return false;
 
 		// Set the output variables
 		outDevice = selected_device;
-		outDeviceVersion = physical_device_properties[0].apiVersion;	// The actual version of the device, which may be different from what we requested in the ApplicationInfo
+		outProperties = physical_device_properties[gpu_idx];
 		outQueueFamilyIndex = queue_node_index;
-		outMaxSamples = getMaxSampleCount(selected_device);
+
+		// Extract device features
+		VkPhysicalDeviceFeatures selected_device_featues;
+		vkGetPhysicalDeviceFeatures(selected_device, &outFeatures);
 
 		return true;
 	}
@@ -337,19 +346,17 @@ namespace nap
 	/**
 	*	Creates a logical device
 	*/
-	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
+	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, VkPhysicalDeviceFeatures& physicalDeviceFeatures, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
 		for (const auto& layer : layerNames)
 			layer_names.emplace_back(layer.c_str());
 
-
 		// Get the number of available extensions for our graphics card
 		uint32_t device_property_count(0);
 		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
-
 		Logger::info("Found %d device extensions", device_property_count);
 
 		// Acquire their actual names
@@ -363,7 +370,6 @@ namespace nap
 		for (int index = 0; index < device_properties.size(); ++index)
 		{
 			const VkExtensionProperties& ext_property = device_properties[index];
-
 			Logger::info("%d: %s", index, ext_property.extensionName);
 
 			auto it = required_extension_names.find(std::string(ext_property.extensionName));
@@ -372,9 +378,11 @@ namespace nap
 
 		}
 
+		// Make sure we found all required extensions
 		if (!errorState.check(required_extension_names.size() == device_property_names.size(), "Unable to find all required extensions"))
 			return false;
 
+		// Log the extensions we can use
 		for (const auto& name : device_property_names)
 			Logger::info("Applying device extension %s", name);
 
@@ -389,7 +397,11 @@ namespace nap
 		queue_create_info.pNext = NULL;
 		queue_create_info.flags = NULL;
 
-		// Device creation information
+		// Enable specific features, we could also enable all supported features here.
+		VkPhysicalDeviceFeatures device_features {0};
+		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
+
+		// Device creation information	
 		VkDeviceCreateInfo create_info;
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		create_info.queueCreateInfoCount = 1;
@@ -399,7 +411,7 @@ namespace nap
 		create_info.ppEnabledExtensionNames = device_property_names.data();
 		create_info.enabledExtensionCount = static_cast<uint32_t>(device_property_names.size());
 		create_info.pNext = NULL;
-		create_info.pEnabledFeatures = NULL;
+		create_info.pEnabledFeatures = &device_features;
 		create_info.flags = NULL;
 
 		// Finally we're ready to create a new device
@@ -696,7 +708,7 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, bool enableMultisampling, VkSampleCountFlagBits sampleCount, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -774,8 +786,12 @@ namespace nap
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
+		multisampling.sampleShadingEnable = enableMultisampling ? VK_TRUE : VK_FALSE;
+		// multisampling.rasterizationSamples = sampleCount; ///< BREAKS???
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampling.pNext = nullptr;
+		multisampling.flags = 0;
+		multisampling.minSampleShading = 1.0f;
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil = getDepthStencilCreateInfo(materialInstance);
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
@@ -837,7 +853,7 @@ namespace nap
 			return pos->second;
 
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), mPhysicalDeviceFeatures.variableMultisampleRate == 1, mMaxSamples, pipeline.mLayout, pipeline.mPipeline, errorState))
 			return Pipeline();
 
 		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
@@ -1066,11 +1082,19 @@ namespace nap
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
 		// Select GPU after succsessful creation of a vulkan instance
-		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceVersion, mGraphicsQueueIndex, mMaxSamples, errorState))
+		VkPhysicalDeviceFeatures	physical_device_features;
+		VkPhysicalDeviceProperties	physical_device_properties;
+
+		// Select GPU, prefers discrete graphics over integrated
+		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
-		// Create a logical device that interfaces with the physical device
-		if (!createLogicalDevice(mPhysicalDevice, mGraphicsQueueIndex, found_layers, mDevice, errorState))
+		// Figure out max multi samples if GPU supports feature
+		if (mPhysicalDeviceFeatures.variableMultisampleRate == VK_TRUE)
+			mMaxSamples = getMaxSampleCount(mPhysicalDevice);
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, mDevice, errorState))
 			return false;
 
 		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create commandpool"))
@@ -1210,7 +1234,7 @@ namespace nap
 		submitInfo.pCommandBuffers = &mTransferCommandBuffers[mCurrentFrameIndex];
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		assert(result == VK_SUCCESS);
+		//assert(result == VK_SUCCESS);
 	}
 
 

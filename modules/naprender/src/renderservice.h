@@ -203,10 +203,38 @@ namespace nap
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
 
-		VkInstance getVulkanInstance() const { return mInstance; }
-		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
-		uint32_t getPhysicalDeviceVersion() const { return mPhysicalDeviceVersion; }
-		VkDevice getDevice() const { return mDevice; }
+		/**
+		 * @return Vulkan runtime instance
+		 */
+		VkInstance getVulkanInstance() const										{ return mInstance; }
+
+		/**
+		 * @return Selected Vulkan compatible hardware device
+		 */
+		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice; }
+
+		/**
+		 * @return all supported hardware features
+		 */
+		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDeviceFeatures; }
+
+		/**
+		* @return the version of Vulkan supported by the device
+		*/
+		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDeviceProperties.apiVersion; }
+
+		/**
+		 * @return all hardware properties
+		 */
+		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDeviceProperties; }
+
+		/**
+		 * Returns the handle to the logical Vulkan device,
+		 * represents the hardware together with the extensions, selected queues and features enabled for it.
+		 * @return The logical Vulkan device.
+		 */
+		VkDevice getDevice() const						{ return mDevice; }
+
 		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
 		VkImageAspectFlags getDepthAspectFlags() const;
@@ -308,11 +336,13 @@ namespace nap
 		VkInstance								mInstance = nullptr;
 		VkDebugReportCallbackEXT				mDebugCallback = nullptr;
 		VkPhysicalDevice						mPhysicalDevice = nullptr;
+		VkPhysicalDeviceFeatures				mPhysicalDeviceFeatures;
+		VkPhysicalDeviceProperties				mPhysicalDeviceProperties;
 		uint32_t								mPhysicalDeviceVersion = 0;
 		VkDevice								mDevice = nullptr;
 		VkCommandPool							mCommandPool = nullptr;
 		VkFormat								mDepthFormat;
-		unsigned int							mGraphicsQueueIndex = -1;
+		int										mGraphicsQueueIndex = -1;
 		VkSampleCountFlagBits					mMaxSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
