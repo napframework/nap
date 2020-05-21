@@ -51,7 +51,7 @@ namespace nap
 		mIntersectMesh = mResourceManager->findObject("IntersectMesh");
 
 		// Tell the GUI service to which window to render
-		mGuiService->selectWindow(mRenderWindow);
+		// mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
@@ -183,7 +183,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			// mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
 			// End render pass
 			mRenderWindow->endRendering();

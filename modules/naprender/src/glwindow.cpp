@@ -638,16 +638,16 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderService->getSampleCount(), mRenderPass, errorState))
 			return false;
 
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
 			return false;
 
-		if (!createColorBuffer(mRenderService->getPhysicalDevice(), mDevice, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, swapchainExtent, mSwapchainFormat, mColorImage, mColorImageMemory, mColorImageView, errorState))
+		if (!createColorBuffer(mRenderService->getPhysicalDevice(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mSwapchainFormat, mColorImage, mColorImageMemory, mColorImageView, errorState))
 			return false;
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImageView, mDepthImageView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
