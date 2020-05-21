@@ -301,5 +301,12 @@ elseif(UNIX)
         list(APPEND EXTRA_RPATH lib)
 
         set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+
+        # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
+        # remotely (from thirdparty)
+        install(FILES ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
+                DESTINATION tools/napkin/platforms/
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                )
     endif()
 endif()

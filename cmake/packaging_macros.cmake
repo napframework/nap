@@ -271,6 +271,13 @@ macro(package_qt)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                     )            
         endforeach()
+
+        # Allow Qt platform plugin to find Qt frameworks in thirdparty
+        install(CODE "execute_process(COMMAND patchelf
+                                              --set-rpath
+                                              \$ORIGIN/../../../thirdparty/Qt/lib
+                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
+                                      ERROR_QUIET)")   
     endif()
 endmacro()
 
