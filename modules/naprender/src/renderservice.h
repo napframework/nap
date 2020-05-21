@@ -49,8 +49,8 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		ERasterizationSamples mSampleCount = ERasterizationSamples::Max;		///< Property: 'SampleCount' The number of samples used in Rasterization, valid values are 1, 2, 4, 8, 16 and 32
-		bool mEnableSampleShading = false;										///< Property: 'EnableSampleShading' Reduces texture aliasing if enabled,
+		ERasterizationSamples mSampleCount = ERasterizationSamples::Four;		///< Property: 'SampleCount' The number of samples used in Rasterization, valid values are 1, 2, 4, 8, 16 and 32
+		bool mEnableSampleShading = true;										///< Property: 'EnableSampleShading' Reduces texture aliasing if enabled,
 		bool mEnableHighDPIMode = true;											///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 
 		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
