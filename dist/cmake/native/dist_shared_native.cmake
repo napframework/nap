@@ -326,9 +326,6 @@ endfunction()
 # Copy calling module's module.json to sit alongside module post-build
 macro(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
-    if(UNIX)
-        set(DEST_FILENAME lib${DEST_FILENAME})
-    endif()
     
     if(APPLE)
         # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY

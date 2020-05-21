@@ -108,6 +108,9 @@ else()
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${MODULE_FOLDER_NAME})    
 
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+
 # Add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
