@@ -1,5 +1,6 @@
 #include "rendertexture2d.h"
 #include "nap/core.h"
+#include "renderservice.h"
 
 RTTI_BEGIN_ENUM(nap::ERenderTargetFormat)
 	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGBA8,		"RGBA8"),
@@ -36,14 +37,13 @@ namespace nap
 		switch (mFormat)
 		{
 		case ERenderTargetFormat::Backbuffer:
+			// TODO: This can be a problem when the backbuffer is a window that doesn't have BGRA as a default setup
 			settings.mChannels = ESurfaceChannels::BGRA;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mRenderService->getSampleCount(),  errorState);
 		case ERenderTargetFormat::Depth:
 			settings.mChannels = ESurfaceChannels::Depth;
 			settings.mDataType = ESurfaceDataType::FLOAT;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mRenderService->getSampleCount(), errorState);
 		case ERenderTargetFormat::RGBA8:
 			settings.mChannels = ESurfaceChannels::RGBA;
 			return Texture2D::init(settings, false, errorState);
@@ -56,5 +56,4 @@ namespace nap
 		assert(false);
 		return false;
 	}
-
 }

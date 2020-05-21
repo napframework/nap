@@ -113,7 +113,7 @@ namespace nap
 {
 	namespace 
 	{
-		bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
+		bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 		{
 			VkImageCreateInfo image_info = {};
 			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -127,7 +127,7 @@ namespace nap
 			image_info.tiling = tiling;
 			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			image_info.usage = usage;
-			image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+			image_info.samples = samples;
 			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 			VmaAllocationCreateInfo alloc_info = {};
@@ -333,10 +333,10 @@ namespace nap
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
 	{
-		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
+		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT, errorState);
 	}
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
@@ -346,7 +346,6 @@ namespace nap
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -385,7 +384,7 @@ namespace nap
 		}
 
 		// We create images and imageviews for the amount of frames in flight
-		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, samples, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
 			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;

@@ -47,16 +47,16 @@ namespace nap
 		SurfaceDescriptor() = default;
 		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::Linear);
 
-		int getWidth() const { return mWidth; }
-		int getHeight() const { return mHeight; }
+		int getWidth() const						{ return mWidth; }
+		int getHeight() const						{ return mHeight; }
 		int getPitch() const;
 		int getNumChannels() const;
 		int getChannelSize() const;
 		int getBytesPerPixel() const;
 		uint64_t getSizeInBytes() const;
-		ESurfaceDataType getDataType() const { return mDataType; }
-		ESurfaceChannels getChannels() const { return mChannels; }
-		EColorSpace getColorSpace() const { return mColorSpace; }
+		ESurfaceDataType getDataType() const		{ return mDataType; }
+		ESurfaceChannels getChannels() const		{ return mChannels; }
+		EColorSpace getColorSpace() const			{ return mColorSpace; }
 
 		bool isValid() const { return mWidth != 0 && mHeight != 0; }
 		bool operator==(const SurfaceDescriptor& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }

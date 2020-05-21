@@ -1350,6 +1350,12 @@ namespace nap
 	}
 
 
+	VkSampleCountFlagBits RenderService::getSampleCount() const
+	{
+		return mMaxSamples;
+	}
+
+
 	VkImageAspectFlags RenderService::getDepthAspectFlags() const
 		{
 		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;

@@ -235,6 +235,11 @@ namespace nap
 		 */
 		VkDevice getDevice() const						{ return mDevice; }
 
+		/**
+		 * @return max number of currently supported samples per pixel.
+		 */
+		VkSampleCountFlagBits getSampleCount() const;
+
 		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
 		VkImageAspectFlags getDepthAspectFlags() const;

@@ -2,6 +2,7 @@
 
 // External Includes
 #include "texture2d.h"
+#include "irendertarget.h"
 
 namespace nap
 {
@@ -9,10 +10,10 @@ namespace nap
 
 	enum class ERenderTargetFormat
 	{
-		Backbuffer,		///< The current native format of the color backbuffer
-		RGBA8,			///< RGBA8 4 components, 8 bytes per component
-		R8,				///< R8	1 components, 8 bytes per component
-		Depth			///< Depth Texture used for binding to depth buffer
+		Backbuffer,		///< The current native format of the color render target, sample count based on supported msaa samples
+		RGBA8,			///< RGBA8 4 components, 8 bytes per component, 1 sample per pixel
+		R8,				///< R8	1 components, 8 bytes per component, 1 sample per pixel
+		Depth			///< Depth Texture used for binding to depth buffer, sample count based supported on supported msaa samples
 	};
 
 	/**
@@ -33,9 +34,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int					mWidth		= 0;							///< Property: 'Width' width of the texture in texels
-		int					mHeight		= 0;							///< Property: 'Height' of the texture, in texels
-		ERenderTargetFormat	mFormat		= ERenderTargetFormat::RGBA8;	///< Property: 'Format' format of the texture
-		EColorSpace			mColorSpace	= EColorSpace::Linear;			///< Property: 'ColorSpace' colorspace of the texture
+		int					mWidth		= 0;								///< Property: 'Width' width of the texture in texels
+		int					mHeight		= 0;								///< Property: 'Height' of the texture, in texels
+		ERenderTargetFormat	mFormat		= ERenderTargetFormat::Backbuffer;	///< Property: 'Format' format of the texture
+		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' colorspace of the texture
 	};
 }
