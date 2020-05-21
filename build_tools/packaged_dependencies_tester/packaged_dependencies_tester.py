@@ -9,7 +9,7 @@ import json
 from multiprocessing import cpu_count
 import os
 import re
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, check_output
 import shutil
 import signal
 import sys
@@ -34,7 +34,10 @@ REPORT_FILENAME = 'report.json'
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
 # to these paths helps us identify libraries being source from strange locations, hand installed libs.
 # TODO Handle other architectures.. eventually
-LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', '/lib/x86_64-linux-gnu']
+LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
+                                   '/lib/x86_64-linux-gnu', 
+                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu'
+                                  ]
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
@@ -132,6 +135,73 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxshmfence',
     'libXxf86vm',
     'libz'
+]
+
+# Testing on Debian is an efficiency necessity in the COVID19 moment
+LINUX_EXTRA_DEBIAN = [
+    'libaom',
+    'libasound_module_pcm_a52',
+    'libasound_module_rate_lavrate',
+    'libavcodec',
+    'libavresample',
+    'libavutil',
+    'libblkid',
+    'libcairo',
+    'libcodec2',
+    'libdatrie',
+    'libfontconfig',
+    'libfribidi',
+    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
+    r'libgio-[0-9]+\.[0-9]+',
+    'libglib-2.0',
+    r'libgmodule-[0-9]+\.[0-9]+',
+    r'libgobject-[0-9]+\.[0-9]+',
+    'libgomp',
+    'libgraphite2',
+    'libgsm',
+    'libharfbuzz',
+    'libicudata',
+    'libicuuc',
+    'libmount',
+    'libmp3lame',
+    'libnuma',
+    'libopenjp2',
+    'libopus',
+    r'libpango-[0-9]+\.[0-9]+',
+    r'libpangocairo-[0-9]+\.[0-9]+',
+    r'libpangoft2-[0-9]+\.[0-9]+',
+    'libpcre',
+    'libpcre2-8',
+    'libpixman-1',
+    'libpng16',
+    'librsvg-2',
+    'libselinux',
+    'libshine',
+    'libsnappy',
+    'libsoxr',
+    'libspeex',
+    'libswresample',
+    'libthai',
+    'libtheoradec',
+    'libtheoraenc',
+    'libtwolame',
+    'libuuid',
+    'libva-drm',
+    'libva-x11',
+    'libva',
+    'libvdpau',
+    'libvpx',
+    'libwavpack',
+    'libwebp',
+    'libwebpmux',
+    'libx264',
+    'libx265',
+    'libxcb-render',
+    'libxcb-shm',
+    'libxml2',
+    'libXrender',
+    'libxvidcore',
+    'libzvbi'
 ]
 
 # Extra Linux system libs we accept being used, for Napkin only
@@ -233,6 +303,18 @@ def is_windows():
     """
 
     return sys.platform.startswith('win')
+
+
+def is_debian():
+    """Is this Debian Linux
+
+    Returns
+    -------
+    bool
+        Success
+    """
+
+    return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
 
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
@@ -507,6 +589,8 @@ def linux_system_library_accepted(short_lib_name, testing_napkin):
 
     # Build list of accepted library names
     all_accepted_libs = LINUX_BASE_ACCEPTED_SYSTEM_LIBS
+    if is_debian():
+        all_accepted_libs.extend(LINUX_EXTRA_DEBIAN)
     if testing_napkin:
         all_accepted_libs.extend(LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS)
     
@@ -992,53 +1076,31 @@ def run_build_directory_template_project(template_results, nap_framework_full_pa
 
     os.chdir(projects_dir)
 
-def run_build_directory_napkin(demo_results, napkin_results, nap_framework_full_path):
-    """Run Napkin from the normal build output
+def run_framework_release_napkin(napkin_results, nap_framework_full_path):
+    """Run Napkin from the framework release
 
     Parameters
     ----------
-    demo_results : dict
-        Results for demos
     napkin_results : dict
         Results for Napkin
     nap_framework_full_path : str
         Absolute path to NAP framework
     """
 
-    napkin_results['runFromBuildOutput'] = {}    
+    napkin_results['runFromFrameworkRelease'] = {}    
 
-    # Iterate demos to find a healthy one to test from
-    napkin_run_demo = None
-    for demo_name, this_demo in sorted(demo_results.items()):
-        if 'build' in this_demo and this_demo['build']['success']:
-            napkin_run_demo = demo_name
-            break
-
-    # Fail if there's no healthy demo to run against
-    if napkin_run_demo is None:
-        print("Error: no demo found to run Napkin from")
-        napkin_results['runFromBuildOutput']['success'] = False
-        return
-
-    os.chdir(napkin_run_demo)
-
-    print("- Run Napkin from build output...")
+    print("- Run Napkin from framework release...")
     cwd = os.getcwd()
 
-    # Locate the directory for the build output
-    build_paths = os.listdir('bin')
-    for f in build_paths:
-        if PROJECT_BUILD_TYPE.lower() in f.lower():
-            build_path = f
-
     # Change directory and run
-    os.chdir(os.path.join('bin', build_path))
+    os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin', nap_framework_full_path, True)
-    napkin_results['runFromBuildOutput']['success'] = success
-    napkin_results['runFromBuildOutput']['stdout'] = stdout
-    napkin_results['runFromBuildOutput']['stderr'] = stderr
-    napkin_results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+    napkin_results['runFromFrameworkRelease']['success'] = success
+    napkin_results['runFromFrameworkRelease']['stdout'] = stdout
+    napkin_results['runFromFrameworkRelease']['stderr'] = stderr
+    napkin_results['runFromFrameworkRelease']['unexpectedLibraries'] = unexpected_libs
 
+    os.chdir(cwd)
     if success:
         print("  Done.")
     else:
@@ -1047,7 +1109,6 @@ def run_build_directory_napkin(demo_results, napkin_results, nap_framework_full_
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
 
-    os.chdir(os.path.join(cwd, os.path.pardir))
     print("----------------------------")
 
 def run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp):
@@ -1068,7 +1129,7 @@ def run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp):
     # Get the name of the demo that Napkin was packaged with
     demo_name = napkin_results['demoPackagedWith']
     containing_dir = os.path.abspath(os.path.join(root_output_dir, '%s-%s-napkin' % (demo_name, timestamp)))
-    os.chdir(containing_dir)
+    os.chdir(os.path.join(containing_dir, 'napkin'))
 
     # Run demo from packaged project
     print("- Run Napkin from package...")
@@ -1248,9 +1309,9 @@ def determine_run_success(demo_results, template_results, napkin_results):
     # Check Napkin results for failure
     if not 'packageWithDemo' in napkin_results or not napkin_results['packageWithDemo']['success']:
         return False
-    if not 'runFromBuildOutput' in napkin_results:
+    if not 'runFromFrameworkRelease' in napkin_results:
         return False
-    elif not napkin_results['runFromBuildOutput']['success'] or len(napkin_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
+    elif not napkin_results['runFromFrameworkRelease']['success'] or len(napkin_results['runFromFrameworkRelease']['unexpectedLibraries']) > 0:
         return False
     if not 'runFromPackagedOutput' in napkin_results:
         return False
@@ -1336,8 +1397,8 @@ def log_summary(demo_results, template_results, napkin_results):
 
     print("Napkin")
     print("- Package with demo: %s" % dict_entry_to_success(napkin_results, 'packageWithDemo'))
-    print("- Run from build output: %s" % dict_entry_to_success(napkin_results, 'runFromBuildOutput'))
-    print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromBuildOutput'))
+    print("- Run from framework release: %s" % dict_entry_to_success(napkin_results, 'runFromFrameworkRelease'))
+    print("- Run from framework release, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromFrameworkRelease'))
     print("- Run from packaged output: %s" % dict_entry_to_success(napkin_results, 'runFromPackagedOutput'))
     print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
     if 'packaged' in napkin_results and napkin_results['packaged']['success']:
@@ -1575,8 +1636,8 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         qt_top_level_path = rename_qt_dir(warnings)
 
     # Run Napkin from normal build output
-    print("============ Phase #6 - Running Napkin from build output directory ============")
-    run_build_directory_napkin(demo_results, napkin_results, nap_framework_full_path)
+    print("============ Phase #6 - Running Napkin from framework release ============")
+    run_framework_release_napkin(napkin_results, nap_framework_full_path)
 
     os.chdir(starting_dir)
 
