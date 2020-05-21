@@ -478,7 +478,7 @@ namespace nap
 		return -1;
 	}
 
-	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
+	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -492,7 +492,7 @@ namespace nap
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = samples;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
@@ -538,9 +538,22 @@ namespace nap
 		return true;
 	}
 
-	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
+
+	static bool createColorBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat colorFormat, VkImage& colorImage, VkDeviceMemory& colorImageMemory, VkImageView& colorImageView, utility::ErrorState& errorState)
 	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
+		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, samples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, colorImage, colorImageMemory, errorState))
+			return false;
+
+		if (!createImageView(device, colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, colorImageView, errorState))
+			return false;
+
+		return true;
+	}
+
+
+	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
+	{
+		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, samples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
 			return false;
 
 		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView, errorState))
@@ -615,7 +628,10 @@ namespace nap
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+			return false;
+
+		if (!createColorBuffer(mRenderService->getPhysicalDevice(), mDevice, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, swapchainExtent, mSwapchainFormat, mColorImage, mColorImageMemory, mColorImageView, errorState))
 			return false;
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
@@ -653,6 +669,24 @@ namespace nap
 		{
 			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
 			mDepthImageMemory = nullptr;
+		}
+
+		if (mColorImageView != nullptr)
+		{
+			vkDestroyImageView(mDevice, mColorImageView, nullptr);
+			mColorImageView = nullptr;
+		}
+
+		if (mColorImage != nullptr)
+		{
+			vkDestroyImage(mDevice, mColorImage, nullptr);
+			mDepthImageView = nullptr;
+		}
+
+		if (mColorImageMemory != nullptr)
+		{
+			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
+			mColorImageMemory = nullptr;
 		}
 
 		for (VkImageView image_view : mSwapChainImageViews)

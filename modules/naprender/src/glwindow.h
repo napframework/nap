@@ -185,9 +185,17 @@ namespace nap
 		std::vector<VkCommandBuffer>					mCommandBuffers;
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
+		
+		// Depth Image Resource
 		VkImage											mDepthImage = nullptr;
 		VkDeviceMemory									mDepthImageMemory = nullptr;
 		VkImageView										mDepthImageView = nullptr;
+
+		// Color Image Resource
+		VkImage											mColorImage = nullptr;
+		VkDeviceMemory									mColorImageMemory = nullptr;
+		VkImageView										mColorImageView = nullptr;
+
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
 		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
