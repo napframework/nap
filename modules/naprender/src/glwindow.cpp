@@ -296,27 +296,37 @@ namespace nap
 		return true;
 	}
 
-	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = swapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.samples = samples;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment = {};
 		depthAttachment.format = depthFormat;
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.samples = samples;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentDescription colorAttachmentResolve{};
+		colorAttachmentResolve.format = swapChainImageFormat;
+		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorAttachmentRef = {};
 		colorAttachmentRef.attachment = 0;
@@ -326,11 +336,16 @@ namespace nap
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		VkAttachmentReference colorAttachmentResolveRef{};
+		colorAttachmentResolveRef.attachment = 2;
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -340,7 +355,7 @@ namespace nap
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -381,15 +396,17 @@ namespace nap
 		return true;
 	}
 
-	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& swapChainImageViews, VkImageView depthImageView, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
+	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
 	{
+		// Create a frame buffer for every view in the swapchain.
 		framebuffers.resize(swapChainImageViews.size());
-
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-			std::array<VkImageView, 2> attachments = {
+			std::array<VkImageView, 3> attachments = 
+			{
+				colorImageView,
+				depthImageView,
 				swapChainImageViews[i],
-				depthImageView
 			};
 
 			VkFramebufferCreateInfo framebufferInfo = {};
@@ -404,7 +421,6 @@ namespace nap
 			if (!errorState.check(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
 				return false;
 		}
-
 		return true;
 	}
 
@@ -622,7 +638,7 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, mRenderPass, errorState))
 			return false;
 
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
@@ -634,7 +650,7 @@ namespace nap
 		if (!createColorBuffer(mRenderService->getPhysicalDevice(), mDevice, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, swapchainExtent, mSwapchainFormat, mColorImage, mColorImageMemory, mColorImageView, errorState))
 			return false;
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImageView, mDepthImageView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
 			return false;
 
 		return true;
@@ -887,7 +903,6 @@ namespace nap
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 
 		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
-
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
@@ -896,7 +911,6 @@ namespace nap
 		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
 
 		glm::vec4 clearColor = mBackbuffer.getClearColor();
-
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
