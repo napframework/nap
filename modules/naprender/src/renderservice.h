@@ -28,24 +28,32 @@ namespace nap
 	class GLWindow;
 	class Texture2D;
 
-	class RendererSettings
+	/**
+	 * System supported rasterization sample counts
+	 */
+	enum class ERasterizationSamples : int
 	{
-	public:
-		bool mDoubleBuffer = true;            ///< Property: 'DoubleBuffer' Enables / Disabled double buffering
-		bool mEnableMultiSampling = true;    ///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
-		int  mMultiSamples = 4;                ///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
-		bool mEnableHighDPIMode = true;        ///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
+		One		= 0x00000001,	
+		Two		= 0x00000002,
+		Four	= 0x00000004,
+		Eight	= 0x00000008,
+		Sixteen = 0x00000010,
+		Max		= 0x00000000				///< Request max available number of rasterization samples.
 	};
 
-
+	/**
+	 * Render engine configuration settings
+	 */
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
+		ERasterizationSamples mSampleCount = ERasterizationSamples::Max;		///< Property: 'SampleCount' The number of samples used in Rasterization, valid values are 1, 2, 4, 8, 16 and 32
+		bool mEnableSampleShading = false;										///< Property: 'EnableSampleShading' Reduces texture aliasing if enabled,
+		bool mEnableHighDPIMode = true;											///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 
-		RendererSettings mSettings;		///< Property: 'Settings' All render settings
+		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
 	};
 
 	/**
@@ -236,7 +244,7 @@ namespace nap
 		VkDevice getDevice() const						{ return mDevice; }
 
 		/**
-		 * @return max number of currently supported samples per pixel.
+		 * @return max number of currently supported rasterization samples per pixel.
 		 */
 		VkSampleCountFlagBits getSampleCount() const;
 
@@ -320,6 +328,10 @@ namespace nap
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
 
+		// Renderer Settings
+		bool									mEnableHighDPIMode = true;
+		bool									mEnableSampleShading = false;
+
 		VmaAllocator							mVulkanAllocator = nullptr;
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
@@ -337,7 +349,6 @@ namespace nap
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
-		RendererSettings						mSettings;
 		VkInstance								mInstance = nullptr;
 		VkDebugReportCallbackEXT				mDebugCallback = nullptr;
 		VkPhysicalDevice						mPhysicalDevice = nullptr;
@@ -348,7 +359,7 @@ namespace nap
 		VkCommandPool							mCommandPool = nullptr;
 		VkFormat								mDepthFormat;
 		int										mGraphicsQueueIndex = -1;
-		VkSampleCountFlagBits					mMaxSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
 	};

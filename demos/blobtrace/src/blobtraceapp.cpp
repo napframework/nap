@@ -51,7 +51,7 @@ namespace nap
 		mIntersectMesh = mResourceManager->findObject("IntersectMesh");
 
 		// Tell the GUI service to which window to render
-		// mGuiService->selectWindow(mRenderWindow);
+		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
