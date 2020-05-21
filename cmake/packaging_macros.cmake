@@ -514,7 +514,7 @@ macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFI
                       unset(ENV{PYTHONPATH})
 
                       # Change link to dylib
-                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/packaging/macos_rpath_stripper/strip_rpaths.py
+                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/build_tools/macos_rpath_stripper/strip_rpaths.py
                                               ${FILEPATH}
                                               ${PATH_PREFIX}
                                       )
