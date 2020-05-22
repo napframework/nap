@@ -8,6 +8,7 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <vk_mem_alloc.h>
 #include "SDL_video.h"
 #include "vulkan/vulkan_core.h"
 
@@ -154,18 +155,17 @@ namespace nap
 		 */
 		uint32 getNumber() const;
 
-		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
+		VkFormat getSwapchainFormat() const				{ return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
+		VkSampleCountFlagBits getSampleCount() const;
 
 	private:
 		friend class BackbufferRenderTarget;
 
 		bool recreateSwapChain(utility::ErrorState& errorState);
-		
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();		
-
-		VkRenderPass getRenderPass() const { return mRenderPass; }
+		VkRenderPass getRenderPass() const				{ return mRenderPass; }
 		void beginRenderPass();
 		void endRenderPass();
 
@@ -185,9 +185,19 @@ namespace nap
 		std::vector<VkCommandBuffer>					mCommandBuffers;
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
+		
+		// Depth Image Resource
 		VkImage											mDepthImage = nullptr;
-		VkDeviceMemory									mDepthImageMemory = nullptr;
 		VkImageView										mDepthImageView = nullptr;
+		VmaAllocation									mDepthAllocation = nullptr;
+		VmaAllocationInfo								mDepthAllocationInfo;
+
+		// Color Image Resource
+		VkImage											mColorImage = nullptr;
+		VkImageView										mColorImageView = nullptr;
+		VmaAllocation									mColorAllocation = nullptr;
+		VmaAllocationInfo								mColorAllocationInfo;
+
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
 		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;

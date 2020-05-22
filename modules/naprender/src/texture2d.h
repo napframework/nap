@@ -149,7 +149,10 @@ namespace nap
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
-		ETextureUsage		mUsage = ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
+		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
+
+	protected:
+		RenderService*				mRenderService = nullptr;
 
 	private:
 		friend class RenderTarget;
@@ -171,8 +174,6 @@ namespace nap
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;
-
-		RenderService*				mRenderService = nullptr;
 		std::vector<uint8_t>		mTextureData;
 		ImageData					mImageData;
 		StagingBufferList			mStagingBuffers;

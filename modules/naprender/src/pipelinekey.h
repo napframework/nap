@@ -9,30 +9,39 @@ namespace nap
 
 	struct PipelineKey
 	{
-		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat) :
+		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount) :
 			mShader(&shader),
 			mDrawMode(drawMode),
 			mDepthMode(depthMode),
 			mBlendMode(blendMode),
 			mCullWindingOrder(cullWindingOrder),
 			mColorFormat(colorFormat),
-			mDepthFormat(depthFormat)
+			mDepthFormat(depthFormat),
+			mSampleCount(sampleCount)
 		{
 		}
 
 		bool operator==(const PipelineKey& rhs) const
 		{
-			return	mShader == rhs.mShader && mDrawMode == rhs.mDrawMode && mDepthMode == rhs.mDepthMode && mBlendMode == rhs.mBlendMode && 
-					mCullWindingOrder == rhs.mCullWindingOrder && mColorFormat == rhs.mColorFormat && mDepthFormat == rhs.mDepthFormat;
+			return	
+				mShader		== rhs.mShader	&& 
+				mDrawMode	== rhs.mDrawMode && 
+				mDepthMode == rhs.mDepthMode && 
+				mBlendMode == rhs.mBlendMode && 
+				mCullWindingOrder == rhs.mCullWindingOrder && 
+				mColorFormat == rhs.mColorFormat && 
+				mDepthFormat == rhs.mDepthFormat &&
+				mSampleCount == rhs.mSampleCount;
 		}
 
-		const Shader*		mShader = nullptr;
-		EDrawMode			mDrawMode = EDrawMode::TRIANGLES;
-		EDepthMode			mDepthMode = EDepthMode::NotSet;
-		EBlendMode			mBlendMode = EBlendMode::NotSet;
-		ECullWindingOrder	mCullWindingOrder = ECullWindingOrder::Clockwise;
-		VkFormat			mColorFormat;
-		VkFormat			mDepthFormat;
+		const Shader*			mShader = nullptr;
+		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;
+		EDepthMode				mDepthMode = EDepthMode::NotSet;
+		EBlendMode				mBlendMode = EBlendMode::NotSet;
+		ECullWindingOrder		mCullWindingOrder = ECullWindingOrder::Clockwise;
+		VkFormat				mColorFormat;
+		VkFormat				mDepthFormat;
+		VkSampleCountFlagBits	mSampleCount = VK_SAMPLE_COUNT_1_BIT;
 	};
 }
 

@@ -296,27 +296,37 @@ namespace nap
 		return true;
 	}
 
-	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = swapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.samples = samples;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment = {};
 		depthAttachment.format = depthFormat;
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.samples = samples;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentDescription colorAttachmentResolve{};
+		colorAttachmentResolve.format = swapChainImageFormat;
+		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorAttachmentRef = {};
 		colorAttachmentRef.attachment = 0;
@@ -326,11 +336,16 @@ namespace nap
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		VkAttachmentReference colorAttachmentResolveRef{};
+		colorAttachmentResolveRef.attachment = 2;
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -340,7 +355,7 @@ namespace nap
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -381,15 +396,17 @@ namespace nap
 		return true;
 	}
 
-	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& swapChainImageViews, VkImageView depthImageView, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
+	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
 	{
+		// Create a frame buffer for every view in the swapchain.
 		framebuffers.resize(swapChainImageViews.size());
-
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-			std::array<VkImageView, 2> attachments = {
+			std::array<VkImageView, 3> attachments = 
+			{
+				colorImageView,
+				depthImageView,
 				swapChainImageViews[i],
-				depthImageView
 			};
 
 			VkFramebufferCreateInfo framebufferInfo = {};
@@ -404,7 +421,6 @@ namespace nap
 			if (!errorState.check(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
 				return false;
 		}
-
 		return true;
 	}
 
@@ -478,7 +494,7 @@ namespace nap
 		return -1;
 	}
 
-	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
+	static bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -492,28 +508,15 @@ namespace nap
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = samples;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
-			return false;
+		VmaAllocationCreateInfo alloc_info = {};
+		alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		alloc_info.flags = 0;
 
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-		uint32_t mem_type_index = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-		if (!errorState.check(mem_type_index != -1, "Failed to find memory type for image"))
-			return false;
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = mem_type_index;
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "Failed to allocate memory for image"))
-			return false;
-
-		if (!errorState.check(vkBindImageMemory(device, image, imageMemory, 0) == VK_SUCCESS, "Failed to bind memory for image"))
+		VkResult result = vmaCreateImage(vmaAllocator, &imageInfo, &alloc_info, &image, &allocation, &allocationInfo);
+		if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
 			return false;
 
 		return true;
@@ -538,9 +541,22 @@ namespace nap
 		return true;
 	}
 
-	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
+
+	static bool createColorBuffer(VmaAllocator allocator, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat colorFormat, VkImage& colorImage, VkImageView& colorImageView, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
+		if (!createImage(allocator, swapchainExtent.width, swapchainExtent.height, colorFormat, samples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, colorImage, allocation, allocationInfo, errorState))
+			return false;
+
+		if (!createImageView(device, colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, colorImageView, errorState))
+			return false;
+
+		return true;
+	}
+
+
+	static bool createDepthBuffer(VmaAllocator allocator, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkImageView& depthImageView, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
+	{
+		if (!createImage(allocator, swapchainExtent.width, swapchainExtent.height, depthFormat, samples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage, allocation, allocationInfo, errorState))
 			return false;
 
 		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView, errorState))
@@ -609,16 +625,19 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderService->getSampleCount(), mRenderPass, errorState))
 			return false;
 
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthBuffer(mRenderService->getVulkanAllocator(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageView, mDepthAllocation, mDepthAllocationInfo, errorState))
 			return false;
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
+		if (!createColorBuffer(mRenderService->getVulkanAllocator(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mSwapchainFormat, mColorImage, mColorImageView, mColorAllocation, mColorAllocationInfo, errorState))
+			return false;
+
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImageView, mDepthImageView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
 			return false;
 
 		return true;
@@ -645,14 +664,20 @@ namespace nap
 
 		if (mDepthImage != nullptr)
 		{
-			vkDestroyImage(mDevice, mDepthImage, nullptr);
+			vmaDestroyImage(mRenderService->getVulkanAllocator(), mDepthImage, mDepthAllocation);
 			mDepthImage = nullptr;
 		}
 
-		if (mDepthImageMemory != nullptr)
+		if (mColorImageView != nullptr)
 		{
-			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
-			mDepthImageMemory = nullptr;
+			vkDestroyImageView(mDevice, mColorImageView, nullptr);
+			mColorImageView = nullptr;
+		}
+
+		if (mColorImage != nullptr)
+		{
+			vmaDestroyImage(mRenderService->getVulkanAllocator(), mColorImage, mColorAllocation);
+			mColorImage = nullptr;
 		}
 
 		for (VkImageView image_view : mSwapChainImageViews)
@@ -853,7 +878,6 @@ namespace nap
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 
 		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
-
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
@@ -862,7 +886,6 @@ namespace nap
 		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
 
 		glm::vec4 clearColor = mBackbuffer.getClearColor();
-
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
@@ -955,6 +978,13 @@ namespace nap
 	{
 		return SDL::getWindowPosition(mWindow);
 	}
+
+
+	VkSampleCountFlagBits GLWindow::getSampleCount() const
+	{
+		return mRenderService->getSampleCount();
+	}
+
 }
 
 RTTI_DEFINE_BASE(nap::GLWindow)

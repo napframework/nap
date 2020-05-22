@@ -36,8 +36,19 @@
 #include "sdlhelpers.h"
 #include "glslang/Public/ShaderLang.h"
 
+RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"01"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two,		"02"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four,		"04"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight,		"08"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Sixteen,	"16"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Max,		"Max")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleCount",			&nap::RenderServiceConfiguration::mSampleCount,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableSampleShading",	&nap::RenderServiceConfiguration::mEnableSampleShading, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -508,7 +519,7 @@ namespace nap
 		window_settings.borderless	= window.mBorderless;
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
-		window_settings.highdpi		= mSettings.mEnableHighDPIMode;
+		window_settings.highdpi		= mEnableHighDPIMode;
 
 		// Select mode
 		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
@@ -706,7 +717,7 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, bool enableMultisampling, VkSampleCountFlagBits sampleCount, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -784,16 +795,11 @@ namespace nap
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		/*
-		multisampling.sampleShadingEnable = static_cast<int>(enableMultisampling);
-		multisampling.rasterizationSamples = sampleCount; ///< BREAKS???
+		multisampling.sampleShadingEnable = static_cast<int>(enableSampleShading);
+		multisampling.rasterizationSamples = sampleCount;
 		multisampling.pNext = nullptr;
 		multisampling.flags = 0;
 		multisampling.minSampleShading = 1.0f;
-		*/
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil = getDepthStencilCreateInfo(materialInstance);
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
@@ -849,13 +855,13 @@ namespace nap
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
-		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat());
+		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat(), renderTarget.getSampleCount());
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
 		if (pos != mPipelineCache.end())
 			return pos->second;
 
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), mPhysicalDeviceFeatures.variableMultisampleRate == 1, mMaxSamples, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), mEnableSampleShading, pipeline.mLayout, pipeline.mPipeline, errorState))
 			return Pipeline();
 
 		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
@@ -1053,7 +1059,9 @@ namespace nap
 			return false;
 
 		// Store render settings, used for initialization and global window creation
-		mSettings = getConfiguration<RenderServiceConfiguration>()->mSettings;
+		mEnableHighDPIMode	= getConfiguration<RenderServiceConfiguration>()->mEnableHighDPIMode;
+		mEnableSampleShading = getConfiguration<RenderServiceConfiguration>()->mEnableSampleShading;
+
 
 		// Get available vulkan extensions, necessary for interfacing with native window
 		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
@@ -1091,9 +1099,19 @@ namespace nap
 		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
-		// Figure out max multi samples if GPU supports feature
-		if (mPhysicalDeviceFeatures.variableMultisampleRate == VK_TRUE)
-			mMaxSamples = getMaxSampleCount(mPhysicalDevice);
+		// Figure out how many rasterization samples we can use
+		ERasterizationSamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
+		VkSampleCountFlagBits max_count = getMaxSampleCount(mPhysicalDevice);
+
+		if ((int)(req_count) > (int)max_count)
+		{
+			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(req_count), (int)max_count);
+			mRasterizationSamples = max_count;
+		}
+		mRasterizationSamples = req_count == ERasterizationSamples::Max ? max_count :
+			(int)(req_count) > (int)max_count ? max_count : (VkSampleCountFlagBits)(req_count);
+		
+		nap::Logger::info("Rasterization sample count is: %d", (int)(mRasterizationSamples));
 
 		// Create a logical device that interfaces with the physical device.
 		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, mDevice, errorState))
@@ -1347,6 +1365,18 @@ namespace nap
 	void RenderService::requestTextureUpdate(Texture2D& texture)
 	{
 		mTexturesToUpdate.insert(&texture);
+	}
+
+
+	VkSampleCountFlagBits RenderService::getSampleCount() const
+	{
+		return mRasterizationSamples;
+	}
+
+
+	bool RenderService::getSampleShadingEnabled() const
+	{
+		return mEnableSampleShading;
 	}
 
 

@@ -201,4 +201,10 @@ namespace nap
 	{
 		return mDepthTexture->getVulkanFormat();
 	}
+
+
+	VkSampleCountFlagBits RenderTarget::getSampleCount() const
+	{
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
 } // nap
