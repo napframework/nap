@@ -39,11 +39,11 @@ namespace nap
 		case ERenderTargetFormat::Backbuffer:
 			// TODO: This can be a problem when the backbuffer is a window that doesn't have BGRA as a default setup
 			settings.mChannels = ESurfaceChannels::BGRA;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mRenderService->getSampleCount(),  errorState);
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT,  errorState);
 		case ERenderTargetFormat::Depth:
 			settings.mChannels = ESurfaceChannels::Depth;
 			settings.mDataType = ESurfaceDataType::FLOAT;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, mRenderService->getSampleCount(), errorState);
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT, errorState);
 		case ERenderTargetFormat::RGBA8:
 			settings.mChannels = ESurfaceChannels::RGBA;
 			return Texture2D::init(settings, false, errorState);

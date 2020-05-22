@@ -32,4 +32,11 @@ namespace nap
 	{
 		return mWindow.getDepthFormat();
 	}
+
+
+	VkSampleCountFlagBits BackbufferRenderTarget::getSampleCount() const
+	{
+		return mWindow.getSampleCount();
+	}
+
 }

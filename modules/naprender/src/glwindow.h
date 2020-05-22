@@ -156,6 +156,7 @@ namespace nap
 
 		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
+		VkSampleCountFlagBits getSampleCount() const;
 
 	private:
 		friend class BackbufferRenderTarget;

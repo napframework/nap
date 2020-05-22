@@ -45,6 +45,7 @@ namespace nap
 
 		virtual VkFormat getColorFormat() const override;
 		virtual VkFormat getDepthFormat() const override;
+		virtual VkSampleCountFlagBits getSampleCount() const override;
 
 	public:
 		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer

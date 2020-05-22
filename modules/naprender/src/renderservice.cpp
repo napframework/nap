@@ -855,13 +855,13 @@ namespace nap
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
-		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat());
+		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat(), renderTarget.getSampleCount());
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
 		if (pos != mPipelineCache.end())
 			return pos->second;
 
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), mRasterizationSamples, mEnableSampleShading, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), mEnableSampleShading, pipeline.mLayout, pipeline.mPipeline, errorState))
 			return Pipeline();
 
 		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));

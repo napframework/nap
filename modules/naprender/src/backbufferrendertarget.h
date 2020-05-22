@@ -36,6 +36,7 @@ namespace nap
 
 		virtual VkFormat getColorFormat() const override;
 		virtual VkFormat getDepthFormat() const override;
+		virtual VkSampleCountFlagBits getSampleCount() const override;
 
 	private:
 		GLWindow&	mWindow;

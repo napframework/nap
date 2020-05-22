@@ -1003,6 +1003,13 @@ namespace nap
 	{
 		return SDL::getWindowPosition(mWindow);
 	}
+
+
+	VkSampleCountFlagBits GLWindow::getSampleCount() const
+	{
+		return mRenderService->getSampleCount();
+	}
+
 }
 
 RTTI_DEFINE_BASE(nap::GLWindow)
