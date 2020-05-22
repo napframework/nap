@@ -248,6 +248,11 @@ namespace nap
 		 */
 		VkSampleCountFlagBits getSampleCount() const;
 
+		/**
+		 * @return if sample shading is enabled
+		 */
+		bool getSampleShadingEnabled() const;
+
 		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkFormat getDepthFormat() const { return mDepthFormat; }
 		VkImageAspectFlags getDepthAspectFlags() const;

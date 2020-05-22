@@ -1374,6 +1374,12 @@ namespace nap
 	}
 
 
+	bool RenderService::getSampleShadingEnabled() const
+	{
+		return mEnableSampleShading;
+	}
+
+
 	VkImageAspectFlags RenderService::getDepthAspectFlags() const
 		{
 		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
