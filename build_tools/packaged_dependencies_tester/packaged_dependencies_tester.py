@@ -756,7 +756,9 @@ def run_cwd_project(project_name, nap_framework_full_path):
             build_path = f
 
     # Build command and run            
-    cmd = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path, project_name))
+    folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
+    patch_audio_service_configuration(folder)
+    cmd = os.path.join(folder, project_name)
     (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
         print("  Done.")
@@ -792,6 +794,7 @@ def run_packaged_project(root_output_dir, timestamp, project_name):
 
     containing_dir = os.path.abspath(os.path.join(root_output_dir, '%s-%s-no_napkin' % (project_name, timestamp)))
     os.chdir(containing_dir)
+    patch_audio_service_configuration('.')
     print("- Run from package...")
 
     # Run
@@ -848,6 +851,7 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
         demo_results[demo_name] = {}
 
         # Configure
+        patch_audio_service_configuration('.')
         (success, stdout, stderr) = regenerate_cwd_project()
         demo_results[demo_name]['generate'] = {}
         demo_results[demo_name]['generate']['success'] = success
@@ -1534,6 +1538,42 @@ def rename_qt_dir(warnings):
 
     return qt_top_level_path
 
+def patch_audio_service_configuration(project_dir):
+    """Patches audio service configuration to have zero input channels
+
+    Parameters
+    ----------
+    project_dir: str
+        Path to project to patch
+    """
+    config_filename = 'config.json'
+    config_path = os.path.join(project_dir, config_filename)
+    loaded_config = False
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        if 'Objects' in config:
+            loaded_config = True
+
+    if not loaded_config:
+        config = {'Objects':[]}
+
+    for obj in list(config['Objects']):
+        if obj['Type'] == 'nap::audio::AudioServiceConfiguration':
+            config['Objects'].remove(obj)
+
+    new_obj = {
+        'Type': 'nap::audio::AudioServiceConfiguration',
+        'mID': 'AudioServiceConfiguration',
+        'SampleRate' : 44100,
+        'InputChannelCount' : 0,
+        'OutputChannelCount' : 2,
+        'AllowChannelCountFailure': 'True'
+    }
+    config['Objects'].append(new_obj)
+
+    with open(config_path, 'w') as f:
+        f.write(json.dumps(config, indent=4))
 
 def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
     """Main entry point to the testing
