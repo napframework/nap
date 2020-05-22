@@ -144,3 +144,42 @@ def get_nap_root_from_project_dir():
 def get_cmake_path():
     nap_root = get_nap_root_from_project_dir()
     return os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')
+
+# Fetch deep module dependencies for a project
+def get_full_project_module_requirements(framework_root, project_name, project_path):
+    with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
+        json_dict = json.load(json_file)
+        modules = []
+        for module_name in json_dict['RequiredModules']:
+            if type(module_name) is unicode:
+                module_name = module_name.encode('utf8')
+                modules.append(module_name)
+        new_modules = modules
+    
+    while len(new_modules) > 0:
+        loop_modules = []
+        for search_module in new_modules:
+            found_module_path = None
+            if search_module == 'mod_{}'.format(project_name):
+                found_module_path = os.path.join(project_path, 'module')
+            else:
+                for module_source in ('modules', 'user_modules'):
+                    check_path = os.path.join(framework_root, module_source, search_module)
+                    if os.path.exists(check_path):
+                        found_module_path = check_path
+                        break
+
+            if not found_module_path is None:
+                with open(os.path.join(found_module_path, 'module.json')) as json_file:
+                    json_dict = json.load(json_file)
+                    for module_name in json_dict['RequiredModules']:
+                        if module_name not in modules and module_name not in loop_modules:
+                            if type(module_name) is unicode:
+                                module_name = module_name.encode('utf8')
+                            loop_modules.append(module_name)
+            else:
+                print("{} not found".format(search_module))
+        new_modules = loop_modules
+        modules.extend(new_modules)
+
+    return modules
