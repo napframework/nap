@@ -13,30 +13,6 @@
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "Float2",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": -100.0,
-                    "Maximum": 100.0
-                },
-                {
-                    "Type": "nap::ParameterInt",
-                    "mID": "Int",
-                    "Name": "",
-                    "Value": 0,
-                    "Minimum": 0,
-                    "Maximum": 100
-                },
-                {
-                    "Type": "nap::ParameterLong",
-                    "mID": "Long",
-                    "Name": "",
-                    "Value": 0,
-                    "Minimum": 0,
-                    "Maximum": 1410065407
-                },
-                {
                     "Type": "nap::ParameterVec3",
                     "mID": "Vec3",
                     "Name": "",
@@ -47,7 +23,27 @@
                     },
                     "Clamp": false,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterVec2",
+                    "mID": "Vec2",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Int",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 100
                 }
             ],
             "Groups": []
@@ -94,14 +90,26 @@
                 },
                 {
                     "Type": "nap::SequencePlayerCurveOutput",
-                    "mID": "Float Input",
+                    "mID": "Float Output",
                     "Parameter": "Float1",
                     "Use Main Thread": true
                 },
                 {
                     "Type": "nap::SequencePlayerCurveOutput",
-                    "mID": "Vec3 Input",
+                    "mID": "Vec3 Output",
                     "Parameter": "Vec3",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Vec2 Output",
+                    "Parameter": "Vec2",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Int Output",
+                    "Parameter": "Int",
                     "Use Main Thread": true
                 }
             ],

@@ -72,6 +72,16 @@ namespace nap
 	}
 
 
+	void SequenceCurveTrackView::handleActions()
+	{
+		if (mState.mAction->isAction<StartDraggingSegment>())
+		{
+			auto* action = mState.mAction->getDerived<StartDraggingSegment>();
+			mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID);
+		}
+	}
+
+
 	void SequenceCurveTrackView::handlePopups()
 	{
 		handleInsertSegmentPopup();
@@ -558,8 +568,8 @@ namespace nap
 				if ((mState.mAction->isAction<None>() ||
 					mState.mAction->isAction<HoveringSegmentValue>() ||
 					mState.mAction->isAction<HoveringSegment>() ||
-					mState.mAction->isAction<HoveringCurve>())
-					&& ImGui::IsMouseHoveringRect(
+					mState.mAction->isAction<HoveringCurve>()) &&
+					ImGui::IsMouseHoveringRect(
 						{segment_value_pos.x - 12, segment_value_pos.y - 12 }, // top left
 						{segment_value_pos.x + 12, segment_value_pos.y + 12 }))  // bottom right
 				{
@@ -695,7 +705,8 @@ namespace nap
 	{
 		// segment handler
 		if (mState.mIsWindowFocused &&
-			(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) &&
+			((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) ||
+			 (mState.mAction->isAction<StartDraggingSegment>() && mState.mAction->getDerived<StartDraggingSegment>()->mSegmentID != segment.mID))&&
 			ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
 					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 }))  // bottom right 
@@ -718,7 +729,7 @@ namespace nap
 			// left mouse is start dragging
 			if (ImGui::IsMouseDown(0))
 			{
-				mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+				mState.mAction = createAction<StartDraggingSegment>(track.mID, segment.mID);
 			}
 			// right mouse in deletion popup
 			else if (ImGui::IsMouseDown(1))

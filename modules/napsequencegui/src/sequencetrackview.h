@@ -49,6 +49,13 @@ namespace nap
 		 */
 		virtual void handlePopups() = 0;
 
+		/**
+		 * handles any actions that are created upon show
+		 * this might be useful when certain actions in tracks are overlapping and/ or when we create an action that 
+		 * needs to do something in the next frame update
+		 */
+		virtual void handleActions() {}
+
 		/////////////////////////////////////////////////////////////////////////////
 		// static factory methods
 		////////////////////////////////////////////////////////////////////////////

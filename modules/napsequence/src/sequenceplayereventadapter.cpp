@@ -7,25 +7,97 @@
 
 namespace nap
 {
-	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerOutput& output)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(output.get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
 
 		auto& eventOutput = static_cast<SequencePlayerEventOutput&>(output);
 
-		auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, eventOutput);
+		auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, eventOutput, player);
 		return std::move(adapter);
 	});
 
 
-	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output)
+	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player)
 		: mTrack(track), mOutput(output)
 	{
+		double time = player.getPlayerTime();
+
+		// mark all events before 'time' as already dispatched
+		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
+		auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+		for (const auto& event_segment : event_track.mSegments)
+		{
+			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
+			SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
+			if (time > event.mStartTime)
+			{
+				if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
+				{
+					mDispatchedEvents.emplace(&event);
+				}
+			}
+		}
 	}
 
 
 	void SequencePlayerEventAdapter::tick(double time)
 	{
+		double deltaTime = time - mPrevTime;
+		mPrevTime = time;
+		if (deltaTime < 0.0)
+		{
+			if (!mPlayingBackwards)
+			{
+				mPlayingBackwards = true;
+
+				//
+				mDispatchedEvents.clear();
+
+				// mark all events after 'time' as already dispatched
+				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
+				auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+				for (const auto& event_segment : event_track.mSegments)
+				{
+					assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
+					SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
+					if (time < event.mStartTime)
+					{
+						if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
+						{
+							mDispatchedEvents.emplace(&event);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			if (mPlayingBackwards)
+			{
+				mPlayingBackwards = false;
+
+				//
+				mDispatchedEvents.clear();
+
+				// mark all events before 'time' as already dispatched
+				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
+				auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+				for (const auto& event_segment : event_track.mSegments)
+				{
+					assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
+					SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
+					if (time > event.mStartTime)
+					{
+						if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
+						{
+							mDispatchedEvents.emplace(&event);
+						}
+					}
+				}
+			}
+		}
+
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
 		auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
 		for (const auto& event_segment : event_track.mSegments)
@@ -33,7 +105,7 @@ namespace nap
 			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
 			SequenceTrackSegmentEventBase& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
 
-			if (time > event.mStartTime)
+			if ( ( !mPlayingBackwards && time > event.mStartTime ) || (mPlayingBackwards && time < event.mStartTime))
 			{
 				if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
 				{
@@ -41,7 +113,7 @@ namespace nap
 					mDispatchedEvents.emplace(&event);
 				}
 			}
-			else if (time < event.mStartTime)
+			else if ((!mPlayingBackwards && time < event.mStartTime) || (mPlayingBackwards && time > event.mStartTime))
 			{
 				if (mDispatchedEvents.find(&event) != mDispatchedEvents.end())
 				{

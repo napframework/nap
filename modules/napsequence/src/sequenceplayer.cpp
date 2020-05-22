@@ -390,7 +390,7 @@ namespace nap
 			return false;
 		}
 
-		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *output);
+		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *output, *this);
 
 		if (adapter == nullptr)
 		{

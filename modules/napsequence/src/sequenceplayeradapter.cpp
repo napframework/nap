@@ -33,8 +33,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, SequenceTrack& track,
-																				SequencePlayerOutput& input)
+	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)
 	{
 		auto& map = getFactoryMap();
 
@@ -42,7 +41,7 @@ namespace nap
 		assert(it != map.end()); // factory method not present
 		if (it != map.end())
 		{
-			return it->second(track, input);
+			return it->second(track, output, player);
 		}
 
 		return nullptr;

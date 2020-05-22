@@ -79,6 +79,25 @@ namespace nap
 		};
 
 		/**
+		* Action for start dragging segments
+		*/
+		class StartDraggingSegment : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			/**
+			* Constructor
+			* @param trackID trackID of segment being dragged
+			* @param segmentID segmentID of segment being dragged
+			*/
+			StartDraggingSegment(std::string trackId, std::string segmentID)
+				: mTrackID(trackId), mSegmentID(segmentID) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+		};
+
+		/**
 		 * Action for inserting segment
 		 */
 		class InsertingSegment :

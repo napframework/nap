@@ -24,6 +24,11 @@ namespace nap
 		 * Handles popups
 		 */
 		virtual void handlePopups() override;
+
+		/**
+		 * Handles any actions
+		 */
+		virtual void handleActions() override;
 	private:
 		/**
 		 * draws the contents of a segment
