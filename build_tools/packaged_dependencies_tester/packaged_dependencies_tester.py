@@ -720,7 +720,7 @@ def package_cwd_project_without_napkin(project_name, root_output_dir, timestamp)
         home_output = os.path.join(root_output_dir, '%s-%s-no_napkin' % (project_name, timestamp))
         os.rename(output_path, home_output)
         nap_framework_full_path = os.path.join(os.getcwd(), os.pardir, os.pardir)
-        selectively_patch_audio_service_configuration('.', home_output, project_name, nap_framework_full_path)
+        patch_audio_service_configuration('.', home_output, project_name, nap_framework_full_path)
         print("  Done. Moving to %s." % home_output)
     else:
         print("  Error: Couldn't package project, return code: %s" % returncode)
@@ -759,7 +759,7 @@ def run_cwd_project(project_name, nap_framework_full_path):
 
     # Build command and run            
     folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
-    selectively_patch_audio_service_configuration(os.getcwd(), folder, project_name, nap_framework_full_path)
+    patch_audio_service_configuration(os.getcwd(), folder, project_name, nap_framework_full_path)
     cmd = os.path.join(folder, project_name)
     (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
