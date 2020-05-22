@@ -494,7 +494,7 @@ namespace nap
 		return -1;
 	}
 
-	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
+	static bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -511,25 +511,12 @@ namespace nap
 		imageInfo.samples = samples;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
-			return false;
+		VmaAllocationCreateInfo alloc_info = {};
+		alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		alloc_info.flags = 0;
 
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-		uint32_t mem_type_index = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-		if (!errorState.check(mem_type_index != -1, "Failed to find memory type for image"))
-			return false;
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = mem_type_index;
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "Failed to allocate memory for image"))
-			return false;
-
-		if (!errorState.check(vkBindImageMemory(device, image, imageMemory, 0) == VK_SUCCESS, "Failed to bind memory for image"))
+		VkResult result = vmaCreateImage(vmaAllocator, &imageInfo, &alloc_info, &image, &allocation, &allocationInfo);
+		if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
 			return false;
 
 		return true;
@@ -555,9 +542,9 @@ namespace nap
 	}
 
 
-	static bool createColorBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat colorFormat, VkImage& colorImage, VkDeviceMemory& colorImageMemory, VkImageView& colorImageView, utility::ErrorState& errorState)
+	static bool createColorBuffer(VmaAllocator allocator, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat colorFormat, VkImage& colorImage, VkImageView& colorImageView, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, samples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, colorImage, colorImageMemory, errorState))
+		if (!createImage(allocator, swapchainExtent.width, swapchainExtent.height, colorFormat, samples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, colorImage, allocation, allocationInfo, errorState))
 			return false;
 
 		if (!createImageView(device, colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, colorImageView, errorState))
@@ -567,9 +554,9 @@ namespace nap
 	}
 
 
-	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
+	static bool createDepthBuffer(VmaAllocator allocator, VkDevice device, VkSampleCountFlagBits samples, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkImageView& depthImageView, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
 	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, samples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
+		if (!createImage(allocator, swapchainExtent.width, swapchainExtent.height, depthFormat, samples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage, allocation, allocationInfo, errorState))
 			return false;
 
 		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView, errorState))
@@ -644,10 +631,10 @@ namespace nap
 		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthBuffer(mRenderService->getVulkanAllocator(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageView, mDepthAllocation, mDepthAllocationInfo, errorState))
 			return false;
 
-		if (!createColorBuffer(mRenderService->getPhysicalDevice(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mSwapchainFormat, mColorImage, mColorImageMemory, mColorImageView, errorState))
+		if (!createColorBuffer(mRenderService->getVulkanAllocator(), mDevice, mRenderService->getSampleCount(), swapchainExtent, mSwapchainFormat, mColorImage, mColorImageView, mColorAllocation, mColorAllocationInfo, errorState))
 			return false;
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImageView, mDepthImageView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
@@ -677,14 +664,8 @@ namespace nap
 
 		if (mDepthImage != nullptr)
 		{
-			vkDestroyImage(mDevice, mDepthImage, nullptr);
+			vmaDestroyImage(mRenderService->getVulkanAllocator(), mDepthImage, mDepthAllocation);
 			mDepthImage = nullptr;
-		}
-
-		if (mDepthImageMemory != nullptr)
-		{
-			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
-			mDepthImageMemory = nullptr;
 		}
 
 		if (mColorImageView != nullptr)
@@ -695,14 +676,8 @@ namespace nap
 
 		if (mColorImage != nullptr)
 		{
-			vkDestroyImage(mDevice, mColorImage, nullptr);
-			mDepthImageView = nullptr;
-		}
-
-		if (mColorImageMemory != nullptr)
-		{
-			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
-			mColorImageMemory = nullptr;
+			vmaDestroyImage(mRenderService->getVulkanAllocator(), mColorImage, mColorAllocation);
+			mColorImage = nullptr;
 		}
 
 		for (VkImageView image_view : mSwapChainImageViews)

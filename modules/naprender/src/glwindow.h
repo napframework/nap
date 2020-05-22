@@ -8,6 +8,7 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <vk_mem_alloc.h>
 #include "SDL_video.h"
 #include "vulkan/vulkan_core.h"
 
@@ -187,13 +188,15 @@ namespace nap
 		
 		// Depth Image Resource
 		VkImage											mDepthImage = nullptr;
-		VkDeviceMemory									mDepthImageMemory = nullptr;
 		VkImageView										mDepthImageView = nullptr;
+		VmaAllocation									mDepthAllocation = nullptr;
+		VmaAllocationInfo								mDepthAllocationInfo;
 
 		// Color Image Resource
 		VkImage											mColorImage = nullptr;
-		VkDeviceMemory									mColorImageMemory = nullptr;
 		VkImageView										mColorImageView = nullptr;
+		VmaAllocation									mColorAllocation = nullptr;
+		VmaAllocationInfo								mColorAllocationInfo;
 
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;

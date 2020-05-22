@@ -49,8 +49,8 @@ namespace nap
 
 	public:
 		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer
-		rtti::ObjectPtr<RenderTexture2D>	mColorTexture;
-		rtti::ObjectPtr<RenderTexture2D>	mDepthTexture;
+		rtti::ObjectPtr<RenderTexture2D>	mColorTexture;		///< Resolved color texture
+		rtti::ObjectPtr<RenderTexture2D>	mDepthTexture;		///< Resolved depth texture
 
 	private:
 		RenderService*				mRenderService;
