@@ -244,17 +244,23 @@ namespace nap
 		VkDevice getDevice() const						{ return mDevice; }
 
 		/**
-		 * @return max number of currently supported rasterization samples per pixel.
+		 * Returns the number of samples used in Rasterization.
+		 * @return rasterization samples per pixel.
 		 */
 		VkSampleCountFlagBits getSampleCount() const;
 
 		/**
+		 * Returns if sample shading is enabled, reduces texture aliasing.
 		 * @return if sample shading is enabled
 		 */
 		bool getSampleShadingEnabled() const;
 
-		VkCommandPool getCommandPool() const { return mCommandPool; }
+		/**
+		 * @return the used depth format.
+		 */
 		VkFormat getDepthFormat() const { return mDepthFormat; }
+
+		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkImageAspectFlags getDepthAspectFlags() const;
 		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
 		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
