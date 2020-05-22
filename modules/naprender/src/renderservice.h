@@ -206,7 +206,7 @@ namespace nap
 
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
-		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
+		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }

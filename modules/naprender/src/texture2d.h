@@ -1,15 +1,16 @@
 #pragma once
 
+// Local Includes
+#include "surfacedescriptor.h"
+#include "renderutils.h"
+
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
-#include "rtti/factory.h"
-#include "vulkan/vulkan_core.h"
-#include "vk_mem_alloc.h"
-#include "nap/signalslot.h"
-#include "surfacedescriptor.h"
+#include <rtti/factory.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -162,15 +163,6 @@ namespace nap
 			VkBuffer					mStagingBuffer;
 			VmaAllocation				mStagingBufferAllocation;
 			VmaAllocationInfo			mStagingBufferAllocationInfo;
-		};
-
-		struct ImageData
-		{
-			VkImage						mTextureImage = nullptr;
-			VkImageView					mTextureView = nullptr;
-			VmaAllocation				mTextureAllocation = nullptr;
-			VmaAllocationInfo			mTextureAllocationInfo;
-			VkImageLayout				mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;

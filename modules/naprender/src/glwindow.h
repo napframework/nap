@@ -1,16 +1,15 @@
 #pragma once
 
+// Local Includes
 #include "backbufferrendertarget.h"
-#include <rtti/rtti.h>
-#include <nap/numeric.h>
+#include "renderutils.h"
 
 // External Includes
 #include <string.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
-#include <vk_mem_alloc.h>
-#include "SDL_video.h"
-#include "vulkan/vulkan_core.h"
+#include <SDL_video.h>
+#include <rtti/rtti.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -171,8 +170,8 @@ namespace nap
 
 	private:
 		BackbufferRenderTarget							mBackbuffer;
-
 		RenderService*									mRenderService = nullptr;
+		VmaAllocator									mAllocator = nullptr;
 		VkDevice										mDevice = nullptr;
 		VkSurfaceKHR									mSurface = nullptr;
 		VkSwapchainKHR									mSwapchain = nullptr;
@@ -185,22 +184,13 @@ namespace nap
 		std::vector<VkCommandBuffer>					mCommandBuffers;
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
+		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
 		
-		// Depth Image Resource
-		VkImage											mDepthImage = nullptr;
-		VkImageView										mDepthImageView = nullptr;
-		VmaAllocation									mDepthAllocation = nullptr;
-		VmaAllocationInfo								mDepthAllocationInfo;
-
-		// Color Image Resource
-		VkImage											mColorImage = nullptr;
-		VkImageView										mColorImageView = nullptr;
-		VmaAllocation									mColorAllocation = nullptr;
-		VmaAllocationInfo								mColorAllocationInfo;
-
+		ImageData										mDepthImage;
+		ImageData										mColorImage;
+		
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
-		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 
 		/**
