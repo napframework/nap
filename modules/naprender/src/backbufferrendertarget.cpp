@@ -38,5 +38,4 @@ namespace nap
 	{
 		return mWindow.getSampleCount();
 	}
-
 }

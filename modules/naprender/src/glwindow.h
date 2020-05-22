@@ -154,7 +154,7 @@ namespace nap
 		 */
 		uint32 getNumber() const;
 
-		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
+		VkFormat getSwapchainFormat() const				{ return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
 		VkSampleCountFlagBits getSampleCount() const;
 
@@ -162,11 +162,9 @@ namespace nap
 		friend class BackbufferRenderTarget;
 
 		bool recreateSwapChain(utility::ErrorState& errorState);
-		
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();		
-
-		VkRenderPass getRenderPass() const { return mRenderPass; }
+		VkRenderPass getRenderPass() const				{ return mRenderPass; }
 		void beginRenderPass();
 		void endRenderPass();
 

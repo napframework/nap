@@ -333,10 +333,10 @@ namespace nap
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
 	{
-		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT, errorState);
+		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 	}
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
@@ -384,7 +384,7 @@ namespace nap
 		}
 
 		// We create images and imageviews for the amount of frames in flight
-		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, samples, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
 			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
