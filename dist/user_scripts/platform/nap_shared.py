@@ -151,9 +151,9 @@ def get_full_project_module_requirements(framework_root, project_name, project_p
         json_dict = json.load(json_file)
         modules = []
         for module_name in json_dict['RequiredModules']:
-            if type(module_name) is unicode:
+            if not isinstance(module_name, str):
                 module_name = module_name.encode('utf8')
-                modules.append(module_name)
+            modules.append(module_name)
         new_modules = modules
     
     while len(new_modules) > 0:
@@ -174,7 +174,7 @@ def get_full_project_module_requirements(framework_root, project_name, project_p
                     json_dict = json.load(json_file)
                     for module_name in json_dict['RequiredModules']:
                         if module_name not in modules and module_name not in loop_modules:
-                            if type(module_name) is unicode:
+                            if not isinstance(module_name, str):
                                 module_name = module_name.encode('utf8')
                             loop_modules.append(module_name)
             else:
