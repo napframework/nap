@@ -88,9 +88,12 @@ namespace nap
 		mState.mInspectorWidth = 300.0f;
 
 		//
-		mState.mMousePos = ImGui::GetMousePos();
-		mState.mMouseDelta = 
-		{	mState.mMousePos.x - mState.mPreviousMousePos.x, 
+		
+		if(ImGui::IsMouseHoveringAnyWindow())
+			mState.mMousePos = ImGui::GetMousePos();
+
+		mState.mMouseDelta =
+		{	mState.mMousePos.x - mState.mPreviousMousePos.x,
 			mState.mMousePos.y - mState.mPreviousMousePos.y };
 		mState.mPreviousMousePos = mState.mMousePos;
 

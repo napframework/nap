@@ -655,6 +655,7 @@ namespace nap
 							else
 							{
 								float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+								
 
 								static std::unordered_map<rttr::type, float(*)(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)> get_value_map
 								{
