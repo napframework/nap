@@ -9,6 +9,11 @@
 #include "mesh.h"
 #include "depthsorter.h"
 #include "vertexbuffer.h"
+#include "texture2d.h"
+#include "descriptorsetcache.h"
+#include "descriptorsetallocator.h"
+#include "vk_mem_alloc.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <nap/core.h>
@@ -18,23 +23,8 @@
 #include <nap/logger.h>
 #include <sceneservice.h>
 #include <scene.h>
-#include "boxmesh.h"
-#include "meshfromfile.h"
-#include "trianglemesh.h"
-#include "shader.h"
-#include "material.h"
-#include "rendertexture2d.h"
-#include "imagefromfile.h"
-#include "image.h"
-#include "texture2d.h"
-#include "planemesh.h"
-#include "spheremesh.h"
-#include "descriptorsetcache.h"
-#include "descriptorsetallocator.h"
-#include "vk_mem_alloc.h"
-#include "SDL_vulkan.h"
-#include "sdlhelpers.h"
-#include "glslang/Public/ShaderLang.h"
+#include <SDL_vulkan.h>
+#include <glslang/Public/ShaderLang.h>
 
 RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"01"),
