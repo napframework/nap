@@ -27,20 +27,10 @@
 			"Format" : "Backbuffer",
 			"Usage" : "RenderTarget"
 		},
-		
-		{
-			"Type" : "nap::RenderTexture2D",
-			"mID" : "DepthTexture",
-			"Width" : 640,
-			"Height" : 480,
-			"Format" : "Depth",
-			"Usage" : "RenderTarget"
-		},		
 		{
 			"Type" : "nap::RenderTarget",
 			"mID": "PlaneRenderTarget",
 			"ColorTexture": "ColorTexture",
-			"DepthTexture": "DepthTexture",	
 			"ClearColor" : {
 				"x" : 1.0,
 				"y" : 1.0,
