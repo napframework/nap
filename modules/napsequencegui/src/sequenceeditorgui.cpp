@@ -107,14 +107,6 @@ namespace nap
 		// calc width of content in timeline window
 		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
 
-		//
-		ImVec2 windowSize = ImGui::GetWindowSize();
-		if( windowSize.x != mState.mWindowSize.x || windowSize.y != mState.mWindowSize.y )
-		{
-			mState.mDirty = true;
-			mState.mWindowSize = windowSize;
-		}
-
 		// set content width of next window
 		ImGui::SetNextWindowContentWidth(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution);
 
@@ -124,6 +116,14 @@ namespace nap
 			(bool*)0, // open
 			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
 		{
+			//
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			if (windowSize.x != mState.mWindowSize.x || windowSize.y != mState.mWindowSize.y)
+			{
+				mState.mDirty = true;
+				mState.mWindowSize = windowSize;
+			}
+
 			// we want to know if this window is focused in order to handle mouseinput
 			// in child windows or not
 			mState.mIsWindowFocused = ImGui::IsRootWindowOrAnyChildFocused();
@@ -139,11 +139,11 @@ namespace nap
 
 			// clear curve cache if we scroll inside the window
 			ImVec2 scroll = ImVec2(ImGui::GetScrollX(), ImGui::GetScrollY());
-			if (scroll.x != mState.mPrevScroll.x || scroll.y != mState.mPrevScroll.y)
+			if (scroll.x != mState.mScroll.x || scroll.y != mState.mScroll.y)
 			{
 				mState.mDirty = true;
 			}
-			mState.mPrevScroll = scroll;
+			mState.mScroll = scroll;
 
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
@@ -225,6 +225,18 @@ namespace nap
 				sequence_player.setPlaybackSpeed(playback_speed);
 			}
 			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+
+			if (ImGui::Checkbox("Follow", &mState.mFollow))
+			{
+			}
+
+			if (mState.mFollow)
+			{
+				float scroll_x = (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
+				ImGui::SetScrollX(scroll_x);
+			}
 
 			ImGui::Spacing();
 			ImGui::Separator();

@@ -225,15 +225,19 @@ namespace nap
 					{ RTTI_OF(SequenceTrackSegmentEventString), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
 
 					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
+
+					  std::ostringstream string_stream;
+					  string_stream << "\"" << segment_event.mValue << "\"" ;
+
 					  drawList->AddText(
 						  { topLeft.x + x + 5, topLeft.y + 5 },
-						  guicolors::red, segment_event.mValue.c_str());
+						  guicolors::red, string_stream.str().c_str());
 					} },
 					{ RTTI_OF(SequenceTrackSegmentEventVec2), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
 					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
 
 					  std::ostringstream string_stream;
-					  string_stream << segment_event.mValue.x << ", " << segment_event.mValue.y;
+					  string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
 
 					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
 					} },
@@ -241,7 +245,7 @@ namespace nap
 					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
 
 					  std::ostringstream string_stream;
-					  string_stream << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z;
+					  string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
 
 					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
 										string_stream.str().c_str());
@@ -449,7 +453,7 @@ namespace nap
 		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
 			// invoke insert sequence popup
-			ImGui::OpenPopup("Delete Segment");
+			ImGui::OpenPopup("Edit Segment");
 
 			auto* action = mState.mAction->getDerived<OpenEditSegmentValuePopup>();
 			mState.mAction = createAction<EditingSegment>(action->mTrackID, action->mSegmentID, action->mSegmentType);
@@ -458,7 +462,7 @@ namespace nap
 		// handle delete segment popup
 		if (mState.mAction->isAction<EditingSegment>())
 		{
-			if (ImGui::BeginPopup("Delete Segment"))
+			if (ImGui::BeginPopup("Edit Segment"))
 			{
 				auto* action = mState.mAction->getDerived<EditingSegment>();
 				if (ImGui::Button("Delete"))

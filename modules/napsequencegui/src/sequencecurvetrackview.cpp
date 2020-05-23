@@ -1444,7 +1444,7 @@ namespace nap
 						time_milseconds
 					};
 
-				edit_time = ImGui::InputInt3("Time", &time_array[0]);
+				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
 				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
 				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
 				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
@@ -1500,26 +1500,38 @@ namespace nap
 			// if no cache present, create new curve
 			if (mCurveCache.find(segment.mID) == mCurveCache.end())
 			{
-				const int point_num = (int) (points_per_pixel * segmentWidth );
+				const long point_num = (int) (points_per_pixel * segmentWidth );
 				std::vector<std::vector<ImVec2>> curves;
 				for (int v = 0; v < segment.mCurves.size(); v++)
 				{
 					std::vector<ImVec2> curve;
 					if(point_num>0)
 					{
-						for (int i = 0; i <= point_num; i++)
+						float start_x = math::max<float>(trackTopLeft.x, 0);
+						float end_x = start_x + mState.mWindowSize.x + mState.mWindowPos.x;
+
+						// start drawing at window pos
 						{
-							float value = 1.0f - segment.mCurves[v]->evaluate((float)i / point_num);
-
-							ImVec2 point =
-								{
-									trackTopLeft.x + previousSegmentX + segmentWidth * ((float)i / point_num),
-									trackTopLeft.y + value * mState.mTrackHeight
-								};
-
-							if( ImGui::IsRectVisible(point, { point.x + 1, point.y + 1 }) )
+							long i = 0;
+							for (; i <= point_num; i++)
 							{
-								curve.emplace_back(point);
+								float p = (float)i / point_num;
+								float x = trackTopLeft.x + previousSegmentX + segmentWidth * p;
+								if (x > start_x)
+								{
+									float value = 1.0f - segment.mCurves[v]->evaluate(p);
+									ImVec2 point =
+									{
+										x,
+										trackTopLeft.y + value * mState.mTrackHeight
+									};
+									curve.emplace_back(point);
+								}
+
+								if (x > end_x)
+								{
+									break; // no longer visible on right side, continuation of this loop is not necessary
+								}								
 							}
 						}
 					}

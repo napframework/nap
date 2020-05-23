@@ -245,7 +245,7 @@ namespace nap
 						time_milseconds
 					};
 
-				edit_time = ImGui::InputInt3("Time", &time_array[0]);
+				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
 				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
 				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
 				time_array[2] = math::clamp<int>(time_array[2], 0, 99);

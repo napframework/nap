@@ -59,7 +59,7 @@ namespace nap
 		ImVec2 mPrevWindowPos;
 
 		// previous window scroll
-		ImVec2 mPrevScroll;
+		ImVec2 mScroll;
 
 		// vertical resolution
 		float mVerticalResolution = 150.0f;
@@ -72,5 +72,8 @@ namespace nap
 
 		// current cursor pos
 		ImVec2 mCursorPos;
+
+		// scroll follows player position
+		bool mFollow = false;
 	};
 }

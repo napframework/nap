@@ -232,9 +232,19 @@ namespace nap
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
-			for (int i = 1; i < steps; i++)
+
+			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
+			for (;i < steps; i++)
 			{
-				draw_list->AddLine({ trackTopLeft.x + i * timestamp_interval, trackTopLeft.y }, { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y + mState.mTrackHeight}, guicolors::darkerGrey);
+				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
+				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
+				{
+					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
+				}
+				else
+				{
+					break;
+				}
 			}
 
 			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
