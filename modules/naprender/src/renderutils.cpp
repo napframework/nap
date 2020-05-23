@@ -6,6 +6,15 @@
 // Local Includes
 #include "renderutils.h"
 
+RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One, "01"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two, "02"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four, "04"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight, "08"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Sixteen, "16"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Max, "Max")
+RTTI_END_ENUM;
+
 namespace nap
 {
 	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, const VmaAllocationCreateInfo& allocationUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)

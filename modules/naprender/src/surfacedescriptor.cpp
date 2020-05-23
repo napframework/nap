@@ -7,7 +7,6 @@ RTTI_BEGIN_CLASS(nap::SurfaceDescriptor)
 	RTTI_PROPERTY("DataType",	&nap::SurfaceDescriptor::mDataType,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Channels",	&nap::SurfaceDescriptor::mChannels,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ColorSpace",	&nap::SurfaceDescriptor::mColorSpace,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",	&nap::SurfaceDescriptor::mSamples,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::ESurfaceChannels)
@@ -27,30 +26,20 @@ RTTI_BEGIN_ENUM(nap::EColorSpace)
 	RTTI_ENUM_VALUE(nap::EColorSpace::sRGB,			"sRGB")
 RTTI_END_ENUM
 
-RTTI_BEGIN_ENUM(nap::ESamples)
-	RTTI_ENUM_VALUE(nap::ESamples::One,		"01"),
-	RTTI_ENUM_VALUE(nap::ESamples::Two,		"02"),
-	RTTI_ENUM_VALUE(nap::ESamples::Four,	"04"),
-	RTTI_ENUM_VALUE(nap::ESamples::Eight,	"08"),
-	RTTI_ENUM_VALUE(nap::ESamples::Sixteen, "16"),
-	RTTI_ENUM_VALUE(nap::ESamples::Max,		"Max")
-RTTI_END_ENUM
-
 namespace nap
 {
-	SurfaceDescriptor::SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, ESamples samples, EColorSpace colorSpace) :
+	SurfaceDescriptor::SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace) :
 		mWidth(width),
 		mHeight(height),
 		mDataType(dataType),
 		mChannels(channels),
-		mSamples(samples),
 		mColorSpace(colorSpace)
 	{
 	}
 
 
 	SurfaceDescriptor::SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels) :
-		SurfaceDescriptor(width, height, dataType, channels, ESamples::One, EColorSpace::Linear)
+		SurfaceDescriptor(width, height, dataType, channels, EColorSpace::Linear)
 	{
 	}
 

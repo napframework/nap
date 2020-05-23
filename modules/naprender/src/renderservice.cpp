@@ -1081,7 +1081,7 @@ namespace nap
 			return false;
 
 		// Figure out how many rasterization samples we can use
-		ESamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
+		ERasterizationSamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
 		VkSampleCountFlagBits max_count = getMaxSampleCount(mPhysicalDevice);
 
 		if ((int)(req_count) > (int)max_count)
@@ -1089,7 +1089,7 @@ namespace nap
 			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(req_count), (int)max_count);
 			mRasterizationSamples = max_count;
 		}
-		mRasterizationSamples = req_count == ESamples::Max ? max_count :
+		mRasterizationSamples = req_count == ERasterizationSamples::Max ? max_count :
 			(int)(req_count) > (int)max_count ? max_count : (VkSampleCountFlagBits)(req_count);
 		
 		nap::Logger::info("Rasterization sample count is: %d", (int)(mRasterizationSamples));
