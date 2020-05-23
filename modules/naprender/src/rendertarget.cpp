@@ -7,7 +7,6 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
  	RTTI_PROPERTY("ColorTexture",	&nap::RenderTarget::mColorTexture,	nap::rtti::EPropertyMetaData::Required)
- 	RTTI_PROPERTY("DepthTexture",	&nap::RenderTarget::mDepthTexture,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderTarget::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -46,7 +45,7 @@ namespace nap
 			colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
+			
 			VkAttachmentReference colorAttachmentRef = {};
 			colorAttachmentRef.attachment = 0;
 			colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -158,13 +157,7 @@ namespace nap
 		if (!errorState.check(mColorTexture->mUsage == ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
 			return false;
 
-		if (!errorState.check(mDepthTexture->mUsage == ETextureUsage::RenderTarget, "The depth texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
-			return false;
-
-		if (!errorState.check(mColorTexture->getSize() == mDepthTexture->getSize(), "The color & depth textures used by a RenderTarget must have the same size."))
-			return false;
-
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mDepthTexture->getVulkanFormat(), getSampleCount(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mRenderService->getDepthFormat(), getSampleCount(), mRenderPass, errorState))
 			return false;
 
 		glm::ivec2 size = mColorTexture->getSize();
@@ -239,29 +232,34 @@ namespace nap
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 
+
 	void RenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
 	}
+
 
 	const glm::ivec2 RenderTarget::getSize() const
 	{
 		return mColorTexture->getSize();
 	}
 
+
 	RenderTexture2D& RenderTarget::getColorTexture()
 	{
 		return *mColorTexture;
 	}
+
 
 	VkFormat RenderTarget::getColorFormat() const
 	{
 		return mColorTexture->getVulkanFormat();
 	}
 
+
 	VkFormat RenderTarget::getDepthFormat() const
 	{
-		return mDepthTexture->getVulkanFormat();
+		return mRenderService->getDepthFormat();
 	}
 
 

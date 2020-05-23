@@ -48,9 +48,8 @@ namespace nap
 		virtual VkSampleCountFlagBits getSampleCount() const override;
 
 	public:
-		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer
-		rtti::ObjectPtr<RenderTexture2D>	mColorTexture;		///< Resolved color texture
-		rtti::ObjectPtr<RenderTexture2D>	mDepthTexture;		///< Resolved depth texture
+		glm::vec4	mClearColor;								///< 'ClearColor' color selection used for clearing the render target
+		rtti::ObjectPtr<RenderTexture2D> mColorTexture;			///< 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:
 		RenderService*				mRenderService;
