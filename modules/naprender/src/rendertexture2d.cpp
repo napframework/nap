@@ -45,11 +45,10 @@ namespace nap
 			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 		case ERenderTargetFormat::RGBA8:
 			settings.mChannels = ESurfaceChannels::RGBA;
-			return Texture2D::init(settings, false, errorState);
-
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 		case ERenderTargetFormat::R8:
 			settings.mChannels = ESurfaceChannels::R;
-			return Texture2D::init(settings, false, errorState);
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 		}
 
 		assert(false);

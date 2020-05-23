@@ -1033,7 +1033,7 @@ namespace nap
 		settings.mChannels = ESurfaceChannels::RGBA;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		if (!mEmptyTexture->init(settings, false, errorState))
+		if (!mEmptyTexture->init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
 			return false;
 
 		std::vector<uint8_t> empty_texture_data;

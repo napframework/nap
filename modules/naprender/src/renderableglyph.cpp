@@ -56,7 +56,7 @@ namespace nap
 		settings.mHeight = mSize.y;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
-		if (!mTexture.init(settings, false, errorCode))
+		if (!mTexture.init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorCode))
 			return false;
 
 		// Upload glyph bitmap data

@@ -250,7 +250,7 @@ namespace nap
 		VkSampleCountFlagBits getSampleCount() const;
 
 		/**
-		 * Returns if sample shading is enabled, reduces texture aliasing.
+		 * Returns if sample shading is enabled, reduces texture aliasing at computational cost.
 		 * @return if sample shading is enabled
 		 */
 		bool getSampleShadingEnabled() const;

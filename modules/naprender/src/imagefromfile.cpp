@@ -3,7 +3,7 @@
 
 // External Includes
 #include <nap/logger.h>
-#include "nap/core.h"
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::ImageFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -33,7 +33,7 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		if (!Texture2D::init(getBitmap().mSurfaceDescriptor, mCompressed, errorState))
+		if (!Texture2D::init(getBitmap().mSurfaceDescriptor, mCompressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
 			return false;
 		
 		update(getBitmap().getData(), getBitmap().mSurfaceDescriptor);

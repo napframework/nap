@@ -2,7 +2,9 @@
 
 // Local Includes
 #include "image.h"
-#include "rtti\factory.h"
+
+// External Includes
+#include <rtti\factory.h>
 
 namespace nap
 {
