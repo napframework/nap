@@ -11,8 +11,6 @@ namespace nap
 	enum class ERenderTargetFormat
 	{
 		Backbuffer,		///< The current native format of the color render target, sample count based on supported msaa samples
-		RGBA8,			///< RGBA8 4 components, 8 bytes per component, 1 sample per pixel
-		R8,				///< R8	1 components, 8 bytes per component, 1 sample per pixel
 		Depth			///< Depth Texture used for binding to depth buffer, sample count based supported on supported msaa samples
 	};
 

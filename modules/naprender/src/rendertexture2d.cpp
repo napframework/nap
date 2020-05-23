@@ -3,10 +3,8 @@
 #include "renderservice.h"
 
 RTTI_BEGIN_ENUM(nap::ERenderTargetFormat)
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGBA8,		"RGBA8"),
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::R8,			"R8"),	
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Depth,		"Depth"),
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Backbuffer,	"Backbuffer")
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Backbuffer,	"Backbuffer"),
+	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::Depth,		"Depth")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
@@ -37,21 +35,22 @@ namespace nap
 		switch (mFormat)
 		{
 		case ERenderTargetFormat::Backbuffer:
+		{
 			settings.mChannels = ESurfaceChannels::BGRA;
 			return Texture2D::init(settings, false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
+		}
 		case ERenderTargetFormat::Depth:
+		{
 			settings.mChannels = ESurfaceChannels::Depth;
 			settings.mDataType = ESurfaceDataType::FLOAT;
 			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-		case ERenderTargetFormat::RGBA8:
-			settings.mChannels = ESurfaceChannels::RGBA;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-		case ERenderTargetFormat::R8:
-			settings.mChannels = ESurfaceChannels::R;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
 		}
-
-		assert(false);
+		default:
+		{
+			assert(false);
+			break;
+		}
+		}
 		return false;
 	}
 }
