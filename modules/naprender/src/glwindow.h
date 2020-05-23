@@ -38,16 +38,18 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		std::string			title;											///< Name of the window
-		int					x				= SDL_WINDOWPOS_CENTERED;		///< Position
-		int					y				= SDL_WINDOWPOS_CENTERED;		///< Position
-		int					width			= 512;							//< Width of the window
-		int					height			= 512;							///< Height of the window
-		bool				borderless		= false;						///< If the window is borderless
-		bool				resizable		= true;							///< If the window is resizable
-		bool				visible			= true;							///< If the window is visible or not
-		VkPresentModeKHR	mode			= VK_PRESENT_MODE_MAILBOX_KHR;	///< Presentation mode
-		bool				highdpi			= true;							///< If high-dpi mode is enabled
+		std::string				title;											///< Name of the window
+		int						x				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int						y				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int						width			= 512;							//< Width of the window
+		int						height			= 512;							///< Height of the window
+		bool					borderless		= false;						///< If the window is borderless
+		bool					resizable		= true;							///< If the window is resizable
+		bool					visible			= true;							///< If the window is visible or not
+		VkPresentModeKHR		mode			= VK_PRESENT_MODE_MAILBOX_KHR;	///< Presentation mode
+		VkSampleCountFlagBits	samples			= VK_SAMPLE_COUNT_4_BIT;		///< Number of fragmentation samples
+		bool					sampleShadingEnabled = true;					///< If sample shading is enabled
+		bool					highdpi			= true;							///< If high-dpi mode is enabled
 	};
 
 
@@ -157,6 +159,7 @@ namespace nap
 		VkFormat getSwapchainFormat() const				{ return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
 		VkSampleCountFlagBits getSampleCount() const;
+		bool getSampleShadingEnabled() const;
 
 	private:
 		friend class BackbufferRenderTarget;
@@ -185,7 +188,9 @@ namespace nap
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
 		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
-		
+		VkSampleCountFlagBits							mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		bool											mSampleShadingEnabled = false;
+
 		ImageData										mDepthImage;
 		ImageData										mColorImage;
 		

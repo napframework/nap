@@ -23,5 +23,6 @@ namespace nap
 		virtual VkFormat getDepthFormat() const = 0;
 		virtual VkRenderPass getRenderPass() const = 0;
 		virtual VkSampleCountFlagBits getSampleCount() const = 0;
+		virtual bool getSampleShadingEnabled() const = 0;
 	};
 }

@@ -35,8 +35,6 @@ static VkPhysicalDevice       g_Gpu = VK_NULL_HANDLE;
 static VkDevice               g_Device = VK_NULL_HANDLE;
 static VkPipelineCache        g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool       g_DescriptorPool = VK_NULL_HANDLE;
-static VkSampleCountFlagBits  g_SampleCount = VK_SAMPLE_COUNT_1_BIT;
-static VkBool32				  g_SampleShadingEnabled = VK_FALSE;
 static void(*g_CheckVkResult)(VkResult err) = NULL;
 
 static VkCommandBuffer        g_CommandBuffer = VK_NULL_HANDLE;
@@ -665,7 +663,7 @@ namespace nap
 		return true;
 	}
 
-	static void createPipeline(VkRenderPass renderPass)
+	static void createPipeline(VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading)
 	{
 		if (g_Pipeline != nullptr)
 			vkDestroyPipeline(g_Device, g_Pipeline, g_Allocator);
@@ -723,11 +721,11 @@ namespace nap
 
 		VkPipelineMultisampleStateCreateInfo ms_info = {};
 		ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		ms_info.rasterizationSamples = g_SampleCount;
+		ms_info.rasterizationSamples = sampleCount;
 		ms_info.pNext = nullptr;
 		ms_info.flags = 0;
 		ms_info.minSampleShading = 1.0f;
-		ms_info.sampleShadingEnable = static_cast<int>(g_SampleShadingEnabled);
+		ms_info.sampleShadingEnable = static_cast<int>(enableSampleShading);
 
 		VkPipelineColorBlendAttachmentState color_attachment[1] = {};
 		color_attachment[0].blendEnable = VK_TRUE;
@@ -922,7 +920,8 @@ namespace nap
 		setGuiWindow(window->getWindow()->getNativeWindow());
 		mWindowChanged = true;
 
-		createPipeline(window->getBackbuffer().getRenderPass());
+		// Store number of samples
+		createPipeline(window->getBackbuffer().getRenderPass(), window->getBackbuffer().getSampleCount(), window->getBackbuffer().getSampleShadingEnabled());
 	}
 
 
@@ -1006,8 +1005,6 @@ namespace nap
 	
 		g_Gpu = mRenderService->getPhysicalDevice();
 		g_Device = mRenderService->getDevice();
-		g_SampleCount = mRenderService->getSampleCount();
-		g_SampleShadingEnabled = static_cast<int>(mRenderService->getSampleShadingEnabled());
 
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 

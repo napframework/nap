@@ -1,13 +1,18 @@
 // Local Includes
 #include "rendertarget.h"
-#include "nap\core.h"
 #include "renderservice.h"
+
+// External Includes
+#include <nap/core.h>
+#include <nap/logger.h>
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
- 	RTTI_PROPERTY("ColorTexture",	&nap::RenderTarget::mColorTexture,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderTarget::mClearColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -100,14 +105,14 @@ namespace nap
 	}
 
 
-	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, ImageData& outData, utility::ErrorState& errorState)
+	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
 		// Create image allocation struct
 		VmaAllocationCreateInfo img_alloc_usage = {};
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
@@ -117,14 +122,14 @@ namespace nap
 	}
 
 
-	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		// Create image allocation struct
 		VmaAllocationCreateInfo img_alloc_usage = {};
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
@@ -154,10 +159,20 @@ namespace nap
 
 	bool RenderTarget::init(utility::ErrorState& errorState)
 	{
+		// Figure out max number of supported samples
+		mRasterizationSamples = mRenderService->getRasterizationSamples(mRequestedSamples);
+
+		// Check if sample rate shading is enabled
+		if (mSampleShading && !(mRenderService->sampleShadingSupported()))
+		{
+			nap::Logger::warn("Sample shading requested but not supported");
+			mSampleShading = false;
+		}
+
 		if (!errorState.check(mColorTexture->mUsage == ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
 			return false;
 
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mRenderService->getDepthFormat(), getSampleCount(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
 			return false;
 
 		glm::ivec2 size = mColorTexture->getSize();
@@ -166,11 +181,11 @@ namespace nap
 		framebuffer_size.height = size.y;
 
 		// Create multi-sampled color attachment
-		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getVulkanFormat(), mColorImage, errorState))
+		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getVulkanFormat(), mRasterizationSamples, mColorImage, errorState))
 			return false;
 
 		// Create multi sampled depth attachment
-		if (!createDepthResource(*mRenderService, framebuffer_size, mDepthImage, errorState))
+		if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 			return false;
 
 		std::array<VkImageView, 3> attachments = 
@@ -265,6 +280,13 @@ namespace nap
 
 	VkSampleCountFlagBits RenderTarget::getSampleCount() const
 	{
-		return mRenderService->getSampleCount();
+		return mRasterizationSamples;
 	}
+
+
+	bool RenderTarget::getSampleShadingEnabled() const
+	{
+		return mSampleShading;
+	}
+
 } // nap

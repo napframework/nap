@@ -27,8 +27,6 @@
 #include <glslang/Public/ShaderLang.h>
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("SampleCount",			&nap::RenderServiceConfiguration::mSampleCount,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableSampleShading",	&nap::RenderServiceConfiguration::mEnableSampleShading, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -501,6 +499,8 @@ namespace nap
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
 		window_settings.highdpi		= mEnableHighDPIMode;
+		window_settings.samples		= getRasterizationSamples(window.mRequestedSamples);
+		window_settings.sampleShadingEnabled = window.mSampleShading;
 
 		// Select mode
 		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
@@ -842,7 +842,7 @@ namespace nap
 			return pos->second;
 
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), mEnableSampleShading, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled(), pipeline.mLayout, pipeline.mPipeline, errorState))
 			return Pipeline();
 
 		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
@@ -997,7 +997,7 @@ namespace nap
 		{
 			if (!comp->isSupported(camera))
 			{
-				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
+				nap::Logger::warn("Unable to render component: %s, unsupported camera %s", 
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
@@ -1041,8 +1041,6 @@ namespace nap
 
 		// Store render settings, used for initialization and global window creation
 		mEnableHighDPIMode	= getConfiguration<RenderServiceConfiguration>()->mEnableHighDPIMode;
-		mEnableSampleShading = getConfiguration<RenderServiceConfiguration>()->mEnableSampleShading;
-
 
 		// Get available vulkan extensions, necessary for interfacing with native window
 		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
@@ -1080,19 +1078,11 @@ namespace nap
 		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
-		// Figure out how many rasterization samples we can use
-		ERasterizationSamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
-		VkSampleCountFlagBits max_count = getMaxSampleCount(mPhysicalDevice);
-
-		if ((int)(req_count) > (int)max_count)
-		{
-			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(req_count), (int)max_count);
-			mRasterizationSamples = max_count;
-		}
-		mRasterizationSamples = req_count == ERasterizationSamples::Max ? max_count :
-			(int)(req_count) > (int)max_count ? max_count : (VkSampleCountFlagBits)(req_count);
-		
-		nap::Logger::info("Rasterization sample count is: %d", (int)(mRasterizationSamples));
+		// Figure out how many rasterization samples we can use and if sample rate shading is supported
+		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
+		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
+		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
+		nap::Logger::info("Sample rate shading is %s", mSampleShadingSupported ? "Supported" : "Not Supported");
 
 		// Create a logical device that interfaces with the physical device.
 		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, mDevice, errorState))
@@ -1349,15 +1339,25 @@ namespace nap
 	}
 
 
-	VkSampleCountFlagBits RenderService::getSampleCount() const
+	VkSampleCountFlagBits RenderService::getMaxRasterizationSamples() const
 	{
-		return mRasterizationSamples;
+		return mMaxRasterizationSamples;
 	}
 
 
-	bool RenderService::getSampleShadingEnabled() const
+	VkSampleCountFlagBits RenderService::getRasterizationSamples(ERasterizationSamples samples)
 	{
-		return mEnableSampleShading;
+		if ((int)(samples) > (int)mMaxRasterizationSamples)
+			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(samples), (int)mMaxRasterizationSamples);
+
+		return samples == ERasterizationSamples::Max ? mMaxRasterizationSamples :
+			(int)(samples) > (int)mMaxRasterizationSamples ? mMaxRasterizationSamples : (VkSampleCountFlagBits)(samples);
+	}
+
+
+	bool RenderService::sampleShadingSupported() const
+	{
+		return mSampleShadingSupported;
 	}
 
 
