@@ -56,5 +56,7 @@ namespace nap
 		RenderService*				mRenderService;
 		VkFramebuffer				mFramebuffer = nullptr;
 		VkRenderPass				mRenderPass = nullptr;
+		ImageData					mDepthImage;
+		ImageData					mColorImage;
 	};
 }

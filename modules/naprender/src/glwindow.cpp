@@ -584,7 +584,7 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderService->getSampleCount(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), getSampleCount(), mRenderPass, errorState))
 			return false;
 
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))

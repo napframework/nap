@@ -26,15 +26,6 @@
 #include <SDL_vulkan.h>
 #include <glslang/Public/ShaderLang.h>
 
-RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"01"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two,		"02"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four,		"04"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight,		"08"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Sixteen,	"16"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Max,		"Max")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("SampleCount",			&nap::RenderServiceConfiguration::mSampleCount,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableSampleShading",	&nap::RenderServiceConfiguration::mEnableSampleShading, nap::rtti::EPropertyMetaData::Default)
@@ -1090,7 +1081,7 @@ namespace nap
 			return false;
 
 		// Figure out how many rasterization samples we can use
-		ERasterizationSamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
+		ESamples req_count = getConfiguration<RenderServiceConfiguration>()->mSampleCount;
 		VkSampleCountFlagBits max_count = getMaxSampleCount(mPhysicalDevice);
 
 		if ((int)(req_count) > (int)max_count)
@@ -1098,7 +1089,7 @@ namespace nap
 			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(req_count), (int)max_count);
 			mRasterizationSamples = max_count;
 		}
-		mRasterizationSamples = req_count == ERasterizationSamples::Max ? max_count :
+		mRasterizationSamples = req_count == ESamples::Max ? max_count :
 			(int)(req_count) > (int)max_count ? max_count : (VkSampleCountFlagBits)(req_count);
 		
 		nap::Logger::info("Rasterization sample count is: %d", (int)(mRasterizationSamples));

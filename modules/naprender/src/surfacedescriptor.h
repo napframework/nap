@@ -35,6 +35,19 @@ namespace nap
 		Linear,				///< Linear color space
 		sRGB				///< Non-linear, sRGB color space
 	};
+
+	/**
+	 * Supported number of samples
+	 */
+	enum class ESamples : int
+	{
+		One		= 0x00000001,
+		Two		= 0x00000002,
+		Four	= 0x00000004,
+		Eight	= 0x00000008,
+		Sixteen = 0x00000010,
+		Max		= 0x00000000				///< Request max available number of rasterization samples.
+	};
 		
 	/**
 	 * Texture2Dsettings
@@ -45,7 +58,8 @@ namespace nap
 
 	public:
 		SurfaceDescriptor() = default;
-		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::Linear);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, ESamples samples, EColorSpace colorSpace);
 
 		int getWidth() const						{ return mWidth; }
 		int getHeight() const						{ return mHeight; }
@@ -57,9 +71,10 @@ namespace nap
 		ESurfaceDataType getDataType() const		{ return mDataType; }
 		ESurfaceChannels getChannels() const		{ return mChannels; }
 		EColorSpace getColorSpace() const			{ return mColorSpace; }
+		ESamples getSamples() const					{ return mSamples;  }
 
 		bool isValid() const { return mWidth != 0 && mHeight != 0; }
-		bool operator==(const SurfaceDescriptor& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
+		bool operator==(const SurfaceDescriptor& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels && other.mSamples == mSamples; }
 		bool operator!=(const SurfaceDescriptor& other) const { return !(*this == other); }
 
 	public:
@@ -68,6 +83,7 @@ namespace nap
 		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;	///< Property: 'DataType' specifies the amount of bytes in a single channel
 		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Property: 'Channels' specifies the channels and their order
 		EColorSpace			mColorSpace = EColorSpace::Linear;			///< Property: 'ColorSpace' specifies linear or SRGB space. Only applicable to BYTE datatypes
+		ESamples			mSamples = ESamples::One;					///< Property: 'Samples' specifies number of samples per pixel
 	};
 }
 

@@ -15,27 +15,37 @@ namespace nap
 {
 	namespace 
 	{
-		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
 			VkAttachmentDescription colorAttachment = {};
 			colorAttachment.format = colorFormat;
-			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.samples = samples;
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 			VkAttachmentDescription depthAttachment = {};
 			depthAttachment.format = depthFormat;
-			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			depthAttachment.samples = samples;
 			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentDescription colorAttachmentResolve{};
+			colorAttachmentResolve.format = colorFormat;
+			colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkAttachmentReference colorAttachmentRef = {};
 			colorAttachmentRef.attachment = 0;
@@ -45,11 +55,16 @@ namespace nap
 			depthAttachmentRef.attachment = 1;
 			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+			VkAttachmentReference colorAttachmentResolveRef{};
+			colorAttachmentResolveRef.attachment = 2;
+			colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 			VkSubpassDescription subpass = {};
 			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 			subpass.colorAttachmentCount = 1;
 			subpass.pColorAttachments = &colorAttachmentRef;
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+			subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
 			std::array<VkSubpassDependency, 2> dependencies;
 			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -68,7 +83,7 @@ namespace nap
 			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 	
-			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+			std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve};
 			VkRenderPassCreateInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -85,6 +100,41 @@ namespace nap
 		}
 	}
 
+
+	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, ImageData& outData, utility::ErrorState& errorState)
+	{
+		// Create image allocation struct
+		VmaAllocationCreateInfo img_alloc_usage = {};
+		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		img_alloc_usage.flags = 0;
+
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+			return false;
+
+		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
+			return false;
+
+		return true;
+	}
+
+
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, ImageData& outImage, utility::ErrorState& errorState)
+	{
+		// Create image allocation struct
+		VmaAllocationCreateInfo img_alloc_usage = {};
+		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		img_alloc_usage.flags = 0;
+
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+			return false;
+
+		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
+			return false;
+
+		return true;
+	}
+
+
 	RenderTarget::RenderTarget(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
@@ -97,6 +147,10 @@ namespace nap
 	
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
+
+		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+
 	}
 
 	bool RenderTarget::init(utility::ErrorState& errorState)
@@ -110,19 +164,27 @@ namespace nap
 		if (!errorState.check(mColorTexture->getSize() == mDepthTexture->getSize(), "The color & depth textures used by a RenderTarget must have the same size."))
 			return false;
 
-		glm::ivec2 size = mColorTexture->getSize();
-
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mDepthTexture->getVulkanFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mDepthTexture->getVulkanFormat(), getSampleCount(), mRenderPass, errorState))
 			return false;
 
+		glm::ivec2 size = mColorTexture->getSize();
 		VkExtent2D framebuffer_size;
 		framebuffer_size.width = size.x;
 		framebuffer_size.height = size.y;
 
-		std::array<VkImageView, 2> attachments = 
+		// Create multi-sampled color attachment
+		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getVulkanFormat(), mColorImage, errorState))
+			return false;
+
+		// Create multi sampled depth attachment
+		if (!createDepthResource(*mRenderService, framebuffer_size, mDepthImage, errorState))
+			return false;
+
+		std::array<VkImageView, 3> attachments = 
 		{
+			mColorImage.mTextureView,
+			mDepthImage.mTextureView,
 			mColorTexture->getImageView(),
-			mDepthTexture->getImageView()
 		};
 
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -205,6 +267,6 @@ namespace nap
 
 	VkSampleCountFlagBits RenderTarget::getSampleCount() const
 	{
-		return VK_SAMPLE_COUNT_1_BIT;
+		return mRenderService->getSampleCount();
 	}
 } // nap

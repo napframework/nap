@@ -59,8 +59,8 @@ namespace nap
 		if (!mTexture.init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorCode))
 			return false;
 
-		// Upload glyph bitmap data
-		//mTexture.update(bitmap_glyph->bitmap.buffer, bitmap_glyph->bitmap.pitch);
+		// Upload glyph data
+		mTexture.update(bitmap_glyph->bitmap.buffer, settings);
 
 		// Clean up bitmap data
 		FT_Done_Glyph(bitmap);
