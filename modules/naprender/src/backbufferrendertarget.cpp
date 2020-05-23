@@ -38,4 +38,11 @@ namespace nap
 	{
 		return mWindow.getSampleCount();
 	}
+
+
+	bool BackbufferRenderTarget::getSampleShadingEnabled() const
+	{
+		return mWindow.getSampleShadingEnabled();
+	}
+
 }

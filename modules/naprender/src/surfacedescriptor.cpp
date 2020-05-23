@@ -26,7 +26,6 @@ RTTI_BEGIN_ENUM(nap::EColorSpace)
 	RTTI_ENUM_VALUE(nap::EColorSpace::sRGB,			"sRGB")
 RTTI_END_ENUM
 
-
 namespace nap
 {
 	SurfaceDescriptor::SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace) :
@@ -35,6 +34,12 @@ namespace nap
 		mDataType(dataType),
 		mChannels(channels),
 		mColorSpace(colorSpace)
+	{
+	}
+
+
+	SurfaceDescriptor::SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels) :
+		SurfaceDescriptor(width, height, dataType, channels, EColorSpace::Linear)
 	{
 	}
 

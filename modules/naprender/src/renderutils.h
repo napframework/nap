@@ -12,7 +12,8 @@
 namespace nap
 {
 	/**
-	 * Vulkan Image Structure
+	 * Vulkan Image Structure.
+	 * Binds an image, view and memory allocation information together for easy usage.
 	 */
 	struct NAPAPI ImageData
 	{
@@ -25,6 +26,21 @@ namespace nap
 		VmaAllocationInfo	mTextureAllocationInfo;							///< Vulkan memory allocation information
 		VkImageLayout		mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
 	};
+
+
+	/**
+	 * All supported number of rasterization samples
+	 */
+	enum class ERasterizationSamples : int
+	{
+		One		= 0x00000001,
+		Two		= 0x00000002,
+		Four	= 0x00000004,
+		Eight	= 0x00000008,
+		Sixteen = 0x00000010,
+		Max		= 0x00000000		///< Request max available number of rasterization samples.
+	};
+
 
 	/**
 	 * Creates a Vulkan image based on the described image usage and given properties.

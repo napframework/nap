@@ -120,7 +120,6 @@ namespace nap
 	private:
 		nap::RenderTarget	mTarget;										///< Internally managed render target
 		nap::PlaneMesh		mPlane;											///< Plane used for rendering the effect onto
-		RenderTexture2D		mDepthTexture;									///< Depth texture which is required by the render target
 		MaterialInstance	mMaterialInstance;								///< The MaterialInstance as created from the resource.
 		RenderableMesh		mRenderableMesh;								///< Valid Plane / Material combination
 		RenderService*		mService = nullptr;								///< Render service

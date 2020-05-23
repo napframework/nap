@@ -10,13 +10,15 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Mode",			&nap::RenderWindow::mMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleShading",	&nap::RenderWindow::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Mode",			&nap::RenderWindow::mMode,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",		&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

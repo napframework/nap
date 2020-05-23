@@ -561,7 +561,6 @@
             "Type": "nap::RenderTarget",
             "mID": "VideoRenderTarget",
             "ColorTexture": "VideoColorTexture",
-            "DepthTexture": "VideoDepthTexture",
             "ClearColor": {
                 "x": 1.0,
                 "y": 0.0,
@@ -598,21 +597,6 @@
             "Width": 1920,
             "Height": 1080,
             "Format": "Backbuffer"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoDepthTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "RenderTarget",
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "Depth"
         },
         {
             "Type": "nap::RenderWindow",

@@ -491,14 +491,14 @@ namespace nap
 	}
 
 
-	static bool createColorResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkFormat colorFormat, ImageData& outData, utility::ErrorState& errorState)
+	static bool createColorResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
 		// Create image allocation struct
 		VmaAllocationCreateInfo img_alloc_usage = {};
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
@@ -508,14 +508,14 @@ namespace nap
 	}
 
 
-	static bool createDepthResource(const RenderService& renderer, VkExtent2D swapchainExtent, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		// Create image allocation struct
 		VmaAllocationCreateInfo img_alloc_usage = {};
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), renderer.getSampleCount(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
@@ -584,16 +584,16 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderService->getSampleCount(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), getSampleCount(), mRenderPass, errorState))
 			return false;
 
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthResource(*mRenderService, swapchainExtent, mDepthImage, errorState))
+		if (!createDepthResource(*mRenderService, swapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 			return false;
 
-		if (!createColorResource(*mRenderService, swapchainExtent, mSwapchainFormat, mColorImage, errorState))
+		if (!createColorResource(*mRenderService, swapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
 			return false;
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
@@ -638,9 +638,6 @@ namespace nap
 	bool GLWindow::init(const RenderWindowSettings& settings, RenderService& renderService, nap::utility::ErrorState& errorState)
 	{
 		mRenderService = &renderService;
-		mAllocator = renderService.getVulkanAllocator();
-		mDevice = renderService.getDevice();
-		mGraphicsQueue = renderService.getGraphicsQueue();
 
 		// create the window
 		mWindow = createSDLWindow(settings, errorState);
@@ -651,8 +648,20 @@ namespace nap
 		setSize(glm::vec2(settings.width, settings.height));
 		mPreviousWindowSize = glm::ivec2(settings.width, settings.height);
 
-		// Store presentation mode
+		// Initialize members
+		mAllocator = renderService.getVulkanAllocator();
+		mDevice = renderService.getDevice();
+		mGraphicsQueue = renderService.getGraphicsQueue();
 		mMode = settings.mode;
+		mRasterizationSamples = settings.samples;
+
+		// Check if sample rate shading is enabled and supported
+		mSampleShadingEnabled = settings.sampleShadingEnabled;
+		if (mSampleShadingEnabled && !(mRenderService->sampleShadingSupported()))
+		{
+			nap::Logger::warn("Sample shading requested but not supported");
+			mSampleShadingEnabled = false;
+		}
 
 		// acquire handle to physical device
 		VkPhysicalDevice physicalDevice = renderService.getPhysicalDevice();
@@ -920,9 +929,14 @@ namespace nap
 
 	VkSampleCountFlagBits GLWindow::getSampleCount() const
 	{
-		return mRenderService->getSampleCount();
+		return mRasterizationSamples;
 	}
 
+
+	bool GLWindow::getSampleShadingEnabled() const
+	{
+		return mSampleShadingEnabled;
+	}
 }
 
 RTTI_DEFINE_BASE(nap::GLWindow)

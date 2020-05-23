@@ -2,12 +2,13 @@
 
 // Local Includes
 #include "renderservice.h"
+#include "glwindow.h"
+#include "renderutils.h"
 
 // External Includes
 #include <window.h>
 #include <utility/dllexport.h>
 #include <rect.h>
-#include "glwindow.h"
 
 namespace nap
 {
@@ -209,17 +210,19 @@ namespace nap
 		void swap() const						{ mWindow->swap(); }
 
 	public:
-		int										mWidth			= 512;							///< Property: 'Width' of the window in pixels
-		int										mHeight			= 512;							///< Property: 'Height' of the window in pixels
-		bool									mBorderless		= false;						///< Property: 'Borderless' if the window has any borders
-		bool									mResizable		= true;							///< Property: 'Resizable' if the window is resizable
-		EPresentationMode						mMode			= EPresentationMode::Mailbox;	///< Property: 'Mode' the image presentation mode to use
-		std::string								mTitle			= "";							///< Property: 'Title' window title
-		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
+		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
+		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
+		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
+		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
+		EPresentationMode		mMode			= EPresentationMode::Mailbox;		///< Property: 'Mode' the image presentation mode to use
+		std::string				mTitle			= "";								///< Property: 'Title' window title
+		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
 
 	private:
-		RenderService*							mRenderService	= nullptr;						// Render service
-		std::shared_ptr<GLWindow>				mWindow			= nullptr;						// Actual OpenGL hardware window
-		bool									mFullscreen		= false;						// If the window is full screen or not
+		RenderService*				mRenderService	= nullptr;						// Render service
+		std::shared_ptr<GLWindow>	mWindow			= nullptr;						// Actual OpenGL hardware window
+		bool						mFullscreen		= false;						// If the window is full screen or not
 	};
 }

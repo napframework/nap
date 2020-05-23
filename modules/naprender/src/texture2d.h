@@ -83,7 +83,6 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
 		bool init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState);
 
 		/**
@@ -160,9 +159,9 @@ namespace nap
 
 		struct StagingBuffer
 		{
-			VkBuffer					mStagingBuffer;
-			VmaAllocation				mStagingBufferAllocation;
-			VmaAllocationInfo			mStagingBufferAllocationInfo;
+			VkBuffer				mStagingBuffer;
+			VmaAllocation			mStagingBufferAllocation;
+			VmaAllocationInfo		mStagingBufferAllocationInfo;
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;

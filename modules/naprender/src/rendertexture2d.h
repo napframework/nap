@@ -8,14 +8,6 @@ namespace nap
 {
 	class Core;
 
-	enum class ERenderTargetFormat
-	{
-		Backbuffer,		///< The current native format of the color render target, sample count based on supported msaa samples
-		RGBA8,			///< RGBA8 4 components, 8 bytes per component, 1 sample per pixel
-		R8,				///< R8	1 components, 8 bytes per component, 1 sample per pixel
-		Depth			///< Depth Texture used for binding to depth buffer, sample count based supported on supported msaa samples
-	};
-
 	/**
 	 * GPU texture resource that it is initially empty
 	 * This texture can be declared as a resource together with
@@ -36,7 +28,6 @@ namespace nap
 
 		int					mWidth		= 0;								///< Property: 'Width' width of the texture in texels
 		int					mHeight		= 0;								///< Property: 'Height' of the texture, in texels
-		ERenderTargetFormat	mFormat		= ERenderTargetFormat::Backbuffer;	///< Property: 'Format' format of the texture
 		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' colorspace of the texture
 	};
 }

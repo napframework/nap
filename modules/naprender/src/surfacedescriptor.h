@@ -35,9 +35,10 @@ namespace nap
 		Linear,				///< Linear color space
 		sRGB				///< Non-linear, sRGB color space
 	};
-		
+
+
 	/**
-	 * Texture2Dsettings
+	 * Used to describe the data of all 2D surfaces, including 2DTextures and Bitmaps.
 	 */
 	struct NAPAPI SurfaceDescriptor
 	{
@@ -45,7 +46,8 @@ namespace nap
 
 	public:
 		SurfaceDescriptor() = default;
-		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::Linear);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace);
 
 		int getWidth() const						{ return mWidth; }
 		int getHeight() const						{ return mHeight; }

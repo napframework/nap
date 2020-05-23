@@ -6,6 +6,7 @@
 #include <rendertarget.h>
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
+#include "renderutils.h"
 
 namespace opengl
 {
@@ -29,19 +30,6 @@ namespace nap
 	class Texture2D;
 
 	/**
-	 * System supported rasterization sample counts
-	 */
-	enum class ERasterizationSamples : int
-	{
-		One		= 0x00000001,	
-		Two		= 0x00000002,
-		Four	= 0x00000004,
-		Eight	= 0x00000008,
-		Sixteen = 0x00000010,
-		Max		= 0x00000000				///< Request max available number of rasterization samples.
-	};
-
-	/**
 	 * Render engine configuration settings
 	 */
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
@@ -49,11 +37,8 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		ERasterizationSamples mSampleCount = ERasterizationSamples::Four;		///< Property: 'SampleCount' The number of samples used in Rasterization, valid values are 1, 2, 4, 8, 16 and 32
-		bool mEnableSampleShading = true;										///< Property: 'EnableSampleShading' Reduces texture aliasing if enabled,
-		bool mEnableHighDPIMode = true;											///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-
-		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
+		bool mEnableHighDPIMode = true;							///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		virtual rtti::TypeInfo getServiceType() override		{ return RTTI_OF(RenderService); }
 	};
 
 	/**
@@ -247,13 +232,20 @@ namespace nap
 		 * Returns the number of samples used in Rasterization.
 		 * @return rasterization samples per pixel.
 		 */
-		VkSampleCountFlagBits getSampleCount() const;
+		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
 		/**
-		 * Returns if sample shading is enabled, reduces texture aliasing.
+		 * Returns supported number of vulkan rasterization samples based on the requested number of samples.
+		 * The output is automatically clamped if requested number of samples is out of range.
+		 * @return supported number of vulkan rasterization samples based on the requested number of samples.
+		 */
+		VkSampleCountFlagBits getRasterizationSamples(ERasterizationSamples samples);
+
+		/**
+		 * Returns if sample shading is supported and enabled, reduces texture aliasing at computational cost.
 		 * @return if sample shading is enabled
 		 */
-		bool getSampleShadingEnabled() const;
+		bool sampleShadingSupported() const;
 
 		/**
 		 * @return the used depth format.
@@ -341,7 +333,7 @@ namespace nap
 
 		// Renderer Settings
 		bool									mEnableHighDPIMode = true;
-		bool									mEnableSampleShading = false;
+		bool									mSampleShadingSupported = false;
 
 		VmaAllocator							mVulkanAllocator = nullptr;
 		WindowList								mWindows;												//< All available windows
@@ -370,7 +362,7 @@ namespace nap
 		VkCommandPool							mCommandPool = nullptr;
 		VkFormat								mDepthFormat;
 		int										mGraphicsQueueIndex = -1;
-		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
 	};

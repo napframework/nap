@@ -282,12 +282,6 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
-	{
-		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-	}
-
-
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
