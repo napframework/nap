@@ -19,7 +19,7 @@ namespace nap
 	class NAPAPI GPUMesh
 	{
 	public:
-		GPUMesh(VmaAllocator vmaAllocator);
+		GPUMesh(RenderService& renderService, EMeshDataUsage inUsage);
 
 		// Default destructor
 		virtual ~GPUMesh() = default;
@@ -63,8 +63,9 @@ namespace nap
 
 	private:
 		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexAttributeBuffer>>;
-		VmaAllocator								mVmaAllocator;
+		RenderService*								mRenderService;
 		AttributeMap								mAttributes;		///< Map from vertex attribute ID to buffer
 		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;		///< Index buffers
+		EMeshDataUsage								mUsage = EMeshDataUsage::Static;
 	};
 } // opengl

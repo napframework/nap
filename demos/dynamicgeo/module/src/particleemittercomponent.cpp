@@ -5,6 +5,7 @@
 #include <rect.h>
 #include <glm/gtx/transform.hpp>
 #include <mathutils.h>
+#include "nap/core.h"
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
@@ -61,12 +62,19 @@ namespace nap
 	class ParticleMesh : public IMesh
 	{
 	public:
+		ParticleMesh(Core& core) :
+			mMeshInstance(core.getService<RenderService>())
+		{
+
+		}
+
 		bool init(utility::ErrorState& errorState)
 		{
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance.setNumVertices(0);
 			mMeshInstance.setUsage(EMeshDataUsage::DynamicWrite);
 			mMeshInstance.reserveVertices(1000);
+			mMeshInstance.setDrawMode(EDrawMode::TRIANGLES);
 
 			// Create the necessary attributes
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
@@ -78,7 +86,6 @@ namespace nap
 
 			// Reserve CPU memory for all the particle geometry necessary to create
 			// We want to draw the mesh as a set of triangles, 2 triangles per particle
-			shape.setDrawMode(EDrawMode::TRIANGLES);
 			shape.reserveIndices(1000);
 
 			// Initialize our instance
@@ -103,7 +110,7 @@ namespace nap
 
 	ParticleEmitterComponentInstance::ParticleEmitterComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableMeshComponentInstance(entity, resource),
-		mParticleMesh(std::make_unique<ParticleMesh>())
+		mParticleMesh(std::make_unique<ParticleMesh>(*entity.getCore()))
 	{ }
 
 

@@ -191,9 +191,9 @@
         {
             "Type": "nap::Material",
             "mID": "ParticleMaterial",
-            "Uniforms": [
+            "Samplers": [
                 {
-                    "Type": "nap::UniformTexture2DArray",
+                    "Type": "nap::Sampler2DArray",
                     "mID": "UniformTexture2DArray_be091041",
                     "Name": "texture_input",
                     "Textures": [

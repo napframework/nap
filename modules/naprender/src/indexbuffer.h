@@ -9,7 +9,7 @@ namespace nap
 	class NAPAPI IndexBuffer : public GPUBuffer
 	{
 	public:
-		IndexBuffer(VmaAllocator vmaAllocator);
+		IndexBuffer(RenderService& renderService, EMeshDataUsage usage);
 
 		/**
 		 * @return the number of indices specified in this buffer

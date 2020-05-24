@@ -18,12 +18,6 @@ RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_FAN,	"TriangleFan")
 RTTI_END_ENUM
 
-RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::Static,		"Static"),
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicWrite,	"DynamicWrite")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS(nap::MeshShape)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -90,23 +84,8 @@ namespace nap
 
 	// Creates GPU vertex attributes and updates mesh
 	bool MeshInstance::initGPUData(utility::ErrorState& errorState)
-	{/*
-		// Convert usage to OpenGL usage. See https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
-		GLenum usage;
-		switch (mProperties.mUsage)
-		{
-		case EMeshDataUsage::Static:
-			usage = GL_STATIC_DRAW;
-			break;
-		case EMeshDataUsage::DynamicRead:
-			usage = GL_DYNAMIC_READ;
-			break;
-		case EMeshDataUsage::DynamicWrite:
-			usage = GL_DYNAMIC_DRAW;
-			break;
-		}*/
-
-		mGPUMesh = std::make_unique<GPUMesh>(mRenderService->getVulkanAllocator());
+	{
+		mGPUMesh = std::make_unique<GPUMesh>(*mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 

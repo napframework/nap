@@ -192,6 +192,12 @@ namespace nap
 				mFunction(std::forward<Args>(args)...);
 		}
 
+		void copyCauses(const Slot& rhs)
+		{
+			for (auto cause : rhs.mCauses)
+				cause->connect(*this);
+		}
+
 	private:
 		template<typename... Args_> friend class Signal;
 

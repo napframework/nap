@@ -7,7 +7,6 @@
 #include <rtti/objectptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
-#include <nap/signalslot.h>
 
 namespace nap
 {

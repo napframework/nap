@@ -4,9 +4,22 @@
 #include "vulkan/vulkan_core.h"
 #include "utility/dllexport.h"
 #include "vk_mem_alloc.h"
+#include <nap/signalslot.h>
+#include <vector>
 
 namespace nap
 {
+	class RenderService;
+
+	/**
+	* Flag that determines how the mesh data is used at runtime.
+	*/
+	enum class EMeshDataUsage
+	{
+		Static,				///< Data of the mesh does not change
+		DynamicWrite,		///< Data of the mesh is frequently read from GPU to CPU
+	};
+
 	/**
 	 * Defines a buffer object on the GPU and acts as a base class for 
 	 * all Vulkan derived buffer types. This object creation / destruction 
@@ -15,7 +28,7 @@ namespace nap
 	class NAPAPI GPUBuffer
 	{
 	public:
-		GPUBuffer(VmaAllocator vmaAllocator);
+		GPUBuffer(RenderService& renderService, EMeshDataUsage usage);
 
 		/**
 		 * Default destructor
@@ -25,17 +38,25 @@ namespace nap
 		GPUBuffer(const GPUBuffer& other) = delete;
 		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
-		VkBuffer getBuffer() const { return mBuffer; }
+		VkBuffer getBuffer() const { return mBuffers[mCurrentBufferIndex].mBuffer; }
+
+		nap::Signal<> bufferChanged;
 
 	protected:
 		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
 
 	private:
-		VmaAllocator		mVmaAllocator = VK_NULL_HANDLE;
-		VmaAllocation		mAllocation = VK_NULL_HANDLE;
-		VkBuffer			mBuffer = VK_NULL_HANDLE;
-		size_t				mCurCapacity = 0;			// Amount of memory reserved
-		size_t				mCurSize = 0;				// defines the number of points in the buffer
+		struct BufferData
+		{
+			VmaAllocation		mAllocation = VK_NULL_HANDLE;
+			VmaAllocationInfo	mAllocationInfo;
+			VkBuffer			mBuffer = VK_NULL_HANDLE;
+		};
+
+		RenderService*			mRenderService = nullptr;
+		std::vector<BufferData>	mBuffers;
+		int						mCurrentBufferIndex = 0;
+		EMeshDataUsage			mUsage;
 	};
 
 } // opengl
