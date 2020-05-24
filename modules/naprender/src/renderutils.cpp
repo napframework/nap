@@ -7,12 +7,12 @@
 #include "renderutils.h"
 
 RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One, "01"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two, "02"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four, "04"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight, "08"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Sixteen, "16"),
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Max, "Max")
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"One"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two,		"Two"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four,		"Four"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight,		"Eight"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Sixteen,	"Sixteen"),
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Max,		"Max")
 RTTI_END_ENUM;
 
 namespace nap

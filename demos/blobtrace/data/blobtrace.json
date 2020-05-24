@@ -7,6 +7,8 @@
 			"Width" : 1280,
 			"Height" : 720,
 			"Title" : "Window 1",
+			"Samples": "Four",
+			"SampleShading": true,
 			"ClearColor": {
                 "x": 0.0666,
                 "y": 0.0784,

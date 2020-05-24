@@ -7,18 +7,20 @@
 			"Width" : 256,
 			"Height" : 256,
 			"Title" : "Window 1",
+			"Samples": "Four",
+			"SampleShading": true,
 			"PresentationMode":"Mailbox"
 		},
-
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window1",
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "Window 2",
+			"Samples": "Four",
+			"SampleShading": true,
 			"PresentationMode":"Mailbox"
 		},
-
 		{
 			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture",
@@ -36,7 +38,9 @@
 				"y" : 1.0,
 				"z" : 1.0,
 				"w" : 1.0
-			}
+			},
+			"Samples": "Two",
+			"SampleShading": false
 		},
 		{
 			"Type" : "nap::MeshFromFile",

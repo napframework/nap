@@ -274,6 +274,8 @@
             "Resizable": true,
             "Title": "Window 1",
             "PresentationMode": "Mailbox",
+            "Samples": "Four",
+            "SampleShading": true,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,

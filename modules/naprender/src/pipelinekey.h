@@ -9,7 +9,7 @@ namespace nap
 
 	struct PipelineKey
 	{
-		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount) :
+		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading) :
 			mShader(&shader),
 			mDrawMode(drawMode),
 			mDepthMode(depthMode),
@@ -17,21 +17,23 @@ namespace nap
 			mCullWindingOrder(cullWindingOrder),
 			mColorFormat(colorFormat),
 			mDepthFormat(depthFormat),
-			mSampleCount(sampleCount)
+			mSampleCount(sampleCount),
+			mSampleShading(sampleShading)
 		{
 		}
 
 		bool operator==(const PipelineKey& rhs) const
 		{
 			return	
-				mShader		== rhs.mShader	&& 
-				mDrawMode	== rhs.mDrawMode && 
+				mShader	== rhs.mShader	&& 
+				mDrawMode == rhs.mDrawMode && 
 				mDepthMode == rhs.mDepthMode && 
 				mBlendMode == rhs.mBlendMode && 
 				mCullWindingOrder == rhs.mCullWindingOrder && 
 				mColorFormat == rhs.mColorFormat && 
 				mDepthFormat == rhs.mDepthFormat &&
-				mSampleCount == rhs.mSampleCount;
+				mSampleCount == rhs.mSampleCount &&
+				mSampleShading == rhs.mSampleShading;
 		}
 
 		const Shader*			mShader = nullptr;
@@ -42,6 +44,7 @@ namespace nap
 		VkFormat				mColorFormat;
 		VkFormat				mDepthFormat;
 		VkSampleCountFlagBits	mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+		bool					mSampleShading = false;
 	};
 }
 
@@ -59,8 +62,10 @@ namespace std
 			size_t cull_winding_hash = hash<size_t>{}((size_t)key.mCullWindingOrder);
 			size_t color_format_hash = hash<size_t>{}((size_t)key.mColorFormat);
 			size_t depth_format_hash = hash<size_t>{}((size_t)key.mDepthFormat);
+			size_t sample_count_hash = hash<size_t>{}((size_t)key.mSampleCount);
+			size_t sample_shading_hash = hash<size_t>{}((size_t)key.mSampleShading);
 
-			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash;
+			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash;
 		}
 	};
 }
