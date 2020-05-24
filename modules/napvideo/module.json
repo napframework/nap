@@ -5,5 +5,8 @@
         "mod_naprender", 
         "mod_napaudio"
     ], 
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/ffmpeg/msvc/install/bin",
+        "{ROOT}/thirdparty/FFmpeg/bin"
+    ]
 }

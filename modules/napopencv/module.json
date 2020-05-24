@@ -5,5 +5,8 @@
         "mod_napmath", 
         "mod_napscene"
     ], 
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/opencv/msvc/x64/vc14/bin",
+        "{ROOT}thirdparty/opencv/bin"
+    ]
 }

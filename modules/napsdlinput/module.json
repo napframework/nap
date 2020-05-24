@@ -5,5 +5,8 @@
         "mod_napinput", 
         "mod_napapp"
     ], 
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/SDL2/msvc/lib/x64",
+        "{ROOT}/thirdparty/SDL2/lib"
+    ]
 }
