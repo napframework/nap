@@ -1225,7 +1225,7 @@ namespace nap
 		submitInfo.pCommandBuffers = &mTransferCommandBuffers[mCurrentFrameIndex];
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		//assert(result == VK_SUCCESS);
+		assert(result == VK_SUCCESS);
 	}
 
 
