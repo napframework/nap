@@ -37,4 +37,11 @@ namespace nap
 	{
 		return mHandle != nullptr;
 	}
+
+
+	IGlyphRepresentation::IGlyphRepresentation(nap::Core& core)
+	{
+
+	}
+
 }

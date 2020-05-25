@@ -4,6 +4,7 @@
 
 // External Includes
 #include <nap/logger.h>
+#include <nap/core.h>
 #include <mathutils.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -24,7 +25,7 @@ RTTI_END_CLASS
 
 // nap::fontinstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontInstance)
-	RTTI_CONSTRUCTOR(const nap::FontService&)
+	RTTI_CONSTRUCTOR(nap::FontService&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,7 +95,7 @@ namespace nap
 	}
 
 
-	FontInstance::FontInstance(const FontService& service)
+	FontInstance::FontInstance(FontService& service) : mService(&service)
 	{
 		// Get handle to free-type lib
 		mFreetypeLib = service.mFreetypeLib;
@@ -329,7 +330,7 @@ namespace nap
 			return representation;
 
 		// Add new representation and move to unique ptr
-		IGlyphRepresentation* new_rep = type.create<IGlyphRepresentation>();
+		IGlyphRepresentation* new_rep = type.create<IGlyphRepresentation>({ mService->getCore() });
 		if (!errorCode.check(new_rep != nullptr, ":%s is not a valid IGlyphRepresentation object", type.get_name().to_string().c_str()))
 			return nullptr;
 

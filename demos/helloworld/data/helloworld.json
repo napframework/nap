@@ -115,7 +115,7 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
-                    "Text": "Hi There! Welcome to NAP",
+                    "Text": "HiThere!WelcometoNAP",
                     "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
@@ -231,7 +231,7 @@
             "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
             "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
+                "MinFilter": "Linear",
                 "MaxFilter": "Linear",
                 "WrapVertical": "ClampToEdge",
                 "WrapHorizontal": "ClampToEdge",
@@ -244,16 +244,25 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms": [
+            "Uniforms" : 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "textColor",
-                    "Value": {
-                        "x": 0.8587999939918518,
-                        "y": 0.8587999939918518,
-                        "z": 0.8587999939918518
-                    }
+
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3",
+                            "Name": "textColor",
+                            "Value": {
+                                "x": 0.8587999939918518,
+                                "y": 0.8587999939918518,
+                                "z": 0.8587999939918518
+                            }
+                        }
+                    ]                              
                 }
             ],
             "Shader": "FontShader",
@@ -264,22 +273,13 @@
         {
             "Type": "nap::Material",
             "mID": "WorldMaterial",
-            "Uniforms": [
+            "Samplers" : 
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
+                    "mID": "world_input_tex_uniform",
                     "Name": "inWorldTexture",
                     "Texture": "WorldTexture"
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "nap::UniformVec3",
-                    "Name": "inCameraPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 4.0
-                    }
                 }
             ],
             "Shader": "WorldShader",

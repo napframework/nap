@@ -1,20 +1,25 @@
 // Local Includes
 #include "renderableglyph.h"
+#include "renderservice.h"
 
 // External Includes
 #include <mathutils.h>
 #include <ft2build.h>
 #include <bitmap.h>
+#include <nap/core.h>
+
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableGlyph)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DGlyph)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DMipMapGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DMipMapGlyph)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap
@@ -26,6 +31,18 @@ namespace nap
 	{
 		return reinterpret_cast<FT_Glyph>(handle);
 	}
+
+
+	RenderableGlyph::RenderableGlyph(nap::Core& core) : IGlyphRepresentation(core),
+		mTexture(std::make_unique<Texture2D>(core))
+	{ }
+
+
+	RenderableGlyph::~RenderableGlyph()
+	{
+		mTexture.reset(nullptr);
+	}
+
 
 	bool RenderableGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
@@ -48,7 +65,7 @@ namespace nap
 		mSize.y = bitmap_glyph->bitmap.rows;
 
 		// Set parameters
-		getTextureParameters(mTexture.mParameters, mSize);
+		getTextureParameters(mTexture->mParameters, mSize);
 
 		// Initialize texture
 		SurfaceDescriptor settings;
@@ -56,11 +73,12 @@ namespace nap
 		settings.mHeight = mSize.y;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
-		if (!mTexture.init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorCode))
+		
+		if (!mTexture->init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorCode))
 			return false;
 
 		// Upload glyph data
-		mTexture.update(bitmap_glyph->bitmap.buffer, settings);
+		mTexture->update(bitmap_glyph->bitmap.buffer, settings);
 
 		// Clean up bitmap data
 		FT_Done_Glyph(bitmap);
@@ -73,6 +91,10 @@ namespace nap
 	}
 
 
+	Renderable2DGlyph::Renderable2DGlyph(nap::Core& core) : RenderableGlyph(core)
+	{
+	}
+
 	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
 	{
 		outParameters.mMaxFilter		= EFilterMode::Linear;
@@ -80,6 +102,11 @@ namespace nap
 		outParameters.mMaxLodLevel		= 0;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+	}
+
+
+	Renderable2DMipMapGlyph::Renderable2DMipMapGlyph(nap::Core& core) : RenderableGlyph(core)
+	{
 	}
 
 

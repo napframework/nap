@@ -17,6 +17,7 @@
 #include <mathutils.h>
 #include <renderableglyph.h>
 #include <font.h>
+#include <uniforminstances.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -55,6 +56,9 @@ namespace nap
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
+
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
@@ -107,55 +111,63 @@ namespace nap
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		nap::UniformVec3Instance* cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
 
+		// Get camera world space position and set
 		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform.setValue(global_pos);
+		cam_loc_uniform->setValue(global_pos);
 
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin the render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Find the world and add as an object to render
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+			components_to_render.emplace_back(&renderable_world);
 
-		// Find the world and add as an object to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+			// Find the perspective camera
+			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
-		components_to_render.emplace_back(&renderable_world);
+			// Render the world with the right camera directly to screen
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
 
-		// Find the perspective camera
-		nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
+			// Render text on top of the sphere
+			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
-		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+			// Find the orthographic camera (2D text can only be rendered with an orthographic camera)
+			nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
 
-		// Clear list of components to render
-		components_to_render.clear();
+			// Center text
+			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
 
-		// Render text on top of the sphere
-		Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+			// Render text on top of sphere using render service
+			// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
+			components_to_render.clear();
+			components_to_render.emplace_back(&render_text);
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
 
-		// Find the orthographic camera (2D text can only be rendered with an orthographic camera)
-		nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
+			// Draw our GUI
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			
+			// End the render pass
+			mRenderWindow->endRendering();
 
-		// Center text
-        render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
+			// End recording
+			mRenderService->endRecording();
+		}
 
-		// Render text on top of sphere using render service
-		// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
-		components_to_render.emplace_back(&render_text);
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
-
-		// Draw our gui
-		mGuiService->draw();
-
-		// Swap screen buffers
-		mRenderWindow->swap();
+		// Signal the ending of the frame
+		mRenderService->endFrame();
 	}
 	
 	
