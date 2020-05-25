@@ -235,11 +235,14 @@ namespace nap
 		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
 		/**
-		 * Returns supported number of vulkan rasterization samples based on the requested number of samples.
-		 * The output is automatically clamped if requested number of samples is out of range.
-		 * @return supported number of vulkan rasterization samples based on the requested number of samples.
+		 * Returns max supported rasterization samples based on the requested number of samples.
+		 * The output is automatically clamped if the requested number of samples exceeds the hardware limit.
+		 * @return if requested number of samples is supported by hardware.
+		 * @param requestedSamples requested number of samples.
+		 * @param outSamples supported number of samples.
+		 * @param errorState contains the error if requested number of samples is not supported by the hardware.
 		 */
-		VkSampleCountFlagBits getRasterizationSamples(ERasterizationSamples samples);
+		bool getRasterizationSamples(ERasterizationSamples requestedSamples, VkSampleCountFlagBits& outSamples, nap::utility::ErrorState& errorState);
 
 		/**
 		 * Returns if sample shading is supported and enabled, reduces texture aliasing at computational cost.

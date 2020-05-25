@@ -499,12 +499,11 @@ namespace nap
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
 		window_settings.highdpi		= mEnableHighDPIMode;
-		window_settings.samples		= getRasterizationSamples(window.mRequestedSamples);
 		window_settings.sampleShadingEnabled = window.mSampleShading;
 
 		// Warn if requested number of samples is not matched by hardware
-		if (window.mRequestedSamples != ERasterizationSamples::Max && (int)(window_settings.samples) != (int)(window.mRequestedSamples))
-			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(window.mRequestedSamples), (int)getMaxRasterizationSamples());
+		if (!getRasterizationSamples(window.mRequestedSamples, window_settings.samples, errorState))
+			nap::Logger::warn(errorState.toString());
 
 		// Select mode
 		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
@@ -1349,10 +1348,13 @@ namespace nap
 	}
 
 
-	VkSampleCountFlagBits RenderService::getRasterizationSamples(ERasterizationSamples samples)
+	bool RenderService::getRasterizationSamples(ERasterizationSamples requestedSamples, VkSampleCountFlagBits& outSamples, nap::utility::ErrorState& errorState)
 	{
-		return samples == ERasterizationSamples::Max ? mMaxRasterizationSamples :
-			(int)(samples) > (int)mMaxRasterizationSamples ? mMaxRasterizationSamples : (VkSampleCountFlagBits)(samples);
+		outSamples = requestedSamples == ERasterizationSamples::Max ? mMaxRasterizationSamples :
+			(int)(requestedSamples) > (int)mMaxRasterizationSamples ? mMaxRasterizationSamples : (VkSampleCountFlagBits)(requestedSamples);
+
+		return errorState.check((int)requestedSamples <= (int)mMaxRasterizationSamples,
+			"Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(requestedSamples), (int)mMaxRasterizationSamples);
 	}
 
 
