@@ -188,7 +188,7 @@ namespace nap
 
 			mRenderService->beginFrame();
 
-			if (mRenderService->beginHeadlessRendering())
+			if (mRenderService->beginHeadlessRecording())
 			{
 				std::vector<RenderableComponentInstance*> components_to_render;
 				components_to_render.push_back(&mPigEntity->getComponent<RenderableMeshComponentInstance>());
@@ -197,10 +197,10 @@ namespace nap
 				mRenderService->renderObjects(*mTextureRenderTarget, mCameraEntityLeft->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				mTextureRenderTarget->endRendering();
 
-				mRenderService->endHeadlessRendering();
+				mRenderService->endHeadlessRecording();
 			}
 
-			if (mRenderService->beginRendering(*render_window))
+			if (mRenderService->beginRecording(*render_window))
 			{
 				glm::mat4 identity = glm::mat4(1.0f);
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -249,7 +249,7 @@ namespace nap
 
 				backbuffer.endRendering();
 
-				mRenderService->endRendering();
+				mRenderService->endRecording();
 			}
 		}
 	 
@@ -257,7 +257,7 @@ namespace nap
 		{
 			RenderWindow* render_window = mRenderWindows[1].get();
 			
-			if (mRenderService->beginRendering(*render_window))
+			if (mRenderService->beginRecording(*render_window))
 			{
 				IRenderTarget& backbuffer = render_window->getBackbuffer();
 				backbuffer.beginRendering();
@@ -278,7 +278,7 @@ namespace nap
 
 				backbuffer.endRendering();
 
-				mRenderService->endRendering();
+				mRenderService->endRecording();
 			}
 		}
 

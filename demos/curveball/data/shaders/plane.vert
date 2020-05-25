@@ -1,8 +1,12 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+// Uniform inputs
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -15,7 +19,7 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

@@ -2,12 +2,13 @@
 
 // Local Includes
 #include "renderservice.h"
+#include "glwindow.h"
+#include "renderutils.h"
 
 // External Includes
 #include <window.h>
 #include <utility/dllexport.h>
 #include <rect.h>
-#include "glwindow.h"
 
 namespace nap
 {
@@ -26,6 +27,17 @@ namespace nap
 
 	public:
 		friend class RenderService;
+
+		/**
+		 * The various image presentation modes.
+		 * Controls the way in which images are presented to screen. 
+		 */
+		enum class EPresentationMode : int
+		{
+			Immediate,					///< The new image immediately replaces the display image, screen tearing may occur.
+			Mailbox,					///< The new image replaces the one image waiting in the queue, becoming the first to be displayed. No screen tearing occurs. Could result in not-shown images, but ensures CPU does not stall.
+			FIFO,						///< Based on first in first out, where every image is presented in order. No screen tearing occurs when drawing faster than monitor refresh rate. CPU could stall.
+		};
 
 		// Default constructor
 		RenderWindow() = default;
@@ -48,11 +60,6 @@ namespace nap
 		 * @return the window managed by this component
 		 */
 		GLWindow* getWindow() const												{ return mWindow.get(); }
-
-		/**
-		 * Swaps window buffers
-		 */
-		void swap() const														{ mWindow->swap(); }
 
 		/**
 		 * Makes this window active, calls activate afterwards
@@ -135,6 +142,12 @@ namespace nap
 		void setHeight(int height);
 
 		/**
+		 * Sets the window clear color.
+		 * @param color the new clear color
+		 */
+		void setClearColor(const glm::vec4& color);
+
+		/**
 		 * Sets the position of the window on screen
 		 * @param position the new screen position in pixel coordinates
 		 */
@@ -182,21 +195,34 @@ namespace nap
 		*/
 		BackbufferRenderTarget& getBackbuffer();
 
+		/**
+		 * Starts a render pass. Only call this when recording is enabled.
+		 */
+		void beginRendering();
+
+		/**
+		 * Ends a render pass. Always call this after beginRendering().
+		 */
+		void endRendering();
+
 	private:
 		void handleEvent(const Event& event);
+		void swap() const						{ mWindow->swap(); }
 
 	public:
-		int										mWidth			= 512;							///< Property: 'Width' of the window in pixels
-		int										mHeight			= 512;							///< Property: 'Height' of the window in pixels
-		bool									mBorderless		= false;						///< Property: 'Borderless' if the window has any borders
-		bool									mResizable		= true;							///< Property: 'Resizable' if the window is resizable
-		bool									mSync			= true;							///< Property: 'Sync' If v-sync is enabled
-		std::string								mTitle			= "";							///< Property: 'Title' window title
-		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
+		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
+		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
+		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
+		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
+		EPresentationMode		mMode			= EPresentationMode::Mailbox;		///< Property: 'Mode' the image presentation mode to use
+		std::string				mTitle			= "";								///< Property: 'Title' window title
+		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
 
 	private:
-		RenderService*							mRenderService	= nullptr;						// Render service
-		std::shared_ptr<GLWindow>				mWindow			= nullptr;						// Actual OpenGL hardware window
-		bool									mFullscreen		= false;						// If the window is full screen or not
+		RenderService*				mRenderService	= nullptr;						// Render service
+		std::shared_ptr<GLWindow>	mWindow			= nullptr;						// Actual OpenGL hardware window
+		bool						mFullscreen		= false;						// If the window is full screen or not
 	};
 }

@@ -80,7 +80,7 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 90.0,
+                            "x": -90.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -174,37 +174,48 @@
         {
             "Type": "nap::Material",
             "mID": "BallMaterial",
-            "Uniforms": [
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "inCameraPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 4.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_af2d9fe4",
-                    "Name": "light",
-                    "Uniforms": [
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
                         {
                             "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_de59dce3",
-                            "Name": "mPosition",
-                            "Value": {
+                            "mID": "UniformVec3",
+                            "Name": "inCameraPosition",
+                            "Value": 
+                            {
                                 "x": 0.0,
-                                "y": 20.0,
-                                "z": 10.0
+                                "y": 0.0,
+                                "z": 4.0
                             }
                         },
                         {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformVec3_dfee004c",
-                            "Name": "mIntensity",
-                            "Value": 1.0
+                            "Type": "nap::UniformStruct",
+                            "mID": "UniformStruct_af2d9fe4",
+                            "Name": "light",
+                            "Uniforms": 
+                            [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_de59dce3",
+                                    "Name": "mPosition",
+                                    "Value": 
+                                    {
+                                        "x": 0.0,
+                                        "y": 20.0,
+                                        "z": 10.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformVec3_dfee004c",
+                                    "Name": "mIntensity",
+                                    "Value": 1.0
+                                }
+                            ]
                         }
                     ]
                 }
@@ -262,7 +273,9 @@
             "Borderless": false,
             "Resizable": true,
             "Title": "Window 1",
-            "Sync": false,
+            "PresentationMode": "Mailbox",
+            "Samples": "Four",
+            "SampleShading": true,
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,

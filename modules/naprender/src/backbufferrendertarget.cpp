@@ -32,4 +32,17 @@ namespace nap
 	{
 		return mWindow.getDepthFormat();
 	}
+
+
+	VkSampleCountFlagBits BackbufferRenderTarget::getSampleCount() const
+	{
+		return mWindow.getSampleCount();
+	}
+
+
+	bool BackbufferRenderTarget::getSampleShadingEnabled() const
+	{
+		return mWindow.getSampleShadingEnabled();
+	}
+
 }

@@ -1,8 +1,12 @@
-#version 150 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+// Uniform inputs
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
 
 in vec3	in_Position;
 in vec3	in_UV0;
@@ -19,7 +23,7 @@ out vec2 passColor;
 void main(void)
 {
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
     // Pass normal in object space
 	passNormal = in_Normal;
@@ -28,7 +32,7 @@ void main(void)
 	passPosition = in_Position;
 
 	// Pass model matrix for blob light calculations
-	passModelMatrix = modelMatrix;
+	passModelMatrix = mvp.modelMatrix;
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

@@ -43,6 +43,7 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldEntity  = scene->findEntity("World");
 
+		// Tell the gui service to which window we are going to render
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -82,15 +83,15 @@ namespace nap
 	 */
 	void CopystampApp::render()
 	{
-		// Activate current window for drawing
-
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		if (mRenderService->beginRendering(*mRenderWindow))
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer.
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-			backbuffer.beginRendering();
-
 			// Get perspective camera
 			PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
@@ -103,6 +104,9 @@ namespace nap
 			UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 			cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
+			// Begin render pass
+			mRenderWindow->beginRendering();
+
 			// Render all copied meshes
 			std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
@@ -110,11 +114,14 @@ namespace nap
 			// Draw gui
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-			backbuffer.endRendering();
+			// End render pass
+			mRenderWindow->endRendering();
 
-			mRenderService->endRendering();
+			// End recording phase
+			mRenderService->endRecording();
 		}
 
+		// submit the queue to GPU for render
 		mRenderService->endFrame();
 	}
 	

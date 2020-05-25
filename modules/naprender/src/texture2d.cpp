@@ -113,35 +113,7 @@ namespace nap
 {
 	namespace 
 	{
-		bool createImage(VmaAllocator vmaAllocator, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkImage& image, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo, utility::ErrorState& errorState)
-		{
-			VkImageCreateInfo image_info = {};
-			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			image_info.imageType = VK_IMAGE_TYPE_2D;
-			image_info.extent.width = width;
-			image_info.extent.height = height;
-			image_info.extent.depth = 1;
-			image_info.mipLevels = 1;
-			image_info.arrayLayers = 1;
-			image_info.format = format;
-			image_info.tiling = tiling;
-			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			image_info.usage = usage;
-			image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			VmaAllocationCreateInfo alloc_info = {};
-			alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-			alloc_info.flags = 0;
-
-			VkResult result = vmaCreateImage(vmaAllocator, &image_info, &alloc_info, &image, &allocation, &allocationInfo);
-			if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
-				return false;
-
-			return true;
-		}
-
-		void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) 
+		static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) 
 		{
 			VkImageMemoryBarrier barrier = {};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -216,25 +188,6 @@ namespace nap
 			};
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-		}
-
-		bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& imageView, utility::ErrorState& errorState)
-		{
-			VkImageViewCreateInfo viewInfo = {};
-			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			viewInfo.image = image;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			viewInfo.format = format;
-			viewInfo.subresourceRange.aspectMask = aspectFlags;
-			viewInfo.subresourceRange.baseMipLevel = 0;
-			viewInfo.subresourceRange.levelCount = 1;
-			viewInfo.subresourceRange.baseArrayLayer = 0;
-			viewInfo.subresourceRange.layerCount = 1;
-
-			if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &imageView) == VK_SUCCESS, "Failed to create texture image view"))
-				return false;
-
-			return true;
 		}
 	}	
 
@@ -319,22 +272,15 @@ namespace nap
 	{
 	}
 
+
 	Texture2D::~Texture2D()
 	{
-		if (mImageData.mTextureView != nullptr)
-			vkDestroyImageView(mRenderService->getDevice(), mImageData.mTextureView, nullptr);
+		destroyImageAndView(mImageData, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 
-		if (mImageData.mTextureImage != nullptr)
-			vmaDestroyImage(mRenderService->getVulkanAllocator(), mImageData.mTextureImage, mImageData.mTextureAllocation);
-		
 		for (StagingBuffer& buffer : mStagingBuffers)
 			vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
 	}
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
-	{
-		return init(descriptor, compressed, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState);
-	}
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
 	{
@@ -346,7 +292,6 @@ namespace nap
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -384,12 +329,17 @@ namespace nap
 				return false;
 		}
 
+		// Create image allocation struct
+		VmaAllocationCreateInfo img_alloc_usage = {};
+		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		img_alloc_usage.flags = 0;
+
 		// We create images and imageviews for the amount of frames in flight
-		if (!createImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_IMAGE_TILING_OPTIMAL, usage, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
-			VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (!createImageView(device, mImageData.mTextureImage, mVulkanFormat, aspect_flags, mImageData.mTextureView, errorState))
+		VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (!create2DImageView(device, mImageData.mTextureImage, mVulkanFormat, aspect_flags, mImageData.mTextureView, errorState))
 				return false;
 
 		mCurrentStagingBufferIndex = 0;

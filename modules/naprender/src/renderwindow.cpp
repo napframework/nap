@@ -2,15 +2,23 @@
 #include <windowevent.h>
 #include "nap/core.h"
 
+RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Immediate"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Mailbox"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "FIFO")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sync",			&nap::RenderWindow::mSync,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleShading",	&nap::RenderWindow::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Mode",			&nap::RenderWindow::mMode,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",		&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -92,6 +100,12 @@ namespace nap
 	}
 
 
+	void RenderWindow::setClearColor(const glm::vec4& color)
+	{
+		mClearColor = color;
+	}
+
+
 	void RenderWindow::setPosition(const glm::ivec2& position)
 	{
 		mWindow->setPosition(position);
@@ -133,6 +147,7 @@ namespace nap
 		return mWindow->getBackbuffer();
 	}
 
+
 	void RenderWindow::handleEvent(const Event& event)
 	{
 		// Update window size when resizing
@@ -141,6 +156,18 @@ namespace nap
 		{
 			mWindow->setSize(glm::ivec2(resized_event->mX, resized_event->mY));
 		}
+	}
+
+
+	void RenderWindow::beginRendering()
+	{
+		mWindow->getBackbuffer().beginRendering();
+	}
+
+
+	void RenderWindow::endRendering()
+	{
+		mWindow->getBackbuffer().endRendering();
 	}
 }
 

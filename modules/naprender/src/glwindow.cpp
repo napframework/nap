@@ -40,8 +40,8 @@ namespace nap
 	}
 
 	/**
-	*	Creates the vulkan surface that is rendered to by the device using SDL
-	*/
+	 *	Creates the vulkan surface that is rendered to by the device using SDL
+	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkPhysicalDevice gpu, uint32_t graphicsFamilyQueueIndex, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
@@ -56,10 +56,11 @@ namespace nap
 		return true;
 	}
 
+
 	/**
-	* Obtain the surface properties that are required for the creation of the swap chain
-	*/
-	bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
+	 * Obtain the surface properties that are required for the creation of the swap chain
+	 */
+	static bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
 			return false;
@@ -67,11 +68,12 @@ namespace nap
 		return true;
 	}
 
+
 	/**
-	* @return if the present modes could be queried and ioMode is set
-	* @param outMode the mode that is requested, will contain FIFO when requested mode is not available
-	*/
-	bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR& ioMode, utility::ErrorState& errorState)
+	 * @return if the present modes could be queried and ioMode is set
+	 * @param outMode the mode that is requested, will contain FIFO when requested mode is not available
+	 */
+	static bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR& ioMode, utility::ErrorState& errorState)
 	{
 		uint32_t mode_count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) == VK_SUCCESS, "Unable to query present mode count for physical device"))
@@ -91,21 +93,23 @@ namespace nap
 		return true;
 	}
 
+
 	/**
-	* Figure out the number of images that are used by the swapchain and
-	* available to us in the application, based on the minimum amount of necessary images
-	* provided by the capabilities struct.
-	*/
-	unsigned int getNumberOfSwapImages(const VkSurfaceCapabilitiesKHR& capabilities)
+	 * Figure out the number of images that are used by the swapchain and
+	 * available to us in the application, based on the minimum amount of necessary images
+	 * provided by the capabilities struct.
+	 */
+	static unsigned int getNumberOfSwapImages(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		unsigned int number = capabilities.minImageCount + 1;
 		return number > capabilities.maxImageCount ? capabilities.minImageCount : number;
 	}
 
+
 	/**
-	*	Returns the size of a swapchain image based on the current surface
-	*/
-	VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
+	 *	Returns the size of a swapchain image based on the current surface
+	 */
+	static VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		// Default size = window size
 		VkExtent2D size = { (unsigned int)windowSize.x, (unsigned int)windowSize.y};
@@ -125,11 +129,11 @@ namespace nap
 
 
 	/**
-	* Checks if the surface supports color and other required surface bits
-	* If so constructs a ImageUsageFlags bitmask that is returned in outUsage
-	* @return if the surface supports all the previously defined bits
-	*/
-	bool getImageUsage(const VkSurfaceCapabilitiesKHR& capabilities, VkImageUsageFlags& outUsage, utility::ErrorState& errorState)
+	 * Checks if the surface supports color and other required surface bits
+	 * If so constructs a ImageUsageFlags bitmask that is returned in outUsage
+	 * @return if the surface supports all the previously defined bits
+	 */
+	static bool getImageUsage(const VkSurfaceCapabilitiesKHR& capabilities, VkImageUsageFlags& outUsage, utility::ErrorState& errorState)
 	{
 		const std::vector<VkImageUsageFlags>& desired_usages { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT };
 		assert(desired_usages.size() > 0);
@@ -152,9 +156,9 @@ namespace nap
 
 
 	/**
-	* @return transform based on global declared above, current transform if that transform isn't available
-	*/
-	VkSurfaceTransformFlagBitsKHR getTransform(const VkSurfaceCapabilitiesKHR& capabilities)
+	 * @return transform based on global declared above, current transform if that transform isn't available
+	 */
+	static VkSurfaceTransformFlagBitsKHR getTransform(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		if (capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 			return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -162,10 +166,11 @@ namespace nap
 		return capabilities.currentTransform;
 	}
 
+
 	/**
-	* @return the most appropriate color space based on the globals provided above
-	*/
-	bool getFormat(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceFormatKHR& outFormat, utility::ErrorState& errorState)
+	 * @return the most appropriate color space
+	 */
+	static bool getFormat(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceFormatKHR& outFormat, utility::ErrorState& errorState)
 	{
 		unsigned int count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, nullptr) == VK_SUCCESS, "Unable to query number of supported surface formats"))
@@ -179,7 +184,7 @@ namespace nap
 		// Preference would work
 		if (found_formats.size() == 1 && found_formats[0].format == VK_FORMAT_UNDEFINED)
 		{
-			outFormat.format = VK_FORMAT_B8G8R8A8_SRGB;
+			outFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
 			outFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 			return true;
 		}
@@ -188,7 +193,7 @@ namespace nap
 		for (const auto& found_format_outer : found_formats)
 		{
 			// Format found
-			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_SRGB)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but it appears that the previous OpenGl implementation didn't use it, so some colors could be washed out
+			if (found_format_outer.format == VK_FORMAT_B8G8R8A8_UNORM)		// TODO: we expect this should be VK_FORMAT_B8G8R8A8_SRGB, but it appears that the previous OpenGl implementation didn't use it, so some colors could be washed out
 			{
 				outFormat.format = found_format_outer.format;
 				for (const auto& found_format_inner : found_formats)
@@ -214,11 +219,12 @@ namespace nap
 		return true;
 	}
 
+
 	/**
-	* creates the swap chain using utility functions above to retrieve swap chain properties
-	* Swap chain is associated with a single window (surface) and allows us to display images to screen
-	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	 * creates the swap chain using utility functions above to retrieve swap chain properties
+	 * Swap chain is associated with a single window (surface) and allows us to display images to screen
+	 */
+	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR mode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get properties of surface, necessary for creation of swap-chain
 		VkSurfaceCapabilitiesKHR surface_properties;
@@ -226,8 +232,8 @@ namespace nap
 			return false;
 
 		// Get the image presentation mode (synced, immediate etc.)
-		VkPresentModeKHR presentation_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-		if (!getPresentationMode(surface, physicalDevice, presentation_mode, errorState))
+		VkPresentModeKHR selected_mode = mode;
+		if (!getPresentationMode(surface, physicalDevice, selected_mode, errorState))
 			return false;
 
 		// Get other swap chain related features
@@ -265,7 +271,7 @@ namespace nap
 		swap_info.pQueueFamilyIndices = nullptr;
 		swap_info.preTransform = transform;
 		swap_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		swap_info.presentMode = presentation_mode;
+		swap_info.presentMode = selected_mode;
 		swap_info.clipped = true;
 		swap_info.oldSwapchain = NULL;
 		swap_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -279,10 +285,11 @@ namespace nap
 		return true;
 	}
 
+
 	/**
-	*	Returns the handles of all the images in a swap chain, result is stored in outImageHandles
-	*/
-	bool getSwapChainImageHandles(VkDevice device, VkSwapchainKHR chain, std::vector<VkImage>& outImageHandles, utility::ErrorState& errorState)
+	 *	Returns the handles of all the images in a swap chain, result is stored in outImageHandles
+	 */
+	static bool getSwapChainImageHandles(VkDevice device, VkSwapchainKHR chain, std::vector<VkImage>& outImageHandles, utility::ErrorState& errorState)
 	{
 		unsigned int image_count(0);
 		if (!errorState.check(vkGetSwapchainImagesKHR(device, chain, &image_count, nullptr) == VK_SUCCESS, "Unable to get number of images in swap chain"))
@@ -296,27 +303,38 @@ namespace nap
 		return true;
 	}
 
-	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+
+	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		VkAttachmentDescription colorAttachment = {};
 		colorAttachment.format = swapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.samples = samples;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment = {};
 		depthAttachment.format = depthFormat;
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.samples = samples;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentDescription colorAttachmentResolve{};
+		colorAttachmentResolve.format = swapChainImageFormat;
+		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorAttachmentRef = {};
 		colorAttachmentRef.attachment = 0;
@@ -326,11 +344,16 @@ namespace nap
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		VkAttachmentReference colorAttachmentResolveRef{};
+		colorAttachmentResolveRef.attachment = 2;
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -340,7 +363,7 @@ namespace nap
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -353,43 +376,32 @@ namespace nap
 		return errorState.check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 	}
 
-	static bool createImageViews(VkDevice device, std::vector<VkImageView>& swapChainImageViews, const std::vector<VkImage>& swapChainImages, VkFormat swapChainFormat, utility::ErrorState& errorState)
+
+	static bool createSwapchainImageViews(VkDevice device, std::vector<VkImageView>& swapChainImageViews, const std::vector<VkImage>& swapChainImages, VkFormat swapChainFormat, utility::ErrorState& errorState)
 	{
 		swapChainImageViews.resize(swapChainImages.size());
 
 		for (size_t i = 0; i < swapChainImages.size(); i++) 
 		{
-			VkImageViewCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = swapChainImages[i];
-			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = swapChainFormat;
-			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount = 1;
-			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount = 1;
-
-			if (!errorState.check(vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) == VK_SUCCESS, "Failed to create image view"))
+			if (!create2DImageView(device, swapChainImages[i], swapChainFormat, VK_IMAGE_ASPECT_COLOR_BIT, swapChainImageViews[i], errorState))
 				return false;
 		}
 
 		return true;
 	}
 
-	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& swapChainImageViews, VkImageView depthImageView, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
-	{
-		framebuffers.resize(swapChainImageViews.size());
 
+	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
+	{
+		// Create a frame buffer for every view in the swapchain.
+		framebuffers.resize(swapChainImageViews.size());
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-			std::array<VkImageView, 2> attachments = {
+			std::array<VkImageView, 3> attachments = 
+			{
+				colorImageView,
+				depthImageView,
 				swapChainImageViews[i],
-				depthImageView
 			};
 
 			VkFramebufferCreateInfo framebufferInfo = {};
@@ -404,7 +416,6 @@ namespace nap
 			if (!errorState.check(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
 				return false;
 		}
-
 		return true;
 	}
 
@@ -442,7 +453,8 @@ namespace nap
 		return true;
 	}
 
-	unsigned int findPresentFamilyIndex(VkPhysicalDevice device, VkSurfaceKHR surface)
+
+	static unsigned int findPresentFamilyIndex(VkPhysicalDevice device, VkSurfaceKHR surface)
 	{
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -478,72 +490,35 @@ namespace nap
 		return -1;
 	}
 
-	static bool createImage(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, utility::ErrorState& errorState)
+
+	static bool createColorResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		VkImageCreateInfo imageInfo = {};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = width;
-		imageInfo.extent.height = height;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.format = format;
-		imageInfo.tiling = tiling;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		// Create image allocation struct
+		VmaAllocationCreateInfo img_alloc_usage = {};
+		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		img_alloc_usage.flags = 0;
 
-		if (!errorState.check(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "Failed to create image"))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
 			return false;
 
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-		uint32_t mem_type_index = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
-		if (!errorState.check(mem_type_index != -1, "Failed to find memory type for image"))
-			return false;
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = mem_type_index;
-
-		if (!errorState.check(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "Failed to allocate memory for image"))
-			return false;
-
-		if (!errorState.check(vkBindImageMemory(device, image, imageMemory, 0) == VK_SUCCESS, "Failed to bind memory for image"))
+		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
 			return false;
 
 		return true;
 	}
 
-	bool createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& imageView, utility::ErrorState& errorState) 
-	{
-		VkImageViewCreateInfo viewInfo = {};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = format;
-		viewInfo.subresourceRange.aspectMask = aspectFlags;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
 
-		if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &imageView) == VK_SUCCESS, "Failed to create image view"))
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
+	{
+		// Create image allocation struct
+		VmaAllocationCreateInfo img_alloc_usage = {};
+		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		img_alloc_usage.flags = 0;
+
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
 			return false;
 
-		return true;
-	}
-
-	static bool createDepthBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkExtent2D swapchainExtent, VkFormat depthFormat, VkImage& depthImage, VkDeviceMemory& depthImageMemory, VkImageView& depthImageView, utility::ErrorState& errorState)
-	{
-		if (!createImage(physicalDevice, device, swapchainExtent.width, swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory, errorState))
-			return false;
-
-		if (!createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
 			return false;
 
 		return true;
@@ -601,7 +576,7 @@ namespace nap
 	bool GLWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
 		VkExtent2D swapchainExtent;
-		if (!createSwapChain(getSize(), mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
+		if (!createSwapChain(getSize(), mMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -609,16 +584,19 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
+		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), getSampleCount(), mRenderPass, errorState))
 			return false;
 
-		if (!createImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
+		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthBuffer(mRenderService->getPhysicalDevice(), mDevice, swapchainExtent, mRenderService->getDepthFormat(), mDepthImage, mDepthImageMemory, mDepthImageView, errorState))
+		if (!createDepthResource(*mRenderService, swapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 			return false;
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mSwapChainImageViews, mDepthImageView, mRenderPass, swapchainExtent, errorState))
+		if (!createColorResource(*mRenderService, swapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+			return false;
+
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
 			return false;
 
 		return true;
@@ -636,24 +614,8 @@ namespace nap
 			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
 
 		mSwapChainFramebuffers.clear();
-
-		if (mDepthImageView != nullptr)
-		{
-			vkDestroyImageView(mDevice, mDepthImageView, nullptr);
-			mDepthImageView = nullptr;
-		}
-
-		if (mDepthImage != nullptr)
-		{
-			vkDestroyImage(mDevice, mDepthImage, nullptr);
-			mDepthImage = nullptr;
-		}
-
-		if (mDepthImageMemory != nullptr)
-		{
-			vkFreeMemory(mDevice, mDepthImageMemory, nullptr);
-			mDepthImageMemory = nullptr;
-		}
+		destroyImageAndView(mDepthImage, mDevice, mAllocator);
+		destroyImageAndView(mColorImage, mDevice, mAllocator);
 
 		for (VkImageView image_view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, image_view, nullptr);
@@ -676,22 +638,39 @@ namespace nap
 	bool GLWindow::init(const RenderWindowSettings& settings, RenderService& renderService, nap::utility::ErrorState& errorState)
 	{
 		mRenderService = &renderService;
-		mDevice = renderService.getDevice();
-		mGraphicsQueue = renderService.getGraphicsQueue();
 
 		// create the window
 		mWindow = createSDLWindow(settings, errorState);
 		if (mWindow == nullptr)
 			return false;
 
+		// Set size and store for future reference
 		setSize(glm::vec2(settings.width, settings.height));
 		mPreviousWindowSize = glm::ivec2(settings.width, settings.height);
 
+		// Initialize members
+		mAllocator = renderService.getVulkanAllocator();
+		mDevice = renderService.getDevice();
+		mGraphicsQueue = renderService.getGraphicsQueue();
+		mMode = settings.mode;
+		mRasterizationSamples = settings.samples;
+
+		// Check if sample rate shading is enabled and supported
+		mSampleShadingEnabled = settings.sampleShadingEnabled;
+		if (mSampleShadingEnabled && !(mRenderService->sampleShadingSupported()))
+		{
+			nap::Logger::warn("Sample shading requested but not supported");
+			mSampleShadingEnabled = false;
+		}
+
+		// acquire handle to physical device
 		VkPhysicalDevice physicalDevice = renderService.getPhysicalDevice();
 
+		// Create render surface for window
 		if (!createSurface(mWindow, renderService.getVulkanInstance(), physicalDevice, renderService.getGraphicsQueueIndex(), mSurface, errorState))
 			return false;
 
+		// Create swapchain and associated resources
 		if (!createSwapChainResources(errorState))
 			return false;
 
@@ -846,7 +825,6 @@ namespace nap
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 
 		glm::ivec2 window_size = SDL::getWindowSize(mWindow);
-
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
@@ -855,7 +833,6 @@ namespace nap
 		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
 
 		glm::vec4 clearColor = mBackbuffer.getClearColor();
-
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
@@ -947,6 +924,18 @@ namespace nap
 	glm::ivec2 GLWindow::getPosition()
 	{
 		return SDL::getWindowPosition(mWindow);
+	}
+
+
+	VkSampleCountFlagBits GLWindow::getSampleCount() const
+	{
+		return mRasterizationSamples;
+	}
+
+
+	bool GLWindow::getSampleShadingEnabled() const
+	{
+		return mSampleShadingEnabled;
 	}
 }
 

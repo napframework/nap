@@ -9,6 +9,11 @@
 #include "mesh.h"
 #include "depthsorter.h"
 #include "vertexbuffer.h"
+#include "texture2d.h"
+#include "descriptorsetcache.h"
+#include "descriptorsetallocator.h"
+#include "vk_mem_alloc.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <nap/core.h>
@@ -18,26 +23,11 @@
 #include <nap/logger.h>
 #include <sceneservice.h>
 #include <scene.h>
-#include "boxmesh.h"
-#include "meshfromfile.h"
-#include "trianglemesh.h"
-#include "shader.h"
-#include "material.h"
-#include "rendertexture2d.h"
-#include "imagefromfile.h"
-#include "image.h"
-#include "texture2d.h"
-#include "planemesh.h"
-#include "spheremesh.h"
-#include "descriptorsetcache.h"
-#include "descriptorsetallocator.h"
-#include "vk_mem_alloc.h"
-#include "SDL_vulkan.h"
-#include "sdlhelpers.h"
-#include "glslang/Public/ShaderLang.h"
+#include <SDL_vulkan.h>
+#include <glslang/Public/ShaderLang.h>
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("Settings",	&nap::RenderServiceConfiguration::mSettings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -47,16 +37,35 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
-	*	@return the set of layers to be initialized with Vulkan
-	*/
+	 * @return max sample count associated with the given physical device
+	 */
+	static VkSampleCountFlagBits getMaxSampleCount(VkPhysicalDevice physicalDevice)
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & VK_SAMPLE_COUNT_64_BIT)	{ return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT)	{ return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT)	{ return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT)		{ return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT)		{ return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT)		{ return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
+
+	/**
+	 *	@return the set of layers to be initialized with Vulkan
+	 */
 	const std::set<std::string>& getRequestedLayerNames()
 	{
 		static std::set<std::string> layers;
+#ifndef NDEBUG
 		if (layers.empty())
-		{
-			layers.emplace("VK_LAYER_NV_optimus");
 			layers.emplace("VK_LAYER_LUNARG_standard_validation");
-		}
+#endif // NDEBUG
 		return layers;
 	}
 
@@ -137,7 +146,6 @@ namespace nap
 		std::vector<VkLayerProperties> instance_layers(instance_layer_count);
 		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers.data()) == VK_SUCCESS, "Unable to retrieve vulkan instance layer names"))
 			return false;
-
 		Logger::info("Found %d instance layers:", instance_layer_count);
 
 		const std::set<std::string>& requested_layers = getRequestedLayerNames();
@@ -248,12 +256,12 @@ namespace nap
 
 
 	/**
-	* Allows the user to select a GPU (physical device)
-	* @return if query, selection and assignment was successful
-	* @param outDevice the selected physical device (gpu)
-	* @param outQueueFamilyIndex queue command family that can handle graphics commands
-	*/
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, uint32_t& outDeviceVersion, unsigned int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	 * Allows the user to select a GPU (physical device)
+	 * @return if query, selection and assignment was successful
+	 * @param outDevice the selected physical device (gpu)
+	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
+	 */
+	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -267,18 +275,25 @@ namespace nap
 
 		// Show device information
 		Logger::info("Found %d GPUs:", physical_device_count);
-
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
+		int discrete_gpu_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
 			VkPhysicalDevice physical_device = physical_devices[index];
 			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-
 			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+
+			// Detect if it's a discrete GPU
+			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && discrete_gpu_idx < 0)
+				discrete_gpu_idx = index;
 		}
 
-		VkPhysicalDevice selected_device = physical_devices[0];
+		// Select first available discrete GPU if present
+		int gpu_idx = discrete_gpu_idx >= 0 ? discrete_gpu_idx : 0;
+
+		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
+		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
 
 		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
 		unsigned int family_queue_count(0);
@@ -291,7 +306,7 @@ namespace nap
 		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, queue_properties.data());
 
 		// Make sure the family of commands contains an option to issue graphical commands.
-		unsigned int queue_node_index = -1;
+		int queue_node_index = -1;
 		for (unsigned int i = 0; i < family_queue_count; i++)
 		{
 			if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -300,14 +315,18 @@ namespace nap
 				break;
 			}
 		}
-
 		if (!errorState.check(queue_node_index >= 0, "Unable to find graphics command queue on device"))
 			return false;
 
 		// Set the output variables
 		outDevice = selected_device;
-		outDeviceVersion = physical_device_properties[0].apiVersion;	// The actual version of the device, which may be different from what we requested in the ApplicationInfo
+		outProperties = physical_device_properties[gpu_idx];
 		outQueueFamilyIndex = queue_node_index;
+
+		// Extract device features
+		VkPhysicalDeviceFeatures selected_device_featues;
+		vkGetPhysicalDeviceFeatures(selected_device, &outFeatures);
+
 		return true;
 	}
 
@@ -315,19 +334,17 @@ namespace nap
 	/**
 	*	Creates a logical device
 	*/
-	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
+	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, VkPhysicalDeviceFeatures& physicalDeviceFeatures, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
 		for (const auto& layer : layerNames)
 			layer_names.emplace_back(layer.c_str());
 
-
 		// Get the number of available extensions for our graphics card
 		uint32_t device_property_count(0);
 		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
-
 		Logger::info("Found %d device extensions", device_property_count);
 
 		// Acquire their actual names
@@ -341,7 +358,6 @@ namespace nap
 		for (int index = 0; index < device_properties.size(); ++index)
 		{
 			const VkExtensionProperties& ext_property = device_properties[index];
-
 			Logger::info("%d: %s", index, ext_property.extensionName);
 
 			auto it = required_extension_names.find(std::string(ext_property.extensionName));
@@ -350,9 +366,11 @@ namespace nap
 
 		}
 
+		// Make sure we found all required extensions
 		if (!errorState.check(required_extension_names.size() == device_property_names.size(), "Unable to find all required extensions"))
 			return false;
 
+		// Log the extensions we can use
 		for (const auto& name : device_property_names)
 			Logger::info("Applying device extension %s", name);
 
@@ -367,7 +385,11 @@ namespace nap
 		queue_create_info.pNext = NULL;
 		queue_create_info.flags = NULL;
 
-		// Device creation information
+		// Enable specific features, we could also enable all supported features here.
+		VkPhysicalDeviceFeatures device_features {0};
+		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
+
+		// Device creation information	
 		VkDeviceCreateInfo create_info;
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		create_info.queueCreateInfoCount = 1;
@@ -377,7 +399,7 @@ namespace nap
 		create_info.ppEnabledExtensionNames = device_property_names.data();
 		create_info.enabledExtensionCount = static_cast<uint32_t>(device_property_names.size());
 		create_info.pNext = NULL;
-		create_info.pEnabledFeatures = NULL;
+		create_info.pEnabledFeatures = &device_features;
 		create_info.flags = NULL;
 
 		// Finally we're ready to create a new device
@@ -469,15 +491,23 @@ namespace nap
 
 	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
-		// Get settings
+		// Create settings
 		RenderWindowSettings window_settings;
 		window_settings.width		= window.mWidth;
 		window_settings.height		= window.mHeight;
 		window_settings.borderless	= window.mBorderless;
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
-		window_settings.sync		= window.mSync;
-		window_settings.highdpi = mSettings.mEnableHighDPIMode;
+		window_settings.highdpi		= mEnableHighDPIMode;
+		window_settings.sampleShadingEnabled = window.mSampleShading;
+
+		// Warn if requested number of samples is not matched by hardware
+		if (!getRasterizationSamples(window.mRequestedSamples, window_settings.samples, errorState))
+			nap::Logger::warn(errorState.toString());
+
+		// Select mode
+		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
+			window.mMode == RenderWindow::EPresentationMode::Mailbox ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 
 #if 0
 			// The primary window always exists. This is necessary to initialize openGL, and we need a window and an associated GL context for creating
@@ -671,7 +701,7 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -743,14 +773,17 @@ namespace nap
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;		//< TODO: Make customizable, currently doesn't work with our plane!
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampling.sampleShadingEnable = static_cast<int>(enableSampleShading);
+		multisampling.rasterizationSamples = sampleCount;
+		multisampling.pNext = nullptr;
+		multisampling.flags = 0;
+		multisampling.minSampleShading = 1.0f;
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil = getDepthStencilCreateInfo(materialInstance);
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
@@ -806,13 +839,13 @@ namespace nap
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
-		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat());
+		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled());
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
 		if (pos != mPipelineCache.end())
 			return pos->second;
 
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled(), pipeline.mLayout, pipeline.mPipeline, errorState))
 			return Pipeline();
 
 		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
@@ -967,7 +1000,7 @@ namespace nap
 		{
 			if (!comp->isSupported(camera))
 			{
-				nap::Logger::warn("unable to render component: %s, unsupported camera %s", 
+				nap::Logger::warn("Unable to render component: %s, unsupported camera %s", 
 					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
 				continue;
 			}
@@ -984,7 +1017,7 @@ namespace nap
 		settings.mChannels = ESurfaceChannels::RGBA;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		if (!mEmptyTexture->init(settings, false, errorState))
+		if (!mEmptyTexture->init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
 			return false;
 
 		std::vector<uint8_t> empty_texture_data;
@@ -1010,7 +1043,7 @@ namespace nap
 			return false;
 
 		// Store render settings, used for initialization and global window creation
-		mSettings = getConfiguration<RenderServiceConfiguration>()->mSettings;
+		mEnableHighDPIMode	= getConfiguration<RenderServiceConfiguration>()->mEnableHighDPIMode;
 
 		// Get available vulkan extensions, necessary for interfacing with native window
 		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
@@ -1030,8 +1063,8 @@ namespace nap
 			return false;
 
 		// Warn when not all requested layers could be found
-		if (!errorState.check(found_layers.size() == getRequestedLayerNames().size(), "Not all requested layers were found"))
-			return false;
+		if (found_layers.size() != getRequestedLayerNames().size())
+			nap::Logger::warn("Not all requested layers were found");
 
 		// Create Vulkan Instance
 		if (!createVulkanInstance(found_layers, found_extensions, mInstance, errorState))
@@ -1041,11 +1074,21 @@ namespace nap
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
 		// Select GPU after succsessful creation of a vulkan instance
-		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceVersion, mGraphicsQueueIndex, errorState))
+		VkPhysicalDeviceFeatures	physical_device_features;
+		VkPhysicalDeviceProperties	physical_device_properties;
+
+		// Select GPU, prefers discrete graphics over integrated
+		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
-		// Create a logical device that interfaces with the physical device
-		if (!createLogicalDevice(mPhysicalDevice, mGraphicsQueueIndex, found_layers, mDevice, errorState))
+		// Figure out how many rasterization samples we can use and if sample rate shading is supported
+		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
+		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
+		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
+		nap::Logger::info("Sample rate shading is %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, mDevice, errorState))
 			return false;
 
 		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create commandpool"))
@@ -1188,6 +1231,7 @@ namespace nap
 		assert(result == VK_SUCCESS);
 	}
 
+
 	void RenderService::beginFrame()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
@@ -1210,7 +1254,7 @@ namespace nap
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
 	}
 
-	bool RenderService::beginHeadlessRendering()
+	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
 
@@ -1226,7 +1270,7 @@ namespace nap
 		return true;
 	}
 
-	void RenderService::endHeadlessRendering()
+	void RenderService::endHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 
@@ -1244,7 +1288,7 @@ namespace nap
 		mCurrentCommandBuffer = nullptr;
 	}
 
-	bool RenderService::beginRendering(RenderWindow& renderWindow)
+	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
 		assert(mCurrentCommandBuffer == nullptr);
 		assert(mCurrentRenderWindow == nullptr);
@@ -1254,11 +1298,10 @@ namespace nap
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
-
 		return true;
 	}
 
-	void RenderService::endRendering()
+	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 		assert(mCurrentRenderWindow != nullptr);
@@ -1296,6 +1339,28 @@ namespace nap
 	void RenderService::requestTextureUpdate(Texture2D& texture)
 	{
 		mTexturesToUpdate.insert(&texture);
+	}
+
+
+	VkSampleCountFlagBits RenderService::getMaxRasterizationSamples() const
+	{
+		return mMaxRasterizationSamples;
+	}
+
+
+	bool RenderService::getRasterizationSamples(ERasterizationSamples requestedSamples, VkSampleCountFlagBits& outSamples, nap::utility::ErrorState& errorState)
+	{
+		outSamples = requestedSamples == ERasterizationSamples::Max ? mMaxRasterizationSamples :
+			(int)(requestedSamples) > (int)mMaxRasterizationSamples ? mMaxRasterizationSamples : (VkSampleCountFlagBits)(requestedSamples);
+
+		return errorState.check((int)requestedSamples <= (int)mMaxRasterizationSamples,
+			"Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(requestedSamples), (int)mMaxRasterizationSamples);
+	}
+
+
+	bool RenderService::sampleShadingSupported() const
+	{
+		return mSampleShadingSupported;
 	}
 
 

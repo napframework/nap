@@ -26,16 +26,14 @@ namespace nap
 		* @return size of render target.
 		*/
 		virtual const glm::ivec2 getSize() const override { return mSize; }
-
 		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
 		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
-
 		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::CounterClockwise; }
-
 		virtual VkRenderPass getRenderPass() const;
-
 		virtual VkFormat getColorFormat() const override;
 		virtual VkFormat getDepthFormat() const override;
+		virtual VkSampleCountFlagBits getSampleCount() const override;
+		virtual bool getSampleShadingEnabled() const override;
 
 	private:
 		GLWindow&	mWindow;

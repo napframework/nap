@@ -35,9 +35,10 @@ namespace nap
 		Linear,				///< Linear color space
 		sRGB				///< Non-linear, sRGB color space
 	};
-		
+
+
 	/**
-	 * Texture2Dsettings
+	 * Used to describe the data of all 2D surfaces, including 2DTextures and Bitmaps.
 	 */
 	struct NAPAPI SurfaceDescriptor
 	{
@@ -45,18 +46,19 @@ namespace nap
 
 	public:
 		SurfaceDescriptor() = default;
-		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace = EColorSpace::sRGB);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels);
+		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace);
 
-		int getWidth() const { return mWidth; }
-		int getHeight() const { return mHeight; }
+		int getWidth() const						{ return mWidth; }
+		int getHeight() const						{ return mHeight; }
 		int getPitch() const;
 		int getNumChannels() const;
 		int getChannelSize() const;
 		int getBytesPerPixel() const;
 		uint64_t getSizeInBytes() const;
-		ESurfaceDataType getDataType() const { return mDataType; }
-		ESurfaceChannels getChannels() const { return mChannels; }
-		EColorSpace getColorSpace() const { return mColorSpace; }
+		ESurfaceDataType getDataType() const		{ return mDataType; }
+		ESurfaceChannels getChannels() const		{ return mChannels; }
+		EColorSpace getColorSpace() const			{ return mColorSpace; }
 
 		bool isValid() const { return mWidth != 0 && mHeight != 0; }
 		bool operator==(const SurfaceDescriptor& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
@@ -67,7 +69,7 @@ namespace nap
 		uint32_t			mHeight = 0;								///< Property: 'Height' specifies the height of the texture
 		ESurfaceDataType	mDataType = nap::ESurfaceDataType::BYTE;	///< Property: 'DataType' specifies the amount of bytes in a single channel
 		ESurfaceChannels	mChannels = nap::ESurfaceChannels::BGRA;	///< Property: 'Channels' specifies the channels and their order
-		EColorSpace			mColorSpace = EColorSpace::sRGB;			///< Property: 'ColorSpace' specifies linear or SRGB space. Only applicable to BYTE datatypes
+		EColorSpace			mColorSpace = EColorSpace::Linear;			///< Property: 'ColorSpace' specifies linear or SRGB space. Only applicable to BYTE datatypes
 	};
 }
 

@@ -1,14 +1,16 @@
 #pragma once
 
+// Local Includes
+#include "surfacedescriptor.h"
+#include "renderutils.h"
+
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
-#include "rtti/factory.h"
-#include "vulkan/vulkan_core.h"
-#include "vk_mem_alloc.h"
-#include "surfacedescriptor.h"
+#include <rtti/factory.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -81,7 +83,6 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
 		bool init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState);
 
 		/**
@@ -148,30 +149,22 @@ namespace nap
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
-		ETextureUsage		mUsage = ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
+		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
+
+	protected:
+		RenderService*				mRenderService = nullptr;
 
 	private:
 		friend class RenderTarget;
 
 		struct StagingBuffer
 		{
-			VkBuffer					mStagingBuffer;
-			VmaAllocation				mStagingBufferAllocation;
-			VmaAllocationInfo			mStagingBufferAllocationInfo;
-		};
-
-		struct ImageData
-		{
-			VkImage						mTextureImage = nullptr;
-			VkImageView					mTextureView = nullptr;
-			VmaAllocation				mTextureAllocation = nullptr;
-			VmaAllocationInfo			mTextureAllocationInfo;
-			VkImageLayout				mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			VkBuffer				mStagingBuffer;
+			VmaAllocation			mStagingBufferAllocation;
+			VmaAllocationInfo		mStagingBufferAllocationInfo;
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;
-
-		RenderService*				mRenderService = nullptr;
 		std::vector<uint8_t>		mTextureData;
 		ImageData					mImageData;
 		StagingBufferList			mStagingBuffers;

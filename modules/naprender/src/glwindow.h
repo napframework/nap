@@ -1,15 +1,15 @@
 #pragma once
 
+// Local Includes
 #include "backbufferrendertarget.h"
-#include <rtti/rtti.h>
-#include <nap/numeric.h>
+#include "renderutils.h"
 
 // External Includes
 #include <string.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
-#include "SDL_video.h"
-#include "vulkan/vulkan_core.h"
+#include <SDL_video.h>
+#include <rtti/rtti.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -38,16 +38,18 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		std::string		title;										///< Name of the window
-		int				x				= SDL_WINDOWPOS_CENTERED;	///< Position
-		int				y				= SDL_WINDOWPOS_CENTERED;	///< Position
-		int				width			= 512;						//< Width of the window
-		int				height			= 512;						///< Height of the window
-		bool			borderless		= false;					///< If the window is borderless
-		bool			resizable		= true;						///< If the window is resizable
-		bool			visible			= true;						///< If the window is visible or not
-		bool			sync			= true;						///< If v-sync is turned on for the window
-		bool			highdpi			= true;						///< If high-dpi mode is enabled
+		std::string				title;											///< Name of the window
+		int						x				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int						y				= SDL_WINDOWPOS_CENTERED;		///< Position
+		int						width			= 512;							//< Width of the window
+		int						height			= 512;							///< Height of the window
+		bool					borderless		= false;						///< If the window is borderless
+		bool					resizable		= true;							///< If the window is resizable
+		bool					visible			= true;							///< If the window is visible or not
+		VkPresentModeKHR		mode			= VK_PRESENT_MODE_MAILBOX_KHR;	///< Presentation mode
+		VkSampleCountFlagBits	samples			= VK_SAMPLE_COUNT_4_BIT;		///< Number of fragmentation samples
+		bool					sampleShadingEnabled = true;					///< If sample shading is enabled
+		bool					highdpi			= true;							///< If high-dpi mode is enabled
 	};
 
 
@@ -154,25 +156,25 @@ namespace nap
 		 */
 		uint32 getNumber() const;
 
-		VkFormat getSwapchainFormat() const { return mSwapchainFormat; }
+		VkFormat getSwapchainFormat() const				{ return mSwapchainFormat; }
 		VkFormat getDepthFormat() const;
+		VkSampleCountFlagBits getSampleCount() const;
+		bool getSampleShadingEnabled() const;
 
 	private:
 		friend class BackbufferRenderTarget;
 
 		bool recreateSwapChain(utility::ErrorState& errorState);
-		
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();		
-
-		VkRenderPass getRenderPass() const { return mRenderPass; }
+		VkRenderPass getRenderPass() const				{ return mRenderPass; }
 		void beginRenderPass();
 		void endRenderPass();
 
 	private:
 		BackbufferRenderTarget							mBackbuffer;
-
 		RenderService*									mRenderService = nullptr;
+		VmaAllocator									mAllocator = nullptr;
 		VkDevice										mDevice = nullptr;
 		VkSurfaceKHR									mSurface = nullptr;
 		VkSwapchainKHR									mSwapchain = nullptr;
@@ -185,9 +187,13 @@ namespace nap
 		std::vector<VkCommandBuffer>					mCommandBuffers;
 		std::vector<VkSemaphore>						mImageAvailableSemaphores;
 		std::vector<VkSemaphore>						mRenderFinishedSemaphores;
-		VkImage											mDepthImage = nullptr;
-		VkDeviceMemory									mDepthImageMemory = nullptr;
-		VkImageView										mDepthImageView = nullptr;
+		VkPresentModeKHR								mMode = VK_PRESENT_MODE_MAILBOX_KHR;
+		VkSampleCountFlagBits							mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		bool											mSampleShadingEnabled = false;
+
+		ImageData										mDepthImage;
+		ImageData										mColorImage;
+		
 		uint32_t										mCurrentImageIndex = 0;
 		glm::ivec2										mPreviousWindowSize;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window

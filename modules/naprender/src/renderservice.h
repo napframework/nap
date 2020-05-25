@@ -6,6 +6,7 @@
 #include <rendertarget.h>
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
+#include "renderutils.h"
 
 namespace opengl
 {
@@ -28,24 +29,16 @@ namespace nap
 	class GLWindow;
 	class Texture2D;
 
-	class RendererSettings
-	{
-	public:
-		bool mDoubleBuffer = true;            ///< Property: 'DoubleBuffer' Enables / Disabled double buffering
-		bool mEnableMultiSampling = true;    ///< Property: 'EnableMultiSampling' Enables / Disables multi sampling.
-		int  mMultiSamples = 4;                ///< Property: 'MultiSampleSamples' Number of samples per pixel when multi sampling is enabled
-		bool mEnableHighDPIMode = true;        ///< Property: 'HighDPIMode' If high DPI render mode is enabled, on by default
-	};
-
-
+	/**
+	 * Render engine configuration settings
+	 */
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(RenderService); }
-
-		RendererSettings mSettings;		///< Property: 'Settings' All render settings
+		bool mEnableHighDPIMode = true;							///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		virtual rtti::TypeInfo getServiceType() override		{ return RTTI_OF(RenderService); }
 	};
 
 	/**
@@ -96,11 +89,11 @@ namespace nap
 		void beginFrame();
 		void endFrame();
 
-		bool beginHeadlessRendering();
-		void endHeadlessRendering();
+		bool beginHeadlessRecording();
+		void endHeadlessRecording();
 
-		bool beginRendering(RenderWindow& renderWindow);
-		void endRendering();
+		bool beginRecording(RenderWindow& renderWindow);
+		void endRecording();
 
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -198,17 +191,71 @@ namespace nap
 
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
-		VmaAllocator getVulkanAllocator() { return mVulkanAllocator; }
+		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 
 		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
 		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
 
-		VkInstance getVulkanInstance() const { return mInstance; }
-		VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
-		uint32_t getPhysicalDeviceVersion() const { return mPhysicalDeviceVersion; }
-		VkDevice getDevice() const { return mDevice; }
-		VkCommandPool getCommandPool() const { return mCommandPool; }
+		/**
+		 * @return Vulkan runtime instance
+		 */
+		VkInstance getVulkanInstance() const										{ return mInstance; }
+
+		/**
+		 * @return Selected Vulkan compatible hardware device
+		 */
+		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice; }
+
+		/**
+		 * @return all supported hardware features
+		 */
+		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDeviceFeatures; }
+
+		/**
+		* @return the version of Vulkan supported by the device
+		*/
+		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDeviceProperties.apiVersion; }
+
+		/**
+		 * @return all hardware properties
+		 */
+		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDeviceProperties; }
+
+		/**
+		 * Returns the handle to the logical Vulkan device,
+		 * represents the hardware together with the extensions, selected queues and features enabled for it.
+		 * @return The logical Vulkan device.
+		 */
+		VkDevice getDevice() const						{ return mDevice; }
+
+		/**
+		 * Returns the max number of hardware supported rasterization samples.
+		 * @return the max number of rasterization samples supported by the hardware.
+		 */
+		VkSampleCountFlagBits getMaxRasterizationSamples() const;
+
+		/**
+		 * Returns max supported rasterization samples based on the requested number of samples.
+		 * The output is automatically clamped if the requested number of samples exceeds the hardware limit.
+		 * @return if requested number of samples is supported by hardware.
+		 * @param requestedSamples requested number of samples.
+		 * @param outSamples supported number of samples.
+		 * @param errorState contains the error if requested number of samples is not supported by the hardware.
+		 */
+		bool getRasterizationSamples(ERasterizationSamples requestedSamples, VkSampleCountFlagBits& outSamples, nap::utility::ErrorState& errorState);
+
+		/**
+		 * Returns if sample shading is supported and enabled, reduces texture aliasing at computational cost.
+		 * @return if sample shading is enabled
+		 */
+		bool sampleShadingSupported() const;
+
+		/**
+		 * @return the used depth format.
+		 */
 		VkFormat getDepthFormat() const { return mDepthFormat; }
+
+		VkCommandPool getCommandPool() const { return mCommandPool; }
 		VkImageAspectFlags getDepthAspectFlags() const;
 		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
 		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
@@ -287,6 +334,10 @@ namespace nap
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
 
+		// Renderer Settings
+		bool									mEnableHighDPIMode = true;
+		bool									mSampleShadingSupported = false;
+
 		VmaAllocator							mVulkanAllocator = nullptr;
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
@@ -304,15 +355,17 @@ namespace nap
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
-		RendererSettings						mSettings;
 		VkInstance								mInstance = nullptr;
 		VkDebugReportCallbackEXT				mDebugCallback = nullptr;
 		VkPhysicalDevice						mPhysicalDevice = nullptr;
+		VkPhysicalDeviceFeatures				mPhysicalDeviceFeatures;
+		VkPhysicalDeviceProperties				mPhysicalDeviceProperties;
 		uint32_t								mPhysicalDeviceVersion = 0;
 		VkDevice								mDevice = nullptr;
 		VkCommandPool							mCommandPool = nullptr;
 		VkFormat								mDepthFormat;
-		unsigned int							mGraphicsQueueIndex = -1;
+		int										mGraphicsQueueIndex = -1;
+		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
 	};

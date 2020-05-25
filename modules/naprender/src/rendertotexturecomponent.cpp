@@ -40,13 +40,14 @@ namespace nap
 
 	}
 
+
 	RenderToTextureComponentInstance::RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mPlane(*entity.getCore()),
-		mDepthTexture(*entity.getCore()),
 		mTarget(*entity.getCore())
 	{
 	}
+
 
 	RenderToTextureComponentInstance::~RenderToTextureComponentInstance()
 	{
@@ -59,25 +60,11 @@ namespace nap
 		// Get resource
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
-		// Create settings for depth 2D texture
-		mDepthTexture.mFormat = ERenderTargetFormat::Depth;
-		mDepthTexture.mWidth  = resource->mOutputTexture->getWidth();
-		mDepthTexture.mHeight = resource->mOutputTexture->getHeight();
-		mDepthTexture.mUsage = ETextureUsage::RenderTarget;
-
-		// Initialize internally managed depth texture
-		mDepthTexture.mParameters.mMaxFilter = EFilterMode::Linear;
-		mDepthTexture.mParameters.mMinFilter = EFilterMode::Linear;
-		mDepthTexture.mParameters.mMaxLodLevel = 1;
-		if (!mDepthTexture.init(errorState))
-			return false;
-
 		// Create the render target
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 
 		// Bind textures to target
 		mTarget.mColorTexture = resource->mOutputTexture;
-		mTarget.mDepthTexture = &mDepthTexture;
 
 		// Initialize target
 		if (!mTarget.init(errorState))

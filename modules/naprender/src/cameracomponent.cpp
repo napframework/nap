@@ -3,6 +3,7 @@
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraComponentInstance)
 RTTI_END_CLASS
@@ -40,11 +41,14 @@ namespace nap
 	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const math::Rect& viewport)
 	{
 		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
+		
+		// TODO: The y clip coordinate needs to be flipped because the projection matrix is adjusted for vulkan
+		// TODO: Introduce renderer specific matrix, not used by clients.
 		glm::vec4 ray_clip = glm::vec4(
 			(2.0f * screenPos.x) / viewport.getWidth()  - 1.0f,
-			(2.0f * screenPos.y) / viewport.getHeight() - 1.0f, 
+			((2.0f * screenPos.y) / viewport.getHeight() - 1.0f) * -1.0f, 
 			-1.0, 1.0);
-		
+
 		glm::vec4 ray_eye = glm::inverse(getProjectionMatrix()) * ray_clip;
 		ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0, 0.0);
 

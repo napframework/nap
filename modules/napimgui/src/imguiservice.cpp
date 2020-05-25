@@ -11,8 +11,9 @@
 #include <color.h>
 #include <SDL_clipboard.h>
 #include <SDL_syswm.h>
-#include "SDL_mouse.h"
-#include "SDL_keyboard.h"
+#include <SDL_mouse.h> 
+#include <SDL_keyboard.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -662,7 +663,7 @@ namespace nap
 		return true;
 	}
 
-	static void createPipeline(VkRenderPass renderPass)
+	static void createPipeline(VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading)
 	{
 		if (g_Pipeline != nullptr)
 			vkDestroyPipeline(g_Device, g_Pipeline, g_Allocator);
@@ -720,7 +721,11 @@ namespace nap
 
 		VkPipelineMultisampleStateCreateInfo ms_info = {};
 		ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		ms_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		ms_info.rasterizationSamples = sampleCount;
+		ms_info.pNext = nullptr;
+		ms_info.flags = 0;
+		ms_info.minSampleShading = 1.0f;
+		ms_info.sampleShadingEnable = static_cast<int>(enableSampleShading);
 
 		VkPipelineColorBlendAttachmentState color_attachment[1] = {};
 		color_attachment[0].blendEnable = VK_TRUE;
@@ -915,7 +920,8 @@ namespace nap
 		setGuiWindow(window->getWindow()->getNativeWindow());
 		mWindowChanged = true;
 
-		createPipeline(window->getBackbuffer().getRenderPass());
+		// Store number of samples
+		createPipeline(window->getBackbuffer().getRenderPass(), window->getBackbuffer().getSampleCount(), window->getBackbuffer().getSampleShadingEnabled());
 	}
 
 
@@ -999,7 +1005,7 @@ namespace nap
 	
 		g_Gpu = mRenderService->getPhysicalDevice();
 		g_Device = mRenderService->getDevice();
-		
+
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
@@ -1068,7 +1074,11 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		// Create new GUI frame
+		if (mUserWindow == nullptr)
+		{
+			nap::Logger::error("No GUI target window specified, make sure to call `selectWindow()` first");
+			return;
+		}
 		newFrame(*mUserWindow->getWindow());
 	};
 

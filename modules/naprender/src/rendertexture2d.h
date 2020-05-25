@@ -2,6 +2,7 @@
 
 // External Includes
 #include "texture2d.h"
+#include "irendertarget.h"
 
 namespace nap
 {
@@ -33,9 +34,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int					mWidth		= 0;							///< Property: 'Width' width of the texture in texels
-		int					mHeight		= 0;							///< Property: 'Height' of the texture, in texels
-		ERenderTargetFormat	mFormat		= ERenderTargetFormat::RGBA8;	///< Property: 'Format' format of the texture
-		EColorSpace			mColorSpace	= EColorSpace::sRGB;			///< Property: 'ColorSpace' colorspace of the texture
+		int					mWidth		= 0;								///< Property: 'Width' width of the texture in texels
+		int					mHeight		= 0;								///< Property: 'Height' of the texture, in texels
+		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' colorspace of the texture
+		ERenderTargetFormat	mFormat = ERenderTargetFormat::Backbuffer;		///< Property: 'Format' texture format
 	};
 }
