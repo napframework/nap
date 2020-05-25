@@ -82,7 +82,7 @@ namespace nap
 	{
 		mRenderService->beginFrame();
 
-		if (mRenderService->beginRendering(*mRenderWindow))
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Clear window back-buffer
 			IRenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
@@ -97,7 +97,7 @@ namespace nap
 
 			backbuffer.endRendering();
 
-			mRenderService->endRendering();
+			mRenderService->endRecording();
 		}
 
 		mRenderService->endFrame();
