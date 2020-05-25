@@ -93,6 +93,6 @@ namespace nap
 			text_matrix = glm::scale(text_matrix, scale);
 			model_matrix = model_matrix * text_matrix;
 		}
-		Renderable3DTextComponentInstance::draw(viewMatrix, projectionMatrix, model_matrix);
+		Renderable3DTextComponentInstance::draw(renderTarget, commandBuffer, viewMatrix, projectionMatrix, model_matrix);
 	}
 }

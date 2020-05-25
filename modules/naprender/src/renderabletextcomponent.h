@@ -99,7 +99,7 @@ namespace nap
 		 * @param projectionMatrix the camera projection matrix
 		 * @param modelMatrix the location of the text in the world
 		 */
-		void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix);
+		void draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix);
 
 		/**
 		 * @return if this text has a transform component associated with it

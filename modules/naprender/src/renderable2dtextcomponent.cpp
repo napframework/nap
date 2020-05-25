@@ -56,7 +56,7 @@ namespace nap
 		glm::mat4x4 view_matrix = glm::translate(identityMatrix, cam_pos);
 
 		// Call base class implementation based on given parameters
-		RenderableTextComponentInstance::draw(view_matrix, projectionMatrix, model_matrix);
+		RenderableTextComponentInstance::draw(renderTarget, commandBuffer, view_matrix, projectionMatrix, model_matrix);
 	}
 
 
@@ -127,7 +127,7 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(IRenderTarget& target)
+	void Renderable2DTextComponentInstance::draw(IRenderTarget& target, VkCommandBuffer commandBuffer)
 	{
 		// Create projection matrix
 		glm::ivec2 size = target.getSize();
@@ -138,6 +138,6 @@ namespace nap
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);
+		RenderableTextComponentInstance::draw(target, commandBuffer, identityMatrix, proj_matrix, model_matrix);
 	}
 }

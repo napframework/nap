@@ -221,12 +221,6 @@ namespace nap
 			// Get the mesh to stamp onto this point and bind
 			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
 
-			// Get data of that mesh
-			MeshInstance& mesh_instance = render_mesh.getMesh().getMeshInstance();
-
-			// GPU mesh representation of mesh to copy
-			GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-
 			// Calculate model matrix
 			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);
 

@@ -142,7 +142,7 @@ namespace nap
 	}
 
 
-	void RenderableTextComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix)
+	void RenderableTextComponentInstance::draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -170,13 +170,6 @@ namespace nap
 			if (model_uniform != nullptr)
 				model_uniform->setValue(modelMatrix);
 		}
-		
-
-		// Prepare blending
-		//mMaterialInstance.update(0); // todo: frame_index
-
-		// Fetch uniform for setting character
-		//UniformSampler2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformSampler2D>(mGlyphUniform);
 
 		// Get vertex position data (that we update in the loop
 		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
@@ -184,17 +177,82 @@ namespace nap
 		// Get plane to draw
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
 
-		// GPU mesh representation of plane
-		GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-
 		// Get render service
 		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+
+		// Fetch index buffer (holding drawing order
+		const IndexBuffer& index_buffer = mesh_instance.getGPUMesh().getIndexBuffer(0);
+
+		utility::ErrorState error_state;
+
+		// Location of active letter
+		float x = 0.0f;
+		float y = 0.0f;
+
+		for (auto& render_glyph : mGlyphs)
+		{
+			// Get width and height of character to draw
+			float w = render_glyph->getSize().x;
+			float h = render_glyph->getSize().y;
+
+			// Compute x and y position
+			float xpos = x + render_glyph->getOffsetLeft();
+			float ypos = y - (h - render_glyph->getOffsetTop());
+
+			// Set vertex positions of plane
+			pos_data[0] = { xpos,		ypos,		0.0f };
+			pos_data[1] = { xpos + w,	ypos,		0.0f };
+			pos_data[2] = { xpos,		ypos + h,	0.0f };
+			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
+
+			// Push vertex positions to GPU
+			nap::utility::ErrorState error;
+			mesh_instance.update(*mPositionAttr, error);
+
+			// Set glyph
+			mGlyphUniform->setTexture(render_glyph->getTexture());
+
+			// Get new descriptor set
+			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+
+			// Bind pipeline
+			RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+
+			// Set viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = renderTarget.getSize().x;
+			viewport.height = renderTarget.getSize().y;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+
+			const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+			const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+			VkRect2D rect;
+			rect.offset.x = 0;
+			rect.offset.y = 0;
+			rect.extent.width = renderTarget.getSize().x;
+			rect.extent.height = renderTarget.getSize().y;
+			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
+
+			// Update x
+			x += render_glyph->getHorizontalAdvance();
+		}
 
 		// Lines / Fill etc.
 		//GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
 
-		// Fetch index buffer (holding drawing order
-		const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
+
 		//GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 		nap::utility::ErrorState error;
 
@@ -206,6 +264,7 @@ namespace nap
 		// Push all uniforms now
 		//mMaterialInstance.update(0);		// TODO: correct frame index
 
+		/*
 		// Location of active letter
 		float x = 0.0f;
 		float y = 0.0f;
@@ -242,6 +301,7 @@ namespace nap
 			// Update x
 			x += render_glyph->getHorizontalAdvance();
 		}
+		*/
 	}
 
 

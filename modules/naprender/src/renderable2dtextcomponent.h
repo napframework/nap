@@ -70,7 +70,7 @@ namespace nap
 		* When using this function the orientation of the text is taken into account.
 		* @param target render target that defines the screen space bounds
 		*/
-		void draw(IRenderTarget& target);
+		void draw(IRenderTarget& target, VkCommandBuffer commandBuffer);
 
 		/**
 		 * @return current text draw orientation
