@@ -6,6 +6,7 @@
 #include "objectgraph.h"
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
+#include <rtti/jsonwriter.h>
 #include "python.h"
 
 // External Includes
@@ -442,4 +443,40 @@ namespace nap
 		}
 #endif
 	}
+
+
+    bool Core::writeConfigFile(utility::ErrorState& errorState)
+    {
+	    // Write all available service configurations to a vector
+        std::vector<rtti::Object*> objects;
+        for (auto& service : mServices)
+        {
+            auto configuration = service->getConfiguration<rtti::Object>();
+            if (configuration != nullptr)
+            {
+                // The serializer needs all objects to have a mID set
+                if (configuration->mID.empty())
+                    configuration->mID = configuration->get_type().get_name().to_string();
+                objects.emplace_back(configuration);
+            }
+        }
+
+        // Serialize the configurations to json
+        rtti::JSONWriter writer;
+        if (!serializeObjects(objects, writer, errorState))
+            return false;
+        std::string json = writer.GetJSON();
+
+        // Save the config file besides the binary, the first location that NAP searches
+        const std::string exeDir = utility::getExecutableDir();
+        const std::string configFilePath = utility::getExecutableDir() + "/" + SERVICE_CONFIG_FILENAME;
+
+        std::ofstream configFile;
+        configFile.open(configFilePath);
+        configFile << json << std::endl;
+        configFile.close();
+
+        return true;
+    }
+
 }

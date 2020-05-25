@@ -180,6 +180,13 @@ namespace nap
 		 * @return true if the file was found, otherwise false.
 		 */
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
+
+		/**
+ 		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
+ 		 * @param errorState Serialization errors will be logged to errorState.
+ 		 * @return true on sucess.
+		 */
+		bool writeConfigFile(utility::ErrorState& errorState);
 	
 	private:
 		/**
