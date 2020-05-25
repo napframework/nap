@@ -161,6 +161,10 @@ namespace nap
 	{
 		// Figure out max number of supported samples
 		mRasterizationSamples = mRenderService->getRasterizationSamples(mRequestedSamples);
+		if (mRequestedSamples != ERasterizationSamples::Max && (int)mRasterizationSamples != (int)mRequestedSamples)
+		{
+			nap::Logger::warn("Requested rasterization sample count of: %d exceeds hardware limit of: %d", (int)(mRequestedSamples), (int)mRenderService->getMaxRasterizationSamples());
+		}
 
 		// Check if sample rate shading is enabled
 		if (mSampleShading && !(mRenderService->sampleShadingSupported()))

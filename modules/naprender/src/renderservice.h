@@ -229,8 +229,8 @@ namespace nap
 		VkDevice getDevice() const						{ return mDevice; }
 
 		/**
-		 * Returns the number of samples used in Rasterization.
-		 * @return rasterization samples per pixel.
+		 * Returns the max number of hardware supported rasterization samples.
+		 * @return the max number of rasterization samples supported by the hardware.
 		 */
 		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
