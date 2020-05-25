@@ -116,7 +116,7 @@ namespace nap
 		UniformStructInstance* getOrCreateUniform(const std::string& name);
 
 		template<class T>
-		T& getOrCreateSampler(const std::string& name);
+		T* getOrCreateSampler(const std::string& name);
 
 		/**
 		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
@@ -138,7 +138,7 @@ namespace nap
 		bool initSamplers(utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
-		SamplerInstance& getOrCreateSamplerInternal(const std::string& name);
+		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
 	private:
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
@@ -152,8 +152,8 @@ namespace nap
 	};
 
 	template<class T>
-	T& MaterialInstance::getOrCreateSampler(const std::string& name)
+	T* MaterialInstance::getOrCreateSampler(const std::string& name)
 	{
-		return *rtti_cast<T>(&getOrCreateSamplerInternal(name));
+		return rtti_cast<T>(getOrCreateSamplerInternal(name));
 	}
 }

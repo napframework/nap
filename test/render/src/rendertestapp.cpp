@@ -164,8 +164,8 @@ namespace nap
 				{
 					rtti::ObjectPtr<ImageFromFile> test_texture = mResourceManager->findObject<ImageFromFile>("TestTexture");
 					assert(test_texture != nullptr);
-					Sampler2DInstance& pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
-					pig_texture_sampler.setTexture(*test_texture);
+					Sampler2DInstance* pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
+					pig_texture_sampler->setTexture(*test_texture);
 
 					material_instance.setBlendMode(EBlendMode::Additive);
 				}
@@ -176,8 +176,8 @@ namespace nap
 				{
 					rtti::ObjectPtr<ImageFromFile> test_texture = mResourceManager->findObject<ImageFromFile>("PigTexture");
 					assert(test_texture != nullptr);
-					Sampler2DInstance& pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
-					pig_texture_sampler.setTexture(*test_texture);
+					Sampler2DInstance* pig_texture_sampler = material_instance.getOrCreateSampler<Sampler2DInstance>("pigTexture");
+					pig_texture_sampler->setTexture(*test_texture);
 
 					material_instance.setBlendMode(EBlendMode::Opaque);
 				}

@@ -138,9 +138,6 @@ namespace nap
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		//target.bind();
-		//mService->pushRenderState();
 		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);
-		//target.unbind();
 	}
 }

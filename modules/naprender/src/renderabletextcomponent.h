@@ -117,7 +117,8 @@ namespace nap
 		std::string mText = "";											///< Text to render
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
-		std::string mGlyphUniform = "glyph";							///< Name of the 2D texture character binding in the shader
+		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
+		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position text
 		RenderableMesh mRenderableMesh;									///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices

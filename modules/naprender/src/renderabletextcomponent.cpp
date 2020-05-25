@@ -1,6 +1,9 @@
 // Local Includes
 #include "renderabletextcomponent.h"
 #include "renderglobals.h"
+#include "material.h"
+#include "indexbuffer.h"
+#include "uniforminstances.h"
 
 // External Includes
 #include <entity.h>
@@ -8,7 +11,6 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <nap/logger.h>
-#include "indexbuffer.h"
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -42,7 +44,7 @@ namespace nap
 		mFont = &(resource->mFont->getFontInstance());
 
 		// Extract glyph uniform (texture slot in shader)
-		mGlyphUniform = resource->mGlyphUniform;
+		mGlyphUniformName = resource->mGlyphUniform;
 
 		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
@@ -50,13 +52,13 @@ namespace nap
 		// Create material instance
 		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
-		
+
 		// Ensure the uniform to set the glyph is available on the source material
-// 		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
-// 		if (!errorState.check(glyph_uniform != nullptr, 
-// 			"%s: Unable to bind font character, can't find 2Dtexture uniform in shader: %s with name: %s", this->mID.c_str(), 
-// 			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
-// 			return false;
+		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(mGlyphUniformName);
+		if (!errorState.check(mGlyphUniform != nullptr,
+		 	"%s: Unable to bind font character, can't find 2DSampler uniform: %s in material: %s", this->mID.c_str(), 
+			mGlyphUniformName.c_str() , mMaterialInstance.getMaterial().mID.c_str()))
+		 	return false;
 
 		// Setup the plane
 		mPlane.mRows	= 1;
@@ -150,18 +152,25 @@ namespace nap
 		}
 
 		// Get the parent material and set uniform values if present
-// 		Material* comp_mat = mMaterialInstance.getMaterial();
-// 		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-// 		if (projectionUniform != nullptr)
-// 			projectionUniform->setValue(projectionMatrix);
-// 
-// 		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-// 		if (viewUniform != nullptr)
-// 			viewUniform->setValue(viewMatrix);
-// 
-// 		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-// 		if (modelUniform != nullptr)
-// 			modelUniform->setValue(modelMatrix);
+		UniformStructInstance* nap_uniform = mMaterialInstance.getMaterial().findUniform(napStructUniform);
+		if (nap_uniform != nullptr)
+		{
+			// Set projection uniform in shader
+			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+			if (projection_uniform != nullptr)
+				projection_uniform->setValue(projectionMatrix);
+
+			// Set view uniform in shader
+			UniformMat4Instance* view_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+			if (view_uniform != nullptr)
+				view_uniform->setValue(viewMatrix);
+
+			// Set model matrix uniform in shader
+			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+			if (model_uniform != nullptr)
+				model_uniform->setValue(modelMatrix);
+		}
+		
 
 		// Prepare blending
 		//mMaterialInstance.update(0); // todo: frame_index
@@ -177,6 +186,9 @@ namespace nap
 
 		// GPU mesh representation of plane
 		GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+
+		// Get render service
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
 
 		// Lines / Fill etc.
 		//GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
