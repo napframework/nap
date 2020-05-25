@@ -11,10 +11,10 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableGlyph)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DGlyph)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DMipMapGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DMipMapGlyph)
 RTTI_END_CLASS
 
 namespace nap
@@ -25,6 +25,11 @@ namespace nap
 	inline static FT_Glyph toFreeTypeGlyph(void* handle)
 	{
 		return reinterpret_cast<FT_Glyph>(handle);
+	}
+
+	RenderableGlyph::RenderableGlyph(Core& core) :
+		mTexture(core)
+	{
 	}
 
 	bool RenderableGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
@@ -73,6 +78,11 @@ namespace nap
 	}
 
 
+	Renderable2DGlyph::Renderable2DGlyph(Core& core) :
+		RenderableGlyph(core)
+	{
+	}
+
 	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
 	{
 		outParameters.mMaxFilter		= EFilterMode::Linear;
@@ -80,6 +90,12 @@ namespace nap
 		outParameters.mMaxLodLevel		= 0;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+	}
+
+
+	Renderable2DMipMapGlyph::Renderable2DMipMapGlyph(Core& core) :
+		RenderableGlyph(core)
+	{
 	}
 
 
@@ -95,5 +111,4 @@ namespace nap
 		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
 		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
 	}
-
 }

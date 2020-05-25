@@ -19,6 +19,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IGlyphRepresentation)
 	public:
+		RenderableGlyph(Core& core);
+
 		/**
 		 * @return size of the glyph in pixels
 		 */
@@ -104,6 +106,10 @@ namespace nap
 	class NAPAPI Renderable2DGlyph : public RenderableGlyph
 	{
 		RTTI_ENABLE(RenderableGlyph)
+
+	public:
+		Renderable2DGlyph(Core& core);
+
 	protected:
 		/**
 		 * @param outParameters the populated texture parameters 
@@ -125,6 +131,9 @@ namespace nap
 	class NAPAPI Renderable2DMipMapGlyph : public RenderableGlyph
 	{
 		RTTI_ENABLE(RenderableGlyph)
+	public:
+		Renderable2DMipMapGlyph(Core& core);
+
 	protected:
 		/**
 		 * @param outParameters the populated texture parameters

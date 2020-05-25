@@ -75,7 +75,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		Texture2D() = default;
 		Texture2D(Core& core);
 		~Texture2D();
 
