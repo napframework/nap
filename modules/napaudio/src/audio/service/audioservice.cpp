@@ -133,8 +133,14 @@ namespace nap
 			// Ensure the input index is valid
 			if (inputDeviceIndex < 0)
             {
-                errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
-                return false;
+                if (configuration->mInputChannelCount == 0 || configuration->mAllowChannelCountFailure)
+                {
+                    Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
+                }
+                else {
+                    errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
+                    return false;
+                }
             }
 
             auto outputDeviceIndex = -1;
@@ -146,8 +152,14 @@ namespace nap
 			// Ensure the output index is valid
 			if (outputDeviceIndex < 0)
             {
-                errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-                return false;
+                if (configuration->mInputChannelCount == 0 || configuration->mAllowChannelCountFailure)
+                {
+                    Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+                }
+                else {
+                    errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+                    return false;
+                }
             }
 
 			// Ensure requested number of input and output channels is available
