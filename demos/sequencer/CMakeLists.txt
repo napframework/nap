@@ -30,4 +30,4 @@ target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # Package into release, export FBX, other shared source project fixes
-nap_source_project_packaging_and_shared_postprocessing(TRUE TRUE "demos" TRUE)
+nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "demos" TRUE)

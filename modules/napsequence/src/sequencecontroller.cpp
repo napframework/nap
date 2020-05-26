@@ -1,6 +1,8 @@
 #include "sequencecontroller.h"
+#include "sequenceeditor.h"
 
 #include <nap/logger.h>
+#include <mathutils.h>
 
 namespace nap
 {
@@ -51,7 +53,7 @@ namespace nap
 			}
 		}
 
-        mPlayer.mSequence->mDuration = longest_track_duration;
+        mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
 	}
 
 
@@ -185,12 +187,6 @@ namespace nap
 
 	void SequenceController::performEditAction(std::function<void()> action)
 	{
-		assert(!mPerformingEditAction); // already performing action, cannot perform an action INSIDE another action
-		if(!mPerformingEditAction)
-		{
-			mPerformingEditAction = true;
-			mPlayer.performEditAction(action);
-			mPerformingEditAction = false;
-		}
+		mEditor.performEditAction(action);
 	}
 }

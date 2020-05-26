@@ -248,7 +248,7 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
-			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 10, 1000, "%0.1f"))
+			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5, 1000, "%0.1f"))
 				mState.mDirty = true;
 			ImGui::SameLine();
 			if (ImGui::DragFloat("V-Zoom", &mState.mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
@@ -272,6 +272,9 @@ namespace nap
 			// on top of everything, draw time line player position
 			drawTimelinePlayerPosition(sequence, sequence_player);
 
+			// draw end of sequence line
+			drawEndOfSequence(sequence, sequence_player);
+
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
 			if (ImGui::Button("Insert New Track"))
@@ -294,6 +297,9 @@ namespace nap
 
 			//
 			handleSaveAsPopup();
+
+			//
+			handleSequenceDurationPopup();
 		}
 
 		ImGui::End();
@@ -373,13 +379,11 @@ namespace nap
 			// draw backgroundbox of controller
 			draw_list->AddRectFilled(
 				start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15
-				}, guicolors::black);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15 }, guicolors::black);
 
 			// draw box of controller
 			draw_list->AddRect(start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15
-				}, guicolors::white);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15}, guicolors::white);
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -399,7 +403,8 @@ namespace nap
 			// draw timestamp text every 100 pixels
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
-			for (int i = 0; i < steps; i++)
+			int step_start = math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth;
+			for (int i = step_start; i < steps; i++)
 			{
 				ImVec2 timestamp_pos;
 				timestamp_pos.x = i * timestamp_interval + start_pos.x;
@@ -411,27 +416,29 @@ namespace nap
 					if (timestamp_pos.y >= parent_window_pos.y &&
 						timestamp_pos.y < parent_window_size.y + parent_window_pos.y)
 					{
-						double time_in_player			= this->mEditor.getDuration() * (float)((float)i / steps);
+						double time_in_player			= player.getDuration() * (float)((float)i / steps);
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
 						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
 
 						if (i != 0)
 						{
-							draw_list->AddLine(
-							{timestamp_pos.x, timestamp_pos.y + 18 },
-							{timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, guicolors::darkGrey);
+							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + 18 }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, guicolors::darkGrey);
 						}
 					}
 				}
+				else
+				{
+					if (timestamp_pos.x > parent_window_size.x + parent_window_pos.x)
+						break; // right side of window, break out of loop
+				}
 			}
 
+			// handle hovering and dragging of player position
 			if (mState.mIsWindowFocused)
 			{
 				if (mState.mAction->isAction<None>()|| mState.mAction->isAction<HoveringPlayerTime>())
 				{
-					if (ImGui::IsMouseHoveringRect(
-							start_pos,
-					{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height}))
+					if (ImGui::IsMouseHoveringRect(start_pos, {start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height}))
 					{
 						mState.mAction = createAction<HoveringPlayerTime>();
 
@@ -454,7 +461,6 @@ namespace nap
 					}
 					else
 					{
-						
 						mState.mAction = createAction<None>();
 					}
 				}else if (mState.mAction->isAction<DraggingPlayerTime>())
@@ -469,7 +475,7 @@ namespace nap
 						if (ImGui::IsMouseReleased(0))
 						{
 							const auto* drag_action = mState.mAction->getDerived<DraggingPlayerTime>();
-							assert(drag_action != nullptr);
+							assert(drag_action != nullptr); 
 							if (drag_action->mWasPlaying && !drag_action->mWasPaused)
 							{
 								player.setIsPlaying(true);
@@ -479,6 +485,76 @@ namespace nap
 						}
 					}
 				}
+			}
+
+			// handle dragging of timeline duration
+			const double player_duration = player.getDuration();
+			const ImVec2 player_duration_top_rect_left =
+			{
+				start_pos.x +  mState.mTimelineWidth - 5, start_pos.y - 15
+			};
+			const ImVec2 player_duration_rect_bottom_right =
+			{
+				start_pos.x + mState.mTimelineWidth + 5,
+				start_pos.y ,
+			};
+
+			bool draw_filled = false;
+			if (mState.mIsWindowFocused)
+			{
+				if (mState.mAction->isAction<None>())
+				{
+					if (ImGui::IsMouseHoveringRect(player_duration_top_rect_left, player_duration_rect_bottom_right))
+					{
+						draw_filled = true;
+						mState.mAction = createAction<HoveringSequenceDuration>();
+					}
+				}
+				else if (mState.mAction->isAction<HoveringSequenceDuration>())
+				{
+					if (ImGui::IsMouseHoveringRect(player_duration_top_rect_left, player_duration_rect_bottom_right))
+					{
+						draw_filled = true;
+
+						if (ImGui::IsMouseDown(0))
+						{
+							mState.mAction = createAction<DraggingSequenceDuration>();
+						}
+
+						if (ImGui::IsMouseDown(1))
+						{
+							mState.mAction = createAction<OpenSequenceDurationPopup>();
+						}
+					}
+					else
+					{
+						mState.mAction = createAction<None>();
+					}
+				}
+				else if (mState.mAction->isAction<DraggingSequenceDuration>())
+				{
+					if (ImGui::IsMouseDown(0))
+					{
+						draw_filled = true;
+						float amount = mState.mMouseDelta.x / mState.mHorizontalResolution;
+						double new_duration = player.getDuration() + amount;
+						mEditor.changeSequenceDuration(new_duration);
+					}
+					else
+					{
+						mState.mAction = createAction<None>();
+					}
+					
+				}
+			}
+
+			if (!draw_filled)
+			{
+				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
+			}
+			else
+			{
+				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
 			}
 		}
 
@@ -515,6 +591,41 @@ namespace nap
 		{
 
 			
+		}
+		ImGui::End();
+		ImGui::PopStyleColor();
+
+		// pop cursorpos
+		ImGui::SetCursorPos(cursor_pos);
+	}
+
+
+
+	void SequenceEditorGUIView::drawEndOfSequence(const Sequence& sequence, SequencePlayer& player)
+	{
+		std::ostringstream string_stream;
+		string_stream << mID << "timelinesequenceduration";
+		std::string id_string = string_stream.str();
+
+		// store cursorpos
+		ImVec2 cursor_pos = ImGui::GetCursorPos();
+
+		ImGui::SetCursorPos(
+		{
+			mState.mTimelineControllerPos.x
+			+ mState.mInspectorWidth + 5
+			+ mState.mTimelineWidth ,
+			mState.mTimelineControllerPos.y + 15.0f
+		});
+
+		ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, guicolors::white);
+		if (ImGui::BeginChild(id_string.c_str(), // id
+		{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f) + 10.0f }, // size
+			false, // no border
+			ImGuiWindowFlags_NoMove)) // window flags
+		{
+
+
 		}
 		ImGui::End();
 		ImGui::PopStyleColor();
@@ -781,6 +892,70 @@ namespace nap
 				}
 
 				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// clicked outside so exit popup
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleSequenceDurationPopup()
+	{
+		if (mState.mAction->isAction<OpenSequenceDurationPopup>())
+		{
+			mState.mAction = createAction<EditSequenceDurationPopup>();
+			ImGui::OpenPopup("Edit Sequence Duration");
+		}
+
+		if (mState.mAction->isAction<EditSequenceDurationPopup>())
+		{
+			if (ImGui::BeginPopup("Edit Sequence Duration"))
+			{
+				double duration = mEditor.mSequencePlayer->getDuration();
+
+				int time_milseconds = (int)(duration * 100.0) % 100;
+				int time_seconds = (int)(duration) % 60;
+				int time_minutes = (int)(duration) / 60;
+
+				bool edit_time = false;
+
+				ImGui::Separator();
+
+				ImGui::PushItemWidth(100.0f);
+
+				int time_array[3] =
+				{
+					time_minutes,
+					time_seconds,
+					time_milseconds
+				};
+
+				edit_time = ImGui::InputInt3("Duration (mm:ss:ms)", &time_array[0]);
+				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+				if (edit_time)
+				{
+					double new_duration = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					mEditor.changeSequenceDuration(new_duration);
+					mState.mDirty = true;
+				}
+
+				ImGui::PopItemWidth();
+
+				ImGui::Separator();
+
+				if (ImGui::Button("Done"))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();

@@ -26,6 +26,8 @@ namespace nap
 	class NAPAPI SequenceEditor : 
 		public Resource
 	{
+		friend class SequenceController;
+
 		RTTI_ENABLE(Resource)
 	public:
 		/**
@@ -46,6 +48,12 @@ namespace nap
 		 * @param file filename
 		 */
 		void load(const std::string& file);
+
+		/**
+		 * changes sequence duration
+		 * @param newDuration new duration of sequence
+		 */
+		void changeSequenceDuration(double newDuration);
 
 		/**
 		 * Returns pointer to base class of controller type, returns nullptr when controller type is not found
@@ -73,16 +81,21 @@ namespace nap
 		 * @return true on succesfull registration
 		 */
 		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
-
-		/**
-		 * @return duration of sequence
-		 */
-		double getDuration();
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
 	private:
 		// map of all controllers
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
+
+		/**
+		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe, is blocking
+		 * @param action the edit action
+		 */
+		void performEditAction(std::function<void()> action);
+
+		// make sure we don't perform two edit actions at the same time ( only possible when performing an edit action inside another action )
+		// edit action are performed on player thread but block main thread
+		bool mPerformingEditAction = false;
 	};
 }

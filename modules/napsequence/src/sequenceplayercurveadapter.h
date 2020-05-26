@@ -81,7 +81,7 @@ namespace nap
 
 					// retrieve the source value
 					CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
-
+					
 					// cast it to a parameter value
 					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 

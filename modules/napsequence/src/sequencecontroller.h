@@ -12,9 +12,10 @@ namespace nap
 
 	// forward declares
 	class SequenceController;
+	class SequenceEditor;
 
 	// shortcut to factory method
-	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&);
+	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&, SequenceEditor&);
 
 	/**
 	 * Base class for controllers for specific track types
@@ -25,8 +26,9 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param player reference to player being used
+		 * @param editor reference to editor
 		 */
-		SequenceController(SequencePlayer& player) : mPlayer(player) {};
+		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
         
         virtual ~SequenceController(){};
 
@@ -117,7 +119,7 @@ namespace nap
 		void updateTracks();
 
 		/**
-		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe
+		 * calls perform edit action on editor class
 		 * @param action the edit action
 		 */
 		void performEditAction(std::function<void()> action);
@@ -131,7 +133,7 @@ namespace nap
 		// reference to player
 		SequencePlayer& mPlayer;
 
-		// used to make sure we don't have two edit actions at the "same" time
-		bool mPerformingEditAction = false;
+		// reference to editor
+		SequenceEditor& mEditor;
 	};
 }

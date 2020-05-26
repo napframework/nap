@@ -20,7 +20,7 @@ namespace nap
 		 * Constructor
 		 * @param player reference to player
 		 */
-		SequenceControllerEvent(SequencePlayer & player) : SequenceController(player) { }
+		SequenceControllerEvent(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
 
 		/**
 		 * edits event message

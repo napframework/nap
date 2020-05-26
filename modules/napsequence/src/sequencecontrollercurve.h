@@ -16,8 +16,9 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param player reference to player
+		 * @param editor reference to editor
 		 */
-		SequenceControllerCurve(SequencePlayer & player) : SequenceController(player) { }
+		SequenceControllerCurve(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
 
 		/**
 		 * @param trackID the id of the track

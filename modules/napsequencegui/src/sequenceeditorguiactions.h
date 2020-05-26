@@ -231,5 +231,29 @@ namespace nap
 			int mSelectedShowIndex = 0;
 			std::string mErrorString;
 		};
+
+		class HoveringSequenceDuration : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
+
+		class DraggingSequenceDuration : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
+
+		class OpenSequenceDurationPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
+
+		class EditSequenceDurationPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
 	}
 }

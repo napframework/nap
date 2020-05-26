@@ -8,6 +8,7 @@
 #include <nap/logger.h>
 #include <fcurve.h>
 #include <functional>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
@@ -30,7 +31,7 @@ namespace nap
 		auto& factory = SequenceController::getControllerFactory();
 		for (auto it : factory)
 		{
-			mControllers.emplace(it.first, it.second(*mSequencePlayer.get()));
+			mControllers.emplace(it.first, it.second(*mSequencePlayer.get(), *this));
 		}
 
 		return true;
@@ -93,9 +94,41 @@ namespace nap
 		}
 	}
 
-
-	double SequenceEditor::getDuration()
+	
+	void SequenceEditor::changeSequenceDuration(double newDuration)
 	{
-		return mSequencePlayer->mSequence->mDuration;
+		newDuration = math::max<double>(newDuration, 0.01);
+
+		performEditAction([this, newDuration]()
+		{
+			auto& sequence = mSequencePlayer->getSequence();
+			
+			// sequence must be at least as long as longest track
+			double longest_track = 0.0;
+			for (auto& track : sequence.mTracks)
+			{
+				double longest_segment = 0.0;
+				for (auto& segment : track->mSegments)
+				{
+					double time = segment->mStartTime + segment->mDuration;
+					longest_segment = math::max<double>(longest_segment, time);
+				}
+				longest_track = math::max<double>(longest_segment, longest_track);
+			}
+
+			sequence.mDuration = math::max<double>(longest_track, newDuration);
+		});
+	}
+
+
+	void SequenceEditor::performEditAction(std::function<void()> action)
+	{
+		assert(!mPerformingEditAction); // already performing action, only possible when doing an edit action inside another action
+		if (!mPerformingEditAction)
+		{
+			mPerformingEditAction = true;
+			mSequencePlayer->performEditAction(action);
+			mPerformingEditAction = false;
+		}
 	}
 }

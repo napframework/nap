@@ -97,21 +97,31 @@ namespace nap
 		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
 
 		/**
+		 * draws end of sequence
+		 * @param sequence reference to sequence
+		 * @param player reference to player
+		 */
+		void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player);
+
+		/**
 		 * Handles insertion of track popup
 		 */
 		void handleInsertTrackPopup();
 
 		/**
-		 * handleLoadPopup
 		 * handles load popup
 		 */
 		void handleLoadPopup();
 
 		/**
-		 * handleSaveAsPopup
 		 * handles save as popup
 		 */
 		void handleSaveAsPopup();
+
+		/**
+		 * handle editing of sequence duration
+		 */
+		void handleSequenceDurationPopup();
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
