@@ -89,31 +89,16 @@
 					"ShaderAttributeID" : "in_OriginalNormal" 
 				}
 			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inHeightmap",
-					"Texture" : "HeightMapTexture"
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "blendValue",
-					"Value" : 1.0
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "inCameraPosition",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 40.0
-					}
-				}
-			]			
+			"Samplers" : 
+            [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "height_tex_uniform",
+                    "Name": "inHeightmap",
+                    "Texture": "HeightMapTexture"
+                }
+            ]		
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "NormalsMaterial",
@@ -141,28 +126,41 @@
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "color",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0
-					}
+					"Type" : "nap::UniformStruct",
+                    "Name" : "FRAGUBO",
+                    "Uniforms" : 
+                    [
+                    	{
+							"Type" : "nap::UniformVec3",
+							"Name" : "color",
+							"Value" : 
+							{
+								"x" : 1.0,
+								"y" : 1.0,
+								"z" : 1.0
+							}
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "nlength",
+							"Value" : 0.1				
+						}
+                    ]
 				},
 				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "blendValue",
-					"Value" : 1.0
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "length",
-					"Value" : 0.1				
+					"Type" : "nap::UniformStruct",
+                    "Name" : "VERTUBO",
+                    "Uniforms" :
+                    [
+                   		{
+                    		"Type" : "nap::UniformFloat",
+                    		"Name" : "blendValue",
+                    		"Value" : 1.0
+                		}
+                    ]
 				}
 			]		
 		},
-
 		{
 			"Type" : "nap::Scene",
 			"mID": "Scene",		
@@ -176,7 +174,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "World",

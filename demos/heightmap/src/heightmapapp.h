@@ -118,6 +118,6 @@ namespace nap
 		void updateGui();
 
 		// Pushes an rgb color to a shader uniform associated with a material
-		void pushColor(RGBColorFloat& color, Material& material, const std::string& name);
+		void pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName);
 	};
 }

@@ -7,7 +7,6 @@ uniform nap
 	uniform mat4 modelMatrix;
 } mvp;
 
-
 // Input Vertex Attributes
 in vec3	in_Position;
 in vec3 in_UV0;
