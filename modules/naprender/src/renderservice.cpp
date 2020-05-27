@@ -294,6 +294,7 @@ namespace nap
 
 		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
 		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
+		Logger::info("Selected GPU: %s", physical_device_properties[gpu_idx].deviceName);
 
 		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
 		unsigned int family_queue_count(0);

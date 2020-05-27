@@ -54,8 +54,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
-		RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)									{ }
+		RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize RenderableCopyMeshComponentInstance based on the RenderableCopyMeshComponent resource
@@ -109,5 +108,6 @@ namespace nap
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors 
 		double mTime = 0.0;												///< Total running time
 		float mRandomRotation = 0.0f;									///< Amount of randomization of rotation speed
+		RenderService* mRenderService = nullptr;						///< Renderer
 	};
 }
