@@ -93,7 +93,7 @@ namespace nap
 		// Get height shader vertex UBO and update normal blend values
 		UniformStructInstance* height_vert_ubo = height_material.getOrCreateUniform("VERTUBO");
 		height_vert_ubo->getOrCreateUniform<UniformFloatInstance>("blendValue")->setValue(current_blend_value);
-		normal_vert_ubo->getOrCreateUniform<UniformFloatInstance>("normalBlendValue")->setValue(normal_blend_value);
+		height_vert_ubo->getOrCreateUniform<UniformFloatInstance>("normalBlendValue")->setValue(normal_blend_value);
 
 		// Push all colors
 		pushColor(mValleyColor, height_material, "FRAGUBO", "lowerColor");
