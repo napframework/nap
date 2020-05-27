@@ -24,7 +24,6 @@ namespace nap
 		using Texture2D::getData;
 		using Texture2D::endGetData;
 
-		Image() = default;
 		Image(Core& core);
 
 		/**
