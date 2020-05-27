@@ -151,14 +151,10 @@ namespace nap
 			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
 
 			// Render text on top of sphere using render service
-			// Alternatively you can use: render_text.draw(const opengl::BackbufferRenderTarget& target) directly
-			render_text.draw(mRenderWindow->getBackbuffer(), mRenderService->getCurrentCommandBuffer());
-
-			/*
+			// Alternatively you can use: render_text.draw(mRenderWindow->getBackbuffer()) directly.
 			components_to_render.clear();
 			components_to_render.emplace_back(&render_text);
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
-			*/
 
 			// Draw our GUI
 			mGuiService->draw(mRenderService->getCurrentCommandBuffer());

@@ -127,7 +127,7 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(IRenderTarget& target, VkCommandBuffer commandBuffer)
+	void Renderable2DTextComponentInstance::draw(IRenderTarget& target)
 	{
 		// Create projection matrix
 		glm::ivec2 size = target.getSize();
@@ -140,6 +140,6 @@ namespace nap
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		RenderableTextComponentInstance::draw(target, commandBuffer, glm::mat4(), proj_matrix, model_matrix);
+		RenderableTextComponentInstance::draw(target, mRenderService->getCurrentCommandBuffer(), glm::mat4(), proj_matrix, model_matrix);
 	}
 }

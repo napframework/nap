@@ -113,6 +113,7 @@ namespace nap
 		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }			
 
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
+		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
 	private:
 		std::string mText = "";											///< Text to render
@@ -128,6 +129,5 @@ namespace nap
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices
 		std::vector<RenderableGlyph*> mGlyphs;							///< Glyphs associated with the text to render
 		math::Rect mTextBounds;											///< Bounds of the text in pixels
-		RenderService* mRenderService = nullptr;						///< Renderer
 	};
 }
