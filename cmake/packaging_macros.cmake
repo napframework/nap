@@ -22,6 +22,7 @@ macro(package_nap)
                 DESTINATION cmake
                 )
         file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/cross_context_macros.cmake)
         install(FILES ${CROSSP_FILES}
                 DESTINATION cmake/
                 )   
@@ -94,6 +95,7 @@ macro(package_nap)
                 DESTINATION cmake/
                 )
         file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/cross_context_macros.cmake)
         install(FILES ${CROSSP_FILES}
                 DESTINATION cmake
                 )   
@@ -680,7 +682,7 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
 
     # Provide path mapping
     if(NOT NAP_PACKAGED_BUILD)
-        deploy_single_path_mapping()
+        deploy_single_path_mapping(${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
     # Run FBX converter

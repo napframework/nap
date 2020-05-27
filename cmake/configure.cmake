@@ -436,13 +436,15 @@ macro(copy_module_json_to_bin)
 endmacro()
 
 # Copy appropriate path mapping in cached location alongside binary
-function(deploy_single_path_mapping)
-    if(WIN32)
-        set(MAPPINGS_PREFIX win64)
+# PROJECT_DIR: The project directory
+function(deploy_single_path_mapping PROJECT_DIR)
+    find_path_mapping(${NAP_ROOT}/build_tools/path_mappings ${PROJECT_DIR} source)
+    if(DEFINED PATH_MAPPING_FILE)
+        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
     else()
-        set(MAPPINGS_PREFIX unix)
+        message(FATAL_ERROR "Couldn't locate path mapping")
     endif()
-    set(SOURCE_MAPPING ${NAP_ROOT}/build_tools/path_mappings/${MAPPINGS_PREFIX}/source.json)
+
     if(APPLE OR WIN32)
         # Multi build-type systems
         set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
@@ -452,6 +454,6 @@ function(deploy_single_path_mapping)
     endif()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_MAPPING} ${DEST_CACHE_PATH}
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${DEST_CACHE_PATH}
                        COMMENT "Deploying path mapping")
 endfunction()

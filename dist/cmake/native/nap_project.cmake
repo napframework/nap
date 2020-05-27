@@ -23,6 +23,7 @@ include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
+include(${NAP_ROOT}/cmake/cross_context_macros.cmake)
 
 # Get our modules list from project.json
 project_json_to_cmake()
@@ -136,7 +137,7 @@ copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
 export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
 # Copy path mapping
-deploy_single_path_mapping()
+deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
 
 # Package into packaged project on *nix
 if(NOT WIN32)
