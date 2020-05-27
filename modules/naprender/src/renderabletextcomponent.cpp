@@ -31,7 +31,8 @@ namespace nap
 {
 	RenderableTextComponentInstance::RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
-		mPlane(*entity.getCore())
+		mPlane(*entity.getCore()),
+		mRenderService(entity.getCore()->getService<RenderService>())
 	{
 	}
 
@@ -106,9 +107,8 @@ namespace nap
 		if (!errorState.check(mPositionAttr != nullptr, "%s: unable to get plane vertex attribute handle", mID.c_str()))
 			return false;
 
-		// Construct render-able mesh (TODO: Make a factory or something similar to create and verify render-able meshes!
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		mRenderableMesh = render_service->createRenderableMesh(mPlane, mMaterialInstance, errorState);
+		// Construct render-able mesh
+		mRenderableMesh = mRenderService->createRenderableMesh(mPlane, mMaterialInstance, errorState);
 		if (!mRenderableMesh.isValid())
 			return false;
 
@@ -179,9 +179,6 @@ namespace nap
 		// Get plane to draw
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
 
-		// Get render service
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-
 		// Fetch index buffer (holding drawing order
 		const IndexBuffer& index_buffer = mesh_instance.getGPUMesh().getIndexBuffer(0);
 
@@ -192,7 +189,7 @@ namespace nap
 		float y = 0.0f;
 
 		// Get pipeline
-		RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		
 		// Scissor rectangle
 		VkRect2D scissor_rect {
