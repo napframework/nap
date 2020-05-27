@@ -11,12 +11,12 @@ namespace nap
 	/**
 	 * GLSL uniform attribute name for root nap struct
 	 */
-	NAPAPI extern const std::string napStructUniform;
+	NAPAPI extern const std::string mvpStructUniform;
 
 	/**
-	 * GLSL uniform attribute name for projection matrix
+	 * GLSL uniform attribute name of model matrix
 	 */
-	NAPAPI extern const std::string projectionMatrixUniform;
+	NAPAPI extern const std::string modelMatrixUniform;
 
 	/**
 	 * GLSL uniform attribute name for view matrix
@@ -24,9 +24,9 @@ namespace nap
 	NAPAPI extern const std::string viewMatrixUniform;
 
 	/**
-	 * GLSL uniform attribute name of model matrix
+	 * GLSL uniform attribute name for projection matrix
 	 */
-	NAPAPI extern const std::string modelMatrixUniform;
+	NAPAPI extern const std::string projectionMatrixUniform;
 
 	/**
 	 * GLM Identity Matrix

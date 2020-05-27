@@ -3,7 +3,7 @@
 
 namespace nap
 {
-	const std::string napStructUniform("nap");
+	const std::string mvpStructUniform("nap");
 
 	// Projection matrix GLSL name
 	const std::string projectionMatrixUniform("projectionMatrix");

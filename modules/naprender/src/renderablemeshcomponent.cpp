@@ -100,7 +100,7 @@ namespace nap
 		// Bind material
 		MaterialInstance& mat_instance = getMaterialInstance();
 
-		UniformStructInstance* nap_uniform = mat_instance.getOrCreateUniform(napStructUniform);
+		UniformStructInstance* nap_uniform = mat_instance.getOrCreateUniform(mvpStructUniform);
 		if (nap_uniform != nullptr)
 		{
 			// Set projection uniform in shader

@@ -4,6 +4,7 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
+#include "uniforminstances.h"
 
 // External Includes
 #include <font.h>
@@ -119,10 +120,14 @@ namespace nap
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
+		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
+		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
+		UniformMat4Instance* mProjectionUniform = nullptr;				///< Found projection uniform input
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position text
 		RenderableMesh mRenderableMesh;									///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices
 		std::vector<RenderableGlyph*> mGlyphs;							///< Glyphs associated with the text to render
 		math::Rect mTextBounds;											///< Bounds of the text in pixels
+		RenderService* mRenderService = nullptr;						///< Renderer
 	};
 }

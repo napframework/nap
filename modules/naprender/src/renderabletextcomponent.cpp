@@ -3,7 +3,6 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "indexbuffer.h"
-#include "uniforminstances.h"
 
 // External Includes
 #include <entity.h>
@@ -60,6 +59,21 @@ namespace nap
 		 	"%s: Unable to bind font character, can't find 2DSampler uniform: %s in material: %s", this->mID.c_str(), 
 			mGlyphUniformName.c_str() , mMaterialInstance.getMaterial().mID.c_str()))
 		 	return false;
+
+		// Find MVP uniforms
+		UniformStructInstance* mvp_uniform = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
+		if (mvp_uniform != nullptr)
+		{
+			mModelUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+			mViewUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+			mProjectionUniform	= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+		}
+
+		// Make sure there's a model matrix
+		if (!errorState.check(mModelUniform != nullptr, "%s: Unable to position character, no model matrix with name: %s found in UBO: %s in material %s",
+			mID.c_str(), modelMatrixUniform.c_str(), 
+			mvpStructUniform.c_str(), mMaterialInstance.getMaterial().mID.c_str()))
+			return false;
 
 		// Setup the plane, 1x1 with lower left corner at origin {0, 0}
 		mPlane.mRows	= 1;
@@ -154,27 +168,13 @@ namespace nap
 			return;
 		}
 
-		// Get the parent material and set uniform values if present
-		UniformStructInstance* nap_uniform = mMaterialInstance.getMaterial().findUniform(napStructUniform);
-		UniformMat4Instance* model_uniform = nullptr;
-		if (nap_uniform != nullptr)
-		{
-			// Set projection uniform in shader
-			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
-			if (projection_uniform != nullptr)
-				projection_uniform->setValue(projectionMatrix);
+		// Update view uniform
+		if (mViewUniform != nullptr)
+			mViewUniform->setValue(viewMatrix);
 
-			// Set view uniform in shader
-			UniformMat4Instance* view_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
-			if (view_uniform != nullptr)
-				view_uniform->setValue(viewMatrix);
-
-			// Set model matrix uniform in shader
-			model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
-		}
-
-		// Get vertex position data (that we update in the loop
-		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
+		// Update projection uniform
+		if (mProjectionUniform != nullptr)
+			mProjectionUniform->setValue(projectionMatrix);
 
 		// Get plane to draw
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -194,6 +194,21 @@ namespace nap
 		// Get pipeline
 		RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		
+		// Scissor rectangle
+		VkRect2D scissor_rect {
+			{0, 0},
+			{(uint32_t)(renderTarget.getSize().x), (uint32_t)(renderTarget.getSize().y) }
+		};
+
+		// Viewport
+		VkViewport viewport = 
+		{
+			0.0f, 0.0f,
+			(float)(renderTarget.getSize().x), 
+			(float)(renderTarget.getSize().y),
+			0.0f, 1.0f
+		};
+
 		// Draw individual glyphs
 		for (auto& render_glyph : mGlyphs)
 		{
@@ -210,54 +225,29 @@ namespace nap
 
 			// Compute x and y position
 			float xpos = x + render_glyph->getOffsetLeft();
-			float ypos = y - (h - render_glyph->getOffsetTop());
-			glm::vec3 position(xpos, ypos, 0.0f);
+			float ypos = y - (h - render_glyph->getOffsetTop());;
 			
-			// Compute scale
-			glm::vec3 scale(w, h, 1.0f);
+			// Compute local model matrix
+			glm::mat4 plane_loc = glm::translate(glm::mat4(), glm::vec3(xpos, ypos, 0.0f));
+			plane_loc = glm::scale(plane_loc, glm::vec3(w, h, 1.0f));
 
-			// Compute matrix
-			glm::mat4 plane_loc = glm::translate(glm::mat4(), position);
-			plane_loc = glm::scale(plane_loc, scale);
-
-			// Set model matrix
-			if (model_uniform != nullptr)
-				model_uniform->setValue(modelMatrix * plane_loc);
-
-			// Set glyph
+			// Update model matrix and glyph
+			mModelUniform->setValue(modelMatrix * plane_loc);
 			mGlyphUniform->setTexture(render_glyph->getTexture());
 
-			// Get new descriptor set
+			// Get new descriptor set that contains the updated settings and bind pipeline
 			VkDescriptorSet descriptor_set = mMaterialInstance.update();
-
-			// Bind pipeline
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-
-			// Set viewport
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = renderTarget.getSize().x;
-			viewport.height = renderTarget.getSize().y;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-			// Bind our desciptor set
+			// Bind descriptor set
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 			// Bind vertex buffers
 			const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
 			const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
 			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
-
-			// TODO: Compute scissor correctly based on 2D text location, saves a lot of drawing overhead!
-			VkRect2D rect;
-			rect.offset.x = 0;
-			rect.offset.y = 0;
-			rect.extent.width = renderTarget.getSize().x;
-			rect.extent.height = renderTarget.getSize().y;
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
 
 			// Draw geometry
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
