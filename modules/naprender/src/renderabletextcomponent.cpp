@@ -191,8 +191,19 @@ namespace nap
 		float x = 0.0f;
 		float y = 0.0f;
 
+		// Get pipeline
+		RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		
+		// Draw individual glyphs
 		for (auto& render_glyph : mGlyphs)
 		{
+			// Don't draw empty glyphs (spaces)
+			if (render_glyph->empty())
+			{
+				x += render_glyph->getHorizontalAdvance();
+				continue;
+			}
+
 			// Get width and height of character to draw
 			float w = render_glyph->getSize().x;
 			float h = render_glyph->getSize().y;
@@ -209,18 +220,6 @@ namespace nap
 			glm::mat4 plane_loc = glm::translate(glm::mat4(), position);
 			plane_loc = glm::scale(plane_loc, scale);
 
-			/*
-			// Set vertex positions of plane
-			pos_data[0] = { xpos,		ypos,		0.0f };
-			pos_data[1] = { xpos + w,	ypos,		0.0f };
-			pos_data[2] = { xpos,		ypos + h,	0.0f };
-			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
-
-			// Push vertex positions to GPU
-			nap::utility::ErrorState error;
-			mesh_instance.update(*mPositionAttr, error);
-			*/
-
 			// Set model matrix
 			if (model_uniform != nullptr)
 				model_uniform->setValue(modelMatrix * plane_loc);
@@ -232,7 +231,6 @@ namespace nap
 			VkDescriptorSet descriptor_set = mMaterialInstance.update();
 
 			// Bind pipeline
-			RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 			// Set viewport
@@ -245,12 +243,15 @@ namespace nap
 			viewport.maxDepth = 1.0f;
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
+			// Bind our desciptor set
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
+			// Bind vertex buffers
 			const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
 			const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
 			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 
+			// TODO: Compute scissor correctly based on 2D text location, saves a lot of drawing overhead!
 			VkRect2D rect;
 			rect.offset.x = 0;
 			rect.offset.y = 0;
@@ -258,66 +259,13 @@ namespace nap
 			rect.extent.height = renderTarget.getSize().y;
 			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 
+			// Draw geometry
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
 			// Update x
 			x += render_glyph->getHorizontalAdvance();
 		}
-
-		// Lines / Fill etc.
-		//GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
-
-
-		//GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-		nap::utility::ErrorState error;
-
-		// Get uniforms to push in loop
-// 		const nap::UniformSampler2D& glyph_binding = mMaterialInstance.getUniform<UniformSampler2D>(glyph_uniform.mName);
-// 		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
-// 		assert(texture_unit > -1);
-
-		// Push all uniforms now
-		//mMaterialInstance.update(0);		// TODO: correct frame index
-
-		/*
-		// Location of active letter
-		float x = 0.0f;
-		float y = 0.0f;
-
-		// Draw every letter in the text to screen
-		for (auto& render_glyph : mGlyphs)
-		{
-			// Get width and height of character to draw
-			float w = render_glyph->getSize().x;
-			float h = render_glyph->getSize().y;
-
-			// Compute x and y position
-			float xpos = x + render_glyph->getOffsetLeft();
-			float ypos = y - (h - render_glyph->getOffsetTop());
-
-			// Set vertex positions of plane
-			pos_data[0] = { xpos,		ypos,		0.0f };
-			pos_data[1] = { xpos + w,	ypos,		0.0f };
-			pos_data[2] = { xpos,		ypos + h,	0.0f };
-			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
-
-			// Push vertex positions to GPU
-			mesh_instance.update(*mPositionAttr, error);
-
-			// Set texture and push uniforms
-			//glyph_uniform.setTexture(render_glyph->getTexture());
-			//glyph_uniform.push(nullptr, glyph_binding.getDeclaration(), texture_unit); // TODO: UBO
-
-			// Bind and draw all the arrays
-// 			index_buffer.bind();
-// 			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-// 			index_buffer.unbind();
-
-			// Update x
-			x += render_glyph->getHorizontalAdvance();
-		}
-		*/
 	}
 
 

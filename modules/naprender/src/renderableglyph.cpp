@@ -33,8 +33,7 @@ namespace nap
 	}
 
 
-	RenderableGlyph::RenderableGlyph(nap::Core& core) : IGlyphRepresentation(core),
-		mTexture(std::make_unique<Texture2D>(core))
+	RenderableGlyph::RenderableGlyph(nap::Core& core) : IGlyphRepresentation(core)
 	{ }
 
 
@@ -64,7 +63,20 @@ namespace nap
 		mSize.x = bitmap_glyph->bitmap.width;
 		mSize.y = bitmap_glyph->bitmap.rows;
 
-		// Set parameters
+		// Store advance
+		mAdvance.x = glyph.getHorizontalAdvance();
+		mAdvance.y = glyph.getVerticalAdvance();
+
+		// If there is no width / height, don't initialize the texture
+		assert(mTexture == nullptr);
+		if (mSize.x == 0 || mSize.y == 0)
+		{
+			FT_Done_Glyph(bitmap);
+			return true;
+		}
+
+		// Create texture and get parameters
+		mTexture = std::make_unique<Texture2D>(*mCore);
 		getTextureParameters(mTexture->mParameters, mSize);
 
 		// Initialize texture
@@ -82,11 +94,6 @@ namespace nap
 
 		// Clean up bitmap data
 		FT_Done_Glyph(bitmap);
-
-		// Store advance
-		mAdvance.x = glyph.getHorizontalAdvance();
-		mAdvance.y = glyph.getVerticalAdvance();
-
 		return true;
 	}
 

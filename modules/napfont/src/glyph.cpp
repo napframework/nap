@@ -39,9 +39,8 @@ namespace nap
 	}
 
 
-	IGlyphRepresentation::IGlyphRepresentation(nap::Core& core)
+	IGlyphRepresentation::IGlyphRepresentation(nap::Core& core) : mCore(&core)
 	{
-
 	}
 
 }

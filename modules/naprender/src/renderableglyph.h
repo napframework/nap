@@ -77,6 +77,12 @@ namespace nap
 		 */
 		int getVerticalAdvance() const { return mAdvance.y; }
 
+		/**
+		 * If this render-able glyph has a texture. 
+		 * @return if this glyph has a texture associated with it
+		 */
+		bool empty() const { return mTexture == nullptr; }
+
 	protected:
 		/**
 		 * Initializes the OpenGL 2DTexture after construction of this glyph.	
@@ -93,7 +99,7 @@ namespace nap
 		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
 
 	private:
-		std::unique_ptr<Texture2D> mTexture;
+		std::unique_ptr<Texture2D> mTexture = nullptr;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
 		glm::ivec2 mBearing = { -1, -1 };		///< Offset from baseline to left/top of glyph
 		glm::ivec2 mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph

@@ -115,7 +115,7 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
-                    "Text": "HoiDaar!",
+                    "Text": " Hi there! Welcome to NAP",
                     "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
