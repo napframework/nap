@@ -72,8 +72,8 @@ namespace nap
 
 		// Make sure there's a model matrix
 		if (!errorState.check(mModelUniform != nullptr, "%s: Unable to position character, no model matrix with name: %s found in UBO: %s in material %s",
-			mID.c_str(), modelMatrixUniform.c_str(), 
-			mvpStructUniform.c_str(), mMaterialInstance.getMaterial().mID.c_str()))
+			mID.c_str(), modelMatrixUniform, 
+			mvpStructUniform, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Setup the plane, 1x1 with lower left corner at origin {0, 0}

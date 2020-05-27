@@ -89,7 +89,7 @@ namespace nap
 			const nap::math::Rect& bbox = getBoundingBox();
 			offset.x = 0.0f - ((scale.x * bbox.getWidth())  / 2.0f);
 
-			glm::mat4x4  text_matrix = glm::translate(identityMatrix, offset);
+			glm::mat4x4  text_matrix = glm::translate(glm::mat4(), offset);
 			text_matrix = glm::scale(text_matrix, scale);
 			model_matrix = model_matrix * text_matrix;
 		}

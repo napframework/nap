@@ -53,7 +53,7 @@ namespace nap
 
 		// Compute new view matrix, don't scale or rotate!
 		glm::vec3 cam_pos = math::extractPosition(viewMatrix);
-		glm::mat4x4 view_matrix = glm::translate(identityMatrix, cam_pos);
+		glm::mat4x4 view_matrix = glm::translate(glm::mat4(), cam_pos);
 
 		// Call base class implementation based on given parameters
 		RenderableTextComponentInstance::draw(renderTarget, commandBuffer, view_matrix, projectionMatrix, model_matrix);
@@ -118,7 +118,7 @@ namespace nap
 		glm::ivec2 pos = getTextPosition();
 
 		// Compose model matrix
-		outMatrix = glm::translate(identityMatrix,
+		outMatrix = glm::translate(glm::mat4(),
 		{
 			(float)pos.x,
 			(float)pos.y,
@@ -140,6 +140,6 @@ namespace nap
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		RenderableTextComponentInstance::draw(target, commandBuffer, identityMatrix, proj_matrix, model_matrix);
+		RenderableTextComponentInstance::draw(target, commandBuffer, glm::mat4(), proj_matrix, model_matrix);
 	}
 }
