@@ -11,6 +11,7 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <nap/logger.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -60,9 +61,11 @@ namespace nap
 			mGlyphUniformName.c_str() , mMaterialInstance.getMaterial().mID.c_str()))
 		 	return false;
 
-		// Setup the plane
+		// Setup the plane, 1x1 with lower left corner at origin {0, 0}
 		mPlane.mRows	= 1;
 		mPlane.mColumns = 1;
+		mPlane.mPosition = { 0.5f, 0.5f };
+		mPlane.mSize = { 1.0f, 1.0f };
 		if (!mPlane.setup(errorState))
 			return false;
 
@@ -153,6 +156,7 @@ namespace nap
 
 		// Get the parent material and set uniform values if present
 		UniformStructInstance* nap_uniform = mMaterialInstance.getMaterial().findUniform(napStructUniform);
+		UniformMat4Instance* model_uniform = nullptr;
 		if (nap_uniform != nullptr)
 		{
 			// Set projection uniform in shader
@@ -166,9 +170,7 @@ namespace nap
 				view_uniform->setValue(viewMatrix);
 
 			// Set model matrix uniform in shader
-			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
-			if (model_uniform != nullptr)
-				model_uniform->setValue(modelMatrix);
+			model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
 		}
 
 		// Get vertex position data (that we update in the loop
@@ -198,7 +200,16 @@ namespace nap
 			// Compute x and y position
 			float xpos = x + render_glyph->getOffsetLeft();
 			float ypos = y - (h - render_glyph->getOffsetTop());
+			glm::vec3 position(xpos, ypos, 0.0f);
+			
+			// Compute scale
+			glm::vec3 scale(w, h, 1.0f);
 
+			// Compute matrix
+			glm::mat4 plane_loc = glm::translate(glm::mat4(), position);
+			plane_loc = glm::scale(plane_loc, scale);
+
+			/*
 			// Set vertex positions of plane
 			pos_data[0] = { xpos,		ypos,		0.0f };
 			pos_data[1] = { xpos + w,	ypos,		0.0f };
@@ -208,6 +219,11 @@ namespace nap
 			// Push vertex positions to GPU
 			nap::utility::ErrorState error;
 			mesh_instance.update(*mPositionAttr, error);
+			*/
+
+			// Set model matrix
+			if (model_uniform != nullptr)
+				model_uniform->setValue(modelMatrix * plane_loc);
 
 			// Set glyph
 			mGlyphUniform->setTexture(render_glyph->getTexture());
