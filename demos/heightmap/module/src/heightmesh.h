@@ -27,7 +27,6 @@ namespace nap
 		RTTI_ENABLE(nap::PlaneMesh)
 	public:
 		HeightMesh(Core& core);
-		virtual ~HeightMesh();
 
 		/**
 		 * Initialize this object after de-serialization

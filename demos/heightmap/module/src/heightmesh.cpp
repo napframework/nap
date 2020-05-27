@@ -23,8 +23,6 @@ namespace nap
 	}
 
 
-	HeightMesh::~HeightMesh() { }
-
 	/**
 	 * Initialize this height map, the end result is a plane where every vertex is displaced along it's normal
 	 * After displacement the normals are re-calculated

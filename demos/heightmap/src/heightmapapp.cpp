@@ -39,9 +39,6 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");		
-		mHeightMesh = mResourceManager->findObject<nap::HeightMesh>("HeightMesh");
-		mNormalsMaterial = mResourceManager->findObject<nap::Material>("NormalsMaterial");
-		mHeightmapMaterial = mResourceManager->findObject<nap::Material>("HeightMaterial");
 		mHeightmap = mResourceManager->findObject<nap::ImageFromFile>("HeightMapTexture");
 
 		// Find the world and camera entities
@@ -250,10 +247,6 @@ namespace nap
 			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
 			ImGui::ColorEdit3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
-		} 
-		if (ImGui::CollapsingHeader("Height Map"))
-		{
-			ImGui::Image(*mHeightmap, { 256, 256 });
 		}
 		ImGui::End();
 	}

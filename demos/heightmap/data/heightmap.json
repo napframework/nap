@@ -7,7 +7,9 @@
 			"Width" : 1280,
 			"Height" : 720,
 			"Title" : "Window 1",
-			"Sync" : false,
+			"Mode" : "Mailbox",
+			"Samples": "Four",
+			"SampleShading":false,
 			"ClearColor": {
                 "x": 0.0666,
                 "y": 0.0784,
@@ -124,42 +126,7 @@
 				}
 			],
 			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformStruct",
-                    "Name" : "FRAGUBO",
-                    "Uniforms" : 
-                    [
-                    	{
-							"Type" : "nap::UniformVec3",
-							"Name" : "color",
-							"Value" : 
-							{
-								"x" : 1.0,
-								"y" : 1.0,
-								"z" : 1.0
-							}
-						},
-						{
-							"Type" : "nap::UniformFloat",
-							"Name" : "nlength",
-							"Value" : 0.1				
-						}
-                    ]
-				},
-				{
-					"Type" : "nap::UniformStruct",
-                    "Name" : "VERTUBO",
-                    "Uniforms" :
-                    [
-                   		{
-                    		"Type" : "nap::UniformFloat",
-                    		"Name" : "blendValue",
-                    		"Value" : 1.0
-                		}
-                    ]
-				}
-			]		
+			[]		
 		},
 		{
 			"Type" : "nap::Scene",
