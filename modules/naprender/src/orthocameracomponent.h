@@ -69,6 +69,18 @@ namespace nap
 		RTTI_ENABLE(CameraComponentInstance)
 	public:
 
+		/**
+		 * Creates a Vulkan compatible orthographic matrix, use this matrix instead of glm::ortho when interfacing with the renderer.
+		 * @return Vulkan compatible orthographic matrix.
+		 */
+		static glm::mat4 createProjectionMatrix(float left, float right, float bottom, float top, float zNear, float zFar);
+		
+		/**
+		 * Creates a Vulkan compatible orthographic matrix without having to specify near and far coordinates
+		 * @return Vulkan compatible orthographic matrix.
+		 */
+		static glm::mat4 createProjectionMatrix(float left, float right, float bottom, float top);
+
 		// Default constructor
 		OrthoCameraComponentInstance(EntityInstance& entity, Component& resource);
 
