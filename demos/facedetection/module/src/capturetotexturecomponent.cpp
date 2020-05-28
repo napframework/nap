@@ -65,6 +65,8 @@ namespace nap
 		if (!errorState.check(mBlobsUniform != nullptr, "%s: missing 'blobs' uniform", mID.c_str()))
 			return false;
 
+		// Add 1 matrix
+		mConversionFrame.addNew();
 		return true;
 	}
 
@@ -133,7 +135,7 @@ namespace nap
 			return;
 		}
 		
-		// Update GPU texture
-		mRenderTexture->update(cv_frame[mMatrixIndex].getMat(cv::ACCESS_READ).data, mRenderTexture->getDescriptor());
+		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_RGB2RGBA);
+		mRenderTexture->update(mConversionFrame[0].getMat(cv::ACCESS_READ).data, mRenderTexture->getDescriptor());
 	}
 }

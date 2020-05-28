@@ -82,5 +82,6 @@ namespace nap
 		int mMatrixIndex = 0;									///< OpenCV sample matrix, defaults to 0
 		UniformIntInstance* mBlobCountUniform = nullptr;		///< OpenCV blob count uniform
 		UniformStructArrayInstance* mBlobsUniform = nullptr;	///< Blobs uniform struct array
+		CVFrame mConversionFrame;
 	};
 }
