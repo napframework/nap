@@ -196,7 +196,7 @@ namespace nap
 		
 		// Now update background texture
 		nap::TransformComponentInstance& xform_comp = mBackgroundEntity->getComponent<nap::TransformComponentInstance>();
-		xform_comp.setScale(glm::vec3(window_size.x, window_size.y*-1.0f, 1.0f));
+		xform_comp.setScale(glm::vec3(window_size.x, window_size.y, 1.0f));
 		xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, -900.0f));
 	}
 	
