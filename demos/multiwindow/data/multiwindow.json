@@ -15,7 +15,6 @@
                 "w": 1.0
             }
 		},
-
 		{		
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window1",
@@ -30,7 +29,6 @@
                 "w": 1.0
             }
 		},
-
 		{		
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window2",
@@ -46,44 +44,37 @@
                 "w": 1.0
             }
 		},
-
 		{
 			"Type" : "nap::ImageFromFile",	
 			"mID" : "WorldTexture",
 			"ImagePath" : "world_texture.png"
 		},
-
 		{
 			"Type" : "nap::ImageFromFile",	
 			"mID" : "TextureOne",
 			"ImagePath" : "texture_one.jpg"
 		},
-
 		{
 			"Type" : "nap::ImageFromFile",	
 			"mID" : "TextureTwo",
 			"ImagePath" : "texture_two.png"
 		},
-
 		{
 			"Type" : "nap::Shader",
 			"mID": "WorldShader",
 			"mVertShader": "shaders/multiwindow/world.vert",
 			"mFragShader": "shaders/multiwindow/world.frag"
 		},
-
 		{
 			"Type" : "nap::Shader",
 			"mID": "PlaneShader",
 			"mVertShader": "shaders/multiwindow/plane.vert",
 			"mFragShader": "shaders/multiwindow/plane.frag"
 		},
-
 		{
 			"Type" : "nap::SphereMesh",
 			"mID" : "WorldMesh"
 		},
-
 		{
 			"Type" : "nap::PlaneMesh",
 			"mID" : "PlaneMesh",
@@ -93,7 +84,6 @@
 				"y" : 1
 			}
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "WorldMaterial",
@@ -113,26 +103,36 @@
 					"ShaderAttributeID" : "in_Normal"
 				}
 			],
+			"Samplers" :
+			[
+				{
+					"Type" : "nap::Sampler2D",
+					"Name" : "inWorldTexture",
+					"mID" : "world_texture_input",
+					"Texture" : "WorldTexture"
+				}
+			],
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inWorldTexture",
-					"Texture" : "WorldTexture"
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "inCameraPosition",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 4.0
-					}
-				}
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                    	{
+							"Type" : "nap::UniformVec3",
+							"Name" : "inCameraPosition",
+							"Value" : 
+							{
+								"x" : 0.0,
+								"y" : 0.0,
+								"z" : 4.0
+							}
+						}
+                    ]
+                }
 			]			
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "PlaneMaterial",
@@ -149,10 +149,11 @@
 					"ShaderAttributeID": "in_UV0"
 				}
 			],
-			"Uniforms" : 
+			"Samplers" : 
 			[
 				{
-					"Type" : "nap::UniformTexture2D",
+					"Type" : "nap::Sampler2D",
+					"mID" : "plane_texture",
 					"Name" : "inTexture",
 					"Texture" : "TextureOne"
 				}
@@ -253,7 +254,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "PlaneTwo",
@@ -266,10 +266,11 @@
 					{
 						"mID": "PlaneMaterialInstance",
 						"Material": "PlaneMaterial",
-						"Uniforms" : 
+						"Samplers" : 
 						[
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
+								"mID" : "plane_texture_two_input",
 								"Name" : "inTexture",
 								"Texture" : "TextureTwo"
 							}
@@ -296,7 +297,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "OrthoCamera",
@@ -324,7 +324,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "PerpectiveCameraOne",
@@ -369,7 +368,6 @@
                 }
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "PerpectiveCameraTwo",
