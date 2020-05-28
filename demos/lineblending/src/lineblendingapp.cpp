@@ -58,6 +58,9 @@ namespace nap
 		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
 		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
 
+		// Set GUI window
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -116,24 +119,33 @@ namespace nap
 	 */
 	void LineBlendingApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Start render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Render all objects in the scene at once
+			// This includes the line + normals and the laser canvas
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
-		// Render all objects in the scene at once
-		// This includes the line + normals and the laser canvas
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			// Draw gui to screen
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
 
-		// Draw gui to screen
-		mGuiService->draw();
+			// End the render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// End recording framebuffer
+			mRenderService->endRecording();
+		}
+
+		// Signal end of frame capture operation
+		mRenderService->endFrame();
 	}
 	
 	

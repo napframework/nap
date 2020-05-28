@@ -10,6 +10,8 @@
 #include <limits>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <nap/logger.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::PX,		"px"),
@@ -20,7 +22,8 @@ RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::DPI,	"dpi")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::LineFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineFromFile)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("File",				&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Units",				&nap::LineFromFile::mUnits,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DPI",				&nap::LineFromFile::mDPI,		nap::rtti::EPropertyMetaData::Default)
@@ -105,6 +108,10 @@ static void extractPathVertices(float* pts, int npts, char closed, float tol, st
 
 namespace nap
 {
+	LineFromFile::LineFromFile(nap::Core& core) : PolyLine(core)
+	{}
+
+
 	bool LineFromFile::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
@@ -220,6 +227,7 @@ namespace nap
 		float pos_y_max = mFlipY ? mNormalize ? -0.5f : rect.mMinPosition.y : mNormalize ? 0.5f	 : rect.mMaxPosition.y;
 
 		// Create a set of mesh instances based on those paths
+		int closed_state = -1;
 		for (int path_index = 0; path_index != paths.size(); ++path_index)
 		{
 			auto& path = paths[path_index];
@@ -269,6 +277,14 @@ namespace nap
 			if (!errorState.check(positions.size() >= 2, "not enough unique vertices in line from file: %s", mFile.c_str()))
 				return false;
 
+			// Store state (closed or open), warn if an other path uses a different state then the initial one
+			// TODO: Ensure individual shapes can be rendered using individual states			
+			closed_state = closed_state < 0 ? static_cast<int>(is_closed) : closed_state;
+			if (is_closed != static_cast<bool>(closed_state))
+			{
+				nap::Logger::warn("Path: %d is %s, differs from other paths in file", path_index, is_closed ? "Closed" : "Open");
+			}
+
 			// Now we have the final vertex positions of this line we can calculate their respective normals
 			if (positions.size() > 1)
 			{
@@ -315,14 +331,16 @@ namespace nap
 				normals.front() = { 0,1.0,0.0 };
 			}
 
-			addShape(positions, normals, uvs, is_closed);
+			addShape(positions, normals, uvs);
 		}
 
+		assert(closed_state >= 0);
+		mMeshInstance->setDrawMode(static_cast<bool>(closed_state) ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
 		return mMeshInstance->init(errorState);
 	}
 
 
-	void LineFromFile::addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool closed)
+	void LineFromFile::addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs)
 	{		
 		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
@@ -344,9 +362,7 @@ namespace nap
 		uvs_attr.addData(pathUvs.data(), pathUvs.size());
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(closed ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
 		utility::generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
-
 		mMeshInstance->setNumVertices(mMeshInstance->getNumVertices() + vertex_count);
 	}
 

@@ -158,6 +158,7 @@ namespace nap
 			return false;
 
 		// Create the mesh that will hold the normals
+		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		// Create shape that holds the normals

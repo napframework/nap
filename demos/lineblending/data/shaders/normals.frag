@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // input  
 in float pass_Tip;
@@ -8,10 +8,13 @@ in vec4 pass_Color;
 out vec4 out_Color;
 
 // Uniform used for setting color
-uniform vec4 mColor;
+uniform UBO
+{
+	uniform vec4 mColor;
+} ubo;
 
 void main() 
 {
-	vec3 line_color = mColor.rgb;
-	out_Color = vec4(line_color * pass_Color.rgb, pass_Tip * mColor.a);
+	vec3 line_color = ubo.mColor.rgb;
+	out_Color = vec4(line_color * pass_Color.rgb, pass_Tip * ubo.mColor.a);
 }

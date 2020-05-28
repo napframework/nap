@@ -32,6 +32,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
+		LineFromFile(nap::Core& core);
+
 		/**
 		 *	Loads the svg file and extracts the line
 		 */
@@ -72,6 +74,6 @@ namespace nap
 		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rectangle, utility::ErrorState& errorState);
 
 		// Create a mesh instance out of curve sampled vertices
-		void addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool isClosed);
+		void addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs);
 	};
 }
