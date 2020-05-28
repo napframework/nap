@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input 
 in vec3 passNormals;										// Normals
@@ -13,9 +13,15 @@ struct PointLight
 	vec3 		mIntensity;
 };
 
-// uniform inputs
-uniform PointLight	lights[1];								// All lights in the scene
-uniform vec3 		meshColor;								// Color or the mesh
+// Uniform inputs
+uniform UBO
+{
+    // uniform inputs
+    uniform PointLight  lights[1];                          // All ubo.lights in the scene
+    uniform vec3        meshColor;                          // Color or the mesh
+
+} ubo;
+
 
 // Light constants
 const float			ambientIntensity = 0.5;					// Ambient light intensity
@@ -36,7 +42,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lights[lightIndex].mPosition - frag_position);
+	vec3 surfaceToLight = normalize(ubo.lights[lightIndex].mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 cameraPosition = cameraLocation;
@@ -44,7 +50,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * lights[lightIndex].mIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.lights[lightIndex].mIntensity;
     
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
@@ -53,7 +59,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     {
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
     }
-    vec3 specular = specularCoefficient * specularColor * lights[lightIndex].mIntensity * specularIntensity;
+    vec3 specular = specularCoefficient * specularColor * ubo.lights[lightIndex].mIntensity * specularIntensity;
 
     // return combination
     return specular + diffuse;
@@ -64,13 +70,13 @@ void main()
 {        
 	//linear color (color before gamma correction)
     vec3 outColor = vec3(0,0,0);
-    for(int i=0; i<lights.length(); i++)
+    for(int i=0; i<ubo.lights.length(); i++)
     {
-    	outColor = outColor + computeLightContribution(i, meshColor);
+    	outColor = outColor + computeLightContribution(i, ubo.meshColor);
     }
 
     // Add ambient color
-	vec3 ambient = meshColor.rgb * ambientIntensity;
+	vec3 ambient = ubo.meshColor.rgb * ambientIntensity;
     outColor = outColor + ambient;
     out_Color = vec4(outColor, 1.0);
 }

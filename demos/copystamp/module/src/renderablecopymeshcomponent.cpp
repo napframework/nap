@@ -135,7 +135,7 @@ namespace nap
 
 	static void renderMesh(RenderService& renderService, RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkViewport& viewport, VkRect2D scissorRect, VkCommandBuffer commandBuffer)
 	{
-		// Get material to and descriptors for material
+		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
 

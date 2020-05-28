@@ -438,13 +438,21 @@
         {
             "Type": "nap::Material",
             "mID": "BlobMaterial",
-            "Uniforms": [
+            "Uniforms" : 
+            [
                 {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_121344fb",
-                    "Name": "lights",
-                    "Structs": [
-                        "LightOne"
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformStructArray",
+                            "mID": "UniformStructArray_121344fb",
+                            "Name": "lights",
+                            "Structs": [
+                                "LightOne"
+                            ]
+                        }
                     ]
                 }
             ],
@@ -456,21 +464,32 @@
         {
             "Type": "nap::Material",
             "mID": "CameraClassifyMaterial",
-            "Uniforms": [
+            "Samplers" :
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_76a0b43b",
                     "Name": "captureTexture",
                     "Texture": "CameraCaptureTexture"
-                },
+                }
+            ],
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec2",
-                    "mID": "UniformVec2_04168e08",
-                    "Name": "captureSize",
-                    "Value": {
-                        "x": 640.0,
-                        "y": 480.0
-                    }
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_04168e08",
+                            "Name": "captureSize",
+                            "Value": {
+                                "x": 640.0,
+                                "y": 480.0
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "ClassifyShader",
@@ -481,16 +500,24 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms": [
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "textColor",
-                    "Value": {
-                        "x": 0.8587999939918518,
-                        "y": 0.8587999939918518,
-                        "z": 0.8587999939918518
-                    }
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3",
+                            "Name": "textColor",
+                            "Value": {
+                                "x": 0.8587999939918518,
+                                "y": 0.8587999939918518,
+                                "z": 0.8587999939918518
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "FontShader",
@@ -501,19 +528,30 @@
         {
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
-            "Uniforms": [
+            "Samplers" : 
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_8ba3bc61",
                     "Name": "inTexture",
                     "Texture": "PlaneTexture"
-                },
+                }
+            ],
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_b2965733",
-                    "Name": "lights",
-                    "Structs": [
-                        "LightOne"
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformStructArray",
+                            "mID": "UniformStructArray_b2965733",
+                            "Name": "lights",
+                            "Structs": [
+                                "LightOne"
+                            ]
+                        }
                     ]
                 }
             ],
@@ -525,21 +563,33 @@
         {
             "Type": "nap::Material",
             "mID": "VideoClassifyMaterial",
-            "Uniforms": [
+            "Samplers":
+            [
                 {
-                    "Type": "nap::UniformVec2",
-                    "mID": "UniformVec2_a528c61c",
-                    "Name": "captureSize",
-                    "Value": {
-                        "x": 640.0,
-                        "y": 360.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_50b9fb1e",
                     "Name": "captureTexture",
                     "Texture": "VideoCaptureTexture"
+                }
+            ],
+            "Uniforms": 
+            [
+                {
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_a528c61c",
+                            "Name": "captureSize",
+                            "Value": 
+                            {
+                                "x": 640.0,
+                                "y": 360.0
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "ClassifyShader",

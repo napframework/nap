@@ -7,6 +7,7 @@
 #include <rendertexture2d.h>
 #include <rendertotexturecomponent.h>
 #include <cvclassifycomponent.h>
+#include <uniforminstances.h>
 
 namespace nap
 {
@@ -77,8 +78,9 @@ namespace nap
 		void onFrameCaptured(const CVFrameEvent& frameEvent);
 		
 		// The adapter we should receive a frame from
-		nap::CVAdapter* mAdapter = nullptr;				///< Pointer to the OpenCV capture device
-		int mMatrixIndex = 0;							///< OpenCV sample matrix, defaults to 0
-		UniformInt* mBlobCountUniform = nullptr;		///< OpenCV blob count uniform
+		nap::CVAdapter* mAdapter = nullptr;						///< Pointer to the OpenCV capture device
+		int mMatrixIndex = 0;									///< OpenCV sample matrix, defaults to 0
+		UniformIntInstance* mBlobCountUniform = nullptr;		///< OpenCV blob count uniform
+		UniformStructArrayInstance* mBlobsUniform = nullptr;	///< Blobs uniform struct array
 	};
 }

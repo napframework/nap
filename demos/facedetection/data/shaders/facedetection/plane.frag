@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;											//< frag Uv's
@@ -21,11 +21,15 @@ struct PointLight
 	vec3 		mIntensity;
 };
 
-// uniform inputs
-uniform sampler2D 	inTexture;
-uniform PointLight 	lights[1];								// All lights in the scene
-uniform Blob		blobs[20];								// All available blobs
-uniform int 		blobCount;								// Number of blobs
+// All uniform frag shader inputs
+uniform UBO
+{
+	uniform PointLight 	lights[1];							// All lights in the scene
+	uniform Blob		blobs[20];							// All available blobs
+	uniform int 		blobCount;							// Number of blobs
+} ubo;
+
+uniform sampler2D 	inTexture;								// Plane texture
 
 // Light constants
 const float			ambientIntensity = 0.1;					// Ambient light intensity
@@ -46,7 +50,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(lights[lightIndex].mPosition - frag_position);
+	vec3 surfaceToLight = normalize(ubo.lights[lightIndex].mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 cameraPosition = cameraLocation;
@@ -54,7 +58,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * lights[lightIndex].mIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.lights[lightIndex].mIntensity;
     
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
@@ -63,7 +67,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     {
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
     }
-    vec3 specular = specularCoefficient * specularColor * lights[lightIndex].mIntensity * specularIntensity;
+    vec3 specular = specularCoefficient * specularColor * ubo.lights[lightIndex].mIntensity * specularIntensity;
 
     // return combination
     return specular + diffuse;
@@ -75,7 +79,7 @@ float getDistance(int blobID)
 {
 	//calculate the location of this fragment (pixel) in world coordinates
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
-    vec3 blob_position = blobs[blobID].mCenter - vec3(0, blobs[blobID].mSize, 0.0);
+    vec3 blob_position = ubo.blobs[blobID].mCenter - vec3(0, ubo.blobs[blobID].mSize, 0.0);
     return length(blob_position - frag_position);
 }
 
@@ -96,7 +100,7 @@ void main()
 
 	//linear color (color before gamma correction)
     vec3 light_color = vec3(0,0,0);
-    for(int i=0; i < lights.length(); i++)
+    for(int i=0; i < ubo.lights.length(); i++)
     {
     	light_color = light_color + computeLightContribution(i, tex_color);
     };
@@ -107,10 +111,10 @@ void main()
 
 	// Compute occlusion value
 	float occ_value = 0.0;
-	for(int i=0; i < blobCount; i++)
+	for(int i=0; i < ubo.blobCount; i++)
 	{
 		float blob_dist = getDistance(i);
-		float lerp_v = fit(blob_dist, 0.0, blobs[i].mSize, 1.0, 0.0);
+		float lerp_v = fit(blob_dist, 0.0, ubo.blobs[i].mSize, 1.0, 0.0);
 		lerp_v = smoothstep(0.0,1.0,pow(lerp_v, 0.85));
 		occ_value = occ_value + lerp_v;
 	}

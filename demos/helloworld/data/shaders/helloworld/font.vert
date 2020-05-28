@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 // Input matrices
 uniform nap
