@@ -32,7 +32,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	glm::mat4 OrthoCameraComponentInstance::createProjectionMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
+	glm::mat4 OrthoCameraComponentInstance::createRenderProjectionMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
 	{
 		glm::mat4x4 o_matrix(1);
 		o_matrix[0][0] = static_cast<float>(2) / (right - left);
@@ -45,7 +45,7 @@ namespace nap
 	}
 
 
-	glm::mat4 OrthoCameraComponentInstance::createProjectionMatrix(float left, float right, float bottom, float top)
+	glm::mat4 OrthoCameraComponentInstance::createRenderProjectionMatrix(float left, float right, float bottom, float top)
 	{
 		glm::mat4x4 o_matrix(1);
 		o_matrix[0][0] = static_cast<float>(2) / (right - left);
@@ -102,9 +102,7 @@ namespace nap
 	}
 
 
-	// Computes projection matrix if dirty, otherwise returns the
-	// cached version
-	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
+	void OrthoCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
 		{
@@ -112,9 +110,10 @@ namespace nap
 			{
 				case EOrthoCameraMode::PixelSpace:
 				{
-					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
+					// In this mode we use the render target size to set the planes.
 					glm::ivec2 render_target_size = getRenderTargetSize();
-					mProjectionMatrix = createProjectionMatrix(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mRenderProjectionMatrix = createRenderProjectionMatrix(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 				case EOrthoCameraMode::CorrectAspectRatio:
@@ -124,20 +123,33 @@ namespace nap
 					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
 					float top_plane = mProperties.mTopPlane * aspect_ratio;
 					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
-					mProjectionMatrix = createProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 				case EOrthoCameraMode::Custom:
 				{
-					mProjectionMatrix = createProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 			}
-
 			mDirty = false;
 		}
+	}
 
+
+	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
+	{
+		updateProjectionMatrices();
 		return mProjectionMatrix;
+	}
+
+
+	const glm::mat4& OrthoCameraComponentInstance::getRenderProjectionMatrix() const
+	{
+		updateProjectionMatrices();
+		return mRenderProjectionMatrix;
 	}
 
 
@@ -149,7 +161,7 @@ namespace nap
 
 	void OrthoCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.push_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(TransformComponent));
 	}
 
 }

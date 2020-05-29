@@ -446,11 +446,30 @@
                     "Uniforms" :
                     [
                         {
-                            "Type": "nap::UniformStructArray",
-                            "mID": "UniformStructArray_121344fb",
-                            "Name": "lights",
-                            "Structs": [
-                                "LightOne"
+                            "Type": "nap::UniformStruct",
+                            "mID": "LightTwo",
+                            "Name": "light",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "902390",
+                                    "Name": "mPosition",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 333.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "985784",
+                                    "Name": "mIntensity",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                }
                             ]
                         }
                     ]
@@ -545,11 +564,30 @@
                     "Uniforms" :
                     [
                         {
-                            "Type": "nap::UniformStructArray",
-                            "mID": "UniformStructArray_b2965733",
-                            "Name": "lights",
-                            "Structs": [
-                                "LightOne"
+                            "Type": "nap::UniformStruct",
+                            "mID": "LightOne",
+                            "Name": "light",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_c1202ff0",
+                                    "Name": "mPosition",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 333.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_2c4cde79",
+                                    "Name": "mIntensity",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                }
                             ]
                         }
                     ]
@@ -621,10 +659,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 1
             },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 480,
-            "Format": "RGB8"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -636,10 +674,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 10
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 480,
-            "Format": "RGBA8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -651,7 +689,7 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 1
             },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8"
@@ -666,10 +704,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 10
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 360,
-            "Format": "RGBA8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderWindow",
@@ -910,33 +948,6 @@
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
-        },
-        {
-            "Type": "nap::UniformStruct",
-            "mID": "LightOne",
-            "Name": "PointLight",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_c1202ff0",
-                    "Name": "mPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 333.0,
-                        "z": 0.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_2c4cde79",
-                    "Name": "mIntensity",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    }
-                }
-            ]
         }
     ]
 }

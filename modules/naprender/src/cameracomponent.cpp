@@ -41,12 +41,9 @@ namespace nap
 	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const math::Rect& viewport)
 	{
 		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
-		
-		// TODO: The y clip coordinate needs to be flipped because the projection matrix is adjusted for vulkan
-		// TODO: Introduce renderer specific matrix, not used by clients.
 		glm::vec4 ray_clip = glm::vec4(
 			(2.0f * screenPos.x) / viewport.getWidth()  - 1.0f,
-			((2.0f * screenPos.y) / viewport.getHeight() - 1.0f) * -1.0f, 
+			(2.0f * screenPos.y) / viewport.getHeight() - 1.0f, 
 			-1.0, 1.0);
 
 		glm::vec4 ray_eye = glm::inverse(getProjectionMatrix()) * ray_clip;

@@ -20,16 +20,14 @@ namespace nap
 		CameraComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		* @return camera projection matrix
-		* Use this matrix to transform a 3d scene in to a 2d projection
-		*/
+		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection.
+		 * @return default camera projection matrix
+		 */
 		virtual const glm::mat4& getProjectionMatrix() const = 0;
 
 		/**
-		 * Returns the view matrix of the camera
-		 * The view is determined by a number of factors including the camera's position
-		 * and possible look at objects
-		 * @return The populated view matrix
+		 * Returns the world space position and rotation of the camera in 3D space.
+		 * @return camera view matrix
 		 */
 		virtual const glm::mat4 getViewMatrix() const = 0;
 
@@ -73,6 +71,14 @@ namespace nap
 		 * @return RenderTarget size
 		 */
 		const glm::ivec2& getRenderTargetSize() const					{ return mRenderTargetSize; }
+
+		/**
+		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
+		 * This can be different from the default if the renderer uses a different coordinate system.
+		 * Use this matrix to transform a 3d scene in to a 2d projection.
+		 * @return the projection matrix used by the renderer
+		 */
+		virtual const glm::mat4& getRenderProjectionMatrix() const = 0;
 
 	private:
 		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to

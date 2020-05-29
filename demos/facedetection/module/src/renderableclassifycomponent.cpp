@@ -67,24 +67,19 @@ namespace nap
 
 		// Get the general uniform buffer object, has handles to all other uniforms
 		UniformStructInstance* gen_ubo = mMaterialInstance.getOrCreateUniform("UBO");
-		if (errorState.check(gen_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", resource->mID.c_str()))
+		if (!errorState.check(gen_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", resource->mID.c_str()))
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
 		mColorUniform = extractUniform<UniformVec3Instance>(resource->mColorUniform, *gen_ubo, errorState);
 		if (mColorUniform == nullptr)
 			return false;
-
-		// Get handle to blob count uniform
-		mBlobCountUniform = extractUniform<UniformIntInstance>("blobCount", *gen_ubo, errorState);
-		if (mBlobCountUniform == nullptr)
-			return false;
 		
 		//////////////////////////////////////////////////////////////////////////
 
 		// Get the mvp uniform buffer object
 		UniformStructInstance* mvp_ubo = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
-		if (errorState.check(mvp_ubo != nullptr, "%s: missing model view projection 'ubo' with name: %s", resource->mID.c_str(), mvpStructUniform))
+		if (!errorState.check(mvp_ubo != nullptr, "%s: missing model view projection 'ubo' with name: %s", resource->mID.c_str(), mvpStructUniform))
 			return false;
 
 		// Get handle to matrices, which we set in the draw call
@@ -104,12 +99,17 @@ namespace nap
 
 		// Get handle to general uniform buffer object of plane
 		UniformStructInstance* plane_ubo = mPlaneComponent->getMaterialInstance().getOrCreateUniform("UBO");
-		if (errorState.check(mvp_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", mPlaneComponent->mID.c_str()))
+		if (!errorState.check(mvp_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", mPlaneComponent->mID.c_str()))
 			return false;
 
 		// Get handle to the blobs uniform array input of the plane material, we update the position of the blobs on update.
 		mBlobsUniform = extractUniform<UniformStructArrayInstance>("blobs", *plane_ubo, errorState);
 		if (mBlobsUniform == nullptr)
+			return false;
+
+		// Get handle to blob count uniform
+		mBlobCountUniform = extractUniform<UniformIntInstance>("blobCount", *plane_ubo, errorState);
+		if (mBlobCountUniform == nullptr)
 			return false;
 
 		//////////////////////////////////////////////////////////////////////////
