@@ -24,7 +24,7 @@ struct PointLight
 // All uniform frag shader inputs
 uniform UBO
 {
-	uniform PointLight 	lights[1];							// All lights in the scene
+	uniform PointLight 	light;								// All lights in the scene
 	uniform Blob		blobs[20];							// All available blobs
 	uniform int 		blobCount;							// Number of blobs
 } ubo;
@@ -40,7 +40,7 @@ const float			specularIntensity = 0.25;				// Amount of added specular
 out vec4 out_Color;
 
 
-vec3 computeLightContribution(int lightIndex, vec3 color)
+vec3 computeLightContribution(vec3 color)
 {
 		//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
@@ -50,7 +50,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(ubo.lights[lightIndex].mPosition - frag_position);
+	vec3 surfaceToLight = normalize(ubo.light.mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
 	vec3 cameraPosition = cameraLocation;
@@ -58,7 +58,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.lights[lightIndex].mIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.light.mIntensity;
     
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
@@ -67,7 +67,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
     {
         specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
     }
-    vec3 specular = specularCoefficient * specularColor * ubo.lights[lightIndex].mIntensity * specularIntensity;
+    vec3 specular = specularCoefficient * specularColor * ubo.light.mIntensity * specularIntensity;
 
     // return combination
     return specular + diffuse;
@@ -99,11 +99,7 @@ void main()
 	vec3 tex_color = texture(inTexture, passUVs.xy).rgb;
 
 	//linear color (color before gamma correction)
-    vec3 light_color = vec3(0,0,0);
-    for(int i=0; i < ubo.lights.length(); i++)
-    {
-    	light_color = light_color + computeLightContribution(i, tex_color);
-    };
+    vec3 light_color = computeLightContribution(tex_color);
 
     // Add ambient color
 	vec3 ambient = tex_color * ambientIntensity;
