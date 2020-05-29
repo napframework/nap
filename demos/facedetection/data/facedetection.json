@@ -639,7 +639,7 @@
             "Usage": "Static",
             "Width": 640,
             "Height": 480,
-            "Format": "RGB8"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -654,7 +654,7 @@
             "Usage": "Static",
             "Width": 640,
             "Height": 360,
-            "Format": "RGB8"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -669,7 +669,7 @@
             "Usage": "Static",
             "Width": 640,
             "Height": 360,
-            "Format": "RGB8"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderWindow",
