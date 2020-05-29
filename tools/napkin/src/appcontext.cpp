@@ -1,12 +1,10 @@
 #include "appcontext.h"
-#include "napkinglobals.h"
-#include "napkinlinkresolver.h"
+
 // std
 #include <fstream>
 
 // qt
 #include <QSettings>
-#include <QDir>
 #include <QTimer>
 
 // nap
@@ -17,6 +15,9 @@
 // local
 #include <naputils.h>
 #include <utility/fileutils.h>
+#include <nap/simpleserializer.h>
+#include "napkinglobals.h"
+#include "napkinlinkresolver.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -63,8 +64,6 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
-	addRecentlyOpenedFile(filename);
-
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
 	std::string buffer;
@@ -77,6 +76,45 @@ Document* AppContext::loadDocument(const QString& filename)
 	return loadDocumentFromString(buffer, filename);
 }
 
+nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
+{
+	ErrorState err;
+	mProjectInfo = std::make_unique<nap::ProjectInfo>();
+	if (!mProjectInfo->load(projectFilename.toStdString(), err))
+	{
+		nap::Logger::error(err.toString());
+		mProjectInfo = nullptr;
+		return nullptr;
+	}
+
+	nap::Logger::info("Loading project '%s' ver. %s (%s)",
+					  mProjectInfo->mTitle.c_str(),
+					  mProjectInfo->mVersion.c_str(),
+					  mProjectInfo->getDirectory().c_str());
+
+	mCore = std::make_unique<nap::Core>();
+	if (!mCore->initializeEngine(err, *mProjectInfo))
+	{
+		nap::Logger::error(err.toString());
+		return nullptr;
+	}
+
+	addRecentlyOpenedProject(projectFilename);
+
+	auto dataFilename = QString::fromStdString(mProjectInfo->getDefaultDataFile());
+	if (!dataFilename.isEmpty())
+		loadDocument(dataFilename);
+
+	return mProjectInfo.get();
+}
+
+nap::ProjectInfo* AppContext::getProject() const
+{
+	if (!mProjectInfo)
+		return nullptr;
+	return mProjectInfo.get();
+}
+
 void AppContext::reloadDocument()
 {
 	loadDocument(mCurrentFilename);
@@ -86,7 +124,13 @@ Document* AppContext::newDocument()
 {
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(getCore());
+	auto core = getCore();
+	if (!core)
+	{
+		nap::Logger::warn("Core not loaded, cannot create document");
+		return nullptr;
+	}
+	mDocument = std::make_unique<Document>(*core);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -99,7 +143,14 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	auto& factory = getCore().getResourceManager()->getFactory();
+	auto core = getCore();
+	if (!core)
+	{
+		nap::Logger::warn("Core not loaded, cannot load document");
+		return nullptr;
+	}
+
+	auto& factory = core->getResourceManager()->getFactory();
 
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
@@ -115,7 +166,8 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
+
+	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -151,8 +203,6 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 	nap::Logger::info("Written file: " + filename.toStdString());
 
-	addRecentlyOpenedFile(filename);
-
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
@@ -181,35 +231,35 @@ std::string AppContext::documentToString() const
 }
 
 
-void AppContext::openRecentDocument()
+void AppContext::openRecentProject()
 {
-	auto lastFilename = AppContext::get().getLastOpenedFilename();
+	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
 	if (lastFilename.isNull())
 		return;
-	AppContext::get().loadDocument(lastFilename);
+	AppContext::get().loadProject(lastFilename);
 }
 
-const QString AppContext::getLastOpenedFilename()
+const QString AppContext::getLastOpenedProjectFilename()
 {
-	auto recent = getRecentlyOpenedFiles();
+	auto recent = getRecentlyOpenedProjects();
 	if (recent.isEmpty())
 		return {};
 
 	return recent.last();
 }
 
-void AppContext::addRecentlyOpenedFile(const QString& filename)
+void AppContext::addRecentlyOpenedProject(const QString& filename)
 {
-	auto recentFiles = getRecentlyOpenedFiles();
-	recentFiles.removeAll(filename);
-	recentFiles << filename;
-	while (recentFiles.size() > MAX_RECENT_FILES)
-		recentFiles.removeFirst();
-	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentFiles);
+	auto recentProjects = getRecentlyOpenedProjects();
+	recentProjects.removeAll(filename);
+	recentProjects << filename;
+	while (recentProjects.size() > MAX_RECENT_FILES)
+		recentProjects.removeFirst();
+	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentProjects);
 
 }
 
-QStringList AppContext::getRecentlyOpenedFiles() const
+QStringList AppContext::getRecentlyOpenedProjects() const
 {
 	return QSettings().value(settingsKey::RECENTLY_OPENED, QStringList()).value<QStringList>();
 }
@@ -223,9 +273,13 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	QTimer::singleShot(100, [this]() {
-		openRecentDocument();
-	});
+	if (!getProject())
+	{
+		QTimer::singleShot(100, [this]()
+		{
+			openRecentProject();
+		});
+	}
 }
 
 void AppContext::connectDocumentSignals(bool enable)
@@ -306,19 +360,19 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
-nap::Core& AppContext::getCore()
+nap::Core* AppContext::getCore()
 {
-	if (!mCoreInitialized)
-	{
-		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir(), true))
-		{
-			nap::Logger::fatal("Failed to initialize engine");
-		}
-		mCoreInitialized = true;
-		coreInitialized();
-	}
-	return mCore;
+//	if (!mCore)
+//	{
+//		ErrorState err;
+//		if (!mCore->initializeEngine(err, getExecutableDir(), true))
+//		{
+//			nap::Logger::fatal("Failed to initialize engine");
+//			return nullptr;
+//		}
+//		coreInitialized();
+//	}
+	return mCore.get();
 }
 
 Document* AppContext::getDocument()

@@ -184,7 +184,7 @@ TEST_CASE("Core", "[core]")
 	dataFile = nap::utility::getAbsolutePath(dataFile);
 
 	nap::utility::ErrorState err;
-	if (!core.initializeEngine(err, "resources", true))
+	if (!core.initializeEngine(err))
 		FAIL(err.toString());
 
 	if (!core.getResourceManager()->loadFile(dataFile, err))

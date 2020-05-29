@@ -8,6 +8,7 @@
 
 // External Includes
 #include "utility/dllexport.h"
+#include <rapidjson/pointer.h>
 
 // STL includes
 #include <string>
@@ -26,7 +27,7 @@ namespace nap
 		/**
 		 * Deserialize a set of objects and their data from the specified JSON string
 		 *
-		 * @param json The JSON to deserialize
+		 * @param json The JSON string to deserialize
 		 * @param propertyValidationMode whether missing required properties should be treated as errors
 		 * @param pointerPropertyMode controls ownership of the created objects. Use 'NoRawPointers' in process and 'OnlyRawPointers' out of process.
 		 * @param factory RTTI object factory. 
@@ -36,6 +37,20 @@ namespace nap
 		 * @return true if deserialization succeeded, false if not. In case of failure the errorState contains detailed error info.
 		 */
 		bool NAPAPI deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
+
+		/**
+		 * Deserialize a set of objects and their data from the specified JSON string
+		 *
+		 * @param jsonArray The JSON value to deserialize
+		 * @param propertyValidationMode whether missing required properties should be treated as errors
+		 * @param pointerPropertyMode controls ownership of the created objects. Use 'NoRawPointers' in process and 'OnlyRawPointers' out of process.
+		 * @param factory RTTI object factory.
+		 * @param result the result of the deserialization operation
+		 * @param errorState contains the error when de-serialization fails.
+		 *
+		 * @return true if deserialization succeeded, false if not. In case of failure the errorState contains detailed error info.
+		 */
+		bool NAPAPI deserializeObjects(const rapidjson::Value& jsonArray, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Read and deserialize a set of objects and their data from the specified JSON file

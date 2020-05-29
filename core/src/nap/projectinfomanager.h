@@ -7,20 +7,13 @@
 // Local includes
 #include "utility/dllexport.h"
 #include "utility/errorstate.h"
+#include "projectinfo.h"
 
 #define PROJECT_INFO_FILENAME "project.json"
 
 namespace nap
 {
 	class Core;
-
-	struct ProjectInfo
-	{
-		std::string					mTitle;					// Project title
-		std::string					mVersion;				// Project version
-		std::vector<std::string>	mModules;				// Project modules
-		std::string					mAlternativeDataPath;	// Path for data directory if other than 'data' next to binary
-	};
 
 	/**
 	 * Deserialize project information from the specified JSON string

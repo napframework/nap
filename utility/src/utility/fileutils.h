@@ -22,6 +22,8 @@ namespace nap
 		*/
 		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute=true);
 
+		bool isAbsolutePath(const std::string& path);
+
 		/**
 		 * Given a relative path, return an absolute path
 		 * @param relPath The path to convert

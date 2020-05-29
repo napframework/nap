@@ -7,6 +7,7 @@
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
 #include "python.h"
+#include "simpleserializer.h"
 
 // External Includes
 #include <iostream>
@@ -59,47 +60,55 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
+	bool Core::initializeEngine(utility::ErrorState& error)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 
-		// Setup our Python environment
+		// Load project info descriptor file
+		std::string projectFile;
+		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFile),
+							  "Failed to find %s", PROJECT_INFO_FILENAME))
+			return false;
+		ProjectInfo projectInfo;
+		if (!projectInfo.load(projectFile, error))
+			return false;
+
+		return initializeEngine(error, projectInfo);
+	}
+
+	bool nap::Core::initializeEngine(nap::utility::ErrorState& error, const ProjectInfo& projectInfo)
+	{
+		// Ensure our current working directory is where the executable is.
+		// Works around issues with the current working directory not being set as
+		// expected when apps are launched directly from macOS Finder and probably other things too.
+		nap::utility::changeDir(nap::utility::getExecutableDir());
+
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif
 
-		// Load our module names from the project info
-		ProjectInfo projectInfo;
-		if (!runningInNonProjectContext)
-		{
-			if (!loadProjectInfoFromFile(*this, projectInfo, error))
-				return false;
-		}
-
-		// Find our project data
-		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
-			return false;
-
-		// Create the resource manager
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-
-		// Create the module manager
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 
+		// Change directory to data folder
+		std::string dataDir = projectInfo.dataDirectory();
+		if (!error.check(utility::fileExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
+			return false;
+		utility::changeDir(dataDir);
+
 		// Load modules
-		if (!mModuleManager->loadModules(projectInfo.mModules, error))
+		if (!mModuleManager->loadModules(projectInfo, error))
 			return false;
 
 		// Create the various services based on their dependencies
-		if (!createServices(error))
+		if (!initializeServices(projectInfo, error))
 			return false;
 
 		return true;
 	}
-
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{
@@ -317,6 +326,85 @@ namespace nap
 		return true;
 	}
 
+	bool nap::Core::initializeServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
+	{
+		ServiceConfigMap configuration_by_type;
+		if (!loadServiceConfiguration(projectInfo, configuration_by_type, errorState))
+			return false;
+
+
+		// Gather all service configuration types
+		std::vector<rtti::TypeInfo> service_configuration_types;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
+
+		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
+		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
+		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
+		{
+			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
+				continue;
+
+			assert(service_configuration_type.is_valid());
+			assert(service_configuration_type.can_create_instance());
+
+			// Construct the service configuration
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+
+			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
+			// object will be destroyed
+			auto pos = configuration_by_type.find(serviceType);
+			if (pos == configuration_by_type.end())
+				configuration_by_type.insert(std::make_pair(serviceType, std::move(service_configuration)));
+		}
+
+		// First create and add all the services (unsorted)
+		std::vector<Service*> services;
+		for (auto& module : mModuleManager->mModules)
+		{
+			if (module.mService == rtti::TypeInfo::empty())
+				continue;
+
+			// Find the ServiceConfiguration that should be used to construct this service (if any)
+			ServiceConfiguration* configuration = nullptr;
+			auto pos = configuration_by_type.find(module.mService);
+			if (pos != configuration_by_type.end())
+				configuration = pos->second.release();
+
+			// Create the service
+			if (!addService(module.mService, configuration, services, errorState))
+				return false;
+		}
+
+		// Create dependency graph
+		ObjectGraph<ServiceObjectGraphItem> graph;
+
+		// Build service dependency graph
+		bool success = graph.build(services, [&](Service* service)
+		{
+			return ServiceObjectGraphItem::create(service, &services);
+		}, errorState);
+
+		// Make sure the graph was successfully build
+		if (!errorState.check(success, "unable to build service dependency graph"))
+			return false;
+
+		// Add services in right order
+		for (auto& node : graph.getSortedNodes())
+		{
+			// Add the service to core
+			nap::Service* service = node->mItem.mObject;
+			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+
+			// This happens within this loop so services are able to query their dependencies while registering object creators
+			service->registerObjectCreators(mResourceManager->getFactory());
+
+			// Notify the service that is has been created and its core pointer is available
+			// We put this call here so the service's dependencies are present and can already be queried if necessary
+			service->created();
+		}
+		return true;
+	}
 
 	// Returns service that matches @type
 	Service* Core::getService(const rtti::TypeInfo& type)

@@ -68,11 +68,6 @@ namespace napkin
 		void onDocked(QDockWidget *dockWidget);
 
 		/**
-		 * Removes possible white line under docked widgets
-		 */
-		void fixTabs();
-
-		/**
 		 * Add the menu
 		 */
 		void addMenu();
@@ -135,6 +130,11 @@ namespace napkin
 		 */
 		void rebuildRecentMenu();
 
+		/**
+		 * @return The application context, providing access to the application's content state
+		 */
+		AppContext& getContext() const;
+
 	private:
 		bool mFirstShowEvent = true;
 
@@ -150,7 +150,7 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ThemeSelectionMenu mThemeMenu;
 		ScenePanel mScenePanel;
-		QMenu* mRecentFilesMenu = nullptr;
+		QMenu* mRecentProjectsMenu = nullptr;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;

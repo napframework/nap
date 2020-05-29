@@ -17,6 +17,7 @@
 #include "thememanager.h"
 #include "document.h"
 #include "resourcefactory.h"
+#include "nap/projectinfo.h"
 
 namespace napkin
 {
@@ -72,7 +73,7 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& getCore();
+		nap::Core* getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
@@ -91,6 +92,19 @@ namespace napkin
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
 		Document* loadDocument(const QString& filename);
+
+		/**
+		 * Load the specified project into the application context
+		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
+		 * @return A pointer to the loaded project info or nullptr when loading failed
+		 */
+		nap::ProjectInfo* loadProject(const QString& projectFilename);
+
+		/**
+		 * @return The currently loaded project or a nullptr when no project is loaded
+		 */
+		nap::ProjectInfo* getProject() const;
+
 
 		/**
 		 * Reload the current document from disk
@@ -128,18 +142,22 @@ namespace napkin
 		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
-		void openRecentDocument();
+		void openRecentProject();
 
 		/**
 		 * @return The path of the file that was opened last.
 		 */
-		const QString getLastOpenedFilename();
+		const QString getLastOpenedProjectFilename();
 
 		/**
 		 * Add a filename to the recently opened file list or bump an existing filename to the top
 		 */
-		void addRecentlyOpenedFile(const QString& filename);
-		QStringList getRecentlyOpenedFiles() const;
+		void addRecentlyOpenedProject(const QString& filename);
+
+		/**
+		 * @return The list of recently opened project files
+		 */
+		QStringList getRecentlyOpenedProjects() const;
 
 		/**
 		 * @return The current document
@@ -336,8 +354,8 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;										// The nap::Core
-		bool mCoreInitialized = false;							// Keep track of core initialization state
+		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here

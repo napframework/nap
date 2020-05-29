@@ -1,4 +1,5 @@
 #include <QFontDatabase>
+#include <QCommandLineParser>
 
 #include <utility/fileutils.h>
 
@@ -50,13 +51,33 @@ int main(int argc, char* argv[])
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("napframework");
 	QApplication::setApplicationName("Napkin");
+	QApplication::setApplicationVersion("0.1");
 
 	initializeSettings();
 
 	QApplication app(argc, argv);
-	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
+
+	// handle commandline
+	QCommandLineParser parser;
+	auto opHelp = parser.addHelpOption();
+	auto opVer = parser.addVersionOption();
+
+	QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
+	parser.addOption(opProject);
+
+	parser.process(app);
+
+	if (parser.isSet(opHelp))
+		return 0;
+
+	if (parser.isSet(opVer))
+		return 0;
+
+	if (parser.isSet(opProject))
+		AppContext::get().addRecentlyOpenedProject(parser.value(opProject));
 
 	// Create main window and run
+	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
 	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
 	w->show();
 	int re = app.exec();

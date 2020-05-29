@@ -13,6 +13,13 @@
 namespace napkin
 {
 
+	std::vector<rttr::type> getDerivedTypes(const rttr::type& type);
+
+	/**
+	 * Recurse all loaded subclasses of the specified type and write to stdout
+	 */
+	void dumpTypes(rttr::type type, const std::string& indent = "");
+
 	/**
 	 * An item displaying an RTTI Type
 	 */
@@ -26,7 +33,7 @@ namespace napkin
 		void refresh();
 
 	private:
-		const nap::rtti::TypeInfo& type;
+		const nap::rtti::TypeInfo& mType;
 	};
 
 	/**

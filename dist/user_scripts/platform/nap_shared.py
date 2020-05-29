@@ -5,6 +5,11 @@ from subprocess import Popen
 import sys
 
 PROJECT_INFO_FILENAME = 'project.json'
+MODULE_INFO_FILENAME = 'module.json'
+
+# Keys for entries in project.json and module.json
+CFG_KEY_DEPENDENCIES = 'Dependencies'
+CFG_KEY_MODULES = 'Modules'
 
 # Run command, raising exception on failure
 def call_except_on_failure(cwd, cmd):

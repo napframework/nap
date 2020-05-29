@@ -17,12 +17,15 @@
 #include "service.h"
 #include "timer.h"
 #include "coreextension.h"
+#include "projectinfo.h"
 
 // Name of the file that contains all the settings for the NAP services.
 constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
+	using ServiceConfigMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+
 	/**
 	 * Core manages the object graph, modules and services
 	 * Core is required in every NAP application and should be the first object that is created and
@@ -63,12 +66,18 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
-		
+		bool initializeEngine(utility::ErrorState& error);
+
+		/**
+		 * Loads all modules in to the core environment and creates all the associated services
+		 * @param error contains the error code when initialization fails
+		 * @param projectInfo indicates if the engine is being run for a non-project use, eg. running Napkin
+		 * @return if initialization succeeded
+		 */
+		bool initializeEngine(utility::ErrorState& error, const ProjectInfo& projectInfo);
+
 		/**
 		 * Initializes all registered services
 		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
@@ -192,6 +201,13 @@ namespace nap
 		bool createServices(utility::ErrorState& errorState);
 
 		/**
+		* Helper function that creates all the services that are found in the various modules
+		* Note that a module does not need to define a service, only if it has been defined
+		* this call will try to create it.
+		*/
+		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
+
+		/**
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
 		* @param configuration The ServiceConfiguration that should be used to construct the service
@@ -216,6 +232,19 @@ namespace nap
 		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
+		 * Load service configurations from the project file
+		 * @param projectInfo The current project
+		 * @param serviceConfigs Used to store the result
+		 * @param errorState Will contain any error messages when loading fails
+		 * @return True if loading succeeded, false otherwise
+		 */
+		bool loadServiceConfiguration(const nap::ProjectInfo& projectInfo,
+									  ServiceConfigMap& serviceConfigs,
+									  utility::ErrorState& errorState);
+
+
+
+		/**
 		* Occurs when a file has been successfully loaded by the resource manager
 		* Forwards the call to all interested services.
 		* This can only be called when the services have been initialized
@@ -227,15 +256,7 @@ namespace nap
 		 *	Calculates the framerate over time
 		 */
 		void calculateFramerate(double deltaTime);
-		
-		/**
-		 * Determine and set our working directory based on where our project data is
-		 * @param errorState if false is returned, contains error information
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @return if the project data was successfully found and working path set
-		 */
-		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
-		
+
 		/**
 		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
 		 * or alongside our binary for a packaged project
@@ -271,8 +292,7 @@ namespace nap
 		// Interface associated with this instance of core.
 		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = {
-			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};
 }
 

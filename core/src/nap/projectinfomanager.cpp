@@ -1,5 +1,4 @@
 #include "projectinfomanager.h"
-#include "logger.h"
 
 #include <utility/fileutils.h>
 
@@ -10,21 +9,6 @@
 
 namespace nap
 {	
-	int getLine(const std::string& json, size_t offset)
-	{
-		int line = 1;
-		int line_offset = 0;
-		while (true)
-		{
-			line_offset = json.find('\n', line_offset);
-			if (line_offset == std::string::npos || line_offset > offset)
-				break;
-			++line;
-			line_offset += 1;
-		}
-		return line;
-	}
-	
 	bool deserializeProjectInfoJSON(const std::string& json, ProjectInfo& result, utility::ErrorState& errorState)
 	{
 		// Try to parse the json file
@@ -32,7 +16,7 @@ namespace nap
 		rapidjson::ParseResult parse_result = document.Parse(json.c_str());
 		if (!parse_result)
 		{
-			errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), getLine(json, parse_result.Offset()));
+			errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), utility::getLine(json, parse_result.Offset()));
 			return false;
 		}
 		
@@ -57,8 +41,8 @@ namespace nap
 			return false;
 	
 		// Populate into info struct and return
-		if (!result.mModules.empty())
-			result.mModules.clear();
+		if (!result.mModuleNames.empty())
+			result.mModuleNames.clear();
 		
 		for (std::size_t index = 0; index < modules->value.Size(); ++index)
 		{
@@ -66,7 +50,7 @@ namespace nap
 			if (!errorState.check(json_element.IsString(), "Entries in 'RequiredModules' array in project info field must be a strings"))
 				return false;
 			
-			result.mModules.push_back(json_element.GetString());
+			result.mModuleNames.push_back(json_element.GetString());
 		}
 		
 		result.mTitle = document["Title"].GetString();

@@ -239,7 +239,7 @@ TEST_CASE("InstancePropertySerialization", "[napkinpropertypath]")
 	std::string dataFile = nap::utility::getAbsolutePath(tempFilename);
 
 	nap::utility::ErrorState err;
-	if (!core.initializeEngine(err, "resources", true))
+	if (!core.initializeEngine(err))
 		FAIL(err.toString());
 
 	if (!core.getResourceManager()->loadFile(dataFile, err))

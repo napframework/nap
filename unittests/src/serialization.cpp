@@ -61,7 +61,7 @@ void serializeDeserializeTest(const std::string& filename)
 	nap::Core core;
 	{
 		ErrorState err;
-		if (!core.initializeEngine(err, "unit_tests_data"))
+		if (!core.initializeEngine(err))
 			FAIL("Failed to initialize engine: " + err.toString());
 	}
 
