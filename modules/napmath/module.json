@@ -1,4 +1,5 @@
 {
-    "dependencies": [
-    ]
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": []
 }

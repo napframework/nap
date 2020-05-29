@@ -1,12 +1,12 @@
 {
-    "title": "Tommy",
-    "version": "0.1.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Tommy",
+    "Version": "0.1.0",
+    "Modules": [
         "mod_napapp",
         "mod_napsandbox",
         "mod_napimgui"
     ],
-    "modulepaths": [
-        "../../lib/Clang-Debug-x86_64"
-    ]
+    "ServiceConfigurations": []
 }

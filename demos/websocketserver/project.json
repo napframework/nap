@@ -1,10 +1,13 @@
 {
-    "title": "WebSocketServer",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "WebSocketServer",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_websocketserver",
         "mod_napapp",
         "mod_napimgui",
         "mod_napcameracontrol"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

@@ -1,8 +1,11 @@
 {
-    "title": "Vinyl",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Vinyl",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_napimgui"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

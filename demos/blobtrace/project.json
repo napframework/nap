@@ -1,14 +1,12 @@
 {
-    "title": "BlobTrace",
-    "version": "1.0.0",
-    "default_data": "data/blobtrace.json",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "BlobTrace",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_napcameracontrol",
         "mod_napimgui"
     ],
-    "modulepaths": [
-        "modules",
-        "/home/bmod/Documents/nap/lib/Clang-Debug-x86_64"
-    ]
+    "ServiceConfigurations": []
 }

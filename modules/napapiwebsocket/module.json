@@ -1,6 +1,8 @@
 {
-    "dependencies": [
-    	"mod_napwebsocket",
-    	"mod_napapi"
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
+        "mod_napwebsocket",
+        "mod_napapi"
     ]
 }

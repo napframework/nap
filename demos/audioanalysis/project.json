@@ -1,9 +1,21 @@
 {
-    "title": "AudioAnalysis",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "AudioAnalysis",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_napaudio",
         "mod_napimgui"
+    ],
+    "ServiceConfigurations": [
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "AudioServiceConfiguration",
+            "SampleRate": 44100,
+            "InputChannelCount": 1,
+            "OutputChannelCount": 2,
+            "AllowChannelCountFailure": "True"
+        }
     ]
 }

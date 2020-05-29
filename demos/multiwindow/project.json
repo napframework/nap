@@ -1,9 +1,12 @@
 {
-    "title": "MultiWindow",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "MultiWindow",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_napcameracontrol",
         "mod_napimgui"
-    ]        
+    ],
+    "ServiceConfigurations": []
 }

@@ -1,9 +1,12 @@
 {
-    "title": "OscMidi",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "OscMidi",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_oscmidi",
         "mod_napimgui"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

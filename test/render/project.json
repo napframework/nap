@@ -1,13 +1,13 @@
 {
-    "title": "RenderTest",
-    "version": "0.1.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "RenderTest",
+    "Version": "0.1.0",
+    "Modules": [
         "mod_napapp",
         "mod_nappython",
         "mod_napcameracontrol",
         "mod_napimgui"
     ],
-    "modulepaths": [
-        "../../lib/Clang-Debug-x86_64"
-    ]
+    "ServiceConfigurations": []
 }

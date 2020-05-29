@@ -1,5 +1,7 @@
 {
-    "dependencies": [
-    	"mod_napscene"
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
+        "mod_napscene"
     ]
 }

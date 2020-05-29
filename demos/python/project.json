@@ -1,9 +1,12 @@
 {
-    "title": "Python",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Python",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_nappython",
         "mod_napimgui"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

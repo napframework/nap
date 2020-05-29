@@ -1,8 +1,11 @@
 {
-    "title": "VideoPlayer",
-    "version": "0.1.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "VideoPlayer",
+    "Version": "0.1.0",
+    "Modules": [
         "mod_napapp",
         "mod_napvideo"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

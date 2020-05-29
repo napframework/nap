@@ -1,6 +1,7 @@
 {
-    "dependencies": 
-    [
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
         "mod_naprender",
         "mod_napopencv",
         "mod_napcameracontrol"

@@ -1,9 +1,12 @@
 {
-    "title": "AudioPlayback",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "AudioPlayback",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_napapp",
         "mod_napaudio",
         "mod_napimgui"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

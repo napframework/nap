@@ -1,10 +1,13 @@
 {
-    "title": "HeightMap",
-    "version": "1.0.0",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "HeightMap",
+    "Version": "1.0.0",
+    "Modules": [
         "mod_heightmap",
         "mod_napapp",
         "mod_napcameracontrol",
         "mod_napimgui"
-    ]
+    ],
+    "ServiceConfigurations": []
 }

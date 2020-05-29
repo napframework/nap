@@ -1,8 +1,10 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
         "mod_naprender",
         "mod_napinput",
         "mod_napscene",
         "mod_napmath"
     ]
-}    
+}

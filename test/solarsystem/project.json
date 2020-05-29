@@ -1,13 +1,13 @@
 {
-    "title": "solarsystem",
-    "version": "0.2.2",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "solarsystem",
+    "Version": "0.2.2",
+    "Modules": [
         "mod_napapp",
         "mod_napsvg",
         "mod_napvideo",
         "mod_napimgui"
     ],
-    "modulepaths": [
-        "../../lib/Clang-Debug-x86_64"
-    ]
+    "ServiceConfigurations": []
 }

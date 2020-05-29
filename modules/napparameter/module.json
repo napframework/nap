@@ -1,6 +1,8 @@
 {
-    "dependencies": [
-    	"mod_napscene",
-    	"mod_napcolor"
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
+        "mod_napscene",
+        "mod_napcolor"
     ]
 }

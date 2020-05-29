@@ -1,6 +1,8 @@
 {
-    "dependencies": [
-        "mod_naprender", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "Dependencies": [
+        "mod_naprender",
         "mod_napmath",
         "mod_napscene",
         "mod_napapiwebsocket",
