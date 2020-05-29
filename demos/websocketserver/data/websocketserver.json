@@ -70,19 +70,27 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms": [
+            "Uniforms" : 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "textColor",
-                    "Value": {
-                        "x": 0.8587999939918518,
-                        "y": 0.8587999939918518,
-                        "z": 0.8587999939918518
-                    }
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3",
+                            "Name": "textColor",
+                            "Value": {
+                                "x": 0.8587999939918518,
+                                "y": 0.8587999939918518,
+                                "z": 0.8587999939918518
+                            }
+                        }
+                    ]                              
                 }
             ],
-            "Shader": "Shader",
+            "Shader": "FontShader",
             "VertexAttributeBindings": [],
             "BlendMode": "AlphaBlend",
             "DepthMode": "InheritFromBlendMode"
@@ -115,7 +123,7 @@
         },
         {
             "Type": "nap::Shader",
-            "mID": "Shader",
+            "mID": "FontShader",
             "mVertShader": "shaders/font.vert",
             "mFragShader": "shaders/font.frag"
         },
