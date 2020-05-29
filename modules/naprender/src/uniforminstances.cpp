@@ -131,28 +131,36 @@ namespace nap
 
 			if (declaration_type == RTTI_OF(UniformStructArrayDeclaration))
 			{
-				const UniformStructArray* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
-
 				UniformStructArrayDeclaration* struct_array_declaration = rtti_cast<UniformStructArrayDeclaration>(uniform_declaration.get());
 				std::unique_ptr<UniformStructArrayInstance> struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
-
-				if (!errorState.check(struct_array_resource->mStructs.size() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
-					return false;
-
-				int resource_index = 0;
-				for (auto& declaration_element : struct_array_declaration->mElements)
+				if (resource == nullptr)
 				{
-					UniformStruct* struct_resource = nullptr;
-					if (struct_array_resource != nullptr && resource_index < struct_array_resource->mStructs.size())
-						struct_resource = struct_array_resource->mStructs[resource_index++].get();
-
-					std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
-					if (!instance_element->addUniformRecursive(*declaration_element, struct_resource, uniformCreatedCallback, createDefaults, errorState))
-						return false;
-
-					struct_array_instance->addElement(std::move(instance_element));
+					int resource_index = 0;
+					for (auto& declaration_element : struct_array_declaration->mElements)
+					{
+						std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
+						if (!instance_element->addUniformRecursive(*declaration_element, nullptr, uniformCreatedCallback, createDefaults, errorState))
+							return false;
+						struct_array_instance->addElement(std::move(instance_element));
+					}
 				}
-
+				else
+				{
+					const UniformStructArray* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
+					if (!errorState.check(struct_array_resource->mStructs.size() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
+						return false;
+					int resource_index = 0;
+					for (auto& declaration_element : struct_array_declaration->mElements)
+					{
+						UniformStruct* struct_resource = nullptr;
+						if (struct_array_resource != nullptr && resource_index < struct_array_resource->mStructs.size())
+							struct_resource = struct_array_resource->mStructs[resource_index++].get();
+						std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
+						if (!instance_element->addUniformRecursive(*declaration_element, struct_resource, uniformCreatedCallback, createDefaults, errorState))
+							return false;
+						struct_array_instance->addElement(std::move(instance_element));
+					}
+				}
 				mUniforms.emplace_back(std::move(struct_array_instance));
 			}
 			else if (declaration_type == RTTI_OF(UniformValueArrayDeclaration))

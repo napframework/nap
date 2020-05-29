@@ -659,7 +659,7 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 1
             },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 480,
             "Format": "RGBA8"
@@ -674,10 +674,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 10
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 480,
-            "Format": "RGBA8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -689,7 +689,7 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 1
             },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8"
@@ -704,10 +704,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 10
             },
-            "Usage": "Static",
+            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 360,
-            "Format": "RGBA8"
+            "Format": "Backbuffer"
         },
         {
             "Type": "nap::RenderWindow",
