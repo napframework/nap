@@ -38,6 +38,7 @@ namespace nap
 		PerpCameraProperties mProperties;	///< Property: 'Properties' the camera settings
 	};
 
+
 	/**
 	 * Implementation of the perspective camera. The view matrix is calculated using the transform attached to the entity. 
 	 */
@@ -61,8 +62,10 @@ namespace nap
 		virtual void setRenderTargetSize(const glm::ivec2& size) override;
 
 		/**
-	 	 * @return camera projection matrix
-		 * Use this matrix to transform a 3d scene in to a 2d projection
+		 * Returns the matrix that is used to transform a 3d scene into a 2d projection.
+		 * Use this matrix for all regular CPU side projection calculations.
+		 * Use the matrix returned by getRenderProjectionMatrix() as shader input only.
+		 * @return camera projection matrix
 		 */
 		virtual const glm::mat4& getProjectionMatrix() const override;
 
@@ -95,16 +98,32 @@ namespace nap
 		 */
 		float getFieldOfView() const;
 
-	private:
 		/**
-		* Recomputes the projection matrix when requested the next time
-		*/
+		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
+		 * Vulkan uses a coordinate system where (-1, -1) is in the top left quadrant, instead of the bottom left quadrant.
+		 * Use this matrix, instead of the one returned by getProjectionMatrix(), when an ortographic projection matrix is required as shader input.
+		*  For all regular (CPU) related orthographic calculations, use getProjectionMatrix().
+		 * @return the projection matrix used by the renderer
+		 */
+		virtual const glm::mat4& getRenderProjectionMatrix() const override;
+
+	private:
+
+		/**
+		 * Recomputes the projection matrix when requested the next time
+		 */
 		void setDirty() { mDirty = true; }
 
+		/**
+		 * Updates all projection matrices when dirty
+		 */
+		void updateProjectionMatrices() const;
+
 	protected:
-		mutable glm::mat4x4				mProjectionMatrix;		// The composed projection matrix
-		mutable bool					mDirty = true;			// If the projection matrix needs to be recalculated
-		PerpCameraProperties			mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponentInstance*		mTransformComponent;	// Cached transform component
+		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
+		mutable glm::mat4x4				mRenderProjectionMatrix;	// The composed projection matrix used by the renderer
+		mutable bool					mDirty = true;				// If the projection matrix needs to be recalculated
+		PerpCameraProperties			mProperties;				// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		TransformComponentInstance*		mTransformComponent;		// Cached transform component
 	};
 }

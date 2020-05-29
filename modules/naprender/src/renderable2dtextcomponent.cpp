@@ -133,7 +133,7 @@ namespace nap
 		glm::ivec2 size = target.getSize();
 
 		// Create projection matrix
-		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
+		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		// Compute model matrix
 		glm::mat4x4 model_matrix;

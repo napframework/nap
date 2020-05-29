@@ -991,7 +991,7 @@ namespace nap
 		//updateRenderState();
 
 		// Extract camera projection matrix
-		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
+		const glm::mat4x4 projection_matrix = camera.getRenderProjectionMatrix();
 
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
