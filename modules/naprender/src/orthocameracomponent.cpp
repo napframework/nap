@@ -134,7 +134,6 @@ namespace nap
 					break;
 				}
 			}
-
 			mDirty = false;
 		}
 	}
