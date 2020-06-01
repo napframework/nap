@@ -3,9 +3,9 @@
 #include "nap/core.h"
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
-	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Immediate"),
-	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "Mailbox"),
-	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate, "FIFO")
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Mailbox,		"Mailbox"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::FIFO,			"FIFO")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderWindow)

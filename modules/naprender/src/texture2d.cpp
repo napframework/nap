@@ -366,6 +366,13 @@ namespace nap
 		return mDescriptor.mHeight;
 	}
 
+
+	const nap::SurfaceDescriptor& Texture2D::getDescriptor() const
+	{
+		return mDescriptor;
+	}
+
+
 	void Texture2D::upload(VkCommandBuffer commandBuffer)
 	{
 		assert(mCurrentStagingBufferIndex != -1);

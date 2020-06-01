@@ -8,6 +8,7 @@
 namespace nap
 {
 	class FontInstance;
+	class Core;
 
 	/**
 	 * Represents a symbol (character) in a font.
@@ -102,7 +103,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		IGlyphRepresentation() = default;
+		IGlyphRepresentation(nap::Core& core);
 
 		// Copy is not allowed
 		IGlyphRepresentation(const IGlyphRepresentation& other) = delete;
@@ -130,6 +131,8 @@ namespace nap
 		 * @return if initialization succeeded or failed.
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& error) = 0;
+
+		nap::Core* mCore;	///< Handle to core instance
 	};
 }
 

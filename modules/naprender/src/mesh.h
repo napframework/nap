@@ -165,7 +165,7 @@ namespace nap
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
-		int						mNumVertices;						///< Property: 'NumVertices' number of mesh vertices
+		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes

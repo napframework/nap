@@ -7,6 +7,10 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * Properties commonly associated with a PolyLine
 	 */
@@ -25,6 +29,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		PolyLine(nap::Core& core);
+
 		/**
 		 * Create the mesh instance and the necessary vertex attributes (P, Cd, N, Uv)
 		 * When implementing a derived PolyLine, make sure to call the base init first
@@ -134,6 +140,7 @@ namespace nap
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
+		RenderService* mRenderService = nullptr;
 
 		// Creates the default vertex line attributes, useful for easy access
 		static void createVertexAttributes(MeshInstance& instance);
@@ -151,21 +158,20 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		// Properties
-		glm::vec3 mStart =	{ -0.5f, 0.0f, 0.0f };	///< Property: 'Start' location of the line
-		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	///< Property: 'End' location of the line
-		bool mClosed =		false;					///< Property: 'Closed' if the line is considered closed
-		int mVertexCount = 2;						///< Property: 'Vertices' number of line vertices, defaults to two
+		Line(nap::Core& core);
 
 		/**
 		 * Creates the line
 		 * @return if the line was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		glm::vec3 mStart	= { -0.5f, 0.0f, 0.0f };	///< Property: 'Start' location of the line
+		glm::vec3 mEnd		= { 0.5f, 0.0f, 0.0f };		///< Property: 'End' location of the line
+		bool mClosed		= false;					///< Property: 'Closed' if the line is considered closed
+		int mVertexCount	= 2;						///< Property: 'Vertices' number of line vertices, defaults to two
+
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 
 
 	/**
@@ -178,13 +184,15 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		glm::vec2 mDimensions;						///< Property: 'Dimensions' vec2 that describes the width and height of the rectangle 
+		Rectangle(nap::Core& core);
 
 		/**
-		* Creates the rectangle
-		* @return if the rectangle was successfully created
-		*/
+		 * Creates the rectangle
+		 * @return if the rectangle was successfully created
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		glm::vec2 mDimensions = { 1.0f, 1.0f };						///< Property: 'Dimensions' vec2 that describes the width and height of the rectangle 
 	};
 
 
@@ -196,14 +204,16 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;					///< Property: 'Radius' of the circle
-		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
+		Circle(nap::Core& core);
 
 		/**
-		* Creates the rectangle
-		* @return if the rectangle was successfully created
-		*/
+		 * Creates the rectangle
+		 * @return if the rectangle was successfully created
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		float mRadius = 1.0f;					///< Property: 'Radius' of the circle
+		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
 	};
 
 	
@@ -215,6 +225,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
+		Hexagon(nap::Core& core);
 		float mRadius = 1.0f;						///< Property: 'Radius' of the hexagon
 
 		/**
@@ -233,6 +244,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
+		TriangleLine(nap::Core& core);
 		float mRadius = 1.0f;							///< Property: 'Radius' of the triangle
 
 		/**
@@ -259,5 +271,4 @@ namespace nap
 	{
 		return math::getValueAlongLine(distanceMap, attr.getData(), location, outValue);
 	}
-
 }

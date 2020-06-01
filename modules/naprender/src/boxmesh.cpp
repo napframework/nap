@@ -46,6 +46,7 @@ namespace nap
 	void BoxMesh::setup()
 	{
 		// Create mesh instance
+		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		// Compute box and construct mesh

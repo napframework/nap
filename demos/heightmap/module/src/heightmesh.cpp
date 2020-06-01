@@ -3,9 +3,11 @@
 // External Includes
 #include <meshutils.h>
 #include <nap/logger.h>
+#include <nap/core.h>
 
 // nap::heightmesh run time class definition 
-RTTI_BEGIN_CLASS(nap::HeightMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Heightmap",	&nap::HeightMesh::mHeightmap,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height",		&nap::HeightMesh::mHeight,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -15,7 +17,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	HeightMesh::~HeightMesh()			{ }
+
+	HeightMesh::HeightMesh(Core& core) : PlaneMesh(core)
+	{
+	}
+
 
 	/**
 	 * Initialize this height map, the end result is a plane where every vertex is displaced along it's normal

@@ -1,8 +1,12 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+// NAP specific matrices
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -17,7 +21,7 @@ out vec3 cameraLocation;			//< camera location
 void main(void)
 {
 	// Pass along model matrix for light calculations
-	passModelMatrix = modelMatrix;
+	passModelMatrix = mvp.modelMatrix;
 
 	// Pass along normals for light calculations
 	passNormals = in_Normals;
@@ -26,8 +30,8 @@ void main(void)
 	passVert = in_Position;
 
 	// Extract camera location
-	cameraLocation = vec3(inverse(viewMatrix)[3]);
+	cameraLocation = vec3(inverse(mvp.viewMatrix)[3]);
 
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 }

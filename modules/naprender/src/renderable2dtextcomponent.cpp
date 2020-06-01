@@ -53,10 +53,10 @@ namespace nap
 
 		// Compute new view matrix, don't scale or rotate!
 		glm::vec3 cam_pos = math::extractPosition(viewMatrix);
-		glm::mat4x4 view_matrix = glm::translate(identityMatrix, cam_pos);
+		glm::mat4x4 view_matrix = glm::translate(glm::mat4(), cam_pos);
 
 		// Call base class implementation based on given parameters
-		RenderableTextComponentInstance::draw(view_matrix, projectionMatrix, model_matrix);
+		RenderableTextComponentInstance::draw(renderTarget, commandBuffer, view_matrix, projectionMatrix, model_matrix);
 	}
 
 
@@ -118,7 +118,7 @@ namespace nap
 		glm::ivec2 pos = getTextPosition();
 
 		// Compose model matrix
-		outMatrix = glm::translate(identityMatrix,
+		outMatrix = glm::translate(glm::mat4(),
 		{
 			(float)pos.x,
 			(float)pos.y,
@@ -131,16 +131,15 @@ namespace nap
 	{
 		// Create projection matrix
 		glm::ivec2 size = target.getSize();
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
-		
+
+		// Create projection matrix
+		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
+
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		//target.bind();
-		//mService->pushRenderState();
-		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);
-		//target.unbind();
+		RenderableTextComponentInstance::draw(target, mRenderService->getCurrentCommandBuffer(), glm::mat4(), proj_matrix, model_matrix);
 	}
 }

@@ -31,6 +31,7 @@ namespace nap
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
+		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		std::vector<glm::vec3> vertices;

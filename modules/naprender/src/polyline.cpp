@@ -1,38 +1,48 @@
+// Local Includes
+#include "renderservice.h"
 #include "polyline.h"
+
+// External Includes
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
 #include <meshutils.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
-	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PolyLine)
-	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Line)
-	RTTI_PROPERTY("Start",		&nap::Line::mStart,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("End",		&nap::Line::mEnd,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Line)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Start",		&nap::Line::mStart,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("End",		&nap::Line::mEnd,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Rectangle)
-	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Rectangle)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Circle)
-	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Circle)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Hexagon)
-	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Hexagon)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::TriangleLine)
-	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleLine)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +138,8 @@ namespace nap
 	bool nap::PolyLine::init(utility::ErrorState& errorState)
 	{
 		// Create the mesh	
-		mMeshInstance = std::make_unique<nap::MeshInstance>(nullptr);	// TODO: proper init
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(mRenderService);
 
 		// Create attributes
 		createVertexAttributes(*mMeshInstance);
@@ -177,6 +188,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -270,6 +282,10 @@ namespace nap
 	}
 
 
+	Hexagon::Hexagon(nap::Core& core) : PolyLine(core)
+	{ }
+
+
 	bool Hexagon::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
@@ -340,6 +356,26 @@ namespace nap
 
 		return mMeshInstance->init(errorState);
 	}
+
+
+	PolyLine::PolyLine(nap::Core& core) : mRenderService(core.getService<nap::RenderService>())
+	{ }
+
+
+	Line::Line(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	Rectangle::Rectangle(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	Circle::Circle(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	TriangleLine::TriangleLine(nap::Core& core) : PolyLine(core)
+	{ }
 
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()

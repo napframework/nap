@@ -142,74 +142,80 @@
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightPosition",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 2.5,
-						"z" : 10.0
-					}
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightIntensity",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0
-					}
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "ambientIntensity",
-					"Value" : 0.1
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "shininess",
-					"Value" : 20
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "specularIntensity",
-					"Value" : 0.225
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "attenuationScale",
-					"Value" : 0.0001
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "grooveScale",
-					"Value" : 0.75
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "cameraLocation",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 5.0
-					}
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "recordColor",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 0.0
-					}
-				}
+                {
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                    	{
+							"Type" : "nap::UniformVec3",
+							"Name" : "lightPosition",
+							"Value" : 
+							{
+								"x" : 1.0,
+								"y" : 2.5,
+								"z" : 10.0
+							}
+						},
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "lightIntensity",
+							"Value" : 
+							{
+								"x" : 1.0,
+								"y" : 1.0,
+								"z" : 1.0
+							}
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "ambientIntensity",
+							"Value" : 0.1
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "shininess",
+							"Value" : 20
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "specularIntensity",
+							"Value" : 0.225
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "attenuationScale",
+							"Value" : 0.0001
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "grooveScale",
+							"Value" : 0.75
+						},
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "cameraLocation",
+							"Value" : 
+							{
+								"x" : 0.0,
+								"y" : 0.0,
+								"z" : 5.0
+							}
+						},
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "recordColor",
+							"Value" : 
+							{
+								"x" : 0.0,
+								"y" : 0.0,
+								"z" : 0.0
+							}
+						}
+                    ]
+                }
 			]			
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "CoverMaterial",
@@ -231,59 +237,65 @@
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightPosition",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 2.5,
-						"z" : 10.0
-					}
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightIntensity",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0
-					}
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "ambientIntensity",
-					"Value" : 0.1
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "shininess",
-					"Value" : 15
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "specularIntensity",
-					"Value" : 0.25
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "attenuationScale",
-					"Value" : 0.00001
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "cameraLocation",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 5.0
-					}
-				}
+               {
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "lightPosition",
+							"Value" : 
+							{
+								"x" : 1.0,
+								"y" : 2.5,
+								"z" : 10.0
+							}
+						},
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "lightIntensity",
+							"Value" : 
+							{
+								"x" : 1.0,
+								"y" : 1.0,
+								"z" : 1.0
+							}
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "ambientIntensity",
+							"Value" : 0.1
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "shininess",
+							"Value" : 15
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "specularIntensity",
+							"Value" : 0.25
+						},
+						{
+							"Type" : "nap::UniformFloat",
+							"Name" : "attenuationScale",
+							"Value" : 0.00001
+						},
+						{
+							"Type" : "nap::UniformVec3",
+							"Name" : "cameraLocation",
+							"Value" : 
+							{
+								"x" : 0.0,
+								"y" : 0.0,
+								"z" : 5.0
+							}
+						}
+                    ]
+                }
 			]	
 		},
-
 		{
 			"Type" : "nap::Material",
 			"mID": "BackgroundMaterial",
@@ -320,7 +332,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "ModelEntity",
@@ -378,21 +389,24 @@
 					"MaterialInstance" : {
 						"Material": "VinylMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" : 
+						"Samplers" : 
 						[
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "vinylLabel",
+								"mID" : "sampler_label_image",
 								"Texture" : "LabelImage"
 							},
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "vinylMask",
+								"mID" : "sampler_mask_image",
 								"Texture" : "MaskImage"
 							},
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "grooveNormalMap",
+								"mID" : "sampler_groove_image",
 								"Texture" : "GrooveNormalMap"
 							}
 						]
@@ -445,10 +459,11 @@
 					"MaterialInstance" : {
 						"Material": "CoverMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" : 
+						"Samplers" : 
 						[
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
+								"mID" : "sampler_cover_image",
 								"Name" : "coverImage",
 								"Texture" : "CoverImage"
 							}
@@ -490,17 +505,28 @@
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" : 
+						"Uniforms":
 						[
 							{
-								"Type" : "nap::UniformTexture2D",
-								"Name" : "backgroundTexture",
-								"Texture" : "BackgroundImage"
-							},
+                    			"Type" : "nap::UniformStruct",
+                    			"Name" : "UBO",
+                    			"Uniforms" :
+                    			[
+									{
+										"Type" : "nap::UniformFloat",
+										"Name" : "intensity",
+										"Value": 1.0
+									}
+                    			]
+                    		}
+						],
+						"Samplers" : 
+						[
 							{
-								"Type" : "nap::UniformFloat",
-								"Name" : "intensity",
-								"Value": 1.0
+								"Type" : "nap::Sampler2D",
+								"Name" : "backgroundTexture",
+								"mID" : "sampler_background_image",
+								"Texture" : "BackgroundImage"
 							}
 						]
 					}		

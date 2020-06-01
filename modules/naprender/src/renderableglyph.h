@@ -8,6 +8,8 @@ namespace nap
 {
 	// Forward Declares
 	class FontInstance;
+	class RenderService;
+	class Core;
 
 	/**
 	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
@@ -19,7 +21,11 @@ namespace nap
 	{
 		RTTI_ENABLE(IGlyphRepresentation)
 	public:
-		RenderableGlyph(Core& core);
+		// Constructor
+		RenderableGlyph(nap::Core& core);
+
+		// Destructor
+		virtual ~RenderableGlyph() override;
 
 		/**
 		 * @return size of the glyph in pixels
@@ -54,12 +60,12 @@ namespace nap
 		/**
 		 * @return the 2D opengl Texture
 		 */
-		const Texture2D& getTexture() const { return mTexture; }
+		const Texture2D& getTexture() const { return *mTexture; }
 
 		/**
 		 * @return the 2D opengl Texture
 		 */
-		Texture2D& getTexture() { return mTexture; }
+		Texture2D& getTexture() { return *mTexture; }
 
 		/**
 		 * @return horizontal glyph advance value in pixels
@@ -70,6 +76,12 @@ namespace nap
 		 * @return vertical glyph advance value in pixels
 		 */
 		int getVerticalAdvance() const { return mAdvance.y; }
+
+		/**
+		 * If this render-able glyph has a texture. 
+		 * @return if this glyph has a texture associated with it
+		 */
+		bool empty() const { return mTexture == nullptr; }
 
 	protected:
 		/**
@@ -87,7 +99,7 @@ namespace nap
 		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
 
 	private:
-		Texture2D mTexture;
+		std::unique_ptr<Texture2D> mTexture = nullptr;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
 		glm::ivec2 mBearing = { -1, -1 };		///< Offset from baseline to left/top of glyph
 		glm::ivec2 mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph
@@ -106,9 +118,10 @@ namespace nap
 	class NAPAPI Renderable2DGlyph : public RenderableGlyph
 	{
 		RTTI_ENABLE(RenderableGlyph)
-
 	public:
-		Renderable2DGlyph(Core& core);
+		// Constructor
+		Renderable2DGlyph(nap::Core& core);
+		Renderable2DGlyph() = default;
 
 	protected:
 		/**
@@ -132,7 +145,9 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableGlyph)
 	public:
-		Renderable2DMipMapGlyph(Core& core);
+		// Constructor
+		Renderable2DMipMapGlyph(nap::Core& core);
+		Renderable2DMipMapGlyph() = default;
 
 	protected:
 		/**

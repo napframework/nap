@@ -263,9 +263,7 @@ namespace nap
 	}
 
 
-	// Computes projection matrix if dirty, otherwise returns the
-	// cached version
-	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
+	void PerspCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
 		{
@@ -278,11 +276,23 @@ namespace nap
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
 			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
-			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
-
+			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
 			mDirty = false;
 		}
+	}
 
+
+	const glm::mat4& PerspCameraComponentInstance::getRenderProjectionMatrix() const
+	{
+		updateProjectionMatrices();
+		return mRenderProjectionMatrix;
+	}
+
+
+	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
+	{
+		updateProjectionMatrices();
 		return mProjectionMatrix;
 	}
 

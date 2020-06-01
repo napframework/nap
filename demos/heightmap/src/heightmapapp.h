@@ -90,11 +90,7 @@ namespace nap
 		InputService*			mInputService = nullptr;			//< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;				//< Gui service
 
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
-		ObjectPtr<HeightMesh>	mHeightMesh = nullptr;				//< Pointer to the height map mesh
-		ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
-		ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
-
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		//< Pointer to the render window
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
 		ObjectPtr<ImageFromFile>	mHeightmap = nullptr;			//< Texture used as height map
@@ -118,6 +114,6 @@ namespace nap
 		void updateGui();
 
 		// Pushes an rgb color to a shader uniform associated with a material
-		void pushColor(RGBColorFloat& color, Material& material, const std::string& name);
+		void pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName);
 	};
 }

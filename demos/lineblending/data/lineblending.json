@@ -425,22 +425,33 @@
         {
             "Type": "nap::Material",
             "mID": "CanvasMaterial",
-            "Uniforms": [
+            "Samplers":
+            [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
+                    "mID": "canvas_sampler_2D",
                     "Name": "mCanvas",
                     "Texture": "CanvasImage"
-                },
+                }
+            ],
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "nap::UniformVec3",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 0.32100000977516177,
-                        "y": 0.32899999618530276,
-                        "z": 0.41499999165534975
-                    }
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "nap::UniformVec3",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 0.32100000977516177,
+                                "y": 0.32899999618530276,
+                                "z": 0.41499999165534975
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "CanvasShader",
@@ -490,17 +501,25 @@
         {
             "Type": "nap::Material",
             "mID": "NormalsMaterial",
-            "Uniforms": [
+            "Uniforms": 
+            [
                 {
-                    "Type": "nap::UniformVec4",
-                    "mID": "nap::UniformVec4",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0,
-                        "w": 1.0
-                    }
+                    "Type" : "nap::UniformStruct",
+                    "Name" : "UBO",
+                    "Uniforms" :
+                    [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "nap::UniformVec4",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0,
+                                "w": 1.0
+                            }
+                        }
+                    ]
                 }
             ],
             "Shader": "NormalsShader",

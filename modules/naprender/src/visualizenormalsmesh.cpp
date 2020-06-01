@@ -1,15 +1,23 @@
 #include "visualizenormalsmesh.h"
-#include <rtti/rtti.h>
 #include "meshutils.h"
-#include <nap/logger.h>
+#include "renderservice.h"
 
-RTTI_BEGIN_CLASS(nap::VisualizeNormalsMesh)
+#include <rtti/rtti.h>
+#include <nap/logger.h>
+#include <nap/core.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VisualizeNormalsMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("ReferenceMesh", &nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Length", &nap::VisualizeNormalsMesh::mNormalLength, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
+	VisualizeNormalsMesh::VisualizeNormalsMesh(Core& core) : mRenderService(core.getService<nap::RenderService>())
+	{ }
+
+
 	bool VisualizeNormalsMesh::init(utility::ErrorState& errorState)
 	{
 		if (!createMeshInstance(errorState))
@@ -150,7 +158,8 @@ namespace nap
 			return false;
 
 		// Create the mesh that will hold the normals
-		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();

@@ -33,20 +33,21 @@ namespace nap
 
 
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource)
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<nap::RenderService>())
 	{
 	}
 
 
 	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Initialize material
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
-
 		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
-		// If it is set, we create a renderablemesh from it
+		// If it is set, we create a renderable-mesh from it
 		if (resource->mMesh != nullptr)
 		{
 			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
@@ -88,56 +89,52 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
+		// Get material to work with
 		if (!mRenderableMesh.isValid())
 		{
 			assert(false);
 			return;
 		}
 
-		// Get global transform
-		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
-
-		// Bind material
+		// Fetch mvp uniform and update individual matrices
 		MaterialInstance& mat_instance = getMaterialInstance();
-
-		UniformStructInstance* nap_uniform = mat_instance.getOrCreateUniform(napStructUniform);
-		if (nap_uniform != nullptr)
+		UniformStructInstance* mvp_uniform = mat_instance.getOrCreateUniform(mvpStructUniform);
+		if (mvp_uniform != nullptr)
 		{
 			// Set projection uniform in shader
-			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+			UniformMat4Instance* projection_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
 			if (projection_uniform != nullptr)
 				projection_uniform->setValue(projectionMatrix);
 
 			// Set view uniform in shader
-			UniformMat4Instance* view_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+			UniformMat4Instance* view_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
 			if (view_uniform != nullptr)
 				view_uniform->setValue(viewMatrix);
 
 			// Set model matrix uniform in shader
-			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+			UniformMat4Instance* model_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
 			if (model_uniform != nullptr)
+			{
+				const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 				model_uniform->setValue(model_matrix);
+			}
 		}
 
+		// Acquire new / unique descriptor set before rendering
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
-		// Gather draw info
-		MeshInstance& mesh_instance = getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
-
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-
+		// Fetch and bind pipeline
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
-		Material& material = mRenderableMesh.getMaterialInstance().getMaterial();
-
+		// Bind shader descriptors
+		Material& material = mat_instance.getMaterial();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
+		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
-
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
@@ -152,6 +149,9 @@ namespace nap
 			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 
+		// Draw meshes
+		MeshInstance& mesh_instance = getMeshInstance();
+		GPUMesh& mesh = mesh_instance.getGPUMesh();
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
 			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
@@ -159,6 +159,7 @@ namespace nap
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
 
+		// Restore clipping
 		if (has_clip_rect)
 		{
 			VkRect2D rect;

@@ -62,11 +62,6 @@ namespace nap
 		GLWindow* getWindow() const												{ return mWindow.get(); }
 
 		/**
-		 * Makes this window active, calls activate afterwards
-		 */
-		VkCommandBuffer makeActive()											{ return mWindow->makeCurrent(); }
-
-		/**
          * Returns the width of the window.
          * Note that on high DPI monitors this is not the same as the pixel count.
          * To get the width in pixels use the size of the backbuffer using getWidthPixels().
@@ -205,10 +200,6 @@ namespace nap
 		 */
 		void endRendering();
 
-	private:
-		void handleEvent(const Event& event);
-		void swap() const						{ mWindow->swap(); }
-
 	public:
 		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
@@ -221,6 +212,11 @@ namespace nap
 		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
 
 	private:
+
+		VkCommandBuffer makeActive()								{ return mWindow->makeCurrent(); }		
+		void swap() const { mWindow->swap(); }
+		void handleEvent(const Event& event);
+		
 		RenderService*				mRenderService	= nullptr;						// Render service
 		std::shared_ptr<GLWindow>	mWindow			= nullptr;						// Actual OpenGL hardware window
 		bool						mFullscreen		= false;						// If the window is full screen or not

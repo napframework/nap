@@ -8,6 +8,10 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * This mesh builds a line structure based on the vertices of another mesh
 	 * The line structure represents the normals of the reference mesh and can be drawn to screen. 
@@ -24,6 +28,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		VisualizeNormalsMesh(Core& core);
+
 		/**
 		 *	Creates the normals from the reference mesh
 		 */
@@ -81,6 +87,9 @@ namespace nap
 
 		// The current reference mesh
 		nap::IMesh* mCurrentReferenceMesh = nullptr;
+
+		// The renderer
+		nap::RenderService* mRenderService = nullptr;
 
 		/**
 		 * Creates the mesh instance and single shape associated with that mesh instance

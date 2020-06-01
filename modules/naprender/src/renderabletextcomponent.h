@@ -4,6 +4,7 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
+#include "uniforminstances.h"
 
 // External Includes
 #include <font.h>
@@ -99,7 +100,7 @@ namespace nap
 		 * @param projectionMatrix the camera projection matrix
 		 * @param modelMatrix the location of the text in the world
 		 */
-		void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix);
+		void draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix);
 
 		/**
 		 * @return if this text has a transform component associated with it
@@ -112,12 +113,17 @@ namespace nap
 		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }			
 
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
+		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
 	private:
 		std::string mText = "";											///< Text to render
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
-		std::string mGlyphUniform = "glyph";							///< Name of the 2D texture character binding in the shader
+		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
+		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
+		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
+		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
+		UniformMat4Instance* mProjectionUniform = nullptr;				///< Found projection uniform input
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position text
 		RenderableMesh mRenderableMesh;									///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices

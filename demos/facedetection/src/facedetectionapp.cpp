@@ -63,6 +63,9 @@ namespace nap
 		mOpenCVEntity = scene->findEntity("OpenCV");
 		mTextEntity = scene->findEntity("Text");
 
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -100,7 +103,7 @@ namespace nap
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
+			//ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
 			{
@@ -154,7 +157,7 @@ namespace nap
 			ImGui::Text(utility::stringFormat("Framerate: %.02f", mCameraCaptureDevice->getAdapter<CVCamera>(0).getFPS()).c_str());
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
-			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
+			//ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
 		}
 		ImGui::End();
 	}
@@ -168,68 +171,79 @@ namespace nap
 	 */
 	void FaceDetectionApp::render()
 	{
-		// Activate current (main) window for drawing
-		mRenderWindow->makeActive();
-
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
 		// Render detected blobs to texture for all OpenCV capture entities
+		if (mRenderService->beginHeadlessRecording())
 		{
 			for (auto& entity : mOpenCVEntity->getChildren())
 			{
 				entity->getComponent<RenderToTextureComponentInstance>().draw();
 			}
+			mRenderService->endHeadlessRecording();
 		}
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
-
-		// Find the perspective camera
-		nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
-
-		// Find objects to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		
-		// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
-		nap::EntityInstance& capture_entity = (*mOpenCVEntity)[mCurrentSelection];
-		for (auto& entity : capture_entity[0].getChildren())
+		// Render everything to screen
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
-			components_to_render.emplace_back(&render_comp);
+			// Start render pass
+			mRenderWindow->beginRendering();
+
+			// Find the perspective camera
+			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
+
+			// Find objects to render
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+
+			// Render detected blobs + ground plane to viewport for the selected OpenCV capture entity.
+			nap::EntityInstance& capture_entity = (*mOpenCVEntity)[mCurrentSelection];
+			for (auto& entity : capture_entity[0].getChildren())
+			{
+				RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
+				components_to_render.emplace_back(&render_comp);
+			}
+			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+
+			// Get component that can render 2D text.
+			Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+
+			// Get entity that draws the 3D blobs, it's the first child of the 3D visualize entity.
+			nap::EntityInstance& blob_entity = capture_entity[0][0];
+			RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
+
+			// Extract world space blob locations and draw text
+			const std::vector<glm::vec4>& locs = classify_render_comp.getLocations();
+
+			// Draw text
+			utility::ErrorState error;
+			for (int i = 0; i < locs.size(); i++)
+			{
+				// Get blob location in 3D
+				glm::vec3 blob_pos = locs[i];
+				blob_pos.y += locs[i].w;
+
+				// Get text location in screen space, offset a bit and draw.
+				glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
+				text_comp.setLocation(text_pos + glm::vec2(0, 25));
+				text_comp.setText(utility::stringFormat("Blob %d", i + 1), error);
+				text_comp.draw(mRenderWindow->getBackbuffer());
+			}
+
+			// Draw our gui
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+
+			// End render pass
+			mRenderWindow->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
 		}
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
 
-		// Get component that can render 2D text.
-		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-
-		// Get entity that draws the 3D blobs, it's the first child of the 3D visualize entity.
-		nap::EntityInstance& blob_entity = capture_entity[0][0];
-		RenderableClassifyComponentInstance& classify_render_comp = blob_entity.getComponent<RenderableClassifyComponentInstance>();
-		
-		// Extract world space blob locations and draw text
-		const std::vector<glm::vec4>& locs = classify_render_comp.getLocations();
-
-		// Draw text
-		utility::ErrorState error;
-		for (int i = 0; i < locs.size(); i++)
-		{
-			// Get blob location in 3D
-			glm::vec3 blob_pos = locs[i]; 
-			blob_pos.y += locs[i].w;
-			
-			// Get text location in screen space, offset a bit and draw.
-			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
-			text_comp.setLocation(text_pos + glm::vec2(0,25));
-			text_comp.setText(utility::stringFormat("Blob %d", i+1), error);
-			text_comp.draw(mRenderWindow->getBackbuffer());
-		}
-
-		// Draw our gui
-		mGuiService->draw();
-
-		// Swap screen buffers
-		mRenderWindow->swap();
+		// Signal the ending of the frame
+		mRenderService->endFrame();
 	}
 	
 	

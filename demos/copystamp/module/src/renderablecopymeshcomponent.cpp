@@ -38,6 +38,12 @@ namespace nap
 	}
 
 
+	RenderableCopyMeshComponentInstance::RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<RenderService>())
+	{
+
+	}
+
 	/**
 	 * Initializes this component. For this component to work a reference mesh + at least one mesh to copy onto it is needed.
 	 * It also makes sure various uniforms (such as color) are present in the material. These uniforms are set when onRender() is called.
@@ -56,7 +62,7 @@ namespace nap
 			return false;
 
 		// Initialize our material instance based on values in the resource
-		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*mRenderService, resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
@@ -72,16 +78,13 @@ namespace nap
 			"no meshes found to copy: %s", resource->mID.c_str()))
 			return false;
 
-		// Fetch render service
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<RenderService>();
-
 		// Iterate over the meshes to copy
 		// Create a valid mesh / material combination based on our referenced material and the meshes to copy
 		// If a renderable mesh turns out to be invalid it means that the material / mesh combination isn't valid, ie:
 		// There are required vertex attributes in the shader that the mesh doesn't have.
-		for(auto& mesh : resource->mCopyMeshes)
+		for (auto& mesh : resource->mCopyMeshes)
 		{
-			RenderableMesh render_mesh = render_service->createRenderableMesh(*mesh, mMaterialInstance, errorState);
+			RenderableMesh render_mesh = mRenderService->createRenderableMesh(*mesh, mMaterialInstance, errorState);
 			if (!errorState.check(render_mesh.isValid(), "%s, mesh: %s can't be copied", resource->mID.c_str(), mesh->mID.c_str()))
 				return false;
 
@@ -129,45 +132,37 @@ namespace nap
 		return mMaterialInstance;
 	}
 
-	void renderMesh(RenderService& renderService, RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkCommandBuffer commandBuffer)
+
+	static void renderMesh(RenderService& renderService, RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkViewport& viewport, VkRect2D scissorRect, VkCommandBuffer commandBuffer)
 	{
+		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
+		// Create render-pipeline and bind
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = renderService.getOrCreatePipeline(renderTarget, renderableMesh.getMesh(), mat_instance, error_state);
-
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = renderTarget.getSize().x;
-		viewport.height = renderTarget.getSize().y;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		// Set viewport
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-		// Gather draw info
+		// Bind descriptor set for next draw call
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+
+		// Bind vertex buffers
+		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& vertexBufferOffsets = renderableMesh.getVertexBufferOffsets();
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+		// Get mesh to draw
 		MeshInstance& mesh_instance = renderableMesh.getMesh().getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
-		Material& material = mat_instance.getMaterial();
+		// Update scissor state
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
-
-		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();
-		const std::vector<VkDeviceSize>& vertexBufferOffsets = renderableMesh.getVertexBufferOffsets();
-
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
-
-		VkRect2D rect;
-		rect.offset.x = 0;
-		rect.offset.y = 0;
-		rect.extent.width = renderTarget.getSize().x;
-		rect.extent.height = renderTarget.getSize().y;
-		vkCmdSetScissor(commandBuffer, 0, 1, &rect);
-
+		// Draw individual shapes inside mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
 			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
@@ -208,6 +203,25 @@ namespace nap
 		// Get camera location
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
+		// Construct viewport, can be re-used.
+		VkViewport viewport =
+		{
+			0.0f, 0.0f,
+			(float)renderTarget.getSize().x,
+			(float)renderTarget.getSize().y,
+			0.0f, 1.0f
+		};
+
+		// Scissor rect can also be re-used
+		VkRect2D scissor_rect
+		{
+			{ 0, 0 },
+			{ 
+				(uint32_t)renderTarget.getSize().x, 
+				(uint32_t)renderTarget.getSize().y 
+			}
+		};
+
 		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
 		for (auto i = 0; i < pos_data.size(); i++)
 		{
@@ -220,12 +234,6 @@ namespace nap
 
 			// Get the mesh to stamp onto this point and bind
 			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
-
-			// Get data of that mesh
-			MeshInstance& mesh_instance = render_mesh.getMesh().getMeshInstance();
-
-			// GPU mesh representation of mesh to copy
-			GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 			// Calculate model matrix
 			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);
@@ -249,7 +257,8 @@ namespace nap
 			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
 			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
 
-			renderMesh(*renderService, render_mesh, renderTarget, commandBuffer);
+			// Render mesh after updating uniforms
+			renderMesh(*mRenderService, render_mesh, renderTarget, viewport, scissor_rect, commandBuffer);
 		}
 	}
 

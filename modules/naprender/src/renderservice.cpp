@@ -294,6 +294,7 @@ namespace nap
 
 		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
 		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
+		Logger::info("Selected GPU: %s", physical_device_properties[gpu_idx].deviceName);
 
 		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
 		unsigned int family_queue_count(0);
@@ -990,7 +991,7 @@ namespace nap
 		//updateRenderState();
 
 		// Extract camera projection matrix
-		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
+		const glm::mat4x4 projection_matrix = camera.getRenderProjectionMatrix();
 
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();

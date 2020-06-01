@@ -78,6 +78,5 @@ namespace nap
         audio::TimeValue mFadeOutTime = 0;                              //< Fade out time in ms
         audio::ControllerValue mPitch = 1.0;                            //< Pitch of the playback in relation to original pitch of the audio file
         audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
-        RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
 	};
 }

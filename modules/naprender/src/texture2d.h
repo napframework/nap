@@ -104,6 +104,11 @@ namespace nap
 		 */
 		int getHeight() const;
 
+		/**
+		 * @return the surface description of this texture
+		 */
+		const SurfaceDescriptor& getDescriptor() const;
+
 		void upload(VkCommandBuffer commandBuffer);
 
 		/**

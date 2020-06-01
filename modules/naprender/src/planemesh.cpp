@@ -45,6 +45,7 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
+		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 		constructPlane(rect, *mMeshInstance);
 

@@ -30,6 +30,7 @@ namespace nap
 	bool TriangleMesh::setup(utility::ErrorState& error)
 	{
 		// Create plane
+		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
 		constructTriangle(*mMeshInstance);
 

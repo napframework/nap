@@ -10,6 +10,8 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
+#include <uniforminstances.h>
+#include <sdlhelpers.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -36,7 +38,7 @@ namespace nap
 			return false;
 
 		// Get screen size
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		glm::ivec2 screen_size = SDL::getScreenSize(0);
 		
 		// Calculate x and y window offsets
 		int offset_x = (screen_size.x - (3 * 512)) / 2;
@@ -125,18 +127,19 @@ namespace nap
 	{
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		nap::UniformStructInstance* frag_ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
 
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindowOne.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
 		// Render Window One : Sphere
+		if(mRenderService->beginRecording(*mRenderWindowOne))
 		{
-			// Activate current window for drawing
-			mRenderWindowOne->makeActive();
-
-			// Clear back-buffer
-			mRenderService->clearRenderTarget(mRenderWindowOne->getBackbuffer());
+			// Begin the render pass
+			mRenderWindowOne->beginRendering();
 
 			// Find the world and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -149,19 +152,23 @@ namespace nap
 			// Set the camera location uniform
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraOne->getComponent<nap::TransformComponentInstance>();
 			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform.setValue(global_pos);
+			cam_loc_uniform->setValue(global_pos);
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
+
+			// End render pass
+			mRenderWindowOne->endRendering();
+
+			// End record pass
+			mRenderService->endRecording();
 		}
 
 		// Render Window Two : Texture
+		if(mRenderService->beginRecording(*mRenderWindowTwo))
 		{
-			// Make window 2 active
-			mRenderWindowTwo->makeActive();
-
-			// Clear backbuffer
-			mRenderService->clearRenderTarget(mRenderWindowTwo->getBackbuffer());
+			// Begin render pass
+			mRenderWindowTwo->beginRendering();
 
 			// Find the plane entity and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -175,16 +182,20 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw();
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+
+			// End render pass
+			mRenderWindowTwo->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
 		}
 
 		// Render Window Three: Sphere and Texture
+		if(mRenderService->beginRecording(*mRenderWindowThree))
 		{
 			// Make window 3 active
-			mRenderWindowThree->makeActive();
-
-			// Clear backbuffer
-			mRenderService->clearRenderTarget(mRenderWindowThree->getBackbuffer());
+			mRenderWindowThree->beginRendering();
 			
 			// Find the world entity and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -197,7 +208,7 @@ namespace nap
 			// Set the camera location uniform for the halo effect
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraTwo->getComponent<nap::TransformComponentInstance>();
 			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform.setValue(global_pos);
+			cam_loc_uniform->setValue(global_pos);
 
 			// Render sphere
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), persp_camera, components_to_render);
@@ -212,25 +223,16 @@ namespace nap
 
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+
+			// Stop render pass
+			mRenderWindowThree->endRendering();
+
+			// Stop recording
+			mRenderService->endRecording();
 		}
 
-		// We can only render the gui to the primary window for now
-		// To do so we simply request the primary window and draw
-		// Note that the primary window is not defined by the declaration
-		// of window resources in json! After that swap all the buffers
-		{
-			// Swap screen buffers
-			mRenderWindowOne->makeActive();
-			mRenderWindowOne->swap();
-
-			// Swap buffers screen two
-			mRenderWindowTwo->makeActive();
-			mRenderWindowTwo->swap();
-
-			// Swap buffers screen three
-			mRenderWindowThree->makeActive();
-			mRenderWindowThree->swap();
-		}
+		// Submit recorded commands
+		mRenderService->endFrame();
 	}
 
 

@@ -321,12 +321,12 @@ namespace nap
 	}
 
 
-	SamplerInstance& MaterialInstance::getOrCreateSamplerInternal(const std::string& name)
+	SamplerInstance* MaterialInstance::getOrCreateSamplerInternal(const std::string& name)
 	{
 		// See if we have an override in MaterialInstance. If so, we can return it
 		SamplerInstance* existing_sampler = findSampler(name);
 		if (existing_sampler != nullptr)
-			return *existing_sampler;
+			return existing_sampler;
 
 		SamplerInstance* result = nullptr;
 
@@ -356,9 +356,7 @@ namespace nap
 
 			image_start_index += declaration.mNumArrayElements;
 		}
-
-		assert(result != nullptr);
-		return *result;
+		return result;
 	}
 
 
