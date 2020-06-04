@@ -21,7 +21,7 @@ namespace nap
         /**
          * A buffer of multichannel audio data in memory.
          */
-        class AudioBufferResource : public Resource
+        class NAPAPI AudioBufferResource : public Resource
         {
             RTTI_ENABLE(Resource)
         public:
