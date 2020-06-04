@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+      "mod_napaudioadvanced",
+      "mod_napmath"
+    ]
+}

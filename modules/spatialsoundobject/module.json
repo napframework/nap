@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+      "mod_napmath",
+      "mod_nappython",
+      "mod_spatialcore",
+      "mod_spatialmultispeaker"
+    ]
+}
