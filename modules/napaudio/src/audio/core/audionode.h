@@ -76,6 +76,11 @@ namespace nap
              * @param: the output that the buffer is requested for
              */
             SampleBuffer& getOutputBuffer(OutputPin& output);
+
+            /**
+             * @return true if the node is currently registered with a currently existing node manager.
+             */
+            bool isRegisteredWithNodeManager() const { return mRegisteredWithNodeManager.load(); }
             
         private:
             /*
@@ -92,6 +97,9 @@ namespace nap
             
             std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
             std::set<InputPinBase*> mInputs; // Used internally by the node to keep track of all its inputs.
+
+            // Set to true when the node has made itself known with the node manager. This registration is deferred to the audio thread so it has to be tracked by this boolean.
+            std::atomic<bool> mRegisteredWithNodeManager = { false };
         };
         
         

@@ -23,7 +23,7 @@ namespace nap
         
         OutputNode::~OutputNode()
         {
-            if (mRootProcess)
+            if (mRootProcess && isRegisteredWithNodeManager())
                 getNodeManager().unregisterRootProcess(*this);
         }
         

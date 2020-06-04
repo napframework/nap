@@ -2,7 +2,7 @@
 
 // audio includes
 #include <audio/service/audioservice.h>
-#include <audio/utility/audiofilereader.h>
+#include <audio/utility/audiofileutils.h>
 
 // RTTI
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource)

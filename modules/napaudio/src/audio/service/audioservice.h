@@ -57,7 +57,12 @@ namespace nap
              * In this case a zero signal will be used to emulate the input from an unsupported input channel.
              */
             bool mAllowChannelCountFailure = true;
-            
+
+            /**
+             * Indicates wether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
+             */
+            bool mAllowDeviceFailure = true;
+
             /**
              * The sample rate the audio stream will run on, the number of samples processed per channel per second.
              */
@@ -93,7 +98,10 @@ namespace nap
              * Register specific object creators
              */
             void registerObjectCreators(rtti::Factory& factory) override;
-            
+
+            /**
+             * Return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
+             */
             NodeManager& getNodeManager();
             
             /**
@@ -137,9 +145,9 @@ namespace nap
             /**
              * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
              * @param hostApiIndex: the number of the host api
-             * @param deviceIndex: the number of the device
+             * @param localDeviceIndex: the number of the device counting from 0 to the number of devices belonging to this host api.
              */
-            const PaDeviceInfo& getDeviceInfo(unsigned int hostApiIndex, unsigned int deviceIndex);
+            const PaDeviceInfo& getDeviceInfo(unsigned int hostApiIndex, unsigned int localDeviceIndex);
             
             /** 
              * Returns information on all the available devices
@@ -155,9 +163,9 @@ namespace nap
             /** 
              * @return the name of an available device specified by host api and device number
              * @param hostApiIndex: the number of the host api
-             * @param deviceIndex: the number of the devie
+             * @param deviceIndex: the number of the devie within the host api
              */
-            std::string getDeviceName(unsigned int hostApiIndex, unsigned int deviceIndex);
+            std::string getDeviceName(unsigned int hostApiIndex, unsigned int localDeviceIndex);
             
             /**
              * Returns the device index for a device specified by name for a given host API .
@@ -165,7 +173,13 @@ namespace nap
              * Returns -1 if the device specified was not found.
              */
             int getDeviceIndex(int hostApiIndex, const std::string& device);
-            
+
+            /**
+             * Returns the device index for a device specified by a local index in the list of devices for a specific host API.
+             * Returns -1 if the specified device was not found.
+             */
+            int getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex) { return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, hostApiDeviceIndex); }
+
             /**
              * Returns the index for a certain host API specified both by name.
              * Uses case insensitive search.
@@ -189,17 +203,45 @@ namespace nap
             int getCurrentOutputDeviceIndex() const { return mOutputDeviceIndex; }
 
             /**
-             * Stops the audio stream, waits for any running audio callback before returning.
-             * @return true on success
+             * Returns the current buffer size.
              */
-            bool stop() { return Pa_StopStream(mStream) == 0; }
+            int getCurrentBufferSize() const { return mBufferSize; }
+
+            /**
+             * Tries to open the audio stream using the given settings. Returns true on success.
+             */
+            bool openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
+
+            /**
+             * Closes the current stream. Assumes that it has been opened successfully.
+             * @return true on success.
+             */
+            bool closeStream(utility::ErrorState& errorState);
 
             /**
              * Restart the audio stream after it has been stopped by calling @stop().
+             * Logs errors in the @errorState. Assumes the stream has been opened succesfully.
              * @return true on success
              */
-            bool start() { return Pa_StartStream(mStream) == 0; }
-            
+            bool start(utility::ErrorState& errorState);
+
+            /**
+             * Stops the audio stream, waits for any running audio callback before returning.
+             * Logs errors in the @errorState. Assumes the stream has been opened succesfully.
+             * @return true on success
+             */
+            bool stop(utility::ErrorState& errorState);
+
+            /**
+             * @return Wether the audio stream is succesfully initialized
+             */
+            bool isOpened() { return mStream != nullptr; }
+
+            /**
+             * @return Wether the audio stream is currently running and not been paused.
+             */
+            bool isActive() { return Pa_IsStreamActive(mStream) == 1; }
+
 			/**
              * This function is typically called by a hardware callback from the device to perform all the audio processing.
              * It performs memory management and processes a lockfree event queue before it invokes the @NodeManager::process() to process audio.
@@ -216,24 +258,28 @@ namespace nap
             
 		private:
             /*
-             * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If not and @mAllowChannelCountFailure is set to true, it will use the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
+             * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If so, @inputDeviceIndex and @outputDeviceIndex will be set to these. If not and @mAllowChannelCountFailure is set to true, it will return the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
              */
-            bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, utility::ErrorState& errorState);
-            
+            bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount, int& outputChannelCount, utility::ErrorState& errorState);
+
             /*
              * Checks wether certain atomic types that are used within the library are lockfree and gives a warning if not.
              */
             void checkLockfreeTypes();
+
+            /*
+             * Copies the current settings to the configuration object.
+             */
+            void saveConfiguration();
             
 		private:
             NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
-            int mInputChannelCount = 1; // The actual input channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
-            int mOutputChannelCount = 2; // The actual output channel count can differ from the one in the configuration in case the configuration value is not supported by the device and mAllowChannelCountFailure is set to true. In this case the maximum amount of the device will be used.
             int mHostApiIndex = -1; // The actual host Api being used.
             int mInputDeviceIndex = -1; // The actual input device being used, if any.
             int mOutputDeviceIndex = -1; // The actual output device being used, if any.
-            
+            int mBufferSize = 1024; // The actual buffersize that the audio device runs on
+
             // DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
             // Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.
             DeletionQueue mDeletionQueue;

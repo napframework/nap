@@ -21,7 +21,8 @@ namespace nap
         
         Node::~Node()
         {
-            getNodeManager().unregisterNode(*this);
+            if (mRegisteredWithNodeManager.load())
+                getNodeManager().unregisterNode(*this);
         }
         
         

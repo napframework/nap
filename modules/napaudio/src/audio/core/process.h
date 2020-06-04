@@ -90,8 +90,8 @@ namespace nap
              * Can be overwriten to respond to changes.
              * @param bufferSize: the new buffersize
              */
-            virtual void bufferSizeChanged(int bufferSize) { }                    
-            
+            virtual void bufferSizeChanged(int bufferSize) { }
+
         private:
             /**
              * Has to be overwritted by descendants to specify the actual process.

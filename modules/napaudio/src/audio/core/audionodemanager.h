@@ -39,7 +39,7 @@ namespace nap
         public:
             NodeManager(DeletionQueue& deletionQueue) : mDeletionQueue(deletionQueue) { }
             
-            ~NodeManager() = default;
+            ~NodeManager();
             
             /**
              * This function is typically called by an audio callback to perform all the audio processing.
@@ -143,6 +143,12 @@ namespace nap
              * Returns the @DeletionQueue that this node manager uses to construct and destruct nodes threadsafely.
              */
             DeletionQueue& getDeletionQueue() { return mDeletionQueue; }
+
+            /**
+             * Signal triggered whenever the input or output channel count of the node manager changes
+             */
+            Signal<NodeManager&> mChannelCountChangedSignal;
+
 
         private:
             // Used by the nodes to register themselves on construction
