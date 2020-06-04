@@ -7,9 +7,14 @@
         "mod_napscene",
         "mod_napcameracontrol",
         "mod_napyoctopuce",
-		"mod_napparameter",
+		    "mod_napparameter",
         "mod_napsvg",
         "mod_napaudio",
-        "mod_napaudioadvanced"
+        "mod_napaudioadvanced",
+        "mod_spatialcore",
+        "mod_spatialdsp",
+        "mod_spatialsoundobject",
+        "mod_spatialimplementations",
+        "mod_spatialmultispeaker"
     ]
 }

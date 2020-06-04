@@ -104,6 +104,17 @@ namespace nap
 		 */
 		void setValue(T value);
 
+        /**
+         * Connects an action to the parameter's valueChanged signal and calls it straightaway, to make sure the connected system is in sync with the parameter's current value.
+         * ActionType can be of any type that can be connected to the valueChanged signal.
+         */
+        template <typename ActionType>
+        void connect(ActionType action)
+        {
+            valueChanged.connect(std::forward<ActionType>(action));
+            action(mValue);
+        }
+
 	public:
 		T			mValue;			///< Property: 'Value' the current value of the parameter
 		Signal<T>	valueChanged;	///< Signal that's raised when the value of this parameter changes
@@ -132,9 +143,21 @@ namespace nap
 			valueChanged(mValue);
 		}
 	}
+
+
 }
 
-#define DEFINE_ENUM_PARAMETER(Type)																			\
-	RTTI_BEGIN_CLASS(Type)															\
-		RTTI_PROPERTY("Value", &Type::mValue, nap::rtti::EPropertyMetaData::Default)					\
-	RTTI_END_CLASS
+#ifdef NAP_ENABLE_PYTHON
+    #define DEFINE_ENUM_PARAMETER(Type)	\
+	    RTTI_BEGIN_CLASS(Type) \
+		    RTTI_PROPERTY("Value", &Type::mValue, nap::rtti::EPropertyMetaData::Default) \
+		    RTTI_FUNCTION("setValue", static_cast<void (Type::*)(const decltype(Type::mValue)&)>(&Type::setValue)) \
+		    RTTI_FUNCTION("connect", &Type::connect<pybind11::function>) \
+	    RTTI_END_CLASS
+#else
+    #define DEFINE_ENUM_PARAMETER(Type) \
+	    RTTI_BEGIN_CLASS(Type) \
+		    RTTI_PROPERTY("Value", &Type::mValue, nap::rtti::EPropertyMetaData::Default) \
+		    RTTI_FUNCTION("setValue", static_cast<void (Type::*)(const decltype(Type::mValue)&)>(&Type::setValue)) \
+	    RTTI_END_CLASS
+#endif

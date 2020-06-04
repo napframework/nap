@@ -81,9 +81,25 @@ namespace nap
 		ParameterGroup& getRootGroup() { assert(hasRootGroup()); return *mRootGroup; }
 
 		/**
+		 * Get the full path to the preset file
+		 * @param groupID The group id
+		 * @param filename The preset file to get the full path of
+		 * @return Full path to the preset file
+		 */
+		std::string getPresetPath(const std::string& groupID, const std::string& filename) const;
+
+		/**
+		 * Get the directory that presets for the specified group are stored in
+		 *
+		 * @param groupID The group id
+		 * @return The directory that presets for the specified group are stored in
+		 */
+		std::string getGroupPresetDirectory(const std::string& groupID) const;
+
+		/**
          * Signal that is emitted when a preset is loaded
          */
-		nap::Signal<std::string> presetLoaded;
+		nap::Signal<> presetLoaded;
 
 
 		/**
@@ -96,22 +112,6 @@ namespace nap
 		 * Called when a json file has been (re)loaded. Used to re-apply the presets.
 		 */
 		virtual void resourcesLoaded() override;
-
-		/**
-		 * Get the full path to the preset file
-		 * @param groupID The group id
-		 * @param filename The preset file to get the full path of
-		 * @return Full path to the preset file
-		 */
-		std::string getPresetPath(const std::string& groupID, const std::string& filename) const;
-
-		/**
-		 * Get the directory that presets for the specified group are stored in
-		 * 
-		 * @param groupID The group id
-		 * @return The directory that presets for the specified group are stored in
-		 */
-		std::string getGroupPresetDirectory(const std::string& groupID) const;
 
 	private:
 
