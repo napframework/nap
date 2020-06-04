@@ -17,7 +17,7 @@ def find_module_json_by_module_name(module_name, nap_root):
     elif os.path.exists(os.path.join(nap_root, 'user_modules', module_name)):
         module_path = os.path.join(nap_root, 'user_modules', module_name)
     # Check for NAP module in NAP source
-    elif module_name.startswith('mod_nap') and os.path.exists(os.path.join(nap_root, 'modules', module_name[4:])):
+    elif module_name.startswith('mod_') and os.path.exists(os.path.join(nap_root, 'modules', module_name[4:])):
         module_path = os.path.join(nap_root, 'modules', module_name[4:])
 
     if module_path is None:
