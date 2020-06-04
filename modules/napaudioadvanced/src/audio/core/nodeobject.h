@@ -80,23 +80,23 @@ namespace nap
         };
 
 
-        class NAPAPI MultiChannelBase : public AudioObject
+        class NAPAPI ParallelNodeObjectBase : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
 
         public:
-            MultiChannelBase() = default;
+            ParallelNodeObjectBase() = default;
             int mChannelCount = 1; ///< Property: 'ChannelCount' The number of channels
         };
 
 
         template <typename NodeType>
-        class MultiChannel : public MultiChannelBase
+        class ParallelNodeObject : public ParallelNodeObjectBase
         {
-            RTTI_ENABLE(MultiChannelBase)
+            RTTI_ENABLE(ParallelNodeObjectBase)
 
         public:
-            MultiChannel() = default;
+            ParallelNodeObject() = default;
 
             std::unique_ptr<AudioObjectInstance> createInstance(NodeManager& nodeManager, utility::ErrorState& errorState) override;
 
@@ -105,7 +105,7 @@ namespace nap
         };
 
 
-        class MultiChannelInstanceBase : public AudioObjectInstance
+        class ParallelNodeObjectInstanceBase : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
         public:
@@ -114,17 +114,17 @@ namespace nap
 
 
         template <typename NodeType>
-        class MultiChannelInstance : public MultiChannelInstanceBase
+        class ParallelNodeObjectInstance : public ParallelNodeObjectInstanceBase
         {
-            RTTI_ENABLE(MultiChannelInstanceBase)
+            RTTI_ENABLE(ParallelNodeObjectInstanceBase)
 
         public:
             using NodeCreationFunction = std::function<std::unique_ptr<NodeType>()>;
 
         public:
-            MultiChannelInstance() = default;
+            ParallelNodeObjectInstance() = default;
 
-            // Inherited from MultiChannelInstanceBase
+            // Inherited from ParallelNodeObjectInstanceBase
             Node* getChannelNonTyped(int channel) override { return channel < mChannels.size() ? mChannels[channel].getRaw() : nullptr; }
 
             bool init(int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
@@ -182,9 +182,9 @@ namespace nap
 
 
         template <typename NodeType>
-        std::unique_ptr<AudioObjectInstance> MultiChannel<NodeType>::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
+        std::unique_ptr<AudioObjectInstance> ParallelNodeObject<NodeType>::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
-            auto instance = std::make_unique<MultiChannelInstance<NodeType>>();
+            auto instance = std::make_unique<ParallelNodeObjectInstance<NodeType>>();
             if (!instance->init(mChannelCount, nodeManager, errorState))
                 return nullptr;
             for (auto channel = 0; channel < instance->getChannelCount(); ++channel)
@@ -199,7 +199,7 @@ namespace nap
 
 
         template <typename NodeType>
-        bool MultiChannelInstance<NodeType>::init(int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool ParallelNodeObjectInstance<NodeType>::init(int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             for (auto channel = 0; channel < channelCount; ++channel)
             {

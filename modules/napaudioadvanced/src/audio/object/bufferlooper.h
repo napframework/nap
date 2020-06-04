@@ -2,7 +2,7 @@
 
 #include <audio/object/bufferplayer.h>
 #include <audio/object/gain.h>
-#include <audio/core/polyphonicobject.h>
+#include <audio/core/polyphonic.h>
 
 namespace nap
 {
@@ -81,7 +81,7 @@ namespace nap
             
             void startVoice(bool fromStart);
 
-            std::unique_ptr<PolyphonicObjectInstance> mPolyphonicInstance = nullptr;
+            std::unique_ptr<PolyphonicInstance> mPolyphonicInstance = nullptr;
             std::set<VoiceInstance*> mVoices;
             
             // private resources
@@ -89,7 +89,7 @@ namespace nap
             std::unique_ptr<BufferPlayer> mBufferPlayer = nullptr;
             std::unique_ptr<Gain> mGain = nullptr;
             std::unique_ptr<Voice> mVoice = nullptr;
-            std::unique_ptr<PolyphonicObject> mPolyphonic = nullptr;
+            std::unique_ptr<Polyphonic> mPolyphonic = nullptr;
         };
         
         

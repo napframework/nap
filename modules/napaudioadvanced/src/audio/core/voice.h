@@ -13,7 +13,7 @@ namespace nap
     {
         
         // Forward declarations
-        class PolyphonicObjectInstance;
+        class PolyphonicInstance;
         
         
         /**
@@ -43,7 +43,7 @@ namespace nap
         {
             RTTI_ENABLE(GraphInstance)
             
-            friend class PolyphonicObjectInstance;
+            friend class PolyphonicInstance;
             
         public:
             bool init(Voice& resource, NodeManager& nodeManager, utility::ErrorState& errorState);

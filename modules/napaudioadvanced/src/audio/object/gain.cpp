@@ -5,7 +5,7 @@ RTTI_BEGIN_CLASS(nap::audio::Gain)
     RTTI_PROPERTY("Inputs", &nap::audio::Gain::mInputs, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelInstance<nap::audio::GainNode>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ParallelNodeObjectInstance<nap::audio::GainNode>)
 RTTI_END_CLASS
 
 namespace nap

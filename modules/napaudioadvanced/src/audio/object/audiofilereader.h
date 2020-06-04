@@ -13,12 +13,12 @@ namespace nap
     namespace audio
     {
 
-        class NAPAPI AudioFileReaderObject : public AudioObject
+        class NAPAPI AudioFileReader : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
 
         public:
-            AudioFileReaderObject() = default;
+            AudioFileReader() = default;
 
             std::vector<ResourcePtr<AudioFileIO>> mAudioFiles; ///< property: 'AudioFiles' Vector that points to mono @AudioFileIO resources to read each channel of the object from.
             int mBufferSize = 65536;
@@ -28,13 +28,13 @@ namespace nap
         };
 
 
-        class NAPAPI AudioFileReaderObjectInstance : public AudioObjectInstance
+        class NAPAPI AudioFileReaderInstance : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
 
         public:
-            AudioFileReaderObjectInstance() = default;
-            AudioFileReaderObjectInstance(const std::string& name) : AudioObjectInstance(name) { }
+            AudioFileReaderInstance() = default;
+            AudioFileReaderInstance(const std::string& name) : AudioObjectInstance(name) { }
             bool init(NodeManager& nodeManager, std::vector<ResourcePtr<AudioFileIO>>& audioFiles, int bufefrSize, utility::ErrorState& errorState);
 
             int getChannelCount() const override { return mNodes.size(); }

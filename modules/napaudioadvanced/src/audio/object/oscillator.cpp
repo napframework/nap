@@ -11,7 +11,7 @@ RTTI_BEGIN_CLASS(nap::audio::Oscillator)
     RTTI_PROPERTY("WaveTable", &nap::audio::Oscillator::mWaveTable, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelInstance<nap::audio::OscillatorNode>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ParallelNodeObjectInstance<nap::audio::OscillatorNode>)
 RTTI_END_CLASS
 
 namespace nap

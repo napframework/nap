@@ -1,22 +1,22 @@
-#include "polyphonicobject.h"
+#include "polyphonic.h"
 
 // Nap includes
 #include <entity.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::PolyphonicObject)
-    RTTI_PROPERTY("Voice", &nap::audio::PolyphonicObject::mVoice, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("VoiceCount", &nap::audio::PolyphonicObject::mVoiceCount, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("VoiceStealing", &nap::audio::PolyphonicObject::mVoiceStealing, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("ChannelCount", &nap::audio::PolyphonicObject::mChannelCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::Polyphonic)
+    RTTI_PROPERTY("Voice", &nap::audio::Polyphonic::mVoice, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("VoiceCount", &nap::audio::Polyphonic::mVoiceCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("VoiceStealing", &nap::audio::Polyphonic::mVoiceStealing, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("ChannelCount", &nap::audio::Polyphonic::mChannelCount, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::audio::PolyphonicObjectInstance)
-    RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicObjectInstance::findFreeVoice)
-    RTTI_FUNCTION("play", &nap::audio::PolyphonicObjectInstance::play)
-    RTTI_FUNCTION("playOnChannels", &nap::audio::PolyphonicObjectInstance::playOnChannels)
-    RTTI_FUNCTION("stop", &nap::audio::PolyphonicObjectInstance::stop)
-    RTTI_FUNCTION("getBusyVoiceCount", &nap::audio::PolyphonicObjectInstance::getBusyVoiceCount)
+RTTI_BEGIN_CLASS(nap::audio::PolyphonicInstance)
+    RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicInstance::findFreeVoice)
+    RTTI_FUNCTION("play", &nap::audio::PolyphonicInstance::play)
+    RTTI_FUNCTION("playOnChannels", &nap::audio::PolyphonicInstance::playOnChannels)
+    RTTI_FUNCTION("stop", &nap::audio::PolyphonicInstance::stop)
+    RTTI_FUNCTION("getBusyVoiceCount", &nap::audio::PolyphonicInstance::getBusyVoiceCount)
 RTTI_END_CLASS
 
 namespace nap
@@ -25,9 +25,9 @@ namespace nap
     namespace audio
     {
 
-        std::unique_ptr<AudioObjectInstance> PolyphonicObject::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
+        std::unique_ptr<AudioObjectInstance> Polyphonic::createInstance(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
-            auto instance = std::make_unique<PolyphonicObjectInstance>();
+            auto instance = std::make_unique<PolyphonicInstance>();
             if (!instance->init(*mVoice, mVoiceCount, mVoiceStealing, mChannelCount, nodeManager, errorState))
                 return nullptr;
             
@@ -35,7 +35,7 @@ namespace nap
         }
 
 
-        bool PolyphonicObjectInstance::init(Voice& voice, int voiceCount, bool voiceStealing, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
+        bool PolyphonicInstance::init(Voice& voice, int voiceCount, bool voiceStealing, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState)
         {
             mNodeManager = &nodeManager;
 
@@ -57,7 +57,7 @@ namespace nap
         }
 
 
-        VoiceInstance* PolyphonicObjectInstance::findFreeVoice()
+        VoiceInstance* PolyphonicInstance::findFreeVoice()
         {
             for (auto& voice : mVoices)
                 if (voice->try_use())
@@ -78,7 +78,7 @@ namespace nap
         }
 
 
-        void PolyphonicObjectInstance::play(VoiceInstance* voice, TimeValue duration)
+        void PolyphonicInstance::play(VoiceInstance* voice, TimeValue duration)
         {
             if (!voice)
                 return;
@@ -88,7 +88,7 @@ namespace nap
         }
 
 
-        void PolyphonicObjectInstance::playSection(VoiceInstance* voice, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
+        void PolyphonicInstance::playSection(VoiceInstance* voice, int startSegment, int endSegment, ControllerValue startValue, TimeValue totalDuration)
         {
             if (!voice)
                 return;
@@ -99,7 +99,7 @@ namespace nap
 
 
 
-        void PolyphonicObjectInstance::playOnChannels(VoiceInstance* voice, std::vector<unsigned int> channels, TimeValue duration)
+        void PolyphonicInstance::playOnChannels(VoiceInstance* voice, std::vector<unsigned int> channels, TimeValue duration)
         {
             if (!voice)
                 return;
@@ -120,7 +120,7 @@ namespace nap
         }
 
 
-        void PolyphonicObjectInstance::stop(VoiceInstance* voice, TimeValue fadeOutTime)
+        void PolyphonicInstance::stop(VoiceInstance* voice, TimeValue fadeOutTime)
         {
             if (!voice)
                 return;
@@ -129,7 +129,7 @@ namespace nap
         }
 
 
-        int PolyphonicObjectInstance::getBusyVoiceCount() const
+        int PolyphonicInstance::getBusyVoiceCount() const
         {
             int result = 0;
             for (auto& voice : mVoices)
@@ -139,19 +139,19 @@ namespace nap
         }
 
 
-        OutputPin* PolyphonicObjectInstance::getOutputForChannel(int channel)
+        OutputPin* PolyphonicInstance::getOutputForChannel(int channel)
         {
             return &mMixNodes[channel]->audioOutput;
         }
 
 
-        int PolyphonicObjectInstance::getChannelCount() const
+        int PolyphonicInstance::getChannelCount() const
         {
             return mMixNodes.size();
         }
 
 
-        void PolyphonicObjectInstance::voiceFinished(VoiceInstance& voice)
+        void PolyphonicInstance::voiceFinished(VoiceInstance& voice)
         {
             assert(voice.getEnvelope().getValue() == 0);
 
@@ -168,7 +168,7 @@ namespace nap
         }
 
 
-        void PolyphonicObjectInstance::connectVoice(VoiceInstance* voice)
+        void PolyphonicInstance::connectVoice(VoiceInstance* voice)
         {
             // We cache the channel numbers of the output mixer that the voice will be connected to within the voice object.
             // We do that here already and not in the enqueued task to avoid allocations on the audio thread.

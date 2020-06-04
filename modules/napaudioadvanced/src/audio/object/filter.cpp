@@ -8,7 +8,7 @@ RTTI_BEGIN_CLASS(nap::audio::Filter)
     RTTI_PROPERTY("Gain", &nap::audio::Filter::mGain, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelInstance<nap::audio::FilterNode>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ParallelNodeObjectInstance<nap::audio::FilterNode>)
 RTTI_END_CLASS
 
 namespace nap

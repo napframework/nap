@@ -1,7 +1,7 @@
 #include "voice.h"
 
 // Audio includes
-#include <audio/core/polyphonicobject.h>
+#include <audio/core/polyphonic.h>
 
 RTTI_BEGIN_CLASS(nap::audio::Voice)
     RTTI_PROPERTY("Envelope", &nap::audio::Voice::mEnvelope, nap::rtti::EPropertyMetaData::Required)

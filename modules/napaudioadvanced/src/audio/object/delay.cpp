@@ -7,7 +7,7 @@ RTTI_BEGIN_CLASS(nap::audio::DelayObject)
     RTTI_PROPERTY("Input", &nap::audio::DelayObject::mInput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelInstance<nap::audio::DelayNode>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ParallelNodeObjectInstance<nap::audio::DelayNode>)
 RTTI_END_CLASS
 
 namespace nap

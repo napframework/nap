@@ -1,11 +1,11 @@
-#include "audiofilewriterobject.h"
+#include "audiofilewriter.h"
 
-RTTI_BEGIN_CLASS(nap::audio::AudioFileWriterObject)
-    RTTI_PROPERTY("AudioFiles", &nap::audio::AudioFileWriterObject::mAudioFiles, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("Input", &nap::audio::AudioFileWriterObject::mInput, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::audio::AudioFileWriter)
+    RTTI_PROPERTY("AudioFiles", &nap::audio::AudioFileWriter::mAudioFiles, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Input", &nap::audio::AudioFileWriter::mInput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileWriterObjectInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileWriterInstance)
 RTTI_END_CLASS
 
 
@@ -15,12 +15,12 @@ namespace nap
     namespace audio
     {
 
-        std::unique_ptr<AudioObjectInstance> AudioFileWriterObject::createInstance(NodeManager &nodeManager, utility::ErrorState &errorState)
+        std::unique_ptr<AudioObjectInstance> AudioFileWriter::createInstance(NodeManager &nodeManager, utility::ErrorState &errorState)
         {
-            auto instance = std::make_unique<AudioFileWriterObjectInstance>();
+            auto instance = std::make_unique<AudioFileWriterInstance>();
             if (!instance->init(nodeManager, mAudioFiles, mInput->getInstance(), errorState))
             {
-                errorState.fail("Failed to initialize AudioFileWriterObjectInstance");
+                errorState.fail("Failed to initialize AudioFileWriterInstance");
                 return nullptr;
             }
 
@@ -28,12 +28,12 @@ namespace nap
         }
 
 
-        bool AudioFileWriterObjectInstance::init(NodeManager &nodeManager, std::vector<ResourcePtr<AudioFileIO>>& audioFileWriters, AudioObjectInstance* input, utility::ErrorState &errorState)
+        bool AudioFileWriterInstance::init(NodeManager &nodeManager, std::vector<ResourcePtr<AudioFileIO>>& audioFileWriters, AudioObjectInstance* input, utility::ErrorState &errorState)
         {
             if (input != nullptr)
                 if (input->getChannelCount() < 1)
                 {
-                    errorState.fail("AudioFileWriterObjectInstance input needs to have at least 1 output channel");
+                    errorState.fail("AudioFileWriterInstance input needs to have at least 1 output channel");
                     return false;
                 }
 
@@ -43,12 +43,12 @@ namespace nap
             {
                 if (audioFile->getDescriptor()->getMode() != AudioFileDescriptor::Mode::WRITE && audioFile->getDescriptor()->getMode() != AudioFileDescriptor::Mode::READWRITE)
                 {
-                    errorState.fail("AudioFileWriterObject: Audio file not opened for writing");
+                    errorState.fail("AudioFileWriter: Audio file not opened for writing");
                     return false;
                 }
                 if (audioFile->getDescriptor()->getChannelCount() != 1)
                 {
-                    errorState.fail("AudioFileWriterObject works with mono AudioFileWriter resources");
+                    errorState.fail("AudioFileWriter works with mono AudioFileWriter resources");
                     return false;
                 }
 

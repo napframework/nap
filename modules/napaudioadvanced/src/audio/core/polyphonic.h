@@ -15,7 +15,7 @@ namespace nap
     namespace audio
     {
     
-        class PolyphonicObjectInstance;
+        class PolyphonicInstance;
         
         
         /**
@@ -24,12 +24,12 @@ namespace nap
          * For each "note" played on the isntrument one voice in the pool will be used.
          * When the playback of the note is finished the voice will be disconnected from the DSP processing graph.
          */
-        class NAPAPI PolyphonicObject : public AudioObject
+        class NAPAPI Polyphonic : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
             
         public:
-            PolyphonicObject() : AudioObject() { }
+            Polyphonic() : AudioObject() { }
 
             /**
              * This points to the voice graph resource defining the patch for a single voice in the polyphonic system.
@@ -61,13 +61,13 @@ namespace nap
         /**
          * Instance of object manages a pool of voices for polyphonic playback.
          */
-        class NAPAPI PolyphonicObjectInstance : public AudioObjectInstance
+        class NAPAPI PolyphonicInstance : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
             
         public:
-            PolyphonicObjectInstance() : AudioObjectInstance() { }
-            PolyphonicObjectInstance(const std::string& name) : AudioObjectInstance(name) { }
+            PolyphonicInstance() : AudioObjectInstance() { }
+            PolyphonicInstance(const std::string& name) : AudioObjectInstance(name) { }
 
             // Initialize the object
             bool init(Voice& voice, int voiceCount, bool voiceStealing, int channelCount, NodeManager& nodeManager, utility::ErrorState& errorState);
@@ -114,7 +114,7 @@ namespace nap
         private:
             void connectVoice(VoiceInstance* voice);
 
-            Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicObjectInstance::voiceFinished };
+            Slot<VoiceInstance&> voiceFinishedSlot = { this, &PolyphonicInstance::voiceFinished };
             void voiceFinished(VoiceInstance& voice);
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;

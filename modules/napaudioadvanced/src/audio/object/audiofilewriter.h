@@ -13,12 +13,12 @@ namespace nap
     namespace audio
     {
 
-        class NAPAPI AudioFileWriterObject : public AudioObject
+        class NAPAPI AudioFileWriter : public AudioObject
         {
             RTTI_ENABLE(AudioObject)
 
         public:
-            AudioFileWriterObject() = default;
+            AudioFileWriter() = default;
 
             std::vector<ResourcePtr<AudioFileIO>> mAudioFiles; ///< property: 'AudioFiles' Vector that points to mono @AudioFileWriter resources to write each channel of the object into.
             ResourcePtr<AudioObject> mInput = nullptr;
@@ -28,13 +28,13 @@ namespace nap
         };
 
 
-        class NAPAPI AudioFileWriterObjectInstance : public AudioObjectInstance
+        class NAPAPI AudioFileWriterInstance : public AudioObjectInstance
         {
             RTTI_ENABLE(AudioObjectInstance)
 
         public:
-            AudioFileWriterObjectInstance() = default;
-            AudioFileWriterObjectInstance(const std::string& name) : AudioObjectInstance(name) { }
+            AudioFileWriterInstance() = default;
+            AudioFileWriterInstance(const std::string& name) : AudioObjectInstance(name) { }
             bool init(NodeManager& nodeManager, std::vector<ResourcePtr<AudioFileIO>>& audioFiles, AudioObjectInstance* input, utility::ErrorState& errorState);
 
             int getChannelCount() const override { return 0; }

@@ -160,7 +160,7 @@ namespace nap
                 return false;
             }
             
-            mPolyphonic = std::make_unique<PolyphonicObject>();
+            mPolyphonic = std::make_unique<Polyphonic>();
             mPolyphonic->mID = "Polyphonic";
             mPolyphonic->mVoice = mVoice.get();
             mPolyphonic->mChannelCount = channelCount;
@@ -172,7 +172,7 @@ namespace nap
                 return false;
             }
 
-            mPolyphonicInstance = mPolyphonic->instantiate<PolyphonicObjectInstance>(nodeManager, errorState);
+            mPolyphonicInstance = mPolyphonic->instantiate<PolyphonicInstance>(nodeManager, errorState);
             
             if (autoPlay)
                 start();
@@ -215,7 +215,7 @@ namespace nap
             auto voice = mPolyphonicInstance->findFreeVoice();
             assert(voice != nullptr);
             mVoices.emplace(voice);
-            auto bufferPlayer = voice->getObject<MultiChannelInstance<BufferPlayerNode>>("BufferPlayer");
+            auto bufferPlayer = voice->getObject<ParallelNodeObjectInstance<BufferPlayerNode>>("BufferPlayer");
             auto& envelope = voice->getEnvelope();
             
             for (auto channel = 0; channel < bufferPlayer->getChannelCount(); ++channel)

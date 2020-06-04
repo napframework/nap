@@ -82,14 +82,14 @@ namespace nap
             Sampler::SamplerEntries mSamplerEntries;
             EnvelopeNode::Envelope mEnvelopeData;
             
-            std::unique_ptr<PolyphonicObjectInstance> mPolyphonicInstance = nullptr;
+            std::unique_ptr<PolyphonicInstance> mPolyphonicInstance = nullptr;
             
             // private resources
             std::unique_ptr<Envelope> mEnvelope = nullptr;
             std::unique_ptr<BufferLooper> mBufferLooper = nullptr;
             std::unique_ptr<Gain> mGain = nullptr;
             std::unique_ptr<Voice> mVoice = nullptr;
-            std::unique_ptr<PolyphonicObject> mPolyphonic = nullptr;
+            std::unique_ptr<Polyphonic> mPolyphonic = nullptr;
         };
         
         

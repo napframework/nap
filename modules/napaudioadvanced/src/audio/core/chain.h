@@ -14,7 +14,7 @@ namespace nap
     {
         
         /**
-         * A chain of AudioObjects that whose inputs and outputs are connected serially.
+         * A chain of AudioObjects whose inputs and outputs are connected serially.
          * A chain can never be empty.
          */
         class NAPAPI Chain : public AudioObject
