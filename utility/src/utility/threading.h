@@ -55,16 +55,15 @@ namespace nap
 	{
     public:
         /**
-         * @blocking: 
-         *   true: the threads blocks and waits for enqueued tasks to perform
-         *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
-         * @maxQueueItems: the maximum number of items in the task queue
+         * @param blocking true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible.
+         * @param maxQueueItems the maximum number of items in the task queue
          */
         WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**
-         * enqueues a task to be performed on this thread
+         * enqueues a task to be performed on this thread.
+		 * @param task the task to enqueue.
          */
         void enqueue(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
         
@@ -79,12 +78,12 @@ namespace nap
         void stop();
         
         /**
-         * Returns wether the thread is running and not shutting down.
+         * @return if the thread is running and not shutting down.
          */
         bool isRunning() { return mRunning; }
         
         /**
-         * Overwrite this method to specify behaviour to be executed each loop after processing the task queue.
+         * Overwrite this method to specify behavior to be executed each loop after processing the task queue.
          */
         virtual void loop() { }
         
@@ -102,16 +101,13 @@ namespace nap
     class ThreadPool final
 	{
     public:
-        ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20, bool realTimePriority = false);
+        ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
         ~ThreadPool();
         
         /**
          * Enqueues a task to be performed on the next idle thread.
          */
-        void execute(TaskQueue::Task task) {
-            assert(task != nullptr);
-            mTaskQueue.enqueue(task);
-        }
+        void execute(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
         
         /**
          * Sets stopping to true and joins and exits all threads in the pool.
@@ -139,6 +135,5 @@ namespace nap
         std::vector<std::thread> mThreads;
         std::atomic<bool> mStop;
         TaskQueue mTaskQueue;
-        bool mRealTimePriority = false;
     };
 }
