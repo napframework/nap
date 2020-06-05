@@ -31,7 +31,7 @@ namespace nap
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(const T& value);
+		void setValue(T value);
 
 		/**
 		 * Sets the min/max range of this parameter to the specified values.
@@ -42,24 +42,13 @@ namespace nap
 		 */
 		void setRange(typename T::value_type minimum, typename T::value_type maximum);
 
-        /**
-         * Connects an action to the parameter's valueChanged signal and calls it straightaway, to make sure the connected system is in sync with the parameter's current value.
-         * ActionType can be of any type that can be connected to the valueChanged signal.
-         */
-        template <typename ActionType>
-        void connect(ActionType action)
-        {
-            valueChanged.connect(std::forward<ActionType>(action));
-            action(mValue);
-        }
-
-    public:
+	public:
 		T						mValue;										        ///< Property: 'Value' the value of this parameter
 		bool					mClamp = false;										///< Property: 'Clamp' if the vector is clamped to the min / max value
 		typename T::value_type	mMinimum = static_cast<typename T::value_type>(0);	///< Property: 'Minimum' the minimum value of this parameter
 		typename T::value_type	mMaximum = static_cast<typename T::value_type>(1);	///< Property: 'Maximum' the maximum value of this parameter
 
-		Signal<const T&>				valueChanged;								///< Signal that's raised when the value changes
+		Signal<T>				valueChanged;								        ///< Signal that's raised when the value changes
 	};
 
 
@@ -86,7 +75,7 @@ namespace nap
 	}
 
 	template<typename T>
-	void ParameterVec<T>::setValue(const T& value)
+	void ParameterVec<T>::setValue(T value)
 	{
 		// Clamp& set the components for each element individually
 		T oldValue = mValue;
@@ -117,24 +106,11 @@ namespace nap
 	/**
 	 * Helper macro that can be used to define the RTTI for a vector parameter type
 	 */
-	 #ifdef NAP_ENABLE_PYTHON
-	    #define DEFINE_VECTOR_PARAMETER(Type)																		\
-		    RTTI_BEGIN_CLASS(Type)																					\
-			    RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)			\
-    		    RTTI_FUNCTION("setValue", static_cast<void (Type::*)(const decltype(Type::mValue)&)>(&Type::setValue))\
-    		    RTTI_FUNCTION("connect", &Type::connect<pybind11::function>) \
-		    RTTI_END_CLASS
-     #else
-        #define DEFINE_VECTOR_PARAMETER(Type)																		\
-		    RTTI_BEGIN_CLASS(Type)																					\
-			    RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)			\
-			    RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)			\
-    		    RTTI_FUNCTION("setValue", static_cast<void (Type::*)(const decltype(Type::mValue)&)>(&Type::setValue))\
-		    RTTI_END_CLASS
-     #endif
+	#define DEFINE_VECTOR_PARAMETER(Type)																				\
+		RTTI_BEGIN_CLASS(Type)																						\
+			RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
+		RTTI_END_CLASS
 }

@@ -60,12 +60,6 @@ namespace nap
 			}
 		}
 
-		// Sort
-		std::sort(presets.begin(), presets.end(), [](std::string a, std::string b)
-		{
-			return a < b;
-		});
-
 		return presets;
 	}
 
@@ -117,7 +111,7 @@ namespace nap
 			if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == group.mID)
 			{
 				setParametersRecursive(*rtti_cast<ParameterGroup>(object.get()), group);
-				presetLoaded();
+				presetLoaded(presetFile);
 				return true;
 			}
 		}

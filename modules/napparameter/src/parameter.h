@@ -43,7 +43,7 @@ namespace nap
 	class NAPAPI ParameterGroup : public Resource
 	{
 		RTTI_ENABLE(Resource)
-	public:
+
 		/**
 		 * Find a parameter in the current group by id
 		 *
@@ -51,30 +51,6 @@ namespace nap
 		 * @return The parameter if found. Null otherwise.
 		 */
 		ResourcePtr<Parameter> findParameter(const std::string& id) const;
-
-		/**
-		 * Find a parameter in the current group by reference
-		 *
-		 * @param param The parameter to find
-		 * @return The parameter if found. Null otherwise.
-		 */
-		ResourcePtr<Parameter> findParameter(const nap::ResourcePtr<Parameter>& param) const;
-
-		/**
-		 * Find a parameter in the current group, or any child of this group, by id
-		 *
-		 * @param name the unique id of the parameter to find
-		 * @return the parameter if found. Null otherwise.
-		 */
-		ResourcePtr<Parameter> findParameterRecursive(const std::string& id) const;
-
-		/**
-		 * Find a parameter in the current group, or any child of this group, by reference
-		 *
-		 * @param param the parameter to find
-		 * @return the parameter if found. Null otherwise.
-		 */
-		ResourcePtr<Parameter> findParameterRecursive(const nap::ResourcePtr<Parameter>& param) const;
 
 		/**
 		 * Find a child ParameterGroup with the specified id

@@ -13,59 +13,17 @@ namespace nap
 {
 	ResourcePtr<Parameter> ParameterGroup::findParameter(const std::string& id) const
 	{
-		for (const auto& param : mParameters)
+		for (auto& param : mParameters)
 			if (param->mID == id)
 				return param;
-		return nullptr;
-	}
 
-
-	nap::ResourcePtr<nap::Parameter> ParameterGroup::findParameter(const nap::ResourcePtr<Parameter>& param) const
-	{
-		for (const auto& param : mParameters)
-			if (param == param)
-				return param;
-		return nullptr;
-	}
-
-
-	nap::ResourcePtr<nap::Parameter> ParameterGroup::findParameterRecursive(const std::string& id) const
-	{
-		nap::ResourcePtr<nap::Parameter> found_param = findParameter(id);
-		if (found_param != nullptr)
-			return found_param;
-
-		for (const auto& group : mChildren)
-		{
-			found_param = group->findParameterRecursive(id);
-			if (found_param == nullptr)
-				continue;
-			return found_param;
-		}
-		return nullptr;
-	}
-
-
-	nap::ResourcePtr<nap::Parameter> ParameterGroup::findParameterRecursive(const nap::ResourcePtr<Parameter>& param) const
-	{
-		nap::ResourcePtr<nap::Parameter> found_param = findParameter(param);
-		if (found_param != nullptr)
-			return found_param;
-
-		for (const auto& group : mChildren)
-		{
-			found_param = group->findParameterRecursive(param);
-			if (found_param == nullptr)
-				continue;
-			return found_param;
-		}
 		return nullptr;
 	}
 
 
 	ResourcePtr<ParameterGroup> ParameterGroup::findChild(const std::string& id) const
 	{
-		for (const auto& param : mChildren)
+		for (auto& param : mChildren)
 			if (param->mID == id)
 				return param;
 
