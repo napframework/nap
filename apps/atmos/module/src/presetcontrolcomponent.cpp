@@ -12,12 +12,9 @@ RTTI_BEGIN_STRUCT(nap::PresetControlComponent::PresetInfo)
     RTTI_PROPERTY("AverageDuration", &nap::PresetControlComponent::PresetInfo::mAverageDuration, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("DurationDeviation", &nap::PresetControlComponent::PresetInfo::mDurationDeviation, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("TransitionTime", &nap::PresetControlComponent::PresetInfo::mTransitionTime, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("AudioLayers", &nap::PresetControlComponent::PresetInfo::mAudioLayers, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("AudioCrossFadeTime", &nap::PresetControlComponent::PresetInfo::mAudioCrossFadeTime, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::PresetControlComponent)
-    RTTI_PROPERTY("AudioControlComponent", &nap::PresetControlComponent::mAudioControlComponent, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("PresetParameterGroup", &nap::PresetControlComponent::mPresetParameterGroup, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Presets", &nap::PresetControlComponent::mPresets, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("RandomizeSequence", &nap::PresetControlComponent::mRandomizeSequence, nap::rtti::EPropertyMetaData::Default)
@@ -102,8 +99,6 @@ namespace nap
         mAverageDuration = resource.mAverageDuration;
         mDurationDeviation = resource.mDurationDeviation;
         mTransitionTime = resource.mTransitionTime;
-        mAudioLayers = resource.mAudioLayers;
-        mAudioCrossFadeTime = resource.mAudioCrossFadeTime;
     }
 
 
@@ -123,16 +118,12 @@ namespace nap
         mCurrentPresetDuration = preset->mAverageDuration + math::random(-preset->mDurationDeviation / 2.f, preset->mDurationDeviation / 2.f);
         mCurrentPresetElapsedTime = 0;
         mSwitchPresetComponent->selectPresetByIndex(preset->mPresetIndex, preset->mTransitionTime);
-
-        // convert the crossfade time from seconds to milliseconds
-        mAudioControlComponent->replaceLayers(preset->mAudioLayers, preset->mAudioCrossFadeTime * 1000.f);
     }
 
 
     void PresetControlComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
     {
         components.push_back(RTTI_OF(nap::SwitchPresetComponent));
-        components.push_back(RTTI_OF(nap::AudioControlComponent));
     }
 
 
