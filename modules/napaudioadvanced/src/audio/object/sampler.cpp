@@ -123,12 +123,16 @@ namespace nap
         {
             if (samplerEntryIndex > mSamplerEntries.size())
                 return nullptr;
+
+            int busyVoiceCount = mPolyphonicInstance->getBusyVoiceCount();
+            Logger::info("Busy voice count %i", busyVoiceCount);
             
             auto voice = mPolyphonicInstance->findFreeVoice();
             assert(voice != nullptr);
             auto bufferLooper = voice->getObject<BufferLooperInstance>("BufferLooper");
             auto& envelope = voice->getEnvelope();
-            
+
+            bufferLooper->reset();
             bufferLooper->start(mSamplerEntries[samplerEntryIndex]);
             envelope.setEnvelopeData(mEnvelopeData);
 
@@ -142,8 +146,11 @@ namespace nap
         {
             auto bufferLooper = voice->getObject<BufferLooperInstance>("BufferLooper");
             auto& envelope = voice->getEnvelope();
-            envelope.stop(release);
-            bufferLooper->stop();
+            if (release == 0.f)
+                envelope.stop(1.f);
+            else
+                envelope.stop(release);
+//            bufferLooper->stop();
         }
 
         
