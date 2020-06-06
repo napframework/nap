@@ -19,7 +19,7 @@ namespace nap
 
             auto& envelope = mSampler.getEnvelopeData();
             envelope.resize(1);
-            envelope[0].mTranslate = true;
+            envelope[0].mTranslate = false;
             envelope[0].mDestination = 1.f;
             envelope[0].mDuration = attack;
             auto voice = mSampler.play(samplerEntryIndex, 0);
@@ -31,13 +31,13 @@ namespace nap
         {
             auto& envelope = mSampler.getEnvelopeData();
             envelope.resize(3);
-            envelope[0].mTranslate = true;
+            envelope[0].mTranslate = false;
             envelope[0].mDestination = 1.f;
             envelope[0].mDuration = attack;
             envelope[1].mTranslate = false;
             envelope[1].mDestination = 1.f;
             envelope[1].mDuration = sustain;
-            envelope[2].mTranslate = true;
+            envelope[2].mTranslate = false;
             envelope[2].mDestination = 0.f;
             envelope[2].mDuration = release;
             mSampler.play(samplerEntryIndex, 0);
