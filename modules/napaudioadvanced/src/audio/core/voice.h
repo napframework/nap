@@ -71,7 +71,7 @@ namespace nap
             /**
              * Stops playback of the voice by forcing the envelope to fade out
              */
-            void stop(TimeValue rampTime = 0);
+            void stop(TimeValue rampTime);
             
             /**
              * @return: wether this voice is currently playing or reserved for usage.
