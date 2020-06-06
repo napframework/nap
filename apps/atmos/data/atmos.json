@@ -18,6 +18,15 @@
         {
             "Type": "nap::Entity",
             "mID": "AudioEntity",
+            "Components": [],
+            "Children": [
+                "AudioLayerEntity",
+                "AudioLayerEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "AudioLayerEntity",
             "Components": [
                 {
                     "Type": "nap::audio::AudioComponent",
@@ -2119,6 +2128,37 @@
                         }
                     ],
                     "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Sensor Audio",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "SensorAudioLayer",
+                            "Name": "",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SensorAudioCrossFadeTime",
+                            "Name": "",
+                            "Value": 4.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SensorAudioVolume",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": -48.0,
+                            "Maximum": 0.0
+                        }
+                    ],
+                    "Groups": []
                 }
             ]
         },
@@ -2228,7 +2268,37 @@
                 },
                 {
                     "Entity": "AudioEntity",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./AudioLayerEntity:1/nap::AudioControlComponent_bb6e3b8d",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "AudioLayer",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_053897-043384-041151-011242",
+                                        "Value": "SensorAudioLayer"
+                                    }
+                                },
+                                {
+                                    "Path": "AudioCrossFadeTime",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_063408-041861-079018-055736",
+                                        "Value": "SensorAudioCrossFadeTime"
+                                    }
+                                },
+                                {
+                                    "Path": "AudioVolume",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_014337-083812-018034-060137",
+                                        "Value": "SensorAudioVolume"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
