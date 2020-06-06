@@ -104,7 +104,13 @@ namespace nap
              * Stops playing the voice by telling it to fade out it's envelope
              * Once the envelope is faded out this will trigger the voice to be disconnected from this object's mixers
              */
-            void stop(VoiceInstance* voice, TimeValue fadeOutTime = 0);
+            void stop(VoiceInstance* voice, TimeValue fadeOutTime);
+
+            /**
+             * Stops the polyphonic hard by disconnecting all its voices.
+             * Only call this while the polyphonic is not being processed anymore!
+             */
+            void reset();
             
             /**
              * Counts the number of voices that are currently playing.

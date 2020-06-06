@@ -129,6 +129,19 @@ namespace nap
         }
 
 
+        void PolyphonicInstance::reset()
+        {
+            for (auto& voice : mVoices)
+                if (voice->isBusy())
+                {
+                    for (auto channel = 0; channel < voice->mConnectedToChannels.size(); ++channel)
+                        mMixNodes[voice->mConnectedToChannels[channel]]->inputs.disconnect(*voice->getOutput()->getOutputForChannel(channel % voice->getOutput()->getChannelCount()));
+
+                    voice->free();
+                }
+        }
+
+
         int PolyphonicInstance::getBusyVoiceCount() const
         {
             int result = 0;
