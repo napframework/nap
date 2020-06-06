@@ -53,6 +53,28 @@ namespace nap
             res *= 220.0;
             return res;
         }
+
+
+        /**
+         * Convert amplitude to decibel value.
+         */
+        inline float toDB(float amplitude)
+        {
+            return 20 * log10(amplitude);
+        }
+
+
+        /**
+         * Convert decibel value to amplitude.
+         */
+        inline float dbToA(float db, float zero = -48)
+        {
+            if (db <= zero)
+                return 0;
+
+            return powf(10, db / 20.0);
+        }
+
         
 
         
