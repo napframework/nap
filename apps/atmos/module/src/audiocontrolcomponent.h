@@ -27,9 +27,12 @@ namespace nap
         void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { }
 
         ComponentPtr<audio::AudioComponent> mAudioComponent; ///< Property: "AudioComponent"
+        ResourcePtr<audio::Sampler> mSampler = nullptr;
+        ResourcePtr<audio::Gain> mGain = nullptr;
 
-        ResourcePtr<ParameterNumeric<int>> mDefaultAudioLayer = nullptr;
-        bool mEnableDefaultLayer = false;
+        ResourcePtr<ParameterNumeric<int>> mAudioLayer = nullptr; ///< Property: 'AudioLayer' index in the sampler entries
+        ResourcePtr<ParameterNumeric<float>> mAudioCrossFadeTime = nullptr; ///< Property: 'AudioCrossFadeTime' in seconds
+        ResourcePtr<ParameterNumeric<float>> mAudioVolume = nullptr; ///< Property: 'AudioVolume' in dB
     };
 
 
@@ -53,12 +56,17 @@ namespace nap
 
     private:
         std::unique_ptr<audio::SampleLayerController> mLayerController = nullptr;
+        audio::ParallelNodeObjectInstance<audio::GainNode>* mGain = nullptr;
 
-        bool mEnableDefaultLayer = false;
-        ResourcePtr<ParameterNumeric<int>> mDefaultAudioLayer = nullptr;
+        ResourcePtr<ParameterNumeric<int>> mAudioLayer = nullptr;
+        ResourcePtr<ParameterNumeric<float>> mAudioCrossFadeTime = nullptr;
+        ResourcePtr<ParameterNumeric<float>> mAudioVolume = nullptr;
 
-        Slot<int> mDefaultLayerChanged = { this, &AudioControlComponentInstance::defaultLayerChanged };
-        void defaultLayerChanged(int newLayer);
+        Slot<int> mAudioLayerChanged = { this, &AudioControlComponentInstance::audioLayerChanged };
+        void audioLayerChanged(int newLayer);
+
+        Slot<float> mVolumeChanged = { this, &AudioControlComponentInstance::volumeChanged };
+        void volumeChanged(float);
     };
 
 }
