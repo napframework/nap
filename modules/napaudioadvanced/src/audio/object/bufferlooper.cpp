@@ -194,10 +194,17 @@ namespace nap
         }
 
         
-        void BufferLooperInstance::stop()
+        void BufferLooperInstance::stop(TimeValue fadeOutTime)
         {
             for (auto voice : mVoices)
-                voice->stop();
+                voice->stop(fadeOutTime);
+        }
+
+
+        void BufferLooperInstance::reset()
+        {
+            mPolyphonicInstance->reset();
+            mVoices.clear();
         }
         
         

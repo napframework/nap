@@ -71,7 +71,8 @@ namespace nap
 
             void start();
             void start(BufferLooper::Settings& settings);
-            void stop();
+            void stop(TimeValue fadeOutTime);
+            void reset();
             
         private:
             BufferLooper::Settings mSettings;
