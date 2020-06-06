@@ -67,6 +67,7 @@ namespace nap
 
         void EnvelopeNode::stop(TimeValue rampTime)
         {
+            assert(rampTime > 0.f);
             mNewCurrentSegment.store(mNewEndSegment.load());
             mFadeOutTime.store(rampTime);
             mIsDirty.set();
