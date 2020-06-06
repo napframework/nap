@@ -95,7 +95,7 @@ namespace nap
     void AudioControlComponentInstance::volumeChanged(float value)
     {
         for (auto channel = 0; channel < mGain->getChannelCount(); ++channel)
-            mGain->getChannel(channel)->setGain(audio::dbToA(value), 1.f);
+            mGain->getChannel(channel)->setGain(audio::dbToA(value), 10.f);
     }
 
 
