@@ -33,6 +33,7 @@ namespace nap
         ResourcePtr<ParameterNumeric<int>> mAudioLayer = nullptr; ///< Property: 'AudioLayer' index in the sampler entries
         ResourcePtr<ParameterNumeric<float>> mAudioCrossFadeTime = nullptr; ///< Property: 'AudioCrossFadeTime' in seconds
         ResourcePtr<ParameterNumeric<float>> mAudioVolume = nullptr; ///< Property: 'AudioVolume' in dB
+        ResourcePtr<ParameterNumeric<float>> mMasterVolume = nullptr; ///< Property: 'MasterVolume' in dB
     };
 
 
@@ -61,6 +62,7 @@ namespace nap
         ResourcePtr<ParameterNumeric<int>> mAudioLayer = nullptr;
         ResourcePtr<ParameterNumeric<float>> mAudioCrossFadeTime = nullptr;
         ResourcePtr<ParameterNumeric<float>> mAudioVolume = nullptr;
+        ResourcePtr<ParameterNumeric<float>> mMasterVolume = nullptr;
 
         Slot<int> mAudioLayerChanged = { this, &AudioControlComponentInstance::audioLayerChanged };
         void audioLayerChanged(int newLayer);

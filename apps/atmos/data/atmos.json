@@ -56,6 +56,7 @@
                     "AudioLayer": "SampleLayer",
                     "AudioCrossFadeTime": "AudioCrossFadeTime",
                     "AudioVolume": "AudioVolume",
+                    "MasterVolume": "MasterVolume",
                     "Sampler": "Sampler",
                     "Gain": "Gain"
                 }
@@ -1336,6 +1337,14 @@
                     "Value": 0,
                     "Minimum": 0,
                     "Maximum": 1
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MasterVolume",
+                    "Name": "",
+                    "Value": -48.0,
+                    "Minimum": -48.0,
+                    "Maximum": 0.0
                 }
             ],
             "Groups": [
@@ -2410,7 +2419,7 @@
                     "mID": "Gain",
                     "ChannelCount": 4,
                     "Gain": [
-                        1.0
+                        0.0
                     ],
                     "Inputs": [
                         "Sampler"
