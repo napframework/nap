@@ -404,6 +404,7 @@ namespace nap
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
 			int step_start = math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth;
+			double step_size = player.getDuration() / mState.mTimelineWidth;
 			for (int i = step_start; i < steps; i++)
 			{
 				ImVec2 timestamp_pos;
@@ -416,7 +417,7 @@ namespace nap
 					if (timestamp_pos.y >= parent_window_pos.y &&
 						timestamp_pos.y < parent_window_size.y + parent_window_pos.y)
 					{
-						double time_in_player			= player.getDuration() * (float)((float)i / steps);
+						double time_in_player = step_size * i;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
 						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
 
