@@ -860,17 +860,16 @@ namespace nap
 		style.Colors[ImGuiCol_Border]					= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_BorderShadow]				= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_FrameBg]					= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgHovered]			= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_FrameBgActive]			= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_FrameBgHovered]			= IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_FrameBgActive]			= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_TitleBg]					= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_TitleBgCollapsed]			= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TitleBgActive]			= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TitleBgActive]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_MenuBarBg]				= IMGUI_NAPBACK;
 		style.Colors[ImGuiCol_ScrollbarBg]				= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_ScrollbarGrab]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ScrollbarGrabHovered]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_ScrollbarGrabActive]		= IMGUI_NAPFRO3;
-		//style.Colors[ImGuiCol_ComboBg]					= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_CheckMark]				= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_SliderGrab]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_SliderGrabActive]			= IMGUI_NAPFRO3;
@@ -878,23 +877,32 @@ namespace nap
 		style.Colors[ImGuiCol_ButtonHovered]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ButtonActive]				= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_Header]					= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_SeparatorHovered]			= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SeparatorActive]			= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_HeaderHovered]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_HeaderActive]				= IMGUI_NAPFRO2;
-		//style.Colors[ImGuiCol_Column]					= IMGUI_NAPBACK;
-		//style.Colors[ImGuiCol_ColumnHovered]			= IMGUI_NAPFRO2;
-		//style.Colors[ImGuiCol_ColumnActive]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ResizeGrip]				= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ResizeGripHovered]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_ResizeGripActive]			= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_Tab]						= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabHovered]				= IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_TabActive]				= IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_TabUnfocused]				= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabUnfocusedActive]		= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_PlotLines]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_PlotLinesHovered]			= IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_PlotHistogram]			= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_PlotHistogramHovered]		= IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_TextSelectedBg]			= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPMODAL;
-		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_SeparatorHovered]			= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_SeparatorActive]			= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavHighlight]				= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavWindowingHighlight]	= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavWindowingDimBg]		= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ModalWindowDimBg]			= IMGUI_NAPFRO1;
 	}
 
 
@@ -1050,10 +1058,12 @@ namespace nap
 		applyStyle();
 
 		// Add font
+		//io.Fonts->AddFontFromFileTTF("c:/naivi/NunitoSans-Regular.ttf", 17.5f);
+
 		ImFontConfig font_config;
-		font_config.OversampleH = 8;
+		font_config.OversampleH = 3;
 		font_config.OversampleV = 1;
-		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.0f, &font_config);
+		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
 
 		createDeviceObjects();
 		createFontsTexture(*mRenderService);
