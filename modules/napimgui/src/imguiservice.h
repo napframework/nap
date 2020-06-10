@@ -5,7 +5,10 @@
 #include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
-#include "nap/resourceptr.h"
+#include <nap/resourceptr.h>
+
+// ImGUI forward declares
+struct ImGuiContext;
 
 namespace nap
 {
@@ -91,6 +94,7 @@ namespace nap
 	private:
 		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
 		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
+		ImGuiContext*				mContext = nullptr;
 		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
 	};
 }
