@@ -855,7 +855,7 @@ namespace nap
 		style.Colors[ImGuiCol_Text]						= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_TextDisabled]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_WindowBg]					= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ChildWindowBg]			= IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_ChildBg]					= IMGUI_NAPBACK;
 		style.Colors[ImGuiCol_PopupBg]					= IMGUI_NAPBACK;
 		style.Colors[ImGuiCol_Border]					= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_BorderShadow]				= IMGUI_NAPFRO1;
@@ -870,7 +870,7 @@ namespace nap
 		style.Colors[ImGuiCol_ScrollbarGrab]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ScrollbarGrabHovered]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_ScrollbarGrabActive]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ComboBg]					= IMGUI_NAPDARK;
+		//style.Colors[ImGuiCol_ComboBg]					= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_CheckMark]				= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_SliderGrab]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_SliderGrabActive]			= IMGUI_NAPFRO3;
@@ -880,15 +880,12 @@ namespace nap
 		style.Colors[ImGuiCol_Header]					= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_HeaderHovered]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_HeaderActive]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_Column]					= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ColumnHovered]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ColumnActive]				= IMGUI_NAPFRO2;
+		//style.Colors[ImGuiCol_Column]					= IMGUI_NAPBACK;
+		//style.Colors[ImGuiCol_ColumnHovered]			= IMGUI_NAPFRO2;
+		//style.Colors[ImGuiCol_ColumnActive]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ResizeGrip]				= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ResizeGripHovered]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_ResizeGripActive]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_CloseButton]				= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_CloseButtonHovered]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_CloseButtonActive]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_PlotLines]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_PlotLinesHovered]			= IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_PlotHistogram]			= IMGUI_NAPFRO3;
@@ -896,7 +893,8 @@ namespace nap
 		style.Colors[ImGuiCol_TextSelectedBg]			= IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPMODAL;
 		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO3;
-		
+		style.Colors[ImGuiCol_SeparatorHovered]			= IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SeparatorActive]			= IMGUI_NAPFRO3;
 	}
 
 
@@ -1018,6 +1016,8 @@ namespace nap
 		VkResult result = vkCreateDescriptorPool(g_Device, &poolInfo, nullptr, &g_DescriptorPool);
 		assert(result == VK_SUCCESS);
 
+		ImGuiContext* context = ImGui::CreateContext();
+
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeyMap[ImGuiKey_Tab]			= (int)EKeyCode::KEY_TAB;
@@ -1086,6 +1086,6 @@ namespace nap
 	void IMGuiService::shutdown()
 	{
 		invalidateDeviceObjects();
-		ImGui::Shutdown();
+		//ImGui::Shutdown();
 	}
 }
