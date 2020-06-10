@@ -863,7 +863,7 @@ namespace nap
 		style.Colors[ImGuiCol_FrameBgHovered]			= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_FrameBgActive]			= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_TitleBg]					= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TitleBgCollapsed]			= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TitleBgCollapsed]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_TitleBgActive]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_MenuBarBg]				= IMGUI_NAPBACK;
 		style.Colors[ImGuiCol_ScrollbarBg]				= IMGUI_NAPDARK;
