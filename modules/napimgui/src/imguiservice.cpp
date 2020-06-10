@@ -32,6 +32,7 @@ namespace nap
 	static void checkVKResult(VkResult err)
 	{
 		if (err == 0) return;
+		assert(false);
 		nap::Logger::error("ImGUI Vulkan Error! code: %d", err);
 	}
 
@@ -45,28 +46,36 @@ namespace nap
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(renderService.getDevice(), &allocInfo, &commandBuffer);
+		VkResult err = vkAllocateCommandBuffers(renderService.getDevice(), &allocInfo, &commandBuffer);
+		checkVKResult(err);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		checkVKResult(err);
+
 		return commandBuffer;
 	}
 
 
 	static void endSingleTimeCommands(RenderService& renderService, VkCommandBuffer commandBuffer)
 	{
-		vkEndCommandBuffer(commandBuffer);
+		VkResult err = vkEndCommandBuffer(commandBuffer);
+		checkVKResult(err);
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(renderService.getGraphicsQueue());
+		err = vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		checkVKResult(err);
+
+		err = vkQueueWaitIdle(renderService.getGraphicsQueue());
+		checkVKResult(err);
+		
 		vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
 	}
 
