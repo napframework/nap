@@ -66,6 +66,31 @@ namespace nap
 		 */
 		bool NAPAPI readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState);
 
+		std::unique_ptr<nap::rtti::Object> NAPAPI readJSONFileObject(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, utility::ErrorState& errorState);
+
+		template<typename T>
+		std::unique_ptr<T> readJSONFileObjectT(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, utility::ErrorState& errorState)
+		{
+			auto obj = readJSONFileObject(path, propertyValidationMode, pointerPropertyMode, factory, errorState);
+			if (obj == nullptr)
+			{
+				errorState.fail("Failed to read Object");
+				return {};
+			}
+			auto t = rtti_cast<T>(obj);
+			if (t == nullptr)
+				errorState.fail("Expected %s, got %s in file %s",
+								 RTTI_OF(T).get_name().data(),
+								 obj->get_type().get_name().data(),
+								 path.c_str());
+			return t;
+		}
+
+		bool NAPAPI readJSONDocumentFile(const std::string& path, rapidjson::Document& document, nap::utility::ErrorState& errorState);
+
+		bool NAPAPI readJSONDocumentString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState);
+
+
 	} //< End Namespace nap
 
 }

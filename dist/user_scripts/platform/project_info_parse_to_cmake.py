@@ -26,9 +26,8 @@ def update_project_info_to_cmake(project_path):
         except json.JSONDecodeError as e:
             raise Exception('While opening %s: %s' % (project_filename, e))
 
-    modulelist = json_dict.get('modules', [])
-    assert isinstance(modulelist, list), "Expected list 'modules' in %s, got %s" %\
-                                         (project_filename, type(modulelist))
+    modulelist = json_dict.get('Modules')
+    assert isinstance(modulelist, list), "Expected list 'Modules' in %s" % project_filename
     nap_modules = ' '.join(modulelist)
 
     # Write out

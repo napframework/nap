@@ -100,6 +100,8 @@ namespace napkin
 		 */
 		nap::ProjectInfo* loadProject(const QString& projectFilename);
 
+		std::unique_ptr<nap::PathMapping> loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
+
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
 		 */
@@ -355,7 +357,6 @@ namespace napkin
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
 		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
-		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here

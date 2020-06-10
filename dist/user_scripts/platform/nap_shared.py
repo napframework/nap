@@ -104,11 +104,11 @@ def get_camelcase_project_name(project_name):
     project_name = ''
     with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
         json_dict = json.load(json_file)
-        if not 'title' in json_dict:
-            print("Missing element 'title' in %s" % PROJECT_INFO_FILENAME)
+        if not 'Title' in json_dict:
+            print("Missing element 'Title' in %s" % PROJECT_INFO_FILENAME)
             return None
 
-        project_name = json_dict['title']
+        project_name = json_dict['Title']
     return project_name
 
 # Add module to project.json
@@ -123,16 +123,16 @@ def add_module_to_project_json(project_name, full_module_name):
     with open(project_info_path) as json_file:
         json_dict = json.load(json_file, object_pairs_hook=OrderedDict)
 
-        if not 'modules' in json_dict:
-            print("Missing element 'modules' in %s" % PROJECT_INFO_FILENAME)
+        if not 'Modules' in json_dict:
+            print("Missing element 'Modules' in %s" % PROJECT_INFO_FILENAME)
             return False
 
-        if not type(json_dict['modules']) is list:
-            print("Element 'modules' in %s is not an array" % PROJECT_INFO_FILENAME)
+        if not type(json_dict['Modules']) is list:
+            print("Element 'Modules' in %s is not an array" % PROJECT_INFO_FILENAME)
             return False
 
-    if not full_module_name in json_dict['modules']:
-        json_dict['modules'].append(full_module_name)
+    if not full_module_name in json_dict['Modules']:
+        json_dict['Modules'].append(full_module_name)
 
         with open(project_info_path, 'w') as json_file:
             json.dump(json_dict, json_file, indent=4)

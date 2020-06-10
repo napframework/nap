@@ -27,7 +27,7 @@ void ModuleModel::onCoreInitialized()
 		return;
 
 	for (const auto& mod : core->getModuleManager().getModules())
-		appendRow(new ModuleItem(mod));
+		appendRow(new ModuleItem(*mod));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

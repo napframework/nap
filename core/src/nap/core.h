@@ -24,7 +24,7 @@ constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 
 namespace nap
 {
-	using ServiceConfigMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
+	using ServiceConfigMap = std::unordered_map<rtti::TypeInfo, ServiceConfiguration*>;
 
 	/**
 	 * Core manages the object graph, modules and services
@@ -76,7 +76,9 @@ namespace nap
 		 * @param projectInfo indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const ProjectInfo& projectInfo);
+		bool initializeEngine(utility::ErrorState& error, std::unique_ptr<ProjectInfo> projectInfo);
+
+		bool doInitializeEngine(utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services
@@ -189,17 +191,13 @@ namespace nap
 		 * @return true if the file was found, otherwise false.
 		 */
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
-	
-	private:
-		/**
-		* Helper function that creates all the services that are found in the various modules
-		* Note that a module does not need to define a service, only if it has been defined
-		* this call will try to create it.
-		* @param error contains the error if the services could not be added
-		* @return if the services are created successfully
-		*/
-		bool createServices(utility::ErrorState& errorState);
 
+		/**
+		 * @return The currently loaded ProjectInfo
+		 */
+		nap::ProjectInfo* getProjectInfo();
+
+	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
 		* Note that a module does not need to define a service, only if it has been defined
@@ -216,33 +214,6 @@ namespace nap
 		* @return if the service was added successfully
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
-
-		/**
-		 * If a service configuration file is provided which is used to initialize the various services
-		 * @return if a service configuration file is provided
-		 */
-		bool hasServiceConfiguration();
-
-		/**
-		 * Load the service configuration file
-		 * @param deserialize_result contains the result after reading the config file
-		 * @param errorState contains the error if deserialization fails
-		 * @return if service configuration reading succeeded or not
-		 */
-		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
-
-		/**
-		 * Load service configurations from the project file
-		 * @param projectInfo The current project
-		 * @param serviceConfigs Used to store the result
-		 * @param errorState Will contain any error messages when loading fails
-		 * @return True if loading succeeded, false otherwise
-		 */
-		bool loadServiceConfiguration(const nap::ProjectInfo& projectInfo,
-									  ServiceConfigMap& serviceConfigs,
-									  utility::ErrorState& errorState);
-
-
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -262,15 +233,23 @@ namespace nap
 		 * or alongside our binary for a packaged project
 		 */
 		void setupPythonEnvironment();
-		
+
+		/**
+		 * @return The current project info, load it if it isn't set.
+		 */
+		bool loadProjectInfo(nap::utility::ErrorState& error);
+
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		// Manages all the loaded modules
-		std::unique_ptr<ModuleManager> mModuleManager;
+		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
 
 		// Manages all the objects in core
-		std::unique_ptr<ResourceManager> mResourceManager;
+		std::unique_ptr<ResourceManager> mResourceManager = nullptr;
+
+		// Holds on to the current project's configuration
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 
 		// Sorted service nodes, set after init
 		ServiceList mServices;

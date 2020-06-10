@@ -15,7 +15,6 @@
 // local
 #include <naputils.h>
 #include <utility/fileutils.h>
-#include <nap/simpleserializer.h>
 #include "napkinglobals.h"
 #include "napkinlinkresolver.h"
 
@@ -67,6 +66,19 @@ Document* AppContext::loadDocument(const QString& filename)
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
 	std::string buffer;
+
+	if (!QFile::exists(filename))
+	{
+		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
+		return nullptr;
+	}
+
+	if (!QFileInfo(filename).isFile())
+	{
+		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
+		return nullptr;
+	}
+
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
 		nap::Logger::error(err.toString());
@@ -78,22 +90,34 @@ Document* AppContext::loadDocument(const QString& filename)
 
 nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	mCore = std::make_unique<nap::Core>();
+
 	ErrorState err;
-	mProjectInfo = std::make_unique<nap::ProjectInfo>();
-	if (!mProjectInfo->load(projectFilename.toStdString(), err))
+
+	auto projectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
+		projectFilename.toStdString(),
+		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+		mCore->getResourceManager()->getFactory(),
+		err);
+
+	if (err.hasErrors())
 	{
-		nap::Logger::error(err.toString());
-		mProjectInfo = nullptr;
+		nap::Logger::error("Failed to load project info %s: %s",
+						   projectFilename.toStdString().c_str(), err.toString().c_str());
 		return nullptr;
 	}
 
-	nap::Logger::info("Loading project '%s' ver. %s (%s)",
-					  mProjectInfo->mTitle.c_str(),
-					  mProjectInfo->mVersion.c_str(),
-					  mProjectInfo->getDirectory().c_str());
+	projectInfo->mFilename = projectFilename.toStdString();
 
-	mCore = std::make_unique<nap::Core>();
-	if (!mCore->initializeEngine(err, *mProjectInfo))
+	auto pathMapping = loadPathMapping(*projectInfo, err);
+
+	nap::Logger::info("Loading project '%s' ver. %s (%s)",
+					  projectInfo->mTitle.c_str(),
+					  projectInfo->mVersion.c_str(),
+					  projectInfo->getDirectory().c_str());
+
+	if (!mCore->initializeEngine(err, std::move(projectInfo)))
 	{
 		nap::Logger::error(err.toString());
 		return nullptr;
@@ -101,18 +125,43 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	addRecentlyOpenedProject(projectFilename);
 
-	auto dataFilename = QString::fromStdString(mProjectInfo->getDefaultDataFile());
+	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDefaultDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
+	else
+		nap::Logger::warn("No data file specified");
 
-	return mProjectInfo.get();
+	return mCore->getProjectInfo();
+}
+
+std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& projectInfo,
+															  nap::utility::ErrorState& err)
+{
+	// Load path mapping
+	auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMapping;
+	auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
+		pathMappingFilename,
+		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+		mCore->getResourceManager()->getFactory(),
+		err);
+
+
+	if (err.hasErrors())
+	{
+		nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
+		return nullptr;
+	}
+
+	return pathMapping;
 }
 
 nap::ProjectInfo* AppContext::getProject() const
 {
-	if (!mProjectInfo)
+	if (!mCore)
 		return nullptr;
-	return mProjectInfo.get();
+
+	return mCore->getProjectInfo();
 }
 
 void AppContext::reloadDocument()
@@ -410,4 +459,3 @@ void napkin::AppContext::closeDocument()
 	documentClosing(prev_doc_name);
 	mDocument.reset(nullptr);
 }
-
