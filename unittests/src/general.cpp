@@ -79,6 +79,29 @@ TEST_CASE("String utilities", "[stringutils]")
 		REQUIRE(nap::utility::joinString(vec, ", ") == "the, highway, to, hell");
 		REQUIRE(nap::utility::joinString(vec, "") == "thehighwaytohell");
 	}
+
+}
+
+TEST_CASE("Template Replacement", "[stringutils]")
+{
+	{
+		std::string a = "You {REP} pass!";
+		std::unordered_map<std::string, std::string> replacements = {
+			{"REP", "can not"},
+		};
+		auto result = nap::utility::namedFormat(a, replacements);
+		REQUIRE(result == "You can not pass!");
+	}
+
+	{
+		std::string a = "/the/{PATH}/to/{PARM}/{SOMETHING}/{PATH}";
+		std::unordered_map<std::string, std::string> replacements = {
+			{"PATH", "road"},
+			{"PARM", "success"},
+		};
+		auto result = nap::utility::namedFormat(a, replacements);
+		REQUIRE(result == "/the/road/to/success/{SOMETHING}/road");
+	}
 }
 
 TEST_CASE("DateTime Utilities", "[datetime]")
