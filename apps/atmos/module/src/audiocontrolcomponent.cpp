@@ -5,11 +5,12 @@
 #include <audio/utility/audiofunctions.h>
 
 RTTI_BEGIN_CLASS(nap::AudioControlComponent)
-    RTTI_PROPERTY("AudioComponent", &nap::AudioControlComponent::mAudioComponent,			nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("AudioLayer", &nap::AudioControlComponent::mAudioLayer,			nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("AudioCrossFadeTime", &nap::AudioControlComponent::mAudioCrossFadeTime,			nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("AudioVolume", &nap::AudioControlComponent::mAudioVolume,			nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("MasterVolume", &nap::AudioControlComponent::mMasterVolume,			nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AudioComponent", &nap::AudioControlComponent::mAudioComponent, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AudioLayer", &nap::AudioControlComponent::mAudioLayer, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AudioCrossFadeTime", &nap::AudioControlComponent::mAudioCrossFadeTime, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AudioVolume", &nap::AudioControlComponent::mAudioVolume, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AudioSensorControl", &nap::AudioControlComponent::mAudioSensorControl, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MasterVolume", &nap::AudioControlComponent::mMasterVolume, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Sampler", &nap::AudioControlComponent::mSampler,	nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Gain", &nap::AudioControlComponent::mGain, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -64,7 +65,8 @@ namespace nap
         mAudioLayer = resource->mAudioLayer;
         mAudioCrossFadeTime = resource->mAudioCrossFadeTime;
         mAudioVolume = resource->mAudioVolume;
-        mMasterVolume = resource->mMasterVolume;
+		mAudioSensorControl = resource->mAudioSensorControl;
+		mMasterVolume = resource->mMasterVolume;
 
         mAudioLayer->setRange(-1, sampler->getSamplerEntries().size() - 1);
         replaceLayers({ mAudioLayer->mValue }, mAudioCrossFadeTime->mValue);
@@ -72,6 +74,10 @@ namespace nap
 
         mAudioVolume->valueChanged.connect(mVolumeChanged);
         mMasterVolume->valueChanged.connect(mVolumeChanged);
+
+		if (mAudioSensorControl != nullptr)
+			mAudioSensorControl->valueChanged.connect(mVolumeChanged);
+
         volumeChanged(0);
 
         return true;
@@ -96,8 +102,15 @@ namespace nap
 
     void AudioControlComponentInstance::volumeChanged(float)
     {
+		auto sensorControl = 1.f;
+		if (mAudioSensorControl != nullptr)
+		{
+			sensorControl = -48.f + mAudioSensorControl->mValue * 48;
+			sensorControl = audio::dbToA(sensorControl);
+		}
+
         for (auto channel = 0; channel < mGain->getChannelCount(); ++channel)
-            mGain->getChannel(channel)->setGain(audio::dbToA(mAudioVolume->mValue) * audio::dbToA(mMasterVolume->mValue), 10.f);
+            mGain->getChannel(channel)->setGain(audio::dbToA(mAudioVolume->mValue) * audio::dbToA(mMasterVolume->mValue) * sensorControl, 10.f);
     }
 
 

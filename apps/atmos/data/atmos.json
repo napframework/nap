@@ -8,8 +8,7 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0,
-                    "w": 1.0,
-                    "a": 1.0
+                    "w": 1.0
                 }
             },
             "Radius": 1.0,
@@ -56,6 +55,7 @@
                     "AudioLayer": "SampleLayer",
                     "AudioCrossFadeTime": "AudioCrossFadeTime",
                     "AudioVolume": "AudioVolume",
+                    "AudioSensorControl": "",
                     "MasterVolume": "MasterVolume",
                     "Sampler": "Sampler",
                     "Gain": "Gain"
@@ -454,6 +454,19 @@
                 {
                     "Type": "nap::PointerInputComponent",
                     "mID": "TouchInputComponent"
+                },
+                {
+                    "Type": "nap::ApplySensorComponent",
+                    "mID": "ApplyAudioRangeSensorComponent",
+                    "Enabled": "AudioRangeSensorEnable",
+                    "Sensor": "RangeSensor",
+                    "Parameters": [
+                        "AudioRangeSensorControl"
+                    ],
+                    "InputRange": "AudioRangeSensorMin",
+                    "OutputRange": "AudioRangeSensorMax",
+                    "Index": "AudioRangeSensorTarget",
+                    "SmoothTime": "AudioRangeSensorSmoothTIme"
                 }
             ],
             "Children": []
@@ -1027,8 +1040,7 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0,
-                    "w": 1.0,
-                    "a": 1.0
+                    "w": 1.0
                 }
             },
             "File": "2.svg",
@@ -2165,6 +2177,60 @@
                             "Value": 0.0,
                             "Minimum": -48.0,
                             "Maximum": 0.0
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "AudioRangeSensorEnable",
+                            "Name": "Range Enable",
+                            "Value": true
+                        },
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "AudioRangeSensorTarget",
+                            "Name": "Range Effect",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "AudioRangeSensorMin",
+                            "Name": "Range Input",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 500.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "AudioRangeSensorMax",
+                            "Name": "Range Output",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "AudioRangeSensorSmoothTIme",
+                            "Name": "Range Smooth Time",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "AudioRangeSensorControl",
+                            "Name": "",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []
@@ -2194,8 +2260,7 @@
                 "x": 1.0,
                 "y": 0.0,
                 "z": 0.0,
-                "w": 0.0,
-                "a": 0.0
+                "w": 0.0
             }
         },
         {
@@ -2241,8 +2306,7 @@
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0,
-                "w": 0.0,
-                "a": 0.0
+                "w": 0.0
             }
         },
         {
@@ -2303,6 +2367,14 @@
                                         "Type": "nap::PointerInstancePropertyValue",
                                         "mID": "instanceProp_nap::rtti::Object*_014337-083812-018034-060137",
                                         "Value": "SensorAudioVolume"
+                                    }
+                                },
+                                {
+                                    "Path": "AudioSensorControl",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "instanceProp_nap::rtti::Object*_056425-078065-008373-097960",
+                                        "Value": "AudioRangeSensorControl"
                                     }
                                 }
                             ]
