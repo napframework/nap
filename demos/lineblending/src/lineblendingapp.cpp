@@ -57,6 +57,8 @@ namespace nap
 		mParameters = mResourceManager->findObject<ParameterGroup>("Parameters");
 		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
 		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
+		mDisplayImage = mResourceManager->findObject<ImageFromFile>("DisplayImage");
+		mBrickImage = mResourceManager->findObject<ImageFromFile>("BrickImage");
 
 		// Set GUI window
 		mGuiService->selectWindow(mRenderWindow);
@@ -80,20 +82,6 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
-		
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-
-		// Show all parameters
-		mParameterGUI->show(mParameters.get(), false);
-		
-		// Display some extra info
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
 
 		// Push some parameter settings to components
 		// Most custom app components directly reference the parameters
@@ -123,6 +111,28 @@ namespace nap
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+
+		// Show all parameters
+		mParameterGUI->show(mParameters.get(), false);
+
+		// Display some extra info
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Display test texture
+		ImTextureID gui_id = mGuiService->getTextureHandle(*mDisplayImage);
+		ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+
+		gui_id = mGuiService->getTextureHandle(*mBrickImage);
+		ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+
+		ImGui::End();
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))

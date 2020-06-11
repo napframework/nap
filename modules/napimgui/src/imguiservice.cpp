@@ -1,7 +1,6 @@
 // Local Includes
 #include "imguiservice.h"
 #include "imguifont.h"
-#include "imgui/imgui.h"
 #include "imgui/imgui_impl_vulkan.h"
 
 // External Includes
@@ -15,6 +14,8 @@
 #include <SDL_mouse.h> 
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
+#include <materialcommon.h>
+#include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -23,9 +24,11 @@ RTTI_END_CLASS
 #define IMGUI_VK_QUEUED_FRAMES 2
 
 // Static data associated with IMGUI: TODO: Use own render classes and remove global state!
-static bool					gMousePressed[3] = { false, false, false };
-static float				gMouseWheel = 0.0f;
-static VkDescriptorPool		gDescriptorPool = VK_NULL_HANDLE;
+static bool						gMousePressed[3] = { false, false, false };
+static float					gMouseWheel = 0.0f;
+static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
+static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
+static VkSampler                gSampler = VK_NULL_HANDLE;
 
 namespace nap
 {
@@ -77,6 +80,60 @@ namespace nap
 		checkVKResult(err);
 		
 		vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
+	}
+
+
+	static DescriptorSetCache* createTextureObjects(RenderService& renderService)
+	{
+		VkResult err;
+
+		// Create sampler
+		VkSamplerCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		info.magFilter = VK_FILTER_LINEAR;
+		info.minFilter = VK_FILTER_LINEAR;
+		info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.minLod = -1000;
+		info.maxLod = 1000;
+		info.maxAnisotropy = 1.0f;
+		err = vkCreateSampler(renderService.getDevice(), &info, nullptr, &gSampler);
+		checkVKResult(err);
+
+		// Create a descriptor set layout for the images we want to display
+		VkDescriptorSetLayoutBinding binding[1] = {};
+		binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding[0].descriptorCount = 1;
+		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		binding[0].pImmutableSamplers = VK_NULL_HANDLE;
+		
+		VkDescriptorSetLayoutCreateInfo set_info = {};
+		set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		set_info.bindingCount = 1;
+		set_info.pBindings = binding;
+		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &gDescriptorSetLayout);
+		checkVKResult(err);
+
+		// Create our descriptor set cache
+		return &renderService.getOrCreateDescriptorSetCache(gDescriptorSetLayout);
+	}
+
+
+	// Create descriptor pool for imgui vulkan implementation, allows creation / allocation right resources on that side
+	static void createGuiDescriptorPool(RenderService& renderService)
+	{
+		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
+		VkDescriptorPoolCreateInfo poolInfo = {};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &pool_size;
+		poolInfo.maxSets = 1;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+
+		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &gDescriptorPool);
+		assert(result == VK_SUCCESS);
 	}
 
 
@@ -233,6 +290,7 @@ namespace nap
 	{
 	}
 
+
 	void IMGuiService::draw(VkCommandBuffer commandBuffer)
 	{
 		if (mUserWindow == nullptr)
@@ -350,23 +408,41 @@ namespace nap
 	}
 
 
+	ImTextureID IMGuiService::getTextureHandle(nap::Texture2D& texture)
+	{
+		// Get description set
+		std::vector<nap::UniformBufferObject> e_buffers;
+		nap::DescriptorSet desc_set = mDescriptorSetCache->acquire(e_buffers, 1);
+
+		// Update description set
+		VkDescriptorImageInfo desc_image[1] = {};
+		desc_image[0].sampler = gSampler;
+		desc_image[0].imageView = texture.getImageView();
+		desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		
+		VkWriteDescriptorSet write_desc[1] = {};
+		write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write_desc[0].dstSet = desc_set.mSet;
+		write_desc[0].descriptorCount = 1;
+		write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write_desc[0].pImageInfo = desc_image;
+		
+		vkUpdateDescriptorSets(mRenderService->getDevice(), 1, write_desc, 0, NULL);
+		return (ImTextureID)(desc_set.mSet);
+	}
+
+
 	bool IMGuiService::init(utility::ErrorState& error)
 	{
 		// Get our renderer
 		mRenderService = getCore().getService<nap::RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Create descriptor pool
-		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
-		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &pool_size;
-		poolInfo.maxSets = 1;
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		// Create descriptor set pool for ImGUI to use, since the current vulkan implementation allocates a font texture to be displayed.
+		createGuiDescriptorPool(*mRenderService);
 
-		VkResult result = vkCreateDescriptorPool(mRenderService->getDevice(), &poolInfo, nullptr, &gDescriptorPool);
-		assert(result == VK_SUCCESS);
+		// Create descriptor set cache, used to acquire descriptors for textures to be displayed in ImGUI
+		mDescriptorSetCache = createTextureObjects(*mRenderService);
 
 		// Create ImGUI context
 		mContext = ImGui::CreateContext();
@@ -439,8 +515,13 @@ namespace nap
 		// Destroy vulkan resources
 		ImGui_ImplVulkan_Shutdown();
 
-		// Destroy descriptor pool
+		// Destroy descriptor pool imgui side
 		vkDestroyDescriptorPool(mRenderService->getDevice(), gDescriptorPool, nullptr);
+
+		// Now delete resources on this side
+		// TODO: Move to function
+		vkDestroySampler(mRenderService->getDevice(), gSampler, nullptr);
+		vkDestroyDescriptorSetLayout(mRenderService->getDevice(), gDescriptorSetLayout, nullptr);
 
 		// Destroy imgui context
 		ImGui::DestroyContext(mContext);

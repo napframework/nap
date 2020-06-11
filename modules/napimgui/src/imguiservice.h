@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "imgui/imgui.h"
+
 // External includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
@@ -15,6 +18,7 @@ namespace nap
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
+	class DescriptorSetCache;
 
 	/**
 	 * This service manages the global ImGui state.
@@ -65,6 +69,11 @@ namespace nap
 		 */
 		bool isCapturingMouse();
 
+		/**
+		 * @return Vulkan texture handle, can be used to display a texture in ImGUI
+		 */
+		ImTextureID getTextureHandle(nap::Texture2D& texture);
+
 	protected:
 		/**
 		 * Initializes the IMGui library. This will also create all associated gui devices objects
@@ -94,7 +103,8 @@ namespace nap
 	private:
 		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
 		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
-		ImGuiContext*				mContext = nullptr;
+		ImGuiContext*				mContext = nullptr;				///< Current ImGUI context 
 		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
+		DescriptorSetCache*			mDescriptorSetCache = nullptr;	///< Cache used to acquire Vulkan DescriptorSets on each update
 	};
 }

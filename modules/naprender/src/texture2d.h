@@ -151,6 +151,8 @@ namespace nap
 
 		VkImageView getImageView() const { return mImageData.mTextureView; }
 
+		const ImageData& getImageData()		{ return mImageData; }
+
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
 		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
