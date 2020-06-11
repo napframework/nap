@@ -46,7 +46,7 @@ elseif(WIN32)
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
         if(DEFINED INCLUDE_DEBUG_SYMBOLS AND INCLUDE_DEBUG_SYMBOLS)
             set(PACKAGE_PDBS ON)
-        endif()    
+        endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
         #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
@@ -61,7 +61,7 @@ elseif(UNIX)
             # Verified for GCC on Linux
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
         endif()
-    endif()    
+    endif()
 endif()
 
 if(APPLE)
@@ -118,10 +118,10 @@ add_subdirectory(tools/napkin)
 
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
-add_subdirectory(test/render)
-add_subdirectory(test/tommy)
-add_subdirectory(test/audiotest)
-add_subdirectory(test/solarsystem)
+# add_subdirectory(test/render)
+# add_subdirectory(test/tommy)
+# add_subdirectory(test/audiotest)
+# add_subdirectory(test/solarsystem)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
@@ -166,7 +166,7 @@ add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 
 # Unit tests
-add_subdirectory(unittests)
+# add_subdirectory(unittests)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
