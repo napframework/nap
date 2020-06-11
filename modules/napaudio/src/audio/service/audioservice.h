@@ -178,7 +178,7 @@ namespace nap
              * Returns the device index for a device specified by a local index in the list of devices for a specific host API.
              * Returns -1 if the specified device was not found.
              */
-            int getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex) { return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, hostApiDeviceIndex); }
+			int getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex);
 
             /**
              * Returns the index for a certain host API specified both by name.
@@ -240,7 +240,7 @@ namespace nap
             /**
              * @return Wether the audio stream is currently running and not been paused.
              */
-            bool isActive() { return Pa_IsStreamActive(mStream) == 1; }
+			bool isActive();
 
 			/**
              * This function is typically called by a hardware callback from the device to perform all the audio processing.

@@ -553,6 +553,16 @@ namespace nap
         }
 
 
+		int AudioService::getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex) 
+		{ 
+			return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, hostApiDeviceIndex); 
+		}
+
+
+		bool AudioService::isActive() { return Pa_IsStreamActive(mStream) == 1; }
+
+
+
     }
     
 }
