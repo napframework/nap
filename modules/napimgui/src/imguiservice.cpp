@@ -15,7 +15,6 @@
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
-#include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -29,6 +28,7 @@ static float					gMouseWheel = 0.0f;
 static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
 static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
 static VkSampler                gSampler = VK_NULL_HANDLE;
+const static int				gMaxSets = 100;
 
 namespace nap
 {
@@ -83,7 +83,7 @@ namespace nap
 	}
 
 
-	static DescriptorSetCache* createTextureObjects(RenderService& renderService)
+	void createDeviceObjects(RenderService& renderService)
 	{
 		VkResult err;
 
@@ -115,21 +115,20 @@ namespace nap
 		set_info.pBindings = binding;
 		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &gDescriptorSetLayout);
 		checkVKResult(err);
-
-		// Create our descriptor set cache
-		return &renderService.getOrCreateDescriptorSetCache(gDescriptorSetLayout);
 	}
 
 
 	// Create descriptor pool for imgui vulkan implementation, allows creation / allocation right resources on that side
-	static void createGuiDescriptorPool(RenderService& renderService)
+	static void createDescriptorPool(RenderService& renderService)
 	{
-		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
+		std::vector<VkDescriptorPoolSize> pool_sizes;
+		pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 * gMaxSets });
+
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &pool_size;
-		poolInfo.maxSets = 1;
+		poolInfo.poolSizeCount = pool_sizes.size();
+		poolInfo.pPoolSizes = pool_sizes.data();
+		poolInfo.maxSets = gMaxSets;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &gDescriptorPool);
@@ -410,25 +409,45 @@ namespace nap
 
 	ImTextureID IMGuiService::getTextureHandle(nap::Texture2D& texture)
 	{
-		// Get description set
-		std::vector<nap::UniformBufferObject> e_buffers;
-		nap::DescriptorSet desc_set = mDescriptorSetCache->acquire(e_buffers, 1);
+		// Check if the texture has been requested before
+		auto it = mDescriptors.find(&texture);
+		if (it != mDescriptors.end())
+			return (ImTextureID)(it->second);
+
+		// Ensure pool is not exausted
+		if (mDescriptors.size() >= gMaxSets-1)
+			return nullptr;
+
+		// Create Descriptor Set:
+		VkDescriptorSet descriptor_set;
+		VkResult err;
+		{
+			VkDescriptorSetAllocateInfo alloc_info = {};
+			alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			alloc_info.descriptorPool = gDescriptorPool;
+			alloc_info.descriptorSetCount = 1;
+			alloc_info.pSetLayouts = &gDescriptorSetLayout;
+			err = vkAllocateDescriptorSets(mRenderService->getDevice(), &alloc_info, &descriptor_set);
+			checkVKResult(err);
+		}
 
 		// Update description set
 		VkDescriptorImageInfo desc_image[1] = {};
 		desc_image[0].sampler = gSampler;
 		desc_image[0].imageView = texture.getImageView();
 		desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		
+
+		// Create write structure and update  descriptor set
 		VkWriteDescriptorSet write_desc[1] = {};
 		write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write_desc[0].dstSet = desc_set.mSet;
+		write_desc[0].dstSet = descriptor_set;
 		write_desc[0].descriptorCount = 1;
 		write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		write_desc[0].pImageInfo = desc_image;
 		
 		vkUpdateDescriptorSets(mRenderService->getDevice(), 1, write_desc, 0, NULL);
-		return (ImTextureID)(desc_set.mSet);
+		mDescriptors.emplace(std::make_pair(&texture, descriptor_set));
+		return (ImTextureID)(descriptor_set);
 	}
 
 
@@ -438,11 +457,11 @@ namespace nap
 		mRenderService = getCore().getService<nap::RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Create descriptor set pool for ImGUI to use, since the current vulkan implementation allocates a font texture to be displayed.
-		createGuiDescriptorPool(*mRenderService);
+		// Create descriptor set pool for ImGUI to use, capped at 100 sets
+		createDescriptorPool(*mRenderService);
 
-		// Create descriptor set cache, used to acquire descriptors for textures to be displayed in ImGUI
-		mDescriptorSetCache = createTextureObjects(*mRenderService);
+		// Create all ImGUI required vulkan resources
+		createDeviceObjects(*mRenderService);
 
 		// Create ImGUI context
 		mContext = ImGui::CreateContext();

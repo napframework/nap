@@ -75,6 +75,42 @@ namespace nap
 	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+
+		// Show all parameters
+		mParameterGUI->show(mParameters.get(), false);
+
+		// Display some extra info
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		static bool flip = false;
+		ImGui::Checkbox("Flip?", &flip);
+		if(flip)
+		{
+			// Display test texture
+			ImTextureID gui_id = mGuiService->getTextureHandle(*mDisplayImage);
+			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+
+			gui_id = mGuiService->getTextureHandle(*mBrickImage);
+			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+		}
+		else
+		{
+			ImTextureID gui_id = mGuiService->getTextureHandle(*mBrickImage);
+			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+
+			// Display test texture
+			gui_id = mGuiService->getTextureHandle(*mDisplayImage);
+			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+		}
+
+		ImGui::End();
+
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -111,28 +147,6 @@ namespace nap
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
-
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-
-		// Show all parameters
-		mParameterGUI->show(mParameters.get(), false);
-
-		// Display some extra info
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
-		// Display test texture
-		ImTextureID gui_id = mGuiService->getTextureHandle(*mDisplayImage);
-		ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-
-		gui_id = mGuiService->getTextureHandle(*mBrickImage);
-		ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-
-		ImGui::End();
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))

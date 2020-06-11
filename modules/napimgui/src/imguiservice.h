@@ -18,7 +18,6 @@ namespace nap
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
-	class DescriptorSetCache;
 
 	/**
 	 * This service manages the global ImGui state.
@@ -105,6 +104,6 @@ namespace nap
 		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
 		ImGuiContext*				mContext = nullptr;				///< Current ImGUI context 
 		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
-		DescriptorSetCache*			mDescriptorSetCache = nullptr;	///< Cache used to acquire Vulkan DescriptorSets on each update
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 	};
 }
