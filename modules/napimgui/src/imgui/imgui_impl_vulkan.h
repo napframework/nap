@@ -43,14 +43,14 @@ struct ImGui_ImplVulkan_InitInfo
 };
 
 // Called by user code
-IMGUI_API bool     ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass);
-IMGUI_API void     ImGui_ImplVulkan_Shutdown();
-IMGUI_API void     ImGui_ImplVulkan_NewFrame();
-IMGUI_API void     ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer);
-IMGUI_API bool     ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer);
-IMGUI_API void     ImGui_ImplVulkan_DestroyFontUploadObjects();
-IMGUI_API void     ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count); // To override MinImageCount after initialization (e.g. if swap chain is recreated)
-
+IMGUI_API bool			ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass);
+IMGUI_API void			ImGui_ImplVulkan_Shutdown();
+IMGUI_API void			ImGui_ImplVulkan_NewFrame();
+IMGUI_API void			ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer);
+IMGUI_API bool			ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer);
+IMGUI_API void			ImGui_ImplVulkan_DestroyFontUploadObjects();
+IMGUI_API void			ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count); // To override MinImageCount after initialization (e.g. if swap chain is recreated)
+IMGUI_API ImTextureID   ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_view, VkImageLayout image_layout);
 
 //-------------------------------------------------------------------------
 // Internal / Miscellaneous Vulkan Helpers
