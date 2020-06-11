@@ -15,6 +15,7 @@
 #include <laseroutputcomponent.h>
 #include <meshutils.h>
 #include <linenoisecomponent.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -93,20 +94,14 @@ namespace nap
 		if(flip)
 		{
 			// Display test texture
-			ImTextureID gui_id = mGuiService->getTextureHandle(*mDisplayImage);
-			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-
-			gui_id = mGuiService->getTextureHandle(*mBrickImage);
-			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
+			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
 		}
 		else
 		{
-			ImTextureID gui_id = mGuiService->getTextureHandle(*mBrickImage);
-			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-
 			// Display test texture
-			gui_id = mGuiService->getTextureHandle(*mDisplayImage);
-			ImGui::Image(gui_id, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
 		}
 
 		ImGui::End();

@@ -131,11 +131,6 @@ namespace nap
 		void getData(Bitmap& bitmap);
 
 		/**
-		 * @return the OpenGL texture hardware handle.
-		 */
-		nap::uint getHandle() const;
-
-		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
 		 */
@@ -149,9 +144,15 @@ namespace nap
 		*/
 		void endGetData(Bitmap& bitmap);
 
-		VkImageView getImageView() const { return mImageData.mTextureView; }
+		/**
+		 * @return Vulkan image view
+		 */
+		VkImageView getImageView() const				{ return mImageData.mTextureView; }
 
-		const ImageData& getImageData()		{ return mImageData; }
+		/**
+		 * @return render service
+		 */
+		RenderService& getRenderService()				{ return *mRenderService; }
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture

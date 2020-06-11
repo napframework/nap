@@ -429,13 +429,6 @@ namespace nap
 	}
 
 
-	nap::uint Texture2D::getHandle() const
-	{
-		return 0;
-		//return getTexture().getTextureId();
-	}
-
-
 	void Texture2D::startGetData()
 	{
 		//getTexture().asyncStartGetData();
