@@ -66,15 +66,12 @@ Index of this file:
 // Define attributes of all API symbols declarations (e.g. for DLL under Windows)
 // IMGUI_API is used for core imgui functions, IMGUI_IMPL_API is used for the default bindings files (imgui_impl_xxx.h)
 // Using dear imgui via a shared library is not recommended, because we don't guarantee backward nor forward ABI compatibility (also function call overhead, as dear imgui is a call-heavy API)
-#ifdef _WIN32
-#ifdef NAP_SHARED_LIBRARY
-#define IMGUI_API __declspec(dllexport)    // Export the symbols
-#else
-#define IMGUI_API __declspec(dllimport)    // Import the symbols
-#endif // NAP_SHARED_LIBRARY
-#else
-#define IMGUI_API                                // Empty statement, does nothing
-#endif // _WIN32
+#ifndef IMGUI_API
+#define IMGUI_API
+#endif
+#ifndef IMGUI_IMPL_API
+#define IMGUI_IMPL_API              IMGUI_API
+#endif
 
 // Helper Macros
 #ifndef IM_ASSERT
