@@ -2,8 +2,12 @@
 #include "projectinfo.h"
 
 RTTI_BEGIN_CLASS(nap::PathMapping)
+	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ModulePaths", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
+
+
 
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("Title", &nap::ProjectInfo::mTitle, nap::rtti::EPropertyMetaData::Required)

@@ -153,6 +153,15 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 		return nullptr;
 	}
 
+	// Do string/template replacement
+	std::unordered_map<std::string, std::string> reps = {
+		{"ROOT", nap::utility::getAbsolutePath(nap::utility::getExecutablePath() + '/' + pathMapping->mNapkinExeToRoot)},
+		{"BUILD_TYPE", "I_DO_NOT_KNOW"},
+	};
+
+	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
+		pathMapping->mModulePaths[i] = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
+
 	return pathMapping;
 }
 

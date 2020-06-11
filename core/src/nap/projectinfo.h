@@ -10,6 +10,8 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
+		std::string mProjectExeToRoot;
+		std::string mNapkinExeToRoot;
 		std::vector<std::string> mModulePaths;
 	};
 
