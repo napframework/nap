@@ -9,6 +9,7 @@
 #include <renderwindow.h>
 #include <inputevent.h>
 #include <nap/resourceptr.h>
+#include <descriptorsetallocator.h>
 
 // ImGUI forward declares
 struct ImGuiContext;
@@ -18,6 +19,7 @@ namespace nap
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
+	//class DescriptorSetAllocator;
 
 	/**
 	 * This service manages the global ImGui state.
@@ -105,5 +107,6 @@ namespace nap
 		ImGuiContext*				mContext = nullptr;				///< Current ImGUI context 
 		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 	};
 }

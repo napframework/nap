@@ -3,18 +3,6 @@
 
 namespace nap
 {
-	/**
-	 * Wrapper around VkDescriptorPool that maintains a use count for amount of sets that are allocated within the pool.
-	 */
-	struct DescriptorPool
-	{
-		using DescriptorSetList = std::vector<VkDescriptorSet>;
-
-		VkDescriptorPool	mPool = VK_NULL_HANDLE;		///< The managed descriptor pool
-		DescriptorSetList	mAllocatedDescriptorSets;	///< The sets that have been allocated from this pool
-		int					mMaxNumSets = 0;			///< Maximum number of sets that can be allocated from the pool
-	};
-
 	DescriptorSetAllocator::DescriptorSetAllocator(VkDevice device) :
 		mDevice(device)
 	{
