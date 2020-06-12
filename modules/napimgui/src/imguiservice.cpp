@@ -335,6 +335,7 @@ namespace nap
 		init_info.CheckVkResultFn = checkVKResult;
 
 		// Create all the vulkan resources, using the window's render pass and init info
+		ImGui::SetCurrentContext(mContext);
 		ImGui_ImplVulkan_Init(&init_info, window->getBackbuffer().getRenderPass());
 
 		// Create the font texture, upload it immediately using a new framebuffer
@@ -450,6 +451,10 @@ namespace nap
 		mRenderService = getCore().getService<nap::RenderService>();
 		assert(mRenderService != nullptr);
 
+		// Register to window added / removed signals
+		mRenderService->windowAdded.connect(mWindowAddedSlot);
+		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
+
 		// Create descriptor set pool for ImGUI to use, capped at 100 sets
 		createFontDescriptorPool(*mRenderService);
 
@@ -541,5 +546,17 @@ namespace nap
 
 		// Destroy imgui context
 		ImGui::DestroyContext(mContext);
+	}
+
+
+	void IMGuiService::onWindowAdded(RenderWindow& window)
+	{
+
+	}
+
+
+	void IMGuiService::onWindowRemoved(RenderWindow& window)
+	{
+
 	}
 }

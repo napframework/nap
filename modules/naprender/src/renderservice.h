@@ -264,6 +264,16 @@ namespace nap
 
 		int getMaxFramesInFlight() const { return 2; }
 
+		/**
+		 * Called when a new window is added to the system
+		 */
+		nap::Signal<nap::RenderWindow&> windowAdded;
+
+		/**
+		 * Called just before a window is removed from the system
+		 */
+		nap::Signal<nap::RenderWindow&> windowRemoved;
+
 	protected:
 		/**
 		* Object creation registration

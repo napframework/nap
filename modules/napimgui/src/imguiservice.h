@@ -10,6 +10,7 @@
 #include <inputevent.h>
 #include <nap/resourceptr.h>
 #include <descriptorsetallocator.h>
+#include <nap/signalslot.h>
 
 // ImGUI forward declares
 struct ImGuiContext;
@@ -108,5 +109,18 @@ namespace nap
 		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+
+
+		/**
+		 * Called when a window is added, creates ImGUI related resources
+		 */
+		void onWindowAdded(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowAddedSlot	= { this, &IMGuiService::onWindowAdded };
+
+		/**
+		 * Called when a window is removed, destroys ImGUI related resources
+		 */
+		void onWindowRemoved(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
 	};
 }
