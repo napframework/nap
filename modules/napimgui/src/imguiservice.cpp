@@ -509,6 +509,8 @@ namespace nap
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
+		ImGuiContext* cur_context = ImGui::GetCurrentContext();
+		ImGui::SetCurrentContext(new_context);
 
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		ImGuiIO& io = ImGui::GetIO();
@@ -539,6 +541,9 @@ namespace nap
 
 		// Push default style
 		applyStyle();
+
+		// Reset context
+		ImGui::SetCurrentContext(cur_context);
 
 		return new_context;
 	}

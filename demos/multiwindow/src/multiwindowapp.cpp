@@ -65,8 +65,6 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
-
-		mGuiService->selectWindow(mRenderWindowTwo);
 		return true;
 	}
 	
@@ -106,9 +104,28 @@ namespace nap
 		positionPlane(*mRenderWindowThree, plane_xform_two);
 
 		// Draw some gui elements
+		mGuiService->selectWindow(mRenderWindowOne);
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+
+		// Draw some gui elements
+		mGuiService->selectWindow(mRenderWindowTwo);
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+
+		// Draw some gui elements
+		mGuiService->selectWindow(mRenderWindowThree);
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
@@ -157,6 +174,9 @@ namespace nap
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
 
+			// Draw gui to window one
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowOne);
+
 			// End render pass
 			mRenderWindowOne->endRendering();
 
@@ -182,7 +202,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowTwo);
 
 			// End render pass
 			mRenderWindowTwo->endRendering();
@@ -223,6 +243,9 @@ namespace nap
 
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+
+			// Draw gui to window one
+			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowThree);
 
 			// Stop render pass
 			mRenderWindowThree->endRendering();

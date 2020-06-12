@@ -61,9 +61,6 @@ namespace nap
 		mDisplayImage = mResourceManager->findObject<ImageFromFile>("DisplayImage");
 		mBrickImage = mResourceManager->findObject<ImageFromFile>("BrickImage");
 
-		// Set GUI window
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	
@@ -76,6 +73,9 @@ namespace nap
 	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
+
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 
