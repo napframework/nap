@@ -551,14 +551,14 @@ namespace nap
 		// Create local vulkan resources
 		//////////////////////////////////////////////////////////////////////////
 
-		// Create descriptor set pool for ImGUI to use, capped at 1 set
+		// Create descriptor set pool for ImGUI to use, capped at 1 set, used by font texture
 		createFontDescriptorPool(*mRenderService);
-
-		// Create description set allocator for custom display textures
-		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
 
 		// Create all required vulkan resources
 		createDeviceObjects(*mRenderService);
+
+		// Create description set allocator for displaying custom NAP textures in ImGUI
+		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
 
 		//////////////////////////////////////////////////////////////////////////
 		// Create imgui specific vulkan resources
