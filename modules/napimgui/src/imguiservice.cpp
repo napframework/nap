@@ -299,7 +299,7 @@ namespace nap
 
 	void IMGuiService::draw(VkCommandBuffer commandBuffer)
 	{
-		if (mUserWindow == nullptr)
+		if (mMainWindow == nullptr)
 		{
 			nap::Logger::error("No GUI target window specified, call `selectWindow()` on init() of the application");
 			return;
@@ -312,46 +312,6 @@ namespace nap
 
 	void IMGuiService::selectWindow(nap::ResourcePtr<RenderWindow> window)
 	{
-		if (mUserWindow != nullptr)
-		{
-			// TODO: This is not correct, many objects can persist, only the pipeline needs to be recreated
-			// TODO: Properly handle resource creation for multiple windows
-			ImGui_ImplVulkan_Shutdown();
-		}
-
-		// Collect init information
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = mRenderService->getVulkanInstance();
-		init_info.PhysicalDevice = mRenderService->getPhysicalDevice();
-		init_info.Device = mRenderService->getDevice();
-		init_info.QueueFamily = mRenderService->getGraphicsQueueIndex();
-		init_info.Queue = mRenderService->getGraphicsQueue();
-		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.DescriptorPool = gDescriptorPool;
-		init_info.Allocator = VK_NULL_HANDLE;
-		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
-		init_info.ImageCount = mRenderService->getMaxFramesInFlight();		
-		init_info.MSAASamples = window->getBackbuffer().getSampleCount();
-		init_info.CheckVkResultFn = checkVKResult;
-
-		// Create all the vulkan resources, using the window's render pass and init info
-		ImGui::SetCurrentContext(mContext);
-		ImGui_ImplVulkan_Init(&init_info, window->getBackbuffer().getRenderPass());
-
-		// Create the font texture, upload it immediately using a new framebuffer
-		VkCommandBuffer font_cmd_buffer = beginSingleTimeCommands(*mRenderService);
-		ImGui_ImplVulkan_CreateFontsTexture(font_cmd_buffer);
-		
-		// Destroy command buffer and font related uploaded objects
-		endSingleTimeCommands(*mRenderService, font_cmd_buffer);
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-		// Update SDL Window information
-		setGuiWindow(window->getWindow()->getNativeWindow());
-
-		// Store handle
-		mUserWindow = window;
-		mWindowChanged = true;
 	}
 
 
@@ -455,15 +415,6 @@ namespace nap
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
-		// Create descriptor set pool for ImGUI to use, capped at 100 sets
-		createFontDescriptorPool(*mRenderService);
-
-		// Create description set allocator for custom display textures
-		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
-
-		// Create all ImGUI required vulkan resources
-		createDeviceObjects(*mRenderService);
-
 		// Create ImGUI context
 		mContext = ImGui::CreateContext();
 
@@ -516,30 +467,30 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		if (mUserWindow == nullptr)
-		{
-			nap::Logger::error("No GUI target window specified, make sure to call `selectWindow()` first");
+		if (mMainWindow == nullptr)
 			return;
-		}
 		
 		// Signal the beginning of a new frame to the vulkan backend
 		ImGui_ImplVulkan_NewFrame();
 
 		// Signal the beginning of a new frame to the imgui backend
-		newFrame(*mUserWindow->getWindow());
+		newFrame(*mMainWindow->getWindow());
 	};
 
 
 	void IMGuiService::shutdown()
 	{
-		// Destroy vulkan resources
-		ImGui_ImplVulkan_Shutdown();
+		if (mMainWindow != nullptr)
+		{
+			// Destroy vulkan resources
+			ImGui_ImplVulkan_Shutdown();
 
-		// Now delete resources on this side
-		destroyDeviceObjects(*mRenderService);
+			// Now delete resources on this side
+			destroyDeviceObjects(*mRenderService);
 
-		// Destroy font descriptor pool side
-		vkDestroyDescriptorPool(mRenderService->getDevice(), gDescriptorPool, nullptr);
+			// Destroy font descriptor pool side
+			vkDestroyDescriptorPool(mRenderService->getDevice(), gDescriptorPool, nullptr);
+		}
 
 		// Free allocator
 		mAllocator.reset(nullptr);
@@ -551,7 +502,58 @@ namespace nap
 
 	void IMGuiService::onWindowAdded(RenderWindow& window)
 	{
+		if (mMainWindow != nullptr)
+			return;
 
+		//////////////////////////////////////////////////////////////////////////
+		// Create local vulkan resources
+		//////////////////////////////////////////////////////////////////////////
+
+		// Create descriptor set pool for ImGUI to use, capped at 100 sets
+		createFontDescriptorPool(*mRenderService);
+
+		// Create description set allocator for custom display textures
+		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
+
+		// Create all required vulkan resources
+		createDeviceObjects(*mRenderService);
+
+		//////////////////////////////////////////////////////////////////////////
+		// Create imgui specific vulkan resources
+		//////////////////////////////////////////////////////////////////////////
+
+		// Collect ImGUI vulkan init information
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.Instance = mRenderService->getVulkanInstance();
+		init_info.PhysicalDevice = mRenderService->getPhysicalDevice();
+		init_info.Device = mRenderService->getDevice();
+		init_info.QueueFamily = mRenderService->getGraphicsQueueIndex();
+		init_info.Queue = mRenderService->getGraphicsQueue();
+		init_info.PipelineCache = VK_NULL_HANDLE;
+		init_info.DescriptorPool = gDescriptorPool;
+		init_info.Allocator = VK_NULL_HANDLE;
+		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
+		init_info.ImageCount = mRenderService->getMaxFramesInFlight();
+		init_info.MSAASamples = window.getBackbuffer().getSampleCount();
+		init_info.CheckVkResultFn = checkVKResult;
+
+		// Create all the vulkan resources, using the window's render pass and init info
+		ImGui::SetCurrentContext(mContext);
+		ImGui_ImplVulkan_Init(&init_info, window.getBackbuffer().getRenderPass());
+
+		// Create the font texture, upload it immediately using a new framebuffer
+		VkCommandBuffer font_cmd_buffer = beginSingleTimeCommands(*mRenderService);
+		ImGui_ImplVulkan_CreateFontsTexture(font_cmd_buffer);
+
+		// Destroy command buffer and font related uploaded objects
+		endSingleTimeCommands(*mRenderService, font_cmd_buffer);
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+		// Update SDL Window information
+		setGuiWindow(window.getWindow()->getNativeWindow());
+
+		// Store handle
+		mMainWindow = &window;
 	}
 
 

@@ -104,12 +104,10 @@ namespace nap
 
 	private:
 		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
-		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
+		ResourcePtr<RenderWindow>	mMainWindow = nullptr;			///< User selected GUI window, defaults to primary window
 		ImGuiContext*				mContext = nullptr;				///< Current ImGUI context 
-		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
-
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources

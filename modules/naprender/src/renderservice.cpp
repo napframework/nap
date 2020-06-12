@@ -490,7 +490,7 @@ namespace nap
 	}
 
 
-	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		// Create settings
 		RenderWindowSettings window_settings;
@@ -513,13 +513,13 @@ namespace nap
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
 		if (!new_window->init(window_settings, *this, errorState))
-			return nullptr;
+			return false;
 
 		// Add window and notify potential listeners
+		window.mWindow = std::move(new_window);
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
-
-		return new_window;
+		return true;
 	}
 
 

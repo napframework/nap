@@ -144,7 +144,7 @@ namespace nap
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
 		 */
-		std::shared_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
+		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
