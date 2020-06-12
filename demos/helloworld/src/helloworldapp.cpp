@@ -157,7 +157,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
 
 			// Draw our GUI
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 			
 			// End the render pass
 			mRenderWindow->endRendering();

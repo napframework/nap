@@ -110,7 +110,7 @@ namespace nap
 			mRenderWindow->beginRendering();
 
 			// Draw our GUI to target
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindow->endRendering();

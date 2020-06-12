@@ -117,7 +117,7 @@ namespace nap
 			mRenderService->renderObjects(backbuffer, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 			// Tell the GUI to draw
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End the render pass
 			mRenderWindow->endRendering();

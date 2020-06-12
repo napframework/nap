@@ -44,7 +44,7 @@ namespace nap
 		 * Draws the all the GUI elements to screen
 		 * You need to call this just before swapping buffers for the primary window
 		 */
-		void draw(VkCommandBuffer commandBuffer, nap::RenderWindow& window);
+		void draw();
 
 		/**
 		 * Explicitly set the window that is used for drawing the GUI elements

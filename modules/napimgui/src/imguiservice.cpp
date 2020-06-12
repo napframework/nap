@@ -311,13 +311,25 @@ namespace nap
 	}
 
 
-	void IMGuiService::draw(VkCommandBuffer commandBuffer, nap::RenderWindow& window)
+	void IMGuiService::draw()
 	{
-		const auto it = mContexts.find(&window);
+		// Get window we're drawing in
+		RenderWindow* current_window = mRenderService->getCurrentRenderWindow();
+		if (current_window == nullptr)
+		{
+			assert(false);
+			nap::Logger::warn("IMGuiService: calling draw without active render window");
+			return;
+		}
+
+		// Switch context based on currently activated render window 
+		const auto it = mContexts.find(current_window);
 		assert(it != mContexts.end());	
 		ImGui::SetCurrentContext(it->second->mContext);
+		
+		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer());
 	}
 
 

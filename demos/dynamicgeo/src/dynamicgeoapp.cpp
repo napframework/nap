@@ -93,7 +93,7 @@ namespace nap
 			mRenderService->renderObjects(backbuffer, frame_cam);
 
 			// Render GUI elements
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			backbuffer.endRendering();
 

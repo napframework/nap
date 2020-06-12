@@ -112,7 +112,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
 
 			// Draw gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindow->endRendering();

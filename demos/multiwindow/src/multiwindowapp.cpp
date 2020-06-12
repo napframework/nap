@@ -202,7 +202,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowTwo);
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindowTwo->endRendering();
@@ -245,7 +245,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowThree);
+			mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindowThree->endRendering();

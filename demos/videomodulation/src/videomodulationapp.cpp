@@ -162,7 +162,7 @@ namespace nap
 			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 
 			// Draw gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			render_target.endRendering();
 

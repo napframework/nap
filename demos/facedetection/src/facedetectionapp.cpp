@@ -233,7 +233,7 @@ namespace nap
 			}
 
 			// Draw our gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindow->endRendering();

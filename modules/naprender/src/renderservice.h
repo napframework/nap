@@ -193,8 +193,9 @@ namespace nap
 
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 
-		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
-		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		int getCurrentFrameIndex() const				{ return mCurrentFrameIndex; }
+		VkCommandBuffer getCurrentCommandBuffer()		{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		RenderWindow* getCurrentRenderWindow()			{ return mCurrentRenderWindow; }
 
 		/**
 		 * @return Vulkan runtime instance
