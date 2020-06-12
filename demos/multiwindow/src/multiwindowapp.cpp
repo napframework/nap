@@ -9,7 +9,7 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <imgui/imgui.h>
+#include <imguiutils.h>
 #include <uniforminstances.h>
 #include <sdlhelpers.h>
 
@@ -47,16 +47,20 @@ namespace nap
 		// Extract windows and set position
 		mRenderWindowOne = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mRenderWindowOne->setPosition({ offset_x, offset_y });
-		
+
 		mRenderWindowTwo = mResourceManager->findObject<nap::RenderWindow>("Window1");
 		mRenderWindowTwo->setPosition({ offset_x + 512, offset_y });
 		
 		mRenderWindowThree = mResourceManager->findObject<nap::RenderWindow>("Window2");
 		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
 
-		// Find the world and camera entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		// Extract textures
+		mTextureOne = mResourceManager->findObject<ImageFromFile>("TextureOne");
+		mTextureTwo = mResourceManager->findObject<ImageFromFile>("TextureTwo");
+		mWorldTexture = mResourceManager->findObject<ImageFromFile>("WorldTexture");
 
+		// Find the entities
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mWorldEntity = scene->findEntity("World");
 		mPerspectiveCameraOne = scene->findEntity("PerpectiveCameraOne");
 		mPerspectiveCameraTwo = scene->findEntity("PerpectiveCameraTwo");
@@ -103,31 +107,8 @@ namespace nap
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
 
-		// Draw some gui elements
-		mGuiService->selectWindow(mRenderWindowOne);
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
-		ImGui::ShowDemoWindow(nullptr);
-
-		// Draw some gui elements
-		mGuiService->selectWindow(mRenderWindowTwo);
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(clr, "Howdy! How are you doing?");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
-
-		// Draw some gui elements
-		mGuiService->selectWindow(mRenderWindowThree);
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(clr, "Stop bugging me, i'm working");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
+		// Update the gui for all windows
+		updateGUI();
 	}
 
 	
@@ -326,5 +307,64 @@ namespace nap
 		// Push position values to transform
 		planeTransform.setTranslate(glm::vec3(pos_x, pos_y, 0.0f));
 		planeTransform.setScale(glm::vec3(scale, scale, 1.0f));
+	}
+
+
+	void MultiWindowApp::updateGUI()
+	{
+		// Select window 1
+		mGuiService->selectWindow(mRenderWindowOne);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 1"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
+		ImGui::ShowDemoWindow(nullptr);
+
+		// Select window 2
+		mGuiService->selectWindow(mRenderWindowTwo);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(clr, "Howdy! How are you doing?");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 2"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mTextureOne->getHeight() / (float)mTextureOne->getWidth();
+			ImGui::Image(*mTextureOne, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
+
+		// Select window 3
+		mGuiService->selectWindow(mRenderWindowThree);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 3"))
+		{
+			// World texture
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+
+			// Texture two
+			ratio = (float)mTextureTwo->getHeight() / (float)mTextureTwo->getWidth();
+			ImGui::Image(*mTextureTwo, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
 	}
 }

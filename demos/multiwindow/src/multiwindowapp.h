@@ -10,6 +10,7 @@
 #include <inputservice.h>
 #include <imguiservice.h>
 #include <app.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -21,10 +22,10 @@ namespace nap
 	 * This example displays 3 windows that draw 2 objects with different cameras and materials
 	 * Input is handled separately for the first and third window. Window 2 is static and doesn't react to mouse events
 	 * The most important part call of this app is the render call where we render the objects to each individual window
-	 * This example uses 3 cameras, 2 perspective and 1 orthographic. The perspective camera's react to mouse input, similar
+	 * This example uses 3 cameras, 2 perspective and 1 orthographic. The perspective cameras react to mouse input, similar
 	 * to the helloworld example. The orthographic camera is used to draw the planes that show the NAP texture.
-	 * Window 3 uses 2 camera's and renders in 2 passes. For each pass a different camera is used:
-	 * first the sphere is rendered with a perspective camera, after that the transparent overlay texture with the orthographic camera
+	 * Window 3 uses 2 cameras and renders in 2 passes. For each pass a different camera is used:
+	 * first the sphere is rendered with a perspective camera, after that the transparent overlay texture with the orthographic camera.
 	 * Only 2 meshes are used: a sphere and a plane. The plane receives the same material but a different texture for every window
 	 * It's important to study the JSON file to relate the scene and it's objects to the render / update logic in this app.
 	 *
@@ -74,6 +75,11 @@ namespace nap
 		 */
 		void positionPlane(nap::RenderWindow& window, nap::TransformComponentInstance& planeTransform);
 
+		/**
+		 * Updates the GUI for all windows
+		 */
+		void updateGUI();
+
 	private:
 		// Nap Services
 		RenderService*				mRenderService = nullptr;			//< Render Service that handles render calls
@@ -91,6 +97,10 @@ namespace nap
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the world
 		ObjectPtr<EntityInstance>	mPlaneOneEntity = nullptr;			//< Pointer to the plane one
 		ObjectPtr<EntityInstance>	mPlaneTwoEntity = nullptr;			//< Pointer to plane two
+		ObjectPtr<ImageFromFile>	mTextureOne = nullptr;				//< Pointer to the first texture
+		ObjectPtr<ImageFromFile>	mTextureTwo = nullptr;				//< Pointer to the second texture
+		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
+		
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 	};
