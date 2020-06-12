@@ -167,8 +167,8 @@ namespace nap
 		static const RGBColorFloat NAPHIGH = RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>();
 
 		const ImVec4 IMGUI_NAPDARK(NAPDARK.getRed(), NAPDARK.getGreen(), NAPDARK.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPBACK(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPMODAL(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.5f);
+		const ImVec4 IMGUI_NAPBACK(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.94f);
+		const ImVec4 IMGUI_NAPMODAL(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.94f);
 		const ImVec4 IMGUI_NAPFRO1(NAPFRO1.getRed(), NAPFRO1.getGreen(), NAPFRO1.getBlue(), 1.0f);
 		const ImVec4 IMGUI_NAPFRO2(NAPFRO2.getRed(), NAPFRO2.getGreen(), NAPFRO2.getBlue(), 1.0f);
 		const ImVec4 IMGUI_NAPFRO3(NAPFRO3.getRed(), NAPFRO3.getGreen(), NAPFRO3.getBlue(), 1.0f);
@@ -188,6 +188,7 @@ namespace nap
 		style.ScrollbarRounding = 7.0f;
 		style.GrabMinSize = 5.0f;
 		style.GrabRounding = 1.0f;
+		style.WindowBorderSize = 0.0f;
 
 		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
@@ -202,7 +203,7 @@ namespace nap
 		style.Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
@@ -240,6 +241,7 @@ namespace nap
 		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPFRO1;
 		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
 	}
 
 
