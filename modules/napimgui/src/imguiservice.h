@@ -45,7 +45,7 @@ namespace nap
 		 * Draws the all the GUI elements to screen
 		 * You need to call this just before swapping buffers for the primary window
 		 */
-		void draw(VkCommandBuffer commandBuffer);
+		void draw(VkCommandBuffer commandBuffer, nap::RenderWindow& window);
 
 		/**
 		 * Explicitly set the window that is used for drawing the GUI elements
@@ -104,11 +104,10 @@ namespace nap
 
 	private:
 		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
-		ResourcePtr<RenderWindow>	mMainWindow = nullptr;			///< User selected GUI window, defaults to primary window
-		ImGuiContext*				mMainContext = nullptr;			///< Current ImGUI context 
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, ImGuiContext*> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -125,7 +124,7 @@ namespace nap
 		/**
 		 * Creates a new imgui context
 		 */
-		ImGuiContext* createContext();
+		ImGuiContext* createContext(ImFontAtlas& fontAtlas);
 
 		/**
 		 * Creates all vulkan related resources, for imGUI as well as local

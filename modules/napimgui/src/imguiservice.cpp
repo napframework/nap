@@ -297,14 +297,11 @@ namespace nap
 	}
 
 
-	void IMGuiService::draw(VkCommandBuffer commandBuffer)
+	void IMGuiService::draw(VkCommandBuffer commandBuffer, nap::RenderWindow& window)
 	{
-		if (mMainWindow == nullptr)
-		{
-			nap::Logger::error("No GUI target window specified, call `selectWindow()` on init() of the application");
-			return;
-		}
-
+		const auto it = mContexts.find(&window);
+		assert(it != mContexts.end());
+		ImGui::SetCurrentContext(it->second);
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	}
@@ -312,12 +309,19 @@ namespace nap
 
 	void IMGuiService::selectWindow(nap::ResourcePtr<RenderWindow> window)
 	{
+		// Select ImGUI context
+		const auto it = mContexts.find(window.get());
+		assert(it != mContexts.end());
+		ImGui::SetCurrentContext(it->second);
+
+		// Update SDL Window information
+		setGuiWindow(it->first->getWindow()->getNativeWindow());
 	}
 
 
 	void IMGuiService::processInputEvent(InputEvent& event)
 	{
-
+		// TODO: make context aware
 		ImGuiIO& io = ImGui::GetIO();
 		
 		// Key event
@@ -428,20 +432,21 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		if (mMainWindow == nullptr)
-			return;
-		
 		// Signal the beginning of a new frame to the vulkan backend
 		ImGui_ImplVulkan_NewFrame();
 
-		// Signal the beginning of a new frame to the imgui backend
-		newFrame(*mMainWindow->getWindow());
+		for (auto& context : mContexts)
+		{
+			// Signal the beginning of a new frame to the imgui backend
+			ImGui::SetCurrentContext(context.second);
+			newFrame(*context.first->getWindow());
+		}
 	};
 
 
 	void IMGuiService::shutdown()
 	{
-		if (mMainContext != nullptr)
+		if (mFontAtlas != nullptr)
 		{
 			// Destroy vulkan resources
 			ImGui_ImplVulkan_Shutdown();
@@ -451,32 +456,46 @@ namespace nap
 
 			// Destroy font descriptor pool side
 			vkDestroyDescriptorPool(mRenderService->getDevice(), gDescriptorPool, nullptr);
+
+			// Free allocator
+			mAllocator.reset(nullptr);
 		}
 
-		// Free allocator
-		mAllocator.reset(nullptr);
-
-		// Destroy imgui context
-		ImGui::DestroyContext(mMainContext);
+		// Destroy imgui contexts
+		for (auto& context : mContexts)
+			ImGui::DestroyContext(context.second);
 	}
 
 
 	void IMGuiService::onWindowAdded(RenderWindow& window)
 	{
-		if (mMainContext != nullptr)
-			return;
+		// Create new context
+		assert(mContexts.find(&window) == mContexts.end());
 
-		// Create ImGUI Context
-		mMainContext = createContext();
+		// Create font atlas if not present
+		ImGuiContext* new_context = nullptr;
+		if (mFontAtlas == nullptr)
+		{
+			// Add font
+			mFontAtlas = std::make_unique<ImFontAtlas>();
+			ImFontConfig font_config;
+			font_config.OversampleH = 3;
+			font_config.OversampleV = 1;
+			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
 
-		// Create all vulkan required resources
-		createVulkanResources(window);
+			// Create context
+			new_context = createContext(*mFontAtlas);
 
-		// Update SDL Window information
-		setGuiWindow(window.getWindow()->getNativeWindow());
+			// Create all vulkan required resources
+			createVulkanResources(window);
+		}
+		else
+		{
+			new_context = createContext(*mFontAtlas);
+		}
 
-		// Store handle
-		mMainWindow = &window;
+		// Add context
+		mContexts.emplace(std::make_pair(&window, new_context));
 	}
 
 
@@ -486,11 +505,10 @@ namespace nap
 	}
 
 
-	ImGuiContext* IMGuiService::createContext()
+	ImGuiContext* IMGuiService::createContext(ImFontAtlas& fontAtlas)
 	{
 		// Create ImGUI context
-		ImGuiContext* new_context = ImGui::CreateContext();
-		ImGui::SetCurrentContext(new_context);
+		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
 
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		ImGuiIO& io = ImGui::GetIO();
@@ -522,12 +540,6 @@ namespace nap
 		// Push default style
 		applyStyle();
 
-		// Add font
-		ImFontConfig font_config;
-		font_config.OversampleH = 3;
-		font_config.OversampleV = 1;
-		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
-
 		return new_context;
 	}
 
@@ -538,7 +550,7 @@ namespace nap
 		// Create local vulkan resources
 		//////////////////////////////////////////////////////////////////////////
 
-		// Create descriptor set pool for ImGUI to use, capped at 100 sets
+		// Create descriptor set pool for ImGUI to use, capped at 1 set
 		createFontDescriptorPool(*mRenderService);
 
 		// Create description set allocator for custom display textures
@@ -567,7 +579,6 @@ namespace nap
 		init_info.CheckVkResultFn = checkVKResult;
 
 		// Create all the vulkan resources, using the window's render pass and init info
-		ImGui::SetCurrentContext(mMainContext);
 		ImGui_ImplVulkan_Init(&init_info, window.getBackbuffer().getRenderPass());
 
 		// Create the font texture, upload it immediately using a new framebuffer
@@ -578,5 +589,4 @@ namespace nap
 		endSingleTimeCommands(*mRenderService, font_cmd_buffer);
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
-
 }
