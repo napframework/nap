@@ -415,45 +415,6 @@ namespace nap
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
-		// Create ImGUI context
-		mContext = ImGui::CreateContext();
-
-		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeyMap[ImGuiKey_Tab]			= (int)EKeyCode::KEY_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow]	= (int)EKeyCode::KEY_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow]	= (int)EKeyCode::KEY_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow]		= (int)EKeyCode::KEY_UP;
-		io.KeyMap[ImGuiKey_DownArrow]	= (int)EKeyCode::KEY_DOWN;
-		io.KeyMap[ImGuiKey_PageUp]		= (int)EKeyCode::KEY_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown]	= (int)EKeyCode::KEY_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home]		= (int)EKeyCode::KEY_HOME;
-		io.KeyMap[ImGuiKey_End]			= (int)EKeyCode::KEY_END;
-		io.KeyMap[ImGuiKey_Delete]		= (int)EKeyCode::KEY_DELETE;
-		io.KeyMap[ImGuiKey_Backspace]	= (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter]		= (int)EKeyCode::KEY_KP_ENTER;
-		io.KeyMap[ImGuiKey_Escape]		= (int)EKeyCode::KEY_ESCAPE;
-		io.KeyMap[ImGuiKey_A]			= (int)EKeyCode::KEY_a;
-		io.KeyMap[ImGuiKey_C]			= (int)EKeyCode::KEY_c;
-		io.KeyMap[ImGuiKey_V]			= (int)EKeyCode::KEY_v;
-		io.KeyMap[ImGuiKey_X]			= (int)EKeyCode::KEY_x;
-		io.KeyMap[ImGuiKey_Y]			= (int)EKeyCode::KEY_y;
-		io.KeyMap[ImGuiKey_Z]			= (int)EKeyCode::KEY_z;
-
-		// Set callbacks
-		io.SetClipboardTextFn = setClipboardText;
-		io.GetClipboardTextFn = getClipboardText;
-		io.ClipboardUserData = NULL;
-
-		// Push default style
-		applyStyle();
-
-		// Add font
-		ImFontConfig font_config;
-		font_config.OversampleH = 3;
-		font_config.OversampleV = 1;
-		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
-
 		return true;
 	}
 
@@ -480,7 +441,7 @@ namespace nap
 
 	void IMGuiService::shutdown()
 	{
-		if (mMainWindow != nullptr)
+		if (mMainContext != nullptr)
 		{
 			// Destroy vulkan resources
 			ImGui_ImplVulkan_Shutdown();
@@ -496,15 +457,83 @@ namespace nap
 		mAllocator.reset(nullptr);
 
 		// Destroy imgui context
-		ImGui::DestroyContext(mContext);
+		ImGui::DestroyContext(mMainContext);
 	}
 
 
 	void IMGuiService::onWindowAdded(RenderWindow& window)
 	{
-		if (mMainWindow != nullptr)
+		if (mMainContext != nullptr)
 			return;
 
+		// Create ImGUI Context
+		mMainContext = createContext();
+
+		// Create all vulkan required resources
+		createVulkanResources(window);
+
+		// Update SDL Window information
+		setGuiWindow(window.getWindow()->getNativeWindow());
+
+		// Store handle
+		mMainWindow = &window;
+	}
+
+
+	void IMGuiService::onWindowRemoved(RenderWindow& window)
+	{
+
+	}
+
+
+	ImGuiContext* IMGuiService::createContext()
+	{
+		// Create ImGUI context
+		ImGuiContext* new_context = ImGui::CreateContext();
+		ImGui::SetCurrentContext(new_context);
+
+		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
+		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
+		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
+		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
+		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
+		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
+		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
+		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
+		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
+		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
+		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
+		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
+		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
+
+		// Set callbacks
+		io.SetClipboardTextFn = setClipboardText;
+		io.GetClipboardTextFn = getClipboardText;
+		io.ClipboardUserData = NULL;
+
+		// Push default style
+		applyStyle();
+
+		// Add font
+		ImFontConfig font_config;
+		font_config.OversampleH = 3;
+		font_config.OversampleV = 1;
+		io.Fonts->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
+
+		return new_context;
+	}
+
+
+	void IMGuiService::createVulkanResources(nap::RenderWindow& window)
+	{
 		//////////////////////////////////////////////////////////////////////////
 		// Create local vulkan resources
 		//////////////////////////////////////////////////////////////////////////
@@ -538,7 +567,7 @@ namespace nap
 		init_info.CheckVkResultFn = checkVKResult;
 
 		// Create all the vulkan resources, using the window's render pass and init info
-		ImGui::SetCurrentContext(mContext);
+		ImGui::SetCurrentContext(mMainContext);
 		ImGui_ImplVulkan_Init(&init_info, window.getBackbuffer().getRenderPass());
 
 		// Create the font texture, upload it immediately using a new framebuffer
@@ -548,17 +577,6 @@ namespace nap
 		// Destroy command buffer and font related uploaded objects
 		endSingleTimeCommands(*mRenderService, font_cmd_buffer);
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-		// Update SDL Window information
-		setGuiWindow(window.getWindow()->getNativeWindow());
-
-		// Store handle
-		mMainWindow = &window;
 	}
 
-
-	void IMGuiService::onWindowRemoved(RenderWindow& window)
-	{
-
-	}
 }

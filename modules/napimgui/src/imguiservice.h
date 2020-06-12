@@ -105,9 +105,10 @@ namespace nap
 	private:
 		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
 		ResourcePtr<RenderWindow>	mMainWindow = nullptr;			///< User selected GUI window, defaults to primary window
-		ImGuiContext*				mContext = nullptr;				///< Current ImGUI context 
+		ImGuiContext*				mMainContext = nullptr;			///< Current ImGUI context 
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, ImGuiContext*> mContexts;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -120,5 +121,15 @@ namespace nap
 		 */
 		void onWindowRemoved(RenderWindow& window);
 		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
+
+		/**
+		 * Creates a new imgui context
+		 */
+		ImGuiContext* createContext();
+
+		/**
+		 * Creates all vulkan related resources, for imGUI as well as local
+		 */
+		void createVulkanResources(nap::RenderWindow& window);
 	};
 }
