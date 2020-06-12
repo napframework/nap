@@ -96,9 +96,8 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-
 		/**
-		 * 
+		 * Ends frame operation for all contexts.
 		 */
 		virtual void postUpdate(double deltaTime) override;
 
@@ -128,6 +127,7 @@ namespace nap
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources

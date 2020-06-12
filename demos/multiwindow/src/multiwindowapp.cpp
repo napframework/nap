@@ -111,6 +111,7 @@ namespace nap
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
+		ImGui::ShowDemoWindow(nullptr);
 
 		// Draw some gui elements
 		mGuiService->selectWindow(mRenderWindowTwo);
@@ -127,6 +128,7 @@ namespace nap
 		ImGui::TextColored(clr, "Stop bugging me, i'm working");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
+		ImGui::ShowDemoWindow(nullptr);
 	}
 
 	

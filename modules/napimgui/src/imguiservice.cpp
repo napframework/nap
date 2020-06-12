@@ -515,6 +515,7 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
 			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
+			mSampleCount = window.getWindow()->getSampleCount();
 
 			// Create context
 			new_context = createContext(*mFontAtlas);
@@ -524,6 +525,9 @@ namespace nap
 		}
 		else
 		{
+			// TODO: Properly handle mismatch in multi-sample count
+			if (mSampleCount != window.getWindow()->getSampleCount())
+				nap::Logger::warn("%s: multi-sample count mismatch", get_type().get_name().to_string().c_str());
 			new_context = createContext(*mFontAtlas);
 		}
 
@@ -534,7 +538,10 @@ namespace nap
 
 	void IMGuiService::onWindowRemoved(RenderWindow& window)
 	{
-
+		// Find window and remove context
+		auto it = mContexts.find(&window);
+		assert(it != mContexts.end());
+		mContexts.erase(it);
 	}
 
 
