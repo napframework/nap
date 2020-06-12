@@ -25,6 +25,7 @@ using namespace napkin;
 std::unique_ptr<AppContext> appContextInstance = nullptr;
 
 
+
 AppContext::AppContext()
 {
 	nap::Logger::instance().log.connect(mLogHandler);
@@ -153,10 +154,12 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 		return nullptr;
 	}
 
+	auto exepath = nap::utility::getExecutablePath();
+	auto rootpath = exepath + '/' + pathMapping->mNapkinExeToRoot;
 	// Do string/template replacement
 	std::unordered_map<std::string, std::string> reps = {
-		{"ROOT", nap::utility::getAbsolutePath(nap::utility::getExecutablePath() + '/' + pathMapping->mNapkinExeToRoot)},
-		{"BUILD_TYPE", "I_DO_NOT_KNOW"},
+		{"ROOT", rootpath},
+		{"BUILD_TYPE", sBuildConf},
 	};
 
 	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
