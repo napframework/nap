@@ -21,18 +21,19 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-#define IMGUI_VK_QUEUED_FRAMES 2
-
 // Static data associated with IMGUI: TODO: Use own render classes and remove global state!
 static bool						gMousePressed[3] = { false, false, false };
 static float					gMouseWheel = 0.0f;
 static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
 static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
 static VkSampler                gSampler = VK_NULL_HANDLE;
-const static int				gMaxSets = 100;
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static / Local methods
+	//////////////////////////////////////////////////////////////////////////
+
 	static void checkVKResult(VkResult err)
 	{
 		if (err == 0) return;
@@ -155,55 +156,6 @@ namespace nap
 	}
 
 
-	static void setGuiWindow(SDL_Window* window)
-	{
-#ifdef _WIN32
-		ImGuiIO& io = ImGui::GetIO();
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(window, &wmInfo);
-		io.ImeWindowHandle = wmInfo.info.win.window;
-#else
-		(void)window;
-#endif
-	}
-
-
-	static void newFrame(GLWindow& window)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-
-		// Setup display size (every frame to accommodate for window resizing)
-		int w, h;
-		int display_w, display_h;
-		SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
-		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
-		io.DisplaySize = ImVec2((float)w, (float)h);
-		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
-
-		// Setup inputs
-		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
-		int mx, my;
-		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		
-		// Mouse position, in pixels, set to -1,-1 if no mouse / on another screen, etc.
-		io.MousePos = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
-			ImVec2((float)mx, (float)my) : io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-
-		io.MouseDown[0] = gMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT))		!= 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-		io.MouseDown[1] = gMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT))	!= 0;
-		io.MouseDown[2] = gMousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE))	!= 0;
-		gMousePressed[0] = gMousePressed[1] = gMousePressed[2] = false;
-
-		io.MouseWheel = gMouseWheel;
-		gMouseWheel = 0.0f;
-
-		// Start the frame. 
-		// This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
-		ImGui::NewFrame();
-	}
-
-
 	static void applyStyle()
 	{
 		// Get colors
@@ -237,59 +189,121 @@ namespace nap
 		style.GrabMinSize = 5.0f;
 		style.GrabRounding = 1.0f;
 
-		style.Colors[ImGuiCol_Text]						= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_TextDisabled]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_WindowBg]					= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ChildBg]					= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_PopupBg]					= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_Border]					= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_BorderShadow]				= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_FrameBg]					= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgHovered]			= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgActive]			= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_TitleBg]					= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TitleBgCollapsed]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TitleBgActive]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_MenuBarBg]				= IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ScrollbarBg]				= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_ScrollbarGrab]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ScrollbarGrabHovered]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ScrollbarGrabActive]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_CheckMark]				= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SliderGrab]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SliderGrabActive]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_Button]					= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ButtonHovered]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ButtonActive]				= IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_Header]					= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SeparatorHovered]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SeparatorActive]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_HeaderHovered]			= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_HeaderActive]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ResizeGrip]				= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ResizeGripHovered]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ResizeGripActive]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_Tab]						= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabHovered]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TabActive]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TabUnfocused]				= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabUnfocusedActive]		= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_PlotLines]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_PlotLinesHovered]			= IMGUI_NAPHIGH;
-		style.Colors[ImGuiCol_PlotHistogram]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_PlotHistogramHovered]		= IMGUI_NAPHIGH;
-		style.Colors[ImGuiCol_TextSelectedBg]			= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDarkening]		= IMGUI_NAPMODAL;
-		style.Colors[ImGuiCol_Separator]				= IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SeparatorHovered]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SeparatorActive]			= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavHighlight]				= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavWindowingHighlight]	= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavWindowingDimBg]		= IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDimBg]			= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_ButtonActive] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_HeaderActive] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabHovered] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIGH;
+		style.Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
+		style.Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ModalWindowDarkening] = IMGUI_NAPMODAL;
+		style.Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPFRO1;
 	}
 
+
+	static ImGuiContext* createContext(ImFontAtlas& fontAtlas)
+	{
+		// Create ImGUI context
+		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
+		ImGuiContext* cur_context = ImGui::GetCurrentContext();
+		ImGui::SetCurrentContext(new_context);
+
+		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
+		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
+		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
+		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
+		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
+		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
+		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
+		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
+		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
+		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
+		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
+		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
+		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
+
+		// Set callbacks
+		io.SetClipboardTextFn = setClipboardText;
+		io.GetClipboardTextFn = getClipboardText;
+		io.ClipboardUserData = NULL;
+
+		// Push default style
+		applyStyle();
+
+		// Reset context
+		ImGui::SetCurrentContext(cur_context);
+
+		return new_context;
+	}
+
+
+	static void setGuiWindow(SDL_Window* window)
+	{
+#ifdef _WIN32
+		ImGuiIO& io = ImGui::GetIO();
+		SDL_SysWMinfo wmInfo;
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(window, &wmInfo);
+		io.ImeWindowHandle = wmInfo.info.win.window;
+#else
+		(void)window;
+#endif
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Service Methods
+	//////////////////////////////////////////////////////////////////////////
 
 	IMGuiService::IMGuiService(ServiceConfiguration* configuration) :
 		Service(configuration)
@@ -300,8 +314,8 @@ namespace nap
 	void IMGuiService::draw(VkCommandBuffer commandBuffer, nap::RenderWindow& window)
 	{
 		const auto it = mContexts.find(&window);
-		assert(it != mContexts.end());
-		ImGui::SetCurrentContext(it->second);
+		assert(it != mContexts.end());	
+		ImGui::SetCurrentContext(it->second->mContext);
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	}
@@ -312,7 +326,7 @@ namespace nap
 		// Select ImGUI context
 		const auto it = mContexts.find(window.get());
 		assert(it != mContexts.end());
-		ImGui::SetCurrentContext(it->second);
+		ImGui::SetCurrentContext(it->second->mContext);
 
 		// Update SDL Window information
 		setGuiWindow(it->first->getWindow()->getNativeWindow());
@@ -321,7 +335,21 @@ namespace nap
 
 	void IMGuiService::processInputEvent(InputEvent& event)
 	{
-		// TODO: make context aware
+		// Check if it's a window input event
+		if (!event.get_type().is_derived_from(RTTI_OF(nap::WindowInputEvent)))
+			return;
+
+		// Find window associated with event
+		WindowInputEvent& input_event = static_cast<WindowInputEvent&>(event);
+		nap::RenderWindow* window = mRenderService->findWindow(input_event.mWindow);
+		assert(window != nullptr);
+		
+		// Get context for window
+		auto context = mContexts.find(window);
+		assert(context != mContexts.end());
+
+		// Select contect and get input / output information
+		ImGui::SetCurrentContext(context->second->mContext);
 		ImGuiIO& io = ImGui::GetIO();
 		
 		// Key event
@@ -330,9 +358,6 @@ namespace nap
 			bool pressed = event.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
 			KeyEvent& key_event = static_cast<KeyEvent&>(event);
 			io.KeysDown[(int)(key_event.mKey)] = pressed;
-
-			// TODO: Keep track of modifier states in NAP so we don't directly interface with SDL2 here
-			// Goal is to remove SDL calls from imgui service
 			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
 			io.KeyCtrl	= ((SDL_GetModState() & KMOD_CTRL)	!= 0);
 			io.KeyAlt	= ((SDL_GetModState() & KMOD_ALT)	!= 0);
@@ -350,7 +375,7 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
 			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
-			gMouseWheel = wheel_event.mY > 0 ? 1 : -1;
+			context->second->mMouseWheel = wheel_event.mY > 0 ? 1 : -1;
 		}
 
 		// Pointer Event
@@ -358,7 +383,7 @@ namespace nap
 		{
 			nap::PointerPressEvent& press_event = static_cast<nap::PointerPressEvent&>(event);
 			assert(press_event.mButton != EMouseButton::UNKNOWN);
-			gMousePressed[static_cast<int>(press_event.mButton)] = true;
+			context->second->mMousePressed[static_cast<int>(press_event.mButton)] = true;
 		}
 	}
 
@@ -437,11 +462,20 @@ namespace nap
 
 		for (auto& context : mContexts)
 		{
-			// Signal the beginning of a new frame to the imgui backend
-			ImGui::SetCurrentContext(context.second);
-			newFrame(*context.first->getWindow());
+			// Signal the beginning of a new frame to the im-gui backend
+			newFrame(*context.first, *context.second);
 		}
 	};
+
+
+	void IMGuiService::postUpdate(double deltaTime)
+	{
+		for (auto& context : mContexts)
+		{
+			ImGui::SetCurrentContext(context.second->mContext);
+			ImGui::EndFrame();
+		}
+	}
 
 
 	void IMGuiService::shutdown()
@@ -462,8 +496,7 @@ namespace nap
 		}
 
 		// Destroy imgui contexts
-		for (auto& context : mContexts)
-			ImGui::DestroyContext(context.second);
+		mContexts.clear();
 	}
 
 
@@ -495,57 +528,13 @@ namespace nap
 		}
 
 		// Add context
-		mContexts.emplace(std::make_pair(&window, new_context));
+		mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
 	}
 
 
 	void IMGuiService::onWindowRemoved(RenderWindow& window)
 	{
 
-	}
-
-
-	ImGuiContext* IMGuiService::createContext(ImFontAtlas& fontAtlas)
-	{
-		// Create ImGUI context
-		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
-		ImGuiContext* cur_context = ImGui::GetCurrentContext();
-		ImGui::SetCurrentContext(new_context);
-
-		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
-		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
-		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
-		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
-		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
-		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
-		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
-		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
-		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
-		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
-
-		// Set callbacks
-		io.SetClipboardTextFn = setClipboardText;
-		io.GetClipboardTextFn = getClipboardText;
-		io.ClipboardUserData = NULL;
-
-		// Push default style
-		applyStyle();
-
-		// Reset context
-		ImGui::SetCurrentContext(cur_context);
-
-		return new_context;
 	}
 
 
@@ -593,5 +582,49 @@ namespace nap
 		// Destroy command buffer and font related uploaded objects
 		endSingleTimeCommands(*mRenderService, font_cmd_buffer);
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
+	}
+
+
+	void IMGuiService::newFrame(RenderWindow& window, GUIContext& context)
+	{
+		// Switch context
+		ImGui::SetCurrentContext(context.mContext);
+
+		// Setup display size (every frame to accommodate for window resizing)
+		ImGuiIO& io = ImGui::GetIO();
+		int w, h;
+		int display_w, display_h;
+		SDL_GetWindowSize(window.getWindow()->getNativeWindow(), &w, &h);
+		SDL_GL_GetDrawableSize(window.getWindow()->getNativeWindow(), &display_w, &display_h);
+		io.DisplaySize = ImVec2((float)w, (float)h);
+		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+
+		// Setup inputs
+		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
+		int mx, my;
+		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
+
+		// Mouse position, in pixels, set to -1,-1 if no mouse / on another screen, etc.
+		io.MousePos = SDL_GetWindowFlags(window.getWindow()->getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
+			ImVec2((float)mx, (float)my) : io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+
+		// Update mouse down state
+		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		io.MouseDown[1] = context.mMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+		io.MouseDown[2] = context.mMousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+		context.mMousePressed[0] = context.mMousePressed[1] = context.mMousePressed[2] = false;
+
+		// Update mouse wheel state
+		io.MouseWheel = context.mMouseWheel;
+		context.mMouseWheel = 0.0f;
+
+		// Begin new frame
+		ImGui::NewFrame();
+	}
+
+
+	IMGuiService::GUIContext::~GUIContext()
+	{
+		ImGui::DestroyContext(mContext);
 	}
 }

@@ -20,7 +20,6 @@ namespace nap
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
-	//class DescriptorSetAllocator;
 
 	/**
 	 * This service manages the global ImGui state.
@@ -97,16 +96,37 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+
 		/**
-		 *	Disables the imgui library
+		 * 
+		 */
+		virtual void postUpdate(double deltaTime) override;
+
+		/**
+		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;
 
 	private:
-		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
+
+		/**
+		 * Simple struct that combines an ImGUI context with additional state information
+		 * Takes ownership of the context, destroys it on destruction
+		 */
+		struct GUIContext
+		{
+			GUIContext(ImGuiContext* context) : mContext(context) { };
+			~GUIContext();
+
+			bool mMousePressed[3]		= { false, false, false };
+			float mMouseWheel			= 0.0f;
+			ImGuiContext* mContext		= nullptr;
+		};
+
+		RenderService* mRenderService = nullptr;
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
-		std::unordered_map<RenderWindow*, ImGuiContext*> mContexts;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 
 		/**
@@ -122,13 +142,13 @@ namespace nap
 		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
 
 		/**
-		 * Creates a new imgui context
-		 */
-		ImGuiContext* createContext(ImFontAtlas& fontAtlas);
-
-		/**
 		 * Creates all vulkan related resources, for imGUI as well as local
 		 */
 		void createVulkanResources(nap::RenderWindow& window);
+
+		/**
+		 * starts a new imgui frame
+		 */
+		void newFrame(RenderWindow& window, GUIContext& context);
 	};
 }
