@@ -128,7 +128,6 @@ namespace nap
 		ImGui::TextColored(clr, "Stop bugging me, i'm working");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
-		ImGui::ShowDemoWindow(nullptr);
 	}
 
 	
@@ -175,7 +174,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer(), *mRenderWindowOne);
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindowOne->endRendering();
@@ -214,7 +213,7 @@ namespace nap
 		// Render Window Three: Sphere and Texture
 		if(mRenderService->beginRecording(*mRenderWindowThree))
 		{
-			// Make window 3 active
+			// Begin the render pass
 			mRenderWindowThree->beginRendering();
 			
 			// Find the world entity and add as an object to render
