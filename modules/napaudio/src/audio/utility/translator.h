@@ -76,9 +76,10 @@ namespace nap
                 
                 // interpolate
                 T frac = index - floor;
-                T res = lerp(inTable[floor], inTable[floor + 1], frac);
-                
-                return res;
+				if (frac > 0)
+					return lerp(inTable[floor], inTable[floor + 1], frac);
+				else
+					return inTable[floor];
             }
             
             
