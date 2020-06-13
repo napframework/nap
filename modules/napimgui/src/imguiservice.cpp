@@ -21,9 +21,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-// Static data associated with IMGUI: TODO: Use own render classes and remove global state!
-static bool						gMousePressed[3] = { false, false, false };
-static float					gMouseWheel = 0.0f;
+// Static data associated with IMGUI
 static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
 static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
 static VkSampler                gSampler = VK_NULL_HANDLE;
