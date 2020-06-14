@@ -329,7 +329,7 @@ namespace nap
 		
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer());
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer(), current_window);
 	}
 
 
