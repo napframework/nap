@@ -155,7 +155,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(*mRenderWindowOne);
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindowOne->endRendering();
@@ -182,7 +182,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui to window one
-			mGuiService->draw(*mRenderWindowTwo);
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindowTwo->endRendering();
@@ -224,8 +224,8 @@ namespace nap
 			// Render the plane with the orthographic to window three
 			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
 
-			// Draw gui to window one
-			mGuiService->draw(*mRenderWindowThree);
+			// Draw gui to window three
+			mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindowThree->endRendering();

@@ -317,7 +317,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::draw(RenderWindow& window)
+	void IMGuiService::draw()
 	{
 		// Get window we're drawing in
 		RenderWindow* current_window = mRenderService->getCurrentRenderWindow();
