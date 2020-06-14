@@ -329,7 +329,7 @@ namespace nap
 		
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer(), current_window);
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer(), it->second->mContext);
 	}
 
 
@@ -517,7 +517,8 @@ namespace nap
 		// Create new context
 		assert(mContexts.find(&window) == mContexts.end());
 
-		// Create font atlas if not present
+		// Create font atlas if not present, this also means it's the first time a window is added
+		// In that case we create the necessary GUI vulkan resources
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
@@ -550,9 +551,12 @@ namespace nap
 
 	void IMGuiService::onWindowRemoved(RenderWindow& window)
 	{
-		// Find window and remove context
+		// Find context 
 		auto it = mContexts.find(&window);
 		assert(it != mContexts.end());
+
+		// Remove on vulkan side and erase
+		ImGui_ImplVulkan_RemoveContext(it->second->mContext);
 		mContexts.erase(it);
 	}
 

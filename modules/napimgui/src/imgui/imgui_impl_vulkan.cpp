@@ -88,7 +88,7 @@ static VkDeviceMemory           g_UploadBufferMemory = VK_NULL_HANDLE;
 static VkBuffer                 g_UploadBuffer = VK_NULL_HANDLE;
 
 // Render buffers
-static std::unordered_map<nap::RenderWindow*, ImGui_ImplVulkanH_WindowRenderBuffers> g_MainWindowRenderBuffers;
+static std::unordered_map<ImGuiContext*, ImGui_ImplVulkanH_WindowRenderBuffers> g_MainWindowRenderBuffers;
 
 // Forward Declarations
 bool ImGui_ImplVulkan_CreateDeviceObjects();
@@ -307,7 +307,7 @@ static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBu
 
 // Render function
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
-void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer, nap::RenderWindow* window)
+void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer, ImGuiContext* context)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
@@ -318,11 +318,13 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
     ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
 
     // Allocate array to store enough vertex/index buffers
-	auto it = g_MainWindowRenderBuffers.find(window);
+	auto it = g_MainWindowRenderBuffers.find(context);
 	if (it == g_MainWindowRenderBuffers.end())
-		g_MainWindowRenderBuffers.emplace(std::make_pair(window, std::move(ImGui_ImplVulkanH_WindowRenderBuffers())));
+	{
+		it = g_MainWindowRenderBuffers.emplace(std::make_pair(context, std::move(ImGui_ImplVulkanH_WindowRenderBuffers()))).first;
+	}
 
-    ImGui_ImplVulkanH_WindowRenderBuffers* wrb = &g_MainWindowRenderBuffers[window];
+	ImGui_ImplVulkanH_WindowRenderBuffers* wrb = &it->second;
     if (wrb->FrameRenderBuffers == NULL)
     {
         wrb->Index = 0;
@@ -793,6 +795,16 @@ void    ImGui_ImplVulkan_DestroyFontUploadObjects()
         vkFreeMemory(v->Device, g_UploadBufferMemory, v->Allocator);
         g_UploadBufferMemory = VK_NULL_HANDLE;
     }
+}
+
+void ImGui_ImplVulkan_RemoveContext(ImGuiContext* context)
+{
+	auto it = g_MainWindowRenderBuffers.find(context);
+	assert(it != g_MainWindowRenderBuffers.end());
+
+	ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+	ImGui_ImplVulkanH_DestroyWindowRenderBuffers(v->Device, &it->second, v->Allocator);
+	g_MainWindowRenderBuffers.erase(it);
 }
 
 void    ImGui_ImplVulkan_DestroyDeviceObjects()
