@@ -268,7 +268,7 @@ static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory
     p_buffer_size = new_size;
 }
 
-static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples)
+static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples, VkRenderPass renderPass)
 {
 	VkPipelineShaderStageCreateInfo stage[2] = {};
 	stage[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -365,7 +365,7 @@ static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples)
 	info.pColorBlendState = &blend_info;
 	info.pDynamicState = &dynamic_state;
 	info.layout = g_PipelineLayout;
-	info.renderPass = g_RenderPass;
+	info.renderPass = renderPass;
 
 	VkPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(v->Device, v->PipelineCache, 1, &info, v->Allocator, &pipeline);
@@ -373,13 +373,13 @@ static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples)
 	return pipeline;
 }
 
-static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, ImGui_ImplVulkanH_FrameRenderBuffers* rb, VkSampleCountFlagBits samples, int fb_width, int fb_height)
+static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, VkRenderPass render_pass, ImGui_ImplVulkanH_FrameRenderBuffers* rb, VkSampleCountFlagBits samples, int fb_width, int fb_height)
 {
     // Bind pipeline and descriptor sets:
     {
 		auto it = g_Pipelines.find(samples);
 		if (it == g_Pipelines.end())
-			it = g_Pipelines.emplace(std::make_pair(samples, ImGui_ImplVulkan_CreatePipeline(samples))).first;
+			it = g_Pipelines.emplace(std::make_pair(samples, ImGui_ImplVulkan_CreatePipeline(samples, render_pass))).first;
         vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
     }
 
@@ -420,7 +420,7 @@ static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBu
 
 // Render function
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
-void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* context, VkCommandBuffer command_buffer, VkSampleCountFlagBits samples)
+void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* context, VkCommandBuffer command_buffer, VkRenderPass render_pass, VkSampleCountFlagBits samples)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
@@ -489,7 +489,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* contex
     }
 
     // Setup desired Vulkan state
-    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, rb, samples, fb_width, fb_height);
+    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, render_pass, rb, samples, fb_width, fb_height);
 
     // Will project scissor/clipping rectangles into framebuffer space
     ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
@@ -510,7 +510,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* contex
                 // User callback, registered via ImDrawList::AddCallback()
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
                 if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, rb, samples, fb_width, fb_height);
+                    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, render_pass, rb, samples, fb_width, fb_height);
                 else
                     pcmd->UserCallback(cmd_list, pcmd);
             }
@@ -791,11 +791,6 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         err = vkCreatePipelineLayout(v->Device, &layout_info, v->Allocator, &g_PipelineLayout);
         check_vk_result(err);
     }
-
-	// Create pipeline
-	auto found_pipeline = g_Pipelines.find(v->MSAASamples);
-	if (found_pipeline == g_Pipelines.end())
-		g_Pipelines.emplace(std::make_pair(v->MSAASamples, ImGui_ImplVulkan_CreatePipeline(v->MSAASamples)));
 
 	return true;
 }

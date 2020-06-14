@@ -317,7 +317,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::draw()
+	void IMGuiService::draw(RenderWindow& window)
 	{
 		// Get window we're drawing in
 		RenderWindow* current_window = mRenderService->getCurrentRenderWindow();
@@ -335,7 +335,11 @@ namespace nap
 		
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), it->second->mContext, mRenderService->getCurrentCommandBuffer(), current_window->getWindow()->getSampleCount());
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
+			it->second->mContext,
+			mRenderService->getCurrentCommandBuffer(), 
+			current_window->getBackbuffer().getRenderPass(),
+			current_window->getBackbuffer().getSampleCount());
 	}
 
 

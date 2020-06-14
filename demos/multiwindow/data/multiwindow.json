@@ -493,7 +493,7 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Two"
         },
         {
             "Type": "nap::RenderWindow",
@@ -529,7 +529,7 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Two"
         },
         {
             "Type": "nap::Scene",
