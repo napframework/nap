@@ -6,9 +6,11 @@
 //  [X] Renderer: User texture binding. See https://github.com/ocornut/imgui/pull/914
 
 // Modified (by naivisoftware) to support custom texture binding, based on: https://github.com/ocornut/imgui/pull/914
-// Also added support for multiple contexts, where every context has it's own set of buffers.
+// Also added support for multiple ImGUI contexts, where every context has it's own set of buffers.
 // Buffers are created lazily on draw, but can be destroyed explicitly by calling: ImGui_ImplVulkan_RemoveContext().
-// Instead of 1 fixed pipeline, pipelines are created based on the number of MXSAA samples.
+// Instead of 1 fixed pipeline, pipelines are created based on the number of MSAA samples.
+// These changes allow for rendering a context to a different viewport, with different MSAA settings,
+// Together with the display of custom textures in ImGUI
 
 // You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
 // If you are new to dear imgui, read examples/README.txt and read the documentation at the top of imgui.cpp.
