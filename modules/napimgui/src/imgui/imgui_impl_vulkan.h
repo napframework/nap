@@ -4,7 +4,11 @@
 // Implemented features:
 //  [X] Renderer: Support for large meshes (64k+ vertices) with 16-bit indices.
 //  [X] Renderer: User texture binding. See https://github.com/ocornut/imgui/pull/914
-//	Modified (by cklosters) to support custom texture binding, based on: https://github.com/ocornut/imgui/pull/914
+
+// Modified (by cklosters) to support custom texture binding, based on: https://github.com/ocornut/imgui/pull/914
+// Also added support for multiple contexts, where every context has it's own set of buffers.
+// Buffers are created lazily on draw, but can be destroyed explicitly by calling: ImGui_ImplVulkan_RemoveContext().
+// Instead of 1, multiple pipelines are created based on the number of MXSAA samples.
 
 // You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
 // If you are new to dear imgui, read examples/README.txt and read the documentation at the top of imgui.cpp.
@@ -47,7 +51,7 @@ struct ImGui_ImplVulkan_InitInfo
 IMGUI_IMPL_API bool			ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass);
 IMGUI_IMPL_API void			ImGui_ImplVulkan_Shutdown();
 IMGUI_IMPL_API void			ImGui_ImplVulkan_NewFrame();
-IMGUI_IMPL_API void			ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer, ImGuiContext* context);
+IMGUI_IMPL_API void			ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* context, VkCommandBuffer command_buffer, VkSampleCountFlagBits samples);
 IMGUI_IMPL_API bool			ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer);
 IMGUI_IMPL_API void			ImGui_ImplVulkan_DestroyFontUploadObjects();
 IMGUI_IMPL_API void			ImGui_ImplVulkan_RemoveContext(ImGuiContext* context);

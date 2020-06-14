@@ -142,6 +142,12 @@ namespace nap
 	}
 
 
+	static void destroyFontDescriptorPool(RenderService& renderService)
+	{
+		vkDestroyDescriptorPool(renderService.getDevice(), gDescriptorPool, nullptr);
+	}
+
+
 	static const char* getClipboardText(void*)
 	{
 		return SDL_GetClipboardText();
@@ -329,7 +335,7 @@ namespace nap
 		
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mRenderService->getCurrentCommandBuffer(), it->second->mContext);
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), it->second->mContext, mRenderService->getCurrentCommandBuffer(), current_window->getWindow()->getSampleCount());
 	}
 
 
@@ -469,13 +475,13 @@ namespace nap
 
 	void IMGuiService::update(double deltaTime)
 	{
-		// Signal the beginning of a new frame to the vulkan backend
-		ImGui_ImplVulkan_NewFrame();
-
 		for (auto& context : mContexts)
 		{
 			// Signal the beginning of a new frame to the im-gui backend
 			newFrame(*context.first, *context.second);
+
+			// Signal the beginning of a new frame to the vulkan backend
+			ImGui_ImplVulkan_NewFrame();
 		}
 	};
 
@@ -496,14 +502,8 @@ namespace nap
 		{
 			// Destroy vulkan resources
 			ImGui_ImplVulkan_Shutdown();
-
-			// Now delete resources on this side
 			destroyDeviceObjects(*mRenderService);
-
-			// Destroy font descriptor pool side
-			vkDestroyDescriptorPool(mRenderService->getDevice(), gDescriptorPool, nullptr);
-
-			// Free allocator
+			destroyFontDescriptorPool(*mRenderService);
 			mAllocator.reset(nullptr);
 		}
 
