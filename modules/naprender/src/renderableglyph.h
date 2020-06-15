@@ -91,13 +91,6 @@ namespace nap
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 
-		/**
-		 * Called on initialization. Derived classes should populate these.
-		 * @param outParameters the parameters that are used to create the GPU texture.
-		 * @param charSize size of a single character
-		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
-
 	private:
 		std::unique_ptr<Texture2D> mTexture = nullptr;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
@@ -122,13 +115,6 @@ namespace nap
 		// Constructor
 		Renderable2DGlyph(nap::Core& core);
 		Renderable2DGlyph() = default;
-
-	protected:
-		/**
-		 * @param outParameters the populated texture parameters 
-		 * @param charSize the size of a single character
-		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 
 
@@ -148,12 +134,5 @@ namespace nap
 		// Constructor
 		Renderable2DMipMapGlyph(nap::Core& core);
 		Renderable2DMipMapGlyph() = default;
-
-	protected:
-		/**
-		 * @param outParameters the populated texture parameters
-		 * @param charSize the size of a single character, used to determine the lod-level for that given character.
-		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
 	};
 }

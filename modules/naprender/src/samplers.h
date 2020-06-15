@@ -16,6 +16,26 @@ namespace nap
 
 	using SamplerChangedCallback = std::function<void(SamplerInstance&)>;
 
+	/**
+	 *	Texture min filter
+	 */
+	enum class EFilterMode : int
+	{
+		Nearest = 0,				///< Nearest
+		Linear						///< Linear
+	};
+
+	/**
+	 *	Texture wrap mode
+	 */
+	enum class EAddressMode : int
+	{
+		Repeat = 0,					///< Repeat 
+		MirroredRepeat,				///< MirroredRepeat
+		ClampToEdge,				///< ClampToEdge
+		ClampToBorder				///< ClampToBorder
+	};
+
 	class NAPAPI Sampler : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -23,7 +43,14 @@ namespace nap
 	public:
 		Sampler() = default;
 
-		std::string mName;
+		std::string		mName;
+
+		EFilterMode		mMinFilter				= EFilterMode::Linear;					///< Property: 'MinFilter' minimizing filter
+		EFilterMode		mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
+		EFilterMode		mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
+		EAddressMode	mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
+		EAddressMode	mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
+		int				mMaxLodLevel			= 0;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
 
 
@@ -49,13 +76,13 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
-		SamplerInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
+		SamplerInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler* sampler, const SamplerChangedCallback& samplerChangedCallback);
 		virtual ~SamplerInstance();
 
 		bool init(utility::ErrorState& errorState);
 
 		const SamplerDeclaration& getDeclaration() const { assert(mDeclaration != nullptr); return *mDeclaration; }
-		VkSampler getSampler() const { return mSampler; }
+		VkSampler getVulkanSampler() const { return mVulkanSampler; }
 
 	protected:
 		void raiseChanged() { if (mSamplerChangedCallback) mSamplerChangedCallback(*this); }
@@ -63,8 +90,9 @@ namespace nap
 	private:
 		RenderService*					mRenderService = nullptr;
 		VkDevice						mDevice;
+		const Sampler*					mSampler = nullptr;
 		const SamplerDeclaration*		mDeclaration = nullptr;
-		VkSampler						mSampler = nullptr;
+		VkSampler						mVulkanSampler = nullptr;
 		SamplerChangedCallback			mSamplerChangedCallback;
 	};
 

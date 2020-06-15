@@ -77,7 +77,6 @@ namespace nap
 
 		// Create texture and get parameters
 		mTexture = std::make_unique<Texture2D>(*mCore);
-		getTextureParameters(mTexture->mParameters, mSize);
 
 		// Initialize texture
 		SurfaceDescriptor settings;
@@ -102,32 +101,7 @@ namespace nap
 	{
 	}
 
-	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
-	{
-		outParameters.mMaxFilter		= EFilterMode::Linear;
-		outParameters.mMinFilter		= EFilterMode::Linear;
-		outParameters.mMaxLodLevel		= 0;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
-	}
-
-
 	Renderable2DMipMapGlyph::Renderable2DMipMapGlyph(nap::Core& core) : RenderableGlyph(core)
 	{
 	}
-
-
-	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
-	{
-		// Calculate max character lod value based on character dimensions
-		int max_lod = charSize.x > charSize.y ? charSize.x : charSize.y;
-		max_lod = int(glm::log2((float)std::max<int>(max_lod,1)));
-
-		outParameters.mMaxFilter		= EFilterMode::Linear;
-		outParameters.mMinFilter		= max_lod > 0 ? EFilterMode::LinearMipmapLinear : EFilterMode::Linear;
-		outParameters.mMaxLodLevel		= max_lod;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
-		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
-	}
-
 }

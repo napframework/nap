@@ -149,7 +149,7 @@ namespace nap
 	// for the texture change. This way, when update() is called, VkUpdateDescriptorSets will use the correct image info.
 	void MaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance)
 	{
-		VkSampler vk_sampler = samplerInstance.getSampler();
+		VkSampler vk_sampler = samplerInstance.getVulkanSampler();
 		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
 		{
 			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
@@ -278,7 +278,7 @@ namespace nap
 
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
 			size_t sampler_descriptor_start_index = mSamplerWriteDescriptors.size();
-			VkSampler vk_sampler = sampler_instance->getSampler();
+			VkSampler vk_sampler = sampler_instance->getVulkanSampler();
 			if (is_array)
 			{
 				// Create all VkDescriptorImageInfo for all elements in the array

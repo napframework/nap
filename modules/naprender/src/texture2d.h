@@ -19,30 +19,6 @@ namespace nap
 	class Core;
 
 	/**
-	 *	Texture min filter
-	 */
-	enum class EFilterMode : int
-	{
-		Nearest = 0,				///< Nearest
-		Linear,						///< Linear
-		NearestMipmapNearest,		///< NearestMipmapNearest
-		LinearMipmapNearest,		///< LinearMipmapNearest
-		NearestMipmapLinear,		///< NearestMipmapLinear
-		LinearMipmapLinear			///< LinearMipmapLinear
-	};
-
-	/**
-	 *	Texture wrap mode
-	 */
-	enum class EWrapMode : int
-	{
-		Repeat = 0,					///< Repeat 
-		MirroredRepeat,				///< MirroredRepeat
-		ClampToEdge,				///< ClampToEdge
-		ClampToBorder				///< ClampToBorder
-	};
-
-	/**
 	 * Flag that determines how the texture is used at runtime.
 	 */
 	enum class ETextureUsage
@@ -50,18 +26,6 @@ namespace nap
 		Static,				///< Texture does not change
 		DynamicRead,		///< Texture is frequently read from GPU to CPU
 		DynamicWrite		///< Texture is frequently updated from CPU to GPU
-	};
-
-	/**
-	 * Parameters associated with a texture
-	 */
-	struct NAPAPI TextureParameters
-	{
-		EFilterMode mMinFilter = EFilterMode::LinearMipmapLinear;		///< Property: 'MinFilter' minimizing filter
-		EFilterMode mMaxFilter = EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
-		EWrapMode	mWrapVertical = EWrapMode::ClampToEdge;				///< Property: 'WrapVertical' vertical wrap mode
-		EWrapMode	mWrapHorizontal = EWrapMode::ClampToEdge;			///< Property: 'WarpHorizontal'	horizontal wrap mode
-		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -82,11 +46,6 @@ namespace nap
 		 * @param settings the texture specific settings associated with this texture
 		 */
 		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
-
-		/**
-		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
-		 */
-		const nap::TextureParameters& getParameters() const { return mParameters; }
 
 		/**
 		 * @return size of the texture, in texels.
@@ -143,7 +102,6 @@ namespace nap
 		void download(VkCommandBuffer commandBuffer);
 
 	public:
-		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
 		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	protected:
@@ -173,29 +131,4 @@ namespace nap
 	};
 
 	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Template Specialization of the Texture filter and wrap modes
-//////////////////////////////////////////////////////////////////////////
-
-namespace std
-{
-	template<>
-	struct hash<nap::EFilterMode>
-	{
-		size_t operator()(const nap::EFilterMode &v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
-
-	template<>
-	struct hash<nap::EWrapMode>
-	{
-		size_t operator()(const nap::EWrapMode &v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
 }
