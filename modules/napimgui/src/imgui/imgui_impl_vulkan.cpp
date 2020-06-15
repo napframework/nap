@@ -820,7 +820,8 @@ void ImGui_ImplVulkan_DestroyFontUploadObjects()
 void ImGui_ImplVulkan_RemoveContext(ImGuiContext* context)
 {
 	auto it = g_RenderBuffers.find(context);
-	assert(it != g_RenderBuffers.end());
+	if (it == g_RenderBuffers.end())
+		return;
 
 	ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
 	ImGui_ImplVulkanH_DestroyWindowRenderBuffers(v->Device, &it->second, v->Allocator);

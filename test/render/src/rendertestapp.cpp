@@ -39,8 +39,6 @@ namespace nap
 			
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
-		
-		getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[0]);
 
 		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
@@ -134,11 +132,17 @@ namespace nap
 // 			Logger::fatal(errorState.toString());
 // 		}
 
-		// 1. Show a simple window.
-		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
-// 		{
-// 			ImGui::ShowTestWindow(&mShow);
-// 		}
+		// 1. Show demo window in viewport 1.
+ 		{
+			getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[0]);
+ 			ImGui::ShowDemoWindow(&mShow);
+ 		}
+
+		// 1. Show metrics window in viewport 2.
+		{
+			getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[1]);
+			ImGui::ShowMetricsWindow(&mShow);
+		}
 	}
 	
 	
@@ -244,7 +248,7 @@ namespace nap
  				components_to_render.clear();
  				components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
  				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-
+				
 				getCore().getService<IMGuiService>()->draw();
 
 				backbuffer.endRendering();
@@ -275,6 +279,7 @@ namespace nap
 				components_to_render.push_back(&mWorldEntity->getComponent<RenderableMeshComponentInstance>());
 				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				
+				getCore().getService<IMGuiService>()->draw();
 
 				backbuffer.endRendering();
 
