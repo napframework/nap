@@ -13,14 +13,13 @@ RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("Title", &nap::ProjectInfo::mTitle, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Version", &nap::ProjectInfo::mVersion, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("DataFile", &nap::ProjectInfo::mDefaultData, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PathMapping", &nap::ProjectInfo::mPathMapping, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PathMapping", &nap::ProjectInfo::mPathMappingFile, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Modules", &nap::ProjectInfo::mModuleNames, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LibraryPaths", &nap::ProjectInfo::mLibraryPaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
-		RTTI_PROPERTY("Dependencies", &nap::ModuleInfo::mDependencies, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Dependencies", &nap::ModuleInfo::mDependencies, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -38,7 +37,7 @@ namespace nap
 		auto projectDir = getDirectory();
 
 		// make all paths absolute
-		for (const auto& p : mLibraryPaths)
+		for (const auto& p : mPathMapping->mModulePaths)
 		{
 			if (utility::isAbsolutePath(p))
 				dirs.emplace_back(p);

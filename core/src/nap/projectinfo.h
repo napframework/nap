@@ -23,9 +23,9 @@ namespace nap
 		std::string mTitle;						// Title of the project
 		std::string mVersion;					// Version of this project
 		std::string mDefaultData;				// Relative path of the default data (json) file
-		std::string mPathMapping;				// Points to a file with a path mapping
+		std::string mPathMappingFile;			// Points to a file with a path mapping
+		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
 		std::vector<std::string> mModuleNames;	// Names of modules this project depends on
-		std::vector<std::string> mLibraryPaths; // Relative or absolute directory paths to search for modules
 		std::vector<nap::ServiceConfiguration*> mServiceConfigurations; // Any service configs in this project
 
 

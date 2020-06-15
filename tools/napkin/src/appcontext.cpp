@@ -110,8 +110,13 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	projectInfo->mFilename = projectFilename.toStdString();
-
-	auto pathMapping = loadPathMapping(*projectInfo, err);
+	projectInfo->mPathMapping = std::move(loadPathMapping(*projectInfo, err));
+	if (projectInfo->mPathMapping == nullptr)
+	{
+		nap::Logger::error("Failed to load path mapping %s: %s",
+						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
+		return nullptr;
+	}
 
 	nap::Logger::info("Loading project '%s' ver. %s (%s)",
 					  projectInfo->mTitle.c_str(),
@@ -138,8 +143,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& projectInfo,
 															  nap::utility::ErrorState& err)
 {
-	// Load path mapping
-	auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMapping;
+	// Load path mapping (relative to the project.json file)
+	auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
 	auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 		pathMappingFilename,
 		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
@@ -154,7 +159,7 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 		return nullptr;
 	}
 
-	auto exepath = nap::utility::getExecutablePath();
+	auto exepath = nap::utility::getExecutableDir();
 	auto rootpath = exepath + '/' + pathMapping->mNapkinExeToRoot;
 	// Do string/template replacement
 	std::unordered_map<std::string, std::string> reps = {

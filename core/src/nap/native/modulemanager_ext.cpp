@@ -54,13 +54,16 @@ namespace nap
 
 		// Load module json
 		auto modinfo = rtti::readJSONFileObjectT<nap::ModuleInfo>(
-			moduleFile,
+			moduleJson,
 			rtti::EPropertyValidationMode::AllowMissingProperties,
 			rtti::EPointerPropertyMode::OnlyRawPointers,
 			mCore.getResourceManager()->getFactory(),
 			err);
 
-		if (!err.check(modinfo != nullptr, "Failed to read ProjectInfo"))
+		if (!err.check(modinfo != nullptr,
+					   "Failed to read %s from %s",
+					   RTTI_OF(nap::ModuleInfo).get_name().data(),
+					   moduleJson.c_str()))
 			return false;
 
 		// Store the path so we can find more files later on
@@ -125,8 +128,8 @@ namespace nap
 		module->mInfo = std::move(modinfo);
 		module->mHandle = module_handle;
 		module->mService = service;
-		mModules.emplace_back(std::move(module));
 		nap::Logger::debug("Module loaded: %s", module->mDescriptor->mID);
+		mModules.emplace_back(std::move(module));
 
 		return true;
 	}
@@ -149,9 +152,19 @@ namespace nap
 		{
 			moduleFile = utility::stringFormat("%s/%s", dir.c_str(), expectedFilename.c_str());
 			moduleJson = utility::stringFormat("%s/%s", dir.c_str(), expectedJsonFile.c_str());
+			nap::Logger::debug("Looking for %s", moduleJson.c_str());
+
 			if (utility::fileExists(moduleFile) and utility::fileExists(moduleJson))
 				return true;
 		}
+
+		nap::Logger::error("Module not found, expected: '%s' and '%s'",
+						   expectedFilename.c_str(), expectedJsonFile.c_str());
+
+		for (const auto& dir : projectInfo.getModuleDirectories())
+			nap::Logger::debug("Attempted to find module in:\n",
+							   utility::joinString(projectInfo.getModuleDirectories(), "\n").c_str());
+
 		return false;
 	}
 
