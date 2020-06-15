@@ -232,13 +232,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "world_texture.png",
             "Compressed": false

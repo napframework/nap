@@ -571,13 +571,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "OutputTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
@@ -586,13 +579,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
