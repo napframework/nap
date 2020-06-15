@@ -2423,7 +2423,7 @@
         {
             "Type": "nap::YoctoEthernetHub",
             "mID": "YoctoEthernetHub",
-            "Address": "192.168.1.120",
+            "Address": "192.168.178.93",
             "Username": "admin",
             "Pass": "rokit247",
             "Port": 80,
@@ -2442,11 +2442,11 @@
         {
             "Type": "nap::YoctoRangeSensor",
             "mID": "RangeSensor",
-            "Name": "YRNGFND1-F1F51.rangeFinder1",
+            "Name": "YRNGFND1-143238.rangeFinder1",
             "Hub": "YoctoEthernetHub",
             "DelayTime": 100,
             "Retries": 20,
-            "Log": false,
+            "Log": true,
             "BufferSize": 1
         },
         {
