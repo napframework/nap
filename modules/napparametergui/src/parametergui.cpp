@@ -511,11 +511,11 @@ namespace nap
 			for (auto& parameter : parameterGroup.mParameters)
 			{
 				const rtti::TypeInfo& type = parameter->get_type();
-
 				ParameterEditorMap::iterator pos = mParameterEditors.find(type);
 				assert(pos != mParameterEditors.end());
-
+				ImGui::PushID(&parameter);
 				pos->second(*parameter);
+				ImGui::PopID();
 			}
 
 			for (auto& child : parameterGroup.mChildren)
