@@ -112,25 +112,25 @@ namespace nap
 						return false;
 
 					if (is_array)
-						sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderService->getDevice(), declaration, (Sampler2DArray*)sampler.get(), SamplerChangedCallback());
+						sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler.get(), SamplerChangedCallback());
 					else
-						sampler_instance = std::make_unique<Sampler2DInstance>(mRenderService->getDevice(), declaration, (Sampler2D*)sampler.get(), SamplerChangedCallback());
+						sampler_instance = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler.get(), SamplerChangedCallback());
 				}
 			}
 
 			if (sampler_instance == nullptr)
 			{
 				if (is_array)
-					sampler_instance = std::make_unique<Sampler2DArrayInstance>(mRenderService->getDevice(), declaration, nullptr, SamplerChangedCallback());
+					sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, SamplerChangedCallback());
 				else
-					sampler_instance = std::make_unique<Sampler2DInstance>(mRenderService->getDevice(), declaration, nullptr, SamplerChangedCallback());
-					}
+					sampler_instance = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, SamplerChangedCallback());
+			}
 
 			if (!sampler_instance->init(errorState))
-						return false;
+				return false;
 
 			addSamplerInstance(std::move(sampler_instance));
-			}
+		}
 
 		return true;
 	}

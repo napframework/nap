@@ -1,6 +1,7 @@
 #include "uniforms.h"
 #include "imagefromfile.h"
 #include "samplers.h"
+#include "renderservice.h"
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)
@@ -23,17 +24,20 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	SamplerInstance::SamplerInstance(VkDevice device, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback) :
+	SamplerInstance::SamplerInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback) :
 		mDeclaration(&declaration),
-		mDevice(device),
+		mRenderService(&renderService),
 		mSamplerChangedCallback(samplerChangedCallback)
 	{
 	}
 
 	SamplerInstance::~SamplerInstance()
 	{
-		if (mSampler != nullptr)
-			vkDestroySampler(mDevice, mSampler, nullptr);
+		mRenderService->queueVulkanObjectDestructor([sampler = mSampler](RenderService& renderService)
+		{
+			if (sampler != nullptr)
+				vkDestroySampler(renderService.getDevice(), sampler, nullptr);
+		});
 	}
 
 	bool SamplerInstance::init(utility::ErrorState& errorState)
@@ -53,13 +57,13 @@ namespace nap
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-		return errorState.check(vkCreateSampler(mDevice, &samplerInfo, nullptr, &mSampler) == VK_SUCCESS, "Could not initialize sampler");
+		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DInstance::Sampler2DInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback) :
-		SamplerInstance(device, declaration, samplerChangedCallback)
+	Sampler2DInstance::Sampler2DInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, samplerChangedCallback)
 	{
 		if (sampler2D != nullptr)
 			mTexture2D = sampler2D->mTexture;
@@ -78,8 +82,8 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Sampler2DArrayInstance::Sampler2DArrayInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
-		SamplerInstance(device, declaration, samplerChangedCallback)
+	Sampler2DArrayInstance::Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)
 			mTextures = sampler2DArray->mTextures;

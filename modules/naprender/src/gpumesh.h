@@ -68,4 +68,4 @@ namespace nap
 		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;		///< Index buffers
 		EMeshDataUsage								mUsage = EMeshDataUsage::Static;
 	};
-} // opengl
+}

@@ -11,8 +11,9 @@
 namespace nap
 {
 	class Texture2D;
-
 	class SamplerInstance;
+	class RenderService;
+
 	using SamplerChangedCallback = std::function<void(SamplerInstance&)>;
 
 	class NAPAPI Sampler : public Resource
@@ -48,7 +49,7 @@ namespace nap
 		RTTI_ENABLE()
 
 	public:
-		SamplerInstance(VkDevice device, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
+		SamplerInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerChangedCallback& samplerChangedCallback);
 		virtual ~SamplerInstance();
 
 		bool init(utility::ErrorState& errorState);
@@ -60,6 +61,7 @@ namespace nap
 		void raiseChanged() { if (mSamplerChangedCallback) mSamplerChangedCallback(*this); }
 
 	private:
+		RenderService*					mRenderService = nullptr;
 		VkDevice						mDevice;
 		const SamplerDeclaration*		mDeclaration = nullptr;
 		VkSampler						mSampler = nullptr;
@@ -84,7 +86,7 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
+		Sampler2DInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
 
 		/**
 		* @param texture The texture resource to set for this uniform.
@@ -137,7 +139,7 @@ namespace nap
 		RTTI_ENABLE(SamplerInstance)
 
 	public:
-		Sampler2DArrayInstance(VkDevice device, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
+		Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
 
 		int getNumElements() const { return mTextures.size(); }
 

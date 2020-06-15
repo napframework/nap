@@ -535,6 +535,10 @@ namespace nap
 
 	GLWindow::~GLWindow()
 	{	
+		// Wait for device to go idle before destroying the window-related resources
+		VkResult result = vkDeviceWaitIdle(mDevice);
+		assert(result == VK_SUCCESS);
+
 		for (VkSemaphore semaphore : mImageAvailableSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 

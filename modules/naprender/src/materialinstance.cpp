@@ -189,9 +189,6 @@ namespace nap
 
 	void MaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
 	{
-		VkDevice device = mRenderService->getDevice();
-		VmaAllocator allocator = mRenderService->getVulkanAllocator();
-
 		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
 		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
@@ -263,9 +260,9 @@ namespace nap
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -340,9 +337,9 @@ namespace nap
 
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(mDevice, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(mDevice, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
 
 				utility::ErrorState error_state;
 				bool initialized = sampler_instance_override->init(error_state);

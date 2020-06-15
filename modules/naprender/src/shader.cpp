@@ -572,14 +572,17 @@ namespace nap
 
 	Shader::~Shader()
 	{
-		if (mDescriptorSetLayout != nullptr)
-			vkDestroyDescriptorSetLayout(mRenderService->getDevice(), mDescriptorSetLayout, nullptr);
+		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
+		{
+			if (descriptorSetLayout != nullptr)
+				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
 
-		if (mVertexModule != nullptr)
-			vkDestroyShaderModule(mRenderService->getDevice(), mVertexModule, nullptr);
+			if (vertexModule != nullptr)
+				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
 
-		if (mFragmentModule != nullptr)
-			vkDestroyShaderModule(mRenderService->getDevice(), mFragmentModule, nullptr);
+			if (fragmentModule != nullptr)
+				vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
+		});
 	}
 
 	// Store path and create display names

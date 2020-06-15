@@ -26,9 +26,12 @@ namespace nap
 
 	GPUBuffer::~GPUBuffer()
 	{
-		for (BufferData& buffer : mBuffers)
-			if (buffer.mAllocation != VK_NULL_HANDLE)
-				vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
+		mRenderService->queueVulkanObjectDestructor([buffers = mBuffers](RenderService& renderService)
+		{
+			for (const BufferData& buffer : buffers)
+				if (buffer.mAllocation != VK_NULL_HANDLE)
+					vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
+		});
 	}
 
 	
