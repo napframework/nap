@@ -184,7 +184,7 @@ namespace nap
 
 	double ApplySensorComponentInstance::calcValueMax()
 	{
-		double max = math::max<double>();
+		double max = math::min<double>();
 		for (auto* sensor : mSensors)
 		{
 			double sensorValue = sensor->getValue();
@@ -200,7 +200,7 @@ namespace nap
 
 	double ApplySensorComponentInstance::calcValueMin()
 	{
-		double min = math::min<double>();
+		double min = math::max<double>();
 		for (auto* sensor : mSensors)
 		{
 			double sensorValue = sensor->getValue();

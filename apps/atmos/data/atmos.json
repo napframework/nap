@@ -433,7 +433,7 @@
                     "OutputRange": "RangeSensorMax",
                     "Index": "RangeSensorTarget",
                     "SmoothTime": "RangeSensorSmoothTIme",
-                    "Sensor Output Type": "Average",
+                    "Sensor Output Type": "Minimum",
                     "Sensor Max Value": 1200.0
                 },
                 {

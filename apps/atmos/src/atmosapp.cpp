@@ -13,6 +13,8 @@
 #include <imgui/imgui.h>
 #include <imguiutils.h>
 
+#include "applysensorcomponent.h"
+
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AtmosApp)
@@ -62,8 +64,17 @@ namespace nap
 		mUniverseEntity = scene->findEntity("UniverseEntity"); 
 
 		// Get yocto sensors
-		mRangeSensor = mResourceManager->findObject("RangeSensor");
 		mProximitySensor = mResourceManager->findObject("ProximitySensor");
+
+		// Get apply range sensor component instance
+		auto rangeSensorComponent = mSensorEntity->findComponentByID("ApplyRangeSensorComponent");
+		assert(rangeSensorComponent != nullptr); // component not found
+		assert(rangeSensorComponent->get_type() == RTTI_OF(ApplySensorComponentInstance)); // type mismatch
+		if (error.check(rangeSensorComponent == nullptr || rangeSensorComponent->get_type() != RTTI_OF(ApplySensorComponentInstance), "Range Sensor Component not found or type mismatch!"))
+		{
+			return false;
+		}
+		mApplySensorComponent = static_cast<ApplySensorComponent*>(static_cast<ApplySensorComponentInstance*>(rangeSensorComponent)->getComponent());
 
 		// Create gui
 		mGui = std::make_unique<AtmosGui>(*this);
@@ -88,7 +99,7 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get(), mSensorEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Upate GUI
+		// Update GUI
 		mGui->update();
 	}
 

@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "atmosgui.h"
+#include "applysensorcomponent.h"
 
 // Nap includes
 #include <renderablemeshcomponent.h>
@@ -85,8 +86,10 @@ namespace nap
 		ObjectPtr<EntityInstance>		mVideoCameraEntity	= nullptr;		///< Pointer to the camera that renders the video
 		ObjectPtr<EntityInstance>		mSensorEntity		= nullptr;		///< Pointer to the sensor entity that handles sensory input		
 		
-		ObjectPtr<YoctoRangeSensor>		mRangeSensor		= nullptr;		///< Yoctopuce range sensor
 		ObjectPtr<YoctoProximitySensor> mProximitySensor	= nullptr;		///< Yoctopuce proximity sensor
+
+		//
+		ApplySensorComponent*			mApplySensorComponent = nullptr;
 
 		// Gui
 		std::unique_ptr<AtmosGui>	mGui = nullptr;
