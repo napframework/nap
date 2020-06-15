@@ -149,6 +149,6 @@ namespace nap
 		/**
 		 * starts a new imgui frame
 		 */
-		void newFrame(RenderWindow& window, GUIContext& context);
+		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 	};
 }

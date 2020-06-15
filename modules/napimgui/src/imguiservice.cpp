@@ -482,7 +482,7 @@ namespace nap
 		for (auto& context : mContexts)
 		{
 			// Signal the beginning of a new frame to the im-gui backend
-			newFrame(*context.first, *context.second);
+			newFrame(*context.first, *context.second, deltaTime);
 
 			// Signal the beginning of a new frame to the vulkan backend
 			ImGui_ImplVulkan_NewFrame();
@@ -609,7 +609,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::newFrame(RenderWindow& window, GUIContext& context)
+	void IMGuiService::newFrame(RenderWindow& window, GUIContext& context, double deltaTime)
 	{
 		// Switch context
 		ImGui::SetCurrentContext(context.mContext);
@@ -622,6 +622,7 @@ namespace nap
 		SDL_GL_GetDrawableSize(window.getWindow()->getNativeWindow(), &display_w, &display_h);
 		io.DisplaySize = ImVec2((float)w, (float)h);
 		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+		io.DeltaTime = deltaTime;
 
 		// Setup inputs
 		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
