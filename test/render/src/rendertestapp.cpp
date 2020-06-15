@@ -132,11 +132,17 @@ namespace nap
 // 			Logger::fatal(errorState.toString());
 // 		}
 
-		// 1. Show a simple window.
-		getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[0]);
+		// 1. Show demo window in viewport 1.
  		{
+			getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[0]);
  			ImGui::ShowDemoWindow(&mShow);
  		}
+
+		// 1. Show metrics window in viewport 2.
+		{
+			getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[1]);
+			ImGui::ShowMetricsWindow(&mShow);
+		}
 	}
 	
 	
@@ -273,6 +279,7 @@ namespace nap
 				components_to_render.push_back(&mWorldEntity->getComponent<RenderableMeshComponentInstance>());
 				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				
+				getCore().getService<IMGuiService>()->draw();
 
 				backbuffer.endRendering();
 
