@@ -24,6 +24,13 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(ApplySensorComponent, ApplySensorComponentInstance)
 	public:
+		enum class SensorCalcTypes : uint8_t
+		{
+			AVERAGE_VALUE = 0,
+			CUMULATIVE_VALUE = 1,
+			CHOOSE_MAXIMUM_VALUE = 2,
+			CHOOSE_MINIMUM_VALUE = 3
+		};
 
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -37,12 +44,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		ResourcePtr<ParameterBool> mEnabled;							///< Property: 'Enabled' if events are forwarded											///< Property: 'Enabled' if the component forwards sensor data to the selected parameter
-		ResourcePtr<BaseYoctoSensor> mSensor;							///< Property: 'Sensor' the sensor to read and apply
+		std::vector<ResourcePtr<BaseYoctoSensor>> mSensors;							///< Property: 'Sensors' the sensors to read and apply
 		std::vector<ResourcePtr<ParameterFloat>> mParameters;			///< Property: 'Parameters' the parameter that you want to influence
 		ResourcePtr<ParameterVec2> mInputRange;							///< Property: 'InputRange' sensor input range
 		ResourcePtr<ParameterVec2> mOutputRange;						///< Property: 'OutputRange' applied parameter output range
 		ResourcePtr<ParameterInt> mSelection;							///< Property: 'Index' Selection
 		ResourcePtr<ParameterFloat> mSmoothTime;						///< Property: 'SmoothTime' smoothing time applied to sensor input in seconds
+		SensorCalcTypes mSensorCalcType;							///< Property: 'Calc Type' describes method of handling data input from multiple sensors
+		double mMaxSensorValue = 1200;									///< Property: 'Max Sensor Value' sensor value will be clamped to this value
 	};
 
 
@@ -77,7 +86,7 @@ namespace nap
 		void selectParameter(int index);
 
 	private:
-		BaseYoctoSensor* mSensor = nullptr;
+		std::vector<BaseYoctoSensor*> mSensors;
 		std::vector<ParameterFloat*> mParameters;
 		int mCurrentIndex = 0;
 		ParameterFloat* mCurrentParameter;
@@ -87,5 +96,15 @@ namespace nap
 		ParameterVec2* mOutputRange = nullptr;
 		ParameterFloat* mSmoothTime = nullptr;
 		math::FloatSmoothOperator mSmoother = { 0.0f, 0.1f };
+		ApplySensorComponent::SensorCalcTypes mCalcType;
+		double mMaxSensorValue;
+	private:
+		// private methods
+		double calcValueAverage();
+		double calcValueMax();
+		double calcValueMin();
+		double calcValueCumulative();
+
+		double (ApplySensorComponentInstance::*mCalcFunc)();
 	};
 }

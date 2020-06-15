@@ -4,15 +4,24 @@
 #include <entity.h>
 #include <mathutils.h>
 
+RTTI_BEGIN_ENUM(nap::ApplySensorComponent::SensorCalcTypes)
+	RTTI_ENUM_VALUE(nap::ApplySensorComponent::SensorCalcTypes::AVERAGE_VALUE, "Average"),
+	RTTI_ENUM_VALUE(nap::ApplySensorComponent::SensorCalcTypes::CUMULATIVE_VALUE, "Cumulative"),
+	RTTI_ENUM_VALUE(nap::ApplySensorComponent::SensorCalcTypes::CHOOSE_MAXIMUM_VALUE, "Maximum"),
+	RTTI_ENUM_VALUE(nap::ApplySensorComponent::SensorCalcTypes::CHOOSE_MINIMUM_VALUE, "Minimum")
+RTTI_END_ENUM
+
 // nap::applysensorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplySensorComponent)
-	RTTI_PROPERTY("Enabled",		&nap::ApplySensorComponent::mEnabled,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Sensor",			&nap::ApplySensorComponent::mSensor,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Parameters",		&nap::ApplySensorComponent::mParameters,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("InputRange",		&nap::ApplySensorComponent::mInputRange,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputRange",	&nap::ApplySensorComponent::mOutputRange,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",			&nap::ApplySensorComponent::mSelection,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SmoothTime",		&nap::ApplySensorComponent::mSmoothTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Enabled",			&nap::ApplySensorComponent::mEnabled,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Sensors",			&nap::ApplySensorComponent::mSensors,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Parameters",			&nap::ApplySensorComponent::mParameters,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("InputRange",			&nap::ApplySensorComponent::mInputRange,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OutputRange",		&nap::ApplySensorComponent::mOutputRange,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",				&nap::ApplySensorComponent::mSelection,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SmoothTime",			&nap::ApplySensorComponent::mSmoothTime,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Sensor Output Type", &nap::ApplySensorComponent::mSensorCalcType,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sensor Max Value",	&nap::ApplySensorComponent::mMaxSensorValue,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::applysensorcomponentInstance run time class definition 
@@ -50,12 +59,37 @@ namespace nap
 		}
 
 		// Copy data and references
-		mSensor = resource->mSensor.get();
+		for (auto sensor : resource->mSensors)
+		{
+			mSensors.emplace_back(sensor.get());
+		}
 		mEnabled = resource->mEnabled.get();
 		mInputRange = resource->mInputRange.get();
 		mOutputRange = resource->mOutputRange.get();
 		mEnabled = resource->mEnabled.get();
 		mSmoothTime = resource->mSmoothTime.get();
+		mCalcType = resource->mSensorCalcType;
+		mMaxSensorValue = resource->mMaxSensorValue;
+
+		switch (mCalcType)
+		{
+		case ApplySensorComponent::SensorCalcTypes::AVERAGE_VALUE:
+			mCalcFunc = &ApplySensorComponentInstance::calcValueAverage;
+			break;
+		case ApplySensorComponent::SensorCalcTypes::CUMULATIVE_VALUE:
+			mCalcFunc = &ApplySensorComponentInstance::calcValueCumulative;
+			break;
+		case ApplySensorComponent::SensorCalcTypes::CHOOSE_MAXIMUM_VALUE:
+			mCalcFunc = &ApplySensorComponentInstance::calcValueMax;
+			break;
+		case ApplySensorComponent::SensorCalcTypes::CHOOSE_MINIMUM_VALUE:
+			mCalcFunc = &ApplySensorComponentInstance::calcValueMin;
+			break;
+		default:
+			assert(false); // some enum value is not implemented!
+			return false;
+			break;
+		}
 
 		// Update smoother value
 		mSmoother.setValue(mInputRange->mValue.y);
@@ -73,12 +107,20 @@ namespace nap
 		if (mCurrentParameter == nullptr)
 			return;
 
-		if (!mSensor->isOnline() || !(mEnabled->mValue))
+		if (!(mEnabled->mValue))
 			return;
+
+		for (auto* sensor : mSensors)
+		{
+			if (!sensor->isOnline())
+				return;
+		}	
+
+		//
+		float svalue = (float)(*this.*mCalcFunc)();
 
 		// Get parameter to set and sensor value
 		ParameterFloat* pfloat = static_cast<ParameterFloat*>(mCurrentParameter);
-		float svalue = (float)(mSensor->getValue());
 
 		// Smoothly interpolate sensor value, clamp based on highest sensor input value
 		float clamp_max = mInputRange->mValue.x > mInputRange->mValue.y ? mInputRange->mValue.x : mInputRange->mValue.y;
@@ -110,5 +152,64 @@ namespace nap
 		// Clamp current index and select
 		mCurrentIndex = math::clamp<int>(index, 0, mParameters.size() - 1);
 		mCurrentParameter = mParameters[mCurrentIndex];
+	}
+
+
+	double ApplySensorComponentInstance::calcValueAverage()
+	{
+		double average = 0.0;
+		for (auto* sensor : mSensors)
+		{
+			double sensorValue = sensor->getValue();
+			sensorValue = math::min<double>(sensorValue, mMaxSensorValue);
+			average += sensorValue;
+		}
+		average /= mSensors.size();
+		return average;
+	}
+
+
+	double ApplySensorComponentInstance::calcValueCumulative()
+	{
+		double value = 0.0;
+		for (auto* sensor : mSensors)
+		{
+			double sensorValue = sensor->getValue();
+			sensorValue = math::min<double>(sensorValue, mMaxSensorValue);
+			value += sensorValue;
+		}
+		return value;
+	}
+
+
+	double ApplySensorComponentInstance::calcValueMax()
+	{
+		double max = math::max<double>();
+		for (auto* sensor : mSensors)
+		{
+			double sensorValue = sensor->getValue();
+			sensorValue = math::min<double>(sensorValue, mMaxSensorValue);
+			if (sensorValue > max)
+			{
+				max = sensorValue;
+			}
+		}
+		return max;
+	}
+
+
+	double ApplySensorComponentInstance::calcValueMin()
+	{
+		double min = math::min<double>();
+		for (auto* sensor : mSensors)
+		{
+			double sensorValue = sensor->getValue();
+			sensorValue = math::min<double>(sensorValue, mMaxSensorValue);
+			if (sensorValue < min)
+			{
+				min = sensorValue;
+			}
+		}
+		return min;
 	}
 }

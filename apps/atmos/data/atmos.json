@@ -421,25 +421,33 @@
                     "Type": "nap::ApplySensorComponent",
                     "mID": "ApplyRangeSensorComponent",
                     "Enabled": "RangeSensorEnable",
-                    "Sensor": "RangeSensor",
+                    "Sensors": [
+                        "Range Sensor 1",
+                        "Range Sensor 2",
+                        "Range Sensor 3"
+                    ],
                     "Parameters": [
                         "Camera FOV"
                     ],
                     "InputRange": "RangeSensorMin",
                     "OutputRange": "RangeSensorMax",
                     "Index": "RangeSensorTarget",
-                    "SmoothTime": "RangeSensorSmoothTIme"
+                    "SmoothTime": "RangeSensorSmoothTIme",
+                    "Sensor Output Type": "Average",
+                    "Sensor Max Value": 1200.0
                 },
                 {
                     "Type": "nap::ApplySensorComponent",
                     "mID": "ApplyProximitySensorComponent",
                     "Enabled": "ProximitySensorEnable",
-                    "Sensor": "ProximitySensor",
+                    "Sensors": [],
                     "Parameters": [],
                     "InputRange": "ProximitySensorMin",
                     "OutputRange": "ProximitySensorMax",
                     "Index": "ProximitySensorTarget",
-                    "SmoothTime": "ProximitySensorSmoothTIme"
+                    "SmoothTime": "ProximitySensorSmoothTIme",
+                    "Sensor Output Type": "Average",
+                    "Sensor Max Value": 1200.0
                 },
                 {
                     "Type": "nap::TouchInputComponent",
@@ -459,14 +467,16 @@
                     "Type": "nap::ApplySensorComponent",
                     "mID": "ApplyAudioRangeSensorComponent",
                     "Enabled": "AudioRangeSensorEnable",
-                    "Sensor": "RangeSensor",
+                    "Sensors": [],
                     "Parameters": [
                         "AudioRangeSensorControl"
                     ],
                     "InputRange": "AudioRangeSensorMin",
                     "OutputRange": "AudioRangeSensorMax",
                     "Index": "AudioRangeSensorTarget",
-                    "SmoothTime": "AudioRangeSensorSmoothTIme"
+                    "SmoothTime": "AudioRangeSensorSmoothTIme",
+                    "Sensor Output Type": "Average",
+                    "Sensor Max Value": 1200.0
                 }
             ],
             "Children": []
@@ -2422,7 +2432,7 @@
         },
         {
             "Type": "nap::YoctoEthernetHub",
-            "mID": "YoctoEthernetHub",
+            "mID": "YoctoEthernetHub 1",
             "Address": "192.168.178.93",
             "Username": "admin",
             "Pass": "rokit247",
@@ -2433,7 +2443,7 @@
             "Type": "nap::YoctoProximitySensor",
             "mID": "ProximitySensor",
             "Name": "YPROXIM1-F8B6C.proximity1",
-            "Hub": "YoctoEthernetHub",
+            "Hub": "YoctoEthernetHub 1",
             "DelayTime": 100,
             "Retries": 20,
             "Log": false,
@@ -2441,9 +2451,29 @@
         },
         {
             "Type": "nap::YoctoRangeSensor",
-            "mID": "RangeSensor",
+            "mID": "Range Sensor 1",
             "Name": "YRNGFND1-143238.rangeFinder1",
-            "Hub": "YoctoEthernetHub",
+            "Hub": "YoctoEthernetHub 1",
+            "DelayTime": 100,
+            "Retries": 20,
+            "Log": true,
+            "BufferSize": 1
+        },
+        {
+            "Type": "nap::YoctoRangeSensor",
+            "mID": "Range Sensor 2",
+            "Name": "YRNGFND1-14324F.rangeFinder1",
+            "Hub": "YoctoEthernetHub 1",
+            "DelayTime": 100,
+            "Retries": 20,
+            "Log": true,
+            "BufferSize": 1
+        },
+        {
+            "Type": "nap::YoctoRangeSensor",
+            "mID": "Range Sensor 3",
+            "Name": "YRNGFND1-13F172.rangeFinder1",
+            "Hub": "YoctoEthernetHub 1",
             "DelayTime": 100,
             "Retries": 20,
             "Log": true,
