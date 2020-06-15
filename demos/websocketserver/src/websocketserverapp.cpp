@@ -115,7 +115,7 @@ namespace nap
 			text_comp.draw(mRenderWindow->getBackbuffer());
 
 			// Draw our GUI to target
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindow->endRendering();

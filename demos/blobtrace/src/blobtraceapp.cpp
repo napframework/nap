@@ -50,9 +50,6 @@ namespace nap
 		// Find the mesh used for intersection testing
 		mIntersectMesh = mResourceManager->findObject("IntersectMesh");
 
-		// Tell the GUI service to which window to render
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	
@@ -183,7 +180,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 			// Draw gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindow->endRendering();

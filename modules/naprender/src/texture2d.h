@@ -126,7 +126,16 @@ namespace nap
 		 */
 		void asyncGetData(Bitmap& bitmap);
 
+
+		/**
+		 * @return Vulkan image view
+		 */
 		VkImageView getImageView() const { return mImageData.mTextureView; }
+
+		/**
+		 * @return render service
+		 */
+		RenderService& getRenderService()				{ return *mRenderService; }
 
 	private:
 		void upload(VkCommandBuffer commandBuffer);
@@ -153,13 +162,13 @@ namespace nap
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;
-		std::vector<uint8_t>				mTextureData;
-		ImageData							mImageData;
-		StagingBufferList					mStagingBuffers;
-		int									mCurrentStagingBufferIndex = -1;
-		size_t								mImageSizeInBytes = -1;
-		SurfaceDescriptor					mDescriptor;
-		VkFormat							mVulkanFormat = VK_FORMAT_UNDEFINED;
+		std::vector<uint8_t>		mTextureData;
+		ImageData					mImageData;
+		StagingBufferList			mStagingBuffers;
+		int							mCurrentStagingBufferIndex = -1;
+		size_t						mImageSizeInBytes = -1;
+		SurfaceDescriptor			mDescriptor;
+		VkFormat					mVulkanFormat = VK_FORMAT_UNDEFINED;
 		std::vector<TextureReadCallback>	mReadCallbacks;
 	};
 

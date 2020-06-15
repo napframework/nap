@@ -4,12 +4,11 @@
 
 // External Includes
 #include <unordered_map>
+#include <utility/dllexport.h>
 #include "vulkan/vulkan_core.h"
 
 namespace nap
 {
-	struct DescriptorPool;
-
 	/**
 	 * Allocates DescriptorSets from a pool. Each pool is bound to a specific combination of UBOs and samplers,
 	 * as allocates resources for each UBO and sampler as well as the DescriptorSet itself. Any shader that has 
@@ -19,7 +18,7 @@ namespace nap
 	 * full, we need to allocate a new pool.
 	 * So essentially we're managing a pool of DescriptorSetPools here.
 	 */
-	class DescriptorSetAllocator
+	class NAPAPI DescriptorSetAllocator
 	{
 	public:
 		DescriptorSetAllocator(VkDevice device);
@@ -31,6 +30,18 @@ namespace nap
 		VkDescriptorSet allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors);
 
 	private:
+		/**
+		 * Wrapper around VkDescriptorPool that maintains a use count for amount of sets that are allocated within the pool.
+		 */
+		struct DescriptorPool
+		{
+			using DescriptorSetList = std::vector<VkDescriptorSet>;
+
+			VkDescriptorPool	mPool = VK_NULL_HANDLE;		///< The managed descriptor pool
+			DescriptorSetList	mAllocatedDescriptorSets;	///< The sets that have been allocated from this pool
+			int					mMaxNumSets = 0;			///< Maximum number of sets that can be allocated from the pool
+		};
+
 		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
 
 		VkDevice					mDevice;

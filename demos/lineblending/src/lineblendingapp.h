@@ -15,6 +15,7 @@
 #include <parameterservice.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -105,6 +106,8 @@ namespace nap
 		ResourcePtr<ParameterGroup> mParameters = nullptr;				//< Pointer to the root parameter group
 		ResourcePtr<ParameterFloat> mLineSizeParam = nullptr;			//< Parameter that controls line size
 		ResourcePtr<ParameterVec2> mLinePositionParam = nullptr;		//< Parameter that controls the line position
+		ResourcePtr<ImageFromFile> mDisplayImage = nullptr;				//< Test image to display in imgui
+		ResourcePtr<ImageFromFile> mBrickImage = nullptr;				//< Test image to display in imgui
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			//< Renders the parameters
 	};

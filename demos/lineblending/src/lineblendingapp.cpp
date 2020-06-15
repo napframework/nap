@@ -15,6 +15,7 @@
 #include <laseroutputcomponent.h>
 #include <meshutils.h>
 #include <linenoisecomponent.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -57,9 +58,8 @@ namespace nap
 		mParameters = mResourceManager->findObject<ParameterGroup>("Parameters");
 		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
 		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
-
-		// Set GUI window
-		mGuiService->selectWindow(mRenderWindow);
+		mDisplayImage = mResourceManager->findObject<ImageFromFile>("DisplayImage");
+		mBrickImage = mResourceManager->findObject<ImageFromFile>("BrickImage");
 
 		return true;
 	}
@@ -73,6 +73,39 @@ namespace nap
 	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+
+		// Show all parameters
+		mParameterGUI->show(mParameters.get(), false);
+
+		// Display some extra info
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		static bool flip = false;
+		ImGui::Checkbox("Flip?", &flip);
+		if(flip)
+		{
+			// Display test texture
+			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
+			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+		}
+		else
+		{
+			// Display test texture
+			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
+		}
+
+		ImGui::End();
+
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -80,20 +113,6 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
-		
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-
-		// Show all parameters
-		mParameterGUI->show(mParameters.get(), false);
-		
-		// Display some extra info
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
 
 		// Push some parameter settings to components
 		// Most custom app components directly reference the parameters
@@ -135,7 +154,7 @@ namespace nap
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
 			// Draw gui to screen
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End the render pass
 			mRenderWindow->endRendering();

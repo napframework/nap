@@ -483,7 +483,7 @@ namespace nap
 	}
 
 
-	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		// Create settings
 		RenderWindowSettings window_settings;
@@ -503,32 +503,16 @@ namespace nap
 		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
 			window.mMode == RenderWindow::EPresentationMode::Mailbox ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 
-#if 0
-			// The primary window always exists. This is necessary to initialize openGL, and we need a window and an associated GL context for creating
-			// resources before a window resource becomes available. The first RenderWindow that is created will share the primary window with the Renderer.
-			// The settings that are passed here are applied to the primary window.
-			// Because of the nature of the real-time editing system, when Windows are edited, new Windows will be created before old Windows are destroyed.
-			// We need to make sure that an edit to a RenderWindow that was previously created as primary window will not create a new window, but share the 
-			// existing primary window. We do this by testing if the IDs are the same.
-			if (mPrimaryWindow.unique() || mPrimaryWindowID == inID)
-			{
-				mPrimaryWindowID = inID;
-				mPrimaryWindow->applySettings(window_settings);
-				return mPrimaryWindow;
-			}
-#endif
-
 		// Construct and return new window
 		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
 		if (!new_window->init(window_settings, *this, errorState))
-			return nullptr;
+			return false;
 
-		mWindows.push_back(&window);
-
-		// After window creation, make sure the primary window stays active, so that render resource creation always goes to that context
-		//getPrimaryWindow().makeCurrent();
-
-		return new_window;
+		// Add window and notify potential listeners
+		window.mWindow = std::move(new_window);
+		mWindows.emplace_back(&window);
+		windowAdded.trigger(window);
+		return true;
 	}
 
 
@@ -538,9 +522,11 @@ namespace nap
 		{ 
 			return val == &window; 
 		});
-		
+
 		assert(pos != mWindows.end());
+		windowRemoved.trigger(window);
 		mWindows.erase(pos);
+
 	}
 	
 

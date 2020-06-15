@@ -131,10 +131,10 @@ namespace nap
 			barrier.dstAccessMask = dstAccessMask;
 
 			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		}
+			}
 
 		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
-		{
+			{
 			VkBufferImageCopy region = {};
 			region.bufferOffset = 0;
 			region.bufferRowLength = 0;
@@ -151,7 +151,7 @@ namespace nap
 			};
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-		}
+			}
 
 
 		void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
@@ -260,7 +260,7 @@ namespace nap
  		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
  		{
  			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
- 
+
  			for (const StagingBuffer& buffer : stagingBuffers)
  				vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
  		});
@@ -368,8 +368,8 @@ namespace nap
 	{
 		assert(mCurrentStagingBufferIndex != -1);
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
-		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();	
-
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
+		
 		VkAccessFlags srcMask = 0;
 		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -441,7 +441,7 @@ namespace nap
 	{
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
  		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
- 		{
+	{
  			bitmap.initFromDescriptor(mDescriptor);
  			memcpy(bitmap.getData(), data, sizeInBytes);
  		};

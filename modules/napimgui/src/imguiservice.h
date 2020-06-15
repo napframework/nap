@@ -1,11 +1,19 @@
 #pragma once
 
+// Local Includes
+#include "imgui/imgui.h"
+
 // External includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
-#include "nap/resourceptr.h"
+#include <nap/resourceptr.h>
+#include <descriptorsetallocator.h>
+#include <nap/signalslot.h>
+
+// ImGUI forward declares
+struct ImGuiContext;
 
 namespace nap
 {
@@ -36,7 +44,7 @@ namespace nap
 		 * Draws the all the GUI elements to screen
 		 * You need to call this just before swapping buffers for the primary window
 		 */
-		void draw(VkCommandBuffer commandBuffer);
+		void draw();
 
 		/**
 		 * Explicitly set the window that is used for drawing the GUI elements
@@ -62,6 +70,11 @@ namespace nap
 		 */
 		bool isCapturingMouse();
 
+		/**
+		 * @return Vulkan texture handle, can be used to display a texture in ImGUI
+		 */
+		ImTextureID getTextureHandle(nap::Texture2D& texture);
+
 	protected:
 		/**
 		 * Initializes the IMGui library. This will also create all associated gui devices objects
@@ -84,13 +97,58 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 *	Disables the imgui library
+		 * Ends frame operation for all contexts.
+		 */
+		virtual void postUpdate(double deltaTime) override;
+
+		/**
+		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;
 
 	private:
-		RenderService*				mRenderService = nullptr;		///< The rendered used by IMGUI
-		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
-		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
+
+		/**
+		 * Simple struct that combines an ImGUI context with additional state information
+		 * Takes ownership of the context, destroys it on destruction
+		 */
+		struct GUIContext
+		{
+			GUIContext(ImGuiContext* context) : mContext(context) { };
+			~GUIContext();
+
+			bool mMousePressed[3]		= { false, false, false };
+			float mMouseWheel			= 0.0f;
+			ImGuiContext* mContext		= nullptr;
+		};
+
+		RenderService* mRenderService = nullptr;
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+
+		/**
+		 * Called when a window is added, creates ImGUI related resources
+		 */
+		void onWindowAdded(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowAddedSlot	= { this, &IMGuiService::onWindowAdded };
+
+		/**
+		 * Called when a window is removed, destroys ImGUI related resources
+		 */
+		void onWindowRemoved(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
+
+		/**
+		 * Creates all vulkan related resources, for imGUI as well as local
+		 */
+		void createVulkanResources(nap::RenderWindow& window);
+
+		/**
+		 * starts a new imgui frame
+		 */
+		void newFrame(RenderWindow& window, GUIContext& context);
 	};
 }

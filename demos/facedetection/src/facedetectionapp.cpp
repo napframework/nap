@@ -103,7 +103,7 @@ namespace nap
 
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			//ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
+			ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
 
 			if (ImGui::Button("Set Streak"))
 			{
@@ -157,7 +157,7 @@ namespace nap
 			ImGui::Text(utility::stringFormat("Framerate: %.02f", mCameraCaptureDevice->getAdapter<CVCamera>(0).getFPS()).c_str());
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
-			//ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
+			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
 		}
 		ImGui::End();
 	}
@@ -233,7 +233,7 @@ namespace nap
 			}
 
 			// Draw our gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			// End render pass
 			mRenderWindow->endRendering();

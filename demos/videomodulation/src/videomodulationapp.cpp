@@ -162,7 +162,7 @@ namespace nap
 			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 
 			// Draw gui
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 
 			render_target.endRendering();
 
@@ -255,18 +255,18 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
 		{
-			// 			float col_width = ImGui::GetContentRegionAvailWidth();
-			// 			nap::Texture2D& video_tex = mVideoRenderTarget->getColorTexture();
-			// 			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
-			// 			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& video_tex = mVideoRenderTarget->getColorTexture();
+			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
+			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
 		}
 		if (ImGui::CollapsingHeader("FX Texture"))			///< The post process effect applied to the video texture
 		{
-// 			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
-// 			float col_width = ImGui::GetContentRegionAvailWidth();
-// 			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
-// 			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
-// 			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
+			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
+			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
 		}
 
 		ImGui::End();

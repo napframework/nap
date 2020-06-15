@@ -38,8 +38,7 @@ namespace nap
 
 	bool RenderWindow::init(utility::ErrorState& errorState)
 	{
-		mWindow = mRenderService->addWindow(*this, errorState);
-		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
+		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
 		// Set color to clear

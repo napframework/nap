@@ -245,7 +245,7 @@ namespace nap
  				components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
  				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 
-				getCore().getService<IMGuiService>()->draw(mRenderService->getCurrentCommandBuffer());
+				getCore().getService<IMGuiService>()->draw();
 
 				backbuffer.endRendering();
 

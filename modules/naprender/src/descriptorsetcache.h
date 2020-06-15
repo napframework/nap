@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <array>
+#include <utility/dllexport.h>
 #include "vulkan/vulkan_core.h"
 #include "vk_mem_alloc.h"
 
@@ -45,7 +46,7 @@ namespace nap
 	 * completed, release should be called for that frame so that the resources are return to the freelist, to 
 	 * be used by subsequent frames.
 	 */
-	class DescriptorSetCache
+	class NAPAPI DescriptorSetCache
 	{
 	public:
 		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator);

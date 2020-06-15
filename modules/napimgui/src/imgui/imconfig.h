@@ -5,17 +5,25 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-
 #include <color.h>
 #include <nap/numeric.h>
 #include <mathutils.h>
+#include <texture2d.h>
+#include <utility/dllexport.h>
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
-//#define IMGUI_API __declspec( dllexport )
-//#define IMGUI_API __declspec( dllimport )
+#ifdef _WIN32
+#ifdef NAP_SHARED_LIBRARY
+	#define IMGUI_API __declspec(dllexport)    // Export the symbols
+#else
+	#define IMGUI_API __declspec(dllimport)    // Import the symbols
+#endif // NAP_SHARED_LIBRARY
+#else
+	#define IMGUI_API                          // Empty statement, does nothing
+#endif // _WIN32
 
 //---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names
 //#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -76,10 +84,8 @@
 
 //---- Tip: You can add extra functions within the ImGui:: namespace, here or in your own headers files.
 //---- e.g. create variants of the ImGui::Value() helper for your low-level math types, or your own widgets/helpers.
-/*
 namespace ImGui
 {
-    void    Value(const char* prefix, const MyMatrix44& v, const char* float_format = NULL);
+
 }
-*/
 

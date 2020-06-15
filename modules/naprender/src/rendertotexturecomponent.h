@@ -79,14 +79,7 @@ namespace nap
 		/**
 		 * @return the output texture
 		 */
-//		Texture2D& getOutputTexture(); 
-
-		/**
-		 * Switch the output texture, ie: the texture that is rendered to.
-		 * @param texture the new texture the result is rendered into
-		 * @param error contains the error if switching fails
-		 */
-//		bool switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error);
+		Texture2D& getOutputTexture(); 
 
 		/**
 		 * Directly executes the render step without having to go through the render service.

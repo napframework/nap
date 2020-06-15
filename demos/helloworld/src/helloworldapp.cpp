@@ -11,13 +11,10 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <imgui/imgui.h>
-#include <triangleiterator.h>
-#include <meshutils.h>
-#include <mathutils.h>
 #include <renderableglyph.h>
 #include <font.h>
 #include <uniforminstances.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -45,6 +42,7 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -86,12 +84,21 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Draw some gui elements
+		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Display world texture in GUI
+		if (ImGui::CollapsingHeader("Textures"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+			ImGui::Text("Word Texture");
+		}
 		ImGui::End();
 	}
 
@@ -141,23 +148,17 @@ namespace nap
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
 
-			// Render text on top of the sphere
+			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
-			// Find the orthographic camera (2D text can only be rendered with an orthographic camera)
-			nap::OrthoCameraComponentInstance& ortho_camera = mOrthographicCamEntity->getComponent<nap::OrthoCameraComponentInstance>();
-
-			// Center text
+			// Center text and render it using the given draw call, 
+			// alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:  
+			// mRenderService::renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
 			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
-
-			// Render text on top of sphere using render service
-			// Alternatively you can use: render_text.draw(mRenderWindow->getBackbuffer()) directly.
-			components_to_render.clear();
-			components_to_render.emplace_back(&render_text);
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
+			render_text.draw(mRenderWindow->getBackbuffer());
 
 			// Draw our GUI
-			mGuiService->draw(mRenderService->getCurrentCommandBuffer());
+			mGuiService->draw();
 			
 			// End the render pass
 			mRenderWindow->endRendering();

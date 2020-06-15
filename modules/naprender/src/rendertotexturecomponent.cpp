@@ -115,20 +115,10 @@ namespace nap
 	}
 
 
-// 	nap::Texture2D& RenderToTextureComponentInstance::getOutputTexture()
-// 	{
-// 		return mTarget.getColorTexture();
-// 	}
-
-
-// 	bool RenderToTextureComponentInstance::switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error)
-// 	{
-// 		mDirty = true;
-// 		if (mTarget.switchColorTexture(texture, error))
-// 			return true;
-// 		return false;
-// 	}
-
+	nap::Texture2D& RenderToTextureComponentInstance::getOutputTexture()
+	{
+		return mTarget.getColorTexture();
+	}
 
 	void RenderToTextureComponentInstance::draw()
 	{

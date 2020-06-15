@@ -147,7 +147,7 @@ namespace nap
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
 		 */
-		std::shared_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
+		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
@@ -198,8 +198,9 @@ namespace nap
 
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 
-		int getCurrentFrameIndex() const { return mCurrentFrameIndex; }
-		VkCommandBuffer getCurrentCommandBuffer() { assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		int getCurrentFrameIndex() const				{ return mCurrentFrameIndex; }
+		VkCommandBuffer getCurrentCommandBuffer()		{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		RenderWindow* getCurrentRenderWindow()			{ return mCurrentRenderWindow; }
 
 		/**
 		 * @return Vulkan runtime instance
@@ -268,6 +269,16 @@ namespace nap
 		Texture2D& getEmptyTexture() const { return *mEmptyTexture; }
 
 		int getMaxFramesInFlight() const { return 2; }
+
+		/**
+		 * Called when a new window is added to the system
+		 */
+		nap::Signal<nap::RenderWindow&> windowAdded;
+
+		/**
+		 * Called just before a window is removed from the system
+		 */
+		nap::Signal<nap::RenderWindow&> windowRemoved;
 
 	protected:
 		/**
