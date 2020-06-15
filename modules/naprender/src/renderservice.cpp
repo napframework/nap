@@ -997,16 +997,9 @@ namespace nap
 		settings.mHeight = 16;
 		settings.mChannels = ESurfaceChannels::RGBA;
 		settings.mDataType = ESurfaceDataType::BYTE;
+		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		if (!mEmptyTexture->init(settings, false, errorState))
-			return false;
-
-		std::vector<uint8_t> empty_texture_data;
-		empty_texture_data.resize(settings.getSizeInBytes());
-
-		mEmptyTexture->update(empty_texture_data.data(), settings.mWidth, settings.mHeight, settings.getPitch(), settings.mChannels);
-
-		return true;
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, errorState);
 	}
 
 

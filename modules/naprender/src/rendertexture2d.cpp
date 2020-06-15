@@ -36,12 +36,12 @@ namespace nap
 		case ERenderTargetFormat::RGBA8:
 		{
 			settings.mChannels = ESurfaceChannels::RGBA;
-			return Texture2D::init(settings, false, errorState);
+			return Texture2D::init(settings, false, Texture2D::EClearMode::DontClear, errorState);
 		}
 		case ERenderTargetFormat::R8:
 		{
 			settings.mChannels = ESurfaceChannels::R;
-			return Texture2D::init(settings, false, errorState);
+			return Texture2D::init(settings, false, Texture2D::EClearMode::DontClear, errorState);
 		}
 		default:
 			errorState.fail("Unsupported format");

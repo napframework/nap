@@ -41,11 +41,18 @@ namespace nap
 		Texture2D(Core& core);
 		~Texture2D();
 
+		enum class EClearMode
+		{
+			FillWithZero,
+			DontClear
+		};
+		
 		/**
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool compressed, EClearMode clearMode, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool compressed, void* initialData, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture, in texels.

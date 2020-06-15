@@ -176,7 +176,7 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, EClearMode clearMode, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
@@ -245,6 +245,24 @@ namespace nap
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
+		if (clearMode == Texture2D::EClearMode::FillWithZero)
+		{
+			std::vector<uint8_t> empty_texture_data;
+			empty_texture_data.resize(mImageSizeInBytes);
+
+			update(empty_texture_data.data(), descriptor);
+		}
+
+		return true;
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, void* initialData, utility::ErrorState& errorState)
+	{
+		if (!init(descriptor, compressed, EClearMode::DontClear, errorState))
+			return false;
+
+		update(initialData, descriptor);
 		return true;
 	}
 
