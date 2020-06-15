@@ -467,7 +467,10 @@
                     "Type": "nap::ApplySensorComponent",
                     "mID": "ApplyAudioRangeSensorComponent",
                     "Enabled": "AudioRangeSensorEnable",
-                    "Sensors": [],
+                    "Sensors": [
+                        "Range Sensor 1",
+                        "Range Sensor 2"
+                    ],
                     "Parameters": [
                         "AudioRangeSensorControl"
                     ],

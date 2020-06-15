@@ -66,16 +66,6 @@ namespace nap
 		// Get yocto sensors
 		mProximitySensor = mResourceManager->findObject("ProximitySensor");
 
-		// Get apply range sensor component instance
-		auto rangeSensorComponent = mSensorEntity->findComponentByID("ApplyRangeSensorComponent");
-		assert(rangeSensorComponent != nullptr); // component not found
-		assert(rangeSensorComponent->get_type() == RTTI_OF(ApplySensorComponentInstance)); // type mismatch
-		if (error.check(rangeSensorComponent == nullptr || rangeSensorComponent->get_type() != RTTI_OF(ApplySensorComponentInstance), "Range Sensor Component not found or type mismatch!"))
-		{
-			return false;
-		}
-		mApplySensorComponent = static_cast<ApplySensorComponent*>(static_cast<ApplySensorComponentInstance*>(rangeSensorComponent)->getComponent());
-
 		// Create gui
 		mGui = std::make_unique<AtmosGui>(*this);
 		mGui->init();

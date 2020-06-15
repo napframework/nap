@@ -141,25 +141,49 @@ namespace nap
 		ImGui::Text(mDateTime.toString().c_str());
 		RGBColorFloat text_color = mTextColor.convert<RGBColorFloat>();
 		ImGui::TextColored(text_color, "%.3f ms/frame (%.1f FPS)", 1000.0f / mApp.getCore().getFramerate(), mApp.getCore().getFramerate());
-		if (ImGui::CollapsingHeader("Apply Sensor Component"))
+
+		// Get apply range sensor component instances
+		std::vector<ApplySensorComponent*> apply_sensor_components;
+		auto components = mApp.mSensorEntity->getComponents();
+		for (auto component_instance : components)
 		{
-			ImGui::Separator();
-			ImGui::Text("Sensors :");
-			ImGui::Indent(10.0f);
-			for (auto sensor : mApp.mApplySensorComponent->mSensors)
+			if (component_instance->get_type() == RTTI_OF(ApplySensorComponentInstance))
 			{
-				if (ImGui::CollapsingHeader(sensor->mSensorName.c_str()))
+				ApplySensorComponentInstance* apply_sensor_component_instance = static_cast<ApplySensorComponentInstance*>(component_instance);
+				ApplySensorComponent* apply_sensor_component = static_cast<ApplySensorComponent*>(apply_sensor_component_instance->getComponent());
+				apply_sensor_components.emplace_back(apply_sensor_component);
+			}
+		}
+		
+		if (ImGui::CollapsingHeader("Apply Sensor Components"))
+		{
+			ImGui::Indent(10.0f);
+			for (auto* apply_sensor_component : apply_sensor_components)
+			{
+				if (ImGui::CollapsingHeader(apply_sensor_component->mID.c_str()))
 				{
-					ImGui::PushID(sensor->mSensorName.c_str());
-					ImGui::Image(sensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
-					ImGui::SameLine();
-					ImGui::Text(utility::stringFormat("%s: %s", sensor->isOnline() ? "online" : "offline", sensor->mID.c_str()).c_str());
-					ImGui::Text(utility::stringFormat("value: %.2f", sensor->getValue()).c_str());
+					ImGui::PushID(apply_sensor_component->mID.c_str());
+					ImGui::Text("Sensors :");
+					ImGui::Indent(10.0f);
+					for (auto sensor : apply_sensor_component->mSensors)
+					{
+						if (ImGui::CollapsingHeader(sensor->mSensorName.c_str()))
+						{
+							ImGui::PushID(sensor->mSensorName.c_str());
+							ImGui::Image(sensor->isOnline() ? *mLedOn : *mLedOff, { 16, 16 });
+							ImGui::SameLine();
+							ImGui::Text(utility::stringFormat("%s: %s", sensor->isOnline() ? "online" : "offline", sensor->mID.c_str()).c_str());
+							ImGui::Text(utility::stringFormat("value: %.2f", sensor->getValue()).c_str());
+							ImGui::PopID();
+						}
+					}
+					ImGui::Unindent(10.0f);
 					ImGui::PopID();
 				}
 			}
 			ImGui::Unindent(10.0f);
 		}
+
 		
 		if (ImGui::CollapsingHeader("Texture Preview"))
 		{

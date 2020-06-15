@@ -89,7 +89,7 @@ namespace nap
 		ObjectPtr<YoctoProximitySensor> mProximitySensor	= nullptr;		///< Yoctopuce proximity sensor
 
 		//
-		ApplySensorComponent*			mApplySensorComponent = nullptr;
+		std::vector<ApplySensorComponent*>	mApplySensorComponents;
 
 		// Gui
 		std::unique_ptr<AtmosGui>	mGui = nullptr;
