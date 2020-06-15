@@ -1714,7 +1714,6 @@
             "Type": "nap::RenderTarget",
             "mID": "CompositionRenderTargetA",
             "mColorTexture": "CompositionTextureA",
-            "mDepthTexture": "CompositionDepthTextureA",
             "mClearColor": {
                 "x": 1.0,
                 "y": 0.0,
@@ -1726,43 +1725,12 @@
             "Type": "nap::RenderTarget",
             "mID": "CompositionRenderTargetB",
             "mColorTexture": "CompositionTextureB",
-            "mDepthTexture": "CompositionDepthTextureB",
             "mClearColor": {
                 "x": 1.0,
                 "y": 0.0,
                 "z": 0.0,
                 "w": 1.0
             }
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionDepthTextureA",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "CompositionDepthTextureB",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
-            "Width": 1024,
-            "Height": 1024,
-            "Format": "Depth"
         },
         {
             "Type": "nap::RenderTexture2D",

@@ -170,9 +170,6 @@ namespace nap
 			mSampleShading = false;
 		}
 
-		if (!errorState.check(mColorTexture->mUsage == ETextureUsage::RenderTarget, "The color texture used by a RenderTarget must have a usage of 'RenderTarget' set."))
-			return false;
-
 		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
 			return false;
 

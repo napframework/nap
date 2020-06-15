@@ -26,8 +26,8 @@
 			"mID" : "ColorTexture",
 			"Width" : 640,
 			"Height" : 480,
-			"Format" : "Backbuffer",
-			"Usage" : "RenderTarget"
+			"Format" : "RGBA8",
+			"Usage" : "Static"
 		},
 		{
 			"Type" : "nap::RenderTarget",

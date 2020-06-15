@@ -19,22 +19,8 @@ namespace nap
 	}
 
 
-	Bitmap& Image::getData()
+	void Image::asyncGetData()
 	{
-		getData(mBitmap);
-		return mBitmap;
-	}
-
-
-	void Image::startGetData()
-	{
-		//getTexture().asyncStartGetData();
-	}
-
-
-	Bitmap& Image::endGetData()
-	{
-		//endGetData(mBitmap);
-		return mBitmap;
+		asyncGetData(mBitmap);
 	}
 }

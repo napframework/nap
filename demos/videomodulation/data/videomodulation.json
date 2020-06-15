@@ -578,10 +578,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "RenderTarget",
+            "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
-            "Format": "Backbuffer"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -593,10 +593,10 @@
                 "WrapHorizontal": "ClampToEdge",
                 "MaxLodLevel": 20
             },
-            "Usage": "RenderTarget",
+            "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
-            "Format": "Backbuffer"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderWindow",

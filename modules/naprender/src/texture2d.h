@@ -49,8 +49,7 @@ namespace nap
 	{
 		Static,				///< Texture does not change
 		DynamicRead,		///< Texture is frequently read from GPU to CPU
-		DynamicWrite,		///< Texture is frequently updated from CPU to GPU
-		RenderTarget		///< Texture is used as output for a RenderTarget
+		DynamicWrite		///< Texture is frequently updated from CPU to GPU
 	};
 
 	/**
@@ -82,7 +81,7 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState);
 
 		/**
 		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
@@ -109,8 +108,6 @@ namespace nap
 		 */
 		const SurfaceDescriptor& getDescriptor() const;
 
-		void upload(VkCommandBuffer commandBuffer);
-
 		/**
 		 * Converts the CPU data that is passed in to the GPU. The internal Bitmap remains untouched. 
 		 * @param data Pointer to the CPU data.
@@ -123,33 +120,18 @@ namespace nap
 		VkFormat getVulkanFormat() const { return mVulkanFormat; }
 
 		/**
-		 * Blocking call to retrieve GPU texture data that is stored in this texture
-		 * When the internal bitmap is empty it will be initialized based on the settings associated with this texture
-		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		 * @return reference to the internal bitmap that is filled with the GPU data of this texture.
-		 */
-		void getData(Bitmap& bitmap);
-
-		/**
-		 * @return the OpenGL texture hardware handle.
-		 */
-		nap::uint getHandle() const;
-
-		/**
-		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
+		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
+		 * @a bitmap reference to the bitmap that is filled with the GPU data of this texture when the readback completes.
 		 */
-		void startGetData();
-
-		/**
-		* Finishes a transfer of texture data from GPU to CPU that was started with startGetData. See comment in startGetData for proper use.
-		* When the internal bitmap is empty it will be initialized based on the settings associated with this texture.
-		* This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		* @return reference to the internal bitmap that is filled with the GPU data of this texture.
-		*/
-		void endGetData(Bitmap& bitmap);
+		void asyncGetData(Bitmap& bitmap);
 
 		VkImageView getImageView() const { return mImageData.mTextureView; }
+
+	private:
+		void upload(VkCommandBuffer commandBuffer);
+		void notifyDownloadReady(int frameIndex);		
+		void download(VkCommandBuffer commandBuffer);
 
 	public:
 		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
@@ -159,7 +141,9 @@ namespace nap
 		RenderService*				mRenderService = nullptr;
 
 	private:
-		friend class RenderTarget;
+		friend class RenderService;
+
+		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
 		struct StagingBuffer
 		{
@@ -169,13 +153,14 @@ namespace nap
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;
-		std::vector<uint8_t>		mTextureData;
-		ImageData					mImageData;
-		StagingBufferList			mStagingBuffers;
-		int							mCurrentStagingBufferIndex = -1;
-		size_t						mImageSizeInBytes = -1;
-		SurfaceDescriptor			mDescriptor;
-		VkFormat					mVulkanFormat = VK_FORMAT_UNDEFINED;
+		std::vector<uint8_t>				mTextureData;
+		ImageData							mImageData;
+		StagingBufferList					mStagingBuffers;
+		int									mCurrentStagingBufferIndex = -1;
+		size_t								mImageSizeInBytes = -1;
+		SurfaceDescriptor					mDescriptor;
+		VkFormat							mVulkanFormat = VK_FORMAT_UNDEFINED;
+		std::vector<TextureReadCallback>	mReadCallbacks;
 	};
 
 	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);

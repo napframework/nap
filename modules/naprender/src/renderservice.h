@@ -57,6 +57,7 @@ namespace nap
 
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
+		using VulkanObjectDestructor = std::function<void(RenderService&)>;
 
 		/**
 		 * Holds current render state 
@@ -94,6 +95,8 @@ namespace nap
 
 		bool beginRecording(RenderWindow& renderWindow);
 		void endRecording();
+
+		void queueVulkanObjectDestructor(const VulkanObjectDestructor& function);
 
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
@@ -187,7 +190,9 @@ namespace nap
 
 		Pipeline getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void requestTextureUpdate(Texture2D& texture);
+		void removeTextureRequests(Texture2D& texture);
+		void requestTextureUpload(Texture2D& texture);
+		void requestTextureDownload(Texture2D& texture);
 
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
@@ -326,13 +331,21 @@ namespace nap
 
 		bool initEmptyTexture(nap::utility::ErrorState& errorState);
 
-		void transferTextures();
+		void transferTextures(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
+		void downloadTextures();
+		void uploadTextures();
+
+		void updateTextureDownloads();
+		void processVulkanDestructors(int frameIndex);
+
+		void waitDeviceIdle();
 
 	private:
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
-		using TexturesToUpdateSet = std::unordered_set<Texture2D*>;
+		using TextureSet = std::unordered_set<Texture2D*>;
+		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 
 		// Renderer Settings
 		bool									mEnableHighDPIMode = true;
@@ -342,13 +355,24 @@ namespace nap
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 		
+		bool									mIsInRenderFrame = false;
+		bool									mCanDestroyVulkanObjectsImmediately = false;
+
 		std::unique_ptr<Texture2D>				mEmptyTexture;
-		TexturesToUpdateSet						mTexturesToUpdate;
+		TextureSet								mTexturesToUpload;
+
+		struct Frame
+		{
+			VkFence								mFence;
+			std::vector<Texture2D*>				mTextureDownloads;
+			VkCommandBuffer						mUploadCommandBuffer;
+			VkCommandBuffer						mDownloadCommandBuffers;
+			VkCommandBuffer						mHeadlessCommandBuffers;
+			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;
+		};
 
 		int										mCurrentFrameIndex = 0;
-		std::vector<VkCommandBuffer>			mTransferCommandBuffers;
-		std::vector<VkCommandBuffer>			mHeadlessCommandBuffers;
-		std::vector<VkFence>					mFrameInFlightFences;
+		std::vector<Frame>						mFramesInFlight;
 		VkCommandBuffer							mCurrentCommandBuffer = nullptr;
 		RenderWindow*							mCurrentRenderWindow = nullptr;		
 

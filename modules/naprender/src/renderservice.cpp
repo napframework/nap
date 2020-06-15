@@ -439,35 +439,28 @@ namespace nap
 		return false;
 	}
 
-	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int maxFramesInFlight, utility::ErrorState& errorState)
+	static bool createCommandBuffer(VkDevice device, VkCommandPool commandPool, VkCommandBuffer& commandBuffer, utility::ErrorState& errorState)
 	{
-		commandBuffers.resize(maxFramesInFlight);
-
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+		allocInfo.commandBufferCount = 1;
 
-		if (!errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers"))
+		if (!errorState.check(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
 			return false;
 
 		return true;
 	}
 
-	static bool createSyncObjects(VkDevice device, std::vector<VkFence>& inFlightFences, int maxFramesInFlight, utility::ErrorState& errorState)
-	{
-		inFlightFences.resize(maxFramesInFlight);
 
+	static bool createSyncObject(VkDevice device, VkFence& fence, utility::ErrorState& errorState)
+	{
 		VkFenceCreateInfo fenceInfo = {};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < maxFramesInFlight; i++)
-			if (!errorState.check(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS, "Failed to create sync objects"))
-				return false;
-
-		return true;
+		return errorState.check(vkCreateFence(device, &fenceInfo, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -891,6 +884,7 @@ namespace nap
 	// Shut down render service
 	RenderService::~RenderService()
 	{
+		mEmptyTexture.reset();
 	}
 
 
@@ -1018,7 +1012,7 @@ namespace nap
 		settings.mChannels = ESurfaceChannels::RGBA;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		if (!mEmptyTexture->init(settings, false, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, errorState))
+		if (!mEmptyTexture->init(settings, false, errorState))
 			return false;
 
 		std::vector<uint8_t> empty_texture_data;
@@ -1112,36 +1106,54 @@ namespace nap
 		if (!initEmptyTexture(errorState))
 			return false;
 		
-		if (!createSyncObjects(mDevice, mFrameInFlightFences, getMaxFramesInFlight(), errorState))
-			return false;
+		mFramesInFlight.resize(getMaxFramesInFlight());
 
-		if (!createCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers, getMaxFramesInFlight(), errorState))
-			return false;
+		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
+		{
+			Frame& frame = mFramesInFlight[frame_index];
+			if (!createSyncObject(mDevice, frame.mFence, errorState))
+				return false;
 
-		if (!createCommandBuffers(mDevice, mCommandPool, mHeadlessCommandBuffers, getMaxFramesInFlight(), errorState))
-			return false;
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffers, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffers, errorState))
+				return false;
+		}
 
 		return true;
 	}
 
-
-	void RenderService::preShutdown()
+	void RenderService::waitDeviceIdle()
 	{
-		// When we're shutting down, we need to ensure all vulkan resources are no longer in use
+		// When we're shutting down or realtime editing, we need to ensure all vulkan resources are no longer in use
 		// Otherwise, during resource destruction, the vulkan specific resources will not be freed correctly.
 		// To do this, we wait for the device to be idle
 		VkResult result = vkDeviceWaitIdle(mDevice);
 		assert(result == VK_SUCCESS);
+
+		// Now that we know the device is idle, we can destroy any currently queued vulkan objects, since they're
+		// guaranteed to no longer be in use
+		for (int frameIndex = 0; frameIndex < mFramesInFlight.size(); ++frameIndex)
+			processVulkanDestructors(frameIndex);
+
+		// Since we know the device is idle at this point, we can destroy vulkan objects without going
+		// through the queue. This is reset when beginFrame is called again.
+		mCanDestroyVulkanObjectsImmediately = true;
+	}
+
+	void RenderService::preShutdown()
+	{
+		waitDeviceIdle();
 	}
 
 
 	void RenderService::preResourcesLoaded()
 	{
-		// When we're reloading resources during realtime edit, we need to ensure all vulkan resources are no longer in use
-		// Otherwise, when vulkan resources are edited, the vulkan specific resources will not be freed correctly.
-		// To do this, we wait for the device to be idle
-		VkResult result = vkDeviceWaitIdle(mDevice);
-		assert(result == VK_SUCCESS);
+		waitDeviceIdle();
 	}
 
 
@@ -1155,16 +1167,16 @@ namespace nap
 		}
 		mPipelineCache.clear();
 
-		vkFreeCommandBuffers(mDevice, mCommandPool, mHeadlessCommandBuffers.size(), mHeadlessCommandBuffers.data());
-		mHeadlessCommandBuffers.clear();
+		for (Frame& frame : mFramesInFlight)
+		{
+			assert(frame.mQueuedVulkanObjectDestructors.empty());
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffers);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mUploadCommandBuffer);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffers);
+			vkDestroyFence(mDevice, frame.mFence, nullptr);
+		}
 
-		vkFreeCommandBuffers(mDevice, mCommandPool, mTransferCommandBuffers.size(), mTransferCommandBuffers.data());
-		mTransferCommandBuffers.clear();
-
-		for (VkFence fence : mFrameInFlightFences)
-			vkDestroyFence(mDevice, fence, nullptr);
-
-		mFrameInFlightFences.clear();
+		mFramesInFlight.clear();
 		mEmptyTexture.reset();
 		mDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
@@ -1203,10 +1215,8 @@ namespace nap
 		SDL::shutdownVideo();
 	}
 	
-
-	void RenderService::transferTextures()
+	void RenderService::transferTextures(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
 	{
-		VkCommandBuffer commandBuffer = mTransferCommandBuffers[mCurrentFrameIndex];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
@@ -1215,51 +1225,139 @@ namespace nap
 		VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
 
-		for (Texture2D* texture : mTexturesToUpdate)
-			texture->upload(mTransferCommandBuffers[mCurrentFrameIndex]);
+		transferFunction();
 
-		mTexturesToUpdate.clear();
-
-		result = vkEndCommandBuffer(mTransferCommandBuffers[mCurrentFrameIndex]);
+		result = vkEndCommandBuffer(commandBuffer);
 		assert(result == VK_SUCCESS);
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &mTransferCommandBuffers[mCurrentFrameIndex];
+		submitInfo.pCommandBuffers = &commandBuffer;
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 	}
 
 
+	void RenderService::removeTextureRequests(Texture2D& texture)
+	{
+		// When textures are destroyed, we also need to remove any pending texture requests
+		mTexturesToUpload.erase(&texture);
+
+		for (Frame& frame : mFramesInFlight)
+		{
+			frame.mTextureDownloads.erase(std::remove_if(frame.mTextureDownloads.begin(), frame.mTextureDownloads.end(), [&texture](Texture2D* existingTexture)
+			{
+				return existingTexture == &texture;
+			}), frame.mTextureDownloads.end());
+		}
+	}
+
+
+	void RenderService::uploadTextures()
+	{
+		VkCommandBuffer commandBuffer = mFramesInFlight[mCurrentFrameIndex].mUploadCommandBuffer;
+		transferTextures(commandBuffer, [commandBuffer, this]()
+		{
+			for (Texture2D* texture : mTexturesToUpload)
+				texture->upload(commandBuffer);
+
+			mTexturesToUpload.clear();
+		});
+	}
+
+
+	void RenderService::downloadTextures()
+	{
+		// Push the download of a texture onto the commandbuffer
+		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
+		transferTextures(commandBuffer, [commandBuffer, this, &frame]()
+		{
+			for (Texture2D* texture : frame.mTextureDownloads)
+				texture->download(commandBuffer);
+		});
+	}
+
+
+	void RenderService::updateTextureDownloads()
+	{
+		// Here we check if any pending texture downloads are ready. We always know for sure that textures
+		// for the current frame are ready (if this function is called after wait for fence). So we could just
+		// call notify for all outstanding texture request for the current frame. However, this could mean that
+		// we are waiting longer than necessary. For example, if we have 3 frames in flight, but the texture is 
+		// ready one frame after the download started, we could already notify the texture. For this reason we
+		// check the fence status of all frames. If a frame has been completed on GPU, we know for sure that the
+		// upload has finished as well, and we can notify the texture that it has finished.
+		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
+		{
+			Frame& frame = mFramesInFlight[frame_index];
+			if (!frame.mTextureDownloads.empty() && vkGetFenceStatus(mDevice, frame.mFence) == VK_SUCCESS)
+			{
+				for (Texture2D* texture : frame.mTextureDownloads)
+					texture->notifyDownloadReady(frame_index);
+
+				frame.mTextureDownloads.clear();
+			}
+		}
+	}
+
+
+	void RenderService::processVulkanDestructors(int frameIndex)
+	{
+		for (VulkanObjectDestructor& destructor : mFramesInFlight[frameIndex].mQueuedVulkanObjectDestructors)
+			destructor(*this);
+
+		mFramesInFlight[frameIndex].mQueuedVulkanObjectDestructors.clear();
+	}
+
+
 	void RenderService::beginFrame()
 	{
-		assert(mCurrentCommandBuffer == nullptr);
-		assert(mCurrentRenderWindow == nullptr);
+		// When we start rendering a frame, we cannot destroy vulkan objects immediately, they must be pushed on the
+		// destructor queue instead. This flag is set to true for cases of real-time editing and the destruction sequence,
+		// where Vulkan object must be destroyed immediately.
+		mCanDestroyVulkanObjectsImmediately = false;
+		mIsInRenderFrame = true;
 
-		vkWaitForFences(mDevice, 1, &mFrameInFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
-		vkResetFences(mDevice, 1, &mFrameInFlightFences[mCurrentFrameIndex]);
-		 
+		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
+
+		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
+		// status which could still not be signaled at that point, causing the notify not to be called. If we then wait for
+		// the fence anyway, we missed the opportunity to notify textures that downloads were ready. Because we reset the fence
+		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
+		// of the fence.
+		updateTextureDownloads();
+
+		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
+
 		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
 
-		transferTextures();
+		processVulkanDestructors(mCurrentFrameIndex);
+		uploadTextures();
 	}
+
 
 	void RenderService::endFrame()
 	{
+		// Push any texture downloads on the commandbuffer
+		downloadTextures();
+
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the commandbuffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFrameInFlightFences[mCurrentFrameIndex]);
+		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
+
+		mIsInRenderFrame = false;
 	}
 
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
 
-		mCurrentCommandBuffer = mHeadlessCommandBuffers[mCurrentFrameIndex];
+		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
@@ -1313,6 +1411,28 @@ namespace nap
 		mCurrentRenderWindow = nullptr;
 	}
 
+
+	void RenderService::queueVulkanObjectDestructor(const VulkanObjectDestructor& function)
+	{
+		// If it's possible to destroy vulkan objects immediately (i.e. when we know the device is idle during shutdown/realtime editing),
+		// we call the lambda immediately.
+		if (mCanDestroyVulkanObjectsImmediately)
+		{
+			function(*this);
+		}
+		else
+		{
+			// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
+			// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).
+			int previousFrameIndex =  mIsInRenderFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
+			if (previousFrameIndex < 0)
+				previousFrameIndex = mFramesInFlight.size() - 1;
+
+			mFramesInFlight[previousFrameIndex].mQueuedVulkanObjectDestructors.push_back(function);
+		}
+	}
+
+
 	void RenderService::preUpdate(double deltaTime)
 	{
 		//	getPrimaryWindow().makeCurrent();
@@ -1337,9 +1457,18 @@ namespace nap
 	}
 
 
-	void RenderService::requestTextureUpdate(Texture2D& texture)
+	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
-		mTexturesToUpdate.insert(&texture);
+		mTexturesToUpload.insert(&texture);
+	}
+
+
+	void RenderService::requestTextureDownload(Texture2D& texture)
+	{
+		// We push a texture download specifically for this frame. When the fence for that frame is signaled,
+		// we now the download has been processed by the GPU, and we can send the texture a notification that
+		// transfer has completed.
+		mFramesInFlight[mCurrentFrameIndex].mTextureDownloads.push_back(&texture);
 	}
 
 

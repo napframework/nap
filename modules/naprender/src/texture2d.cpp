@@ -23,8 +23,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_ENUM(nap::ETextureUsage)
 	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
 	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite"),
-	RTTI_ENUM_VALUE(nap::ETextureUsage::RenderTarget,	"RenderTarget")
+	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::TextureParameters)
@@ -113,7 +112,8 @@ namespace nap
 {
 	namespace 
 	{
-		static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) 
+		static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
+										  VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStage, VkAccessFlags dstAccessMask, VkPipelineStageFlags dstStage) 
 		{
 			VkImageMemoryBarrier barrier = {};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -127,47 +127,10 @@ namespace nap
 			barrier.subresourceRange.levelCount = 1;
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount = 1;
+			barrier.srcAccessMask = srcAccessMask;
+			barrier.dstAccessMask = dstAccessMask;
 
-			VkPipelineStageFlags sourceStage;
-			VkPipelineStageFlags destinationStage;
-
-			if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) 
-			{
-				barrier.srcAccessMask = 0;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-				sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-				destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			}
-			else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) 
-			{
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-				sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-				destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			}
-			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-			{
-				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-				sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			}
-			else 
-			{
-				throw std::invalid_argument("unsupported layout transition!");
-			}
-
-			vkCmdPipelineBarrier(
-				commandBuffer,
-				sourceStage, destinationStage,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &barrier
-			);
+			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		}
 
 		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
@@ -188,6 +151,27 @@ namespace nap
 			};
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		}
+
+
+		void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
+		{
+			VkBufferImageCopy region = {};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 1;
+			region.imageOffset = { 0, 0, 0 };
+			region.imageExtent = {
+				width,
+				height,
+				1
+			};
+
+			vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
 		}
 	}	
 
@@ -240,24 +224,21 @@ namespace nap
 				}
 				break;
 			}
-		case ESurfaceChannels::Depth:				
-			return renderService.getDepthFormat();
 		}
 
 		return VK_FORMAT_UNDEFINED;
 	}
 
-	static int getNumStagingBuffers(ETextureUsage textureUsage)
+	static int getNumStagingBuffers(int inMaxFramesInFlight, ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
 		case ETextureUsage::DynamicWrite:
-			return 3;
+			return inMaxFramesInFlight + 1;
 		case ETextureUsage::Static:
-		case ETextureUsage::DynamicRead:
 			return 1;
-		case ETextureUsage::RenderTarget:
-			return 0;
+		case ETextureUsage::DynamicRead:
+			return inMaxFramesInFlight;
 		}
 
 		assert(false);
@@ -275,14 +256,18 @@ namespace nap
 
 	Texture2D::~Texture2D()
 	{
-		destroyImageAndView(mImageData, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
-
-		for (StagingBuffer& buffer : mStagingBuffers)
-			vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
+		mRenderService->removeTextureRequests(*this);
+ 		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+ 		{
+ 			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+ 
+ 			for (const StagingBuffer& buffer : stagingBuffers)
+ 				vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
+ 		});
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, VkImageUsageFlags usage, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
@@ -293,6 +278,9 @@ namespace nap
 
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+
+		if (mUsage == ETextureUsage::DynamicRead)
+			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
 		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
@@ -311,23 +299,27 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
-		mStagingBuffers.resize(getNumStagingBuffers(mUsage));
+		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			StagingBuffer& imageBuffer = mStagingBuffers[index];
 
 			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
 			bufferInfo.size = mImageSizeInBytes;
-			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			bufferInfo.usage = mUsage == ETextureUsage::DynamicRead ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+			allocInfo.usage = mUsage == ETextureUsage::DynamicRead ? VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
 			allocInfo.flags = 0;
 
 			if (!errorState.check(vmaCreateBuffer(vulkan_allocator, &bufferInfo, &allocInfo, &imageBuffer.mStagingBuffer, &imageBuffer.mStagingBufferAllocation, &imageBuffer.mStagingBufferAllocationInfo) == VK_SUCCESS, "Could not allocate buffer for texture"))
 				return false;
 		}
+
+		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (mUsage == ETextureUsage::DynamicRead)
+			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create image allocation struct
 		VmaAllocationCreateInfo img_alloc_usage = {};
@@ -338,8 +330,7 @@ namespace nap
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
-		VkImageAspectFlags aspect_flags = descriptor.getChannels() == ESurfaceChannels::Depth ? mRenderService->getDepthAspectFlags() : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (!create2DImageView(device, mImageData.mTextureImage, mVulkanFormat, aspect_flags, mImageData.mTextureView, errorState))
+		if (!create2DImageView(device, mImageData.mTextureImage, mVulkanFormat, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
 				return false;
 
 		mCurrentStagingBufferIndex = 0;
@@ -377,14 +368,40 @@ namespace nap
 	{
 		assert(mCurrentStagingBufferIndex != -1);
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
-		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
-		
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();	
+
+		VkAccessFlags srcMask = 0;
+		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
+		{
+			srcMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcMask, srcStage, dstMask, dstStage);
 		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+							VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
+
+
+	void Texture2D::download(VkCommandBuffer commandBuffer)
+	{
+		assert(mCurrentStagingBufferIndex != -1);
+		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
+
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+							   VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 	}
 
 
@@ -416,37 +433,37 @@ namespace nap
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
-		mRenderService->requestTextureUpdate(*this);
+		mRenderService->requestTextureUpload(*this);
 	}
 
 
-	void Texture2D::getData(Bitmap& bitmap)
+	void Texture2D::asyncGetData(Bitmap& bitmap)
 	{
-// 		if (bitmap.empty())
-// 			bitmap.initFromTexture(mTexture.getSettings());
-// 
-// 		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+ 		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+ 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
+ 		{
+ 			bitmap.initFromDescriptor(mDescriptor);
+ 			memcpy(bitmap.getData(), data, sizeInBytes);
+ 		};
+ 		mRenderService->requestTextureDownload(*this);	
 	}
 
 
-	nap::uint Texture2D::getHandle() const
+	void Texture2D::notifyDownloadReady(int frameIndex)
 	{
-		return 0;
-		//return getTexture().getTextureId();
-	}
+		// Update the staging buffer using the Bitmap contents
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		StagingBuffer& buffer = mStagingBuffers[frameIndex];
 
-	void Texture2D::startGetData()
-	{
-		//getTexture().asyncStartGetData();
-	}
+		void* mapped_memory;
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
+		assert(result == VK_SUCCESS);
 
+		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
 
-	void Texture2D::endGetData(Bitmap& bitmap)
-	{
-// 		if (bitmap.empty())
-// 			bitmap.initFromTexture(mTexture.getSettings());
-// 
-// 		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
+
+		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

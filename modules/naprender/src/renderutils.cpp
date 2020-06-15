@@ -62,7 +62,7 @@ namespace nap
 	}
 
 
-	void NAPAPI destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator)
+	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
 		if (data.mTextureView != nullptr)
 			vkDestroyImageView(device, data.mTextureView, nullptr);

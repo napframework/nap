@@ -55,5 +55,5 @@ namespace nap
 	/**
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data
 	 */
-	void NAPAPI destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator);
+	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator);
 }

@@ -21,8 +21,7 @@ namespace nap
 			
 	public:
 		using Texture2D::update;
-		using Texture2D::getData;
-		using Texture2D::endGetData;
+		using Texture2D::asyncGetData;
 
 		Image(Core& core);
 
@@ -37,26 +36,10 @@ namespace nap
 		void update();
 
 		/**
-		 * Blocking call to retrieve GPU texture data that is stored in this texture
-		 * When the internal bitmap is empty it will be initialized based on the settings associated with this texture
-		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		 * @return reference to the internal bitmap that is filled with the GPU data of this texture.
-		 */
-		Bitmap& getData();
-
-		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
 		 */
-		void startGetData();
-
-		/**
-		* Finishes a transfer of texture data from GPU to CPU that was started with startGetData. See comment in startGetData for proper use.
-		* When the internal bitmap is empty it will be initialized based on the settings associated with this texture.
-		* This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		* @return reference to the internal bitmap that is filled with the GPU data of this texture.
-		*/
-		Bitmap& endGetData();
+		void asyncGetData();
 
 	private:
 		Bitmap		mBitmap;			///< The CPU image representation

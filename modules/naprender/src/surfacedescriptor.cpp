@@ -49,7 +49,6 @@ namespace nap
 		switch (mChannels)
 		{
 		case ESurfaceChannels::R:
-		case ESurfaceChannels::Depth:
 			return 1;
 
 		case ESurfaceChannels::RGBA:

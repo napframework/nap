@@ -10,10 +10,8 @@ namespace nap
 
 	enum class ERenderTargetFormat
 	{
-		Backbuffer,		///< The current native format of the color backbuffer
 		RGBA8,			///< RGBA8 4 components, 8 bytes per component
-		R8,				///< R8	1 components, 8 bytes per component
-		Depth			///< Depth Texture used for binding to depth buffer
+		R8				///< R8	1 components, 8 bytes per component
 	};
 
 	/**
@@ -37,6 +35,6 @@ namespace nap
 		int					mWidth		= 0;								///< Property: 'Width' width of the texture in texels
 		int					mHeight		= 0;								///< Property: 'Height' of the texture, in texels
 		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' colorspace of the texture
-		ERenderTargetFormat	mFormat = ERenderTargetFormat::Backbuffer;		///< Property: 'Format' texture format
+		ERenderTargetFormat	mFormat		= ERenderTargetFormat::RGBA8;		///< Property: 'Format' texture format
 	};
 }
