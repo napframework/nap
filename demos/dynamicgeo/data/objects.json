@@ -163,13 +163,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "ParticleOne",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 5
-            },
             "Usage": "Static",
             "ImagePath": "texture_one.jpg",
             "Compressed": false
@@ -177,13 +170,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "ParticleTwo",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 5
-            },
             "Usage": "Static",
             "ImagePath": "texture_two.png",
             "Compressed": false

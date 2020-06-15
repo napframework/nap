@@ -342,13 +342,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "CanvasImage",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "laser_canvas.png",
             "Compressed": false
@@ -356,13 +349,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "DisplayImage",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "test.jpg",
             "Compressed": false
@@ -370,13 +356,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "BrickImage",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "brick.jpg",
             "Compressed": false

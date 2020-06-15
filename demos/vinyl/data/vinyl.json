@@ -18,66 +18,31 @@
 		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "LabelImage",
-			"ImagePath" : "label.png",
-			"Parameters" : {
-				"MaxFilter" : "Linear",		
-				"MinFilter" : "LinearMipmapLinear",		
-				"WrapVertical" : "ClampToEdge",	
-				"WrapHorizontal" : "ClampToEdge",
-				"MaxLodLevel" : 3
-			}
+			"ImagePath" : "label.png"
 		},
 
 		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "CoverImage",
-			"ImagePath" : "cover.png",
-			"Parameters" : {
-				"MaxFilter" : "Linear",		
-				"MinFilter" : "LinearMipmapLinear",		
-				"WrapVertical" : "ClampToEdge",	
-				"WrapHorizontal" : "ClampToEdge",
-				"MaxLodLevel" : 3
-			}
+			"ImagePath" : "cover.png"
 		},
 
 		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "BackgroundImage",
-			"ImagePath" : "background.jpg",
-			"Parameters" : {
-				"MaxFilter" : "Linear",		
-				"MinFilter" : "LinearMipmapLinear",		
-				"WrapVertical" : "ClampToEdge",	
-				"WrapHorizontal" : "ClampToEdge",
-				"MaxLodLevel" : 3
-			}
+			"ImagePath" : "background.jpg"
 		},
 
 		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "MaskImage",
-			"ImagePath" : "label_mask.jpg",
-			"Parameters" : {
-				"MaxFilter" : "Linear",		
-				"MinFilter" : "LinearMipmapLinear",		
-				"WrapVertical" : "ClampToEdge",	
-				"WrapHorizontal" : "ClampToEdge",
-				"MaxLodLevel" : 3
-			}
+			"ImagePath" : "label_mask.jpg"
 		},
 
 		{
 			"Type" : "nap::ImageFromFile",
 			"mID" : "GrooveNormalMap",
-			"ImagePath" : "grooves.png",
-			"Parameters" : {
-				"MaxFilter" : "Linear",		
-				"MinFilter" : "LinearMipmapLinear",		
-				"WrapVertical" : "ClampToEdge",	
-				"WrapHorizontal" : "ClampToEdge",
-				"MaxLodLevel" : 3
-			}
+			"ImagePath" : "grooves.png"
 		},
 
 		{

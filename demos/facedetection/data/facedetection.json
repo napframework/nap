@@ -424,13 +424,6 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "PlaneTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "texture_one.jpg",
             "Compressed": false
@@ -652,13 +645,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraCaptureTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 1
-            },
             "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 480,
@@ -667,13 +653,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraOutputTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
             "Usage": "RenderTarget",
             "Width": 640,
             "Height": 480,
@@ -682,13 +661,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoCaptureTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 1
-            },
             "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 360,
@@ -697,13 +669,6 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoOutputTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
             "Usage": "RenderTarget",
             "Width": 640,
             "Height": 360,
