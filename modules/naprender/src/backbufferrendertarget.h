@@ -4,7 +4,7 @@
 
 namespace nap
 {
-	class GLWindow;
+	class RenderWindow;
 
 	/**
 	* Render target that represents a backbuffer.
@@ -12,7 +12,7 @@ namespace nap
 	class BackbufferRenderTarget : public IRenderTarget
 	{
 	public:
-		BackbufferRenderTarget(GLWindow& window);
+		BackbufferRenderTarget(RenderWindow& window);
 
 		virtual void beginRendering() override;
 		virtual void endRendering() override;
@@ -36,9 +36,9 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override;
 
 	private:
-		GLWindow&	mWindow;
-		glm::ivec2	mSize;
-		glm::vec4	mClearColor;			// Clear color, used for clearing the color buffer
+		RenderWindow&	mWindow;
+		glm::ivec2		mSize;
+		glm::vec4		mClearColor;			// Clear color, used for clearing the color buffer
 	};
 
 } // nap

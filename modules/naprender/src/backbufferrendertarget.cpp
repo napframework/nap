@@ -1,9 +1,9 @@
 #include "backbufferrendertarget.h"
-#include "glwindow.h"
+#include "renderwindow.h"
 
 namespace nap
 {
-	BackbufferRenderTarget::BackbufferRenderTarget(GLWindow& window) :
+	BackbufferRenderTarget::BackbufferRenderTarget(RenderWindow& window) :
 		mWindow(window)
 	{
 	}

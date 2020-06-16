@@ -351,7 +351,7 @@ namespace nap
 		ImGui::SetCurrentContext(it->second->mContext);
 
 		// Update SDL Window information
-		setGuiWindow(it->first->getWindow()->getNativeWindow());
+		setGuiWindow(it->first->getNativeWindow());
 	}
 
 
@@ -532,7 +532,7 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
 			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
-			mSampleCount = window.getWindow()->getSampleCount();
+			mSampleCount = window.getSampleCount();
 
 			// Create context
 			new_context = createContext(*mFontAtlas);
@@ -618,8 +618,8 @@ namespace nap
 		ImGuiIO& io = ImGui::GetIO();
 		int w, h;
 		int display_w, display_h;
-		SDL_GetWindowSize(window.getWindow()->getNativeWindow(), &w, &h);
-		SDL_GL_GetDrawableSize(window.getWindow()->getNativeWindow(), &display_w, &display_h);
+		SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
+		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
 		io.DisplaySize = ImVec2((float)w, (float)h);
 		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 		io.DeltaTime = deltaTime;
@@ -630,7 +630,7 @@ namespace nap
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
 
 		// Mouse position, in pixels, set to -1,-1 if no mouse / on another screen, etc.
-		io.MousePos = SDL_GetWindowFlags(window.getWindow()->getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
+		io.MousePos = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
 			ImVec2((float)mx, (float)my) : io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 
 		// Update mouse down state

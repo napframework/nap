@@ -485,31 +485,7 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
-		// Create settings
-		RenderWindowSettings window_settings;
-		window_settings.width		= window.mWidth;
-		window_settings.height		= window.mHeight;
-		window_settings.borderless	= window.mBorderless;
-		window_settings.resizable	= window.mResizable;
-		window_settings.title		= window.mTitle;
-		window_settings.highdpi		= mEnableHighDPIMode;
-		window_settings.sampleShadingEnabled = window.mSampleShading;
-
-		// Warn if requested number of samples is not matched by hardware
-		if (!getRasterizationSamples(window.mRequestedSamples, window_settings.samples, errorState))
-			nap::Logger::warn(errorState.toString());
-
-		// Select mode
-		window_settings.mode = window.mMode == RenderWindow::EPresentationMode::FIFO ? VK_PRESENT_MODE_FIFO_RELAXED_KHR :
-			window.mMode == RenderWindow::EPresentationMode::Mailbox ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
-
-		// Construct and return new window
-		std::shared_ptr<GLWindow> new_window = std::make_shared<GLWindow>();
-		if (!new_window->init(window_settings, *this, errorState))
-			return false;
-
-		// Add window and notify potential listeners
-		window.mWindow = std::move(new_window);
+		assert(mWindows.find(&window) == mWindows.end());
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
 		return true;
@@ -534,7 +510,7 @@ namespace nap
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
 		{ 
-			return val->getWindow()->getNativeWindow() == nativeWindow; 
+			return val->getNativeWindow() == nativeWindow; 
 		});
 
 		if (pos != mWindows.end())

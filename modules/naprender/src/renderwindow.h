@@ -1,19 +1,20 @@
 #pragma once
 
 // Local Includes
-#include "renderservice.h"
-#include "glwindow.h"
 #include "renderutils.h"
+#include "backbufferrendertarget.h"
 
 // External Includes
 #include <window.h>
-#include <utility/dllexport.h>
 #include <rect.h>
+#include <SDL_vulkan.h>
 
 namespace nap
 {
+	// Forward Declares
 	class Core;
 	class BackbufferRenderTarget;
+	class RenderService;
 
 	/**
 	 * 3D render window resource that can be declared in json.
@@ -27,6 +28,7 @@ namespace nap
 
 	public:
 		friend class RenderService;
+		friend class BackbufferRenderTarget;
 
 		/**
 		 * The various image presentation modes.
@@ -38,12 +40,6 @@ namespace nap
 			Mailbox,					///< The new image replaces the one image waiting in the queue, becoming the first to be displayed. No screen tearing occurs. Could result in not-shown images, but ensures CPU does not stall.
 			FIFO,						///< Based on first in first out, where every image is presented in order. No screen tearing occurs when drawing faster than monitor refresh rate. CPU could stall.
 		};
-
-		// Default constructor
-		RenderWindow() = default;
-		
-		// Destructor
-		virtual ~RenderWindow() override;
 
 		/**
 		 * This constructor is called when creating the render window using the resource manager
@@ -57,9 +53,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the window managed by this component
+		 * Called when the window is detroyed.
 		 */
-		GLWindow* getWindow() const												{ return mWindow.get(); }
+		virtual void onDestroy() override;
 
 		/**
          * Returns the width of the window.
@@ -67,7 +63,7 @@ namespace nap
          * To get the width in pixels use the size of the backbuffer using getWidthPixels().
 		 * @return the width of the window
 		 */
-		int getWidth() const													{ return mWindow->getSize().x; }
+		int getWidth() const													{ return getSize().x; }
 
         /**
          * Returns the width of this window in pixels.
@@ -81,7 +77,7 @@ namespace nap
          * To get the height in pixels use the size of the backbuffer using getHeightPixels().
 		 * @return the height of the window in pixels
 		 */
-		int getHeight() const													{ return mWindow->getSize().y; }
+		int getHeight() const													{ return getSize().y; }
         
         /**
          * Returns the height of this window in pixels.
@@ -137,6 +133,18 @@ namespace nap
 		void setHeight(int height);
 
 		/**
+		 * Sets the size of the window, updating both width and height.
+		 * When the window is drawn on a high DPI monitor the pixel count of the window buffer will be higher.
+		 * @param height the new window height in pixels
+		 */
+		void setSize(const glm::ivec2& size);
+
+		/**
+		 * @ the window size in pixels
+		 */
+		const glm::ivec2 getSize() const;
+
+		/**
 		 * Sets the window clear color.
 		 * @param color the new clear color
 		 */
@@ -152,6 +160,11 @@ namespace nap
 		 * @return the window position in pixel coordinates
 		 */
 		const glm::ivec2 getPosition() const;
+
+		/**
+		 * @return the hardware window handle, nullptr if undefined
+		 */
+		SDL_Window* getNativeWindow() const;
 
 		/**
 		 *	@return the hardware window number
@@ -200,12 +213,33 @@ namespace nap
 		 */
 		void endRendering();
 
+		/**
+		 * @return swapchain format used to render to window.
+		 */
+		VkFormat getSwapchainFormat() const											{ return mSwapchainFormat; }
+		
+		/**
+		 * @return depth format used by window.
+		 */
+		VkFormat getDepthFormat() const;
+		
+		/**
+		 * @return current number of MSAA samples used when rendering to the window.
+		 */
+		VkSampleCountFlagBits getSampleCount() const								{ return mRasterizationSamples; }
+		
+		/**
+		 * @return if sample based shading is enabled when rendering to the window.
+		 */
+		bool getSampleShadingEnabled() const										{ return mSampleShadingEnabled; }
+
 	public:
 		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
 		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
 		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
 		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
+		bool					mVisible		= true;								///< Property: 'Visible' if the render window is visible on screen
 		EPresentationMode		mMode			= EPresentationMode::Mailbox;		///< Property: 'Mode' the image presentation mode to use
 		std::string				mTitle			= "";								///< Property: 'Title' window title
 		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
@@ -213,12 +247,46 @@ namespace nap
 
 	private:
 
-		VkCommandBuffer makeActive()								{ return mWindow->makeCurrent(); }		
-		void swap() const { mWindow->swap(); }
+		// NAP
+		RenderService*					mRenderService	= nullptr;						// Render service
+		BackbufferRenderTarget			mBackbuffer;
+
+		// SDL
+		bool							mFullscreen		= false;						// If the window is full screen or not
+		SDL_Window*						mSDLWindow		= nullptr;						// SDL window
+
+		// Vulkan
+		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;		// Number of available MSAA samples
+		VmaAllocator					mAllocator = nullptr;
+		VkDevice						mDevice = nullptr;
+		VkSurfaceKHR					mSurface = nullptr;
+		VkSwapchainKHR					mSwapchain = nullptr;
+		VkRenderPass					mRenderPass = nullptr;
+		VkQueue							mGraphicsQueue = nullptr;
+		VkQueue							mPresentQueue = nullptr;
+		VkFormat						mSwapchainFormat;
+		std::vector<VkImageView>		mSwapChainImageViews;
+		std::vector<VkFramebuffer>		mSwapChainFramebuffers;
+		std::vector<VkCommandBuffer>	mCommandBuffers;
+		std::vector<VkSemaphore>		mImageAvailableSemaphores;
+		std::vector<VkSemaphore>		mRenderFinishedSemaphores;
+		VkPresentModeKHR				mPresentationMode = VK_PRESENT_MODE_MAILBOX_KHR;
+		ImageData						mDepthImage;
+		ImageData						mColorImage;
+		bool							mSampleShadingEnabled = false;
+		glm::ivec2						mPreviousWindowSize;
+		uint32_t						mCurrentImageIndex = 0;
+
+		// Called by render service
+		VkCommandBuffer makeActive();
+		void swap() const;
 		void handleEvent(const Event& event);
-		
-		RenderService*				mRenderService	= nullptr;						// Render service
-		std::shared_ptr<GLWindow>	mWindow			= nullptr;						// Actual OpenGL hardware window
-		bool						mFullscreen		= false;						// If the window is full screen or not
+
+		bool recreateSwapChain(utility::ErrorState& errorState);
+		bool createSwapChainResources(utility::ErrorState& errorState);
+		void destroySwapChainResources();
+		VkRenderPass getRenderPass() const { return mRenderPass; }
+		void beginRenderPass();
+		void endRenderPass();
 	};
 }

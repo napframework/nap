@@ -26,7 +26,6 @@ namespace nap
 	class RenderableMesh;
 	class IMesh;
 	class MaterialInstance;
-	class GLWindow;
 	class Texture2D;
 
 	/**
