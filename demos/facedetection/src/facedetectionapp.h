@@ -9,6 +9,7 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <cvservice.h>
 #include <app.h>
 #include <cvcapturedevice.h>

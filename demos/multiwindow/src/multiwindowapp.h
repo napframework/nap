@@ -11,6 +11,7 @@
 #include <imguiservice.h>
 #include <app.h>
 #include <imagefromfile.h>
+#include <renderservice.h>
 
 namespace nap
 {

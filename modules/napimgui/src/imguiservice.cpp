@@ -338,8 +338,8 @@ namespace nap
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
 			it->second->mContext,
 			mRenderService->getCurrentCommandBuffer(), 
-			current_window->getBackbuffer().getRenderPass(),
-			current_window->getBackbuffer().getSampleCount());
+			current_window->getRenderPass(),
+			current_window->getSampleCount());
 	}
 
 
@@ -351,7 +351,7 @@ namespace nap
 		ImGui::SetCurrentContext(it->second->mContext);
 
 		// Update SDL Window information
-		setGuiWindow(it->first->getWindow()->getNativeWindow());
+		setGuiWindow(it->first->getNativeWindow());
 	}
 
 
@@ -532,7 +532,7 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
 			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
-			mSampleCount = window.getWindow()->getSampleCount();
+			mSampleCount = window.getSampleCount();
 
 			// Create context
 			new_context = createContext(*mFontAtlas);
@@ -593,11 +593,11 @@ namespace nap
 		init_info.Allocator = VK_NULL_HANDLE;
 		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
 		init_info.ImageCount = mRenderService->getMaxFramesInFlight();
-		init_info.MSAASamples = window.getBackbuffer().getSampleCount();
+		init_info.MSAASamples = window.getSampleCount();
 		init_info.CheckVkResultFn = checkVKResult;
 
 		// Create all the vulkan resources, using the window's render pass and init info
-		ImGui_ImplVulkan_Init(&init_info, window.getBackbuffer().getRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, window.getRenderPass());
 
 		// Create the font texture, upload it immediately using a new framebuffer
 		VkCommandBuffer font_cmd_buffer = beginSingleTimeCommands(*mRenderService);
@@ -618,8 +618,8 @@ namespace nap
 		ImGuiIO& io = ImGui::GetIO();
 		int w, h;
 		int display_w, display_h;
-		SDL_GetWindowSize(window.getWindow()->getNativeWindow(), &w, &h);
-		SDL_GL_GetDrawableSize(window.getWindow()->getNativeWindow(), &display_w, &display_h);
+		SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
+		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
 		io.DisplaySize = ImVec2((float)w, (float)h);
 		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 		io.DeltaTime = deltaTime;
@@ -630,7 +630,7 @@ namespace nap
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
 
 		// Mouse position, in pixels, set to -1,-1 if no mouse / on another screen, etc.
-		io.MousePos = SDL_GetWindowFlags(window.getWindow()->getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
+		io.MousePos = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
 			ImVec2((float)mx, (float)my) : io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 
 		// Update mouse down state

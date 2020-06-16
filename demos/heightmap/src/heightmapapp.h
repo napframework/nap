@@ -7,6 +7,7 @@
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>

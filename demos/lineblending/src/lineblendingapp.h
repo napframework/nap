@@ -9,6 +9,7 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <app.h>
 #include <spheremesh.h>
 #include <parametergui.h>

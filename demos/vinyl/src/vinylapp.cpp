@@ -88,8 +88,7 @@ namespace nap
 	void VinylApp::render()
 	{
 		// Set back buffer color
-		IRenderTarget& backbuffer = mRenderWindow->getBackbuffer();
-		backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
+		mRenderWindow->setClearColor({ 0.0705f, 0.49f, 0.5647f, 1.0f });
 		
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -105,7 +104,7 @@ namespace nap
 			// Render Background
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			components_to_render.emplace_back(&(mBackgroundEntity->getComponent<nap::RenderableMeshComponentInstance>()));
-			mRenderService->renderObjects(backbuffer, mCameraEntity->getComponent<nap::OrthoCameraComponentInstance>(), components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<nap::OrthoCameraComponentInstance>(), components_to_render);
 
 			// Render Vinyl
 			components_to_render.clear();
@@ -114,7 +113,7 @@ namespace nap
 				if (e->hasComponent<nap::RenderableMeshComponentInstance>())
 					components_to_render.emplace_back(&(e->getComponent<nap::RenderableMeshComponentInstance>()));
 			}
-			mRenderService->renderObjects(backbuffer, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 			// Tell the GUI to draw
 			mGuiService->draw();

@@ -2,9 +2,11 @@
 
 // External Includes
 #include <string>
-#include <SDL.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+
+// SDL Forward declares
+struct SDL_Window;
 
 namespace nap
 {
@@ -103,13 +105,6 @@ namespace nap
 		 * @return if the system initialized correctly or not
 		 */
 		bool initVideo();
-
-		/**
-		 * Sets if the window is resizable or not
-		 * @param window the window that should be resizable
-		 * @param resizable if the window is resizable
-		 */
-		void setWindowResizable(SDL_Window* window, bool resizable);
 
 		/**
 	 	 * Controls if the window has any borders

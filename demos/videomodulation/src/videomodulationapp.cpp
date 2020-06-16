@@ -135,18 +135,16 @@ namespace nap
 		// Render everything to screen
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Clear target
-			BackbufferRenderTarget& render_target = mRenderWindow->getBackbuffer();
-			render_target.setClearColor({ mClearColor.getRed(), mClearColor.getGreen(), mClearColor.getBlue(), 1.0 });
-
-			render_target.beginRendering();
+			// Clear target and begin render pass
+			mRenderWindow->setClearColor({ mClearColor.toVec3(), 1.0f });
+			mRenderWindow->beginRendering();
 
 			// Get background plane to render
 			std::vector<RenderableComponentInstance*> render_objects;
 			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
 
 			// Render background plane
-			mRenderService->renderObjects(render_target, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
+			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
 
 			// Render displacement mesh
 			render_objects.clear();
@@ -159,13 +157,15 @@ namespace nap
 			uniform->setValue(math::extractPosition(global_xform));
 
 			// Render
-			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
+			mRenderService->renderObjects(*mRenderWindow, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 
 			// Draw gui
 			mGuiService->draw();
 
-			render_target.endRendering();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
+			// End recording into command buffer
 			mRenderService->endRecording();
 		}
 

@@ -3,7 +3,8 @@
 
 // External Includes
 #include <assert.h>
-#include "SDL_vulkan.h"
+#include <SDL.h>
+#include <SDL_vulkan.h>
 
 namespace nap
 {
@@ -17,14 +18,6 @@ namespace nap
 				return false;
 
 			return true;
-		}
-
-		void setWindowResizable(SDL_Window* window, bool resizable)
-		{
-			// TODO: This isn't supported on < SDL 2.05 versions
-			// Either we decide to only support those versions of SDL
-			// But that will exclude the current Ubuntu 16.04 version
-			// SDL_SetWindowResizable(window, (SDL_bool)resizable);
 		}
 
 

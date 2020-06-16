@@ -6,6 +6,7 @@
 // Nap includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
+#include <renderservice.h>
 #include <imguiservice.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>

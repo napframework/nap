@@ -125,7 +125,7 @@ namespace nap
 		VkCommandBuffer command_buffer = mService->getCurrentCommandBuffer();
 
 		// Create orthographic projection matrix
-		glm::ivec2 size = mTarget.getSize();
+		glm::ivec2 size = mTarget.getBufferSize();
 		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		mTarget.beginRendering();
@@ -224,7 +224,7 @@ namespace nap
 		if (mDirty)
 		{
 			// Transform to middle of target
-			glm::ivec2 tex_size = mTarget.getSize();
+			glm::ivec2 tex_size = mTarget.getBufferSize();
 			mModelMatrix = glm::translate(sIdentityMatrix, glm::vec3(
 				tex_size.x / 2.0f,
 				tex_size.y / 2.0f,

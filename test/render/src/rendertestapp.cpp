@@ -152,7 +152,7 @@ namespace nap
 		// Render window 0
 		{
 			RenderWindow* render_window = mRenderWindows[0].get();
-			render_window->getWindow()->getBackbuffer().setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+			render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
@@ -209,10 +209,8 @@ namespace nap
 				glm::mat4 identity = glm::mat4(1.0f);
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
-					
-				IRenderTarget& backbuffer = render_window->getBackbuffer(); 
 
-				backbuffer.beginRendering();
+				render_window->beginRendering();
 
 // 				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 // 
@@ -239,20 +237,18 @@ namespace nap
 // 				rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
 // 				rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-				//IRenderTarget& backbuffer = render_window->getBackbuffer();
-				backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+				mRenderService->renderObjects(*render_window, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 // 				// Render sphere using split camera with custom projection matrix
  				mSplitCameraEntity->getComponent<PerspCameraComponentInstance>().setGridLocation(0, 0);
  				components_to_render.clear();
  				components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
- 				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
+ 				mRenderService->renderObjects(*render_window, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				
 				getCore().getService<IMGuiService>()->draw();
 
-				backbuffer.endRendering();
-
+				render_window->endRendering();
 				mRenderService->endRecording();
 			}
 		}
@@ -263,26 +259,24 @@ namespace nap
 			
 			if (mRenderService->beginRecording(*render_window))
 			{
-				IRenderTarget& backbuffer = render_window->getBackbuffer();
-				backbuffer.beginRendering();
+				render_window->beginRendering();
 
 				// Render specific object directly to backbuffer
 				std::vector<RenderableComponentInstance*> components_to_render;
 				if (mPigEntity != nullptr)
 					components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
 
-				mRenderService->renderObjects(backbuffer, mCameraEntityRight->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+				mRenderService->renderObjects(*render_window, mCameraEntityRight->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 				
 				// Render sphere using split camera with custom projection matrix
 				mSplitCameraEntity->getComponent<PerspCameraComponentInstance>().setGridLocation(0, 1);
 				components_to_render.clear();
 				components_to_render.push_back(&mWorldEntity->getComponent<RenderableMeshComponentInstance>());
-				mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
+				mRenderService->renderObjects(*render_window, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				
 				getCore().getService<IMGuiService>()->draw();
 
-				backbuffer.endRendering();
-
+				render_window->endRendering();
 				mRenderService->endRecording();
 			}
 		}
@@ -322,7 +316,7 @@ namespace nap
 	
 	void RenderTestApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->toggleFullscreen();
 	}
 
 	

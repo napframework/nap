@@ -165,8 +165,8 @@ namespace nap
 			VkRect2D rect;
 			rect.offset.x = 0;
 			rect.offset.y = 0;
-			rect.extent.width = renderTarget.getSize().x;
-			rect.extent.height = renderTarget.getSize().y;
+			rect.extent.width = renderTarget.getBufferSize().x;
+			rect.extent.height = renderTarget.getBufferSize().y;
 			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 	}

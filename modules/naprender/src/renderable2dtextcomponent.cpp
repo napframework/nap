@@ -130,7 +130,7 @@ namespace nap
 	void Renderable2DTextComponentInstance::draw(IRenderTarget& target)
 	{
 		// Create projection matrix
-		glm::ivec2 size = target.getSize();
+		glm::ivec2 size = target.getBufferSize();
 
 		// Create projection matrix
 		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);

@@ -9,6 +9,7 @@
 #include <imguiservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <renderservice.h>
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
