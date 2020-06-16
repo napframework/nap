@@ -48,6 +48,11 @@ namespace nap
 		RenderWindow(Core& core);
 
 		/**
+		 * Destroys all render resources
+		 */
+		virtual ~RenderWindow() override;
+
+		/**
 		 * Creates window, connects to resize event.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;

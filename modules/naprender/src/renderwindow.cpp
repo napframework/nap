@@ -557,6 +557,37 @@ namespace nap
 		mRenderService(core.getService<RenderService>()),
 		mBackbuffer(*this)
 	{
+		// Fetch required vulkan handles
+		mAllocator = mRenderService->getVulkanAllocator();
+		mDevice = mRenderService->getDevice();
+		mGraphicsQueue = mRenderService->getGraphicsQueue();
+	}
+
+
+	RenderWindow::~RenderWindow()
+	{
+		// Wait for device to go idle before destroying the window-related resources
+		VkResult result = vkDeviceWaitIdle(mDevice);
+		assert(result == VK_SUCCESS);
+
+		// Destroy all vulkan resources if present
+		for (VkSemaphore semaphore : mImageAvailableSemaphores)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+
+		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+
+		if (!mCommandBuffers.empty())
+			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers.size(), mCommandBuffers.data());
+
+		// Destroy all resources associated with swapchain
+		destroySwapChainResources();
+		if (mSurface != nullptr)
+			vkDestroySurfaceKHR(mRenderService->getVulkanInstance(), mSurface, nullptr);
+
+		// Destroy SDL Window
+		if (mSDLWindow != nullptr)
+			SDL_DestroyWindow(mSDLWindow);
 	}
 
 
@@ -592,11 +623,6 @@ namespace nap
 			mMode == RenderWindow::EPresentationMode::Mailbox ? 
 			VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
 
-		// Initialize vulkan members
-		mAllocator = mRenderService->getVulkanAllocator();
-		mDevice = mRenderService->getDevice();
-		mGraphicsQueue = mRenderService->getGraphicsQueue();
-
 		// acquire handle to physical device
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
 
@@ -608,12 +634,15 @@ namespace nap
 		if (!createSwapChainResources(errorState))
 			return false;
 
+		// Create required command buffers for max frames in flight
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
+		// Create frame / GPU synchronization objects
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
+		// Get presentation queue
 		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
 		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
 			return false;
@@ -914,7 +943,6 @@ namespace nap
 
 		VkResult result = vkDeviceWaitIdle(mDevice);
 		assert(result == VK_SUCCESS);
-
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
 			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
 
@@ -926,7 +954,6 @@ namespace nap
 			vkDestroyImageView(mDevice, image_view, nullptr);
 
 		mSwapChainImageViews.clear();
-
 		if (mRenderPass != nullptr)
 		{
 			vkDestroyRenderPass(mDevice, mRenderPass, nullptr);

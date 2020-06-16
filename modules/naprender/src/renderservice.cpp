@@ -485,7 +485,6 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
-		assert(mWindows.find(&window) == mWindows.end());
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
 		return true;

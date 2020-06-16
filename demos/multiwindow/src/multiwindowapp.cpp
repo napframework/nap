@@ -12,6 +12,7 @@
 #include <imguiutils.h>
 #include <uniforminstances.h>
 #include <sdlhelpers.h>
+#include <renderservice.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
