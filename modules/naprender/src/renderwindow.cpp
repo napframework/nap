@@ -1012,5 +1012,3 @@ namespace nap
 		return ECullWindingOrder::CounterClockwise;
 	}
 }
-
-
