@@ -1,17 +1,14 @@
 #pragma once
 
-// External Includes
-#include <nap/service.h>
-#include <windowevent.h>
-#include <rendertarget.h>
+// Local Includes
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
 
-namespace opengl
-{
-	class RenderTarget;
-}
+// External Includes
+#include <nap/service.h>
+#include <windowevent.h>
+#include <rendertarget.h>
 
 namespace nap
 {

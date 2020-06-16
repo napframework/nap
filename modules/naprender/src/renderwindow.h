@@ -7,7 +7,9 @@
 // External Includes
 #include <window.h>
 #include <rect.h>
-#include <SDL_vulkan.h>
+
+// SDL Forward declares
+struct SDL_Window;
 
 namespace nap
 {

@@ -12,7 +12,6 @@
 #include "texture2d.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
-#include "vk_mem_alloc.h"
 #include "sdlhelpers.h"
 
 // External Includes

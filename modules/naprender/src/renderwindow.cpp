@@ -5,6 +5,7 @@
 #include <renderservice.h>
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <SDL_vulkan.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
