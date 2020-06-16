@@ -84,8 +84,8 @@ static VkPipelineCreateFlags		g_PipelineCreateFlags = 0x00;
 static VkDescriptorSetLayout		g_DescriptorSetLayout = VK_NULL_HANDLE;
 static VkDescriptorSet				g_FontDescriptorSet = VK_NULL_HANDLE;
 static VkPipelineLayout				g_PipelineLayout = VK_NULL_HANDLE;
-VkShaderModule						g_VertModule = VK_NULL_HANDLE;
-VkShaderModule						g_FragModule = VK_NULL_HANDLE;
+static VkShaderModule				g_VertModule = VK_NULL_HANDLE;
+static VkShaderModule				g_FragModule = VK_NULL_HANDLE;
 
 // Unique pipeline for every MXSAA flag
 static std::unordered_map<VkSampleCountFlagBits, VkPipeline> g_Pipelines;
@@ -377,7 +377,7 @@ static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples,
 	return pipeline;
 }
 
-static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, VkPipeline pipeline, ImGui_ImplVulkanH_FrameRenderBuffers* rb, VkSampleCountFlagBits samples, int fb_width, int fb_height)
+static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, VkPipeline pipeline, ImGui_ImplVulkanH_FrameRenderBuffers* rb, int fb_width, int fb_height)
 {
     // Bind pipeline":
     {
@@ -496,7 +496,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* contex
 	VkPipeline pipeline = compatible_pipeline->second;
 
 	// Setup render state
-    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, pipeline, rb, samples, fb_width, fb_height);
+    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, pipeline, rb, fb_width, fb_height);
 
     // Will project scissor/clipping rectangles into framebuffer space
     ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
@@ -517,7 +517,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* contex
                 // User callback, registered via ImDrawList::AddCallback()
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
                 if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, pipeline, rb, samples, fb_width, fb_height);
+                    ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, pipeline, rb, fb_width, fb_height);
                 else
                     pcmd->UserCallback(cmd_list, pcmd);
             }
