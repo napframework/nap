@@ -80,26 +80,33 @@ namespace nap
 	 */
 	void DynamicGeoApp::render()
 	{
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Clear window back-buffer
-			IRenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-			backbuffer.beginRendering();
-
+			// Render all available geometry
 			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(backbuffer, frame_cam);
+			mRenderService->renderObjects(*mRenderWindow, frame_cam);
 
 			// Render GUI elements
 			mGuiService->draw();
 
-			backbuffer.endRendering();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
+			// End recording
 			mRenderService->endRecording();
 		}
 
+		// Proceed to next frame
 		mRenderService->endFrame();
 	}
 	
@@ -143,7 +150,6 @@ namespace nap
 	// Cleanup
 	int DynamicGeoApp::shutdown() 
 	{
-		std::cout << "stopping..." << "\n";
 		return 0;
 	}
 }

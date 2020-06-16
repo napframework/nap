@@ -10,6 +10,7 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <videoservice.h>
+#include <renderservice.h>
 #include <video.h>
 #include <app.h>
 #include <rendertarget.h>

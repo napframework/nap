@@ -12,7 +12,7 @@
 #include <rendertarget.h>
 #include <app.h>
 #include <scene.h>
-
+#include <renderservice.h>
 
 namespace nap
 {

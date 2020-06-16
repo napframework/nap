@@ -105,14 +105,10 @@ namespace nap
 			Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 
 			// Center
-			text_comp.setLocation(
-			{ 
-				mRenderWindow->getWidthPixels()  / 2, 
-				mRenderWindow->getHeightPixels() / 2 
-			});
+			text_comp.setLocation(mRenderWindow->getSize() / glm::ivec2(2, 2));
 
 			// Draw
-			text_comp.draw(mRenderWindow->getBackbuffer());
+			text_comp.draw(*mRenderWindow);
 
 			// Draw our GUI to target
 			mGuiService->draw();

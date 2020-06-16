@@ -126,7 +126,7 @@ namespace nap
 
 			// Render all objects in the scene at once
 			// This includes the line + normals and the laser canvas
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
 			// Draw gui to screen
 			mGuiService->draw();

@@ -63,7 +63,7 @@ namespace nap
 		virtual void onDestroy() override;
 
 		/**
-		 * Returns the width and height of this window. 
+		 * Returns the width and height of this window, in screen coordinates.
 		 * Note that on high DPI monitors this is not the same as the pixel count.
 		 * To get the width and height in pixels use getBufferSize().
 		 * @return the size of this window in pixels, ie: the drawable / buffer size
@@ -71,7 +71,7 @@ namespace nap
 		const glm::ivec2 getSize() const;
 
 		/**
-         * Returns the width of the window.
+         * Returns the width of the window, in screen coordinates.
          * Note that on high DPI monitors this is not the same as the pixel count.
          * To get the width in pixels use the size of the backbuffer using getWidthPixels().
 		 * @return the width of the window
@@ -85,7 +85,7 @@ namespace nap
 		int getWidthPixels() const												{ return getBufferSize().x; }
         
 		/**
-         * Returns the height of the window.
+         * Returns the height of the window, in screen coordinates.
          * Note that on high DPI monitors this is not the same as the pixel count.
          * To get the height in pixels use the size of the backbuffer using getHeightPixels().
 		 * @return the height of the window in pixels
@@ -99,8 +99,8 @@ namespace nap
 		int getHeightPixels() const												{ return getBufferSize().y; }
         
 		/**
-		 * Returns the width and height of this window in pixels: the drawable size
-		 * @return the width and height of this window in pixels: the drawable size
+		 * Returns the width and height of this window in pixels.
+		 * @return the width and height of this window in pixels.
 		 */
 		const glm::ivec2 getBufferSize() const override;
 
@@ -138,23 +138,20 @@ namespace nap
 		void toggleFullscreen();
 
 		/**
-		 * Sets the width of the window.
-         * When the window is drawn on a high DPI monitor the resulting pixel count of the window buffer will be higher.
-		 * @param width the new width of the window in pixels
+		 * Sets the width of the window, in screen coordinates.
+		 * @param width the new width of the window, in screen coordinates.
 		 */
 		void setWidth(int width);
 
 		/**
-         * Sets the height of the window.
-         * When the window is drawn on a high DPI monitor the pixel count of the window buffer will be higher.
-		 * @param height the new window height in pixels
+         * Sets the height of the window, in screen coordinates.
+		 * @param height the new window height, in screen coordinates.
 		 */
 		void setHeight(int height);
 
 		/**
-		 * Sets the size of the window, updating both width and height.
-		 * When the window is drawn on a high DPI monitor the pixel count of the window buffer will be higher.
-		 * @param height the new window height in pixels
+		 * Set the size of the window, in screen coordinates.
+		 * @param size the new window size, in screen coordinates.
 		 */
 		void setSize(const glm::ivec2& size);
 

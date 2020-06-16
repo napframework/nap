@@ -46,17 +46,30 @@ namespace nap
     // Called when the window is going to render
     void CoreApp::render()
     {
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-		// Draw our gui
-		mGuiService->draw();
+			// Render GUI elements
+			mGuiService->draw();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Stop render pass
+			mRenderWindow->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Proceed to next frame
+		mRenderService->endFrame();
     }
 
 

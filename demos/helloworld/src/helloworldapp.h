@@ -8,6 +8,7 @@
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <renderservice.h>
 #include <imguiservice.h>
 #include <app.h>
 #include <spheremesh.h>

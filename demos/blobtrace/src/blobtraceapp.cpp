@@ -177,7 +177,7 @@ namespace nap
 			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, camera, components_to_render);
 
 			// Draw gui
 			mGuiService->draw();

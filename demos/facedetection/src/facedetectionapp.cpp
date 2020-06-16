@@ -205,7 +205,7 @@ namespace nap
 				RenderableComponentInstance& render_comp = entity->getComponent<RenderableComponentInstance>();
 				components_to_render.emplace_back(&render_comp);
 			}
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
 
 			// Get component that can render 2D text.
 			Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
@@ -229,7 +229,7 @@ namespace nap
 				glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
 				text_comp.setLocation(text_pos + glm::vec2(0, 25));
 				text_comp.setText(utility::stringFormat("Blob %d", i + 1), error);
-				text_comp.draw(mRenderWindow->getBackbuffer());
+				text_comp.draw(*mRenderWindow);
 			}
 
 			// Draw our gui

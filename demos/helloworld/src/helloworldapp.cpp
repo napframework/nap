@@ -5,14 +5,11 @@
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
-#include <renderable3dtextcomponent.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <renderableglyph.h>
-#include <font.h>
 #include <uniforminstances.h>
 #include <imguiutils.h>
 
@@ -54,9 +51,6 @@ namespace nap
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
-
-		// Select GUI window
-		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
@@ -146,16 +140,16 @@ namespace nap
 			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
 
 			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
 			// Center text and render it using the given draw call, 
 			// alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:  
-			// mRenderService::renderObjects(mRenderWindow->getBackbuffer(), ortho_camera, components_to_render);
+			// mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
 			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
-			render_text.draw(mRenderWindow->getBackbuffer());
+			render_text.draw(*mRenderWindow);
 
 			// Draw our GUI
 			mGuiService->draw();

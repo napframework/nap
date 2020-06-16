@@ -109,7 +109,7 @@ namespace nap
 
 			// Render all copied meshes
 			std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
-			mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
+			mRenderService->renderObjects(*mRenderWindow, persp_camera, renderable_comps);
 
 			// Draw gui
 			mGuiService->draw();
