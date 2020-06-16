@@ -20,7 +20,7 @@
             "Components": [],
             "Children": [
                 "AudioLayerEntity",
-                "AudioLayerEntity"
+                "AudioSensorLayerEntity"
             ]
         },
         {
@@ -58,7 +58,49 @@
                     "AudioSensorControl": "",
                     "MasterVolume": "MasterVolume",
                     "Sampler": "Sampler",
-                    "Gain": "Gain"
+                    "Gain": "Gain",
+                    "HasSensorControl": false
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "AudioSensorLayerEntity",
+            "Components": [
+                {
+                    "Type": "nap::audio::AudioComponent",
+                    "mID": "nap::audio::AudioComponent_e6785248",
+                    "Object": {
+                        "Type": "nap::audio::GraphObject",
+                        "mID": "GraphObject_674ff486",
+                        "Graph": "AudioGraph"
+                    },
+                    "Links": []
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent_529f7ec1",
+                    "Input": "./nap::audio::AudioComponent_e6785248",
+                    "Routing": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "Type": "nap::AudioControlComponent",
+                    "mID": "nap::AudioControlComponent_95763f0b",
+                    "AudioComponent": "./nap::audio::AudioComponent_e6785248",
+                    "AudioLayer": "SensorAudioLayer",
+                    "AudioCrossFadeTime": "SensorAudioCrossFadeTime",
+                    "AudioVolume": "SensorAudioVolume",
+                    "AudioSensorControl": "AudioRangeSensorControl",
+                    "MasterVolume": "MasterVolume",
+                    "Sampler": "Sampler",
+                    "Gain": "Gain",
+                    "HasSensorControl": true
                 }
             ],
             "Children": []
@@ -2341,45 +2383,7 @@
                 },
                 {
                     "Entity": "AudioEntity",
-                    "InstanceProperties": [
-                        {
-                            "TargetComponent": "./AudioLayerEntity:1/nap::AudioControlComponent_bb6e3b8d",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "AudioLayer",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_053897-043384-041151-011242",
-                                        "Value": "SensorAudioLayer"
-                                    }
-                                },
-                                {
-                                    "Path": "AudioCrossFadeTime",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_063408-041861-079018-055736",
-                                        "Value": "SensorAudioCrossFadeTime"
-                                    }
-                                },
-                                {
-                                    "Path": "AudioVolume",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_014337-083812-018034-060137",
-                                        "Value": "SensorAudioVolume"
-                                    }
-                                },
-                                {
-                                    "Path": "AudioSensorControl",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "instanceProp_nap::rtti::Object*_056425-078065-008373-097960",
-                                        "Value": "AudioRangeSensorControl"
-                                    }
-                                }
-                            ]
-                        }
-                    ]
+                    "InstanceProperties": []
                 }
             ]
         },
