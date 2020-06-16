@@ -192,7 +192,7 @@ namespace nap
 	
 	void AudioAnalysisApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
 	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->toggleFullscreen();
 	}
 
 
