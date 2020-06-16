@@ -32,7 +32,7 @@ namespace nap
 		virtual void beginRendering() override;
 		virtual void endRendering() override;
 
-		virtual const glm::ivec2 getSize() const;
+		virtual const glm::ivec2 getBufferSize() const;
 
 		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
 		virtual const glm::vec4& getClearColor() const override { return mClearColor; }

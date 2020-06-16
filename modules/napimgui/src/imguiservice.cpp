@@ -338,8 +338,8 @@ namespace nap
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
 			it->second->mContext,
 			mRenderService->getCurrentCommandBuffer(), 
-			current_window->getBackbuffer().getRenderPass(),
-			current_window->getBackbuffer().getSampleCount());
+			current_window->getRenderPass(),
+			current_window->getSampleCount());
 	}
 
 
@@ -593,11 +593,11 @@ namespace nap
 		init_info.Allocator = VK_NULL_HANDLE;
 		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
 		init_info.ImageCount = mRenderService->getMaxFramesInFlight();
-		init_info.MSAASamples = window.getBackbuffer().getSampleCount();
+		init_info.MSAASamples = window.getSampleCount();
 		init_info.CheckVkResultFn = checkVKResult;
 
 		// Create all the vulkan resources, using the window's render pass and init info
-		ImGui_ImplVulkan_Init(&init_info, window.getBackbuffer().getRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, window.getRenderPass());
 
 		// Create the font texture, upload it immediately using a new framebuffer
 		VkCommandBuffer font_cmd_buffer = beginSingleTimeCommands(*mRenderService);

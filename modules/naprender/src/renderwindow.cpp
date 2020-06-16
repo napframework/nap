@@ -554,10 +554,8 @@ namespace nap
 
 
 	RenderWindow::RenderWindow(Core& core) :
-		mRenderService(core.getService<RenderService>()),
-		mBackbuffer(*this)
-	{
-	}
+		mRenderService(core.getService<RenderService>())
+	{ }
 
 
 	RenderWindow::~RenderWindow()
@@ -660,9 +658,6 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
-		// Update clear color
-		mBackbuffer.setClearColor(mClearColor);
-
 		// We want to respond to resize events for this window
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 
@@ -675,18 +670,6 @@ namespace nap
 		mRenderService->removeWindow(*this);
 	}
 	
-
-	int RenderWindow::getHeightPixels() const
-    {
-        return mBackbuffer.getSize().y;
-    }
-    
-
-	int RenderWindow::getWidthPixels() const
-    {
-        return mBackbuffer.getSize().x;
-    }
-
 
 	void RenderWindow::show()
 	{
@@ -728,11 +711,13 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		// Set set of window
 		SDL::setWindowSize(mSDLWindow, size);
+	}
 
-		// The back-buffer can have more pixels than the represented window (OSX / Retina), get pixel size accordingly
-		mBackbuffer.setSize(SDL::getDrawableWindowSize(mSDLWindow));
+
+	const glm::ivec2 RenderWindow::getBufferSize() const
+	{
+		return SDL::getDrawableWindowSize(mSDLWindow);
 	}
 
 
@@ -745,6 +730,12 @@ namespace nap
 	void RenderWindow::setClearColor(const glm::vec4& color)
 	{
 		mClearColor = color;
+	}
+
+
+	const glm::vec4& RenderWindow::getClearColor() const
+	{
+		return mClearColor;
 	}
 
 
@@ -781,18 +772,6 @@ namespace nap
 	math::Rect RenderWindow::getRectPixels() const
 	{
 		return{ 0.0f, 0.0f, static_cast<float>(getWidthPixels()), static_cast<float>(getHeightPixels()) };
-	}
-
-
-	const BackbufferRenderTarget& RenderWindow::getBackbuffer() const
-	{
-		return mBackbuffer;
-	}
-
-
-	BackbufferRenderTarget& RenderWindow::getBackbuffer()
-	{
-		return mBackbuffer;
 	}
 
 
@@ -974,10 +953,11 @@ namespace nap
 	}
 
 
-	void RenderWindow::beginRenderPass()
+	void RenderWindow::beginRendering()
 	{
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 
+		// TODO: This could be incorrect on HighDPI monitors, in that case use drawable size
 		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -986,9 +966,8 @@ namespace nap
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
 
-		glm::vec4 clearColor = mBackbuffer.getClearColor();
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
+		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -1014,28 +993,22 @@ namespace nap
 	}
 
 
-	void RenderWindow::endRenderPass()
+	void RenderWindow::endRendering()
 	{
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		vkCmdEndRenderPass(mCommandBuffers[current_frame]);
 	}
 
 
-	void RenderWindow::beginRendering()
-	{
-		mBackbuffer.beginRendering();
-	}
-
-
-	void RenderWindow::endRendering()
-	{
-		mBackbuffer.endRendering();
-	}
-
-
 	VkFormat RenderWindow::getDepthFormat() const
 	{
 		return mRenderService->getDepthFormat();
+	}
+
+
+	nap::ECullWindingOrder RenderWindow::getWindingOrder() const
+	{
+		return ECullWindingOrder::CounterClockwise;
 	}
 }
 

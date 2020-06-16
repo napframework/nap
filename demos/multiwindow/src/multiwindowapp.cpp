@@ -153,7 +153,7 @@ namespace nap
 			cam_loc_uniform->setValue(global_pos);
 
 			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowOne, camera, components_to_render);
 
 			// Draw gui to window one
 			mGuiService->draw();
@@ -180,7 +180,7 @@ namespace nap
 			nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
 
 			// Render the plane with the orthographic to window two
-			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowTwo, camera, components_to_render);
 
 			// Draw gui to window one
 			mGuiService->draw();
@@ -212,7 +212,7 @@ namespace nap
 			cam_loc_uniform->setValue(global_pos);
 
 			// Render sphere
-			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), persp_camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowThree, persp_camera, components_to_render);
 
 			// Now find the second plane to render
 			nap::RenderableMeshComponentInstance& renderable_plane = mPlaneTwoEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -223,7 +223,7 @@ namespace nap
 			nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
 
 			// Render the plane with the orthographic to window three
-			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowThree, camera, components_to_render);
 
 			// Draw gui to window three
 			mGuiService->draw();
@@ -284,7 +284,7 @@ namespace nap
 
 	void MultiWindowApp::positionPlane(nap::RenderWindow& window, nap::TransformComponentInstance& planeTransform)
 	{
-        glm::ivec2 pixel_size = window.getBackbuffer().getSize();
+        glm::ivec2 pixel_size = window.getSize();
 		float window_width = pixel_size.x;
 		float window_heigh = pixel_size.y;
 

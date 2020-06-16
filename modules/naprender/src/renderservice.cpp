@@ -940,7 +940,7 @@ namespace nap
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
-		camera.setRenderTargetSize(renderTarget.getSize());
+		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
 		// Make sure we update our render state associated with the current context
 		//updateRenderState();

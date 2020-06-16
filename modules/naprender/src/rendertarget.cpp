@@ -252,7 +252,7 @@ namespace nap
 	}
 
 
-	const glm::ivec2 RenderTarget::getSize() const
+	const glm::ivec2 RenderTarget::getBufferSize() const
 	{
 		return mColorTexture->getSize();
 	}

@@ -229,8 +229,8 @@ namespace nap
 		VkViewport viewport =
 		{
 			0.0f, 0.0f,
-			(float)renderTarget.getSize().x,
-			(float)renderTarget.getSize().y,
+			(float)renderTarget.getBufferSize().x,
+			(float)renderTarget.getBufferSize().y,
 			0.0f, 1.0f
 		};
 
@@ -239,8 +239,8 @@ namespace nap
 		{
 			{ 0, 0 },
 			{
-				(uint32_t)renderTarget.getSize().x,
-				(uint32_t)renderTarget.getSize().y
+				(uint32_t)renderTarget.getBufferSize().x,
+				(uint32_t)renderTarget.getBufferSize().y
 			}
 		};
 

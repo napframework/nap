@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "renderutils.h"
-#include "backbufferrendertarget.h"
+#include "irendertarget.h"
 
 // External Includes
 #include <window.h>
@@ -22,7 +22,7 @@ namespace nap
 	 * an OpenGL window including associated render context.
 	 * It is important to activate the window before issuing any draw commands!
 	 */
-	class NAPAPI RenderWindow : public Window
+	class NAPAPI RenderWindow : public Window, public IRenderTarget
 	{
 		RTTI_ENABLE(Window)
 
@@ -63,6 +63,14 @@ namespace nap
 		virtual void onDestroy() override;
 
 		/**
+		 * Returns the width and height of this window. 
+		 * Note that on high DPI monitors this is not the same as the pixel count.
+		 * To get the width and height in pixels use getBufferSize().
+		 * @return the size of this window in pixels, ie: the drawable / buffer size
+		 */
+		const glm::ivec2 getSize() const;
+
+		/**
          * Returns the width of the window.
          * Note that on high DPI monitors this is not the same as the pixel count.
          * To get the width in pixels use the size of the backbuffer using getWidthPixels().
@@ -74,7 +82,7 @@ namespace nap
          * Returns the width of this window in pixels.
          * @return the width of the window in pixels.
          */
-        int getWidthPixels() const;
+		int getWidthPixels() const												{ return getBufferSize().x; }
         
 		/**
          * Returns the height of the window.
@@ -88,8 +96,14 @@ namespace nap
          * Returns the height of this window in pixels.
          * @return the width of the window in pixels.
          */
-        int getHeightPixels() const;
+		int getHeightPixels() const												{ return getBufferSize().y; }
         
+		/**
+		 * Returns the width and height of this window in pixels: the drawable size
+		 * @return the width and height of this window in pixels: the drawable size
+		 */
+		const glm::ivec2 getBufferSize() const override;
+
 		/**
 		 * Shows the window and gives it input focus.
 		 * This call also makes sure the window is on top of other windows.
@@ -145,15 +159,16 @@ namespace nap
 		void setSize(const glm::ivec2& size);
 
 		/**
-		 * @ the window size in pixels
+		 * Sets the window clear color.
+		 * @param color the new clear color
 		 */
-		const glm::ivec2 getSize() const;
+		virtual void setClearColor(const glm::vec4& color) override;
 
 		/**
 		 * Sets the window clear color.
 		 * @param color the new clear color
 		 */
-		void setClearColor(const glm::vec4& color);
+		virtual const glm::vec4& getClearColor() const override;
 
 		/**
 		 * Sets the position of the window on screen
@@ -191,52 +206,44 @@ namespace nap
 		math::Rect getRectPixels() const;
 
 		/**
-		* The back buffer for an OpenGL window isn't an actual frame buffer
-		* but allows for handling windows and render targets inside the framework
-		* in a similar way. Associating a back buffer with a window also ensures, in this case,
-		* that the opengl viewport always matches the window dimensions
-		* @return the back buffer associated with this window
-		*/
-		const BackbufferRenderTarget& getBackbuffer() const;
-
-		/**
-		* The back buffer for an OpenGL window isn't an actual frame buffer
-		* but allows for handling windows and render targets inside the framework
-		* in a similar way. Associating a back buffer with a window also ensures, in this case,
-		* that the opengl viewport always matches the window dimensions
-		* @return the back buffer associated with this window
-		*/
-		BackbufferRenderTarget& getBackbuffer();
-
-		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
-		void beginRendering();
+		virtual void beginRendering() override;
 
 		/**
 		 * Ends a render pass. Always call this after beginRendering().
 		 */
-		void endRendering();
+		virtual void endRendering() override;
 
 		/**
 		 * @return swapchain format used to render to window.
 		 */
-		VkFormat getSwapchainFormat() const											{ return mSwapchainFormat; }
-		
+		virtual VkFormat getColorFormat() const override							{ return mSwapchainFormat; }
+
 		/**
 		 * @return depth format used by window.
 		 */
-		VkFormat getDepthFormat() const;
+		virtual VkFormat getDepthFormat() const override;
 		
 		/**
 		 * @return current number of MSAA samples used when rendering to the window.
 		 */
-		VkSampleCountFlagBits getSampleCount() const								{ return mRasterizationSamples; }
+		virtual VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
 		
 		/**
 		 * @return if sample based shading is enabled when rendering to the window.
 		 */
-		bool getSampleShadingEnabled() const										{ return mSampleShadingEnabled; }
+		virtual bool getSampleShadingEnabled() const override						{ return mSampleShadingEnabled; }
+
+		/**
+		 * @return polygon winding order
+		 */
+		virtual ECullWindingOrder getWindingOrder() const override;
+
+		/**
+		 * @return render pass associated with this window.
+		 */
+		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
 	public:
 		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
@@ -254,7 +261,6 @@ namespace nap
 
 		// NAP
 		RenderService*					mRenderService	= nullptr;						// Render service
-		BackbufferRenderTarget			mBackbuffer;
 
 		// SDL
 		bool							mFullscreen		= false;						// If the window is full screen or not
@@ -288,8 +294,5 @@ namespace nap
 		bool recreateSwapChain(utility::ErrorState& errorState);
 		bool createSwapChainResources(utility::ErrorState& errorState);
 		void destroySwapChainResources();
-		VkRenderPass getRenderPass() const { return mRenderPass; }
-		void beginRenderPass();
-		void endRenderPass();
 	};
 }
