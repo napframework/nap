@@ -557,18 +557,22 @@ namespace nap
 		mRenderService(core.getService<RenderService>()),
 		mBackbuffer(*this)
 	{
-		// Fetch required vulkan handles
-		mAllocator = mRenderService->getVulkanAllocator();
-		mDevice = mRenderService->getDevice();
-		mGraphicsQueue = mRenderService->getGraphicsQueue();
 	}
 
 
 	RenderWindow::~RenderWindow()
 	{
+		// Return immediately if there's no actual native present present
+		// This is the case when the window is created but not initialized or did not initialize properly
+		if (mSDLWindow == nullptr)
+			return;
+
 		// Wait for device to go idle before destroying the window-related resources
-		VkResult result = vkDeviceWaitIdle(mDevice);
-		assert(result == VK_SUCCESS);
+		if (mDevice != nullptr)
+		{
+			VkResult result = vkDeviceWaitIdle(mDevice);
+			assert(result == VK_SUCCESS);
+		}
 
 		// Destroy all vulkan resources if present
 		for (VkSemaphore semaphore : mImageAvailableSemaphores)
@@ -586,8 +590,7 @@ namespace nap
 			vkDestroySurfaceKHR(mRenderService->getVulkanInstance(), mSurface, nullptr);
 
 		// Destroy SDL Window
-		if (mSDLWindow != nullptr)
-			SDL_DestroyWindow(mSDLWindow);
+		SDL_DestroyWindow(mSDLWindow);
 	}
 
 
@@ -598,6 +601,9 @@ namespace nap
 		mSDLWindow = createSDLWindow(*this, errorState);
 		if (mSDLWindow == nullptr)
 			return false;
+
+		// Fetch required vulkan handles
+		mDevice = mRenderService->getDevice();
 
 		// Set size and store for future reference
 		setSize(glm::vec2(mWidth, mHeight));
@@ -865,7 +871,7 @@ namespace nap
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		VkResult result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		VkResult result = vkQueueSubmit(mRenderService->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
 		VkPresentInfoKHR presentInfo = {};
@@ -947,8 +953,8 @@ namespace nap
 			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
 
 		mSwapChainFramebuffers.clear();
-		destroyImageAndView(mDepthImage, mDevice, mAllocator);
-		destroyImageAndView(mColorImage, mDevice, mAllocator);
+		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
+		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
 
 		for (VkImageView image_view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, image_view, nullptr);

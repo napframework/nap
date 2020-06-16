@@ -262,12 +262,10 @@ namespace nap
 
 		// Vulkan
 		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;		// Number of available MSAA samples
-		VmaAllocator					mAllocator = nullptr;
 		VkDevice						mDevice = nullptr;
 		VkSurfaceKHR					mSurface = nullptr;
 		VkSwapchainKHR					mSwapchain = nullptr;
 		VkRenderPass					mRenderPass = nullptr;
-		VkQueue							mGraphicsQueue = nullptr;
 		VkQueue							mPresentQueue = nullptr;
 		VkFormat						mSwapchainFormat;
 		std::vector<VkImageView>		mSwapChainImageViews;
