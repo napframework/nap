@@ -427,34 +427,75 @@ namespace nap
 #endif
 	}
 
-	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& error)
+	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err)
 	{
-		// Load project info descriptor file
-		std::string projectFile;
-		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFile),
+		// Load project info
+		std::string projectFilename;
+		if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
 						 "Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
-		auto obj = rtti::readJSONFileObject(projectFile,
-											rtti::EPropertyValidationMode::AllowMissingProperties,
-											rtti::EPointerPropertyMode::OnlyRawPointers,
-											mResourceManager->getFactory(),
-											error);
-		if (!error.check(obj != nullptr, "Failed to read ProjectInfo"))
+		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
+			projectFilename.c_str(),
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+			getResourceManager()->getFactory(),
+			err);
+
+		if (!err.check(mProjectInfo != nullptr,
+					  "Failed to load project info %s",
+					  projectFilename.c_str()))
 			return false;
 
-		mProjectInfo = rtti_cast<nap::ProjectInfo>(obj);
+		mProjectInfo->mFilename = projectFilename;
 
-		if (!mProjectInfo)
-		{
-			error.fail("Expected ProjectInfo in %s", projectFile.c_str());
+		// Load path mapping
+		mProjectInfo->mPathMapping = std::move(loadPathMapping(*mProjectInfo, err));
+
+		if (!err.check(mProjectInfo->mPathMapping != nullptr,
+					   "Failed to load path mapping %s: %s",
+					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
 			return false;
-		}
 
-		// This is necessary to find other folders down the line
-		mProjectInfo->mFilename = projectFile;
+		nap::Logger::info("Loading project '%s' ver. %s (%s)",
+						  mProjectInfo->mTitle.c_str(),
+						  mProjectInfo->mVersion.c_str(),
+						  mProjectInfo->getDirectory().c_str());
 
 		return true;
+	}
+
+	std::unique_ptr<nap::PathMapping> Core::loadPathMapping(nap::ProjectInfo& projectInfo,
+																  nap::utility::ErrorState& err)
+	{
+		// Load path mapping (relative to the project.json file)
+		auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
+		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
+			pathMappingFilename,
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+			getResourceManager()->getFactory(),
+			err);
+
+
+		if (err.hasErrors())
+		{
+			nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
+			return nullptr;
+		}
+
+		auto exepath = nap::utility::getExecutableDir();
+		auto rootpath = exepath + '/' + pathMapping->mNapkinExeToRoot;
+		// Do string/template replacement
+		std::unordered_map<std::string, std::string> reps = {
+			{"ROOT", rootpath},
+			{"BUILD_TYPE", sBuildConf},
+		};
+
+		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
+			pathMapping->mModulePaths[i] = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
+
+		return pathMapping;
 	}
 
 	nap::ProjectInfo* nap::Core::getProjectInfo()

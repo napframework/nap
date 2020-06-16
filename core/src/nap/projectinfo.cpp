@@ -1,5 +1,6 @@
-#include "utility/fileutils.h"
 #include "projectinfo.h"
+#include "logger.h"
+#include "utility/fileutils.h"
 
 RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Required)
@@ -35,6 +36,13 @@ namespace nap
 	{
 		std::vector<std::string> dirs;
 		auto projectDir = getDirectory();
+
+		if (mPathMapping->mModulePaths.empty())
+		{
+			nap::Logger::error("No module paths specified in path mapping: %s",
+							   mPathMapping->mFilename.c_str());
+			return {};
+		}
 
 		// make all paths absolute
 		for (const auto& p : mPathMapping->mModulePaths)

@@ -244,6 +244,8 @@ namespace nap
 		 */
 		bool loadProjectInfo(nap::utility::ErrorState& error);
 
+		std::unique_ptr<PathMapping> loadPathMapping(ProjectInfo& projectInfo, utility::ErrorState& err);
+
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
