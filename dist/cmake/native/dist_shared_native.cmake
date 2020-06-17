@@ -465,7 +465,13 @@ function(deploy_single_path_mapping PROJECT_DIR)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${DEST_CACHE_PATH}
-                       COMMENT "Deploying path mapping")
+                       COMMENT "Deploying path mapping to bin")
+
+    set(PROJ_DEST_CACHE_PATH ${PROJECT_DIR}/cache/path_mapping.json)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping to project directory")
 
     # Install into packaged app
     find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} packaged_app)
