@@ -435,6 +435,7 @@ namespace nap
 						 "Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
+		// Load ProjectInfo from json
 		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
 			projectFilename.c_str(),
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
@@ -447,6 +448,7 @@ namespace nap
 					  projectFilename.c_str()))
 			return false;
 
+		// Store originating filename so we can reference it later
 		mProjectInfo->mFilename = projectFilename;
 
 		// Load path mapping

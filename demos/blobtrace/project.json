@@ -3,6 +3,8 @@
     "mID": "ProjectInfo",
     "Title": "BlobTrace",
     "Version": "1.0.0",
+    "DataFile": "data/blobtrace.json",
+    "PathMapping": "pathmapping.json",
     "Modules": [
         "mod_napapp",
         "mod_napcameracontrol",
