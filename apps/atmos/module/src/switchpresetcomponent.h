@@ -104,6 +104,7 @@ namespace nap
 		std::string mNextPreset;
 		std::vector<std::string> mPresets;
 
+		bool mAnimationStart = true;
 
 		/**
 		* transitionToPreset SelectPresetComponentInstance. starts the preset transition

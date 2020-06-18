@@ -14,7 +14,7 @@ RTTI_END_ENUM
 // nap::applysensorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplySensorComponent)
 	RTTI_PROPERTY("Enabled",			&nap::ApplySensorComponent::mEnabled,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Sensors",			&nap::ApplySensorComponent::mSensors,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Sensors",			&nap::ApplySensorComponent::mSensors,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Parameters",			&nap::ApplySensorComponent::mParameters,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("InputRange",			&nap::ApplySensorComponent::mInputRange,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputRange",		&nap::ApplySensorComponent::mOutputRange,		nap::rtti::EPropertyMetaData::Required)
@@ -108,6 +108,9 @@ namespace nap
 			return;
 
 		if (!(mEnabled->mValue))
+			return;
+
+		if (mSensors.size() == 0)
 			return;
 
 		for (auto* sensor : mSensors)

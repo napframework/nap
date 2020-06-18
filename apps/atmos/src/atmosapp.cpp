@@ -70,6 +70,11 @@ namespace nap
 		mGui = std::make_unique<AtmosGui>(*this);
 		mGui->init();
 
+		// hide gui, set fullscreen and hide mousecursor
+		mRenderWindow->setFullscreen(true);
+		mGui->toggleVisibility();
+		mRenderWindow->showMouseCursor(mGui->getVisibility());
+
 		return true;
 	}
 	
@@ -184,6 +189,7 @@ namespace nap
 			if (press_event->mKey == nap::EKeyCode::KEY_h)
 			{
 				mGui->toggleVisibility();
+				mRenderWindow->showMouseCursor(mGui->getVisibility());
 			}
 
 			//demo functionality for the preset selector: 

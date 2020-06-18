@@ -113,6 +113,12 @@ namespace nap
 		void setPosition(const glm::ivec2& position);
 
 		/**
+		 * Show or hide mouse cursor
+		 * @param show true is show, false is hide
+		 */
+		void setShowMouseCursor(const bool show);
+
+		/**
 		 *	@return the window position in pixel coordinates
 		 */
 		glm::ivec2 getPosition();

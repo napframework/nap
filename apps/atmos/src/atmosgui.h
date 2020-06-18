@@ -46,6 +46,8 @@ namespace nap
 		 */
 		void toggleVisibility();
 
+		const bool getVisibility() const { return !mHide; }
+
 		/**
 		 *	@return the background color
 		 */

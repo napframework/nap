@@ -98,6 +98,7 @@ namespace nap
 	{
 		if (mHide)
 			return;
+			
 
 		// Menu
 		if (ImGui::BeginMainMenuBar())

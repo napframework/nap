@@ -99,12 +99,24 @@ namespace nap
 		case NONE:
 			break;
 		case PresetSwitchTransitionState::FADE_OUT_CURRENT:
-			mAnimationTime = mAnimationTime + deltaTime;
+			if (mAnimationStart)
+			{
+				mAnimationTime = 0.0f;
+				mAnimationStart = false;
+			}
+			else
+			{
+				mAnimationTime = mAnimationTime + deltaTime;
+			}
+			
 			lerpProgress = mAnimationTime / mAnimationDuration;
 			updateFogFade(lerpProgress);
 
 			if (mAnimationTime >= mAnimationDuration)
+			{
+				mAnimationStart = true;
 				mPresetSwitchAnimationState = LOAD_NEXT;
+			}
 			break;
 		case PresetSwitchTransitionState::LOAD_NEXT:
 			mPresetSwitchAnimationState = WAIT_FOR_LOAD;
@@ -114,13 +126,25 @@ namespace nap
 			//waiting on preset loaded to come back. load is blocking so we never get here...
 			break;
 		case PresetSwitchTransitionState::REVEAL_NEXT:
-			mAnimationTime = mAnimationTime + deltaTime;
+			if (mAnimationStart)
+			{
+				mAnimationTime = 0.0f;
+				mAnimationStart = false;
+			}
+			else
+			{
+				mAnimationTime = mAnimationTime + deltaTime;
+			}
 			lerpProgress = mAnimationTime / mAnimationDuration;
 			lerpProgress = 1.0 - lerpProgress;
 			updateFogFade(lerpProgress);
 
 			if (mAnimationTime >= mAnimationDuration)
+			{
 				mPresetSwitchAnimationState = NONE;
+				mAnimationStart = true;
+			}
+				
 			break;
 		default:
 			break;

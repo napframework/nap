@@ -65,6 +65,12 @@ namespace nap
 	}
 
 
+	void RenderWindow::showMouseCursor(const bool show)
+	{
+		mWindow->setShowMouseCursor(show);
+	}
+
+
 	void RenderWindow::setFullscreen(bool value)
 	{
 		mWindow->setFullScreen(value);

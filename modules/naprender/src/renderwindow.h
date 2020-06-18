@@ -95,6 +95,12 @@ namespace nap
 		void hide();
 
 		/**
+		 * Show or hide mouse cursor
+		 * @param show true = show, false = hide
+		 */
+		void showMouseCursor(const bool show);
+
+		/**
 		 *	@return the window title
 		 */
 		const std::string& getTitle() const										{ return mTitle; }

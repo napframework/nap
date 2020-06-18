@@ -146,6 +146,12 @@ namespace nap
 	}
 
 
+	void GLWindow::setShowMouseCursor(const bool show)
+	{
+		SDL_ShowCursor(show ? SDL_ENABLE : SDL_DISABLE);
+	}
+
+
 	// Set opengl window size 
 	void GLWindow::setSize(const glm::ivec2& size)
 	{
