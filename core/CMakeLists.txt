@@ -73,6 +73,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
+if(MSVC OR APPLE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_RELEASE_BUILD=$<STREQUAL:$<CONFIG>,Release>)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_BUILD_TYPE=$<LOWER_CASE:$<CONFIG>>)
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_RELEASE_BUILD=$<STREQUAL:${CMAKE_BUILD_TYPE},Release>)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_BUILD_TYPE=$<LOWER_CASE:${CMAKE_BUILD_TYPE}>)
+endif()
+
 if (MSVC)
     include(GenerateExportheader)
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
