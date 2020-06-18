@@ -89,5 +89,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
 		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
+
+		RGBAColor8 mTextHighColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

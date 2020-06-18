@@ -6,6 +6,7 @@
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
 #include "uniforminstances.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
@@ -141,7 +142,24 @@ namespace nap
 		// 1. Show metrics window in viewport 2.
 		{
 			getCore().getService<IMGuiService>()->selectWindow(mRenderWindows[1]);
-			ImGui::ShowMetricsWindow(&mShow);
+
+			// Add some gui elements
+			ImGui::Begin("Controls");
+			ImGui::Text(getCurrentDateTime().toString().c_str());
+			RGBAColorFloat clr = mTextHighColor.convert<RGBAColorFloat>();
+			ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+			// Display world texture in GUI
+			if (ImGui::CollapsingHeader("Textures"))
+			{
+				Texture2D& color_texture = *mTextureRenderTarget->mColorTexture;
+				float col_width = ImGui::GetColumnWidth();
+				float ratio = (float)color_texture.getHeight() / (float)color_texture.getWidth();
+				ImGui::Image(color_texture, ImVec2(col_width, col_width * ratio));
+				ImGui::Text("Render Texture");
+			}
+			ImGui::End();
 		}
 	}
 	
@@ -210,6 +228,7 @@ namespace nap
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
 
+				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 				render_window->beginRendering();
 
 // 				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
@@ -236,8 +255,6 @@ namespace nap
 // 				rotating_plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
 // 				rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
 // 				rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 				mRenderService->renderObjects(*render_window, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 // 				// Render sphere using split camera with custom projection matrix
