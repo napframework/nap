@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <locale>
 #include <memory>
+#include <unordered_map>
 
 namespace nap
 {
@@ -138,6 +139,8 @@ namespace nap
 		template <typename... Args>
 		static std::string stringFormat(const std::string& format, Args... args);
 
+		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
+
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.
 		 * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"
@@ -198,7 +201,6 @@ namespace nap
 			snprintf(buf.get(), size, format.c_str(), args...);
 			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 		}
-
 
 		template <typename T>
 		std::string addresStr(T thing)

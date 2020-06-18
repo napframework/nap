@@ -40,6 +40,8 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
 # SRCDIR: The directory to work in
 macro(export_fbx_in_place SRCDIR)
@@ -64,6 +66,7 @@ macro(export_fbx_in_place SRCDIR)
                        COMMENT "Export FBX in '${SRCDIR}'"
                        )
 endmacro()
+
 
 # Copy directory to project bin output
 # SRCDIR: The source directory

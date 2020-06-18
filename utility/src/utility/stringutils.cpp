@@ -160,6 +160,14 @@ namespace nap
 			return s.substr(first, (last - first + 1));
 		}
 
+		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep)
+		{
+			std::string result = subject;
+			for (const auto& e : rep)
+				replaceAllInstances(result, '{' + e.first + '}', e.second);
+			return result;
+		}
+
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
