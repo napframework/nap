@@ -65,4 +65,9 @@ namespace nap
 		VkAccessFlags srcAccessMask,	VkPipelineStageFlags srcStage, 
 		VkAccessFlags dstAccessMask,	VkPipelineStageFlags dstStage, 
 		uint32 mipLevels);
+
+	/**
+	 * Generates mip-maps for the provided image
+	 */
+	void NAPAPI generateMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels);
 }

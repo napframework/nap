@@ -174,7 +174,7 @@ namespace nap
 			}
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
 		}
-		mGenerateMipMaps = generateMipMaps;
+		mGenerateMipMaps = generateMipMaps && mMipLevels > 1;
 
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		if (mUsage == ETextureUsage::DynamicRead)
@@ -217,7 +217,7 @@ namespace nap
 		}
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		if (mUsage == ETextureUsage::DynamicRead)
+		if (mUsage == ETextureUsage::DynamicRead || mGenerateMipMaps)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create image allocation struct
@@ -225,7 +225,7 @@ namespace nap
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		// We create images and imageviews for the amount of frames in flight
+		// We create images and image views for the amount of frames in flight
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
@@ -298,18 +298,30 @@ namespace nap
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
+		// Get image ready for copy
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			srcMask, srcStage, 
 			dstMask, dstStage, 
 			mMipLevels);
+		
+		// Copy staging buffer to image
 		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
 		
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT, 
-			VK_ACCESS_SHADER_READ_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
-			mMipLevels);
+		// Generate mip maps, if we do that we don't have to transition the image layout anymore
+		// This is handled by the generateMipmaps command.
+		if (mGenerateMipMaps)
+		{
+			generateMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+		}
+		else
+		{
+			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				mMipLevels);
+		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
