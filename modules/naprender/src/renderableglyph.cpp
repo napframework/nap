@@ -43,7 +43,7 @@ namespace nap
 	}
 
 
-	bool RenderableGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
+	bool RenderableGlyph::onInit(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode)
 	{
 		// Get handle to the glyph
 		FT_Glyph bitmap = toFreeTypeGlyph(glyph.getHandle());
@@ -85,7 +85,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
 		
-		if (!mTexture->init(settings, false, bitmap_glyph->bitmap.buffer, errorCode))
+		if (!mTexture->init(settings, generateMipmaps, bitmap_glyph->bitmap.buffer, errorCode))
 			return false;
 
 		// Clean up bitmap data
@@ -95,10 +95,25 @@ namespace nap
 
 
 	Renderable2DGlyph::Renderable2DGlyph(nap::Core& core) : RenderableGlyph(core)
+	{ }
+	
+
+	bool Renderable2DGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
+		if (!RenderableGlyph::onInit(glyph, false, errorCode))
+			return false;
+		return true;
 	}
 
+
 	Renderable2DMipMapGlyph::Renderable2DMipMapGlyph(nap::Core& core) : RenderableGlyph(core)
+	{ } 
+
+
+	bool Renderable2DMipMapGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
+		if (!RenderableGlyph::onInit(glyph, true, errorCode))
+			return false;
+		return true;
 	}
 }

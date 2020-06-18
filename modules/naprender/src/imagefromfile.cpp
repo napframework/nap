@@ -7,8 +7,8 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("ImagePath", &nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
-	RTTI_PROPERTY("Compressed",			&nap::ImageFromFile::mCompressed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("ImagePath",		&nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
+	RTTI_PROPERTY("GenerateLods",			&nap::ImageFromFile::mGenerateLods,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -33,6 +33,7 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		return Texture2D::init(getBitmap().mSurfaceDescriptor, true, getBitmap().getData(), errorState);
+		// Create 2D texture
+		return Texture2D::init(getBitmap().mSurfaceDescriptor, mGenerateLods, getBitmap().getData(), errorState);
 	}
 }

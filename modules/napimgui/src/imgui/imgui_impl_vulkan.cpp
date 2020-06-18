@@ -748,8 +748,8 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        info.minLod = -1000;
-        info.maxLod = 1000;
+        info.minLod = 0.0f;
+        info.maxLod = VK_LOD_CLAMP_NONE;
         info.maxAnisotropy = 1.0f;
         err = vkCreateSampler(v->Device, &info, v->Allocator, &g_FontSampler);
         check_vk_result(err);
