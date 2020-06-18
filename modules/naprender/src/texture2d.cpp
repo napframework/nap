@@ -176,12 +176,7 @@ namespace nap
 		}
 		mGenerateMipMaps = generateMipMaps;
 
-		VkDevice device = mRenderService->getDevice();
-		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
-
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
-
 		if (mUsage == ETextureUsage::DynamicRead)
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
 
@@ -202,6 +197,7 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
@@ -233,7 +229,7 @@ namespace nap
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
-		if (!create2DImageView(device, mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
 				return false;
 
 		mCurrentStagingBufferIndex = 0;
