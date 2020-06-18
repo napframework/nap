@@ -83,7 +83,7 @@ namespace nap
 
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
-		VkFormat getVulkanFormat() const { return mFormat; }
+		VkFormat getFormat() const { return mFormat; }
 
 		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
@@ -102,6 +102,11 @@ namespace nap
 		 * @return render service
 		 */
 		RenderService& getRenderService()				{ return *mRenderService; }
+
+		/**
+		 * @return number of mip-map levels
+		 */
+		int getMipmapCount()							{ return static_cast<int>(mMipLevels); }
 
 	private:
 		void upload(VkCommandBuffer commandBuffer);
@@ -135,7 +140,6 @@ namespace nap
 		SurfaceDescriptor					mDescriptor;
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;
 		std::vector<TextureReadCallback>	mReadCallbacks;
-		bool								mGenerateMipMaps = false;
 		uint32								mMipLevels = 1;
 	};
 

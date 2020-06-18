@@ -170,7 +170,7 @@ namespace nap
 			mSampleShading = false;
 		}
 
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getVulkanFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
 			return false;
 
 		glm::ivec2 size = mColorTexture->getSize();
@@ -179,7 +179,7 @@ namespace nap
 		framebuffer_size.height = size.y;
 
 		// Create multi-sampled color attachment
-		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getVulkanFormat(), mRasterizationSamples, mColorImage, errorState))
+		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getFormat(), mRasterizationSamples, mColorImage, errorState))
 			return false;
 
 		// Create multi sampled depth attachment
@@ -266,7 +266,7 @@ namespace nap
 
 	VkFormat RenderTarget::getColorFormat() const
 	{
-		return mColorTexture->getVulkanFormat();
+		return mColorTexture->getFormat();
 	}
 
 

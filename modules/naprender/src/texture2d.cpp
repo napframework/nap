@@ -134,62 +134,67 @@ namespace nap
 	}
 
 
+	/**
+	 * Transition image to a new layout using an existing image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
+		VkImageLayout oldLayout,		VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
+		uint32 mipLevel,				uint32 mipLevelCount)
+	{
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = mipLevel;
+		barrier.subresourceRange.levelCount = mipLevelCount;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = dstAccessMask;
+		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+
+	/**
+	 * Transition image to a new layout using an image barrier.
+	 */
 	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
 		VkImageLayout oldLayout, VkImageLayout newLayout,
 		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
 		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevels)
+		uint32 mipLevel, uint32 mipLevelCount)
 	{
-		{
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = oldLayout;
-			barrier.newLayout = newLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = mipLevels;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = srcAccessMask;
-			barrier.dstAccessMask = dstAccessMask;
-
-			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		}
+		VkImageMemoryBarrier barrier = {};
+		transitionImageLayout(commandBuffer, image, barrier,
+			oldLayout,		newLayout,
+			srcAccessMask,	dstAccessMask,
+			srcStage,		dstStage,
+			mipLevel,		mipLevelCount);
 	}
 
 
-	static void generateMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
 	{
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = image;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.subresourceRange.levelCount = 1;
 
-		int32_t mipWidth = texWidth;
-		int32_t mipHeight = texHeight;
+		int32 mipWidth  = static_cast<int32>(texWidth);
+		int32 mipHeight = static_cast<int32>(texHeight);
 
+		VkImageMemoryBarrier barrier {};
 		for (uint32_t i = 1; i < mipLevels; i++)
 		{
-			barrier.subresourceRange.baseMipLevel = i - 1;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			// Prepare LOD for blit operation
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
+				i - 1,									1);
 
-			vkCmdPipelineBarrier(buffer,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-				0, nullptr,
-				0, nullptr,
-				1, &barrier);
-
+			// Create blit structure
 			VkImageBlit blit{};
 			blit.srcOffsets[0] = { 0, 0, 0 };
 			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
@@ -204,38 +209,30 @@ namespace nap
 			blit.dstSubresource.baseArrayLayer = 0;
 			blit.dstSubresource.layerCount = 1;
 
+			// Blit
 			vkCmdBlitImage(buffer,
 				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				1, &blit,
 				VK_FILTER_LINEAR);
 
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			// Prepare LOD for shader read
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				i - 1,									1);
 
-			vkCmdPipelineBarrier(buffer,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-				0, nullptr,
-				0, nullptr,
-				1, &barrier);
-
-			if (mipWidth > 1) mipWidth /= 2;
+			if (mipWidth  > 1) mipWidth  /= 2;
 			if (mipHeight > 1) mipHeight /= 2;
 		}
 
-		barrier.subresourceRange.baseMipLevel = mipLevels - 1;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-		vkCmdPipelineBarrier(buffer,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+		// Prepare final LOD for shader read
+		transitionImageLayout(buffer, image, barrier,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			mipLevels - 1,							1);
 	}
 
 
@@ -270,6 +267,7 @@ namespace nap
 			return false;
 
 		// If mip mapping is enabled, ensure it is supported
+		mMipLevels = 1;
 		if (generateMipMaps)
 		{
 			VkFormatProperties format_properties;
@@ -281,7 +279,6 @@ namespace nap
 			}
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
 		}
-		mGenerateMipMaps = generateMipMaps && mMipLevels > 1;
 
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		if (mUsage == ETextureUsage::DynamicRead)
@@ -324,7 +321,7 @@ namespace nap
 		}
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		if (mUsage == ETextureUsage::DynamicRead || mGenerateMipMaps)
+		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create image allocation struct
@@ -405,21 +402,20 @@ namespace nap
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
-		// Get image ready for copy
+		// Get image ready for copy, applied to all mipmap layers
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			srcMask,	dstMask,
 			srcStage,	dstStage,
-			mMipLevels);
+			0,			mMipLevels);
 		
 		// Copy staging buffer to image
 		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
 		
-		// Generate mip maps, if we do that we don't have to transition the image layout anymore
-		// This is handled by the generateMipmaps command.
-		if (mGenerateMipMaps)
+		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
+		if (mMipLevels > 1)
 		{
-			generateMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
@@ -427,7 +423,7 @@ namespace nap
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				mMipLevels);
+				0,										1);
 		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
@@ -441,18 +437,22 @@ namespace nap
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
+		// Transition for copy
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
-			mMipLevels);
+			0,											1);
+		
+		// Copy to buffer
 		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
 		
+		// Transition back to shader usage
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_WRITE_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			mMipLevels);
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0,											1);
 	}
 
 
@@ -478,9 +478,7 @@ namespace nap
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
-
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
-
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
