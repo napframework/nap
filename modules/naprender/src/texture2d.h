@@ -51,8 +51,8 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, EClearMode clearMode, utility::ErrorState& errorState);
-		bool init(const SurfaceDescriptor& descriptor, bool compressed, void* initialData, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EClearMode clearMode, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, void* initialData, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture, in texels.

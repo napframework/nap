@@ -21,27 +21,6 @@ namespace nap
 {
 	namespace 
 	{
-		static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
-										  VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStage, VkAccessFlags dstAccessMask, VkPipelineStageFlags dstStage) 
-		{
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = oldLayout;
-			barrier.newLayout = newLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = srcAccessMask;
-			barrier.dstAccessMask = dstAccessMask;
-
-			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		}
-
 		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
 		{
 			VkBufferImageCopy region = {};
@@ -176,7 +155,7 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, EClearMode clearMode, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EClearMode clearMode, utility::ErrorState& errorState)
 	{
 		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
@@ -245,11 +224,11 @@ namespace nap
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
+		// Fill the texture with nothing (black)
 		if (clearMode == Texture2D::EClearMode::FillWithZero)
 		{
 			std::vector<uint8_t> empty_texture_data;
 			empty_texture_data.resize(mImageSizeInBytes);
-
 			update(empty_texture_data.data(), descriptor);
 		}
 
@@ -257,9 +236,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, void* initialData, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, void* initialData, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, compressed, EClearMode::DontClear, errorState))
+		if (!init(descriptor, EClearMode::DontClear, errorState))
 			return false;
 
 		update(initialData, descriptor);
