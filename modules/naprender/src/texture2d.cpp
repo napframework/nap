@@ -19,121 +19,228 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace 
-	{
-		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
-		{
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = {
-				width,
-				height,
-				1
-			};
-
-			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-		}
-
-
-		void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
-		{
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = {
-				width,
-				height,
-				1
-			};
-
-			vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
-		}
-	}	
-
+	//////////////////////////////////////////////////////////////////////////
+	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		ESurfaceChannels channels = descriptor.getChannels();
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
+
+		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	}
+
+
+	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
+	{
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
+
+		vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+	}
+
+
+	static VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	{
 		ESurfaceDataType dataType = descriptor.getDataType();
 		EColorSpace colorSpace = descriptor.getColorSpace();
 
-		switch (channels)
+		switch (descriptor.getChannels())
 		{
-		case ESurfaceChannels::R:
+			case ESurfaceChannels::R:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32_SFLOAT;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16_UNORM;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16_UNORM;
 				}
 				break;
 			}
-		case ESurfaceChannels::RGBA:
+			case ESurfaceChannels::RGBA:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32G32B32A32_SFLOAT;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16G16B16A16_UNORM;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32G32B32A32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16G16B16A16_UNORM;
 				}
 				break;
 			}
-		case ESurfaceChannels::BGRA:
+			case ESurfaceChannels::BGRA:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_UNDEFINED;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_UNDEFINED;
 				}
 				break;
 			}
+			assert(false);
 		}
-
 		return VK_FORMAT_UNDEFINED;
 	}
+
 
 	static int getNumStagingBuffers(int inMaxFramesInFlight, ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case ETextureUsage::DynamicWrite:
-			return inMaxFramesInFlight + 1;
-		case ETextureUsage::Static:
-			return 1;
-		case ETextureUsage::DynamicRead:
-			return inMaxFramesInFlight;
+			case ETextureUsage::DynamicWrite:
+				return inMaxFramesInFlight + 1;
+			case ETextureUsage::Static:
+				return 1;
+			case ETextureUsage::DynamicRead:
+				return inMaxFramesInFlight;
+			default:
+				assert(false);
 		}
-
-		assert(false);
 		return 0;
 	}
 
 
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		uint32 mipLevels)
+	{
+		{
+			VkImageMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = oldLayout;
+			barrier.newLayout = newLayout;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = image;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = mipLevels;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.srcAccessMask = srcAccessMask;
+			barrier.dstAccessMask = dstAccessMask;
+
+			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		}
+	}
+
+
+	static void generateMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	{
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = image;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.levelCount = 1;
+
+		int32_t mipWidth = texWidth;
+		int32_t mipHeight = texHeight;
+
+		for (uint32_t i = 1; i < mipLevels; i++)
+		{
+			barrier.subresourceRange.baseMipLevel = i - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+			vkCmdPipelineBarrier(buffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+
+			VkImageBlit blit{};
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = i - 1;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = i;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+
+			vkCmdBlitImage(buffer,
+				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(buffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+
+			if (mipWidth > 1) mipWidth /= 2;
+			if (mipHeight > 1) mipHeight /= 2;
+		}
+
+		barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(buffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Texture2D
 	//////////////////////////////////////////////////////////////////////////
 
 	Texture2D::Texture2D(Core& core) :
@@ -294,15 +401,15 @@ namespace nap
 
 		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		{
-			srcMask = VK_ACCESS_SHADER_READ_BIT;
+			srcMask  = VK_ACCESS_SHADER_READ_BIT;
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
 		// Get image ready for copy
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-			srcMask, srcStage, 
-			dstMask, dstStage, 
+			srcMask,	dstMask,
+			srcStage,	dstStage,
 			mMipLevels);
 		
 		// Copy staging buffer to image
@@ -317,9 +424,9 @@ namespace nap
 		else
 		{
 			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				mMipLevels);
 		}
 
@@ -336,15 +443,15 @@ namespace nap
 
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_ACCESS_SHADER_WRITE_BIT,					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
-			VK_ACCESS_TRANSFER_READ_BIT,				VK_PIPELINE_STAGE_TRANSFER_BIT,
+			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
 			mMipLevels);
 		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT, 
-			VK_ACCESS_SHADER_WRITE_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_WRITE_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			mMipLevels);
 	}
 
@@ -399,15 +506,12 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		StagingBuffer& buffer = mStagingBuffers[frameIndex];
-
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
-
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
-
 		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

@@ -56,18 +56,4 @@ namespace nap
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data
 	 */
 	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator);
-
-	/**
-	 * Transitions the layout of an image from old to new using the provided settings.
-	 */
-	void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, 
-		VkImageLayout oldLayout,		VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask,	VkPipelineStageFlags srcStage, 
-		VkAccessFlags dstAccessMask,	VkPipelineStageFlags dstStage, 
-		uint32 mipLevels);
-
-	/**
-	 * Generates mip-maps for the provided image
-	 */
-	void NAPAPI generateMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels);
 }
