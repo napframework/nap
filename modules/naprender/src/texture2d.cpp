@@ -155,11 +155,26 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, EClearMode clearMode, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
 	{
-		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
+		// Get the format
+		mFormat = getTextureFormat(*mRenderService, descriptor);
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
 			return false;
+
+		// If mip mapping is enabled, ensure it is supported
+		if (generateMipMaps)
+		{
+			VkFormatProperties format_properties;
+			mRenderService->getFormatProperties(mFormat, format_properties);		
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			{
+				errorState.fail("%s: image format does not support support linear blitting");
+				return false;
+			}
+			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+		}
+		mGenerateMipMaps = generateMipMaps;
 
 		VkDevice device = mRenderService->getDevice();
 		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
@@ -215,10 +230,10 @@ namespace nap
 		img_alloc_usage.flags = 0;
 
 		// We create images and imageviews for the amount of frames in flight
-		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
-		if (!create2DImageView(device, mImageData.mTextureImage, mVulkanFormat, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+		if (!create2DImageView(device, mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
 				return false;
 
 		mCurrentStagingBufferIndex = 0;
@@ -236,9 +251,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, void* initialData, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, EClearMode::DontClear, errorState))
+		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, errorState))
 			return false;
 
 		update(initialData, descriptor);
@@ -287,10 +302,18 @@ namespace nap
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcMask, srcStage, dstMask, dstStage);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			srcMask, srcStage, 
+			dstMask, dstStage, 
+			mMipLevels);
 		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-							VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+		
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT, 
+			VK_ACCESS_SHADER_READ_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+			mMipLevels);
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -303,11 +326,18 @@ namespace nap
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							   VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_SHADER_WRITE_BIT,					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+			VK_ACCESS_TRANSFER_READ_BIT,				VK_PIPELINE_STAGE_TRANSFER_BIT,
+			mMipLevels);
 		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+		
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT, 
+			VK_ACCESS_SHADER_WRITE_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			mMipLevels);
 	}
 
 

@@ -33,6 +33,6 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		return Texture2D::init(getBitmap().mSurfaceDescriptor, mCompressed, getBitmap().getData(), errorState);
+		return Texture2D::init(getBitmap().mSurfaceDescriptor, true, getBitmap().getData(), errorState);
 	}
 }

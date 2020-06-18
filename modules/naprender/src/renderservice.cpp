@@ -973,7 +973,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero,  errorState);
 	}
 
 
@@ -1097,6 +1097,13 @@ namespace nap
 		// through the queue. This is reset when beginFrame is called again.
 		mCanDestroyVulkanObjectsImmediately = true;
 	}
+
+
+	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
+	{
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+	}
+
 
 	void RenderService::preShutdown()
 	{

@@ -51,8 +51,8 @@ namespace nap
 		 * Initializes the opengl texture using the associated parameters and given settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		bool init(const SurfaceDescriptor& descriptor, EClearMode clearMode, utility::ErrorState& errorState);
-		bool init(const SurfaceDescriptor& descriptor, void* initialData, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture, in texels.
@@ -83,7 +83,7 @@ namespace nap
 
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
-		VkFormat getVulkanFormat() const { return mVulkanFormat; }
+		VkFormat getVulkanFormat() const { return mFormat; }
 
 		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
@@ -127,14 +127,16 @@ namespace nap
 		};
 
 		using StagingBufferList = std::vector<StagingBuffer>;
-		std::vector<uint8_t>		mTextureData;
-		ImageData					mImageData;
-		StagingBufferList			mStagingBuffers;
-		int							mCurrentStagingBufferIndex = -1;
-		size_t						mImageSizeInBytes = -1;
-		SurfaceDescriptor			mDescriptor;
-		VkFormat					mVulkanFormat = VK_FORMAT_UNDEFINED;
+		std::vector<uint8_t>				mTextureData;
+		ImageData							mImageData;
+		StagingBufferList					mStagingBuffers;
+		int									mCurrentStagingBufferIndex = -1;
+		size_t								mImageSizeInBytes = -1;
+		SurfaceDescriptor					mDescriptor;
+		VkFormat							mFormat = VK_FORMAT_UNDEFINED;
 		std::vector<TextureReadCallback>	mReadCallbacks;
+		bool								mGenerateMipMaps = false;
+		uint32								mMipLevels = 1;
 	};
 
 	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);

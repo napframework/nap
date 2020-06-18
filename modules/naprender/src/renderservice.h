@@ -266,6 +266,8 @@ namespace nap
 
 		int getMaxFramesInFlight() const { return 2; }
 
+		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties);
+
 		/**
 		 * Called when a new window is added to the system
 		 */
