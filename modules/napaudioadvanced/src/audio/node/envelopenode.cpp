@@ -61,6 +61,8 @@ namespace nap
 
             mNewEndSegment.store(endSegment);
             mNewCurrentSegment.store(startSegment);
+
+			mValue.setValue(startValue);
             mIsDirty.set();
         }
 
