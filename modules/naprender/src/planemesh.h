@@ -59,7 +59,7 @@ namespace nap
 		glm::vec2		mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
 		int				mRows = 1;											///< Property: 'Rows' number of rows
 		int				mColumns = 1;										///< Property: 'Columns' number of columns
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;					///< Property: 'Usage' If the plane is created once or frequently updated.
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;					///< Property: 'Usage' If the plane is uploaded once or frequently updated.
 		ECullMode		mCullMode = ECullMode::None;						///< Property: 'CullMode' Plane cull mode, defaults to no culling
 
 	private:

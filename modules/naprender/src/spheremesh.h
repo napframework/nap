@@ -33,9 +33,11 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 	public:
-		float mRadius	= 1.0f;		///< Property: 'Radius' of the sphere
-		float mRings	= 50.0f;	///< Property: 'Rings' number of rings
-		float mSectors	= 50.0f;	///< Property: 'Sectors' number of sectors
+		float			mRadius	= 1.0f;							///< Property: 'Radius' of the sphere
+		float			mRings = 50.0f;							///< Property: 'Rings' number of rings
+		float			mSectors = 50.0f;						///< Property: 'Sectors' number of sectors
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 
 	private:
 		RenderService* mRenderService;

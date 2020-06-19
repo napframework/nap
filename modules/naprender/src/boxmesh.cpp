@@ -5,6 +5,8 @@
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",		&nap::BoxMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -156,6 +158,8 @@ namespace nap
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
 		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setCullMode(mCullMode);
+		mesh.setUsage(mUsage);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);

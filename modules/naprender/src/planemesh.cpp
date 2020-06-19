@@ -49,8 +49,6 @@ namespace nap
 		// Create plane
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setCullMode(mCullMode);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect
@@ -134,6 +132,8 @@ namespace nap
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
 		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setUsage(mUsage);
+		mesh.setCullMode(mCullMode);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);

@@ -33,7 +33,6 @@ namespace nap
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		constructTriangle(*mMeshInstance);
-
 		return true;
 	}
 
@@ -64,6 +63,8 @@ namespace nap
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());
 		mesh.setDrawMode(EDrawMode::TriangleStrip);
+		mesh.setCullMode(ECullMode::Back);
+		mesh.setUsage(EMeshDataUsage::Static);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());

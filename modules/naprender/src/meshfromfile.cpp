@@ -10,6 +10,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MeshFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",			&nap::MeshFromFile::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",		&nap::MeshFromFile::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY_FILELINK("Path",	&nap::MeshFromFile::mPath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
 RTTI_END_CLASS
 
@@ -29,8 +30,10 @@ namespace nap
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
-		// Set the usage for the mesh
+		// Set the usage and cull mode for the mesh
 		mesh_instance->setUsage(mUsage);
+		mesh_instance->setCullMode(mCullMode);
+		mesh_instance->setDrawMode(EDrawMode::Triangles);
 
 		// Initialize the mesh
 		if (!errorState.check(mesh_instance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))

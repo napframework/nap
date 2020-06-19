@@ -12,9 +12,11 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rings",		&nap::SphereMesh::mRings,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sectors",	&nap::SphereMesh::mSectors, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",		&nap::SphereMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",	&nap::SphereMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rings",		&nap::SphereMesh::mRings,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sectors",	&nap::SphereMesh::mSectors,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -98,6 +100,8 @@ namespace nap
 
 		mMeshInstance->setNumVertices(vertex_count);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
+		mMeshInstance->setCullMode(mCullMode);
+		mMeshInstance->setUsage(mUsage);
 
 		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
