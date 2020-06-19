@@ -6,6 +6,7 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",		&nap::PlaneMesh::mUsage,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rows",		&nap::PlaneMesh::mRows,		nap::rtti::EPropertyMetaData::Default)
@@ -47,6 +48,7 @@ namespace nap
 		// Create plane
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance->setUsage(mUsage);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect

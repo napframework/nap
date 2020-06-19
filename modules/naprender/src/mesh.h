@@ -350,8 +350,9 @@ namespace nap
 
 	private:
 		RenderService*											mRenderService;
-		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
-		std::unique_ptr<GPUMesh>								mGPUMesh;			///< GPU mesh
+		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;			///< CPU mesh data
+		std::unique_ptr<GPUMesh>								mGPUMesh;				///< GPU mesh
+		bool													mInitialized = false;	///< If the instance is initialized
 	};
 
 

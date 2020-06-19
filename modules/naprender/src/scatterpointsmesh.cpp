@@ -6,8 +6,9 @@
 
 // nap::scatterpointsmesh run time class definition 
 RTTI_BEGIN_CLASS(nap::ScatterPointsMesh)
-	RTTI_PROPERTY("ReferenceMesh", &nap::ScatterPointsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PointCount", &nap::ScatterPointsMesh::mNumberOfPoints, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::ScatterPointsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ReferenceMesh",	&nap::ScatterPointsMesh::mReferenceMesh,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PointCount",		&nap::ScatterPointsMesh::mNumberOfPoints,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,6 +52,7 @@ namespace nap
 		// There is only 1 shape associated with the scatter mesh
 		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
 		mMeshInstance->createShape();
+		mMeshInstance->setUsage(mUsage);
 		return true;
 	}
 

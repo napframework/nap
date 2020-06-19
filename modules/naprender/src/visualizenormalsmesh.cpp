@@ -8,8 +8,9 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VisualizeNormalsMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("ReferenceMesh", &nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Length", &nap::VisualizeNormalsMesh::mNormalLength, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::VisualizeNormalsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ReferenceMesh",	&nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Length",			&nap::VisualizeNormalsMesh::mNormalLength,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -160,6 +161,7 @@ namespace nap
 		// Create the mesh that will hold the normals
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance->setUsage(mUsage);
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();

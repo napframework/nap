@@ -33,11 +33,9 @@ namespace nap
 		 */
 		virtual const MeshInstance& getMeshInstance() const override			{ return *mMeshInstance; }
 
-		// property: pointer to the IMesh that the points are scattered on
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-
-		// number of points to scatter on reference mesh
 		int mNumberOfPoints = 1000;												///< Property: 'PointCount' number of points to scatter on the mesh
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;						///< Property: 'Usage' If the plane is created once or frequently updated.
 
 	protected:
 		// Creates the mesh and shape

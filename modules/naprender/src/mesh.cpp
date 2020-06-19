@@ -1,11 +1,14 @@
 // Local Includes
 #include "mesh.h"
-#include <rtti/rttiutilities.h>
 #include "meshutils.h"
 #include "renderservice.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
-#include "nap/core.h"
+
+// External Includes
+#include <rtti/rttiutilities.h>
+#include <nap/core.h>
+#include <nap/assert.h>
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::Unknown,		"Unknown"),
@@ -94,7 +97,8 @@ namespace nap
 
 	bool MeshInstance::init(utility::ErrorState& errorState)
 	{
-		return initGPUData(errorState);
+		mInitialized = initGPUData(errorState);
+		return mInitialized;
 	}
 
 
@@ -137,6 +141,10 @@ namespace nap
 
 	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
+		// Assert when trying to update a mesh that is static and already initialized
+		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMeshDataUsage::DynamicWrite, 
+			"trying to update mesh without usage set to: 'DynamicWrite'");
+
 		// Check for mismatches in sizes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{

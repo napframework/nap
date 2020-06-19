@@ -761,7 +761,8 @@
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
             "ReferenceMesh": "DisplayLine",
-            "Length": 0.05000000074505806
+            "Length": 0.05000000074505806,
+            "Usage": "DynamicWrite"
         }
     ]
 }

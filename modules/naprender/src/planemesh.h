@@ -53,10 +53,11 @@ namespace nap
 		const math::Rect& getRect()										{ return mRect; }
 
 		// property: the size of the plane
-		glm::vec2	mSize = { 1.0, 1.0 };								///< Property: 'Size' the size of the plane in units
-		glm::vec2	mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
-		int			mRows = 1;											///< Property: 'Rows' number of rows
-		int			mColumns = 1;										///< Property: 'Columns' number of columns
+		glm::vec2		mSize = { 1.0, 1.0 };								///< Property: 'Size' the size of the plane in units
+		glm::vec2		mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
+		int				mRows = 1;											///< Property: 'Rows' number of rows
+		int				mColumns = 1;										///< Property: 'Columns' number of columns
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;					///< Property: 'Usage' If the plane is created once or frequently updated.
 
 	private:
 		RenderService* mRenderService;

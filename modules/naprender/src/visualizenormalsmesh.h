@@ -52,11 +52,9 @@ namespace nap
 		*/
 		bool calculateNormals(utility::ErrorState& error, bool push = true);
 
-		// property: pointer to the IMesh that is used as a reference
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-
-		// property: length of the normals
 		float mNormalLength = 1.0f;												///< Property: 'Length' length of the normals
+		EMeshDataUsage	mUsage = EMeshDataUsage::DynamicWrite;					///< Property: 'Usage' If the normals are created once or frequently updated.
 
 		/**
 		* Set the mesh that is used as a reference to build the normals from. Called on init().
