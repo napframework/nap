@@ -36,6 +36,13 @@ namespace nap
 		// Get the just created and initialized mesh instance
 		nap::MeshInstance& mesh = getMeshInstance();
 
+		// Ensure some render properties are correctly set
+		// Although the mesh transforms, this is purely because of the shader
+		// The vertices remain the same all the time.
+		mesh.setCullMode(ECullMode::Back);
+		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setUsage(EMeshDataUsage::Static);
+
 		// Get attributes
 		Vec3VertexAttribute& pos_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uvs_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));

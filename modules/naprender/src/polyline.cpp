@@ -140,7 +140,7 @@ namespace nap
 	{
 		// Create the mesh	
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<nap::MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(*mRenderService);
 		mMeshInstance->setUsage(mLineProperties.mUsage);
 		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 

@@ -8,7 +8,9 @@
 
 namespace nap
 {
+	// Forward Declares
 	class Core;
+	class RenderService;
 
 	/**
 	 * Predefined rectangular mesh with a specific size centered at the origin on the xy axis. 

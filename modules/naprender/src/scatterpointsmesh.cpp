@@ -1,11 +1,14 @@
 #include "scatterpointsmesh.h"
 #include "meshutils.h"
+#include "renderservice.h"
 
 // External Includes
 #include <mathutils.h>
+#include <nap/core.h>
 
 // nap::scatterpointsmesh run time class definition 
-RTTI_BEGIN_CLASS(nap::ScatterPointsMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ScatterPointsMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",			&nap::ScatterPointsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ReferenceMesh",	&nap::ScatterPointsMesh::mReferenceMesh,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PointCount",		&nap::ScatterPointsMesh::mNumberOfPoints,	nap::rtti::EPropertyMetaData::Default)
@@ -16,6 +19,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	ScatterPointsMesh::ScatterPointsMesh(Core& core) : 
+		mRenderService(core.getService<RenderService>())
+	{ }
+
 	bool ScatterPointsMesh::init(utility::ErrorState& errorState)
 	{
 		// make sure we have at least 1 point to scatter
@@ -50,9 +58,11 @@ namespace nap
 			return false;
 
 		// There is only 1 shape associated with the scatter mesh
-		mMeshInstance = std::make_unique<MeshInstance>(nullptr);	// TODO: proper init
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->createShape();
 		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::Points);
 		return true;
 	}
 

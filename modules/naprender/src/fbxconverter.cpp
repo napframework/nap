@@ -246,7 +246,7 @@ namespace nap
 		// will clone contents and take ownership of the cloned content. 
 		// The RTTI data in Mesh is lost, which is intentional as we don't need an extra copy of CPU data in memory. If we need to have an option to keep the source CPU data for binary
 		// meshes, this can be supported later by adding it. This could be the case if we are doing dynamic geometry based on a binary mesh where we keep the source mesh for reference.
-		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(&renderService);
+		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(renderService);
 		mesh_instance->copyMeshProperties(mesh->mProperties);
 		return mesh_instance;
 	}

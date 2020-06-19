@@ -70,7 +70,7 @@ namespace nap
 	// MeshInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	MeshInstance::MeshInstance(RenderService* renderService) :
+	MeshInstance::MeshInstance(RenderService& renderService) :
 		mRenderService(renderService)
 	{ }
 
@@ -90,7 +90,7 @@ namespace nap
 	// Creates GPU vertex attributes and updates mesh
 	bool MeshInstance::initGPUData(utility::ErrorState& errorState)
 	{
-		mGPUMesh = std::make_unique<GPUMesh>(*mRenderService, mProperties.mUsage);
+		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 
@@ -162,13 +162,13 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			vertex_attr_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mProperties.mShapes[shapeIndex].getIndices());
 		}
 
 		return true;
@@ -183,7 +183,7 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		gpu_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
 		return true;
 	}
 
@@ -210,7 +210,7 @@ namespace nap
 
 		// Create instance
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<nap::MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(*mRenderService);
 		
 		// Copy properties from resource to instance and initialize
 		mMeshInstance->copyMeshProperties(mProperties);

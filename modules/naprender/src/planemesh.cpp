@@ -48,7 +48,7 @@ namespace nap
 
 		// Create plane
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setCullMode(mCullMode);
 		constructPlane(rect, *mMeshInstance);

@@ -19,10 +19,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-		BoxMesh();
-		BoxMesh(Core& core);
 
-		virtual ~BoxMesh();
+		BoxMesh(Core& core);
 
 		/**
 		 * Sets up and initializes the box as a mesh based on the provided parameters.

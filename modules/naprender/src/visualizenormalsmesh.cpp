@@ -160,8 +160,9 @@ namespace nap
 
 		// Create the mesh that will hold the normals
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::Lines);
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();
@@ -244,7 +245,6 @@ namespace nap
 
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
-		mMeshInstance->setDrawMode(EDrawMode::Lines);
 
 		// Draw normals as lines
 		MeshShape& shape = mMeshInstance->getShape(0);

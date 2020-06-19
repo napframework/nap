@@ -14,7 +14,6 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	
 	public:
-		MeshFromFile();
 		MeshFromFile(Core& core);
 
 		/**

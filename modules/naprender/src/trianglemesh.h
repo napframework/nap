@@ -19,7 +19,6 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-		TriangleMesh() = default;
 		TriangleMesh(Core& core);
 
 		/**

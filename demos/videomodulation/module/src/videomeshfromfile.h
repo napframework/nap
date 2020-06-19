@@ -28,7 +28,6 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		VideoMeshFromFile(Core& core);
-		virtual ~VideoMeshFromFile();
 
 		/**
 		* Initialize this object after de-serialization

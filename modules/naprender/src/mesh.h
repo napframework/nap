@@ -212,7 +212,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		MeshInstance(RenderService* renderService);
+		MeshInstance(RenderService& renderService);
 
 		// destructor
 		virtual ~MeshInstance();
@@ -376,7 +376,7 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
-		RenderService*											mRenderService;
+		RenderService&											mRenderService;			///< Required reference to the render service
 		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;			///< CPU mesh data
 		std::unique_ptr<GPUMesh>								mGPUMesh;				///< GPU mesh
 		bool													mInitialized = false;	///< If the instance is initialized
@@ -391,7 +391,6 @@ namespace nap
 	class IMesh : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
 		/**
 		 * @return the mesh instance
@@ -420,7 +419,7 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	public:
 		/**
-		 * Constructor used when serializing properties.
+		 * Constructor used during serialization.
 		 */
 		Mesh() = default;
 
