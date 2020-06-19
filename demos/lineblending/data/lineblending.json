@@ -363,13 +363,16 @@
         {
             "Type": "nap::Line",
             "mID": "DisplayLine",
-            "Properties": {
-                "Color": {
+            "Properties": 
+            {
+                "Color": 
+                {
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage":"DynamicWrite"
             },
             "Start": {
                 "x": -0.5,

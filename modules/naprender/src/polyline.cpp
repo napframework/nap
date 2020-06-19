@@ -10,6 +10,7 @@
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
 	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",		&nap::PolyLineProperties::mUsage,	nap::rtti::EPropertyMetaData::Default)	
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PolyLine)
@@ -140,6 +141,8 @@ namespace nap
 		// Create the mesh	
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<nap::MeshInstance>(mRenderService);
+		mMeshInstance->setUsage(mLineProperties.mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 
 		// Create attributes
 		createVertexAttributes(*mMeshInstance);
@@ -178,10 +181,9 @@ namespace nap
 		// Upsample line
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		utility::generateIndices(shape, p_count, false);
+		utility::generateIndices(shape, p_count, mClosed);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -245,8 +247,6 @@ namespace nap
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-
 		MeshShape& shape = mMeshInstance->createShape();
 		utility::generateIndices(shape, 4, true);
 
@@ -272,8 +272,6 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-
 		MeshShape& shape = mMeshInstance->createShape();
 		utility::generateIndices(shape, mSegments, true);		
 
@@ -313,8 +311,6 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-
 		MeshShape& shape = mMeshInstance->createShape();
 		utility::generateIndices(shape, 6, true);
 

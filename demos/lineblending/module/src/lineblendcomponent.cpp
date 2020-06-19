@@ -29,7 +29,6 @@ namespace nap
 
 		// Copy line and set draw mode, we are updating this mesh frequently.
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
-		mTarget->getMeshInstance().setUsage(EMeshDataUsage::DynamicWrite);
 
 		// Resample and cache current line selections
 		cacheVertexAttributes(*mSelectorOne);
