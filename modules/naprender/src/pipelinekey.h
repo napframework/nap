@@ -59,7 +59,7 @@ namespace std
 	{
 		size_t operator()(const nap::PipelineKey& key) const
 		{
-			size_t shader_hash = hash<size_t>{}((size_t)key.mShader);
+			size_t shader_hash	= hash<size_t>{}((size_t)key.mShader);
 			size_t draw_mode_hash = hash<size_t>{}((size_t)key.mDrawMode);
 			size_t depth_mode_hash = hash<size_t>{}((size_t)key.mDepthMode);
 			size_t blend_mode_hash = hash<size_t>{}((size_t)key.mBlendMode);

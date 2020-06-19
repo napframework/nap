@@ -65,16 +65,18 @@ namespace nap
 		return stream.str();
 	}
 	
+
+	//////////////////////////////////////////////////////////////////////////
+	// MeshInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	MeshInstance::MeshInstance(RenderService* renderService) :
 		mRenderService(renderService)
-	{
-	}
+	{ }
+
 
 	MeshInstance::~MeshInstance()
-	{
-	}
+	{ }
 
 
 	// Returns associated mesh
@@ -187,16 +189,12 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Mesh
+	//////////////////////////////////////////////////////////////////////////
 
-	Mesh::Mesh() :
-		mMeshInstance(nullptr)
-	{
-	}
+	Mesh::Mesh(Core& core) : mRenderService(core.getService<nap::RenderService>())
+	{}
 
-	Mesh::Mesh(Core& core) :
-		mMeshInstance(core.getService<RenderService>())
-	{
-	}
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
@@ -210,7 +208,27 @@ namespace nap
 				utility::generateIndices(shape, mProperties.mNumVertices);
 		}
 
-		mMeshInstance.copyMeshProperties(mProperties);
-		return mMeshInstance.init(errorState);
+		// Create instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(mRenderService);
+		
+		// Copy properties from resource to instance and initialize
+		mMeshInstance->copyMeshProperties(mProperties);
+		return mMeshInstance->init(errorState);
 	}
+
+
+	nap::MeshInstance& Mesh::getMeshInstance()
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
+
+	const nap::MeshInstance& nap::Mesh::getMeshInstance() const
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
 }

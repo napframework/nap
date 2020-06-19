@@ -384,14 +384,23 @@ namespace nap
 
 
 	/**
-	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
+	 * Base class for each mesh resource. 
+	 * Every derived mesh should provide the system with a MeshInstance.
+	 * The instance is rendered and can be updated / modified at runtime.
 	 */
 	class IMesh : public Resource
 	{
 		RTTI_ENABLE(Resource)
 
 	public:
+		/**
+		 * @return the mesh instance
+		 */
 		virtual MeshInstance& getMeshInstance() = 0;
+
+		/**
+		 * @return the mesh instance
+		 */
 		virtual const MeshInstance& getMeshInstance() const = 0;
 	};
 
@@ -410,8 +419,14 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		/**
+		 * Constructor used when serializing properties.
+		 */
+		Mesh() = default;
 
-		Mesh();
+		/**
+		 * Constructor used at runtime.
+		 */
 		Mesh(Core& core);
 
 		/**
@@ -424,12 +439,12 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance()	override		{ return mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override;
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override;
 
 		/**
 		 * Finds vertex attribute.
@@ -447,10 +462,11 @@ namespace nap
 		template<typename T>
 		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
-		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
+		RTTIMeshProperties	mProperties;				///< Property: 'Properties' RTTI mesh CPU data
 
 	private:
-		MeshInstance		mMeshInstance;		///< Runtime mesh instance
+		std::unique_ptr<MeshInstance> mMeshInstance;	///< Runtime mesh instance
+		RenderService* mRenderService = nullptr;		///< Render service
 	};
 
 

@@ -15,7 +15,6 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 
 	public:
-		SphereMesh();
 		SphereMesh(Core& core);
 
 		/**
