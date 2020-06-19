@@ -28,6 +28,7 @@ RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",			&nap::RTTIMeshProperties::mUsage,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DrawMode",		&nap::RTTIMeshProperties::mDrawMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",		&nap::RTTIMeshProperties::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	

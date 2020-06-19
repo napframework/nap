@@ -19,8 +19,8 @@ namespace nap
 	class Core;
 
 	/**
-	* Topology of the mesh
-	*/
+	 * Topology of the mesh
+	 */
 	enum class EDrawMode : int32
 	{
 		Points			= 0,				///< Interpret the vertex data as single points
@@ -31,6 +31,19 @@ namespace nap
 		TriangleFan		= 5,				///< Interpret the vertex data as a fan of triangles
 		Unknown			= 0x7FFFFFFF,		///< Invalid vertex interpretation
 	};
+
+
+	/**
+	 * Triangle cull modes
+	 */
+	enum class ECullMode : int32
+	{
+		None			= 0,				///< No culling
+		Front			= 1,				///< Cull front facing triangles
+		Back			= 2,				///< Cull back facing triangles
+		FrontAndBack	= 3					///< Cull front and back facing triangles
+	};
+
 
 	/**
 	 * Known vertex attribute IDs in the system
@@ -168,6 +181,7 @@ namespace nap
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -297,6 +311,16 @@ namespace nap
 		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
 
 		/**
+		 * @return set the cull mode of this mesh (front, back etc.)
+		 */
+		void setCullMode(ECullMode mode)									{ mProperties.mCullMode = mode; }
+
+		/**
+		 * @return the cull mode of this mesh (front, back etc.)
+		 */
+		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
+
+		/**
 		 * Get the shape at the specified index
 		 * @param index The index of the shape to get (between 0 and getNumShapes())
 		 * @return The shape
@@ -317,7 +341,8 @@ namespace nap
 		MeshShape& createShape();
 
 		/**
-		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called; changing it after init will not have any effect.
+		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
+		 * changing it after init will not have any effect.
 		 */
 		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
@@ -329,6 +354,7 @@ namespace nap
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
@@ -338,6 +364,7 @@ namespace nap
 		/**
 		 * Push one specific CPU vertex buffer to the GPU.
 		 * Use this when updating only specific vertex attributes at run-time.
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between the vertex buffer an error will be returned
 		 * @param attribute the attribute to synchronize.
 		 * @param errorState contains the error when synchronization fails.

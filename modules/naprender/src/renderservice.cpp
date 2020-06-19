@@ -24,6 +24,7 @@
 #include <scene.h>
 #include <SDL_vulkan.h>
 #include <glslang/Public/ShaderLang.h>
+#include <nap/assert.h>
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
@@ -639,7 +640,14 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, 
+		EDrawMode drawMode, 
+		ECullWindingOrder windingOrder, 
+		VkRenderPass renderPass, 
+		VkSampleCountFlagBits sampleCount, 
+		bool enableSampleShading,
+		ECullMode cullMode,
+		VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -711,7 +719,7 @@ namespace nap
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;		//< TODO: Make customizable, currently doesn't work with our plane!
+		rasterizer.cullMode = static_cast<VkCullModeFlagBits>(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -777,17 +785,41 @@ namespace nap
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
-		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled());
+		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
+		
+		// Create pipeline key based on draw properties
+		PipelineKey pipeline_key(shader, draw_mode, 
+			materialInstance.getDepthMode(), 
+			materialInstance.getBlendMode(), 
+			renderTarget.getWindingOrder(), 
+			renderTarget.getColorFormat(), 
+			renderTarget.getDepthFormat(), 
+			renderTarget.getSampleCount(), 
+			renderTarget.getSampleShadingEnabled(),
+			cull_mode);
+
+		// Find key in cache and use previously created pipeline
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
 		if (pos != mPipelineCache.end())
 			return pos->second;
 
+		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled(), pipeline.mLayout, pipeline.mPipeline, errorState))
-			return Pipeline();
+		if (createGraphicsPipeline(mDevice, materialInstance,
+			draw_mode,
+			renderTarget.getWindingOrder(),
+			renderTarget.getRenderPass(),
+			renderTarget.getSampleCount(),
+			renderTarget.getSampleShadingEnabled(),
+			cull_mode,
+			pipeline.mLayout, pipeline.mPipeline, errorState))
+		{
+			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			return pipeline;
+		}
 
-		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
-		return pipeline;
+		NAP_ASSERT_MSG(false, "Unable to create new pipeline");
+		return Pipeline();
 	}
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)

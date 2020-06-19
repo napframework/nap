@@ -1,11 +1,12 @@
 // Local Includes
 #include "particleemittercomponent.h"
+#include "renderservice.h"
 
 #include <entity.h>
 #include <rect.h>
 #include <glm/gtx/transform.hpp>
 #include <mathutils.h>
-#include "nap/core.h"
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
@@ -75,6 +76,7 @@ namespace nap
 			mMeshInstance.setUsage(EMeshDataUsage::DynamicWrite);
 			mMeshInstance.reserveVertices(1000);
 			mMeshInstance.setDrawMode(EDrawMode::Triangles);
+			mMeshInstance.setCullMode(ECullMode::None);
 
 			// Create the necessary attributes
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());

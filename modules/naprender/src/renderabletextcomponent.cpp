@@ -81,11 +81,10 @@ namespace nap
 		mPlane.mColumns = 1;
 		mPlane.mPosition = { 0.5f, 0.5f };
 		mPlane.mSize = { 1.0f, 1.0f };
+		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mCullMode = ECullMode::Back;
 		if (!mPlane.setup(errorState))
 			return false;
-
-		// Make sure we can write to it often 
-		mPlane.getMeshInstance().setUsage(EMeshDataUsage::DynamicWrite);
 
 		// Update the uv coordinates
 		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
