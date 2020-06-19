@@ -10,7 +10,7 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imguiutils.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 #include <sdlhelpers.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 

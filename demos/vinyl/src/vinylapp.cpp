@@ -6,7 +6,7 @@
 #include <renderwindow.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 // Register app with RTTI, ensures the app running knows it's running an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VinylApp)

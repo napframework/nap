@@ -14,7 +14,7 @@
 #include <imgui/imgui.h>
 #include <mathutils.h>
 #include <meshutils.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application

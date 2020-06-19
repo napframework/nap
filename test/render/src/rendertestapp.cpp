@@ -7,7 +7,7 @@
 #include <imguiservice.h>
 #include <imgui/imgui.h>
 #include <imguiutils.h>
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

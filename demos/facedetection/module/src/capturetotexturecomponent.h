@@ -7,7 +7,7 @@
 #include <rendertexture2d.h>
 #include <rendertotexturecomponent.h>
 #include <cvclassifycomponent.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 namespace nap
 {

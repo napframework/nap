@@ -14,7 +14,7 @@
 #include <audio/component/levelmetercomponent.h>
 #include <rendertotexturecomponent.h>
 #include <imguiutils.h>
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

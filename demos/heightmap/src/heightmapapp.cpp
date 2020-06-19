@@ -11,7 +11,7 @@
 #include <inputrouter.h>
 #include<imgui/imgui.h>
 #include <imguiutils.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application

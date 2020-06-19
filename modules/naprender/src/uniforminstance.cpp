@@ -1,4 +1,4 @@
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 #include "uniforms.h"
 
 namespace nap

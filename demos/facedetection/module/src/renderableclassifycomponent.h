@@ -11,7 +11,7 @@
 #include <renderablemeshcomponent.h>
 #include <smoothdamp.h>
 #include <nap/timer.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 namespace nap
 {
