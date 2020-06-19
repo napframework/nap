@@ -10,7 +10,8 @@
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <nap/numeric.h>
-#include "rtti/factory.h"
+#include <rtti/factory.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -20,22 +21,21 @@ namespace nap
 	/**
 	* Topology of the mesh
 	*/
-	enum class EDrawMode : uint8_t
+	enum class EDrawMode : int32
 	{
-		Points = 1,						///< Interpret the vertex data as single points
-		Lines = 2,						///< Interpret the vertex data as individual lines
-		LineStrip = 3,					///< Interpret the vertex data as a single connected line
-		LineLoop = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
-		Triangles = 5,					///< Interpret the vertex data as a set of triangles
-		TriangleStrip = 6,				///< Interpret the vertex data as a strip of triangles
-		TriangleFan = 7,				///< Interpret the vertex data as a fan of triangles
-		Unknown = 0,					///< Invalid vertex interpretation
+		Points			= 0,				///< Interpret the vertex data as single points
+		Lines			= 1,				///< Interpret the vertex data as individual lines
+		LineStrip		= 2,				///< Interpret the vertex data as a single connected line
+		Triangles		= 3,				///< Interpret the vertex data as a set of triangles
+		TriangleStrip	= 4,				///< Interpret the vertex data as a strip of triangles
+		TriangleFan		= 5,				///< Interpret the vertex data as a fan of triangles
+		Unknown			= 0x7FFFFFFF,		///< Invalid vertex interpretation
 	};
 
 	/**
-	* Known vertex attribute IDs in the system
-	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
-	*/
+	 * Known vertex attribute IDs in the system
+	 * These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
+	 */
 	namespace VertexAttributeIDs
 	{
 		/**

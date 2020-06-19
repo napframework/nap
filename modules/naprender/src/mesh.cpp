@@ -12,7 +12,6 @@ RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::Points,			"Points"),
 	RTTI_ENUM_VALUE(nap::EDrawMode::Lines,			"Lines"),
 	RTTI_ENUM_VALUE(nap::EDrawMode::LineStrip,		"LineStrip"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LineLoop,		"LineLoop"),
 	RTTI_ENUM_VALUE(nap::EDrawMode::Triangles,		"Triangles"),
 	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleStrip,	"TriangleStrip"),
 	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleFan,	"TriangleFan")

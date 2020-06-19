@@ -120,7 +120,7 @@ namespace nap
 
 		// Automatically generate indices
 		MeshShape& shape = mMeshInstance->getShape(0);
-		utility::generateIndices(shape, mNumberOfPoints);
+		utility::generateIndices(shape, mNumberOfPoints, false);
 
 		return true;
 	}

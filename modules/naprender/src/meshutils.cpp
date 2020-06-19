@@ -11,7 +11,6 @@ namespace nap
 		{
 			switch (meshInstance.getDrawMode())
 			{
-			case EDrawMode::LineLoop:
 			case EDrawMode::LineStrip:
 			case EDrawMode::Lines:
 			case EDrawMode::Points:
@@ -48,7 +47,6 @@ namespace nap
 					count += math::max<int>(shape.getNumIndices() - 2, 0);
 					break;
 				}
-				case EDrawMode::LineLoop:
 				case EDrawMode::LineStrip:
 				case EDrawMode::Lines:
 				case EDrawMode::Points:
@@ -191,12 +189,19 @@ namespace nap
 		}
 
 
-		void generateIndices(nap::MeshShape& shape, int vertexCount, int offset)
+		void generateIndices(nap::MeshShape& shape, int vertexCount, bool loop, int offset)
 		{
 			MeshShape::IndexList& indices = shape.getIndices();
-			indices.resize(vertexCount);
+			int vert_count = loop ? vertexCount + 1 : vertexCount;
+			indices.resize(vert_count);
+			
+			// Generate indices
 			for (int vertex = 0; vertex < vertexCount; ++vertex)
 				indices[vertex] = vertex + offset;
+			
+			// Loop if requested, adding an extra index at the end
+			if (loop)
+				indices.back() = indices.front();
 		}
 
 

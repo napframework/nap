@@ -536,29 +536,13 @@ namespace nap
 		window->addEvent(std::move(windowEvent));
 	}
 
+	
 	VkPrimitiveTopology getTopology(EDrawMode drawMode)
 	{
-		switch (drawMode)
-		{
-		case EDrawMode::Points:
-			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case EDrawMode::Lines:
-			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case EDrawMode::LineStrip:
-			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case EDrawMode::Triangles:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case EDrawMode::TriangleStrip:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case EDrawMode::TriangleFan:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-		default:
-		{
-			assert(false);
-			return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
-		}
-		}
+		assert(drawMode != EDrawMode::Unknown);
+		return static_cast<VkPrimitiveTopology>(drawMode);
 	}
+
 
 	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{

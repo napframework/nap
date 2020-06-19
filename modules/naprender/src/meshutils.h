@@ -80,12 +80,13 @@ namespace nap
 		void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
 		/**
-		* Generates a list of sequential indices from offset op to vertexCount + offset.
+		* Generates a list of sequential indices from offset up to vertexCount + offset.
 		* @param shape The shape to generate indices for.
-		* @param vertexCount The number of indices to generate.
+		* @param vertexCount number of indices to generate.
+		* @param loop an extra index is added at the end, pointing to the the first one. Useful when creating a line loop.
 		* @param offset The first index value.
 		*/
-		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
+		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, bool loop = false, int offset = 0);
 
 		/**
 		* Builds a 'map' that binds points (mesh index values) to faces

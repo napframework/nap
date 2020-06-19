@@ -248,7 +248,7 @@ namespace nap
 		MeshShape& shape = mMeshInstance->getShape(0);
 
 		// Automatically generate indices
-		utility::generateIndices(shape, vertex_count * 2);
+		utility::generateIndices(shape, vertex_count * 2, false);
 
 		return true;
 	}
