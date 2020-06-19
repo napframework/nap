@@ -163,7 +163,7 @@ namespace nap
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
-		mesh.setDrawMode(EDrawMode::TRIANGLES);
+		mesh.setDrawMode(EDrawMode::Triangles);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);

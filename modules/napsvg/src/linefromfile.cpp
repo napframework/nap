@@ -335,7 +335,7 @@ namespace nap
 		}
 
 		assert(closed_state >= 0);
-		mMeshInstance->setDrawMode(static_cast<bool>(closed_state) ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
+		mMeshInstance->setDrawMode(static_cast<bool>(closed_state) ? EDrawMode::LineLoop : EDrawMode::LineStrip);
 		return mMeshInstance->init(errorState);
 	}
 

@@ -37,7 +37,7 @@ namespace nap
 		}
 
 		const Shader*			mShader = nullptr;
-		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;
+		EDrawMode				mDrawMode = EDrawMode::Triangles;
 		EDepthMode				mDepthMode = EDepthMode::NotSet;
 		EBlendMode				mBlendMode = EBlendMode::NotSet;
 		ECullWindingOrder		mCullWindingOrder = ECullWindingOrder::Clockwise;

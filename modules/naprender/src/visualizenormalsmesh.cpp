@@ -242,7 +242,7 @@ namespace nap
 
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
-		mMeshInstance->setDrawMode(EDrawMode::LINES);
+		mMeshInstance->setDrawMode(EDrawMode::Lines);
 
 		// Draw normals as lines
 		MeshShape& shape = mMeshInstance->getShape(0);

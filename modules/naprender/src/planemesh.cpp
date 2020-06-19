@@ -129,7 +129,7 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
-		mesh.setDrawMode(EDrawMode::TRIANGLES);
+		mesh.setDrawMode(EDrawMode::Triangles);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);

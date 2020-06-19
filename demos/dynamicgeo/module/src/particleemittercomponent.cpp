@@ -74,7 +74,7 @@ namespace nap
 			mMeshInstance.setNumVertices(0);
 			mMeshInstance.setUsage(EMeshDataUsage::DynamicWrite);
 			mMeshInstance.reserveVertices(1000);
-			mMeshInstance.setDrawMode(EDrawMode::TRIANGLES);
+			mMeshInstance.setDrawMode(EDrawMode::Triangles);
 
 			// Create the necessary attributes
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());

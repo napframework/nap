@@ -104,7 +104,7 @@ namespace nap
 				return false;
 
 			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
-			mesh_data.mProperties.mDrawMode = EDrawMode::TRIANGLES;
+			mesh_data.mProperties.mDrawMode = EDrawMode::Triangles;
 
 			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 

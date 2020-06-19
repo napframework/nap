@@ -22,14 +22,14 @@ namespace nap
 	*/
 	enum class EDrawMode : uint8_t
 	{
-		POINTS = 1,						///< Interpret the vertex data as single points
-		LINES = 2,						///< Interpret the vertex data as individual lines
-		LINE_STRIP = 3,					///< Interpret the vertex data as a single connected line
-		LINE_LOOP = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
-		TRIANGLES = 5,					///< Interpret the vertex data as a set of triangles
-		TRIANGLE_STRIP = 6,				///< Interpret the vertex data as a strip of triangles
-		TRIANGLE_FAN = 7,				///< Interpret the vertex data as a fan of triangles
-		UNKNOWN = 0,					///< Invalid vertex interpretation
+		Points = 1,						///< Interpret the vertex data as single points
+		Lines = 2,						///< Interpret the vertex data as individual lines
+		LineStrip = 3,					///< Interpret the vertex data as a single connected line
+		LineLoop = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
+		Triangles = 5,					///< Interpret the vertex data as a set of triangles
+		TriangleStrip = 6,				///< Interpret the vertex data as a strip of triangles
+		TriangleFan = 7,				///< Interpret the vertex data as a fan of triangles
+		Unknown = 0,					///< Invalid vertex interpretation
 	};
 
 	/**
@@ -167,7 +167,7 @@ namespace nap
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
-		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};

@@ -540,17 +540,17 @@ namespace nap
 	{
 		switch (drawMode)
 		{
-		case EDrawMode::POINTS:
+		case EDrawMode::Points:
 			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case EDrawMode::LINES:
+		case EDrawMode::Lines:
 			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case EDrawMode::LINE_STRIP:
+		case EDrawMode::LineStrip:
 			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case EDrawMode::TRIANGLES:
+		case EDrawMode::Triangles:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case EDrawMode::TRIANGLE_STRIP:
+		case EDrawMode::TriangleStrip:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case EDrawMode::TRIANGLE_FAN:
+		case EDrawMode::TriangleFan:
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 		default:
 		{

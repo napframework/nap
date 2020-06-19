@@ -63,7 +63,7 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());
-		mesh.setDrawMode(EDrawMode::TRIANGLE_STRIP);
+		mesh.setDrawMode(EDrawMode::TriangleStrip);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());

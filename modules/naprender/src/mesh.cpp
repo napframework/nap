@@ -8,14 +8,14 @@
 #include "nap/core.h"
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
-	RTTI_ENUM_VALUE(nap::EDrawMode::UNKNOWN,		"Unknown"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::POINTS,			"Points"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINES,			"Lines"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_STRIP,		"LineStrip"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_LOOP,		"LineLoop"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLES,		"Triangles"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_STRIP,	"TriangleStrip"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_FAN,	"TriangleFan")
+	RTTI_ENUM_VALUE(nap::EDrawMode::Unknown,		"Unknown"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Points,			"Points"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Lines,			"Lines"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LineStrip,		"LineStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LineLoop,		"LineLoop"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Triangles,		"Triangles"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleStrip,	"TriangleStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleFan,	"TriangleFan")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::MeshShape)

@@ -102,7 +102,7 @@ namespace nap
 		}
 
 		mMeshInstance->setNumVertices(vertex_count);
-		mMeshInstance->setDrawMode(EDrawMode::TRIANGLES);
+		mMeshInstance->setDrawMode(EDrawMode::Triangles);
 
 		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());

@@ -59,7 +59,7 @@ namespace nap
 	{
 		assert(mMeshInstance != nullptr);
 		mMeshInstance->setNumVertices(mNumberOfPoints);
-		mMeshInstance->setDrawMode(EDrawMode::POINTS);
+		mMeshInstance->setDrawMode(EDrawMode::Points);
 
 		// Create position attribute
 		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));

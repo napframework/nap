@@ -11,15 +11,15 @@ namespace nap
 		{
 			switch (meshInstance.getDrawMode())
 			{
-			case EDrawMode::LINE_LOOP:
-			case EDrawMode::LINE_STRIP:
-			case EDrawMode::LINES:
-			case EDrawMode::POINTS:
-			case EDrawMode::UNKNOWN:
+			case EDrawMode::LineLoop:
+			case EDrawMode::LineStrip:
+			case EDrawMode::Lines:
+			case EDrawMode::Points:
+			case EDrawMode::Unknown:
 				return false;
-			case EDrawMode::TRIANGLES:
-			case EDrawMode::TRIANGLE_FAN:
-			case EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::Triangles:
+			case EDrawMode::TriangleFan:
+			case EDrawMode::TriangleStrip:
 				return true;
 			default:
 				assert(false);
@@ -37,22 +37,22 @@ namespace nap
 				const MeshShape& shape = mesh.getShape(shape_index);
 				switch (mesh.getDrawMode())
 				{
-				case EDrawMode::TRIANGLES:
+				case EDrawMode::Triangles:
 				{
 					count += shape.getNumIndices() / 3;
 					break;
 				}
-				case EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
-				case EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+				case EDrawMode::TriangleFan:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+				case EDrawMode::TriangleStrip:		// After that every vertex is a triangle
 				{
 					count += math::max<int>(shape.getNumIndices() - 2, 0);
 					break;
 				}
-				case EDrawMode::LINE_LOOP:
-				case EDrawMode::LINE_STRIP:
-				case EDrawMode::LINES:
-				case EDrawMode::POINTS:
-				case EDrawMode::UNKNOWN:
+				case EDrawMode::LineLoop:
+				case EDrawMode::LineStrip:
+				case EDrawMode::Lines:
+				case EDrawMode::Points:
+				case EDrawMode::Unknown:
 					break;
 				default:
 					assert(false);
@@ -77,7 +77,7 @@ namespace nap
 
 			switch (drawMode)
 			{
-			case EDrawMode::TRIANGLES:
+			case EDrawMode::Triangles:
 			{
 				// Make sure our index is in range
 				assert((number * 3) + 2 < mesh_indices.size());
@@ -89,7 +89,7 @@ namespace nap
 				*(id + 2) = indices[2];
 				break;
 			}
-			case EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TriangleFan:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data();
@@ -98,7 +98,7 @@ namespace nap
 				*(id + number + 2) = indices[2];
 				break;
 			}
-			case EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TriangleStrip:
 			{
 				assert(number + 2 < mesh_indices.size());
 				unsigned int* id = mesh_indices.data() + number;

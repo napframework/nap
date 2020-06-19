@@ -124,13 +124,13 @@ namespace nap
 
 			switch (mMeshInstance->getDrawMode())
 			{
-			case EDrawMode::TRIANGLES:
+			case EDrawMode::Triangles:
 				mCurIterator = new ShapeTriangleListIterator(shape);
 				break;
-			case EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TriangleStrip:
 				mCurIterator = new ShapeTriangleStripIterator(shape);
 				break;
-			case EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TriangleFan:
 				mCurIterator = new ShapeTriangleFanIterator(shape);
 				break;
 			default:
