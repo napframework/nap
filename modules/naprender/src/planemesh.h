@@ -24,7 +24,7 @@ namespace nap
 		PlaneMesh(Core& core);
 
 		/**
-		 * Sets up and initializes the plane as a mesh based on the provided parameters.
+		 * Sets up, initializes and uploads the plane to the GPU based on the provided parameters.
 		 * @param errorState contains the error message if the mesh could not be created.
 		 * @return if the mesh was successfully created and initialized.
 		 */

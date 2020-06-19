@@ -248,6 +248,12 @@ namespace nap
 			ImGui::ColorEdit3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
 		}
+		if (ImGui::CollapsingHeader("Heightmap"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float col_ratio = (float)mHeightmap->getHeight() / (float)mHeightmap->getWidth();
+			ImGui::Image(*mHeightmap, ImVec2(col_width, col_width * col_ratio));
+		}
 		ImGui::End();
 	}
 

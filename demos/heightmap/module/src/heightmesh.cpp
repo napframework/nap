@@ -29,28 +29,23 @@ namespace nap
 	 */
 	bool HeightMesh::init(utility::ErrorState& errorState)
 	{
-		// Initialize our plane with the right amount of rows / columns
-		if (!PlaneMesh::init(errorState))
+		// Setup our plane with the right amount of rows / columns + default vertex attributes.
+		// Initialization is postponed to the end of this call, when the data is uploaded to the GPU.
+		// If we would have called init() here, the data would be uploaded twice, here and at the end, something we want to avoid.
+		if (!PlaneMesh::setup(errorState))
 			return false;
 
-		// Get the just created and initialized mesh instance
-		nap::MeshInstance& mesh = getMeshInstance();
-
-		// Ensure some render properties are correctly set
-		// Although the mesh transforms, this is purely because of the shader
-		// The vertices remain the same all the time.
-		mesh.setCullMode(ECullMode::Back);
-		mesh.setDrawMode(EDrawMode::Triangles);
-		mesh.setUsage(EMeshDataUsage::Static);
+		// Get the just created mesh instance
+		nap::MeshInstance& mesh_instance = getMeshInstance();
 
 		// Get attributes
-		Vec3VertexAttribute& pos_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uvs_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec3VertexAttribute& nor_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		Vec3VertexAttribute& uvs_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec3VertexAttribute& nor_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 
 		// Store the original point positions in a new attribute
-		mOriginalPosAttr = &mesh.getOrCreateAttribute<glm::vec3>("OriginalPosition");
-		mOriginalNorAttr = &mesh.getOrCreateAttribute<glm::vec3>("OriginalNormal");
+		mOriginalPosAttr = &mesh_instance.getOrCreateAttribute<glm::vec3>("OriginalPosition");
+		mOriginalNorAttr = &mesh_instance.getOrCreateAttribute<glm::vec3>("OriginalNormal");
 
 		mOriginalPosAttr->setData(pos_attr.getData());
 		mOriginalNorAttr->setData(nor_attr.getData());
@@ -64,7 +59,7 @@ namespace nap
 		float width = static_cast<float>(bitmap.getWidth() - 1);
 		float heigh = static_cast<float>(bitmap.getHeight() - 1);
 
-		int vert_count = mesh.getNumVertices();
+		int vert_count = mesh_instance.getNumVertices();
 
 		// Create the pixel that we need for sampling the bitmap data
 		std::unique_ptr<BaseColor> pixel = bitmap.makePixel();
@@ -98,12 +93,12 @@ namespace nap
 		}
 
 		// Update our mesh normals to ensure light calculations work in the shader
-		utility::computeNormals(mesh, pos_attr, nor_attr);
+		utility::computeNormals(mesh_instance, pos_attr, nor_attr);
 
 		// Store position attribute
 		mDisplacedPosAttr = &pos_attr;
 
 		// Initialize the mesh -> attributes are verified and data is uploaded to the GPU
-		return mesh.init(errorState);
+		return mesh_instance.init(errorState);
 	}
 }
