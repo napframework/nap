@@ -491,11 +491,14 @@ namespace nap
 		// Do string/template replacement
 		std::unordered_map<std::string, std::string> reps = {
 			{"ROOT", rootpath},
-			{"BUILD_TYPE", sBuildConf},
+			{"BUILD_TYPE", sBuildType},
 		};
 
 		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
-			pathMapping->mModulePaths[i] = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
+		{
+			auto newPath = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
+			pathMapping->mModulePaths[i] = newPath;
+		}
 
 		return pathMapping;
 	}

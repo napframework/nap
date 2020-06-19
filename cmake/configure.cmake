@@ -1,13 +1,15 @@
 if(MSVC OR APPLE)
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
+
+        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${OUTPUTCONFIG})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${OUTPUTCONFIG})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
         else()
-            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${OUTPUTCONFIG})
-            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG})
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
         endif()
 
         string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
@@ -20,7 +22,7 @@ else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
     else()
-        set(BUILD_CONF ${CMAKE_BUILD_TYPE})
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
     # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 

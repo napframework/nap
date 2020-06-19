@@ -1,8 +1,8 @@
 {
     "Type": "nap::PathMapping",
     "mID": "UnixFrameworkReleaseMapping",
-    "ProjectExeToRoot": "../../../..",
-    "NapkinExeToRoot": "../../..",
+    "ProjectExeToRoot": "../../..",
+    "NapkinExeToRoot": "../..",
     "ModulePaths": 
     [
         "{ROOT}/modules/{MODULE_NAME}/lib/{BUILD_TYPE}",

@@ -1,8 +1,8 @@
 {
     "Type": "nap::PathMapping",
     "mID": "Win64FrameworkReleaseMapping",
-    "ProjectExeToRoot": "../../../..",
-    "NapkinExeToRoot": "../../..",
+    "ProjectExeToRoot": "../../..",
+    "NapkinExeToRoot": "../..",
     "ModulePaths": 
     [
         "{EXE_DIR}",

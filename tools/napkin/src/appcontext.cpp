@@ -164,7 +164,7 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 	// Do string/template replacement
 	std::unordered_map<std::string, std::string> reps = {
 		{"ROOT", rootpath},
-		{"BUILD_TYPE", sBuildConf},
+		{"BUILD_TYPE", sBuildType},
 	};
 
 	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)

@@ -3,7 +3,7 @@
     "mID": "ProjectInfo",
     "Title": "BlobTrace",
     "Version": "1.0.0",
-    "DataFile": "data/blobtrace.json",
+    "Data": "data/blobtrace.json",
     "PathMapping": "./cache/path_mapping.json",
     "RequiredModules": [
         "mod_napapp",

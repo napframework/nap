@@ -25,7 +25,7 @@ constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
-constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
 
 namespace nap
 {

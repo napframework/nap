@@ -145,14 +145,23 @@ namespace nap
 	bool ModuleManager::findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
 										std::string& moduleFile, std::string& moduleJson)
 	{
-		auto expectedFilename = utility::stringFormat("lib%s.so", moduleName.c_str());
-		auto expectedJsonFile = utility::stringFormat("lib%s.json", moduleName.c_str());
+		auto expectedFilename = utility::stringFormat("%s.so", moduleName.c_str());
+		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
 
-		for (const auto& dir : projectInfo.getModuleDirectories())
+		auto moduleDirs = projectInfo.getModuleDirectories();
+
+		if (moduleDirs.empty())
+		{
+			nap::Logger::error("No module dirs specified in %s", projectInfo.mFilename.c_str());
+			return false;
+		}
+
+		for (const auto& dir : moduleDirs)
 		{
 			moduleFile = utility::stringFormat("%s/%s", dir.c_str(), expectedFilename.c_str());
 			moduleJson = utility::stringFormat("%s/%s", dir.c_str(), expectedJsonFile.c_str());
-			nap::Logger::debug("Looking for %s", moduleJson.c_str());
+			nap::Logger::debug("Looking for %s (resolved as: %s)", moduleJson.c_str(),
+							   utility::getAbsolutePath(moduleJson.c_str()).c_str());
 
 			if (utility::fileExists(moduleFile) and utility::fileExists(moduleJson))
 				return true;
@@ -160,10 +169,6 @@ namespace nap
 
 		nap::Logger::error("Module not found, expected: '%s' and '%s'",
 						   expectedFilename.c_str(), expectedJsonFile.c_str());
-
-		for (const auto& dir : projectInfo.getModuleDirectories())
-			nap::Logger::debug("Attempted to find module in:\n",
-							   utility::joinString(projectInfo.getModuleDirectories(), "\n").c_str());
 
 		return false;
 	}
