@@ -164,18 +164,9 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Viewport", fullscreen);
-				fullscreen = !fullscreen;
+				mRenderWindow->toggleFullscreen();
 			}
 		}
-	}
-
-	
-	// Make window fullscreen
-	void VinylApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
