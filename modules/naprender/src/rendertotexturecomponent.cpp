@@ -126,7 +126,9 @@ namespace nap
 
 		// Create orthographic projection matrix
 		glm::ivec2 size = mTarget.getBufferSize();
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
+
+		// Create projection matrix
+		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
 
 		mTarget.beginRendering();
 
@@ -160,6 +162,9 @@ namespace nap
 
 		// Get the parent material
 		Material& comp_mat = mMaterialInstance.getMaterial();		 
+
+		// Update the model matrix so that the plane mesh is of the same size as the render target
+		computeModelMatrix();
 
 		UniformStructInstance* nap_uniform = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
 		if (nap_uniform != nullptr)
