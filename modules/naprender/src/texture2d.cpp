@@ -273,19 +273,20 @@ namespace nap
 
 		// Make sure usage is not DynamicWrite when LOD generation is turned on
 		// TODO: Support mipmap generation when texture = ETextureUsage::DynamicWrite
-		if (!errorState.check(!(mUsage == ETextureUsage::DynamicWrite && generateMipMaps),
-			"%s: Mipmap generation not supported for dynamic write textures", mID.c_str()))
+		if (mUsage == ETextureUsage::DynamicWrite && generateMipMaps)
+		{
+			errorState.fail("%s: Mipmap generation not supported for dynamic write textures", mID.c_str());
 			return false;
+		}
 
 		// If mip mapping is enabled, ensure it is supported
-		mMipLevels = 1;
 		if (generateMipMaps)
 		{
 			VkFormatProperties format_properties;
 			mRenderService->getFormatProperties(mFormat, format_properties);		
 			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			{
-				errorState.fail("%s: image format does not support support linear blitting");
+				errorState.fail("%s: image format does not support support linear blitting", mID.c_str());
 				return false;
 			}
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
