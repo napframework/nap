@@ -57,6 +57,58 @@ namespace nap
 
 
 	/**
+	 * @return Vulkan draw mode based on given draw mode
+	 */
+	static VkPrimitiveTopology getTopology(EDrawMode drawMode)
+	{
+		switch (drawMode)
+		{
+			case EDrawMode::Points:
+				return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			case EDrawMode::Lines:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			case EDrawMode::LineStrip:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+			case EDrawMode::Triangles:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			case EDrawMode::TriangleStrip:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+			case EDrawMode::TriangleFan:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+			default:
+			{
+				assert(false);
+				return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+			}
+		}
+	}
+
+
+	/**
+	 * @return Vulkan cull mode based on given NAP cull mode
+	 */
+	static VkCullModeFlagBits getCullMode(ECullMode mode)
+	{
+		switch (mode)
+		{
+			case ECullMode::Back:
+				return VK_CULL_MODE_BACK_BIT;
+			case ECullMode::Front:
+				return VK_CULL_MODE_FRONT_BIT;
+			case ECullMode::FrontAndBack:
+				return VK_CULL_MODE_FRONT_AND_BACK;
+			case ECullMode::None:
+				return VK_CULL_MODE_NONE;
+			default:
+			{
+				assert(false);
+				return VK_CULL_MODE_NONE;
+			}
+		}
+	}
+
+
+	/**
 	 *	@return the set of layers to be initialized with Vulkan
 	 */
 	const std::set<std::string>& getRequestedLayerNames()
@@ -537,13 +589,6 @@ namespace nap
 		window->addEvent(std::move(windowEvent));
 	}
 
-	
-	VkPrimitiveTopology getTopology(EDrawMode drawMode)
-	{
-		assert(drawMode != EDrawMode::Unknown);
-		return static_cast<VkPrimitiveTopology>(drawMode);
-	}
-
 
 	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
@@ -719,7 +764,7 @@ namespace nap
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = static_cast<VkCullModeFlagBits>(cullMode);
+		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
