@@ -286,7 +286,7 @@ namespace nap
 			mRenderService->getFormatProperties(mFormat, format_properties);		
 			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			{
-				errorState.fail("%s: image format does not support support linear blitting", mID.c_str());
+				errorState.fail("%s: image format does not support support linear blitting, consider disabling mipmap generation", mID.c_str());
 				return false;
 			}
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
