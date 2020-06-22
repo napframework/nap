@@ -57,7 +57,7 @@ namespace nap
 
 
 	/**
-	 * @return Vulkan draw mode based on given draw mode
+	 * @return Vulkan topology mode based on given NAP draw mode
 	 */
 	static VkPrimitiveTopology getTopology(EDrawMode drawMode)
 	{
