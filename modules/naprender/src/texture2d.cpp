@@ -1,8 +1,12 @@
+// Local Includes
 #include "texture2d.h"
 #include "bitmap.h"
 #include "renderservice.h"
-#include "nap/core.h"
 #include "copyimagedata.h"
+
+// External Includes
+#include <nap/core.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_ENUM(nap::ETextureUsage)
 	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
@@ -261,9 +265,16 @@ namespace nap
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
 	{
-		// Get the format
+		// Get the format, when unsupported bail.
 		mFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
+			"%s, Unsupported texture format", mID.c_str()))
+			return false;
+
+		// Make sure usage is not DynamicWrite when LOD generation is turned on
+		// TODO: Support mipmap generation when texture = ETextureUsage::DynamicWrite
+		if (!errorState.check(!(mUsage == ETextureUsage::DynamicWrite && generateMipMaps),
+			"%s: Mipmap generation not supported for dynamic write textures", mID.c_str()))
 			return false;
 
 		// If mip mapping is enabled, ensure it is supported
@@ -280,9 +291,12 @@ namespace nap
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
 		}
 
+		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		if (mUsage == ETextureUsage::DynamicRead)
+		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
 		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
