@@ -18,10 +18,8 @@ namespace nap
 	class SequencePlayerParameterSetterBase;
 
 	/**
-	 * Main interface for processing sequence events and setting the parameters on the main thread
-	 * All SequenceEventReceivers and ParameterSetters are registered and de-registered with this service on initialization and destruction
-	 * This service consumes all received sequence events and forwards them to all registered SequenceEventReceivers
-	 * Also, the service sets all parameter values that are tied to a sequenceplayer and its tracks when the user wants parameters to be set on main thread
+	 * Main interface for processing sequence events and updating sequenceoutputs
+	 * F.E. 
 	 */
 	class NAPAPI SequenceService : public Service
 	{
@@ -37,6 +35,10 @@ namespace nap
 		// Default Destructor
 		virtual ~SequenceService();
 
+		/**
+		 * Registers object create for specific output types
+		 * Each output type must register its own factory method so its constructor gets initialized with a reference to the sequenceservice
+		 */
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService*));
 	protected:
 		/**
@@ -46,7 +48,6 @@ namespace nap
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
-		 * init
 		 * initializes service
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
@@ -54,8 +55,7 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * update
-		 * updates any ParameterSetters and SequenceEventReceivers from main thread
+		 * updates any outputs from main thread
 		 * @param deltaTime deltaTime
 		 */
 		virtual void update(double deltaTime) override;
