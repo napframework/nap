@@ -6,7 +6,7 @@
 #include <nap/logger.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 #include "vk_mem_alloc.h"
 #include "nap/core.h"
 

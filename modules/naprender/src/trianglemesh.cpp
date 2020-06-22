@@ -5,7 +5,7 @@
 #include "renderservice.h"
 #include "nap/core.h"
 
-RTTI_BEGIN_CLASS(nap::TriangleMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -31,9 +31,8 @@ namespace nap
 	{
 		// Create plane
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		constructTriangle(*mMeshInstance);
-
 		return true;
 	}
 
@@ -63,7 +62,9 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());
-		mesh.setDrawMode(EDrawMode::TRIANGLE_STRIP);
+		mesh.setDrawMode(EDrawMode::TriangleStrip);
+		mesh.setCullMode(ECullMode::Back);
+		mesh.setUsage(EMeshDataUsage::Static);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());
@@ -72,5 +73,4 @@ namespace nap
 		MeshShape& shape = mesh.createShape();
 		shape.setIndices(indices.data(), indices.size());
 	}
-
 };

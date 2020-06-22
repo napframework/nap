@@ -1,11 +1,13 @@
 // Local Includes
 #include "particleemittercomponent.h"
-
+#include "renderservice.h"
+// External Includes
 #include <entity.h>
 #include <rect.h>
 #include <glm/gtx/transform.hpp>
 #include <mathutils.h>
-#include "nap/core.h"
+#include <nap/core.h>
+#include <renderservice.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
@@ -62,48 +64,50 @@ namespace nap
 	class ParticleMesh : public IMesh
 	{
 	public:
-		ParticleMesh(Core& core) :
-			mMeshInstance(core.getService<RenderService>())
-		{
-
-		}
+		ParticleMesh(Core& core) : mRenderService(core.getService<RenderService>())
+		{ }
 
 		bool init(utility::ErrorState& errorState)
 		{
+			assert(mRenderService != nullptr);
+			mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
-			mMeshInstance.setNumVertices(0);
-			mMeshInstance.setUsage(EMeshDataUsage::DynamicWrite);
-			mMeshInstance.reserveVertices(1000);
-			mMeshInstance.setDrawMode(EDrawMode::TRIANGLES);
+			mMeshInstance->setNumVertices(0);
+			mMeshInstance->setUsage(EMeshDataUsage::DynamicWrite);
+			mMeshInstance->reserveVertices(1000);
+			mMeshInstance->setDrawMode(EDrawMode::Triangles);
+			mMeshInstance->setCullMode(ECullMode::None);
 
 			// Create the necessary attributes
-			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-			FloatVertexAttribute& id_attribute = mMeshInstance.getOrCreateAttribute<float>("pid");
+			Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+			Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+			Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+			FloatVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<float>("pid");
 
-			MeshShape& shape = mMeshInstance.createShape();
+			MeshShape& shape = mMeshInstance->createShape();
 
 			// Reserve CPU memory for all the particle geometry necessary to create
 			// We want to draw the mesh as a set of triangles, 2 triangles per particle
 			shape.reserveIndices(1000);
 
 			// Initialize our instance
-			return mMeshInstance.init(errorState);
+			return mMeshInstance->init(errorState);
 		}
 
 		/**
 		* @return MeshInstance as created during init().
 		*/
-		virtual MeshInstance& getMeshInstance()	override { return mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override				{ return *mMeshInstance; }
 
 		/**
 		* @return MeshInstance as created during init().
 		*/
-		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override	{ return *mMeshInstance; }
 
 	private:
-		MeshInstance mMeshInstance;
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
+		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
 	};
 
 	//////////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@
 #include "renderservice.h"
 #include "indexbuffer.h"
 #include "renderglobals.h"
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)

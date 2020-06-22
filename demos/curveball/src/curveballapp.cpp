@@ -14,7 +14,7 @@
 #include <imgui/imgui.h>
 #include <mathutils.h>
 #include <meshutils.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -118,9 +118,6 @@ namespace nap
 		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Set clear color
-			mRenderWindow->setClearColor({ 1.0f, 0.0f, 0.0f, 0.0f });
-
 			// Start render pass
 			mRenderWindow->beginRendering();
 

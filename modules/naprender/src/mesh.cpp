@@ -1,21 +1,23 @@
 // Local Includes
 #include "mesh.h"
-#include <rtti/rttiutilities.h>
 #include "meshutils.h"
 #include "renderservice.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
-#include "nap/core.h"
+
+// External Includes
+#include <rtti/rttiutilities.h>
+#include <nap/core.h>
+#include <nap/assert.h>
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
-	RTTI_ENUM_VALUE(nap::EDrawMode::UNKNOWN,		"Unknown"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::POINTS,			"Points"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINES,			"Lines"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_STRIP,		"LineStrip"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::LINE_LOOP,		"LineLoop"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLES,		"Triangles"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_STRIP,	"TriangleStrip"),
-	RTTI_ENUM_VALUE(nap::EDrawMode::TRIANGLE_FAN,	"TriangleFan")
+	RTTI_ENUM_VALUE(nap::EDrawMode::Unknown,		"Unknown"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Points,			"Points"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Lines,			"Lines"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::LineStrip,		"LineStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::Triangles,		"Triangles"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleStrip,	"TriangleStrip"),
+	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleFan,	"TriangleFan")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::MeshShape)
@@ -26,6 +28,7 @@ RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",			&nap::RTTIMeshProperties::mUsage,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DrawMode",		&nap::RTTIMeshProperties::mDrawMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",		&nap::RTTIMeshProperties::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
@@ -62,16 +65,18 @@ namespace nap
 		return stream.str();
 	}
 	
+
+	//////////////////////////////////////////////////////////////////////////
+	// MeshInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	MeshInstance::MeshInstance(RenderService* renderService) :
+	MeshInstance::MeshInstance(RenderService& renderService) :
 		mRenderService(renderService)
-	{
-	}
+	{ }
+
 
 	MeshInstance::~MeshInstance()
-	{
-	}
+	{ }
 
 
 	// Returns associated mesh
@@ -85,7 +90,7 @@ namespace nap
 	// Creates GPU vertex attributes and updates mesh
 	bool MeshInstance::initGPUData(utility::ErrorState& errorState)
 	{
-		mGPUMesh = std::make_unique<GPUMesh>(*mRenderService, mProperties.mUsage);
+		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
 
@@ -95,7 +100,8 @@ namespace nap
 
 	bool MeshInstance::init(utility::ErrorState& errorState)
 	{
-		return initGPUData(errorState);
+		mInitialized = initGPUData(errorState);
+		return mInitialized;
 	}
 
 
@@ -138,6 +144,10 @@ namespace nap
 
 	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
+		// Assert when trying to update a mesh that is static and already initialized
+		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMeshDataUsage::DynamicWrite, 
+			"trying to update mesh without usage set to: 'DynamicWrite'");
+
 		// Check for mismatches in sizes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
@@ -152,13 +162,13 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			vertex_attr_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), mProperties.mShapes[shapeIndex].getIndices());
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mProperties.mShapes[shapeIndex].getIndices());
 		}
 
 		return true;
@@ -173,22 +183,18 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(mRenderService->getPhysicalDevice(), mRenderService->getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
+		gpu_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
 		return true;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Mesh
+	//////////////////////////////////////////////////////////////////////////
 
-	Mesh::Mesh() :
-		mMeshInstance(nullptr)
-	{
-	}
+	Mesh::Mesh(Core& core) : mRenderService(core.getService<nap::RenderService>())
+	{}
 
-	Mesh::Mesh(Core& core) :
-		mMeshInstance(core.getService<RenderService>())
-	{
-	}
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
@@ -202,7 +208,27 @@ namespace nap
 				utility::generateIndices(shape, mProperties.mNumVertices);
 		}
 
-		mMeshInstance.copyMeshProperties(mProperties);
-		return mMeshInstance.init(errorState);
+		// Create instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(*mRenderService);
+		
+		// Copy properties from resource to instance and initialize
+		mMeshInstance->copyMeshProperties(mProperties);
+		return mMeshInstance->init(errorState);
 	}
+
+
+	nap::MeshInstance& Mesh::getMeshInstance()
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
+
+	const nap::MeshInstance& nap::Mesh::getMeshInstance() const
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
 }

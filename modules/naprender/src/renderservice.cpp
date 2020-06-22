@@ -24,6 +24,7 @@
 #include <scene.h>
 #include <SDL_vulkan.h>
 #include <glslang/Public/ShaderLang.h>
+#include <nap/assert.h>
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
@@ -52,6 +53,58 @@ namespace nap
 		if (counts & VK_SAMPLE_COUNT_2_BIT)		{ return VK_SAMPLE_COUNT_2_BIT; }
 
 		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
+
+	/**
+	 * @return Vulkan topology mode based on given NAP draw mode
+	 */
+	static VkPrimitiveTopology getTopology(EDrawMode drawMode)
+	{
+		switch (drawMode)
+		{
+			case EDrawMode::Points:
+				return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			case EDrawMode::Lines:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			case EDrawMode::LineStrip:
+				return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+			case EDrawMode::Triangles:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			case EDrawMode::TriangleStrip:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+			case EDrawMode::TriangleFan:
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+			default:
+			{
+				assert(false);
+				return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+			}
+		}
+	}
+
+
+	/**
+	 * @return Vulkan cull mode based on given NAP cull mode
+	 */
+	static VkCullModeFlagBits getCullMode(ECullMode mode)
+	{
+		switch (mode)
+		{
+			case ECullMode::Back:
+				return VK_CULL_MODE_BACK_BIT;
+			case ECullMode::Front:
+				return VK_CULL_MODE_FRONT_BIT;
+			case ECullMode::FrontAndBack:
+				return VK_CULL_MODE_FRONT_AND_BACK;
+			case ECullMode::None:
+				return VK_CULL_MODE_NONE;
+			default:
+			{
+				assert(false);
+				return VK_CULL_MODE_NONE;
+			}
+		}
 	}
 
 
@@ -536,29 +589,6 @@ namespace nap
 		window->addEvent(std::move(windowEvent));
 	}
 
-	VkPrimitiveTopology getTopology(EDrawMode drawMode)
-	{
-		switch (drawMode)
-		{
-		case EDrawMode::POINTS:
-			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case EDrawMode::LINES:
-			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case EDrawMode::LINE_STRIP:
-			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case EDrawMode::TRIANGLES:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case EDrawMode::TRIANGLE_STRIP:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case EDrawMode::TRIANGLE_FAN:
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-		default:
-		{
-			assert(false);
-			return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
-		}
-		}
-	}
 
 	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
@@ -655,7 +685,14 @@ namespace nap
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, EDrawMode drawMode, ECullWindingOrder windingOrder, VkRenderPass renderPass, VkSampleCountFlagBits sampleCount, bool enableSampleShading, VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, 
+		EDrawMode drawMode, 
+		ECullWindingOrder windingOrder, 
+		VkRenderPass renderPass, 
+		VkSampleCountFlagBits sampleCount, 
+		bool enableSampleShading,
+		ECullMode cullMode,
+		VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -727,7 +764,7 @@ namespace nap
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;		//< TODO: Make customizable, currently doesn't work with our plane!
+		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -793,17 +830,41 @@ namespace nap
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
-		PipelineKey pipeline_key(shader, draw_mode, materialInstance.getDepthMode(), materialInstance.getBlendMode(), renderTarget.getWindingOrder(), renderTarget.getColorFormat(), renderTarget.getDepthFormat(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled());
+		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
+		
+		// Create pipeline key based on draw properties
+		PipelineKey pipeline_key(shader, draw_mode, 
+			materialInstance.getDepthMode(), 
+			materialInstance.getBlendMode(), 
+			renderTarget.getWindingOrder(), 
+			renderTarget.getColorFormat(), 
+			renderTarget.getDepthFormat(), 
+			renderTarget.getSampleCount(), 
+			renderTarget.getSampleShadingEnabled(),
+			cull_mode);
+
+		// Find key in cache and use previously created pipeline
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
 		if (pos != mPipelineCache.end())
 			return pos->second;
 
+		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (!createGraphicsPipeline(mDevice, materialInstance, draw_mode, renderTarget.getWindingOrder(), renderTarget.getRenderPass(), renderTarget.getSampleCount(), renderTarget.getSampleShadingEnabled(), pipeline.mLayout, pipeline.mPipeline, errorState))
-			return Pipeline();
+		if (createGraphicsPipeline(mDevice, materialInstance,
+			draw_mode,
+			renderTarget.getWindingOrder(),
+			renderTarget.getRenderPass(),
+			renderTarget.getSampleCount(),
+			renderTarget.getSampleShadingEnabled(),
+			cull_mode,
+			pipeline.mLayout, pipeline.mPipeline, errorState))
+		{
+			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			return pipeline;
+		}
 
-		mPipelineCache.insert(std::make_pair(pipeline_key, pipeline));
-		return pipeline;
+		NAP_ASSERT_MSG(false, "Unable to create new pipeline");
+		return Pipeline();
 	}
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
@@ -973,7 +1034,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero,  errorState);
 	}
 
 
@@ -1097,6 +1158,13 @@ namespace nap
 		// through the queue. This is reset when beginFrame is called again.
 		mCanDestroyVulkanObjectsImmediately = true;
 	}
+
+
+	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
+	{
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+	}
+
 
 	void RenderService::preShutdown()
 	{

@@ -4,7 +4,7 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 
 // External Includes
 #include <font.h>

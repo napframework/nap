@@ -50,7 +50,7 @@ namespace nap
 		EFilterMode		mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
 		EAddressMode	mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
 		EAddressMode	mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
-		int				mMaxLodLevel			= 0;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
+		int				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
 	};
 
 

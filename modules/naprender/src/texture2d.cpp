@@ -1,8 +1,12 @@
+// Local Includes
 #include "texture2d.h"
 #include "bitmap.h"
 #include "renderservice.h"
-#include "nap/core.h"
 #include "copyimagedata.h"
+
+// External Includes
+#include <nap/core.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_ENUM(nap::ETextureUsage)
 	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
@@ -19,142 +23,225 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace 
-	{
-		static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
-										  VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStage, VkAccessFlags dstAccessMask, VkPipelineStageFlags dstStage) 
-		{
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = oldLayout;
-			barrier.newLayout = newLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = srcAccessMask;
-			barrier.dstAccessMask = dstAccessMask;
-
-			vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		}
-
-		void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
-		{
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = {
-				width,
-				height,
-				1
-			};
-
-			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-		}
-
-
-		void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
-		{
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = {
-				width,
-				height,
-				1
-			};
-
-			vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
-		}
-	}	
-
+	//////////////////////////////////////////////////////////////////////////
+	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		ESurfaceChannels channels = descriptor.getChannels();
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
+
+		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	}
+
+
+	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
+	{
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
+
+		vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+	}
+
+
+	static VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	{
 		ESurfaceDataType dataType = descriptor.getDataType();
 		EColorSpace colorSpace = descriptor.getColorSpace();
 
-		switch (channels)
+		switch (descriptor.getChannels())
 		{
-		case ESurfaceChannels::R:
+			case ESurfaceChannels::R:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32_SFLOAT;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16_UNORM;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16_UNORM;
 				}
 				break;
 			}
-		case ESurfaceChannels::RGBA:
+			case ESurfaceChannels::RGBA:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32G32B32A32_SFLOAT;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16G16B16A16_UNORM;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32G32B32A32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16G16B16A16_UNORM;
 				}
 				break;
 			}
-		case ESurfaceChannels::BGRA:
+			case ESurfaceChannels::BGRA:
 			{
 				switch (dataType)
 				{
-				case nap::ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_UNDEFINED;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_UNDEFINED;
 				}
 				break;
 			}
+			assert(false);
 		}
-
 		return VK_FORMAT_UNDEFINED;
 	}
+
 
 	static int getNumStagingBuffers(int inMaxFramesInFlight, ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case ETextureUsage::DynamicWrite:
-			return inMaxFramesInFlight + 1;
-		case ETextureUsage::Static:
-			return 1;
-		case ETextureUsage::DynamicRead:
-			return inMaxFramesInFlight;
+			case ETextureUsage::DynamicWrite:
+				return inMaxFramesInFlight + 1;
+			case ETextureUsage::Static:
+				return 1;
+			case ETextureUsage::DynamicRead:
+				return inMaxFramesInFlight;
+			default:
+				assert(false);
 		}
-
-		assert(false);
 		return 0;
 	}
 
 
+	/**
+	 * Transition image to a new layout using an existing image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
+		VkImageLayout oldLayout,		VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
+		uint32 mipLevel,				uint32 mipLevelCount)
+	{
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = mipLevel;
+		barrier.subresourceRange.levelCount = mipLevelCount;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = dstAccessMask;
+		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+
+	/**
+	 * Transition image to a new layout using an image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		uint32 mipLevel, uint32 mipLevelCount)
+	{
+		VkImageMemoryBarrier barrier = {};
+		transitionImageLayout(commandBuffer, image, barrier,
+			oldLayout,		newLayout,
+			srcAccessMask,	dstAccessMask,
+			srcStage,		dstStage,
+			mipLevel,		mipLevelCount);
+	}
+
+
+	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	{
+
+		int32 mipWidth  = static_cast<int32>(texWidth);
+		int32 mipHeight = static_cast<int32>(texHeight);
+
+		VkImageMemoryBarrier barrier {};
+		for (uint32_t i = 1; i < mipLevels; i++)
+		{
+			// Prepare LOD for blit operation
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
+				i - 1,									1);
+
+			// Create blit structure
+			VkImageBlit blit{};
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = i - 1;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = i;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+
+			// Blit
+			vkCmdBlitImage(buffer,
+				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+
+			// Prepare LOD for shader read
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				i - 1,									1);
+
+			if (mipWidth  > 1) mipWidth  /= 2;
+			if (mipHeight > 1) mipHeight /= 2;
+		}
+
+		// Prepare final LOD for shader read
+		transitionImageLayout(buffer, image, barrier,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			mipLevels - 1,							1);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Texture2D
 	//////////////////////////////////////////////////////////////////////////
 
 	Texture2D::Texture2D(Core& core) :
@@ -176,20 +263,41 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, EClearMode clearMode, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
 	{
-		mVulkanFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mVulkanFormat != VK_FORMAT_UNDEFINED, "Unsupported texture format"))
+		// Get the format, when unsupported bail.
+		mFormat = getTextureFormat(*mRenderService, descriptor);
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
+			"%s, Unsupported texture format", mID.c_str()))
 			return false;
 
-		VkDevice device = mRenderService->getDevice();
-		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
+		// Make sure usage is not DynamicWrite when LOD generation is turned on
+		// TODO: Support mipmap generation when texture = ETextureUsage::DynamicWrite
+		if (mUsage == ETextureUsage::DynamicWrite && generateMipMaps)
+		{
+			errorState.fail("%s: Mipmap generation not supported for dynamic write textures", mID.c_str());
+			return false;
+		}
 
+		// If mip mapping is enabled, ensure it is supported
+		if (generateMipMaps)
+		{
+			VkFormatProperties format_properties;
+			mRenderService->getFormatProperties(mFormat, format_properties);		
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			{
+				errorState.fail("%s: image format does not support support linear blitting, consider disabling mipmap generation", mID.c_str());
+				return false;
+			}
+			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+		}
+
+		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
-
 		if (mUsage == ETextureUsage::DynamicRead)
+		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
 		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
@@ -208,6 +316,7 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead. 
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
@@ -227,7 +336,7 @@ namespace nap
 		}
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		if (mUsage == ETextureUsage::DynamicRead)
+		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create image allocation struct
@@ -235,21 +344,21 @@ namespace nap
 		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		img_alloc_usage.flags = 0;
 
-		// We create images and imageviews for the amount of frames in flight
-		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mVulkanFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		// We create images and image views for the amount of frames in flight
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
-		if (!create2DImageView(device, mImageData.mTextureImage, mVulkanFormat, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
 				return false;
 
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
+		// Fill the texture with nothing (black)
 		if (clearMode == Texture2D::EClearMode::FillWithZero)
 		{
 			std::vector<uint8_t> empty_texture_data;
 			empty_texture_data.resize(mImageSizeInBytes);
-
 			update(empty_texture_data.data(), descriptor);
 		}
 
@@ -257,9 +366,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool compressed, void* initialData, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, compressed, EClearMode::DontClear, errorState))
+		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, errorState))
 			return false;
 
 		update(initialData, descriptor);
@@ -304,14 +413,33 @@ namespace nap
 
 		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		{
-			srcMask = VK_ACCESS_SHADER_READ_BIT;
+			srcMask  = VK_ACCESS_SHADER_READ_BIT;
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcMask, srcStage, dstMask, dstStage);
+		// Get image ready for copy, applied to all mipmap layers
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			srcMask,	dstMask,
+			srcStage,	dstStage,
+			0,			mMipLevels);
+		
+		// Copy staging buffer to image
 		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-							VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+		
+		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
+		if (mMipLevels > 1)
+		{
+			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+		}
+		else
+		{
+			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0,										1);
+		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -324,11 +452,22 @@ namespace nap
 		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							   VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+		// Transition for copy
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0,											1);
+		
+		// Copy to buffer
 		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+		
+		// Transition back to shader usage
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0,											1);
 	}
 
 
@@ -354,9 +493,7 @@ namespace nap
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
-
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
-
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
@@ -382,15 +519,12 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		StagingBuffer& buffer = mStagingBuffers[frameIndex];
-
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
-
 		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
-
 		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

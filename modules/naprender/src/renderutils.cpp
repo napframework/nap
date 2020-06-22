@@ -17,7 +17,7 @@ RTTI_END_ENUM;
 
 namespace nap
 {
-	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, const VmaAllocationCreateInfo& allocationUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
+	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, const VmaAllocationCreateInfo& allocationUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 	{
 		VkImageCreateInfo image_info = {};
 		image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -25,7 +25,7 @@ namespace nap
 		image_info.extent.width = width;
 		image_info.extent.height = height;
 		image_info.extent.depth = 1;
-		image_info.mipLevels = 1;
+		image_info.mipLevels = mipLevels;
 		image_info.arrayLayers = 1;
 		image_info.format = format;
 		image_info.tiling = tiling;
@@ -42,7 +42,7 @@ namespace nap
 	}
 
 
-	bool create2DImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState)
+	bool create2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState)
 	{
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -51,7 +51,7 @@ namespace nap
 		viewInfo.format = format;
 		viewInfo.subresourceRange.aspectMask = aspectFlags;
 		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.levelCount = mipLevels;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
@@ -70,5 +70,4 @@ namespace nap
 		if (data.mTextureImage != nullptr)
 			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
 	}
-
 }

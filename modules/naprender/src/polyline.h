@@ -16,7 +16,8 @@ namespace nap
 	 */
 	struct PolyLineProperties
 	{
-		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	///< Property: 'Color' RGBA color of the line
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' If the line is created once or frequently updated.
+		glm::vec4		mColor = { 1.0f, 1.0f, 1.0f,1.0f };	///< Property: 'Color' RGBA color of the line
 	};
 
 
@@ -133,7 +134,7 @@ namespace nap
 		/**
 		 * @return if the line is closed or not
 		 */
-		bool isClosed() const;
+		virtual bool isClosed() const = 0;
 
 		// Properties associated with a line
 		PolyLineProperties mLineProperties;
@@ -166,10 +167,15 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		glm::vec3 mStart	= { -0.5f, 0.0f, 0.0f };	///< Property: 'Start' location of the line
-		glm::vec3 mEnd		= { 0.5f, 0.0f, 0.0f };		///< Property: 'End' location of the line
-		bool mClosed		= false;					///< Property: 'Closed' if the line is considered closed
-		int mVertexCount	= 2;						///< Property: 'Vertices' number of line vertices, defaults to two
+		/**
+		 * @return closed or open based on the 'Closed' property.
+		 */
+		virtual bool isClosed() const override						{ return mClosed; }
+
+		glm::vec3 mStart	= { -0.5f, 0.0f, 0.0f };				///< Property: 'Start' location of the line
+		glm::vec3 mEnd		= { 0.5f, 0.0f, 0.0f };					///< Property: 'End' location of the line
+		bool mClosed		= false;								///< Property: 'Closed' if the line is considered closed
+		int mVertexCount	= 2;									///< Property: 'Vertices' number of line vertices, defaults to two
 
 	};
 
@@ -192,6 +198,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override						{ return true; }
+
 		glm::vec2 mDimensions = { 1.0f, 1.0f };						///< Property: 'Dimensions' vec2 that describes the width and height of the rectangle 
 	};
 
@@ -212,8 +223,13 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		float mRadius = 1.0f;					///< Property: 'Radius' of the circle
-		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
+
+		float mRadius = 1.0f;									///< Property: 'Radius' of the circle
+		int mSegments = 100;									///< Property: 'Segments' number of circle segments 
 	};
 
 	
@@ -226,13 +242,18 @@ namespace nap
 		RTTI_ENABLE(PolyLine)
 	public:
 		Hexagon(nap::Core& core);
-		float mRadius = 1.0f;						///< Property: 'Radius' of the hexagon
+		float mRadius = 1.0f;									///< Property: 'Radius' of the hexagon
 
 		/**
 		 * Creates the hexagon
 		 * @return if the hexagon was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
 	};
 
 	
@@ -245,13 +266,18 @@ namespace nap
 		RTTI_ENABLE(PolyLine)
 	public:
 		TriangleLine(nap::Core& core);
-		float mRadius = 1.0f;							///< Property: 'Radius' of the triangle
+		float mRadius = 1.0f;									///< Property: 'Radius' of the triangle
 
 		/**
 		 * Creates the equal sided triangle
 		 * @return if the triangle mesh was created successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
 	};
 
 

@@ -8,8 +8,9 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VisualizeNormalsMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("ReferenceMesh", &nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Length", &nap::VisualizeNormalsMesh::mNormalLength, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::VisualizeNormalsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ReferenceMesh",	&nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Length",			&nap::VisualizeNormalsMesh::mNormalLength,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -159,7 +160,9 @@ namespace nap
 
 		// Create the mesh that will hold the normals
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::Lines);
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();
@@ -242,13 +245,12 @@ namespace nap
 
 		// Set number of vertices
 		mMeshInstance->setNumVertices(vertex_count * 2);
-		mMeshInstance->setDrawMode(EDrawMode::LINES);
 
 		// Draw normals as lines
 		MeshShape& shape = mMeshInstance->getShape(0);
 
 		// Automatically generate indices
-		utility::generateIndices(shape, vertex_count * 2);
+		utility::generateIndices(shape, vertex_count * 2, false);
 
 		return true;
 	}

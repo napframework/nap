@@ -10,7 +10,8 @@
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <nap/numeric.h>
-#include "rtti/factory.h"
+#include <rtti/factory.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -18,24 +19,36 @@ namespace nap
 	class Core;
 
 	/**
-	* Topology of the mesh
-	*/
-	enum class EDrawMode : uint8_t
+	 * Topology of the mesh
+	 */
+	enum class EDrawMode : int32
 	{
-		POINTS = 1,						///< Interpret the vertex data as single points
-		LINES = 2,						///< Interpret the vertex data as individual lines
-		LINE_STRIP = 3,					///< Interpret the vertex data as a single connected line
-		LINE_LOOP = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
-		TRIANGLES = 5,					///< Interpret the vertex data as a set of triangles
-		TRIANGLE_STRIP = 6,				///< Interpret the vertex data as a strip of triangles
-		TRIANGLE_FAN = 7,				///< Interpret the vertex data as a fan of triangles
-		UNKNOWN = 0,					///< Invalid vertex interpretation
+		Points			= 0,				///< Interpret the vertex data as single points
+		Lines			= 1,				///< Interpret the vertex data as individual lines
+		LineStrip		= 2,				///< Interpret the vertex data as a single connected line
+		Triangles		= 3,				///< Interpret the vertex data as a set of triangles
+		TriangleStrip	= 4,				///< Interpret the vertex data as a strip of triangles
+		TriangleFan		= 5,				///< Interpret the vertex data as a fan of triangles
+		Unknown			= 0x7FFFFFFF,		///< Invalid vertex interpretation
 	};
 
+
 	/**
-	* Known vertex attribute IDs in the system
-	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
-	*/
+	 * Triangle cull modes
+	 */
+	enum class ECullMode : int32
+	{
+		None			= 0,				///< No culling
+		Front			= 1,				///< Cull front facing triangles
+		Back			= 2,				///< Cull back facing triangles
+		FrontAndBack	= 3					///< Cull front and back facing triangles
+	};
+
+
+	/**
+	 * Known vertex attribute IDs in the system
+	 * These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
+	 */
 	namespace VertexAttributeIDs
 	{
 		/**
@@ -167,7 +180,8 @@ namespace nap
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
-		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -198,7 +212,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		MeshInstance(RenderService* renderService);
+		MeshInstance(RenderService& renderService);
 
 		// destructor
 		virtual ~MeshInstance();
@@ -297,6 +311,16 @@ namespace nap
 		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
 
 		/**
+		 * @return set the cull mode of this mesh (front, back etc.)
+		 */
+		void setCullMode(ECullMode mode)									{ mProperties.mCullMode = mode; }
+
+		/**
+		 * @return the cull mode of this mesh (front, back etc.)
+		 */
+		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
+
+		/**
 		 * Get the shape at the specified index
 		 * @param index The index of the shape to get (between 0 and getNumShapes())
 		 * @return The shape
@@ -317,7 +341,8 @@ namespace nap
 		MeshShape& createShape();
 
 		/**
-		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called; changing it after init will not have any effect.
+		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
+		 * changing it after init will not have any effect.
 		 */
 		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
@@ -329,6 +354,7 @@ namespace nap
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
@@ -338,6 +364,7 @@ namespace nap
 		/**
 		 * Push one specific CPU vertex buffer to the GPU.
 		 * Use this when updating only specific vertex attributes at run-time.
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between the vertex buffer an error will be returned
 		 * @param attribute the attribute to synchronize.
 		 * @param errorState contains the error when synchronization fails.
@@ -349,21 +376,30 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
-		RenderService*											mRenderService;
-		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
-		std::unique_ptr<GPUMesh>								mGPUMesh;			///< GPU mesh
+		RenderService&											mRenderService;			///< Required reference to the render service
+		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;			///< CPU mesh data
+		std::unique_ptr<GPUMesh>								mGPUMesh;				///< GPU mesh
+		bool													mInitialized = false;	///< If the instance is initialized
 	};
 
 
 	/**
-	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
+	 * Base class for each mesh resource. 
+	 * Every derived mesh should provide the system with a MeshInstance.
+	 * The instance is rendered and can be updated / modified at runtime.
 	 */
 	class IMesh : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
+		/**
+		 * @return the mesh instance
+		 */
 		virtual MeshInstance& getMeshInstance() = 0;
+
+		/**
+		 * @return the mesh instance
+		 */
 		virtual const MeshInstance& getMeshInstance() const = 0;
 	};
 
@@ -382,8 +418,14 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		/**
+		 * Constructor used during serialization.
+		 */
+		Mesh() = default;
 
-		Mesh();
+		/**
+		 * Constructor used at runtime.
+		 */
 		Mesh(Core& core);
 
 		/**
@@ -396,12 +438,12 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance()	override		{ return mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override;
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override;
 
 		/**
 		 * Finds vertex attribute.
@@ -419,10 +461,11 @@ namespace nap
 		template<typename T>
 		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
-		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
+		RTTIMeshProperties	mProperties;				///< Property: 'Properties' RTTI mesh CPU data
 
 	private:
-		MeshInstance		mMeshInstance;		///< Runtime mesh instance
+		std::unique_ptr<MeshInstance> mMeshInstance;	///< Runtime mesh instance
+		RenderService* mRenderService = nullptr;		///< Render service
 	};
 
 

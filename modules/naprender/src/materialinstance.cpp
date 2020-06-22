@@ -7,7 +7,7 @@
 #include <nap/logger.h>
 #include "rtti/rttiutilities.h"
 #include "renderservice.h"
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 #include "descriptorsetcache.h"
 #include "vk_mem_alloc.h"
 

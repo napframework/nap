@@ -653,10 +653,9 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraOutputTexture",
-            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 480,
-            "Format": "Backbuffer"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -669,10 +668,9 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoOutputTexture",
-            "Usage": "RenderTarget",
             "Width": 640,
             "Height": 360,
-            "Format": "Backbuffer"
+            "Format": "RGBA8"
         },
         {
             "Type": "nap::RenderWindow",

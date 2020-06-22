@@ -89,7 +89,7 @@ namespace nap
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
-		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
+		virtual bool onInit(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode);
 
 	private:
 		std::unique_ptr<Texture2D> mTexture = nullptr;
@@ -114,7 +114,14 @@ namespace nap
 	public:
 		// Constructor
 		Renderable2DGlyph(nap::Core& core);
-		Renderable2DGlyph() = default;
+
+	protected:
+		/**
+		 * Initializes the OpenGL 2DTexture after construction of this glyph.
+		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
+		 * @return if the 2DTexture has been initialized correctly.
+		 */
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 	};
 
 
@@ -133,6 +140,13 @@ namespace nap
 	public:
 		// Constructor
 		Renderable2DMipMapGlyph(nap::Core& core);
-		Renderable2DMipMapGlyph() = default;
+
+	protected:
+		/**
+		 * Initializes the OpenGL 2DTexture after construction of this glyph.
+		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
+		 * @return if the 2DTexture has been initialized correctly.
+		 */
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 	};
 }

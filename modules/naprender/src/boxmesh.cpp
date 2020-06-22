@@ -3,8 +3,10 @@
 #include "nap/core.h"
 
 // nap::boxmesh run time class definition 
-RTTI_BEGIN_CLASS(nap::BoxMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",		&nap::BoxMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -18,17 +20,9 @@ namespace nap
 	static constexpr int boxVertCount = planeVertCount * 6;		//< Total number of box vertices
 	static constexpr int triCount = 6 * 2;						//< Total number of box triangles
 
-	BoxMesh::BoxMesh() :
-		mRenderService(nullptr)
-	{
-	}
 	BoxMesh::BoxMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
-
-	BoxMesh::~BoxMesh()			{ }
-
+	{ }
 
 	bool BoxMesh::init(utility::ErrorState& errorState)
 	{
@@ -47,7 +41,7 @@ namespace nap
 	{
 		// Create mesh instance
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(mRenderService);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
 		// Compute box and construct mesh
 		mBox = math::Box(mSize.x, mSize.y, mSize.z, mPosition);
@@ -163,7 +157,9 @@ namespace nap
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
-		mesh.setDrawMode(EDrawMode::TRIANGLES);
+		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setCullMode(mCullMode);
+		mesh.setUsage(mUsage);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);

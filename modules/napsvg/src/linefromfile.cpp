@@ -193,6 +193,20 @@ namespace nap
 	}
 
 
+	bool LineFromFile::isClosed(int shapeIndex) const
+	{
+		assert(shapeIndex < mClosedStates.size());
+		return mClosedStates[shapeIndex];
+	}
+
+
+	bool LineFromFile::isClosed() const
+	{
+		assert(!mClosedStates.empty());
+		return mClosedStates.front();
+	}
+
+
 	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rect, utility::ErrorState& errorState)
 	{
 		// Calculate rectangle ratio
@@ -227,7 +241,7 @@ namespace nap
 		float pos_y_max = mFlipY ? mNormalize ? -0.5f : rect.mMinPosition.y : mNormalize ? 0.5f	 : rect.mMaxPosition.y;
 
 		// Create a set of mesh instances based on those paths
-		int closed_state = -1;
+		mClosedStates.clear();
 		for (int path_index = 0; path_index != paths.size(); ++path_index)
 		{
 			auto& path = paths[path_index];
@@ -277,14 +291,6 @@ namespace nap
 			if (!errorState.check(positions.size() >= 2, "not enough unique vertices in line from file: %s", mFile.c_str()))
 				return false;
 
-			// Store state (closed or open), warn if an other path uses a different state then the initial one
-			// TODO: Ensure individual shapes can be rendered using individual states			
-			closed_state = closed_state < 0 ? static_cast<int>(is_closed) : closed_state;
-			if (is_closed != static_cast<bool>(closed_state))
-			{
-				nap::Logger::warn("Path: %d is %s, differs from other paths in file", path_index, is_closed ? "Closed" : "Open");
-			}
-
 			// Now we have the final vertex positions of this line we can calculate their respective normals
 			if (positions.size() > 1)
 			{
@@ -331,16 +337,16 @@ namespace nap
 				normals.front() = { 0,1.0,0.0 };
 			}
 
-			addShape(positions, normals, uvs);
+			addShape(is_closed, positions, normals, uvs);
+			mClosedStates.emplace_back(is_closed);
 		}
 
-		assert(closed_state >= 0);
-		mMeshInstance->setDrawMode(static_cast<bool>(closed_state) ? EDrawMode::LINE_LOOP : EDrawMode::LINE_STRIP);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 		return mMeshInstance->init(errorState);
 	}
 
 
-	void LineFromFile::addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs)
+	void LineFromFile::addShape(bool closed, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs)
 	{		
 		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));

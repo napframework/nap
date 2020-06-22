@@ -14,7 +14,6 @@ namespace nap
 		RTTI_ENABLE(IMesh)
 	
 	public:
-		MeshFromFile();
 		MeshFromFile(Core& core);
 
 		/**
@@ -32,8 +31,9 @@ namespace nap
 		 */
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
-		std::string		mPath;								///< Property: 'Path' path to the file on disk
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' specifies the way the mesh is used, allows the driver to optimize memory if necessary
+		std::string		mPath;									///< Property: 'Path' path to the file on disk
+		EMeshDataUsage	mUsage		= EMeshDataUsage::Static;	///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		ECullMode		mCullMode	= ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 
 	private:
 		RenderService*						mRenderService;

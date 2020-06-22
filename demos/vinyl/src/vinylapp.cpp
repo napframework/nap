@@ -6,7 +6,7 @@
 #include <renderwindow.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <uniforminstances.h>
+#include <uniforminstance.h>
 
 // Register app with RTTI, ensures the app running knows it's running an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VinylApp)
@@ -164,18 +164,9 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Viewport", fullscreen);
-				fullscreen = !fullscreen;
+				mRenderWindow->toggleFullscreen();
 			}
 		}
-	}
-
-	
-	// Make window fullscreen
-	void VinylApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

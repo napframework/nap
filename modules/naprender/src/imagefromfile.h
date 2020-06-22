@@ -17,13 +17,11 @@ namespace nap
 	{
 		RTTI_ENABLE(Image)
 	public:
-		// Constructor
+		// Constructor using image path
 		ImageFromFile(Core& core, const std::string& imgPath);
 
-		ImageFromFile(Core& core);
-
 		// Default Constructor
-		ImageFromFile() = default;
+		ImageFromFile(Core& core);
 
 		/**
 		* Loads the image from mImagePath.
@@ -32,10 +30,8 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-
 	public:
-		// Path to img on disk
 		std::string				mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
-		bool					mCompressed = false;					///< Property: 'Compressed' If the image on the GPU is compressed
+		bool					mGenerateLods = true;					///< Property: 'GenerateLods' If LODs are generated for this image
 	};
 }

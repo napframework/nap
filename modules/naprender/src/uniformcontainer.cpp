@@ -1,5 +1,5 @@
 #include "uniformcontainer.h"
-#include "uniforminstances.h"
+#include "uniforminstance.h"
 #include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS(nap::UniformContainer)

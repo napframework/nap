@@ -9,7 +9,7 @@ namespace nap
 
 	struct PipelineKey
 	{
-		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading) :
+		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode) :
 			mShader(&shader),
 			mDrawMode(drawMode),
 			mDepthMode(depthMode),
@@ -18,10 +18,12 @@ namespace nap
 			mColorFormat(colorFormat),
 			mDepthFormat(depthFormat),
 			mSampleCount(sampleCount),
-			mSampleShading(sampleShading)
+			mSampleShading(sampleShading),
+			mCullMode(cullMode)
 		{
 		}
 
+		// TODO: Concatenate all properties into single / multiple 64bit values
 		bool operator==(const PipelineKey& rhs) const
 		{
 			return	
@@ -33,11 +35,12 @@ namespace nap
 				mColorFormat == rhs.mColorFormat && 
 				mDepthFormat == rhs.mDepthFormat &&
 				mSampleCount == rhs.mSampleCount &&
-				mSampleShading == rhs.mSampleShading;
+				mSampleShading == rhs.mSampleShading &&
+				mCullMode == rhs.mCullMode;
 		}
 
 		const Shader*			mShader = nullptr;
-		EDrawMode				mDrawMode = EDrawMode::TRIANGLES;
+		EDrawMode				mDrawMode = EDrawMode::Triangles;
 		EDepthMode				mDepthMode = EDepthMode::NotSet;
 		EBlendMode				mBlendMode = EBlendMode::NotSet;
 		ECullWindingOrder		mCullWindingOrder = ECullWindingOrder::Clockwise;
@@ -45,6 +48,7 @@ namespace nap
 		VkFormat				mDepthFormat;
 		VkSampleCountFlagBits	mSampleCount = VK_SAMPLE_COUNT_1_BIT;
 		bool					mSampleShading = false;
+		ECullMode				mCullMode = ECullMode::Back;
 	};
 }
 
@@ -55,7 +59,7 @@ namespace std
 	{
 		size_t operator()(const nap::PipelineKey& key) const
 		{
-			size_t shader_hash = hash<size_t>{}((size_t)key.mShader);
+			size_t shader_hash	= hash<size_t>{}((size_t)key.mShader);
 			size_t draw_mode_hash = hash<size_t>{}((size_t)key.mDrawMode);
 			size_t depth_mode_hash = hash<size_t>{}((size_t)key.mDepthMode);
 			size_t blend_mode_hash = hash<size_t>{}((size_t)key.mBlendMode);
@@ -64,8 +68,9 @@ namespace std
 			size_t depth_format_hash = hash<size_t>{}((size_t)key.mDepthFormat);
 			size_t sample_count_hash = hash<size_t>{}((size_t)key.mSampleCount);
 			size_t sample_shading_hash = hash<size_t>{}((size_t)key.mSampleShading);
+			size_t cull_mode_hash = hash<size_t>{}((size_t)key.mCullMode);
 
-			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash;
+			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash;
 		}
 	};
 }
