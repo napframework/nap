@@ -56,27 +56,32 @@
 */
 
 #define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const nap::RGBAColorFloat& f)	{ x = f[0]; y = f[1]; z = f[2]; w = f[3]; }					\
-        operator nap::RGBAColorFloat() const	{ return nap::RGBAColorFloat(x,y,z,w); }					\
-		ImVec4(const nap::RGBColorFloat& f)		{ x = f[0]; y = f[1]; z = f[2]; w = 1.0f; }					\
-		operator nap::RGBColorFloat() const		{ return nap::RGBColorFloat(x, y, z); }						\
-		ImVec4(const nap::RGBAColor8& f)		{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
-													y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
-													z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
-													w = (float)f[3]/(float)nap::math::max<nap::uint8>();}	\
-		operator nap::RGBAColor8() const		{ return nap::RGBAColor8(									\
-													static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((w * (float)nap::math::max<nap::uint8>()))); }  \
-		ImVec4(const nap::RGBColor8& f)			{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
-													y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
-													z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
-													w = 1.0f;}												\
-		operator nap::RGBColor8() const			{ return nap::RGBColor8(									\
-													static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>()))); }
+        ImVec4(const nap::RGBAColorFloat& f)			{ x = f[0]; y = f[1]; z = f[2]; w = f[3]; }					\
+        operator nap::RGBAColorFloat() const			{ return nap::RGBAColorFloat(x,y,z,w); }					\
+		ImVec4(const nap::RGBColorFloat& f)				{ x = f[0]; y = f[1]; z = f[2]; w = 1.0f; }					\
+		operator nap::RGBColorFloat() const				{ return nap::RGBColorFloat(x, y, z); }						\
+		ImVec4(const nap::RGBAColor8& f)				{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = (float)f[3]/(float)nap::math::max<nap::uint8>();}	\
+		operator nap::RGBAColor8() const				{ return nap::RGBAColor8(									\
+															static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((w * (float)nap::math::max<nap::uint8>()))); }  \
+		ImVec4(const nap::RGBColor8& f)					{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = 1.0f;}												\
+		operator nap::RGBColor8() const					{ return nap::RGBColor8(									\
+															static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>()))); }	\
+		ImVec4(const nap::RGBColorFloat& f, float a)	{ x = f[0]; y = f[1]; z = f[2]; w = a; }					\
+		ImVec4(const nap::RGBColor8& f, float a)		{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = a;}	
 
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices

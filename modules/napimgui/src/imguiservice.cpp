@@ -17,6 +17,16 @@
 #include <materialcommon.h>
 #include <descriptorsetallocator.h>
 
+RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
+	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiServiceConfiguration::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiServiceConfiguration::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiServiceConfiguration::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
@@ -160,23 +170,16 @@ namespace nap
 	}
 
 
-	static void applyStyle()
+	static void applyStyle(const IMGuiServiceConfiguration& config)
 	{
-		// Get colors
-		static const RGBColorFloat NAPDARK = RGBColor8(0x11, 0x14, 0x26).convert<RGBColorFloat>();
-		static const RGBColorFloat NAPBACK = RGBColor8(0x2D, 0x2E, 0x42).convert<RGBColorFloat>();
-		static const RGBColorFloat NAPFRO1 = RGBColor8(0x52, 0x54, 0x6A).convert<RGBColorFloat>();
-		static const RGBColorFloat NAPFRO2 = RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>();
-		static const RGBColorFloat NAPFRO3 = RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>();
-		static const RGBColorFloat NAPHIGH = RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>();
-
-		const ImVec4 IMGUI_NAPDARK(NAPDARK.getRed(), NAPDARK.getGreen(), NAPDARK.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPBACK(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.94f);
-		const ImVec4 IMGUI_NAPMODAL(NAPBACK.getRed(), NAPBACK.getGreen(), NAPBACK.getBlue(), 0.94f);
-		const ImVec4 IMGUI_NAPFRO1(NAPFRO1.getRed(), NAPFRO1.getGreen(), NAPFRO1.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPFRO2(NAPFRO2.getRed(), NAPFRO2.getGreen(), NAPFRO2.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPFRO3(NAPFRO3.getRed(), NAPFRO3.getGreen(), NAPFRO3.getBlue(), 1.0f);
-		const ImVec4 IMGUI_NAPHIGH(NAPHIGH.getRed(), NAPHIGH.getGreen(), NAPHIGH.getBlue(), 1.0f);
+		// Get ImGUI colors 
+		ImVec4 IMGUI_NAPDARK(config.mDarkColor, 1.0f);
+		ImVec4 IMGUI_NAPBACK(config.mBackgroundColor, 0.94f);
+		ImVec4 IMGUI_NAPMODA(config.mDarkColor, 0.85f);
+		ImVec4 IMGUI_NAPFRO1(config.mFront1Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO2(config.mFront2Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO3(config.mFront3Color, 1.0f);
+		ImVec4 IMGUI_NAPHIGH(config.mHighlightColor, 1.0f);
 
 		// Apply style
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -237,19 +240,18 @@ namespace nap
 		style.Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
 		style.Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDarkening] = IMGUI_NAPMODAL;
+		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
 		style.Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
 		style.Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
 	}
 
 
-	static ImGuiContext* createContext(ImFontAtlas& fontAtlas)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -284,11 +286,10 @@ namespace nap
 		io.ClipboardUserData = NULL;
 
 		// Push default style
-		applyStyle();
+		applyStyle(configuration);
 
 		// Reset context
 		ImGui::SetCurrentContext(cur_context);
-
 		return new_context;
 	}
 
@@ -531,18 +532,19 @@ namespace nap
 			ImFontConfig font_config;
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
-			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, 17.5f, &font_config);
+			float font_size = getConfiguration<IMGuiServiceConfiguration>()->mFontSize;
+			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
 			mSampleCount = window.getSampleCount();
 
-			// Create context
-			new_context = createContext(*mFontAtlas);
+			// Create context and apply style
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
 		}
 		else
 		{
-			new_context = createContext(*mFontAtlas);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
 		}
 
 		// Add context
