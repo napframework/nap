@@ -87,8 +87,8 @@ namespace nap
                 return false;
             }
             
-            output.clear();
-            output.resize(channelCount, 0);
+			auto channelOffset = output.getSize();
+            output.resize(channelOffset + channelCount, 0);
             
             auto formattedBuffer = reinterpret_cast<float*>(buffer.data());
             
@@ -96,10 +96,10 @@ namespace nap
             {
                 auto frameCount = done / (sampleSize * channelCount);
                 auto offset = output.getSize();
-                output.resize(channelCount, output.getSize() + frameCount);
+                output.resize(channelOffset + channelCount, output.getSize() + frameCount);
                 auto i = 0;
                 for (auto frame = 0; frame < frameCount; ++frame)
-                    for (auto channel = 0; channel < channelCount; ++channel)
+                    for (auto channel = channelOffset; channel < channelOffset + channelCount; ++channel)
                     {
                         output[channel][offset + frame] = formattedBuffer[i];
                         i++;
