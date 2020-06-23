@@ -487,7 +487,7 @@ namespace nap
 		}
 
 		auto exepath = nap::utility::getExecutableDir();
-		auto rootpath = exepath + '/' + pathMapping->mNapkinExeToRoot;
+		auto rootpath = exepath + '/' + pathMapping->mProjectExeToRoot;
 		// Do string/template replacement
 		std::unordered_map<std::string, std::string> reps = {
 			{"ROOT", rootpath},

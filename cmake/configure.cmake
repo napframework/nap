@@ -48,9 +48,9 @@ add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
 # SRCDIR: The directory to work in
 macro(export_fbx_in_place SRCDIR)
     if (MSVC OR APPLE)
-        set(BUILD_CONF $<CONFIG>)
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
     else()
-        set(BUILD_CONF ${CMAKE_BUILD_TYPE})
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
     # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 

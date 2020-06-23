@@ -159,11 +159,11 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 		return nullptr;
 	}
 
-	auto exepath = nap::utility::getExecutableDir();
-	auto rootpath = exepath + '/' + pathMapping->mNapkinExeToRoot;
+	auto projToRootPath = nap::utility::getExecutableDir() + '/' + pathMapping->mNapkinExeToRoot;
+
 	// Do string/template replacement
 	std::unordered_map<std::string, std::string> reps = {
-		{"ROOT", rootpath},
+		{"ROOT", projToRootPath},
 		{"BUILD_TYPE", sBuildType},
 	};
 

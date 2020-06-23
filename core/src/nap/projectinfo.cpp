@@ -20,7 +20,7 @@ RTTI_END_CLASS
 
 
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
-	RTTI_PROPERTY("Dependencies", &nap::ModuleInfo::mDependencies, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mDependencies, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
