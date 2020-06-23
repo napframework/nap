@@ -190,6 +190,9 @@ namespace nap
 		void requestTextureUpload(Texture2D& texture);
 		void requestTextureDownload(Texture2D& texture);
 
+		void requestBufferUpload(GPUBuffer& buffer);
+		void removeBufferRequests(GPUBuffer& buffer);
+
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
@@ -350,13 +353,15 @@ namespace nap
 		void waitDeviceIdle();
 
 	private:
+		
+		// Using defines, makes handling types easier
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
+		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 
-		// Renderer Settings
 		bool									mEnableHighDPIMode = true;
 		bool									mSampleShadingSupported = false;
 
@@ -369,6 +374,7 @@ namespace nap
 
 		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TextureSet								mTexturesToUpload;
+		BufferSet								mBuffersToUpload;
 
 		struct Frame
 		{

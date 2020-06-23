@@ -1261,21 +1261,6 @@ namespace nap
 	}
 
 
-	void RenderService::removeTextureRequests(Texture2D& texture)
-	{
-		// When textures are destroyed, we also need to remove any pending texture requests
-		mTexturesToUpload.erase(&texture);
-
-		for (Frame& frame : mFramesInFlight)
-		{
-			frame.mTextureDownloads.erase(std::remove_if(frame.mTextureDownloads.begin(), frame.mTextureDownloads.end(), [&texture](Texture2D* existingTexture)
-			{
-				return existingTexture == &texture;
-			}), frame.mTextureDownloads.end());
-		}
-	}
-
-
 	void RenderService::uploadTextures()
 	{
 		VkCommandBuffer commandBuffer = mFramesInFlight[mCurrentFrameIndex].mUploadCommandBuffer;
@@ -1478,6 +1463,21 @@ namespace nap
 	}
 
 
+	void RenderService::removeTextureRequests(Texture2D& texture)
+	{
+		// When textures are destroyed, we also need to remove any pending texture requests
+		mTexturesToUpload.erase(&texture);
+
+		for (Frame& frame : mFramesInFlight)
+		{
+			frame.mTextureDownloads.erase(std::remove_if(frame.mTextureDownloads.begin(), frame.mTextureDownloads.end(), [&texture](Texture2D* existingTexture)
+			{
+				return existingTexture == &texture;
+			}), frame.mTextureDownloads.end());
+		}
+	}
+
+
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
 		mTexturesToUpload.insert(&texture);
@@ -1490,6 +1490,19 @@ namespace nap
 		// we now the download has been processed by the GPU, and we can send the texture a notification that
 		// transfer has completed.
 		mFramesInFlight[mCurrentFrameIndex].mTextureDownloads.push_back(&texture);
+	}
+
+
+	void RenderService::removeBufferRequests(GPUBuffer& buffer)
+	{
+		// When buffers are destroyed, we also need to remove any pending upload requests
+		mBuffersToUpload.erase(&buffer);
+	}
+
+
+	void RenderService::requestBufferUpload(GPUBuffer& buffer)
+	{
+		mBuffersToUpload.insert(&buffer);
 	}
 
 
