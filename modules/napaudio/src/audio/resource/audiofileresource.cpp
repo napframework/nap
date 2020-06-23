@@ -47,6 +47,8 @@ namespace nap
                 return false;
             }
             
+			getBuffer()->clear;
+
             for (auto i = 0; i < mAudioFilePaths.size(); ++i)
             {
                 if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))

@@ -140,10 +140,11 @@ namespace nap
             }
             
             // copy the read buffer into the output, also performs de-interleaving of the data into separate channels
-            output.resize(info.channels, info.frames);
+			auto channelOffset = output.getChannelCount();
+            output.resize(channelOffset + info.channels, info.frames);
             int i = 0;
             for (auto frame = 0; frame < info.frames; ++frame)
-                for (auto channel = 0; channel < info.channels; ++channel)
+                for (auto channel = channelOffset; channel < channelOffset + info.channels; ++channel)
                 {
                     output[channel][frame] = readBuffer[i];
                     i++;
