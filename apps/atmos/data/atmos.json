@@ -2558,13 +2558,6 @@
             "AudioFilePaths": [
                 "audio/testtone.wav"
             ]
-        },
-        {
-            "Type": "nap::audio::MultiAudioFileResource",
-            "mID": "TrailerAudio",
-            "AudioFilePaths": [
-                "audio/habitattrailer8.mp3"
-            ]
         }
     ]
 }
