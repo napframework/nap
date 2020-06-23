@@ -13,6 +13,7 @@ RTTI_BEGIN_CLASS(nap::AudioControlComponent)
 	RTTI_PROPERTY("MasterVolume", &nap::AudioControlComponent::mMasterVolume, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Sampler", &nap::AudioControlComponent::mSampler,	nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Gain", &nap::AudioControlComponent::mGain, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("HasSensorControl", &nap::AudioControlComponent::mHasSensorControl, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioControlComponentInstance)
@@ -65,7 +66,7 @@ namespace nap
         mAudioLayer = resource->mAudioLayer;
         mAudioCrossFadeTime = resource->mAudioCrossFadeTime;
         mAudioVolume = resource->mAudioVolume;
-		mAudioSensorControl = resource->mAudioSensorControl;
+		mAudioSensorControl = resource->mHasSensorControl ? resource->mAudioSensorControl : nullptr;
 		mMasterVolume = resource->mMasterVolume;
 
         mAudioLayer->setRange(-1, sampler->getSamplerEntries().size() - 1);

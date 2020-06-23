@@ -35,6 +35,7 @@ namespace nap
         ResourcePtr<ParameterNumeric<float>> mAudioVolume = nullptr; ///< Property: 'AudioVolume' in dB
 		ResourcePtr<ParameterNumeric<float>> mAudioSensorControl = nullptr; ///< Property: Sensor input normalized between 0 and 1
 		ResourcePtr<ParameterNumeric<float>> mMasterVolume = nullptr; ///< Property: 'MasterVolume' in dB
+		bool mHasSensorControl = false; ///< Property: 'HasSensorControl' Indicates wether the AudioSensorControl parameter will be used
     };
 
 
