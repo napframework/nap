@@ -20,8 +20,8 @@ namespace nap
 	 */
 	enum class EMeshDataUsage
 	{
-		Static,				///< Data of the mesh does not change
-		DynamicWrite,		///< Data of the mesh is frequently read from GPU to CPU
+		Static,				///< Mesh data does not change
+		DynamicWrite,		///< Mesh data is frequently updated
 	};
 
 	/**
