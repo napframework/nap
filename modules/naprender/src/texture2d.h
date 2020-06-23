@@ -123,17 +123,9 @@ namespace nap
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
-		struct StagingBuffer
-		{
-			VkBuffer				mStagingBuffer;
-			VmaAllocation			mStagingBufferAllocation;
-			VmaAllocationInfo		mStagingBufferAllocationInfo;
-		};
-
-		using StagingBufferList = std::vector<StagingBuffer>;
 		std::vector<uint8_t>				mTextureData;
 		ImageData							mImageData;
-		StagingBufferList					mStagingBuffers;
+		std::vector<BufferData>				mStagingBuffers;
 		int									mCurrentStagingBufferIndex = -1;
 		size_t								mImageSizeInBytes = -1;
 		SurfaceDescriptor					mDescriptor;
@@ -141,6 +133,4 @@ namespace nap
 		std::vector<TextureReadCallback>	mReadCallbacks;
 		uint32								mMipLevels = 1;
 	};
-
-	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);
 }

@@ -20,11 +20,26 @@ namespace nap
 		// Default Constructor
 		ImageData() = default;
 
-		VkImage				mTextureImage = nullptr;						///< Vulkan Image
-		VkImageView			mTextureView = nullptr;							///< Vulkan Image view
-		VmaAllocation		mTextureAllocation = nullptr;					///< Vulkan single memory allocation
+		VkImage				mTextureImage = VK_NULL_HANDLE;					///< Vulkan Image
+		VkImageView			mTextureView = VK_NULL_HANDLE;					///< Vulkan Image view
+		VmaAllocation		mTextureAllocation = VK_NULL_HANDLE;			///< Vulkan single memory allocation
 		VmaAllocationInfo	mTextureAllocationInfo;							///< Vulkan memory allocation information
 		VkImageLayout		mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
+	};
+
+
+	/**
+	 * Vulkan Buffer Structure
+	 * Binds a buffer, memory allocation and allocation information together.
+	 */
+	struct NAPAPI BufferData
+	{
+		// Default constructor
+		BufferData() = default;
+
+		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan memory allocation handle
+		VmaAllocationInfo	mAllocationInfo;								///< Vulkan allocation information
+		VkBuffer			mBuffer = VK_NULL_HANDLE;						///< Vulkan buffer
 	};
 
 
@@ -56,4 +71,19 @@ namespace nap
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data
 	 */
 	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator);
+
+	/**
+	 * Creates a Vulkan buffer
+	 */
+	bool NAPAPI createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, BufferData& outBuffer, utility::ErrorState& error);
+
+	/**
+	 * Destroys a Vulkan buffer
+	 */
+	void NAPAPI destroyBuffer(VmaAllocator allocator, const BufferData& buffer);
+
+	/**
+	 * Uploads data into a staging buffer
+	 */
+	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer);
 }

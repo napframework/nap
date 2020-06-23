@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "vk_mem_alloc.h"
+#include "renderutils.h"
 
 // External Includes
 #include <vulkan/vulkan_core.h>
@@ -54,16 +55,6 @@ namespace nap
 		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
 	private:
-		/**
-		 * Simple structure used to combine buffer related data
-		 */
-		struct BufferData
-		{
-			VmaAllocation		mAllocation = VK_NULL_HANDLE;		///< Single memory allocation handle
-			VmaAllocationInfo	mAllocationInfo;					///< Allocation information
-			VkBuffer			mBuffer = VK_NULL_HANDLE;			///< Actual buffer
-		};
-
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
 		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry

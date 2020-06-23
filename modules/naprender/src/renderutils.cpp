@@ -62,12 +62,52 @@ namespace nap
 	}
 
 
-	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
+	void destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
-		if (data.mTextureView != nullptr)
+		if (data.mTextureView != VK_NULL_HANDLE)
 			vkDestroyImageView(device, data.mTextureView, nullptr);
 
-		if (data.mTextureImage != nullptr)
+		if (data.mTextureImage != VK_NULL_HANDLE)
 			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
+	}
+
+
+	bool createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, BufferData& outBuffer, utility::ErrorState& error)
+	{
+		// Create buffer information 
+		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = size;
+		bufferInfo.usage = bufferUsage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		// Create allocation information
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = memoryUsage;
+		allocInfo.flags = 0;
+
+		// Create buffer
+		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);
+		if (!error.check(result == VK_SUCCESS, "Unable to create buffer"))
+			return false;
+		return true;
+	}
+
+
+	void destroyBuffer(VmaAllocator allocator, const BufferData& buffer)
+	{
+		if(buffer.mBuffer != VK_NULL_HANDLE)
+			vmaDestroyBuffer(allocator, buffer.mBuffer, buffer.mAllocation);
+	}
+
+
+	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer)
+	{
+		void* mapped_memory;
+		if (vmaMapMemory(allocator, buffer.mAllocation, &mapped_memory) != VK_SUCCESS)
+			return false;
+
+		memcpy(mapped_memory, data, (size_t)size);
+		vmaUnmapMemory(allocator, buffer.mAllocation);
+		return true;
 	}
 }

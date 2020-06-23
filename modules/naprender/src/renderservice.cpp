@@ -1264,7 +1264,7 @@ namespace nap
 	}
 
 
-	void RenderService::uploadBuffers()
+	void RenderService::uploadData()
 	{
 		// Fetch upload command buffer to use
 		VkCommandBuffer commandBuffer = mFramesInFlight[mCurrentFrameIndex].mUploadCommandBuffer;
@@ -1283,7 +1283,7 @@ namespace nap
 	}
 
 
-	void RenderService::downloadTextures()
+	void RenderService::downloadData()
 	{
 		// Push the download of a texture onto the commandbuffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
@@ -1351,14 +1351,14 @@ namespace nap
 			kvp.second->release(mCurrentFrameIndex);
 
 		processVulkanDestructors(mCurrentFrameIndex);
-		uploadBuffers();
+		uploadData();
 	}
 
 
 	void RenderService::endFrame()
 	{
 		// Push any texture downloads on the commandbuffer
-		downloadTextures();
+		downloadData();
 
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the commandbuffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.

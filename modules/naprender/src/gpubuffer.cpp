@@ -16,6 +16,10 @@ RTTI_END_ENUM
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
+
 	GPUBuffer::GPUBuffer(RenderService& renderService, EMeshDataUsage usage) :
 		mRenderService(&renderService),
 		mUsage(usage)
@@ -37,16 +41,11 @@ namespace nap
 		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging = mStagingBuffer](RenderService& renderService)
 		{
 			// Destroy staging buffer
-			if(staging.mAllocation != VK_NULL_HANDLE)
-				vmaDestroyBuffer(renderService.getVulkanAllocator(), staging.mBuffer, staging.mAllocation);
+			destroyBuffer(renderService.getVulkanAllocator(), staging);
 
 			// Destroy render buffers
 			for (const BufferData& buffer : buffers)
-			{
-				if (buffer.mAllocation == VK_NULL_HANDLE)
-					continue;
-				vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
-			}
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
 		});
 	}
 
@@ -79,51 +78,29 @@ namespace nap
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
 		// Make sure we haven't already uploaded or are attempting to upload data
-		if (mRenderBuffers[0].mAllocation != VK_NULL_HANDLE || mStagingBuffer.mAllocation != VK_NULL_HANDLE)
+		if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || mStagingBuffer.mBuffer != VK_NULL_HANDLE)
 		{
 			error.fail("Buffer already allocated!");
 			return false;
 		}
 
-		// Create staging buffer information
-		VkBufferCreateInfo stage_buffer_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		stage_buffer_info.size = mSize;
-		stage_buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		stage_buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		// Create allocation info
-		VmaAllocationCreateInfo stage_alloc_info = {};
-		stage_alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-		stage_alloc_info.flags = 0;
-
 		// Create staging buffer
-		VkResult result = vmaCreateBuffer(allocator, &stage_buffer_info, &stage_alloc_info, &mStagingBuffer.mBuffer, &mStagingBuffer.mAllocation, &mStagingBuffer.mAllocationInfo);
-		if (!error.check(result == VK_SUCCESS, "Unable to create staging buffer"))
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, mStagingBuffer, error))
+		{
+			error.fail("Staging buffer error");
 			return false;
-
+		}
+			
 		// Copy data into staging buffer
-		void* mapped_memory;
-		result = vmaMapMemory(allocator, mStagingBuffer.mAllocation, &mapped_memory);
-		assert(result == VK_SUCCESS);
-		memcpy(mapped_memory, data, mSize);
-		vmaUnmapMemory(allocator, mStagingBuffer.mAllocation);
+		if (!error.check(uploadToBuffer(allocator, mSize, data, mStagingBuffer), "Unable to upload data to staging buffer"))
+			return false;
 
 		// Now create the GPU buffer to transfer data to, create buffer information
-		VkBufferCreateInfo render_buffer_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		render_buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage;
-		render_buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		render_buffer_info.size = mSize;
-
-		// Create GPU buffer allocation info
-		VmaAllocationCreateInfo render_alloc_info = {};
-		render_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		render_alloc_info.flags = 0;
-
-		// Create GPU buffer
-		BufferData& gpu_buffer = mRenderBuffers[0];
-		result = vmaCreateBuffer(allocator, &render_buffer_info, &render_alloc_info, &gpu_buffer.mBuffer, &gpu_buffer.mAllocation, &gpu_buffer.mAllocationInfo);
-		if (!error.check(result == VK_SUCCESS, "Unable to create render buffer"))
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, mRenderBuffers[0], error))
+		{
+			error.fail("Render buffer error");
 			return false;
+		}
 
 		// Request upload
 		mRenderService->requestBufferUpload(*this);
@@ -145,47 +122,37 @@ namespace nap
 		BufferData& buffer_data = mRenderBuffers[mCurrentBufferIndex];
 		if (buffer_data.mBuffer == VK_NULL_HANDLE || required_size_bytes > buffer_data.mAllocationInfo.size)
 		{
+			// Destroy buffer if allocated
 			// TODO: Queue destruction of buffer, could be in use
-			if (buffer_data.mBuffer != VK_NULL_HANDLE)
-				vmaDestroyBuffer(allocator, buffer_data.mBuffer, buffer_data.mAllocation);
+			destroyBuffer(allocator, buffer_data);
 
-			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = required_size_bytes;
-			bufferInfo.usage = usage;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			// We use CPU_TO_GPU to be able to update on CPU easily. This is mostly convenient for dynamic geometry and suboptimal
-			// for static geometry. To solve this, we'd need to have special handling for static geometry where we use a GPU only buffer
-			// and use a staging buffer to upload from CPU to GPU.
-			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-			allocInfo.flags = 0;
-
-			VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer_data.mBuffer, &buffer_data.mAllocation, &buffer_data.mAllocationInfo);
-			if (!error.check(result == VK_SUCCESS, "Unable to create render buffer"))
+			// Create buffer
+			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer_data, error))
+			{
+				error.fail("Render buffer error");
 				return false;
+			}
 		}
 
 		// Upload directly into buffer, use exact data size
 		mSize = elementSize * numVertices;
-		void* mapped_memory;
-		VkResult result = vmaMapMemory(allocator, buffer_data.mAllocation, &mapped_memory);
-		assert(result == VK_SUCCESS);
-		memcpy(mapped_memory, data, mSize);
-		vmaUnmapMemory(allocator, buffer_data.mAllocation);
-
-		// Signal change
+		if (!error.check(uploadToBuffer(allocator, mSize, data, buffer_data), "Buffer upload failed"))
+			return false;
 		bufferChanged();
+
 		return true;
 	}
 
 
 	void GPUBuffer::upload(VkCommandBuffer commandBuffer)
 	{
+		// Copy staging buffer to GPU
 		assert(mStagingBuffer.mAllocation != VK_NULL_HANDLE);
 		VkBufferCopy copyRegion{};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffer.mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
+
+		// Signal change
 		bufferChanged();
 	}
 }
