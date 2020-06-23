@@ -11,8 +11,13 @@ See the main() function below.
 """
 
 import json
+import logging
 import os
 import sys
+from collections import OrderedDict
+
+LOG = logging.getLogger(os.path.basename(os.path.dirname(__file__)))
+
 
 def _convertModuleRef(modulename):
     return {
@@ -48,29 +53,47 @@ def _loadJSON(directory, filename):
     with open(filepath, 'r') as fp:
         data = json.load(fp)
 
-    if _hasBeenConverted(data):
-        print('Already converted: %s' % filepath)
-        return None, None
-
     return filepath, data
+
+
+def _findDataFile(rootDir):
+    projname = os.path.basename(rootDir)
+    assert projname, 'Expected root dir to be in a project directory: %s' % rootDir
+    dataDir = os.path.join(rootDir, 'data')
+
+    # check for data dir first
+    if not os.path.exists(dataDir):
+        print('Expected data dir: %s' % dataDir)
+        return
+
+    # attempt to find common files
+    guesses = (
+        os.path.join(dataDir, '%s.json' % projname),
+        os.path.join(dataDir, 'data.json'),
+    )
+    return next((g for g in guesses if os.path.exists(g)), None)
 
 
 def convertModuleInfo(directory):
     """Find a moduleinfo file in the specified directory, convert to new format and write to same file"""
-    filepath, moduleinfo = _loadJSON(directory, 'module.json')
+    filepath, modInfoJson = _loadJSON(directory, 'module.json')
     if not filepath:
         return
 
-    print('Converting: %s' % filepath)
+    if any(t not in modInfoJson for t in ('Type', 'mID')):
+        print('Converting: %s' % filepath)
 
-    newModuleInfo = {
-        'Type': 'nap::ModuleInfo',
-        'mID': 'ModuleInfo',
-        'Dependencies': moduleinfo.get('dependencies', [])
-    }
+        newModInfoJson = OrderedDict((
+            ('Type', 'nap::ModuleInfo'),
+            ('mID', 'ModuleInfo'),
+            ('RequiredModules', modInfoJson.get('dependencies', [])),
+        ))
+
+    else:
+        newModInfoJson = modInfoJson
 
     with open(filepath, 'w') as fp:
-        json.dump(newModuleInfo, fp, indent=4)
+        json.dump(newModInfoJson, fp, indent=4)
 
 
 def convertProjectInfo(directory):
@@ -78,28 +101,33 @@ def convertProjectInfo(directory):
     This will also attempt to merge and convert any existing service configurations into the same file
     and delete the original config.json
     """
-    filepath, projectinfo = _loadJSON(directory, 'project.json')
-    if not projectinfo:
+    filepath, projInfoJson = _loadJSON(directory, 'project.json')
+    if not projInfoJson:
         return
 
-    print('Converting: %s' % filepath)
+    # has this file been converted yet?
+    if any(t not in projInfoJson for t in ('Type', 'mID')):
+        print('Converting: %s' % filepath)
 
-    newProjectInfo = {
-        'Type': 'nap::ProjectInfo',
-        'mID': 'ProjectInfo',
-        'Title': projectinfo.get('title'),
-        'Version': projectinfo.get('version'),
-        'Modules': projectinfo.get('modules', []),
-        'ServiceConfigurations': list(_convertServiceConfig(directory)),
-    }
+        newProjInfoJson = OrderedDict((
+            ('Type', 'nap::ProjectInfo'),
+            ('mID', 'ProjectInfo'),
+            ('Title', projInfoJson.get('title')),
+            ('Version', projInfoJson.get('version')),
+            ('RequiredModules', projInfoJson.get('modules', [])),
+            ('ServiceConfig', list(_convertServiceConfig(directory))),
+        ))
+
+    else:
+        newProjInfoJson = projInfoJson
+
+    # -- ensure some values
+    newProjInfoJson.setdefault('PathMapping', 'cache/path_mapping.json')
+    newProjInfoJson.setdefault('Data', _findDataFile(directory) or '')
 
     with open(filepath, 'w') as fp:
-        json.dump(newProjectInfo, fp, indent=4)
+        json.dump(newProjInfoJson, fp, indent=4)
 
-
-def _hasBeenConverted(data):
-    # new version must have these two keys
-    return 'Type' in data and 'mID' in data
 
 def convertProject(projectdir):
     convertProjectInfo(projectdir)
@@ -107,6 +135,7 @@ def convertProject(projectdir):
     moduledir = os.path.join(projectdir, 'module')
     if os.path.exists(moduledir):
         convertModuleInfo(moduledir)
+
 
 def convertRepository(rootdirectory):
     print('Convert project and moduleinfo files in nap repository: %s' % rootdirectory)
@@ -129,6 +158,7 @@ def convertRepository(rootdirectory):
         for d in os.listdir(parentdir):
             directory = os.path.join(parentdir, d)
             convertModuleInfo(directory)
+
 
 def main():
     if len(sys.argv) < 2:
