@@ -36,12 +36,9 @@ namespace nap
 
 	bool ModuleManager::loadModule_(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
 	{
-		// Fail if we're trying to load the same module twice
+		// Only load module once
 		if (getLoadedModule(moduleName))
-		{
-			err.fail(utility::stringFormat("Module already loaded: %s", moduleName.c_str()));
-			return false;
-		}
+			return true;
 
 		// Attempt to find the module files first
 		std::string moduleFile;
