@@ -17,8 +17,9 @@ RTTI_END_ENUM;
 
 namespace nap
 {
-	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, const VmaAllocationCreateInfo& allocationUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
+	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 	{
+		// Image creation info
 		VkImageCreateInfo image_info = {};
 		image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -34,7 +35,13 @@ namespace nap
 		image_info.samples = samples;
 		image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VkResult result = vmaCreateImage(allocator, &image_info, &allocationUsage, &outImage, &outAllocation, &outAllocationInfo);
+		// Allocation creation info
+		VmaAllocationCreateInfo alloc_info = {};
+		alloc_info.flags = 0;
+		alloc_info.usage = memoryUsage;
+
+		// Create image using allocator and allocation instructions
+		VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
 		if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
 			return false;
 
