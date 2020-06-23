@@ -38,6 +38,7 @@ namespace nap
 
 	GPUBuffer::~GPUBuffer()
 	{
+		mRenderService->removeBufferRequests(*this);
 		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging = mStagingBuffer](RenderService& renderService)
 		{
 			// Destroy staging buffer
