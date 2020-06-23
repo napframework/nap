@@ -343,9 +343,9 @@ namespace nap
 
 		bool initEmptyTexture(nap::utility::ErrorState& errorState);
 
-		void transferTextures(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
+		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
 		void downloadTextures();
-		void uploadTextures();
+		void uploadBuffers();
 
 		void updateTextureDownloads();
 		void processVulkanDestructors(int frameIndex);

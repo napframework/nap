@@ -1,19 +1,23 @@
 #pragma once
 
 // Local Includes
-#include "vulkan/vulkan_core.h"
-#include "utility/dllexport.h"
 #include "vk_mem_alloc.h"
+
+// External Includes
+#include <vulkan/vulkan_core.h>
+#include <utility/dllexport.h>
 #include <nap/signalslot.h>
 #include <vector>
+#include <utility/errorstate.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
 	class RenderService;
 
 	/**
-	* Flag that determines how the mesh data is used at runtime.
-	*/
+	 * Flag that determines how the mesh data is used at runtime.
+	 */
 	enum class EMeshDataUsage
 	{
 		Static,				///< Data of the mesh does not change
@@ -27,6 +31,7 @@ namespace nap
 	 */
 	class NAPAPI GPUBuffer
 	{
+		friend class RenderService;
 	public:
 		GPUBuffer(RenderService& renderService, EMeshDataUsage usage);
 
@@ -41,13 +46,12 @@ namespace nap
 		// Copy assignment not allowed
 		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
-		VkBuffer getBuffer() const { return mRenderBuffers[mCurrentBufferIndex].mBuffer; }
+		VkBuffer getBuffer() const;
 
 		nap::Signal<> bufferChanged;
 
 	protected:
-		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
-		void update();
+		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
 	private:
 		/**
@@ -65,6 +69,11 @@ namespace nap
 		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry
 		int						mCurrentBufferIndex = 0;			///< Current render buffer index
 		EMeshDataUsage			mUsage;								///< How the buffer is used, static, updated frequently etc.
+		uint32					mSize = 0;							///< Current used buffer size in bytes
+
+		bool setDataInternalStatic(void* data, int elementSize, size_t numVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalDynamic(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		void upload(VkCommandBuffer commandBuffer);
 	};
 
 } // opengl

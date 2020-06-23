@@ -12,9 +12,9 @@ namespace nap
 	}
 
 	// Uploads the data block to the GPU
-	void IndexBuffer::setData(VkPhysicalDevice physicalDevice, VkDevice device, const std::vector<unsigned int>& indices)
+	bool IndexBuffer::setData(const std::vector<unsigned int>& indices, utility::ErrorState& error)
 	{
 		mCount = indices.size();
-		setDataInternal(physicalDevice, device, (void*)indices.data(), sizeof(int), indices.size(), indices.capacity(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+		return setDataInternal((void*)indices.data(), sizeof(int), indices.size(), indices.capacity(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, error);
 	}
 }

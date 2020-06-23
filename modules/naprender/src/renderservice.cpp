@@ -1236,40 +1236,49 @@ namespace nap
 		SDL::shutdownVideo();
 	}
 	
-	void RenderService::transferTextures(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
+	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
 	{
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
+		// Begin recording commands
 		VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
 
+		// Perform transfer
 		transferFunction();
 
+		// End recoding commands
 		result = vkEndCommandBuffer(commandBuffer);
 		assert(result == VK_SUCCESS);
 
+		// Submit command queue
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
-
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 	}
 
 
-	void RenderService::uploadTextures()
+	void RenderService::uploadBuffers()
 	{
+		// Fetch upload command buffer to use
 		VkCommandBuffer commandBuffer = mFramesInFlight[mCurrentFrameIndex].mUploadCommandBuffer;
-		transferTextures(commandBuffer, [commandBuffer, this]()
+
+		// Transfer data to the GPU, including texture data and general purpose render buffers.
+		transferData(commandBuffer, [commandBuffer, this]()
 		{
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
-
 			mTexturesToUpload.clear();
+
+			for (GPUBuffer* buffer : mBuffersToUpload)
+				buffer->upload(commandBuffer);
+			mBuffersToUpload.clear();
 		});
 	}
 
@@ -1279,7 +1288,7 @@ namespace nap
 		// Push the download of a texture onto the commandbuffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
 		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
-		transferTextures(commandBuffer, [commandBuffer, this, &frame]()
+		transferData(commandBuffer, [commandBuffer, this, &frame]()
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
@@ -1342,7 +1351,7 @@ namespace nap
 			kvp.second->release(mCurrentFrameIndex);
 
 		processVulkanDestructors(mCurrentFrameIndex);
-		uploadTextures();
+		uploadBuffers();
 	}
 
 

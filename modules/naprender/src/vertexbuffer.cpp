@@ -46,9 +46,9 @@ namespace nap
 
 
 	// Uploads the data block to the GPU
-	void VertexAttributeBuffer::setData(VkPhysicalDevice physicalDevice, VkDevice device, void* data, size_t numVertices, size_t reservedNumVertices)
+	bool VertexAttributeBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error)
 	{
-		setDataInternal(physicalDevice, device, data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+		return setDataInternal(data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,  error);
 	}
 
 } // opengl

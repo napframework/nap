@@ -36,6 +36,7 @@ namespace nap
 	 */
 	class NAPAPI Texture2D : public Resource
 	{
+		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
@@ -120,8 +121,6 @@ namespace nap
 		RenderService*				mRenderService = nullptr;
 
 	private:
-		friend class RenderService;
-
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
 		struct StagingBuffer
