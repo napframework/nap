@@ -66,6 +66,9 @@ namespace nap
 
 	std::string ProjectInfo::dataDirectory() const
 	{
+		auto dataFile = getDefaultDataFile();
+		if (dataFile.empty())
+			return getDirectory() + "/data";
 		return getDirectory() + "/" + utility::getFileDir(mDefaultData);
 	}
 }
