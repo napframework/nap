@@ -47,7 +47,7 @@ namespace nap
                 return false;
             }
             
-			getBuffer()->clear;
+			getBuffer()->clear();
 
             for (auto i = 0; i < mAudioFilePaths.size(); ++i)
             {
