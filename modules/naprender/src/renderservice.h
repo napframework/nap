@@ -31,10 +31,22 @@ namespace nap
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
-
 	public:
-		bool mEnableHighDPIMode = true;							///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		virtual rtti::TypeInfo getServiceType() override		{ return RTTI_OF(RenderService); }
+
+		/**
+		 * Describes the various GPU types
+		 */
+		enum class EPhysicalDeviceType : int
+		{
+			Integrated	= 1,	///< Integrated graphics card
+			Discrete	= 2,	///< Discrete (dedicated) graphics card
+			Virtual		= 3,	///< Virtual graphics card
+			CPU			= 4		///< CPU as graphics card
+		};
+
+		EPhysicalDeviceType		mPreferredGPU = EPhysicalDeviceType::Discrete;	///< Property: 'PreferredGPU' The preferred GPU to select
+		bool					mEnableHighDPIMode = true;						///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		virtual rtti::TypeInfo	getServiceType() override						{ return RTTI_OF(RenderService); }
 	};
 
 	/**

@@ -26,6 +26,13 @@
 #include <glslang/Public/ShaderLang.h>
 #include <nap/assert.h>
 
+RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Virtual,		"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -36,6 +43,28 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * @return VK physical device type
+	 */
+	VkPhysicalDeviceType getPhysicalDeviceType(RenderServiceConfiguration::EPhysicalDeviceType devType)
+	{
+		switch(devType)
+		{
+		case RenderServiceConfiguration::EPhysicalDeviceType::Discrete:
+			return VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::Integrated:
+			return VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::CPU:
+			return VK_PHYSICAL_DEVICE_TYPE_CPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::Virtual:
+			return VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
+		default:
+			assert(false);
+		}
+		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
+	}
+
+
 	/**
 	 * @return max sample count associated with the given physical device
 	 */
@@ -313,7 +342,7 @@ namespace nap
 	 * @param outDevice the selected physical device (gpu)
 	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
 	 */
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectGPU(VkInstance instance, VkPhysicalDeviceType preferredType, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -328,7 +357,7 @@ namespace nap
 		// Show device information
 		Logger::info("Found %d GPUs:", physical_device_count);
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		int discrete_gpu_idx = -1;
+		int preferred_gpu_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
 			VkPhysicalDevice physical_device = physical_devices[index];
@@ -336,15 +365,19 @@ namespace nap
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
 			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
-			// Detect if it's a discrete GPU
-			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && discrete_gpu_idx < 0)
-				discrete_gpu_idx = index;
+			// Detect if it's the preferred GPU
+			preferred_gpu_idx = properties.deviceType == preferredType && preferred_gpu_idx < 0 ? index : preferred_gpu_idx;
 		}
 
 		// Select first available discrete GPU if present
-		int gpu_idx = discrete_gpu_idx >= 0 ? discrete_gpu_idx : 0;
+		int gpu_idx = preferred_gpu_idx;
+		if (preferred_gpu_idx < 0)
+		{
+			nap::Logger::warn("Unable to find preferred GPU, selecting first available one");
+			gpu_idx = 0;
+		}
 
-		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
+		// Notify selection
 		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
 		Logger::info("Selected GPU: %s", physical_device_properties[gpu_idx].deviceName);
 
@@ -379,7 +412,6 @@ namespace nap
 		// Extract device features
 		VkPhysicalDeviceFeatures selected_device_featues;
 		vkGetPhysicalDeviceFeatures(selected_device, &outFeatures);
-
 		return true;
 	}
 
@@ -1087,7 +1119,8 @@ namespace nap
 		VkPhysicalDeviceProperties	physical_device_properties;
 
 		// Select GPU, prefers discrete graphics over integrated
-		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
+		VkPhysicalDeviceType preferred_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
+		if (!selectGPU(mInstance, preferred_gpu, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
