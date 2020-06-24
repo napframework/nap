@@ -39,6 +39,9 @@ namespace nap
 	GPUBuffer::~GPUBuffer()
 	{
 		mRenderService->removeBufferRequests(*this);
+		
+		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
+		// This ensures the buffers are destroyed when certain they are not in use.
 		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging = mStagingBuffer](RenderService& renderService)
 		{
 			// Destroy staging buffer
@@ -119,15 +122,21 @@ namespace nap
 		uint32_t required_size_bytes = elementSize * reservedNumVertices;
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
-		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. The buffer size depends on reservedNumVertices.
+		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. 
+		// The final buffer size is calculated based on the reservedNumVertices.
 		BufferData& buffer_data = mRenderBuffers[mCurrentBufferIndex];
 		if (buffer_data.mBuffer == VK_NULL_HANDLE || required_size_bytes > buffer_data.mAllocationInfo.size)
 		{
-			// Destroy buffer if allocated
-			// TODO: Queue destruction of buffer, could be in use
-			destroyBuffer(allocator, buffer_data);
+			// Queue buffer for destruction if already allocated, the buffer data is copied, not captured by reference.
+			if (buffer_data.mBuffer != VK_NULL_HANDLE)
+			{
+				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService)
+				{
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				});
+			}
 
-			// Create buffer
+			// Create buffer new buffer
 			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer_data, error))
 			{
 				error.fail("Render buffer error");
