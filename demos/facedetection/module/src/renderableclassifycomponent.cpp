@@ -183,12 +183,12 @@ namespace nap
 			glm::vec4 new_location = mBlobs[i].update(deltaTime);
 
 			// Set current blob location in plane material
-			UniformVec3Instance* center_uniform = mBlobsUniform->getElement(i).getOrCreateUniform<UniformVec3Instance>("mCenter");
+			UniformVec3Instance* center_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformVec3Instance>("mCenter");
 			assert(center_uniform != nullptr);
 			center_uniform->setValue(new_location);
 
 			// Set current blob size in plane material
-			UniformFloatInstance* size_uniform = mBlobsUniform->getElement(i).getOrCreateUniform<UniformFloatInstance>("mSize");
+			UniformFloatInstance* size_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformFloatInstance>("mSize");
 			assert(size_uniform != nullptr);
 			size_uniform->setValue(new_location.w);
 			

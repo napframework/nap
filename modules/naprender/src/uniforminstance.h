@@ -127,6 +127,11 @@ namespace nap
 			return *mElements[index];
 		}
 
+		UniformStructInstance& operator[](size_t index)
+		{
+			return getElement(index);
+		}
+
 		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
@@ -225,9 +230,9 @@ namespace nap
 		}
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
+		 * Updates the uniform in the shader.
+		 * @param declaration: the uniform declaration from the shader that is used to set the value.
+		 */
 		virtual void push(uint8_t* uniformBuffer) const override
 		{
 			size_t size = mValues.size() * sizeof(T);
@@ -238,6 +243,18 @@ namespace nap
 		void set(const TypedUniformValueArray<T>& resource)
 		{
 			mValues = resource.mValues;
+		}
+
+		void setValues(const std::vector<T> values)
+		{
+			assert(values.size() <= mDeclaration->mNumElements);
+			mValues = values;
+		}
+
+		T& operator[](size_t index)
+		{
+			assert(index < mValues.size());
+			return mValues[index];
 		}
 
 		std::vector<T>& getValues() { return mValues; }
