@@ -253,13 +253,9 @@ namespace nap
 		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to query the number of Vulkan instance extension names"))
 			return false;
 
-		// Display names
-		Logger::info("Found %d Vulkan instance extensions:", ext_count);
+		// Store
 		for (unsigned int i = 0; i < ext_count; i++)
-		{
-			Logger::info("%d: %s", i, ext_names[i]);
 			outExtensions.emplace_back(ext_names[i]);
-		}
 
 		// Add debug display extension, we need this to relay debug messages
 		outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -1128,7 +1124,7 @@ namespace nap
 		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
 		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
-		nap::Logger::info("Sample rate shading is: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
 
 		// Create unique set of extensions out of required and additional requested ones
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
