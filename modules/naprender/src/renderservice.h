@@ -32,9 +32,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
-
 		/**
-		 * Describes the various GPU types
+		 * Supported Vulkan device types. 
 		 */
 		enum class EPhysicalDeviceType : int
 		{
@@ -44,9 +43,13 @@ namespace nap
 			CPU			= 4		///< CPU as graphics card
 		};
 
-		EPhysicalDeviceType		mPreferredGPU = EPhysicalDeviceType::Discrete;	///< Property: 'PreferredGPU' The preferred GPU to select
-		bool					mEnableHighDPIMode = true;						///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		virtual rtti::TypeInfo	getServiceType() override						{ return RTTI_OF(RenderService); }
+		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
+		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		std::vector<std::string>	mLayers = { "VK_LAYER_LUNARG_standard_validation" };			///< Property: 'Layers' Vulkan Layers that are required to be present in Debug mode. Layers are disabled in release mode.
+		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
+		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
+		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
 	};
 
 	/**
