@@ -19,7 +19,7 @@ namespace nap
 
 	/**
 	 * Instantiated version of a nap::Uniform.
-	 * Every uniform resource has an associative instance, ie: nap::UniformValue -> nap::UniformValueInstance/
+	 * Every uniform 'resource' has an associative 'instance', ie: nap::UniformValue -> nap::UniformValueInstance.
 	 * An instance can be updated / inspected at run-time and is associated with a declaration.
 	 */
 	class NAPAPI UniformInstance
