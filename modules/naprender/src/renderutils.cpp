@@ -117,4 +117,11 @@ namespace nap
 		vmaUnmapMemory(allocator, buffer.mAllocation);
 		return true;
 	}
+
+
+	void nap::BufferData::release()
+	{
+		mAllocation = VK_NULL_HANDLE;
+		mBuffer = VK_NULL_HANDLE;
+	}
 }

@@ -1344,13 +1344,15 @@ namespace nap
 		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
 		// of the fence.
 		updateTextureDownloads();
-
 		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
 
+		// Destroy all vulkan resources associated with current frame
 		processVulkanDestructors(mCurrentFrameIndex);
+
+		// Upload data before rendering new set
 		uploadData();
 	}
 

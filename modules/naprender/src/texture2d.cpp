@@ -430,6 +430,19 @@ namespace nap
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		// Destroy staging buffer when usage is static
+		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
+		// Explicitly release the handle, so it's not deleted twice.
+		if (mUsage == ETextureUsage::Static)
+		{
+			assert(mStagingBuffers.size() == 1);
+			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService)
+			{
+				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
+			});
+			buffer.release();
+		}
 	}
 
 

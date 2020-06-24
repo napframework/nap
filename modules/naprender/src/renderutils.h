@@ -40,6 +40,12 @@ namespace nap
 		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan memory allocation handle
 		VmaAllocationInfo	mAllocationInfo;								///< Vulkan allocation information
 		VkBuffer			mBuffer = VK_NULL_HANDLE;						///< Vulkan buffer
+		
+		/**
+		 * Releases the buffer, resetting all the handles to null.
+		 * Does not delete it. 
+		 */
+		void				release();
 	};
 
 

@@ -109,13 +109,12 @@ namespace nap
 		 */
 		int getMipmapCount()							{ return static_cast<int>(mMipLevels); }
 
+		ETextureUsage mUsage = ETextureUsage::Static;					///< Property: 'Usage' If this texture is updated frequently or considered static.
+
 	private:
 		void upload(VkCommandBuffer commandBuffer);
 		void notifyDownloadReady(int frameIndex);		
 		void download(VkCommandBuffer commandBuffer);
-
-	public:
-		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
 
 	protected:
 		RenderService*				mRenderService = nullptr;

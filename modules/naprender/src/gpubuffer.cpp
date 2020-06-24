@@ -37,16 +37,12 @@ namespace nap
 
 
 	GPUBuffer::~GPUBuffer()
-	{
-		mRenderService->removeBufferRequests(*this);
-		
+	{	
 		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
 		// This ensures the buffers are destroyed when certain they are not in use.
-		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging = mStagingBuffer](RenderService& renderService)
+		mRenderService->removeBufferRequests(*this);
+		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers](RenderService& renderService)
 		{
-			// Destroy staging buffer
-			destroyBuffer(renderService.getVulkanAllocator(), staging);
-
 			// Destroy render buffers
 			for (const BufferData& buffer : buffers)
 				destroyBuffer(renderService.getVulkanAllocator(), buffer);
@@ -156,11 +152,24 @@ namespace nap
 
 	void GPUBuffer::upload(VkCommandBuffer commandBuffer)
 	{
+		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
+		assert(mStagingBuffer.mBuffer != VK_NULL_HANDLE);
+		assert(mUsage == EMeshDataUsage::Static);
+		assert(mRenderBuffers.size() == 1);
+		
 		// Copy staging buffer to GPU
-		assert(mStagingBuffer.mAllocation != VK_NULL_HANDLE);
 		VkBufferCopy copyRegion{};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffer.mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
+
+		// Queue destruction of staging buffer
+		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
+		// Explicitly release the buffer, so it's not deleted twice
+		mRenderService->queueVulkanObjectDestructor([buffer = mStagingBuffer](RenderService& renderService)
+		{
+			destroyBuffer(renderService.getVulkanAllocator(), buffer);
+		});
+		mStagingBuffer.release();
 
 		// Signal change
 		bufferChanged();
