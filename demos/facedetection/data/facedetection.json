@@ -4,11 +4,11 @@
             "Type": "nap::CVCamera",
             "mID": "Camera",
             "CloseOnError": true,
-            "Backend": "Automatic",
             "ShowDialog": true,
             "DeviceIndex": 0,
             "Codec": "",
             "OverrideResolution": true,
+            "Backend": "DirectShow",
             "Resolution": {
                 "x": 640,
                 "y": 480
@@ -425,8 +425,7 @@
             "Type": "nap::ImageFromFile",
             "mID": "PlaneTexture",
             "Usage": "Static",
-            "ImagePath": "texture_one.jpg",
-            "Compressed": false
+            "ImagePath": "texture_one.jpg"
         },
         {
             "Type": "nap::Material",

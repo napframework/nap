@@ -287,6 +287,14 @@ namespace nap
 		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties);
 
 		/**
+		 * Returns if the render service is currently recording (rendering) a frame.
+		 * If that is the case, certain operations are not allowed. 
+		 * For example: data upload / download operations to and from the GPU are forbidden.
+		 * @return if the render service is currently recording a frame.
+		 */
+		bool isRenderingFrame() const { return mIsRenderingFrame; }
+
+		/**
 		 * Called when a new window is added to the system
 		 */
 		nap::Signal<nap::RenderWindow&> windowAdded;
@@ -384,7 +392,7 @@ namespace nap
 		WindowList								mWindows;												//< All available windows
 		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
 		
-		bool									mIsInRenderFrame = false;
+		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = false;
 
 		std::unique_ptr<Texture2D>				mEmptyTexture;

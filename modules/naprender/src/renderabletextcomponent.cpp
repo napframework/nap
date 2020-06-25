@@ -11,6 +11,7 @@
 #include <renderservice.h>
 #include <nap/logger.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <nap/assert.h>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -128,9 +129,21 @@ namespace nap
 
 	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
 	{
-		// Clear Glyph handles
-		mGlyphs.clear();
-		mGlyphs.reserve(text.size());
+		// Clear and add text
+		clearText();
+		return addText(text, error);
+	}
+
+
+	bool RenderableTextComponentInstance::addText(const std::string& text, utility::ErrorState& error)
+	{
+		// Adding / changing text is not allowed during frame capture
+		// This is because new characters might be uploaded
+		NAP_ASSERT_MSG(!mRenderService->isRenderingFrame(), "Can't change or add text when rendering a frame");
+
+		// Create new glyph set
+		std::vector<RenderableGlyph*> new_glyphs;
+		new_glyphs.reserve(text.size());
 
 		// Get or create a Glyph for every letter in the text
 		bool success(true);
@@ -144,17 +157,32 @@ namespace nap
 				continue;
 			}
 			// Store handle
-			mGlyphs.emplace_back(glyph);
+			new_glyphs.emplace_back(glyph);
 		}
-		mText = text;
-		mFont->getBoundingBox(mText, mTextBounds);	
+
+		// Get bounding box and add entries into cache
+		math::Rect new_bounds;
+		mTextCache.emplace_back(text);
+		mFont->getBoundingBox(mTextCache.back(), new_bounds);
+		mGlyphCache.emplace_back(std::move(new_glyphs));
+		mTextBounds.emplace_back(std::move(new_bounds));
+
 		return success;
 	}
 
 
-	nap::MaterialInstance& RenderableTextComponentInstance::getMaterialInstance()
+	void RenderableTextComponentInstance::setLineIndex(int index)
 	{
-		return mMaterialInstance;
+		assert(index < mGlyphCache.size());
+		mCacheIndex = index;
+	}
+
+
+	void RenderableTextComponentInstance::clearText()
+	{
+		mGlyphCache.clear();
+		mTextBounds.clear();
+		mCacheIndex = 0;
 	}
 
 
@@ -166,6 +194,10 @@ namespace nap
 			assert(false);
 			return;
 		}
+
+		// If index is invalid, return
+		if (mCacheIndex >= mGlyphCache.size())
+			return;
 
 		// Update view uniform
 		if (mViewUniform != nullptr)
@@ -206,7 +238,7 @@ namespace nap
 		};
 
 		// Draw individual glyphs
-		for (auto& render_glyph : mGlyphs)
+		for (auto& render_glyph : mGlyphCache[mCacheIndex])
 		{
 			// Don't draw empty glyphs (spaces)
 			if (render_glyph->empty())
@@ -256,7 +288,15 @@ namespace nap
 
 
 	const math::Rect& RenderableTextComponentInstance::getBoundingBox() const
-	{ 
-		return mTextBounds;
+	{
+		const static math::Rect empty;
+		return mCacheIndex < mTextBounds.size() ? mTextBounds[mCacheIndex] : empty;
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText()
+	{
+		const static std::string empty;
+		return mCacheIndex < mTextCache.size() ? mTextCache[mCacheIndex] : empty;
 	}
 }

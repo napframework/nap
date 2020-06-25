@@ -83,83 +83,10 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
-		
-		// Show selection box
-		static const char* items[] = { "Video", "Webcam" };
-		ImGui::Combo("Select", &mCurrentSelection, items, IM_ARRAYSIZE(items));
+		// Set text to draw
 
-		// Video controls
-		if (ImGui::CollapsingHeader("Video"))
-		{
-			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
-				adapter.setFrame(mCurrentVideoFrame);
 
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
-			ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
-
-			if (ImGui::Button("Set Streak"))
-			{
-				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-				utility::ErrorState error;
-				if (!video_adapter.changeVideo("streak.mp4", error))
-					nap::Logger::info(error.toString());
-				mCurrentVideoFrame = 0;
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("Set People"))
-			{
-				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
-				utility::ErrorState error;
-				if (!video_adapter.changeVideo("people.mp4", error))
-					nap::Logger::info(error.toString());
-				mCurrentVideoFrame = 0;
-			}
-			if (adapter.hasErrors())
-			{
-				nap::CVCaptureErrorMap map = adapter.getErrors();
-				for (auto error : map)
-					ImGui::TextColored(clr, error.second.c_str());
-			}
-		}
-
-		// Webcam controls
-		if (ImGui::CollapsingHeader("Webcam"))
-		{
-			CVCamera& camera_one = mCameraCaptureDevice->getAdapter<CVCamera>(0);
-			if (camera_one.hasErrors())
-			{
-				nap::CVCaptureErrorMap map = camera_one.getErrors();
-				for (auto error : map)
-					ImGui::TextColored(clr, error.second.c_str());
-
-				if (ImGui::Button("Reconnect Camera One"))
-				{
-					nap::utility::ErrorState error;
-					if (!camera_one.reconnect(error))
-					{
-						nap::Logger::error(error.toString());
-					}
-				}
-			}
-			else
-				ImGui::Text("No Errors");
-
-			// Display camera framerate and draw camera texture
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", mCameraCaptureDevice->getAdapter<CVCamera>(0).getFPS()).c_str());
-			float col_width = ImGui::GetContentRegionAvailWidth();
-			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
-			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
-		}
-		ImGui::End();
+		updateGUI();
 	}
 
 	
@@ -228,7 +155,7 @@ namespace nap
 				// Get text location in screen space, offset a bit and draw.
 				glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
 				text_comp.setLocation(text_pos + glm::vec2(0, 25));
-				text_comp.setText(utility::stringFormat("Blob %d", i + 1), error);
+				//text_comp.setText(utility::stringFormat("Blob %d", i + 1), error);
 				text_comp.draw(*mRenderWindow);
 			}
 
@@ -285,5 +212,87 @@ namespace nap
 	int FaceDetectionApp::shutdown()
 	{
 		return 0;
+	}
+
+
+	void FaceDetectionApp::updateGUI()
+	{
+		// General Information
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Show selection box
+		static const char* items[] = { "Video", "Webcam" };
+		ImGui::Combo("Select", &mCurrentSelection, items, IM_ARRAYSIZE(items));
+
+		// Video controls
+		if (ImGui::CollapsingHeader("Video"))
+		{
+			CVVideo& adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+			if (ImGui::SliderInt("Location", &mCurrentVideoFrame, 0, adapter.geFrameCount()))
+				adapter.setFrame(mCurrentVideoFrame);
+
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mVideoOutputTexture->getWidth()) / static_cast<float>(mVideoCaptureTexture->getHeight());
+			ImGui::Image(*mVideoOutputTexture, { col_width, col_width / ratio_video });
+
+			if (ImGui::Button("Set Streak"))
+			{
+				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+				utility::ErrorState error;
+				if (!video_adapter.changeVideo("streak.mp4", error))
+					nap::Logger::info(error.toString());
+				mCurrentVideoFrame = 0;
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Set People"))
+			{
+				CVVideo& video_adapter = mVideoCaptureDevice->getAdapter<CVVideo>(0);
+				utility::ErrorState error;
+				if (!video_adapter.changeVideo("people.mp4", error))
+					nap::Logger::info(error.toString());
+				mCurrentVideoFrame = 0;
+			}
+			if (adapter.hasErrors())
+			{
+				nap::CVCaptureErrorMap map = adapter.getErrors();
+				for (auto error : map)
+					ImGui::TextColored(clr, error.second.c_str());
+			}
+		}
+
+		// Webcam controls
+		if (ImGui::CollapsingHeader("Webcam"))
+		{
+			CVCamera& camera_one = mCameraCaptureDevice->getAdapter<CVCamera>(0);
+			if (camera_one.hasErrors())
+			{
+				nap::CVCaptureErrorMap map = camera_one.getErrors();
+				for (auto error : map)
+					ImGui::TextColored(clr, error.second.c_str());
+
+				if (ImGui::Button("Reconnect Camera One"))
+				{
+					nap::utility::ErrorState error;
+					if (!camera_one.reconnect(error))
+						nap::Logger::error(error.toString());
+				}
+			}
+			else
+			{
+				ImGui::Text("No Errors");
+			}
+
+			// Display camera framerate and draw camera texture
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", mCameraCaptureDevice->getAdapter<CVCamera>(0).getFPS()).c_str());
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			float ratio_video = static_cast<float>(mCameraOutputTexture->getWidth()) / static_cast<float>(mCameraCaptureTexture->getHeight());
+			ImGui::Image(*mCameraOutputTexture, { col_width, col_width / ratio_video });
+		}
+		ImGui::End();
 	}
 }

@@ -69,15 +69,13 @@ namespace nap
 		 */
 		bool setText(const std::string& text, utility::ErrorState& error);
 
-		/**
-		 * @return the text that is drawn.
-		 */
-		const std::string& getText() const								{ return mText; }
+		const std::string& getText();
 
-		/**
-		 * @return material used when drawing the text.
-		 */
-		MaterialInstance& getMaterialInstance();
+		void setLineIndex(int index);
+
+		bool addText(const std::string& text, utility::ErrorState& error);
+
+		void clear();
 
 		/**
 		 * @return the bounding box of the text in pixels.
@@ -116,7 +114,8 @@ namespace nap
 		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
 	private:
-		std::string mText = "";											///< Text to render
+		std::string mText = "";											///< Text to render, as provided by the resource
+		int mCacheIndex = 0;											///< Current cache to draw
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
@@ -127,7 +126,8 @@ namespace nap
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position text
 		RenderableMesh mRenderableMesh;									///< Valid Plane / Material combination
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the plane vertices
-		std::vector<RenderableGlyph*> mGlyphs;							///< Glyphs associated with the text to render
-		math::Rect mTextBounds;											///< Bounds of the text in pixels
+		std::vector<math::Rect> mTextBounds;							///< Bounds of the text in pixels
+		std::vector<std::vector<RenderableGlyph*>> mGlyphCache;			///< All available lines of text to render
+		std::vector<std::string> mTextCache;							///< All current lines to be drawn
 	};
 }
