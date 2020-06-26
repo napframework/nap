@@ -321,7 +321,7 @@ namespace nap
 	/**
 	 * Selects a device based on user preference, min required api version and queue family requirements
 	 */
-	static bool selectGPU(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -406,21 +406,22 @@ namespace nap
 			return false;
 
 		// If the preferred GPU is found, use that one, otherwise first compatible one
-		int gpu_idx = preferred_idx;
+		int device_idx = preferred_idx;
 		if (preferred_idx < 0)
 		{
 			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
-			gpu_idx = 0;
+			device_idx = 0;
 		}
 
 		// Set the output variables
-		outDevice = physical_devices[gpu_idx];
-		outProperties = physical_device_properties[gpu_idx];
-		outQueueFamilyIndex = queue_indices[gpu_idx];
+		outDevice = physical_devices[device_idx];
+		outProperties = physical_device_properties[device_idx];
+		outQueueFamilyIndex = queue_indices[device_idx];
 
 		// Extract device features
 		VkPhysicalDeviceFeatures selected_device_featues;
-		vkGetPhysicalDeviceFeatures(physical_devices[gpu_idx], &outFeatures);
+		vkGetPhysicalDeviceFeatures(physical_devices[device_idx], &outFeatures);
+		nap::Logger::info("Selected device: %d", device_idx, physical_device_properties[device_idx].deviceName);
 		return true;
 	}
 
@@ -1144,7 +1145,7 @@ namespace nap
 		VkPhysicalDeviceProperties	physical_device_properties;
 
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
-		if (!selectGPU(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
