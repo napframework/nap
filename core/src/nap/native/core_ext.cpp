@@ -34,7 +34,7 @@ namespace nap
 		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
 		// so that we avoid module DLL copying hell.
 
-		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
+		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../..");
 		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
 		// Iterate possible project locations

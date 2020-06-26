@@ -3,7 +3,7 @@
 
 using namespace napkin;
 
-ModuleItem::ModuleItem(const nap::ModuleManager::Module& module)
+ModuleItem::ModuleItem(const nap::Module& module)
 		: QStandardItem(), mModule(module)
 {
 	std::string name(module.mDescriptor->mID);

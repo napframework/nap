@@ -164,5 +164,13 @@ namespace nap
 		 * @return True if the read succeeded, false otherwise
 		 */
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err);
+
+		/**
+		 * Find a file in one of the given directories.
+		 * @param basefilename The base filename to look for
+		 * @param dirs The directories to search in
+		 * @return The absolute path to the found file or an empty string if none was found
+		 */
+		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs);
 	}
 }

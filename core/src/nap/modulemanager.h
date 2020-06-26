@@ -16,6 +16,19 @@ namespace nap
 	class Core;
 
 	/**
+	 * Holds on to the dll/sharedobject pointer and any metadata associated with a module
+	 */
+	class Module
+	{
+	public:
+		std::string						mName;									// The canonical name of the module
+		ModuleDescriptor*				mDescriptor;							// The descriptor that belongs to the module
+		std::unique_ptr<ModuleInfo>		mInfo;									// Data that was loaded from the module json
+		void*							mHandle;								// Handle to native module
+		rtti::TypeInfo					mService = rtti::TypeInfo::empty();		// Service associated with the module
+	};
+
+	/**
 	 * Responsible for dynamically loading additional nap modules
 	 */
 	class NAPAPI ModuleManager final
@@ -23,19 +36,6 @@ namespace nap
 		friend class Core;
 
 	public:
-		/**
-		* Data for a loaded module
-		*/
-		struct Module
-		{
-			std::string						mName;									// The canonical name of the module
-			ModuleDescriptor*				mDescriptor;							// The descriptor that belongs to the module
-			std::unique_ptr<ModuleInfo>		mInfo;									// Data that was loaded from the module json
-			void*							mHandle;								// Handle to native module
-			rtti::TypeInfo					mService = rtti::TypeInfo::empty();		// Service associated with the module
-		};
-
-
 		// Constructor
 		ModuleManager(Core& core);
 
@@ -53,7 +53,7 @@ namespace nap
 		/**
 		 * @return All currently loaded modules
 		 */
-		std::vector<nap::ModuleManager::Module*> getModules() const;
+		std::vector<nap::Module*> getModules() const;
 
 	private:
 		bool loadModule_(const ProjectInfo& projectinfo, const std::string& moduleFile, utility::ErrorState& err);
@@ -75,10 +75,9 @@ namespace nap
 		 * @return True if the operation was successful, false otherwise
 		 */
 		bool findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
-							 std::string& moduleFile, std::string& moduleJson);
+							 std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err);
 
-
-		std::vector<std::unique_ptr<Module>> 	mModules;	// The loaded modules
+		std::vector<std::shared_ptr<Module>> 	mModules;	// The loaded modules
 		Core& 								 	mCore;		// Core
 
 	};

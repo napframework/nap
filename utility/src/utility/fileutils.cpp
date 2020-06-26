@@ -93,7 +93,7 @@ namespace nap
 #else
 			GetFullPathName((LPCSTR)path.c_str(), MAX_PATH_SIZE, _path, filenameComponent);
 #endif
-			return std::string((char*)_path);
+			return !std::string((char*)_path).empty();
 #else
 			return path.at(0) == '/';
 #endif
@@ -364,6 +364,17 @@ namespace nap
 			in.read(&outBuffer[0], len);
 
 			return true;
+		}
+
+		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
+        {
+			for (const auto& dir : dirs)
+			{
+				auto filepath = utility::stringFormat("%s/%s", dir.c_str(), basefilename.c_str());
+				if (utility::fileExists(filepath))
+					return filepath;
+			}
+			return {};
 		}
 
 	}

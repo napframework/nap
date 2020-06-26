@@ -8,7 +8,6 @@
 
 // External Includes
 #include <utility/fileutils.h>
-#include <dlfcn.h>
 
 namespace nap
 {
@@ -16,20 +15,16 @@ namespace nap
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
 		for (const std::string& moduleName : projectInfo.mModuleNames)
-		{
 			if (!loadModule_(projectInfo, moduleName, err))
-			{
-				err.fail("Failed to load module '%s'", moduleName.c_str());
 				return false;
-			}
-		}
+
 		return true;
 	}
 
-	std::vector<nap::ModuleManager::Module*> ModuleManager::getModules() const
+	std::vector<nap::Module*> ModuleManager::getModules() const
 	{
-		std::vector<nap::ModuleManager::Module*> mods;
-		for (auto& m : mModules)
+		std::vector<nap::Module*> mods;
+		for (const auto& m : mModules)
 			mods.emplace_back(m.get());
 		return mods;
 	}
@@ -43,11 +38,8 @@ namespace nap
 		// Attempt to find the module files first
 		std::string moduleFile;
 		std::string moduleJson;
-		if (!findModuleFiles(project, moduleName, moduleFile, moduleJson))
-		{
-			err.fail("Cannot find module %s", moduleName.c_str());
+		if (!findModuleFiles(project, moduleName, moduleFile, moduleJson, err))
 			return false;
-		}
 
 		// Load module json
 		auto modinfo = rtti::readJSONFileObjectT<nap::ModuleInfo>(
@@ -69,6 +61,7 @@ namespace nap
 		// Load module dependencies first
 		for (const auto& modName : modinfo->mDependencies)
 		{
+			// Skip already loaded modules
 			if (getLoadedModule(modName))
 				continue;
 
@@ -77,10 +70,12 @@ namespace nap
 		}
 
 		// Load module binary
-		void* module_handle = dlopen(moduleFile.c_str(), RTLD_LAZY);
+		std::string loadModuleError;
+		void* module_handle = loadModule(moduleFile, loadModuleError);
 		if (!module_handle)
 		{
-			err.fail(utility::stringFormat("Failed to load module '%s': %s", moduleFile.c_str(), dlerror()));
+			err.fail(utility::stringFormat("Failed to load module '%s': %s",
+										   moduleFile.c_str(), loadModuleError.c_str()));
 			return false;
 		}
 
@@ -131,7 +126,7 @@ namespace nap
 		return true;
 	}
 
-	const ModuleManager::Module* ModuleManager::getLoadedModule(const std::string& moduleName)
+	const Module* ModuleManager::getLoadedModule(const std::string& moduleName)
 	{
 		for (const auto& mod : mModules)
 			if (mod->mName == moduleName)
@@ -140,34 +135,28 @@ namespace nap
 	}
 
 	bool ModuleManager::findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
-										std::string& moduleFile, std::string& moduleJson)
+										std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err)
 	{
-		auto expectedFilename = utility::stringFormat("%s.so", moduleName.c_str());
-		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
-
+		// Require module directories to be provided
 		auto moduleDirs = projectInfo.getModuleDirectories();
-
-		if (moduleDirs.empty())
-		{
-			nap::Logger::error("No module dirs specified in %s", projectInfo.mFilename.c_str());
+		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.mFilename.c_str()))
 			return false;
-		}
 
-		for (const auto& dir : moduleDirs)
-		{
-			moduleFile = utility::stringFormat("%s/%s", dir.c_str(), expectedFilename.c_str());
-			moduleJson = utility::stringFormat("%s/%s", dir.c_str(), expectedJsonFile.c_str());
-			nap::Logger::debug("Looking for %s (resolved as: %s)", moduleJson.c_str(),
-							   utility::getAbsolutePath(moduleJson.c_str()).c_str());
+		// Find module json in given directories
+		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
+		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
+		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+					   expectedJsonFile.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
+			return false;
 
-			if (utility::fileExists(moduleFile) and utility::fileExists(moduleJson))
-				return true;
-		}
+		// Find module library in given directories
+		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
+		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
+		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+					   expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
+			return false;
 
-		nap::Logger::error("Module not found, expected: '%s' and '%s'",
-						   expectedFilename.c_str(), expectedJsonFile.c_str());
-
-		return false;
+		return true;
 	}
 
 }

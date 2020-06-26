@@ -256,7 +256,7 @@ namespace nap
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
-		for (auto& module : mModuleManager->mModules)
+		for (const auto& module : mModuleManager->mModules)
 		{
 			if (module->mService == rtti::TypeInfo::empty())
 				continue;
