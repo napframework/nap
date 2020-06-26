@@ -295,6 +295,16 @@ namespace nap
 		bool isRenderingFrame() const { return mIsRenderingFrame; }
 
 		/**
+		 * @return Vulkan major api version
+		 */
+		uint32 getVulkanVersionMajor() const;
+
+		/**
+		 * @return Vulkan minor api version
+		 */
+		uint32 getVulkanVersionMinor() const;
+
+		/**
 		 * Called when a new window is added to the system
 		 */
 		nap::Signal<nap::RenderWindow&> windowAdded;
@@ -430,6 +440,7 @@ namespace nap
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
+		uint32									mAPIVersion = 0;
 	};
 } // nap
 

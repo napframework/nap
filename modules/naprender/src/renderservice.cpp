@@ -267,7 +267,7 @@ namespace nap
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, utility::ErrorState& errorState)
+	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, uint32& outVersion, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -279,9 +279,10 @@ namespace nap
 		for (const auto& ext : extensionNames)
 			ext_names.emplace_back(ext.c_str());
 
-		// Get the suppoerted vulkan instance version
-		unsigned int api_version;
-		vkEnumerateInstanceVersion(&api_version);
+		// Get the supported vulkan instance version
+		if (!errorState.check(vkEnumerateInstanceVersion(&outVersion) == VK_SUCCESS,
+			"Unable Query instance-level version of Vulkan before instance creation"))
+			return false;
 
 		// initialize the VkApplicationInfo structure
 		VkApplicationInfo app_info = {};
@@ -291,7 +292,7 @@ namespace nap
 		app_info.applicationVersion = 1;
 		app_info.pEngineName = "NAP";
 		app_info.engineVersion = 1;
-		app_info.apiVersion = api_version;	// Note: this is the *requested* version, which is the version the installed vulkan driver supports. If the device itself does not support this version, a lower version is returned. See selectGPU
+		app_info.apiVersion = outVersion;
 
 		// initialize the VkInstanceCreateInfo structure
 		VkInstanceCreateInfo inst_info = {};
@@ -305,31 +306,22 @@ namespace nap
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
 		// Create vulkan runtime instance
-		Logger::info("Initializing Vulkan instance");
 		VkResult res = vkCreateInstance(&inst_info, NULL, &outInstance);
-		switch (res)
-		{
-		case VK_SUCCESS:
-			break;
-		case VK_ERROR_INCOMPATIBLE_DRIVER:
-			errorState.fail("Unable to create Vulkan instance, cannot find a compatible Vulkan driver");
-			return false;
-		default:
-			errorState.fail("Unable to create Vulkan instance: unknown error");
-			return false;
-		}
-
-		return true;
+		if (res == VK_SUCCESS)
+			return true;
+		
+		// Add error message and return
+		errorState.fail(res == VK_ERROR_INCOMPATIBLE_DRIVER ?
+			"Unable to create Vulkan instance, cannot find a compatible Vulkan driver" :
+			"Unable to create Vulkan instance: error: %d", static_cast<int>(res));
+		return false;
 	}
 
 
 	/**
-	 * Allows the user to select a GPU (physical device)
-	 * @return if query, selection and assignment was successful
-	 * @param outDevice the selected physical device (gpu)
-	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
+	 * Selects a device based on user preference, min required api version and queue family requirements
 	 */
-	static bool selectGPU(VkInstance instance, VkPhysicalDeviceType preferredType, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectGPU(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -343,62 +335,92 @@ namespace nap
 
 		// Show device information
 		Logger::info("Found %d GPU(s):", physical_device_count);
+		
+		// Pick the right GPU, based on type preference, api-version and queue support
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		int preferred_gpu_idx = -1;
+		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+
+		std::vector<int> valid_devices;
+		std::vector<int> queue_indices;
+		int preferred_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
+			// Get current physical device
 			VkPhysicalDevice physical_device = physical_devices[index];
+
+			// Get properties associated with device
 			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
 			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
-			// Detect if it's the preferred GPU
-			preferred_gpu_idx = properties.deviceType == preferredType && preferred_gpu_idx < 0 ? index : preferred_gpu_idx;
+			// If the supported api version < required by currently used api, continue
+			if (properties.apiVersion < minAPIVersion)
+			{
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				continue;
+			}
+
+			// Find the number queues this device supports
+			uint32 family_queue_count(0);
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
+			if (family_queue_count == 0)
+			{
+				Logger::warn("%d: No queue families available", index);
+				continue;
+			}
+
+			// Extract the properties of all the queue families
+			// We want to make sure that we have a queue that supports the required flags
+			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
+
+			// Make sure the family of commands contains an option to issue graphical commands.
+			int queue_node_index = -1;
+			for (unsigned int i = 0; i < family_queue_count; i++)
+			{
+				if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & required_flags)
+				{
+					queue_node_index = i;
+					break;
+				}
+			}
+			
+			// No compatible queue found
+			if (queue_node_index < 0)
+			{
+				Logger::warn("%d: Unable to find compatible queue family", index);
+				continue;
+			}
+
+			// This is at least a compatible device
+			valid_devices.emplace_back(index);
+			queue_indices.emplace_back(index);
+			nap::Logger::info("%d: Compatible", index);
+
+			// Check if it's the preferred type, if so select it
+			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? index : preferred_idx;
 		}
 
-		// Select first available discrete GPU if present
-		int gpu_idx = preferred_gpu_idx;
-		if (preferred_gpu_idx < 0)
+		// if there are no valid devices, bail.
+		if (!errorState.check(!valid_devices.empty(), "No compatible device found"))
+			return false;
+
+		// If the preferred GPU is found, use that one, otherwise first compatible one
+		int gpu_idx = preferred_idx;
+		if (preferred_idx < 0)
 		{
-			nap::Logger::warn("Unable to find preferred GPU, selecting first available one");
+			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
 			gpu_idx = 0;
 		}
 
-		// Notify selection
-		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
-		Logger::info("Selected GPU: %s", physical_device_properties[gpu_idx].deviceName);
-
-		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
-		unsigned int family_queue_count(0);
-		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, nullptr);
-		if (!errorState.check(family_queue_count != 0, "Device has no family of queues associated with it"))
-			return false;
-
-		// Extract the properties of all the queue families
-		std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, queue_properties.data());
-
-		// Make sure the family of commands contains an option to issue graphical commands.
-		int queue_node_index = -1;
-		for (unsigned int i = 0; i < family_queue_count; i++)
-		{
-			if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
-				queue_node_index = i;
-				break;
-			}
-		}
-		if (!errorState.check(queue_node_index >= 0, "Unable to find graphics command queue on device"))
-			return false;
-
 		// Set the output variables
-		outDevice = selected_device;
+		outDevice = physical_devices[gpu_idx];
 		outProperties = physical_device_properties[gpu_idx];
-		outQueueFamilyIndex = queue_node_index;
+		outQueueFamilyIndex = queue_indices[gpu_idx];
 
 		// Extract device features
 		VkPhysicalDeviceFeatures selected_device_featues;
-		vkGetPhysicalDeviceFeatures(selected_device, &outFeatures);
+		vkGetPhysicalDeviceFeatures(physical_devices[gpu_idx], &outFeatures);
 		return true;
 	}
 
@@ -544,6 +566,9 @@ namespace nap
 	}
 
 
+	/**
+	 * Get vulkan depth and stencil creation information, based on current material state.
+	 */
 	static VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
 		VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
@@ -593,6 +618,9 @@ namespace nap
 	}
 
 
+	/**
+	 * Get color blend state based on material settings.
+	 */
 	static VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
 	{
 		VkPipelineColorBlendAttachmentState color_blend_attachment_state = {};
@@ -772,7 +800,6 @@ namespace nap
 
 		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
 			return false;
-
 		return true;
 	}
 
@@ -1106,7 +1133,7 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		if (!createVulkanInstance(found_layers, found_extensions, mInstance, errorState))
+		if (!createVulkanInstance(found_layers, found_extensions, mInstance, mAPIVersion, errorState))
 			return false;
 
 		// Vulkan messaging callback
@@ -1117,7 +1144,7 @@ namespace nap
 		VkPhysicalDeviceProperties	physical_device_properties;
 
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
-		if (!selectGPU(mInstance, pref_gpu, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
+		if (!selectGPU(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
@@ -1204,6 +1231,18 @@ namespace nap
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+	}
+
+
+	uint32 RenderService::getVulkanVersionMajor() const
+	{
+		return VK_VERSION_MAJOR(mAPIVersion);
+	}
+
+
+	uint32 RenderService::getVulkanVersionMinor() const
+	{
+		return VK_VERSION_MINOR(mAPIVersion);
 	}
 
 
