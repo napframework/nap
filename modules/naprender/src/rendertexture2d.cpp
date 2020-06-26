@@ -31,17 +31,20 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mColorSpace = mColorSpace;
 
+		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static ? Texture2D::EClearMode::DontClear :
+			Texture2D::EClearMode::FillWithZero;
+
 		switch (mFormat)
 		{
 		case ERenderTargetFormat::RGBA8:
 		{
 			settings.mChannels = ESurfaceChannels::RGBA;
-			return Texture2D::init(settings, false, Texture2D::EClearMode::DontClear, errorState);
+			return Texture2D::init(settings, false, clear_mode, errorState);
 		}
 		case ERenderTargetFormat::R8:
 		{
 			settings.mChannels = ESurfaceChannels::R;
-			return Texture2D::init(settings, false, Texture2D::EClearMode::DontClear, errorState);
+			return Texture2D::init(settings, false, clear_mode, errorState);
 		}
 		default:
 			errorState.fail("Unsupported format");

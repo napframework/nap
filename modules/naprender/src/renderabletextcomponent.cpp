@@ -11,6 +11,7 @@
 #include <renderservice.h>
 #include <nap/logger.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <nap/assert.h>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -112,7 +113,7 @@ namespace nap
 			return false;
 
 		// Set text, needs to succeed on initialization
-		if (!setText(resource->mText, errorState))
+		if (!addLine(resource->mText, errorState))
 			return false;
 
 		return true;
@@ -128,9 +129,15 @@ namespace nap
 
 	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
 	{
-		// Clear Glyph handles
-		mGlyphs.clear();
-		mGlyphs.reserve(text.size());
+		// Adding / changing text is not allowed during frame capture
+		// This is because new characters might be uploaded
+		NAP_ASSERT_MSG(!mRenderService->isRenderingFrame(), "Can't change or add text when rendering a frame");
+
+		// Get cache to populate
+		assert(mIndex < mGlyphCache.size());
+		std::vector<RenderableGlyph*>& cur_cache = mGlyphCache[mIndex];
+		cur_cache.clear();
+		cur_cache.reserve(text.size());
 
 		// Get or create a Glyph for every letter in the text
 		bool success(true);
@@ -144,17 +151,61 @@ namespace nap
 				continue;
 			}
 			// Store handle
-			mGlyphs.emplace_back(glyph);
+			cur_cache.emplace_back(glyph);
 		}
-		mText = text;
-		mFont->getBoundingBox(mText, mTextBounds);	
+
+		// Set text and compute bounding box
+		mLinesCache[mIndex]  = text;
+		mFont->getBoundingBox(text, mTextBounds[mIndex]);
 		return success;
 	}
 
 
-	nap::MaterialInstance& RenderableTextComponentInstance::getMaterialInstance()
+	bool RenderableTextComponentInstance::setText(int lineIndex, const std::string& text, utility::ErrorState& error)
 	{
-		return mMaterialInstance;
+		setLineIndex(lineIndex);
+		return setText(text, error);
+	}
+
+
+	bool RenderableTextComponentInstance::addLine(const std::string& text, utility::ErrorState& error)
+	{
+		// Increase container size
+		resize(mGlyphCache.size() + 1);
+
+		// Set text, creating glyphs when required
+		setLineIndex(mGlyphCache.size() - 1);
+		return setText(text, error);
+	}
+
+
+	void RenderableTextComponentInstance::setLineIndex(int index)
+	{
+		assert(index < mGlyphCache.size());
+		mIndex = index;
+	}
+
+
+	void RenderableTextComponentInstance::resize(int lines)
+	{
+		mGlyphCache.resize((size_t)lines);
+		mTextBounds.resize((size_t)lines);
+		mLinesCache.resize((size_t)lines);
+	}
+
+
+	int RenderableTextComponentInstance::getCount() const
+	{
+		return static_cast<int>(mGlyphCache.size());
+	}
+
+
+	void RenderableTextComponentInstance::clear()
+	{
+		mGlyphCache.clear();
+		mTextBounds.clear();
+		mLinesCache.clear();
+		mIndex = 0;
 	}
 
 
@@ -166,6 +217,16 @@ namespace nap
 			assert(false);
 			return;
 		}
+
+		// If there is no cache, there's nothing to draw so bail.
+		if (mGlyphCache.empty())
+			return;
+		assert(mIndex < mGlyphCache.size());
+
+		// If the cache contains no characters, bail.
+		std::vector<RenderableGlyph*> cur_cache = mGlyphCache[mIndex];
+		if (cur_cache.empty())
+			return;
 
 		// Update view uniform
 		if (mViewUniform != nullptr)
@@ -181,13 +242,12 @@ namespace nap
 		// Fetch index buffer (holding drawing order
 		const IndexBuffer& index_buffer = mesh_instance.getGPUMesh().getIndexBuffer(0);
 
-		utility::ErrorState error_state;
-
 		// Location of active letter
 		float x = 0.0f;
 		float y = 0.0f;
 
 		// Get pipeline
+		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		
 		// Scissor rectangle
@@ -206,7 +266,7 @@ namespace nap
 		};
 
 		// Draw individual glyphs
-		for (auto& render_glyph : mGlyphs)
+		for (auto& render_glyph : mGlyphCache[mIndex])
 		{
 			// Don't draw empty glyphs (spaces)
 			if (render_glyph->empty())
@@ -256,7 +316,30 @@ namespace nap
 
 
 	const math::Rect& RenderableTextComponentInstance::getBoundingBox() const
-	{ 
-		return mTextBounds;
+	{
+		const static math::Rect empty;
+		return mIndex < mTextBounds.size() ? mTextBounds[mIndex] : empty;
 	}
+
+
+	const nap::math::Rect& RenderableTextComponentInstance::getBoundingBox(int index)
+	{
+		assert(index < mTextBounds.size());
+		return mTextBounds[index];
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText()
+	{
+		const static std::string empty;
+		return mIndex < mLinesCache.size() ? mLinesCache[mIndex] : empty;
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText(int index)
+	{
+		assert(index < mLinesCache.size());
+		return mLinesCache[index];
+	}
+
 }

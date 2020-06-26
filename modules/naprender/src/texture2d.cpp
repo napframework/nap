@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {

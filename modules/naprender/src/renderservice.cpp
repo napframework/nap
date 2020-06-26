@@ -1375,7 +1375,7 @@ namespace nap
 		// destructor queue instead. This flag is set to true for cases of real-time editing and the destruction sequence,
 		// where Vulkan object must be destroyed immediately.
 		mCanDestroyVulkanObjectsImmediately = false;
-		mIsInRenderFrame = true;
+		mIsRenderingFrame = true;
 
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
 
@@ -1408,7 +1408,7 @@ namespace nap
 		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
 
-		mIsInRenderFrame = false;
+		mIsRenderingFrame = false;
 	}
 
 	bool RenderService::beginHeadlessRecording()
@@ -1482,7 +1482,7 @@ namespace nap
 		{
 			// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
 			// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).
-			int previousFrameIndex =  mIsInRenderFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
+			int previousFrameIndex =  mIsRenderingFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
 			if (previousFrameIndex < 0)
 				previousFrameIndex = mFramesInFlight.size() - 1;
 
