@@ -27,33 +27,6 @@ namespace nap
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on application update. You can however change the position and line of text to draw inside the render loop.
-	 *
-	 * For example, on update:
-	 * ~~~~~
-	 *		// Set text for next draw operation
-	 *		text_component.resize(blobs.size());
-	 *		for (int i = 0; i < blobs.size(); i++)
-	 *		{
-	 *			text_component.setText(i, utility::stringFormat("Blob %d", i + 1), error);
-	 *		}
-	 * ~~~~~
-	 *
-	 * And on render:
-	 * ~~~~~
-	 *		// Set text for next draw operation
-	 *		for (int i = 0; i < blobs.size(); i++)
-	 *		{
-	 *			// Get blob location in screen space
-	 *			glm::vec3 blob_pos = locs[i];
-	 *			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
-	 *
-	 *			// Set location, select line and draw
-	 *			text_comp.setLocation(text_pos);
-	 *			text_comp.setLineIndex(i);
-	 *			text_comp.draw(*mRenderWindow)
-	 *		}
-	 * ~~~~~
-	 *
 	 */
 	class NAPAPI RenderableTextComponent : public RenderableComponent
 	{
@@ -78,33 +51,6 @@ namespace nap
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line. 
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on application update. You can however change the position and line of text to draw inside the render loop.
-	 *
-	 * For example, on update:
-	 * ~~~~~
-	 *		// Set text for next draw operation
-	 *		text_component.resize(blobs.size());
-	 *		for (int i = 0; i < blobs.size(); i++)
-	 *		{
-	 *			text_component.setText(i, utility::stringFormat("Blob %d", i + 1), error);
-	 *		}
-	 * ~~~~~
-	 *
-	 * And on render:
-	 * ~~~~~
-	 *		// Set text for next draw operation
-	 *		for (int i = 0; i < blobs.size(); i++)
-	 *		{
-	 *			// Get blob location in screen space
-	 *			glm::vec3 blob_pos = locs[i];
-	 *			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
-	 *
-	 *			// Set location, select line and draw
-	 *			text_comp.setLocation(text_pos);
-	 *			text_comp.setLineIndex(i);
-	 *			text_comp.draw(*mRenderWindow)
-	 *		}
-	 * ~~~~~
-	 * 
 	 */
 	class NAPAPI RenderableTextComponentInstance : public RenderableComponentInstance
 	{
