@@ -280,9 +280,13 @@ namespace nap
 			ext_names.emplace_back(ext.c_str());
 
 		// Get the supported vulkan instance version
-		if (!errorState.check(vkEnumerateInstanceVersion(&outVersion) == VK_SUCCESS,
+		uint32 current_api(0);
+		if (!errorState.check(vkEnumerateInstanceVersion(&current_api) == VK_SUCCESS,
 			"Unable Query instance-level version of Vulkan before instance creation"))
 			return false;
+
+		// Create api version without patch, not used when creating instance
+		outVersion = VK_MAKE_VERSION(VK_VERSION_MAJOR(current_api), VK_VERSION_MINOR(current_api), 0);
 
 		// initialize the VkApplicationInfo structure
 		VkApplicationInfo app_info = {};
