@@ -162,7 +162,7 @@ namespace nap
 			// Extract world space blob locations and draw text
 			const std::vector<glm::vec4>& locs = classify_render_comp.getLocations();
 
-			// Draw text
+			// Draw text above blob
 			utility::ErrorState error;
 			for (int i = 0; i < locs.size(); i++)
 			{
@@ -177,7 +177,7 @@ namespace nap
 				text_comp.draw(*mRenderWindow);
 			}
 
-			// Draw our gui
+			// Draw the GUI
 			mGuiService->draw();
 
 			// End render pass

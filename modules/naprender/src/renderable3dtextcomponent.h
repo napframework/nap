@@ -26,7 +26,7 @@ namespace nap
 	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
-	 * Only update or add new lines of text on application update. You can however change the position and line of text to draw inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
 	 */
 	class NAPAPI Renderable3DTextComponent : public RenderableTextComponent
 	{
@@ -55,7 +55,7 @@ namespace nap
 	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
-	 * Only update or add new lines of text on application update. You can however change the position and line of text to draw inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
 	 */
 	class NAPAPI Renderable3DTextComponentInstance : public RenderableTextComponentInstance
 	{

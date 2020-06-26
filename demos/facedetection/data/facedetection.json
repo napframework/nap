@@ -8,7 +8,7 @@
             "DeviceIndex": 0,
             "Codec": "",
             "OverrideResolution": true,
-            "Backend": "DirectShow",
+            "Backend": "Automatic",
             "Resolution": {
                 "x": 640,
                 "y": 480
