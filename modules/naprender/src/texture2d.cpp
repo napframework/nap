@@ -251,19 +251,28 @@ namespace nap
 
 	Texture2D::~Texture2D()
 	{		 
-		mRenderService->removeTextureRequests(*this);
- 		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
- 		{
- 			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
-			for (const BufferData& buffer : stagingBuffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
- 		});
+		// Only destroy vulkan resources when texture has been initialized.
+		// Texture can only be initialized when there is an operational render service.
+		// If the texture is created but not initialized afterwards, omit destruction.
+		if (mRenderService->isInitialized())
+		{
+			mRenderService->removeTextureRequests(*this);
+			mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+			{
+				destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+				for (const BufferData& buffer : stagingBuffers)
+				{
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				}
+			});
+		}
 	}
 
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
+		assert(mRenderService->isInitialized());
 		mFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
 			"%s, Unsupported texture format", mID.c_str()))

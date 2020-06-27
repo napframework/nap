@@ -572,22 +572,30 @@ namespace nap
 
 	Shader::~Shader()
 	{
-		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
+		// Only destroy vulkan resources when shader has been initialized.
+		// Shader can only be initialized when there is an operational renderer.
+		// If the texture is created but not initialized afterwards, omit destruction.
+		if (mRenderService->isInitialized())
 		{
-			if (descriptorSetLayout != nullptr)
-				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
+			mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
+			{
+				if (descriptorSetLayout != nullptr)
+					vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
 
-			if (vertexModule != nullptr)
-				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
+				if (vertexModule != nullptr)
+					vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
 
-			if (fragmentModule != nullptr)
-				vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
-		});
+				if (fragmentModule != nullptr)
+					vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
+			});
+		}
 	}
+
 
 	// Store path and create display names
 	bool Shader::init(utility::ErrorState& errorState)
 	{
+		assert(mRenderService->isInitialized());
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
 

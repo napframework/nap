@@ -314,6 +314,13 @@ namespace nap
 		 */
 		nap::Signal<nap::RenderWindow&> windowRemoved;
 
+		/**
+		 * Returns if the render service is running, a non operational render service is
+		 * in an undefined state and can therefore not be queried
+		 * @return if the render service is initialized and therefore running
+		 */
+		bool isInitialized() const	{ return mInitialized; }
+
 	protected:
 		/**
 		* Object creation registration
@@ -441,6 +448,7 @@ namespace nap
 		VkQueue									mGraphicsQueue = nullptr;
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
+		bool									mInitialized = false;
 	};
 } // nap
 

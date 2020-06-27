@@ -1215,7 +1215,6 @@ namespace nap
 			return false;
 		
 		mFramesInFlight.resize(getMaxFramesInFlight());
-
 		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
 		{
 			Frame& frame = mFramesInFlight[frame_index];
@@ -1232,6 +1231,7 @@ namespace nap
 				return false;
 		}
 
+		mInitialized = true;
 		return true;
 	}
 
@@ -1340,6 +1340,7 @@ namespace nap
 
 		ShFinalize();
 		SDL::shutdownVideo();
+		mInitialized = false;
 	}
 	
 	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
