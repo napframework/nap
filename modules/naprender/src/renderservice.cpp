@@ -145,6 +145,27 @@ namespace nap
 
 
 	/**
+	 * @return device type name
+	 */
+	static std::string getDeviceTypeName(VkPhysicalDeviceType type)
+	{
+		switch (type)
+		{
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			return "Discrete";
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			return "Integrated";
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			return "Virtual";
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			return "CPU";
+		default:
+			return "Unknown";
+		}
+	}
+
+
+	/**
 	 * @return the set of required device extension names
 	 */
 	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
@@ -355,7 +376,7 @@ namespace nap
 			// Get properties associated with device
 			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", index, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
 			// If the supported api version < required by currently used api, continue
 			if (properties.apiVersion < minAPIVersion)

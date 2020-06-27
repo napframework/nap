@@ -95,9 +95,34 @@ namespace nap
 
 
 	/**
+	 * Returns name of swapchain mode
+	 */
+	static std::string getPresentModeName(VkPresentModeKHR presentMode)
+	{
+		switch (presentMode)
+		{
+		case VK_PRESENT_MODE_FIFO_KHR:
+			return "FIFO";
+		case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+			return "FIFO Relaxed";
+		case VK_PRESENT_MODE_IMMEDIATE_KHR:
+			return "Immediate";
+		case VK_PRESENT_MODE_MAILBOX_KHR:
+			return "Mailbox";
+		case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
+			return "Shared Continuous Refresh";
+		case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
+			return "Shared Demand Refresh";
+		default:
+			return "Unknown";
+		}
+	}
+
+
+	/**
 	 * Returns if the requested presentation mode is supported, fall-back = FIFO_KHR
 	 */
-	static bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR requestedMode, VkPresentModeKHR& outMode, utility::ErrorState& errorState)
+	static bool getPresentMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR requestedMode, VkPresentModeKHR& outMode, utility::ErrorState& errorState)
 	{
 		uint32_t mode_count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) == VK_SUCCESS, "Unable to query present mode count for physical device"))
@@ -260,7 +285,7 @@ namespace nap
 			return false;
 
 		// Get the image presentation mode (synced, immediate etc.)
-		if (!getPresentationMode(surface, physicalDevice, presentMode, outPresentMode, errorState))
+		if (!getPresentMode(surface, physicalDevice, presentMode, outPresentMode, errorState))
 			return false;
 
 		// Get other swap chain related features
@@ -892,7 +917,7 @@ namespace nap
 		// Check if the selected presentation mode matches our request
 		if (out_mode != mPresentationMode)
 		{
-			nap::Logger::warn("%s: Unsupported presentation mode, switched to FIFO", mID.c_str());
+			nap::Logger::warn("%s: Unsupported presentation mode: %s, switched to: %s", mID.c_str(), getPresentModeName(mPresentationMode).c_str(), getPresentModeName(out_mode).c_str());
 			mPresentationMode = out_mode;
 		}
 
