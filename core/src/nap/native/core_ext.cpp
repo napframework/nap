@@ -22,7 +22,7 @@ namespace nap
 		const std::string exeDir = utility::getExecutableDir();
 
 		// Check for the file in its normal location, beside the binary
-		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
+		const std::string alongsideBinaryPath = utility::joinPath({utility::getExecutableDir(), filename});
 		nap::Logger::debug("Looking for '%s'...", alongsideBinaryPath.c_str());
 		if (utility::fileExists(alongsideBinaryPath))
 		{
@@ -34,20 +34,20 @@ namespace nap
 		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
 		// so that we avoid module DLL copying hell.
 
-		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../..");
+		const std::string relNapRoot = utility::joinPath({exeDir, "..", ".."});
+		const std::string napRoot = utility::getAbsolutePath(relNapRoot);
 		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
 		// Iterate possible project locations
 		for (auto& parentPath : sPossibleProjectParents)
 		{
-			std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
+			std::string testDataPath = utility::joinPath({napRoot, parentPath, projectName});
 			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
 			if (!utility::dirExists(testDataPath))
 				continue;
 
 			// We found our project folder, now let's verify we have a our file in there
-			testDataPath += "/";
-			testDataPath += filename;
+			testDataPath = utility::joinPath({testDataPath, filename});
 			if (utility::fileExists(testDataPath))
 			{
 				foundFilePath = testDataPath;

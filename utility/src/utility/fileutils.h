@@ -172,5 +172,20 @@ namespace nap
 		 * @return The absolute path to the found file or an empty string if none was found
 		 */
 		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs);
+
+		/**
+		 * Join parts path parts using the correct path separator for the current platform
+		 */
+		std::string joinPath(const std::vector<std::string>& parts);
+
+		/**
+		 * @return The current platform's file path separator
+		 */
+		std::string pathSep();
+
+		/**
+		 * @return A file path with the correct path separator for the current platform
+		 */
+		std::string forceSeparator(const std::string& path);
 	}
 }

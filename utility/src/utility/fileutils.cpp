@@ -370,11 +370,33 @@ namespace nap
         {
 			for (const auto& dir : dirs)
 			{
-				auto filepath = utility::stringFormat("%s/%s", dir.c_str(), basefilename.c_str());
+				auto filepath = joinPath({dir.c_str(), basefilename.c_str()});
 				if (utility::fileExists(filepath))
 					return filepath;
 			}
 			return {};
+		}
+
+		std::string joinPath(const std::vector<std::string>& parts)
+		{
+			return joinString(parts, pathSep());
+		}
+
+		std::string pathSep() {
+#if defined(_WIN32)
+			return "\\";
+#else
+			return "/";
+#endif
+		}
+
+		std::string forceSeparator(const std::string& path)
+		{
+#if defined(_WIN32)
+			return replaceAllInstances(path, "/", pathSep());
+#else
+			return replaceAllInstances(path, "\\", pathSep());
+#endif
 		}
 
 	}

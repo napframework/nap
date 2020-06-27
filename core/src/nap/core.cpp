@@ -432,7 +432,7 @@ namespace nap
 		// Load project info
 		std::string projectFilename;
 		if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
-						 "Failed to find %s", PROJECT_INFO_FILENAME))
+					   "Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
 		// Load ProjectInfo from json
@@ -452,7 +452,7 @@ namespace nap
 		mProjectInfo->mFilename = projectFilename;
 
 		// Load path mapping
-		mProjectInfo->mPathMapping = std::move(loadPathMapping(*mProjectInfo, err));
+		mProjectInfo->mPathMapping = std::move(loadPathMapping(*mProjectInfo, false, err));
 
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
@@ -467,8 +467,8 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<nap::PathMapping> Core::loadPathMapping(nap::ProjectInfo& projectInfo,
-																  nap::utility::ErrorState& err)
+	std::unique_ptr<nap::PathMapping> Core::loadPathMapping(nap::ProjectInfo& projectInfo, bool editorMode,
+															nap::utility::ErrorState& err)
 	{
 		// Load path mapping (relative to the project.json file)
 		auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
@@ -487,11 +487,15 @@ namespace nap
 		}
 
 		auto exepath = nap::utility::getExecutableDir();
-		auto rootpath = exepath + '/' + pathMapping->mProjectExeToRoot;
+
+		const std::string rootPath = utility::joinPath({exepath, editorMode ? pathMapping->mNapkinExeToRoot : pathMapping->mProjectExeToRoot});
+
 		// Do string/template replacement
 		std::unordered_map<std::string, std::string> reps = {
-			{"ROOT", rootpath},
+			{"ROOT", rootPath},
 			{"BUILD_TYPE", sBuildType},
+			{"PROJECT_DIR", projectInfo.getDirectory()},
+			{"EXE_DIR", utility::getExecutableDir()},
 		};
 
 		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)

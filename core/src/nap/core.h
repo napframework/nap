@@ -202,7 +202,16 @@ namespace nap
 		 */
 		nap::ProjectInfo* getProjectInfo();
 
-	private:
+        /**
+         * Load path mapping file and replace any template vars with their respective values
+         * @param projectInfo The current project info
+         * @param editorMode True if this is invoked from Napkin, false otherwise
+         * @param err The resulting errors if there were any
+         * @return The path mapping that was loaded or nullptr if loading failed
+         */
+        std::unique_ptr<nap::PathMapping> loadPathMapping(nap::ProjectInfo& projectInfo, bool editorMode, nap::utility::ErrorState& err);
+
+    private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
 		* Note that a module does not need to define a service, only if it has been defined
@@ -243,8 +252,6 @@ namespace nap
 		 * @return The current project info, load it if it isn't set.
 		 */
 		bool loadProjectInfo(nap::utility::ErrorState& error);
-
-		std::unique_ptr<PathMapping> loadPathMapping(ProjectInfo& projectInfo, utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

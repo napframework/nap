@@ -110,7 +110,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	projectInfo->mFilename = projectFilename.toStdString();
-	projectInfo->mPathMapping = std::move(loadPathMapping(*projectInfo, err));
+	projectInfo->mPathMapping = std::move(mCore->loadPathMapping(*projectInfo, true, err));
 	if (projectInfo->mPathMapping == nullptr)
 	{
 		nap::Logger::error("Failed to load path mapping %s: %s",
@@ -143,8 +143,10 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& projectInfo,
 															  nap::utility::ErrorState& err)
 {
+	auto projectDir = projectInfo.getDirectory();
+
 	// Load path mapping (relative to the project.json file)
-	auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
+	auto pathMappingFilename = projectDir + '/' + projectInfo.mPathMappingFile;
 	auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 		pathMappingFilename,
 		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
@@ -165,6 +167,7 @@ std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& 
 	std::unordered_map<std::string, std::string> reps = {
 		{"ROOT", projToRootPath},
 		{"BUILD_TYPE", sBuildType},
+		{"PROJECT_DIR", }
 	};
 
 	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)

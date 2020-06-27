@@ -3,8 +3,8 @@
 #include "utility/fileutils.h"
 
 RTTI_BEGIN_CLASS(nap::PathMapping)
-	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ModulePaths", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -50,7 +50,7 @@ namespace nap
 			if (utility::isAbsolutePath(p))
 				dirs.emplace_back(p);
 			else
-				dirs.emplace_back(utility::stringFormat("%s/%s", projectDir.c_str(), p.c_str()));
+				dirs.emplace_back(utility::joinPath({projectDir, p}));
 		}
 
 		return dirs;
@@ -60,7 +60,7 @@ namespace nap
 	{
 		if (mDefaultData.empty())
 			return {};
-		return getDirectory() + "/" + mDefaultData;
+		return utility::joinPath({getDirectory(), mDefaultData});
 	}
 
 
@@ -68,7 +68,7 @@ namespace nap
 	{
 		auto dataFile = getDefaultDataFile();
 		if (dataFile.empty())
-			return getDirectory() + "/data";
-		return getDirectory() + "/" + utility::getFileDir(mDefaultData);
+			return utility::joinPath({getDirectory(), "data"});
+		return utility::joinPath({getDirectory(), utility::getFileDir(mDefaultData)});
 	}
 }

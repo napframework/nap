@@ -162,6 +162,7 @@ namespace nap
 
 		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
+			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
 			std::string result = subject;
 			for (const auto& e : rep)
 				replaceAllInstances(result, '{' + e.first + '}', e.second);
