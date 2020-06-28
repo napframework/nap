@@ -24,6 +24,7 @@ namespace nap
 	class IMesh;
 	class MaterialInstance;
 	class Texture2D;
+	class GPUBuffer;
 
 	/**
 	 * Render engine configuration settings
@@ -68,8 +69,9 @@ namespace nap
 	*/
 	class NAPAPI RenderService : public Service
 	{
+		friend class Texture2D;
+		friend class GPUBuffer;
 		RTTI_ENABLE(Service)
-
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
@@ -243,11 +245,6 @@ namespace nap
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
-		 * Shuts down the renderer, queued resources are destroyed.
-		 */
-		virtual void shutdown() override;
-
-		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
@@ -339,43 +336,10 @@ namespace nap
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		/**
-		 * Deletes all texture upload and download requests.
-		 * Called when a texture resource is destroyed.
-		 * @param texture the texture to remove upload and download requests for.
-		 */
-		void removeTextureRequests(Texture2D& texture);
-
-		/**
-		 * Request a pixel data transfer, from a staging buffer to image buffer.
-		 * @param texture the texture to upload.
-		 */
-		void requestTextureUpload(Texture2D& texture);
-		
-		/**
-		 * Request a pixel data transfer, from image buffer to CPU.
-		 * @param texture the texture to download data into.
-		 */
-		void requestTextureDownload(Texture2D& texture);
-
-		/**
-		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
-		 * @param buffer the butter to upload to the GPU.
-		 */
-		void requestBufferUpload(GPUBuffer& buffer);
-		
-		/**
-		 * Deletes all buffer upload requests.
-		 * Called when the GPU buffer is destroyed.
-		 * @param buffer the buffer to remove pending upload commands for.
-		 */
-		void removeBufferRequests(GPUBuffer& buffer);
-
-		/**
 		 * @return main Vulkan allocator
 		 */
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 		
-
 		/**
 		 * Returns the command buffer that is being recorded. Every window records into
 		 * it's own command buffer. All headless render operations share the same command buffer.
@@ -575,24 +539,19 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * Invoked when exiting the main loop, after app shutdown is called
-		 * This is called before shutdown() and before the resources are destroyed.
-		 * Use this function if your service needs to reset its state before resources 
-		 * are destroyed
-		 * When service B depends on A, Service B is shutdown before A
+		 * Waits for the device to be idle and deletes queued resources.
 		 */
 		virtual void preShutdown();
 
 		/**
-		 * Invoked when the resource manager is about to load resources
+		 * Shuts down the renderer, local Vulkan resources are destroyed.
 		 */
-		virtual void preResourcesLoaded() override;
+		virtual void shutdown() override;
 
 		/**
-		 * Called before update, ensures the primary window is the active window before update is called.
-		 * @param deltaTime time in seconds in between frames.
+		 * Invoked when the resource manager is about to load resources.
 		 */
-		virtual void preUpdate(double deltaTime) override;
+		virtual void preResourcesLoaded() override;
 
 		/**
 		 * Process all received window events.
@@ -612,16 +571,43 @@ namespace nap
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
-		 * Processes all received window events.
-		 */
-		void processEvents();
-
-		/**
 		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.
 		 * @param errorState contains the error if the texture could not be initialized
 		 * @return if the texture initialized successfully.
 		 */
 		bool initEmptyTexture(nap::utility::ErrorState& errorState);
+
+		/**
+		 * Deletes all texture upload and download requests.
+		 * Called when a texture resource is destroyed.
+		 * @param texture the texture to remove upload and download requests for.
+		 */
+		void removeTextureRequests(Texture2D& texture);
+
+		/**
+		 * Request a pixel data transfer, from a staging buffer to image buffer.
+		 * @param texture the texture to upload.
+		 */
+		void requestTextureUpload(Texture2D& texture);
+
+		/**
+		 * Request a pixel data transfer, from image buffer to CPU.
+		 * @param texture the texture to download data into.
+		 */
+		void requestTextureDownload(Texture2D& texture);
+
+		/**
+		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
+		 * @param buffer the butter to upload to the GPU.
+		 */
+		void requestBufferUpload(GPUBuffer& buffer);
+
+		/**
+		 * Deletes all buffer upload requests.
+		 * Called when the GPU buffer is destroyed.
+		 * @param buffer the buffer to remove pending upload commands for.
+		 */
+		void removeBufferRequests(GPUBuffer& buffer);
 
 		/**
 		 * Transfers all previously queued data to the GPU.
@@ -659,7 +645,6 @@ namespace nap
 		void waitDeviceIdle();
 
 	private:
-
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;

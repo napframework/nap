@@ -962,15 +962,6 @@ namespace nap
 	}
 
 
-	void RenderService::processEvents()
-	{
-		for (const auto& window : mWindows)
-		{
-			window->processEvents();
-		}
-	}
-
-
 	// Shut down render service
 	RenderService::~RenderService()
 	{
@@ -1472,21 +1463,20 @@ namespace nap
 		mIsRenderingFrame = false;
 	}
 
+
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
-
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
-
 		return true;
 	}
+
 
 	void RenderService::endHeadlessRecording()
 	{
@@ -1552,15 +1542,12 @@ namespace nap
 	}
 
 
-	void RenderService::preUpdate(double deltaTime)
-	{
-		//	getPrimaryWindow().makeCurrent();
-	}
-
-
 	void RenderService::update(double deltaTime)
 	{
-		processEvents();
+		for (const auto& window : mWindows)
+		{
+			window->processEvents();
+		}
 	}
 
 
