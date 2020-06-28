@@ -838,11 +838,6 @@ namespace nap
 		Service(configuration) { }
 
 
-	// Register all object creation functions
-	void RenderService::registerObjectCreators(rtti::Factory& factory)
-	{ }
-
-
 	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));

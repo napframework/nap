@@ -54,14 +54,18 @@ namespace nap
 
 	/**
 	 * Main interface for 2D and 3D rendering operations.
-	 * This service initializes the render back-end, manages all vertex array buffers, can be used to create RenderableMesh objects and
-	 * provides an interface to render objects to a specific target (screen or back-buffer).
-	 * Vertex array object management is handled completely by this service. As a user you only work
-	 * with the render interface to render a set of render-able components to a target using a camera.
-	 * The service is shut down automatically on exit, and destroys all windows and left over resources.
-	 * When rendering geometry using (most) renderObjects() the service automatically sorts your selection based on the blend mode of the material.
+	 * This service initializes the Vulkan back-end and provides an interface to render objects to a specific target (screen or back-buffer).
+	 * The service is shut down automatically on exit, and destroys all left over resources.
+	 * When rendering geometry the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
-	 */
+	 *
+	 * On initialization the service will pick a device based on the preferred GPU type.
+	 * If no compatible GPU is found the system will fail to initialize.
+	 * The system needs to at least support the version of Vulkan currently linked to by the module,
+	 * the required number of extensions (configurable) and queue family capabilities of the GPU itself.
+	 * The queue family needs to support both Graphics and Transfer commands.
+	 * Most dedicated and integrated GPUs are supported.
+	*/
 	class NAPAPI RenderService : public Service
 	{
 		RTTI_ENABLE(Service)
@@ -69,63 +73,153 @@ namespace nap
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
-
-		/**
-		 * Holds current render state 
-		 */
-		enum class State : int
-		{
-			Uninitialized	= -1,		///< The render back end is not initialized
-			Initialized		= 0,		///< The render back end initialized correctly
-			WindowError		= 1,		///< The render back end produced a window error
-			SystemError		= 2,		///< The render back end produced a system error
-		};
 		
+		/**
+		 * Binds a pipeline and pipeline layout together.
+		 */
 		struct Pipeline
 		{
-			bool isValid() const
-			{
-				return mPipeline != nullptr && mLayout != nullptr;
-			}
+			/**
+			 * Returns if the pipeline has been created and is set.
+			 * @return if the pipeline has been created and is set.
+			 */
+			bool isValid() const	{ return mPipeline != nullptr && mLayout != nullptr; }
 
-			VkPipeline			mPipeline = nullptr;
-			VkPipelineLayout	mLayout = nullptr;
+			VkPipeline				mPipeline = nullptr;	///< Handle to Vulkan pipeline
+			VkPipelineLayout		mLayout = nullptr;		///< Handle to Vulkan pipeline layout
 		};
 
-		// Default constructor
+		/**
+		 * Creates the service together with the provided configuration settings.
+		 * @param configuration render engine configuration.
+		 */
 		RenderService(ServiceConfiguration* configuration);
 
 		// Default destructor
 		virtual ~RenderService();
 
+		/**
+		 * Tells the system you are about to render a new frame.
+		 * The system might wait until all commands issued previously, associated with the same frame handle (fence), have been processed.
+		 * Multiple frames are in flight at the same time, but if the graphics load is heavy, the system might wait here to ensure resources are available.
+		 * Pending data upload and download requests are executed, together with the destruction of queued resources.
+		 *
+		 * Call this function at the beginning of the render loop, before any RenderService::beginRecording() calls.
+		 * Make sure to call RenderService::endFrame() after all recording operations are finished, at the end of the render loop.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		void beginFrame();
+		
+		/**
+		 * Tells the system you finished rendering into the frame.
+		 * Always call this at the end of the render() loop, after RenderService::beginFrame().
+		 * Failure to properly end the frame will result in a system freeze.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		void endFrame();
 
+		/**
+		 * Starts a headless render operation.
+		 * Call this when you want to render objects to a render-target instead of a render window.
+		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 * @return if the headless record operation started successfully.
+		 */
 		bool beginHeadlessRecording();
+		
+		/**
+		 * Ends a headless render operation, submits the recorded command buffer to the queue.
+		 * Always call this function after a successful call to nap::RenderService::beginHeadlessRecording().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		void endHeadlessRecording();
 
+		/**
+		 * Starts a window render operation. Call this when you want to render geometry to a render window.
+		 * Always call RenderService::endRecording() afterwards, on success.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 * @return if the window record operation started successfully.
+		 */
 		bool beginRecording(RenderWindow& renderWindow);
+		
+		/**
+		 * Ends a window render operation, submits the recorded command buffer to the queue.
+		 * Always call this function after a successful call to nap::RenderService::beginRecording().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		void endRecording();
 
-		void queueVulkanObjectDestructor(const VulkanObjectDestructor& function);
-
 		/**
-		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
+		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
-		 * Components that can't be rendered with the given camera are omitted. 
+		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
-		* Renders all available RenderableComponents in the scene to a specific renderTarget.
-		* Components that can't be rendered with the given camera are omitted.
-		* @param renderTarget the target to render to
-		* @param camera the camera used for rendering all the available components
-		* @param sortFunction The function used to sort the components to render
-		*/
+		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
+		 * Components that can't be rendered with the given camera are omitted.
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
+		 * @param sortFunction The function used to sort the components to render
+		 */
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
 
 		/**
@@ -149,19 +243,19 @@ namespace nap
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
-		 * Shuts down the managed renderer
+		 * Shuts down the renderer, queued resources are destroyed.
 		 */
 		virtual void shutdown() override;
 
 		/**
-		 * Add a new window for the specified resource
+		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
 		 */
 		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
-		 * Remove a window
+		 * Remove a window as a valid target from the render engine.
 		 * @param window the window to remove from the render service
 		 */
 		void removeWindow(RenderWindow& window);
@@ -188,65 +282,156 @@ namespace nap
 		void addEvent(WindowEventPtr windowEvent);
 
 		/**
-		* Creates a renderable mesh that represents the coupling between a mesh and material that can be rendered to screen.
-		* Internally the renderable mesh manages a vertex array object that is issued by the render service.
-		* This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent. 
-		* The result should be validated by calling RenderableMesh.isValid(). Invalid mesh / material representations can't be rendered together.
-		* @param mesh The mesh that is used in the mesh-material combination.
-		* @param materialInstance The material instance that is used in the mesh-material combination.
-		* @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
-		* @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
-		*/
+		 * Creates a renderable mesh, that represents the coupling between a mesh and material, that can be rendered to screen.
+		 * Internally the renderable mesh manages a vertex array object that is issued by the render service.
+		 * This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent. 
+		 * The result should be validated by calling RenderableMesh.isValid(). Invalid mesh / material representations can't be rendered together.
+		 * @param mesh The mesh that is used in the mesh-material combination.
+		 * @param materialInstance The material instance that is used in the mesh-material combination.
+		 * @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
+		 * @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
+		 */
 		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
+		/**
+		 * Returns a Vulkan pipeline for the given render target, mesh and material combination.
+		 * Internally pipelines are cached, a new pipeline is created when a new combination is encountered.
+		 * Because of this initial frames are slower to render, until all combinations are cached and returned from the pool.
+		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
+		 *
+		 * Use this function inside nap::RenderableComponentInstance::onDraw() to find the right pipeline before rendering.
+		 * ~~~~~{.cpp}
+		 *		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(target, mesh, mat_instance, error_state);
+		 *		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+		 * ~~~~~
+		 *
+		 * @param renderTarget target that is rendered too.
+		 * @param mesh the mesh that is drawn.
+		 * @param materialInstance the material applied to the mesh.
+		 * @return new or cached pipeline.
+		 */
 		Pipeline getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		void removeTextureRequests(Texture2D& texture);
-		void requestTextureUpload(Texture2D& texture);
-		void requestTextureDownload(Texture2D& texture);
-
-		void requestBufferUpload(GPUBuffer& buffer);
-		void removeBufferRequests(GPUBuffer& buffer);
-
-		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
-
-		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
-
-		int getCurrentFrameIndex() const				{ return mCurrentFrameIndex; }
-		VkCommandBuffer getCurrentCommandBuffer()		{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
-		RenderWindow* getCurrentRenderWindow()			{ return mCurrentRenderWindow; }
+		/**
+		 * Queues a function that destroys Vulkan resources at a later point in time.
+		 * Certain Vulkan resources, including buffers, image buffers etc. might still be in use when
+		 * the NAP resource is destroyed. It is therefore necessary to queue their destruction, instead
+		 * of deleting them immediately. Make sure that all resources are captured by copy, instead of reference.
+		 *
+		 * ~~~~~{.cpp}
+		 * 		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers](RenderService& service)
+		 *		{
+		 *			for (const BufferData& buffer : buffers)
+		 *			{
+		 *				destroyBuffer(service.getVulkanAllocator(), buffer);
+		 *			}
+		 *		});
+		 * ~~~~~
+		 */
+		void queueVulkanObjectDestructor(const VulkanObjectDestructor& function);
 
 		/**
-		 * @return Vulkan runtime instance
+		 * Returns a descriptor set cache based on the given layout.
+		 * The cache is used to acquire descriptor sets.
+		 * @param layout the descriptor set layout to create the cache for.
+		 * @return descriptor set cache for the given layout.
+		 */
+		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
+
+		/**
+		 * Deletes all texture upload and download requests.
+		 * Called when a texture resource is destroyed.
+		 * @param texture the texture to remove upload and download requests for.
+		 */
+		void removeTextureRequests(Texture2D& texture);
+
+		/**
+		 * Request a pixel data transfer, from a staging buffer to image buffer.
+		 * @param texture the texture to upload.
+		 */
+		void requestTextureUpload(Texture2D& texture);
+		
+		/**
+		 * Request a pixel data transfer, from image buffer to CPU.
+		 * @param texture the texture to download data into.
+		 */
+		void requestTextureDownload(Texture2D& texture);
+
+		/**
+		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
+		 * @param buffer the butter to upload to the GPU.
+		 */
+		void requestBufferUpload(GPUBuffer& buffer);
+		
+		/**
+		 * Deletes all buffer upload requests.
+		 * Called when the GPU buffer is destroyed.
+		 * @param buffer the buffer to remove pending upload commands for.
+		 */
+		void removeBufferRequests(GPUBuffer& buffer);
+
+		/**
+		 * @return main Vulkan allocator
+		 */
+		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
+		
+
+		/**
+		 * Returns the command buffer that is being recorded. Every window records into
+		 * it's own command buffer. All headless render operations share the same command buffer.
+		 * The current command buffer is set after nap::beginHeadlessRecording() or
+		 * nap::beginRecording(RenderWindow&) and only valid until the recording operation is ended.
+		 * @return the command buffer that is being recorded.
+		 */
+		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		
+		/**
+		 * Returns the window that is being rendered to, only valid between a
+		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
+		 * @return the window currently being rendered to, nullptr if not set.
+		 */
+		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != nullptr); return mCurrentRenderWindow; }
+
+		/**
+		 * Returns the Vulkan runtime instance.
+		 * @return Vulkan runtime instance.
 		 */
 		VkInstance getVulkanInstance() const										{ return mInstance; }
 
 		/**
-		 * @return Selected Vulkan compatible hardware device
+		 * Returns the physical device (GPU) that is used for all render operations.
+		 * Multiple physical devices are not supported.
+		 * @return Selected Vulkan hardware (GPU) device
 		 */
 		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice; }
 
 		/**
+		 * Returns all supported physical device (GPU) features.
 		 * @return all supported hardware features
 		 */
 		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDeviceFeatures; }
 
 		/**
-		* @return the version of Vulkan supported by the device
-		*/
+		 * Returns the Vulkan api version, as supported by the physical device.
+		 * Note that this is not the same as the api version used by the render engine.
+		 * The physical device needs to support the min required api version requested by the render engine,
+		 * but could be higher.
+		 * @return the version of Vulkan supported by the device
+		 */
 		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDeviceProperties.apiVersion; }
 
 		/**
+		 * All physical device hardware properties.
 		 * @return all hardware properties
 		 */
 		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDeviceProperties; }
 
 		/**
 		 * Returns the handle to the logical Vulkan device,
-		 * represents the hardware together with the extensions, selected queues and features enabled for it.
+		 * represents the hardware together with the extensions, selected queue and features enabled for it.
 		 * @return The logical Vulkan device.
 		 */
-		VkDevice getDevice() const						{ return mDevice; }
+		VkDevice getDevice() const													{ return mDevice; }
 
 		/**
 		 * Returns the max number of hardware supported rasterization samples.
@@ -266,40 +451,95 @@ namespace nap
 
 		/**
 		 * Returns if sample shading is supported and enabled, reduces texture aliasing at computational cost.
-		 * @return if sample shading is enabled
+		 * @return if sample shading is supported.
 		 */
 		bool sampleShadingSupported() const;
 
 		/**
-		 * @return the used depth format.
+		 * Returns the selected and currently in use depth format.
+		 * @return the currently selected and in use depth format.
 		 */
-		VkFormat getDepthFormat() const { return mDepthFormat; }
+		VkFormat getDepthFormat() const												{ return mDepthFormat; }
 
-		VkCommandPool getCommandPool() const { return mCommandPool; }
+		/**
+		 * Returns a handle to the Vulkan command pool object.
+		 * Command pools are opaque objects that command buffer memory is allocated from.
+		 * @return handle to the Vulkan command pool object.
+		 */
+		VkCommandPool getCommandPool() const										{ return mCommandPool; }
+		
+		/**
+		 * @return flags that specify which depth aspects of an image are included in a view.
+		 */
 		VkImageAspectFlags getDepthAspectFlags() const;
-		unsigned int getGraphicsQueueIndex() const { return mGraphicsQueueIndex; }
-		VkQueue getGraphicsQueue() const { return mGraphicsQueue; }
+		
+		/**
+		 * Returns the index of the selected queue family.
+		 * @return the main queue index.
+		 */
+		unsigned int getGraphicsQueueIndex() const									{ return mGraphicsQueueIndex; }
+		
+		/**
+		 * Returns the selected queue, used to execute recorded command buffers.
+		 * The queue must support Graphics and Transfer operations.
+		 * @return the queue that is used to execute recorded command buffers.
+		 */
+		VkQueue getGraphicsQueue() const											{ return mGraphicsQueue; }
 
-		Texture2D& getEmptyTexture() const { return *mEmptyTexture; }
+		/**
+		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
+		 * @return empty texture that is available on the GPU
+		 */
+		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
 
-		int getMaxFramesInFlight() const { return 2; }
+		/**
+		 * Returns the index of the frame that is currently rendered.
+		 * This index controls which command buffer is recorded and is therefore
+		 * capped to the max number of images in flight.
+		 * @return index of the currently rendered frame.
+		 */
+		int getCurrentFrameIndex() const											{ return mCurrentFrameIndex; }
 
+		/**
+		 * Returns the max number of frames in flight. If there is only
+		 * 1 frame in flight the application will stall until it is rendered. Having
+		 * multiple frames in flight at once allows the render engine to start on a new frame
+		 * without having to wait on the previous one to finish.
+		 *
+		 * Increasing the number of frames in flight does however have a negative impact on resource usage,
+		 * because every frame requires its own unique set of command buffers, descriptor sets etc.
+		 * 2 is therefore a good number, where 3 offers only, in most situations, a slight increase in performance.
+		 * This however greatly depends on the application GPU and CPU load.
+		 */
+		int getMaxFramesInFlight() const											{ return 2; }
+
+		/**
+		 * Returns the physical device properties for the requested Vulkan format.
+		 * @return physical device properties for the requested Vulkan format.
+		 */
 		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties);
 
 		/**
 		 * Returns if the render service is currently recording (rendering) a frame.
-		 * If that is the case, certain operations are not allowed. 
+		 * Returns true in between start and end frame calls, otherwise false.
+		 * If that is the case, certain operations are not allowed.
 		 * For example: data upload / download operations to and from the GPU are forbidden.
 		 * @return if the render service is currently recording a frame.
 		 */
-		bool isRenderingFrame() const { return mIsRenderingFrame; }
+		bool isRenderingFrame() const												{ return mIsRenderingFrame; }
 
 		/**
+		 * Returns the major api version used to create the Vulkan instance.
+		 * The vulkan instance is created using a combination of the major and minor api version.
+		 * Note that the physical device is required to support at least that version.
 		 * @return Vulkan major api version
 		 */
 		uint32 getVulkanVersionMajor() const;
 
 		/**
+		 * Returns the minor api version used to create the Vulkan instance.
+		 * The vulkan instance is created using a combination of the major and minor api version.
+		 * Note that the physical device is required to support at least that version.
 		 * @return Vulkan minor api version
 		 */
 		uint32 getVulkanVersionMinor() const;
@@ -322,11 +562,6 @@ namespace nap
 		bool isInitialized() const	{ return mInitialized; }
 
 	protected:
-		/**
-		* Object creation registration
-		*/
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
-
 		/**
 		 * Register dependencies, render module depends on scene
 		 */
@@ -367,34 +602,64 @@ namespace nap
 
     private:
 		/**
-		* Sorts a set of renderable components based on distance to the camera, ie: depth
-		* Note that when the object is of a type mesh it will use the material to sort based on opacity
-		* If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
-		* know the way the object is rendered to screen
-		* @param comps the renderable components to sort
-		* @param camera the camera used for sorting based on distance
-		*/
+		 * Sorts a set of renderable components based on distance to the camera, ie: depth
+		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
+		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
+		 * know the way the object is rendered to screen
+		 * @param comps the renderable components to sort
+		 * @param camera the camera used for sorting based on distance
+		 */
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
-		 * Processes all window related events for all available windows
+		 * Processes all received window events.
 		 */
 		void processEvents();
 
+		/**
+		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.
+		 * @param errorState contains the error if the texture could not be initialized
+		 * @return if the texture initialized successfully.
+		 */
 		bool initEmptyTexture(nap::utility::ErrorState& errorState);
 
+		/**
+		 * Transfers all previously queued data to the GPU.
+		 * @param commandBuffer the command buffer to record the transfer operations in.
+		 * @param transferFunction function that is called at the appropriate time to upload the data.
+		 */
 		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
+		
+		/**
+		 * Downloads all previously queued data from the GPU.
+		 */
 		void downloadData();
+		
+		/**
+		 * Called by transferdata(), uploads all texture and buffer data to the GPU.
+		 */
 		void uploadData();
 
+		/**
+		 * Checks if any pending texture downloads are ready.
+		 * Textures for which the download has completed are notified.
+		 */
 		void updateTextureDownloads();
+		
+		/**
+		 * Called by the render engine at the appropriate time to delete all queued Vulkan resources.
+		 * @param frameIndex index of the frame to delete resources for.
+		 */
 		void processVulkanDestructors(int frameIndex);
 
+		/**
+		 * Waits for the device to reach idle state, when reached all queued destructions are processed.
+		 * A device in idle state is forced to have completed all work, it is therefore safe to destroy pending resources.
+		 */
 		void waitDeviceIdle();
 
 	private:
-		
-		// Using defines, makes handling types easier
+
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
@@ -402,29 +667,29 @@ namespace nap
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 
+		/**
+		 * Binds together all the Vulkan data for a frame.
+		 */
+		struct Frame
+		{
+			VkFence								mFence;								///< CPU sync primitive
+			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
+			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
+			VkCommandBuffer						mDownloadCommandBuffers;			///< Command buffer used to download data from GPU to CPU
+			VkCommandBuffer						mHeadlessCommandBuffers;			///< Command buffer used to record operations not associated with a window.
+			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
+		};
+
 		bool									mEnableHighDPIMode = true;
 		bool									mSampleShadingSupported = false;
-
 		VmaAllocator							mVulkanAllocator = nullptr;
-		WindowList								mWindows;												//< All available windows
-		SceneService*							mSceneService = nullptr;								//< Service that manages all the scenes
-		
+		WindowList								mWindows;												
+		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = false;
-
 		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToUpload;
-
-		struct Frame
-		{
-			VkFence								mFence;
-			std::vector<Texture2D*>				mTextureDownloads;
-			VkCommandBuffer						mUploadCommandBuffer;
-			VkCommandBuffer						mDownloadCommandBuffers;
-			VkCommandBuffer						mHeadlessCommandBuffers;
-			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;
-		};
 
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
