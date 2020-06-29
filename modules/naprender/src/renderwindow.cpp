@@ -829,6 +829,12 @@ namespace nap
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		assert(result == VK_SUCCESS);
 
+		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
+		if (mImagesInFlight[mCurrentImageIndex] != -1)
+			mRenderService->waitForFence(mImagesInFlight[mCurrentImageIndex]);
+
+		mImagesInFlight[mCurrentImageIndex] = mRenderService->getCurrentFrameIndex();
+
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -940,6 +946,10 @@ namespace nap
 
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
 			return false;
+
+		mImagesInFlight.resize(chain_images.size());
+		for (int& frame : mImagesInFlight)
+			frame = -1;
 
 		return true;
 	}

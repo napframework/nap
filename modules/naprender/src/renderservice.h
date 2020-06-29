@@ -527,6 +527,15 @@ namespace nap
 		 */
 		bool isInitialized() const	{ return mInitialized; }
 
+		/**
+		 * Wait for the fence belonging to the specified frame index. This ensures that, after the wait, all resources for that frame are no longer in use.
+		 * You normally don't need to use this as all synchronization is handled for you. This function is only used by RenderWindow to ensure that the current
+		 * swap chain image is no longer in use.
+		 *
+		 * @param frameIndex The index of the frame to wait for
+		 */
+		void waitForFence(int frameIndex);
+
 	protected:
 		/**
 		 * Register dependencies, render module depends on scene

@@ -1240,6 +1240,12 @@ namespace nap
 	}
 
 
+	void RenderService::waitForFence(int frameIndex)
+	{
+		vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+	}
+
+
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
