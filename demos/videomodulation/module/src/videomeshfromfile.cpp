@@ -23,8 +23,6 @@ namespace nap
 	{
 	}
 
-	VideoMeshFromFile::~VideoMeshFromFile()			{ }
-
 
 	bool VideoMeshFromFile::init(utility::ErrorState& errorState)
 	{

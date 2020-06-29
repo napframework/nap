@@ -15,7 +15,7 @@ struct PointLight
 };
 
 // uniform inputs
-uniform sampler2D	videoTexture;
+uniform sampler2D	videoTextureFrag;
 
 uniform UBO
 {
@@ -50,7 +50,7 @@ void main()
     vec3 ws_normal = normalize(normal_matrix * passNormal);
 
 	// Get texture rgba value
-	vec3 tex_color = texture(videoTexture, passUVs.xy).rgb;
+	vec3 tex_color = texture(videoTextureFrag, passUVs.xy).rgb;
 
 	// Get both mix colors
 	vec3 ver_color = passColor.rgb;

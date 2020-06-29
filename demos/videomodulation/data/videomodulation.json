@@ -86,9 +86,15 @@
                                 {
                                     "Type": "nap::Sampler2D",
                                     "mID": "nap::Sampler2D_2123213",
-                                    "Name": "videoTexture",
+                                    "Name": "videoTextureVert",
                                     "Texture": "VideoColorTexture"
-                                }
+                                },
+								{
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "nap::Sampler2D_2123214",
+                                    "Name": "videoTextureFrag",
+                                    "Texture": "VideoColorTexture"
+                                }								
                             ],                        
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
