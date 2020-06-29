@@ -493,7 +493,7 @@ namespace nap
 		// Do string/template replacement
 		std::unordered_map<std::string, std::string> reps = {
 			{"ROOT", rootPath},
-			{"BUILD_CONF", sBuildConf},
+			{"BUILD_CONFIG", sBuildConf},
 			{"BUILD_TYPE", sBuildType},
 			{"PROJECT_DIR", projectInfo.getDirectory()},
 			{"EXE_DIR", utility::getExecutableDir()},

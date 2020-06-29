@@ -5,6 +5,6 @@
     "NapkinExeToRoot": "../../..",
     "ModulePaths": 
     [
-        "{ROOT}/lib/{BUILD_CONF}"    
+        "{ROOT}/lib/{BUILD_CONFIG}"    
     ]
 }
