@@ -7,6 +7,7 @@
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
 #include "python.h"
+#include "packaginginfo.h"
 
 // External Includes
 #include <iostream>
