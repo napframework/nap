@@ -15,6 +15,7 @@ namespace nap
 	 * Use the vertex array object handle to bind your mesh before rendering.
 	 * The vertex array object handle is given by the render service on construction.
 	 * Call RenderService.createRenderableMesh() from your own renderable component to create a renderable mesh on initialization.
+	 * Renderable meshes are hashable, equality is based on the contained mesh and material.
 	 */
 	class NAPAPI RenderableMesh final
 	{
@@ -26,9 +27,14 @@ namespace nap
 		 */
 		RenderableMesh() = default;
 
+		// Copy constructor
 		RenderableMesh(const RenderableMesh& rhs);
 
+		// Copy assignment operator
 		RenderableMesh& operator=(const RenderableMesh& rhs);
+
+		// Object is similar when sharing mesh / material combination
+		bool operator==(const RenderableMesh& rhs) const;
 
 		/**
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
@@ -77,8 +83,26 @@ namespace nap
 		std::vector<VkBuffer>		mVertexBuffers;
 		std::vector<VkDeviceSize>	mVertexBufferOffsets;
 		bool						mVertexBuffersDirty = true;
-
 		nap::Slot<>					mVertexBufferDataChangedSlot = { [&]() { onVertexBufferDataChanged(); } };
 	};
+}
 
+
+//////////////////////////////////////////////////////////////////////////
+// hash
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	template<>
+	struct hash<nap::RenderableMesh>
+	{
+		size_t operator()(const nap::RenderableMesh& key) const
+		{
+			assert(key.isValid());
+			size_t mesh_hash = hash<size_t>{}((size_t)&key.getMesh());
+			size_t mate_hash = hash<size_t>{}((size_t)&key.getMaterialInstance());
+			return mesh_hash ^ mate_hash;
+		}
+	};
 }

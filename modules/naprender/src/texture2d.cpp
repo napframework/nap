@@ -269,7 +269,6 @@ namespace nap
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
-		assert(mRenderService->isInitialized());
 		mFormat = getTextureFormat(*mRenderService, descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
 			"%s, Unsupported texture format", mID.c_str()))
