@@ -84,10 +84,11 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformValueArrayDeclaration::UniformValueArrayDeclaration(const std::string& name, int offset, int size, EUniformValueType elementType, int numElements) :
+	UniformValueArrayDeclaration::UniformValueArrayDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements) :
 		UniformDeclaration(name, offset, size),
 		mElementType(elementType),
-		mNumElements(numElements)
+		mNumElements(numElements),
+		mStride(stride)
 	{
 	}
 

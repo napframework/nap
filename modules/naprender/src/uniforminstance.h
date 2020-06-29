@@ -231,9 +231,20 @@ namespace nap
 		*/
 		virtual void push(uint8_t* uniformBuffer) const override
 		{
-			size_t size = mValues.size() * sizeof(T);
-			assert(size == mDeclaration->mSize);
-			memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+			if (sizeof(T) == mDeclaration->mStride)
+			{
+				size_t size = mValues.size() * sizeof(T);
+				memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+			}
+			else
+			{
+				uint8_t* dest = uniformBuffer + mDeclaration->mOffset;
+				for (const T& value : mValues)
+				{
+					memcpy(dest, &value, sizeof(value));
+					dest += mDeclaration->mStride;
+				}
+			}
 		}
 
 		virtual void setDefault() override
@@ -244,6 +255,7 @@ namespace nap
 		void set(const TypedUniformValueArray<T>& resource)
 		{
 			mValues = resource.mValues;
+			assert(mValues.size() == mDeclaration->mNumElements);
 		}
 
 		std::vector<T>& getValues() { return mValues; }

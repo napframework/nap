@@ -441,11 +441,13 @@ bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cro
 			}
 			else
 			{
+				size_t stride = compiler.type_struct_member_array_stride(type, index);
+
 				nap::EUniformValueType element_type = getUniformValueType(member_type);
 				if (!errorState.check(element_type != nap::EUniformValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, element_type, num_elements);
+				std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
 				parentStruct.mMembers.emplace_back(std::move(array_declaration));
 			}
 		}

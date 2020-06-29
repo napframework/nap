@@ -83,10 +83,11 @@ namespace nap
 		RTTI_ENABLE(UniformDeclaration)
 
 	public:
-		UniformValueArrayDeclaration(const std::string& name, int offset, int size, EUniformValueType elementType, int numElements);
+		UniformValueArrayDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
 
 		EUniformValueType	mElementType;
 		int					mNumElements;
+		int					mStride;
 	};
 
 	class UniformBufferObjectDeclaration : public UniformStructDeclaration
