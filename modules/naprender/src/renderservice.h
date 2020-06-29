@@ -309,7 +309,7 @@ namespace nap
 		 * @param materialInstance the material applied to the mesh.
 		 * @return new or cached pipeline.
 		 */
-		Pipeline getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
+		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 		/**
 		 * Queues a function that destroys Vulkan resources when appropriate.

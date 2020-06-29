@@ -8,7 +8,6 @@
 #include <color.h>
 #include <uniforminstance.h>
 #include <materialinstance.h>
-#include <renderservice.h>
 
 namespace nap
 {
@@ -100,8 +99,7 @@ namespace nap
 		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;							///< Handle to the vertices we want to stamp
 		IMesh* mTargetMesh;																///< Mesh to copy onto
 		std::vector<RenderableMesh> mCopyMeshes;										///< All renderable variants of the mesh to copy
-		std::unordered_map<RenderableMesh, std::vector<glm::vec3>> mPositions;			///< All renderable meshes and their positions
-		std::unordered_map<RenderableMesh, RenderService::Pipeline> mPipelines;		///< All pipelines associated with a specific renable mesh combination
+		std::unordered_map<RenderableMesh, std::vector<int>> mMeshPositions;			///< All renderable meshes and their positions
 		Vec3VertexAttribute* mTargetVertices = nullptr;									///< Point positions to copy meshes onto
 		Vec3VertexAttribute* mTargetNormals = nullptr;									///< Point orientation of target mesh
 		nap::UniformVec3Instance* mColorUniform = nullptr;								///< Color uniform slot

@@ -595,7 +595,7 @@ namespace nap
 	/**
 	 * Get vulkan depth and stencil creation information, based on current material state.
 	 */
-	static VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
+	static VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(const MaterialInstance& materialInstance)
 	{
 		VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
 		depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -647,7 +647,7 @@ namespace nap
 	/**
 	 * Get color blend state based on material settings.
 	 */
-	static VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
+	static VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(const MaterialInstance& materialInstance)
 	{
 		VkPipelineColorBlendAttachmentState color_blend_attachment_state = {};
 		color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -689,7 +689,7 @@ namespace nap
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
-		MaterialInstance& materialInstance, 
+		const MaterialInstance& materialInstance, 
 		EDrawMode drawMode,  
 		ECullWindingOrder windingOrder, 
 		VkRenderPass renderPass, 
@@ -700,7 +700,7 @@ namespace nap
 		VkPipeline& graphicsPipeline, 
 		utility::ErrorState& errorState)
 	{
-		Material& material = materialInstance.getMaterial();
+		const Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
 
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
@@ -893,9 +893,9 @@ namespace nap
 	}
 
 
-	RenderService::Pipeline RenderService::getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	RenderService::Pipeline RenderService::getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
-		Material& material = materialInstance.getMaterial();
+		const Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();

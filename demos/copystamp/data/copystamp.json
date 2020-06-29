@@ -96,9 +96,9 @@
                     "Type": "nap::RenderableCopyMeshComponent",
                     "mID": "nap::RenderableCopyMeshComponent",
                     "Orient": false,
-                    "Scale": 1.0,
+                    "Scale": 0.725,
                     "RotationSpeed": 2.5,
-                    "RandomScale": 0.800000011920929,
+                    "RandomScale": 0.8,
                     "RandomRotation": 0.949999988079071,
                     "MaterialInstance": {
                         "Material": "CopyMaterial",
@@ -222,8 +222,8 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows": 50,
-            "Columns": 50
+            "Rows": 75,
+            "Columns": 75
         },
         {
             "Type": "nap::RenderWindow",

@@ -57,7 +57,7 @@ namespace nap
 
 		// Fetch transform, used to offset the copied meshes
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if(!errorState.check(mTransform != nullptr, 
+		if (!errorState.check(mTransform != nullptr,
 			"%s: unable to find transform component", resource->mID.c_str()))
 			return false;
 
@@ -74,7 +74,7 @@ namespace nap
 		mModelUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("modelMatrix");
 
 		// Ensure there's at least 1 mesh to copy
-		if (!errorState.check(!(resource->mCopyMeshes.empty()), 
+		if (!errorState.check(!(resource->mCopyMeshes.empty()),
 			"no meshes found to copy: %s", resource->mID.c_str()))
 			return false;
 
@@ -92,7 +92,7 @@ namespace nap
 			mCopyMeshes.emplace_back(render_mesh);
 
 			// Create list of positions to associate with every renderable mesh
-			mPositions.emplace(std::make_pair(render_mesh, std::vector<glm::vec3>()));	
+			mMeshPositions.emplace(std::make_pair(render_mesh, std::vector<int>()));
 		}
 
 		// Store handle to target mesh
@@ -110,7 +110,7 @@ namespace nap
 
 		// Copy over parameters
 		mOrient = resource->mOrient;
-		mScale	= resource->mScale;
+		mScale = resource->mScale;
 		mRandomScale = resource->mRandomScale;
 		mRandomRotation = resource->mRandomRotation;
 		mRotationSpeed = resource->mRotationSpeed;
@@ -119,7 +119,21 @@ namespace nap
 		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
 		mColors.emplace_back(RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>());
 		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
-			
+
+		// We do a bit of caching here, to ensure we can draw the same mesh, at different positions, using the same pipeline in order.
+		// If we randomly select a mesh for every vertex on draw we switch between pipelines too often, which is heavy for the GPU.
+		// For every vertex in the target mesh, select a mesh and associate that vertex with the mesh.
+		math::setRandomSeed(mSeed);
+		std::vector<glm::vec3>& pos_data = mTargetVertices->getData();
+		for (auto i = 0; i < pos_data.size(); i++)
+		{
+			// Pick random mesh number
+			int mesh_idx = math::random<int>(0, mCopyMeshes.size() - 1);
+
+			// Get the mesh to stamp for this point and store it
+			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
+			mMeshPositions[render_mesh].emplace_back(i);
+		}
 		return true;
 	}
 
@@ -136,19 +150,11 @@ namespace nap
 	}
 
 
-	static void renderMesh(RenderService& renderService, RenderableMesh& renderableMesh, IRenderTarget& renderTarget, VkViewport& viewport, VkRect2D scissorRect, VkCommandBuffer commandBuffer)
+	static void renderMesh(RenderService& renderService, RenderService::Pipeline& pipeline, RenderableMesh& renderableMesh, VkCommandBuffer commandBuffer)
 	{
 		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
-
-		// Create render-pipeline and bind
-		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = renderService.getOrCreatePipeline(renderTarget, renderableMesh.getMesh(), mat_instance, error_state);
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-
-		// Set viewport
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 		// Bind descriptor set for next draw call
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
@@ -162,9 +168,6 @@ namespace nap
 		MeshInstance& mesh_instance = renderableMesh.getMesh().getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
-		// Update scissor state
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
-
 		// Draw individual shapes inside mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
@@ -173,6 +176,7 @@ namespace nap
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
 	}
+
 
 	/**
 	 * Called by the render service when the app wants to draw this component.
@@ -225,44 +229,59 @@ namespace nap
 			}
 		};
 
-		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
-		for (auto i = 0; i < pos_data.size(); i++)
+		// Iterate over every mesh and their stored position
+		for (const auto& it : mMeshPositions)
 		{
-			// Pick random mesh number
-			int mesh_idx = math::random<int>(0, mCopyMeshes.size() - 1);
-			
-			// Pick random color for mesh and push to GPU
-			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
-			mColorUniform->setValue(color);
+			// Get vertices and mesh to stamp onto vertices
+			const std::vector<int>& vertices = it.second;
+			RenderableMesh mesh = it.first;
 
-			// Get the mesh to stamp onto this point and bind
-			RenderableMesh& render_mesh = mCopyMeshes[mesh_idx];
+			// Get render-pipeline for mesh / material
+			utility::ErrorState error_state;
+			RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), error_state);
 
-			// Calculate model matrix
-			glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[i]);
+			// Bind pipeline per mesh we are going to render
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
-			// Orient towards camera using normal or rotate based on time
-			float ftime = math::random<float>(1.0f - rand_rotat, 1.0f) * (float)mTime;
-			if (mOrient)
+			// Set viewport
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+			// Update scissor state
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
+
+			// Go over all the vertices associated with the mesh, use the index to determine
+			// all the shader properties and render.
+			for (const auto& vertex : vertices)
 			{
-				glm::vec3 cam_normal = glm::normalize(cam_pos - pos_data[i]);
-				glm::vec3 nor_normal = glm::normalize(nor_data[i]);
-				glm::vec3 rot_normal = glm::cross(nor_normal, cam_normal);
-				float rot_value = glm::acos(glm::dot(cam_normal, nor_normal));
-				object_loc = glm::rotate(object_loc, rot_value, rot_normal);
-			}
-			else
-			{
-				object_loc = glm::rotate(object_loc, ftime, {0,1,0});
-			}
+				// Pick random color for mesh and push to GPU
+				glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
+				mColorUniform->setValue(color);
 
-			// Add scale, set as value and push
-			float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
-			mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
+				// Calculate model matrix
+				glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[vertex]);
 
-			// Render mesh after updating uniforms
-			renderMesh(*mRenderService, render_mesh, renderTarget, viewport, scissor_rect, commandBuffer);
+				// Orient towards camera using normal or rotate based on time
+				float ftime = math::random<float>(1.0f - rand_rotat, 1.0f) * (float)mTime;
+				if (mOrient)
+				{
+					glm::vec3 cam_normal = glm::normalize(cam_pos - pos_data[vertex]);
+					glm::vec3 nor_normal = glm::normalize(nor_data[vertex]);
+					glm::vec3 rot_normal = glm::cross(nor_normal, cam_normal);
+					float rot_value = glm::acos(glm::dot(cam_normal, nor_normal));
+					object_loc = glm::rotate(object_loc, rot_value, rot_normal);
+				}
+				else
+				{
+					object_loc = glm::rotate(object_loc, ftime, { 0,1,0 });
+				}
+
+				// Add scale, set as value and push
+				float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
+				mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
+
+				// Render mesh after updating uniforms
+				renderMesh(*mRenderService, pipeline, mesh, commandBuffer);
+			}
 		}
 	}
-
 }
