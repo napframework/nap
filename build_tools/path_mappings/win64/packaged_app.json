@@ -3,6 +3,6 @@
     "mID": "Win64PackagedAppMapping",
     "ModulePaths": 
     [
-        "{EXE_DIR}"
+        "{PROJECT_DIR}"
     ]
 }
