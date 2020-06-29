@@ -856,11 +856,15 @@ namespace nap
 		if (mImagesInFlight[mCurrentImageIndex] != -1)
 			mRenderService->waitForFence(mImagesInFlight[mCurrentImageIndex]);
 
+		// Keep track of the fact that the current image index is in use by the current frame. This ensures we can wait for the frame to
+		// finish if we encounter this image index again in the future.
 		mImagesInFlight[mCurrentImageIndex] = current_frame;
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
+		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
+		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
 		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
@@ -870,6 +874,8 @@ namespace nap
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &mCommandBuffers[current_frame];
 
+		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
+		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
 		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;

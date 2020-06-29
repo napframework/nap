@@ -1061,9 +1061,6 @@ namespace nap
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
-		// Make sure we update our render state associated with the current context
-		//updateRenderState();
-
 		// Extract camera projection matrix
 		const glm::mat4x4 projection_matrix = camera.getRenderProjectionMatrix();
 
@@ -1182,7 +1179,7 @@ namespace nap
 		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create Command Pool"))
 			return false;
 
-		// 
+		// Determine depth format for the current device
 		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
 			return false;
 
@@ -1197,6 +1194,7 @@ namespace nap
 
 		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
 
+		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
 		if (!initEmptyTexture(errorState))
 			return false;
 		
@@ -1349,7 +1347,7 @@ namespace nap
 		// Perform transfer
 		transferFunction();
 
-		// End recoding commands
+		// End recording commands
 		result = vkEndCommandBuffer(commandBuffer);
 		assert(result == VK_SUCCESS);
 
@@ -1373,10 +1371,12 @@ namespace nap
 		{
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
+
 			mTexturesToUpload.clear();
 
 			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
+
 			mBuffersToUpload.clear();
 		});
 	}
@@ -1435,6 +1435,12 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
+		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
+		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
+		// Notice that there are multiple other VkQueueSubmits that are performed by RenderWindow(s), and headless 
+		// rendering. All those submits do not trigger a fence. They are all part of the same frame, so when the frame
+		// fence has been signaled, we can be assured that all resources for the entire frame, including resources used 
+		// by other VkQueueSubmits, are free to use.
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
 
 		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
@@ -1444,6 +1450,8 @@ namespace nap
 		// of the fence.
 		updateTextureDownloads();
 
+		// Release the DescriptorSets that were used for this frame index. This ensures that the DescriptorSets
+		// can be re-allocated as part of this frame's rendering.
 		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
 
@@ -1475,13 +1483,16 @@ namespace nap
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
+
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
+
 		return true;
 	}
 
@@ -1489,6 +1500,7 @@ namespace nap
 	void RenderService::endHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
+
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
@@ -1499,6 +1511,7 @@ namespace nap
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
+
 		mCurrentCommandBuffer = nullptr;
 	}
 
