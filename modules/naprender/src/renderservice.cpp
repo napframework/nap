@@ -1528,17 +1528,17 @@ namespace nap
 		if (mCanDestroyVulkanObjectsImmediately)
 		{
 			function(*this);
+			return;
 		}
-		else
-		{
-			// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
-			// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).
-			int previousFrameIndex =  mIsRenderingFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
-			if (previousFrameIndex < 0)
-				previousFrameIndex = mFramesInFlight.size() - 1;
 
-			mFramesInFlight[previousFrameIndex].mQueuedVulkanObjectDestructors.push_back(function);
-		}
+		// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
+		// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).	
+		assert(isInitialized());
+		int previousFrameIndex =  mIsRenderingFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
+		if (previousFrameIndex < 0)
+			previousFrameIndex = mFramesInFlight.size() - 1;
+
+		mFramesInFlight[previousFrameIndex].mQueuedVulkanObjectDestructors.emplace_back(function);
 	}
 
 
