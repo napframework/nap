@@ -67,6 +67,11 @@ namespace nap
 		Material& getMaterial();
 
 		/**
+		 * @return material that this instance is overriding
+		 */
+		const Material& getMaterial() const;
+
+		/**
 		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
 		*/
 		EBlendMode getBlendMode() const;

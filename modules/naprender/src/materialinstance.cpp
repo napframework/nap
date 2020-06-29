@@ -470,6 +470,12 @@ namespace nap
 	}
 
 
+	const nap::Material& MaterialInstance::getMaterial() const
+	{
+		return *mResource->mMaterial;
+	}
+
+
 	EBlendMode MaterialInstance::getBlendMode() const
 	{
 		if (mResource->mBlendMode != EBlendMode::NotSet)
