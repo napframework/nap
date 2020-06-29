@@ -293,7 +293,7 @@ namespace nap
 
 		// Called by render service
 		VkCommandBuffer makeActive();
-		void swap() const;
+		void swap();
 		void handleEvent(const Event& event);
 
 		bool recreateSwapChain(utility::ErrorState& errorState);

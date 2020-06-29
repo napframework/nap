@@ -154,8 +154,8 @@ namespace nap
 	*/
 	static unsigned int getNumberOfSwapImages(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
-		unsigned int number = capabilities.minImageCount + 1;
-		return number > capabilities.maxImageCount ? capabilities.minImageCount : number;
+ 		unsigned int number = capabilities.minImageCount + 1;
+ 		return number > capabilities.maxImageCount ? capabilities.minImageCount : number;
 	}
 
 
@@ -829,12 +829,6 @@ namespace nap
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		assert(result == VK_SUCCESS);
 
-		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
-		if (mImagesInFlight[mCurrentImageIndex] != -1)
-			mRenderService->waitForFence(mImagesInFlight[mCurrentImageIndex]);
-
-		mImagesInFlight[mCurrentImageIndex] = mRenderService->getCurrentFrameIndex();
-
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -848,13 +842,21 @@ namespace nap
 	}
 
 
-	void RenderWindow::swap() const
+	void RenderWindow::swap()
 	{
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
+
+		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
+		// We only need to do this right before VkQueueSubmit, to avoid having multiple submits that are waiting on the same image to be returned from the
+		// presentation engine. By waiting until right before the submit, we maximize parallelism with the GPU.
+		if (mImagesInFlight[mCurrentImageIndex] != -1)
+			mRenderService->waitForFence(mImagesInFlight[mCurrentImageIndex]);
+
+		mImagesInFlight[mCurrentImageIndex] = current_frame;
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

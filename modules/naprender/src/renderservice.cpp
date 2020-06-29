@@ -1443,7 +1443,6 @@ namespace nap
 		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
 		// of the fence.
 		updateTextureDownloads();
-		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
@@ -1458,6 +1457,9 @@ namespace nap
 
 	void RenderService::endFrame()
 	{
+		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
+		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
+
 		// Push any texture downloads on the commandbuffer
 		downloadData();
 
