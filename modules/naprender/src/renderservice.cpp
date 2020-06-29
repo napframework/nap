@@ -1491,7 +1491,6 @@ namespace nap
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
-	
 		mCurrentCommandBuffer = nullptr;
 	}
 
@@ -1513,9 +1512,7 @@ namespace nap
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 		assert(mCurrentRenderWindow != nullptr);
-
 		mCurrentRenderWindow->swap();
-
 		mCurrentCommandBuffer = nullptr;
 		mCurrentRenderWindow = nullptr;
 	}
@@ -1629,12 +1626,9 @@ namespace nap
 
 
 	VkImageAspectFlags RenderService::getDepthAspectFlags() const
-		{
-		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (mDepthFormat != VK_FORMAT_D32_SFLOAT)
-			flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
-		return flags;
+	{
+		return mDepthFormat != VK_FORMAT_D32_SFLOAT ? 
+			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : 
+			VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
-
 }
