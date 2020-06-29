@@ -1,6 +1,7 @@
 // Local Includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <packaginginfo.h>
 
 // External Includes
 #include <utility/fileutils.h>
@@ -29,12 +30,16 @@ namespace nap
 			foundFilePath = alongsideBinaryPath;
 			return true;
 		}
-#ifndef NAP_PACKAGED_BUILD
-		// When working against NAP source find our file in the tree structure in the project source.
+		// When working against NAP Source or Packaged Release find our file in the tree structure in the project source.
 		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
 		// so that we avoid module DLL copying hell.
 
+        // TODO This should use the path mapping
+#ifdef NAP_PACKAGED_BUILD
+		const std::string relNapRoot = utility::joinPath({exeDir, "..", "..", "..", ".."});
+#else
 		const std::string relNapRoot = utility::joinPath({exeDir, "..", ".."});
+#endif
 		const std::string napRoot = utility::getAbsolutePath(relNapRoot);
 		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
@@ -55,7 +60,6 @@ namespace nap
 				return true;
 			}
 		}
-#endif // NAP_PACKAGED_BUILD
 		return false;
 	}
 
