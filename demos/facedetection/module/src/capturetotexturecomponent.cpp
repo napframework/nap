@@ -85,7 +85,7 @@ namespace nap
 		for (int i=0; i<blob_count; i++)
 		{
 			// Set blob center
-			UniformVec2Instance* center_uniform = mBlobsUniform->getElement(i).getOrCreateUniform<UniformVec2Instance>("mCenter");
+			UniformVec2Instance* center_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformVec2Instance>("mCenter");
 			assert(center_uniform != nullptr);
 			center_uniform->setValue(glm::vec2
 			(
@@ -94,7 +94,7 @@ namespace nap
 			));
 
 			// Set blob size
-			UniformFloatInstance* size_uniform = mBlobsUniform->getElement(i).getOrCreateUniform<UniformFloatInstance>("mSize");
+			UniformFloatInstance* size_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformFloatInstance>("mSize");
 			assert(size_uniform != nullptr);
 			size_uniform->setValue(blobs[i].getHeight() / 2.0f);
 		}

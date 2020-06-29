@@ -146,7 +146,7 @@ namespace nap
 	{
 		// Assert when trying to update a mesh that is static and already initialized
 		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMeshDataUsage::DynamicWrite, 
-			"trying to update mesh without usage set to: 'DynamicWrite'");
+			"trying to update previously allocated mesh without usage set to: 'DynamicWrite'");
 
 		// Check for mismatches in sizes
 		for (auto& mesh_attribute : mProperties.mAttributes)
@@ -162,15 +162,17 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
+			if (!vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity(), errorState))
+				return false;
 		}
 
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), mProperties.mShapes[shapeIndex].getIndices());
+			IndexBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices(), errorState))
+				return false;
 		}
-
 		return true;
 	}
 
@@ -183,8 +185,7 @@ namespace nap
 		{
 			return false;
 		}
-		gpu_buffer.setData(mRenderService.getPhysicalDevice(), mRenderService.getDevice(), attribute.getRawData(), attribute.getCount(), attribute.getCapacity());
-		return true;
+		return gpu_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity(), errorState);
 	}
 
 

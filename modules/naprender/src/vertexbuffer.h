@@ -30,7 +30,7 @@ namespace nap
 		 * @param numVertices number of vertices represented by data
 		 * @param reservedNumVertices used when current capacity is lower than current size. Used to calculate GPU buffer size.
 		 */
-		void setData(VkPhysicalDevice physicalDevice, VkDevice device, void* data, size_t numVertices, size_t reservedNumVertices);
+		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
 
 	private:
 		VkFormat		mFormat;

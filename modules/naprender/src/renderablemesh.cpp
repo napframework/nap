@@ -79,5 +79,12 @@ namespace nap
 		mVertexBuffersDirty = false;
 		return mVertexBuffers;
 	}
+
+
+	bool RenderableMesh::operator==(const RenderableMesh& rhs) const
+	{
+		return mMaterialInstance == rhs.mMaterialInstance && mMesh == rhs.mMesh;
+	}
+
 }
 

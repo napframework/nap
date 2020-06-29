@@ -15,23 +15,28 @@ namespace nap
 {
 	// Forward Declares
 	class Core;
-	class BackbufferRenderTarget;
 	class RenderService;
 
 	/**
-	 * 3D render window resource that can be declared in json.
-	 * This resource offers an interface to change window settings and manages
-	 * an OpenGL window including associated render context.
-	 * It is important to activate the window before issuing any draw commands!
+	 * Vulkan render window that can be declared in JSON. 
+	 *
+	 * Multiple presentation (display) modes are available to choose from. The selected presentation mode
+	 * controls how the rendered images are presented to screen: in sync, out of sync or tied to the refresh rate of the monitor.
+	 * It is however possible that the selected presentation mode is not supported by the graphics hardware,
+	 * if that's the case the window will revert to FIFO_KRH, which is the presentation mode
+	 * every vulkan compatible device must support. A warning is issued if the selected presentation mode
+	 * is unavailable. 
+	 *
+	 * In order to improve performance, consider lowering the sample count and disable sample based shading.
+	 * If sample based shading is requested but not supported, it is disabled and a warning is issued. 
+	 * If the requested multi-sample count exceeds what is supported by the hardware, the highest available sample
+	 * count is picked and a warning is issued.
 	 */
 	class NAPAPI RenderWindow : public Window, public IRenderTarget
 	{
 		RTTI_ENABLE(Window)
-
-	public:
 		friend class RenderService;
-		friend class BackbufferRenderTarget;
-
+	public:
 		/**
 		 * The various image presentation modes.
 		 * Controls the way in which images are presented to screen. 

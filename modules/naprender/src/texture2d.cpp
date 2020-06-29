@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
@@ -251,15 +250,19 @@ namespace nap
 
 
 	Texture2D::~Texture2D()
-	{
+	{	
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->removeTextureRequests(*this);
- 		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
- 		{
- 			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
-
- 			for (const StagingBuffer& buffer : stagingBuffers)
- 				vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mStagingBuffer, buffer.mStagingBufferAllocation);
- 		});
+		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+		{
+			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			for (const BufferData& buffer : stagingBuffers)
+			{
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			}
+		});
 	}
 
 
@@ -270,14 +273,6 @@ namespace nap
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
 			"%s, Unsupported texture format", mID.c_str()))
 			return false;
-
-		// Make sure usage is not DynamicWrite when LOD generation is turned on
-		// TODO: Support mipmap generation when texture = ETextureUsage::DynamicWrite
-		if (mUsage == ETextureUsage::DynamicWrite && generateMipMaps)
-		{
-			errorState.fail("%s: Mipmap generation not supported for dynamic write textures", mID.c_str());
-			return false;
-		}
 
 		// If mip mapping is enabled, ensure it is supported
 		if (generateMipMaps)
@@ -295,9 +290,7 @@ namespace nap
 		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		if (mUsage == ETextureUsage::DynamicRead)
-		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
-		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
 		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
@@ -320,32 +313,31 @@ namespace nap
 		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
-			StagingBuffer& imageBuffer = mStagingBuffers[index];
+			BufferData& staging_buffer = mStagingBuffers[index];
 
-			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = mImageSizeInBytes;
-			bufferInfo.usage = mUsage == ETextureUsage::DynamicRead ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			// Get usage flags based on selected texture usage
+			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = mUsage == ETextureUsage::DynamicRead ? VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
-			allocInfo.flags = 0;
+			VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ? VMA_MEMORY_USAGE_GPU_TO_CPU : 
+				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-			if (!errorState.check(vmaCreateBuffer(vulkan_allocator, &bufferInfo, &allocInfo, &imageBuffer.mStagingBuffer, &imageBuffer.mStagingBufferAllocation, &imageBuffer.mStagingBufferAllocationInfo) == VK_SUCCESS, "Could not allocate buffer for texture"))
+			// Create staging buffer
+			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, staging_buffer, errorState))
+			{
+				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
 				return false;
+			}
 		}
 
+		// Create GPU image usage information
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-		// Create image allocation struct
-		VmaAllocationCreateInfo img_alloc_usage = {};
-		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		img_alloc_usage.flags = 0;
-
 		// We create images and image views for the amount of frames in flight
-		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, img_alloc_usage,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, 
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
 		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
@@ -361,7 +353,6 @@ namespace nap
 			empty_texture_data.resize(mImageSizeInBytes);
 			update(empty_texture_data.data(), descriptor);
 		}
-
 		return true;
 	}
 
@@ -403,7 +394,7 @@ namespace nap
 	void Texture2D::upload(VkCommandBuffer commandBuffer)
 	{
 		assert(mCurrentStagingBufferIndex != -1);
-		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 		
 		VkAccessFlags srcMask = 0;
@@ -425,7 +416,7 @@ namespace nap
 			0,			mMipLevels);
 		
 		// Copy staging buffer to image
-		copyBufferToImage(commandBuffer, buffer.mStagingBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
@@ -443,13 +434,26 @@ namespace nap
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		// Destroy staging buffer when usage is static
+		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
+		// Explicitly release the handle, so it's not deleted twice.
+		if (mUsage == ETextureUsage::Static)
+		{
+			assert(mStagingBuffers.size() == 1);
+			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService)
+			{
+				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
+			});
+			buffer.release();
+		}
 	}
 
 
 	void Texture2D::download(VkCommandBuffer commandBuffer)
 	{
 		assert(mCurrentStagingBufferIndex != -1);
-		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
@@ -460,7 +464,7 @@ namespace nap
 			0,											1);
 		
 		// Copy to buffer
-		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mStagingBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
@@ -485,16 +489,16 @@ namespace nap
 
 		// We use a staging buffer that is guaranteed to be free
 		assert(mCurrentStagingBufferIndex != -1);
-		StagingBuffer& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		void* mapped_memory;
-		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
-		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
+		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
 		mRenderService->requestTextureUpload(*this);
@@ -518,13 +522,13 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
-		StagingBuffer& buffer = mStagingBuffers[frameIndex];
+		BufferData& buffer = mStagingBuffers[frameIndex];
 		void* mapped_memory;
-		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mStagingBufferAllocation, &mapped_memory);
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
-		vmaUnmapMemory(vulkan_allocator, buffer.mStagingBufferAllocation);
+		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

@@ -4,7 +4,7 @@
 namespace nap
 {
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
-	std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
+	static std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
 	{
 		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
 
@@ -16,10 +16,12 @@ namespace nap
 
 			result->set(*typed_resource);
 		}
-
 		return result;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// UniformStructInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	std::unique_ptr<UniformInstance> UniformStructInstance::createUniformFromDeclaration(const UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
@@ -115,6 +117,20 @@ namespace nap
 
 		return nullptr;
 	}
+
+
+	nap::UniformInstance* UniformStructInstance::findUniform(const std::string& name)
+	{
+		UniformInstance* instance = nullptr;
+		for (auto& uniform_instance : mUniforms)
+		{
+			if (uniform_instance->getDeclaration().mName == name)
+				return uniform_instance.get();
+		}
+
+		return nullptr;
+	}
+
 
 	bool UniformStructInstance::addUniformRecursive(const UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState)
 	{
@@ -253,10 +269,12 @@ namespace nap
 				mUniforms.emplace_back(std::move(value_instance));
 			}
 		}
-
 		return true;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// UniformStructArrayInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	void UniformStructArrayInstance::addElement(std::unique_ptr<UniformStructInstance> element)
@@ -264,4 +282,4 @@ namespace nap
 		mElements.emplace_back(std::move(element));
 	}
 
-} // End Namespace NAP
+}

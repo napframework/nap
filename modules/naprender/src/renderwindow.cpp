@@ -83,8 +83,8 @@ namespace nap
 
 
 	/**
-	* Obtain the surface properties that are required for the creation of the swap chain
-	*/
+	 * Obtain the surface properties that are required for the creation of the swap chain
+	 */
 	static bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
@@ -95,10 +95,34 @@ namespace nap
 
 
 	/**
-	* @return if the present modes could be queried and ioMode is set
-	* @param outMode the mode that is requested, will contain FIFO when requested mode is not available
-	*/
-	static bool getPresentationMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR& ioMode, utility::ErrorState& errorState)
+	 * Returns name of swapchain mode
+	 */
+	static std::string getPresentModeName(VkPresentModeKHR presentMode)
+	{
+		switch (presentMode)
+		{
+		case VK_PRESENT_MODE_FIFO_KHR:
+			return "FIFO";
+		case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+			return "FIFO Relaxed";
+		case VK_PRESENT_MODE_IMMEDIATE_KHR:
+			return "Immediate";
+		case VK_PRESENT_MODE_MAILBOX_KHR:
+			return "Mailbox";
+		case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
+			return "Shared Continuous Refresh";
+		case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
+			return "Shared Demand Refresh";
+		default:
+			return "Unknown";
+		}
+	}
+
+
+	/**
+	 * Returns if the requested presentation mode is supported, fall-back = FIFO_KHR
+	 */
+	static bool getPresentMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR requestedMode, VkPresentModeKHR& outMode, utility::ErrorState& errorState)
 	{
 		uint32_t mode_count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) == VK_SUCCESS, "Unable to query present mode count for physical device"))
@@ -110,11 +134,15 @@ namespace nap
 
 		for (auto& mode : available_modes)
 		{
-			if (mode == ioMode)
+			if (mode == requestedMode)
+			{
+				outMode = requestedMode;
 				return true;
+			}
 		}
 
-		ioMode = VK_PRESENT_MODE_FIFO_KHR;
+		// Fall back on FIFO if requested mode is not supported
+		outMode = VK_PRESENT_MODE_FIFO_KHR;
 		return true;
 	}
 
@@ -249,7 +277,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR mode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, VkPresentModeKHR& outPresentMode, utility::ErrorState& errorState)
 	{
 		// Get properties of surface, necessary for creation of swap-chain
 		VkSurfaceCapabilitiesKHR surface_properties;
@@ -257,8 +285,7 @@ namespace nap
 			return false;
 
 		// Get the image presentation mode (synced, immediate etc.)
-		VkPresentModeKHR selected_mode = mode;
-		if (!getPresentationMode(surface, physicalDevice, selected_mode, errorState))
+		if (!getPresentMode(surface, physicalDevice, presentMode, outPresentMode, errorState))
 			return false;
 
 		// Get other swap chain related features
@@ -296,7 +323,7 @@ namespace nap
 		swap_info.pQueueFamilyIndices = nullptr;
 		swap_info.preTransform = transform;
 		swap_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		swap_info.presentMode = selected_mode;
+		swap_info.presentMode = outPresentMode;
 		swap_info.clipped = true;
 		swap_info.oldSwapchain = NULL;
 		swap_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -405,13 +432,11 @@ namespace nap
 	static bool createSwapchainImageViews(VkDevice device, std::vector<VkImageView>& swapChainImageViews, const std::vector<VkImage>& swapChainImages, VkFormat swapChainFormat, utility::ErrorState& errorState)
 	{
 		swapChainImageViews.resize(swapChainImages.size());
-
 		for (size_t i = 0; i < swapChainImages.size(); i++)
 		{
 			if (!create2DImageView(device, swapChainImages[i], swapChainFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, swapChainImageViews[i], errorState))
 				return false;
 		}
-
 		return true;
 	}
 
@@ -518,12 +543,7 @@ namespace nap
 
 	static bool createColorResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		// Create image allocation struct
-		VmaAllocationCreateInfo img_alloc_usage = {};
-		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		img_alloc_usage.flags = 0;
-
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, img_alloc_usage, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
@@ -535,12 +555,7 @@ namespace nap
 
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		// Create image allocation struct
-		VmaAllocationCreateInfo img_alloc_usage = {};
-		img_alloc_usage.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		img_alloc_usage.flags = 0;
-
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, img_alloc_usage, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
 			return false;
 
 		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
@@ -893,10 +908,18 @@ namespace nap
 
 	bool RenderWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		VkExtent2D swapchainExtent;
 		// TODO: getSize() needs to be drawable size on OSX, je pense!
-		if (!createSwapChain(getSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, errorState))
+		VkExtent2D swapchainExtent;
+		VkPresentModeKHR out_mode;
+		if (!createSwapChain(getSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, out_mode, errorState))
 			return false;
+		
+		// Check if the selected presentation mode matches our request
+		if (out_mode != mPresentationMode)
+		{
+			nap::Logger::warn("%s: Unsupported presentation mode: %s, switched to: %s", mID.c_str(), getPresentModeName(mPresentationMode).c_str(), getPresentModeName(out_mode).c_str());
+			mPresentationMode = out_mode;
+		}
 
 		// Get image handles from swap chain
 		std::vector<VkImage> chain_images;
