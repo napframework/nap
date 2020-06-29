@@ -142,6 +142,16 @@ namespace nap
 		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.mFilename.c_str()))
 			return false;
 
+        // Substitute module name in given directories
+        std::string token = "{MODULE_NAME}";
+		for (auto& dir : moduleDirs)
+        {
+            size_t found_pos = dir.find(token);
+            if(found_pos == std::string::npos)
+                continue;
+            dir.replace(found_pos, token.length(), moduleName);
+        }
+
 		// Find module json in given directories
 		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
 		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
