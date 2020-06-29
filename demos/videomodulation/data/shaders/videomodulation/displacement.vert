@@ -29,7 +29,7 @@ uniform DisplacementUBO
 	float randomness;
 } displacement;
 
-uniform sampler2D	videoTexture;
+uniform sampler2D	videoTextureVert;
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax)
 {
@@ -43,7 +43,7 @@ float fit(float value, float inMin, float inMax, float outMin, float outMax)
 void main(void)
 {
 	// Get texture rgba value
-	vec3 tex_color = texture(videoTexture, in_CenterUV.xy).rgb;
+	vec3 tex_color = texture(videoTextureVert, in_CenterUV.xy).rgb;
 
 	// Get displacement value
 	float tex_greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;

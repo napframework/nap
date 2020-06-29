@@ -73,7 +73,7 @@ namespace nap
 					buildUniformBufferObjectRecursive(*base_element, element_override, ubo);
 				}
 			}
-			else if (declaration_type == RTTI_OF(UniformValueArrayInstance))
+			else if (declaration_type.is_derived_from(RTTI_OF(UniformValueArrayInstance)))
 			{
 				const UniformValueArrayInstance* base_array_uniform = rtti_cast<const UniformValueArrayInstance>(base_uniform.get());
 				const UniformValueArrayInstance* override_array_uniform = rtti_cast<const UniformValueArrayInstance>(override_uniform);
@@ -246,7 +246,7 @@ namespace nap
 		// not change. So we build these write descriptor sets up front and only change the information that can change. These are:
 		// - WriteDescriptorSet (which is acquired during update())
 		// - What texture is bound (so: image info)
-		// 
+		//  
 		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
 			const SamplerDeclaration& declaration = sampler_declarations[sampler_index];

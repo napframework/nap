@@ -275,6 +275,11 @@ namespace nap
 		 */
 		virtual const UniformDeclaration& getDeclaration() const override				{ return *mDeclaration; }
 
+		/**
+		 * Required override, sets up default values.
+		 */
+		virtual void setDefault() = 0;
+
 	protected:
 		const UniformValueArrayDeclaration* mDeclaration;
 	};
@@ -309,6 +314,11 @@ namespace nap
 			assert(values.size() <= mDeclaration->mNumElements);
 			mValues = values;
 		}
+
+		/**
+		 * Populate defaults
+		 */
+		virtual void setDefault() override												{ mValues.resize(mDeclaration->mNumElements, T()); }
 
 		/**
 		 * Array subscript operator, returns a specific value in the array as a reference, 

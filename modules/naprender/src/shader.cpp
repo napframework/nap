@@ -503,6 +503,10 @@ bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStag
 		if (!errorState.check(sampler_type.array.size() <= 1, "Multidimensional arrays are not supported"))
 			return false;
 
+		auto existing_sampler = std::find_if(samplerDeclarations.begin(), samplerDeclarations.end(), [&sampled_image](const nap::SamplerDeclaration& declaration) { return declaration.mName == sampled_image.name; });
+		if (!errorState.check(existing_sampler == samplerDeclarations.end(), "Encountered a sampler '%s' which has previously been declared for this shader; duplicate samplers are not supported.", sampled_image.name.c_str()))
+			return false;
+
 		bool is_array = !sampler_type.array.empty();
 		int num_elements = 1;
 		if (is_array)

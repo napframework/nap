@@ -155,7 +155,7 @@ namespace nap
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
-		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
 
 		class OverlayLinkResolver;
 
@@ -198,6 +198,7 @@ namespace nap
 			void clear();
 			void addExistingDevice(Device& device);
 			void addNewDevice(Device& device);
+			void addInitializedObject(rtti::Object& object);
 
 			ObjectByIDMap& getObjectsToUpdate() { return mObjectsToUpdate; }
 
@@ -209,6 +210,7 @@ namespace nap
 			ObjectByIDMap				mObjectsToUpdate;			///< Owned map of all objects that need to be pushed into the ResourceManager.
 			std::vector<Device*>		mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
 			std::vector<Device*>		mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
+			std::vector<rtti::Object*>	mInitializedObjects;		///< This is the list of objects that have actually been initted and will need onDestroy called on them in case of an error
 			bool						mRollbackObjects = true;
 		};
 
