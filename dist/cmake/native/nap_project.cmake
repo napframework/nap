@@ -132,8 +132,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
 endif()
 
-# Copy data to bin post-build
-copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+# Run FBX converter post-build
 export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
 # Copy path mapping
