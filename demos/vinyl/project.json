@@ -7,7 +7,7 @@
         "mod_napapp", 
         "mod_napimgui"
     ], 
-    "Data": "", 
+    "Data": "data/vinyl.json", 
     "ServiceConfig": "", 
-    "PathMapping": "./cache/path_mapping.json"
+    "PathMapping": "cache/path_mapping.json"
 }

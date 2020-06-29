@@ -13,5 +13,5 @@
     ], 
     "Data": "", 
     "ServiceConfig": "", 
-    "PathMapping": "./cache/path_mapping.json"
+    "PathMapping": "cache/path_mapping.json"
 }

@@ -1,15 +1,15 @@
 {
-    "Type": "nap::ProjectInfo",
-    "mID": "ProjectInfo",
-    "Title": "BlobTrace",
-    "Version": "1.0.0",
-    "Data": "data/blobtrace.json",
-    "PathMapping": "./cache/path_mapping.json",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "BlobTrace", 
+    "Version": "1.0.0", 
+    "Data": "data/blobtrace.json", 
+    "PathMapping": "cache/path_mapping.json", 
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napcameracontrol",
+        "mod_napapp", 
+        "mod_napcameracontrol", 
         "mod_napimgui"
-    ],
-    "ServiceConfig": "",
+    ], 
+    "ServiceConfig": "", 
     "ServiceConfigurations": []
 }
