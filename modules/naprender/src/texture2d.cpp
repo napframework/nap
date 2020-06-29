@@ -250,22 +250,19 @@ namespace nap
 
 
 	Texture2D::~Texture2D()
-	{		 
-		// Only destroy vulkan resources when texture has been initialized.
-		// Texture can only be initialized when there is an operational render service.
-		// If the texture is created but not initialized afterwards, omit destruction.
-		if (mRenderService->isInitialized())
+	{	
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService->removeTextureRequests(*this);
+		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
 		{
-			mRenderService->removeTextureRequests(*this);
-			mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			for (const BufferData& buffer : stagingBuffers)
 			{
-				destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
-				for (const BufferData& buffer : stagingBuffers)
-				{
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
-				}
-			});
-		}
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			}
+		});
 	}
 
 

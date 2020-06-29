@@ -40,7 +40,6 @@ namespace nap
 	{	
 		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
 		// This ensures the buffers are destroyed when certain they are not in use.
-		assert(mRenderService->isInitialized());
 		mRenderService->removeBufferRequests(*this);
 		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers](RenderService& renderService)
 		{

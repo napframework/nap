@@ -104,7 +104,8 @@ namespace nap
 		 * Tells the system you are about to render a new frame.
 		 * The system might wait until all commands issued previously, associated with the same frame handle (fence), have been processed.
 		 * Multiple frames are in flight at the same time, but if the graphics load is heavy, the system might wait here to ensure resources are available.
-		 * Pending data upload and download requests are executed, together with the destruction of queued resources.
+		 * Pending upload requests are executed. Previously issued download requests are checked for completion. 
+		 * Queued resources that are out of scope are destroyed.
 		 *
 		 * Call this function at the beginning of the render loop, before any RenderService::beginRecording() calls.
 		 * Make sure to call RenderService::endFrame() after all recording operations are finished, at the end of the render loop.
@@ -125,6 +126,7 @@ namespace nap
 		 * Tells the system you finished rendering into the frame.
 		 * Always call this at the end of the render() loop, after RenderService::beginFrame().
 		 * Failure to properly end the frame will result in a system freeze.
+		 * Any pending download requests are pushed onto the command buffer.
 		 *
 		 * ~~~~~{.cpp}
 		 *		mRenderService->beginFrame();
@@ -310,7 +312,7 @@ namespace nap
 		Pipeline getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 		/**
-		 * Queues a function that destroys Vulkan resources at a later point in time.
+		 * Queues a function that destroys Vulkan resources when appropriate.
 		 * Certain Vulkan resources, including buffers, image buffers etc. might still be in use when
 		 * the NAP resource is destroyed. It is therefore necessary to queue their destruction, instead
 		 * of deleting them immediately. Make sure that all resources are captured by copy, instead of reference.
@@ -671,7 +673,7 @@ namespace nap
 		WindowList								mWindows;												
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
-		bool									mCanDestroyVulkanObjectsImmediately = false;
+		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToUpload;

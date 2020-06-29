@@ -564,31 +564,30 @@ namespace nap
 
 	}
 
+
 	Shader::Shader(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
 
 	}
 
+
 	Shader::~Shader()
 	{
-		// Only destroy vulkan resources when shader has been initialized.
-		// Shader can only be initialized when there is an operational renderer.
-		// If the texture is created but not initialized afterwards, omit destruction.
-		if (mRenderService->isInitialized())
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
 		{
-			mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
-			{
-				if (descriptorSetLayout != nullptr)
-					vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
+			if (descriptorSetLayout != nullptr)
+				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
 
-				if (vertexModule != nullptr)
-					vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
+			if (vertexModule != nullptr)
+				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
 
-				if (fragmentModule != nullptr)
-					vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
-			});
-		}
+			if (fragmentModule != nullptr)
+				vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
+		});
 	}
 
 
