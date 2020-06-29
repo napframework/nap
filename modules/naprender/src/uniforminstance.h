@@ -207,6 +207,7 @@ namespace nap
 		{
 		}
 
+		virtual void setDefault() = 0;
 		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 	protected:
@@ -233,6 +234,11 @@ namespace nap
 			size_t size = mValues.size() * sizeof(T);
 			assert(size == mDeclaration->mSize);
 			memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+		}
+
+		virtual void setDefault() override
+		{
+			mValues.resize(mDeclaration->mNumElements, T());
 		}
 
 		void set(const TypedUniformValueArray<T>& resource)
