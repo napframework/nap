@@ -51,7 +51,7 @@ def _loadJSON(directory, filename):
         return None, None
 
     with open(filepath, 'r') as fp:
-        data = json.load(fp)
+        data = json.load(fp, object_pairs_hook=OrderedDict)
 
     return filepath, data
 
@@ -71,7 +71,11 @@ def _findDataFile(rootDir):
         os.path.join(dataDir, '%s.json' % projname),
         os.path.join(dataDir, 'data.json'),
     )
-    return next((g for g in guesses if os.path.exists(g)), None)
+    found_path = next((g for g in guesses if os.path.exists(g)), None)
+    if found_path is None:
+        return None
+    else:
+        return os.path.relpath(found_path, rootDir)
 
 
 def convertModuleInfo(directory):
@@ -142,10 +146,13 @@ def convertRepository(rootdirectory):
     projectdirs = [
         'apps',
         'demos',
+        'projects',
         'test',
     ]
     for p in projectdirs:
         parentdir = os.path.join(rootdirectory, p)
+        if not os.path.exists(parentdir):
+            continue
         for d in os.listdir(parentdir):
             directory = os.path.join(parentdir, d)
             convertProject(directory)
