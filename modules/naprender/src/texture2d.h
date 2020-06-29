@@ -36,6 +36,7 @@ namespace nap
 	 */
 	class NAPAPI Texture2D : public Resource
 	{
+		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
@@ -108,33 +109,22 @@ namespace nap
 		 */
 		int getMipmapCount()							{ return static_cast<int>(mMipLevels); }
 
+		ETextureUsage mUsage = ETextureUsage::Static;					///< Property: 'Usage' If this texture is updated frequently or considered static.
+
 	private:
 		void upload(VkCommandBuffer commandBuffer);
 		void notifyDownloadReady(int frameIndex);		
 		void download(VkCommandBuffer commandBuffer);
 
-	public:
-		ETextureUsage				mUsage = ETextureUsage::Static;					///< Property: 'Usage' How this texture is used, ie: updated on the GPU
-
 	protected:
 		RenderService*				mRenderService = nullptr;
 
 	private:
-		friend class RenderService;
-
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
-		struct StagingBuffer
-		{
-			VkBuffer				mStagingBuffer;
-			VmaAllocation			mStagingBufferAllocation;
-			VmaAllocationInfo		mStagingBufferAllocationInfo;
-		};
-
-		using StagingBufferList = std::vector<StagingBuffer>;
 		std::vector<uint8_t>				mTextureData;
 		ImageData							mImageData;
-		StagingBufferList					mStagingBuffers;
+		std::vector<BufferData>				mStagingBuffers;
 		int									mCurrentStagingBufferIndex = -1;
 		size_t								mImageSizeInBytes = -1;
 		SurfaceDescriptor					mDescriptor;
@@ -142,6 +132,4 @@ namespace nap
 		std::vector<TextureReadCallback>	mReadCallbacks;
 		uint32								mMipLevels = 1;
 	};
-
-	VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor);
 }

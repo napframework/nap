@@ -23,7 +23,7 @@ namespace nap
 		 * of this object
 		 * @param indices: Index data to upload to the GPU
 		 */
-		void setData(VkPhysicalDevice physicalDevice, VkDevice device, const std::vector<unsigned int>& indices);
+		bool setData(const std::vector<unsigned int>& indices, utility::ErrorState& error);
 
 	private:
 		size_t		mCount = 0;					// number of indices used to construct the triangles

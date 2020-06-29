@@ -26,8 +26,20 @@
 #include <glslang/Public/ShaderLang.h>
 #include <nap/assert.h>
 
+RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Virtual,		"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("EnableHighDPI",			&nap::RenderServiceConfiguration::mEnableHighDPIMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -36,6 +48,32 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static Methods
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * @return VK physical device type
+	 */
+	static VkPhysicalDeviceType getPhysicalDeviceType(RenderServiceConfiguration::EPhysicalDeviceType devType)
+	{
+		switch(devType)
+		{
+		case RenderServiceConfiguration::EPhysicalDeviceType::Discrete:
+			return VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::Integrated:
+			return VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::CPU:
+			return VK_PHYSICAL_DEVICE_TYPE_CPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::Virtual:
+			return VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
+		default:
+			assert(false);
+		}
+		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
+	}
+
+
 	/**
 	 * @return max sample count associated with the given physical device
 	 */
@@ -43,7 +81,6 @@ namespace nap
 	{
 		VkPhysicalDeviceProperties physicalDeviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
-
 		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 		if (counts & VK_SAMPLE_COUNT_64_BIT)	{ return VK_SAMPLE_COUNT_64_BIT; }
 		if (counts & VK_SAMPLE_COUNT_32_BIT)	{ return VK_SAMPLE_COUNT_32_BIT; }
@@ -51,7 +88,6 @@ namespace nap
 		if (counts & VK_SAMPLE_COUNT_8_BIT)		{ return VK_SAMPLE_COUNT_8_BIT; }
 		if (counts & VK_SAMPLE_COUNT_4_BIT)		{ return VK_SAMPLE_COUNT_4_BIT; }
 		if (counts & VK_SAMPLE_COUNT_2_BIT)		{ return VK_SAMPLE_COUNT_2_BIT; }
-
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
@@ -109,35 +145,39 @@ namespace nap
 
 
 	/**
-	 *	@return the set of layers to be initialized with Vulkan
+	 * @return device type name
 	 */
-	const std::set<std::string>& getRequestedLayerNames()
+	static std::string getDeviceTypeName(VkPhysicalDeviceType type)
 	{
-		static std::set<std::string> layers;
-#ifndef NDEBUG
-		if (layers.empty())
-			layers.emplace("VK_LAYER_LUNARG_standard_validation");
-#endif // NDEBUG
-		return layers;
-	}
-
-
-	/**
-	* @return the set of required device extension names
-	*/
-	const std::set<std::string>& getRequestedDeviceExtensionNames()
-	{
-		static std::set<std::string> layers;
-		if (layers.empty())
+		switch (type)
 		{
-			layers.emplace(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			return "Discrete";
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			return "Integrated";
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			return "Virtual";
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			return "CPU";
+		default:
+			return "Unknown";
 		}
+	}
+
+
+	/**
+	 * @return the set of required device extension names
+	 */
+	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
+	{
+		const static std::vector<std::string> layers = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		return layers;
 	}
 
+
 	/**
-	* Callback that receives a debug message from Vulkan
-	*/
+	 * Callback that receives a debug message from Vulkan
+	 */
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
 		uint64_t obj,
 		size_t location,
@@ -150,30 +190,32 @@ namespace nap
 		return VK_FALSE;
 	}
 
-	VkResult createDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
+
+	/**
+	 * Creates a debug report callback object
+	 */
+	static VkResult createDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 	{
 		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-		if (func != nullptr)
-		{
-			return func(instance, pCreateInfo, pAllocator, pCallback);
-		}
-		else
-		{
-			return VK_ERROR_EXTENSION_NOT_PRESENT;
-		}
+		return func != nullptr ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-	void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
+
+	/**
+	 * Destroys a debug report callback object
+	 */
+	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
 	{
 		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 		if (func != nullptr)
 			func(instance, pCallback, nullptr);
 	}
 
+
 	/**
-	*	Sets up the vulkan messaging callback specified above
-	*/
-	bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
+	 * Sets up the vulkan messaging callback specified above
+	 */
+	static bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
 	{
 		VkDebugReportCallbackCreateInfoEXT createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -182,12 +224,14 @@ namespace nap
 
 		if (!errorState.check(createDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
 			return false;
-
 		return true;
 	}
 
 
-	bool getAvailableVulkanLayers(std::vector<std::string>& outLayers, utility::ErrorState& errorState)
+	/**
+	 * Returns all available vulkan layers
+	 */
+	static bool getAvailableVulkanLayers(const std::vector<std::string>& requestedLayers, bool print, std::vector<std::string>& outLayers, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of available layers
 		// Layers are used for debugging / validation etc / profiling..
@@ -198,29 +242,26 @@ namespace nap
 		std::vector<VkLayerProperties> instance_layers(instance_layer_count);
 		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers.data()) == VK_SUCCESS, "Unable to retrieve vulkan instance layer names"))
 			return false;
-		Logger::info("Found %d instance layers:", instance_layer_count);
+		if (print) { Logger::info("Found %d Vulkan layers:", instance_layer_count); }
 
-		const std::set<std::string>& requested_layers = getRequestedLayerNames();
 		outLayers.clear();
 		for (int index = 0; index < instance_layers.size(); ++index)
 		{
 			VkLayerProperties& layer = instance_layers[index];
-			Logger::info("%d: %s: %s", index, layer.layerName, layer.description);
+			if (print) { Logger::info("%d: %s", index, layer.layerName); }
+			const auto found_it = std::find_if(requestedLayers.begin(), requestedLayers.end(), [&](const auto& it)
+			{
+				return it == std::string(layer.layerName);
+			});
 
-			if (requested_layers.find(std::string(layer.layerName)) != requested_layers.end())
+			if (found_it != requestedLayers.end())
 				outLayers.emplace_back(layer.layerName);
 		}
-
-		// Print the ones we're enabling
-		Logger::info("");
-		for (const auto& layer : outLayers)
-			Logger::info("Applying layer: %s", layer.c_str());
-
 		return true;
 	}
 
 
-	bool getAvailableVulkanExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	bool getAvailableVulkanInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -233,13 +274,9 @@ namespace nap
 		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to query the number of Vulkan instance extension names"))
 			return false;
 
-		// Display names
-		Logger::info("Found %d Vulkan instance extensions:", ext_count);
+		// Store
 		for (unsigned int i = 0; i < ext_count; i++)
-		{
-			Logger::info("%d: %s", i, ext_names[i]);
 			outExtensions.emplace_back(ext_names[i]);
-		}
 
 		// Add debug display extension, we need this to relay debug messages
 		outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -251,7 +288,7 @@ namespace nap
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, utility::ErrorState& errorState)
+	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, uint32& outVersion, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -263,9 +300,14 @@ namespace nap
 		for (const auto& ext : extensionNames)
 			ext_names.emplace_back(ext.c_str());
 
-		// Get the suppoerted vulkan instance version
-		unsigned int api_version;
-		vkEnumerateInstanceVersion(&api_version);
+		// Get the supported vulkan instance version
+		uint32 current_api(0);
+		if (!errorState.check(vkEnumerateInstanceVersion(&current_api) == VK_SUCCESS,
+			"Unable Query instance-level version of Vulkan before instance creation"))
+			return false;
+
+		// Create api version without patch, not used when creating instance
+		outVersion = VK_MAKE_VERSION(VK_VERSION_MAJOR(current_api), VK_VERSION_MINOR(current_api), 0);
 
 		// initialize the VkApplicationInfo structure
 		VkApplicationInfo app_info = {};
@@ -275,9 +317,9 @@ namespace nap
 		app_info.applicationVersion = 1;
 		app_info.pEngineName = "NAP";
 		app_info.engineVersion = 1;
-		app_info.apiVersion = api_version;	// Note: this is the *requested* version, which is the version the installed vulkan driver supports. If the device itself does not support this version, a lower version is returned. See selectGPU
+		app_info.apiVersion = outVersion;
 
-											// initialize the VkInstanceCreateInfo structure
+		// initialize the VkInstanceCreateInfo structure
 		VkInstanceCreateInfo inst_info = {};
 		inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		inst_info.pNext = NULL;
@@ -289,31 +331,22 @@ namespace nap
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
 		// Create vulkan runtime instance
-		Logger::info("Initializing Vulkan instance");
 		VkResult res = vkCreateInstance(&inst_info, NULL, &outInstance);
-		switch (res)
-		{
-		case VK_SUCCESS:
-			break;
-		case VK_ERROR_INCOMPATIBLE_DRIVER:
-			errorState.fail("Unable to create vulkan instance, cannot find a compatible Vulkan driver");
-			return false;
-		default:
-			errorState.fail("Unable to create Vulkan instance: unknown error");
-			return false;
-		}
-
-		return true;
+		if (res == VK_SUCCESS)
+			return true;
+		
+		// Add error message and return
+		errorState.fail(res == VK_ERROR_INCOMPATIBLE_DRIVER ?
+			"Unable to create Vulkan instance, cannot find a compatible Vulkan driver" :
+			"Unable to create Vulkan instance: error: %d", static_cast<int>(res));
+		return false;
 	}
 
 
 	/**
-	 * Allows the user to select a GPU (physical device)
-	 * @return if query, selection and assignment was successful
-	 * @param outDevice the selected physical device (gpu)
-	 * @param outQueueFamilyIndex queue command family that can handle graphics commands
+	 * Selects a device based on user preference, min required api version and queue family requirements
 	 */
-	bool selectGPU(VkInstance instance, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		unsigned int physical_device_count(0);
@@ -326,68 +359,102 @@ namespace nap
 		vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data());
 
 		// Show device information
-		Logger::info("Found %d GPUs:", physical_device_count);
+		Logger::info("Found %d GPU(s):", physical_device_count);
+		
+		// Pick the right GPU, based on type preference, api-version and queue support
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		int discrete_gpu_idx = -1;
+		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+
+		std::vector<int> valid_devices;
+		std::vector<int> queue_indices;
+		int preferred_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
+			// Get current physical device
 			VkPhysicalDevice physical_device = physical_devices[index];
+
+			// Get properties associated with device
 			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s (%d.%d)", index, properties.deviceName, VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", index, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
-			// Detect if it's a discrete GPU
-			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && discrete_gpu_idx < 0)
-				discrete_gpu_idx = index;
-		}
-
-		// Select first available discrete GPU if present
-		int gpu_idx = discrete_gpu_idx >= 0 ? discrete_gpu_idx : 0;
-
-		// TODO: Maybe not always select first GPU? Maybe allow the user to override selection
-		VkPhysicalDevice selected_device = physical_devices[gpu_idx];
-		Logger::info("Selected GPU: %s", physical_device_properties[gpu_idx].deviceName);
-
-		// Find the number queues this device supports, we want to make sure that we have a queue that supports graphics commands
-		unsigned int family_queue_count(0);
-		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, nullptr);
-		if (!errorState.check(family_queue_count != 0, "Device has no family of queues associated with it"))
-			return false;
-
-		// Extract the properties of all the queue families
-		std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &family_queue_count, queue_properties.data());
-
-		// Make sure the family of commands contains an option to issue graphical commands.
-		int queue_node_index = -1;
-		for (unsigned int i = 0; i < family_queue_count; i++)
-		{
-			if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			// If the supported api version < required by currently used api, continue
+			if (properties.apiVersion < minAPIVersion)
 			{
-				queue_node_index = i;
-				break;
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				continue;
 			}
+
+			// Find the number queues this device supports
+			uint32 family_queue_count(0);
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
+			if (family_queue_count == 0)
+			{
+				Logger::warn("%d: No queue families available", index);
+				continue;
+			}
+
+			// Extract the properties of all the queue families
+			// We want to make sure that we have a queue that supports the required flags
+			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
+
+			// Make sure the family of commands contains an option to issue graphical commands.
+			int queue_node_index = -1;
+			for (unsigned int i = 0; i < family_queue_count; i++)
+			{
+				if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & required_flags)
+				{
+					queue_node_index = i;
+					break;
+				}
+			}
+			
+			// No compatible queue found
+			if (queue_node_index < 0)
+			{
+				Logger::warn("%d: Unable to find compatible queue family", index);
+				continue;
+			}
+
+			// This is at least a compatible device
+			valid_devices.emplace_back(index);
+			queue_indices.emplace_back(index);
+			nap::Logger::info("%d: Compatible", index);
+
+			// Check if it's the preferred type, if so select it
+			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? index : preferred_idx;
 		}
-		if (!errorState.check(queue_node_index >= 0, "Unable to find graphics command queue on device"))
+
+		// if there are no valid devices, bail.
+		if (!errorState.check(!valid_devices.empty(), "No compatible device found"))
 			return false;
+
+		// If the preferred GPU is found, use that one, otherwise first compatible one
+		int device_idx = preferred_idx;
+		if (preferred_idx < 0)
+		{
+			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
+			device_idx = 0;
+		}
 
 		// Set the output variables
-		outDevice = selected_device;
-		outProperties = physical_device_properties[gpu_idx];
-		outQueueFamilyIndex = queue_node_index;
+		outDevice = physical_devices[device_idx];
+		outProperties = physical_device_properties[device_idx];
+		outQueueFamilyIndex = queue_indices[device_idx];
 
 		// Extract device features
 		VkPhysicalDeviceFeatures selected_device_featues;
-		vkGetPhysicalDeviceFeatures(selected_device, &outFeatures);
-
+		vkGetPhysicalDeviceFeatures(physical_devices[device_idx], &outFeatures);
+		nap::Logger::info("Selected device: %d", device_idx, physical_device_properties[device_idx].deviceName);
 		return true;
 	}
 
 
 	/**
-	*	Creates a logical device
-	*/
-	bool createLogicalDevice(VkPhysicalDevice& physicalDevice, VkPhysicalDeviceFeatures& physicalDeviceFeatures, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, VkDevice& outDevice, utility::ErrorState& errorState)
+	 * Creates the logical device based on the selected physical device, queue index and required extensions
+	 */
+	static bool createLogicalDevice(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceFeatures& physicalDeviceFeatures, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -398,7 +465,7 @@ namespace nap
 		uint32_t device_property_count(0);
 		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
-		Logger::info("Found %d device extensions", device_property_count);
+		if (print) { Logger::info("Found %d Vulkan device extensions:", device_property_count); }
 
 		// Acquire their actual names
 		std::vector<VkExtensionProperties> device_properties(device_property_count);
@@ -407,25 +474,23 @@ namespace nap
 
 		// Match names against requested extension
 		std::vector<const char*> device_property_names;
-		const std::set<std::string>& required_extension_names = getRequestedDeviceExtensionNames();
 		for (int index = 0; index < device_properties.size(); ++index)
 		{
 			const VkExtensionProperties& ext_property = device_properties[index];
-			Logger::info("%d: %s", index, ext_property.extensionName);
+			if (print) { Logger::info("%d: %s", index, ext_property.extensionName); }
 
-			auto it = required_extension_names.find(std::string(ext_property.extensionName));
-			if (it != required_extension_names.end())
+			auto it = extensionNames.find(std::string(ext_property.extensionName));
+			if (it != extensionNames.end())
 				device_property_names.emplace_back(ext_property.extensionName);
-
 		}
 
 		// Make sure we found all required extensions
-		if (!errorState.check(required_extension_names.size() == device_property_names.size(), "Unable to find all required extensions"))
+		if (!errorState.check(extensionNames.size() == device_property_names.size(), "Unable to find all required extensions"))
 			return false;
 
 		// Log the extensions we can use
 		for (const auto& name : device_property_names)
-			Logger::info("Applying device extension %s", name);
+			Logger::info("Applying device extension: %s", name);
 
 		// Create queue information structure used by device based on the previously fetched queue information from the physical device
 		// We create one command processing queue for graphics
@@ -462,35 +527,43 @@ namespace nap
 		return true;
 	}
 
-	bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, unsigned int graphicsQueueIndex, VkCommandPool& commandPool)
+
+	/**
+	 * Creates a command pool associated with the given queue index
+	 */
+	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, unsigned int graphicsQueueIndex, VkCommandPool& commandPool)
 	{
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = graphicsQueueIndex;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
 		return vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS;
 	}
 
+
+	/**
+	 * Select depth format to use
+	 */
 	static bool findDepthFormat(VkPhysicalDevice physicalDevice, VkFormat& outFormat)
 	{
-		std::vector<VkFormat> candidates = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
-
+		static const std::vector<VkFormat> candidates = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
 		for (VkFormat format : candidates)
 		{
 			VkFormatProperties props;
 			vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
-
 			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			{
 				outFormat = format;
 				return true;
 			}
 		}
-
 		return false;
 	}
 
+
+	/**
+	 *  Create a command buffer, using the given pool
+	 */
 	static bool createCommandBuffer(VkDevice device, VkCommandPool commandPool, VkCommandBuffer& commandBuffer, utility::ErrorState& errorState)
 	{
 		VkCommandBufferAllocateInfo allocInfo = {};
@@ -506,7 +579,10 @@ namespace nap
 	}
 
 
-	static bool createSyncObject(VkDevice device, VkFence& fence, utility::ErrorState& errorState)
+	/**
+	 * Create CPU - GPU synchronization primitive
+	 */
+	static bool createFence(VkDevice device, VkFence& fence, utility::ErrorState& errorState)
 	{
 		VkFenceCreateInfo fenceInfo = {};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -515,82 +591,11 @@ namespace nap
 		return errorState.check(vkCreateFence(device, &fenceInfo, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
 	}
 
-	//////////////////////////////////////////////////////////////////////////
 
-	RenderService::RenderService(ServiceConfiguration* configuration) :
-		Service(configuration)
-	{
-	}
-
-
-	// Register all object creation functions
-	void RenderService::registerObjectCreators(rtti::Factory& factory)
-	{
-	}
-
-
-	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
-	{
-		dependencies.emplace_back(RTTI_OF(SceneService));
-	}
-
-
-	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
-	{
-		mWindows.emplace_back(&window);
-		windowAdded.trigger(window);
-		return true;
-	}
-
-
-	void RenderService::removeWindow(RenderWindow& window)
-	{
-		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val == &window; 
-		});
-
-		assert(pos != mWindows.end());
-		windowRemoved.trigger(window);
-		mWindows.erase(pos);
-
-	}
-	
-
-	RenderWindow* RenderService::findWindow(void* nativeWindow) const
-	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val->getNativeWindow() == nativeWindow; 
-		});
-
-		if (pos != mWindows.end())
-			return *pos;
-		return nullptr;
-	}
-
-
-	RenderWindow* RenderService::findWindow(uint id) const
-	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) 
-		{ 
-			return val->getNumber() == id; 
-		});
-
-		if (pos != mWindows.end())
-			return *pos;
-		return nullptr;
-	}
-
-	void RenderService::addEvent(WindowEventPtr windowEvent)
-	{
-		nap::Window* window = findWindow(windowEvent->mWindow);
-		assert(window != nullptr);
-		window->addEvent(std::move(windowEvent));
-	}
-
-
-	VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
+	/**
+	 * Get vulkan depth and stencil creation information, based on current material state.
+	 */
+	static VkPipelineDepthStencilStateCreateInfo getDepthStencilCreateInfo(MaterialInstance& materialInstance)
 	{
 		VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
 		depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -600,52 +605,49 @@ namespace nap
 		depth_stencil.depthBoundsTestEnable = VK_FALSE;
 		depth_stencil.stencilTestEnable = VK_FALSE;
 
-		EDepthMode depth_mode = materialInstance.getDepthMode();
-
 		// If the depth mode is inherited from the blend mode, determine the correct depth mode to use
+		EDepthMode depth_mode = materialInstance.getDepthMode();
 		if (depth_mode == EDepthMode::InheritFromBlendMode)
-		{
-			if (materialInstance.getBlendMode() == EBlendMode::Opaque)
-				depth_mode = EDepthMode::ReadWrite;
-			else
-				depth_mode = EDepthMode::ReadOnly;
-		}
+			depth_mode = materialInstance.getBlendMode() == EBlendMode::Opaque ? EDepthMode::ReadWrite : EDepthMode::ReadOnly;
 
+		// Update depth configuration based on blend mode
 		switch (depth_mode)
 		{
-		case EDepthMode::ReadWrite:
-		{
-			depth_stencil.depthTestEnable = VK_TRUE;
-			depth_stencil.depthWriteEnable = VK_TRUE;
-			break;
-		}
-		case EDepthMode::ReadOnly:
-		{
-			depth_stencil.depthTestEnable = VK_TRUE;
-			depth_stencil.depthWriteEnable = VK_FALSE;
-			break;
-		}
-		case EDepthMode::WriteOnly:
-		{
-			depth_stencil.depthTestEnable = VK_FALSE;
-			depth_stencil.depthWriteEnable = VK_TRUE;
-			break;
-		}
-		case EDepthMode::NoReadWrite:
-	{
-			depth_stencil.depthTestEnable = VK_FALSE;
-			depth_stencil.depthWriteEnable = VK_FALSE;
-			break;
-		}
+			case EDepthMode::ReadWrite:
+			{
+				depth_stencil.depthTestEnable  = VK_TRUE;
+				depth_stencil.depthWriteEnable = VK_TRUE;
+				break;
+			}
+			case EDepthMode::ReadOnly:
+			{
+				depth_stencil.depthTestEnable  = VK_TRUE;
+				depth_stencil.depthWriteEnable = VK_FALSE;
+				break;
+			}
+			case EDepthMode::WriteOnly:
+			{
+				depth_stencil.depthTestEnable  = VK_FALSE;
+				depth_stencil.depthWriteEnable = VK_TRUE;
+				break;
+			}
+			case EDepthMode::NoReadWrite:
+			{
+				depth_stencil.depthTestEnable  = VK_FALSE;
+				depth_stencil.depthWriteEnable = VK_FALSE;
+				break;
+			}
 		default:
 			assert(false);
 		}
-
 		return depth_stencil;
 	}
 
 
-	VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
+	/**
+	 * Get color blend state based on material settings.
+	 */
+	static VkPipelineColorBlendAttachmentState getColorBlendAttachmentState(MaterialInstance& materialInstance)
 	{
 		VkPipelineColorBlendAttachmentState color_blend_attachment_state = {};
 		color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -653,46 +655,50 @@ namespace nap
 		color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD;
 
 		EBlendMode blend_mode = materialInstance.getBlendMode();
-
 		switch (blend_mode)
 		{
-		case EBlendMode::Opaque:
-		{
-			color_blend_attachment_state.blendEnable = VK_FALSE;
-			break;
+			case EBlendMode::Opaque:
+			{
+				color_blend_attachment_state.blendEnable = VK_FALSE;
+				break;
+			}
+			case EBlendMode::AlphaBlend:
+			{
+				color_blend_attachment_state.blendEnable = VK_TRUE;
+				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				break;
+			}
+			case EBlendMode::Additive:
+			{
+				color_blend_attachment_state.blendEnable = VK_TRUE;
+				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				break;
+			}
 		}
-		case EBlendMode::AlphaBlend:
-		{
-			color_blend_attachment_state.blendEnable = VK_TRUE;
-			color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			break;
-		}
-		case EBlendMode::Additive:
-	{
-			color_blend_attachment_state.blendEnable = VK_TRUE;
-			color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			break;
-		}
-		}
-
 		return color_blend_attachment_state;
 	}
 
 
-	bool createGraphicsPipeline(VkDevice device, MaterialInstance& materialInstance, 
-		EDrawMode drawMode, 
+	/**
+	 * Creates a new Vulkan pipeline based on the provided settings
+	 */
+	static bool createGraphicsPipeline(VkDevice device, 
+		MaterialInstance& materialInstance, 
+		EDrawMode drawMode,  
 		ECullWindingOrder windingOrder, 
 		VkRenderPass renderPass, 
 		VkSampleCountFlagBits sampleCount, 
 		bool enableSampleShading,
-		ECullMode cullMode,
-		VkPipelineLayout& pipelineLayout, VkPipeline& graphicsPipeline, utility::ErrorState& errorState)
+		ECullMode cullMode, 
+		VkPipelineLayout& pipelineLayout, 
+		VkPipeline& graphicsPipeline, 
+		utility::ErrorState& errorState)
 	{
 		Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -820,9 +826,72 @@ namespace nap
 
 		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
 			return false;
-
 		return true;
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Render Service
+	//////////////////////////////////////////////////////////////////////////
+
+	RenderService::RenderService(ServiceConfiguration* configuration) :
+		Service(configuration) { }
+
+
+	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
+	}
+
+
+	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	{
+		mWindows.emplace_back(&window);
+		windowAdded.trigger(window);
+		return true;
+	}
+
+
+	void RenderService::removeWindow(RenderWindow& window)
+	{
+		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val == &window;
+		});
+		assert(pos != mWindows.end());
+		windowRemoved.trigger(window);
+		mWindows.erase(pos);
+
+	}
+
+
+	RenderWindow* RenderService::findWindow(void* nativeWindow) const
+	{
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val->getNativeWindow() == nativeWindow;
+		});
+		return pos != mWindows.end() ? *pos : nullptr;
+	}
+
+
+	RenderWindow* RenderService::findWindow(uint id) const
+	{
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		{
+			return val->getNumber() == id;
+		});
+		return pos != mWindows.end() ? *pos : nullptr;
+	}
+
+
+	void RenderService::addEvent(WindowEventPtr windowEvent)
+	{
+		nap::Window* window = findWindow(windowEvent->mWindow);
+		assert(window != nullptr);
+		window->addEvent(std::move(windowEvent));
+	}
+
 
 	RenderService::Pipeline RenderService::getOrCreatePipeline(IRenderTarget& renderTarget, IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
@@ -890,15 +959,6 @@ namespace nap
 		}
 
 		return RenderableMesh(mesh, materialInstance);
-	}
-
-
-	void RenderService::processEvents()
-	{
-		for (const auto& window : mWindows)
-		{
-			window->processEvents();
-		}
 	}
 
 
@@ -983,7 +1043,6 @@ namespace nap
 	}
 
 
-	// Renders all available objects to a specific renderTarget.
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
 		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
@@ -1045,9 +1104,11 @@ namespace nap
 		mSceneService = getCore().getService<SceneService>();
 		assert(mSceneService != nullptr);
 
+		// Initialize SDL video
 		if (!errorState.check(SDL::initVideo(), "Failed to init SDL"))
 			return false;
 
+		// Initialize shader compiler
 		if (!errorState.check(ShInitialize() != 0, "Failed to initialize shader compiler"))
 			return false;
 
@@ -1060,49 +1121,68 @@ namespace nap
 		// surface later on.
 		std::vector<std::string> found_extensions;
 		SDL_Window* dummy_window = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-		bool got_extensions = getAvailableVulkanExtensions(dummy_window, found_extensions, errorState);
+		bool got_extensions = getAvailableVulkanInstanceExtensions(dummy_window, found_extensions, errorState);
 		SDL_DestroyWindow(dummy_window);
-
 		if (!got_extensions)
 			return false;
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
-		if (!getAvailableVulkanLayers(found_layers, errorState))
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = getConfiguration<RenderServiceConfiguration>()->mLayers;
+		bool print_layers = getConfiguration<RenderServiceConfiguration>()->mPrintAvailableLayers;
+		if (!getAvailableVulkanLayers(requested_layers, print_layers, found_layers, errorState))
 			return false;
 
 		// Warn when not all requested layers could be found
-		if (found_layers.size() != getRequestedLayerNames().size())
+		if (found_layers.size() != requested_layers.size())
 			nap::Logger::warn("Not all requested layers were found");
 
-		// Create Vulkan Instance
-		if (!createVulkanInstance(found_layers, found_extensions, mInstance, errorState))
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		if (!createVulkanInstance(found_layers, found_extensions, mInstance, mAPIVersion, errorState))
 			return false;
 
 		// Vulkan messaging callback
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
-		// Select GPU after succsessful creation of a vulkan instance
+		// Select GPU after successful creation of a vulkan instance
 		VkPhysicalDeviceFeatures	physical_device_features;
 		VkPhysicalDeviceProperties	physical_device_properties;
 
-		// Select GPU, prefers discrete graphics over integrated
-		if (!selectGPU(mInstance, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
 		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
 		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
-		nap::Logger::info("Sample rate shading is %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+
+		// Create unique set of extensions out of required and additional requested ones
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+		std::vector<std::string> addition_ext_names = getConfiguration<RenderServiceConfiguration>()->mAdditionalExtensions;
+		required_ext_names.insert(required_ext_names.end(), addition_ext_names.begin(), addition_ext_names.end());
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
 
 		// Create a logical device that interfaces with the physical device.
-		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, mDevice, errorState))
+		bool print_extensions = getConfiguration<RenderServiceConfiguration>()->mPrintAvailableExtensions;
+		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
 			return false;
 
-		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create commandpool"))
+		// Create command pool
+		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create Command Pool"))
 			return false;
 
+		// 
 		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
 			return false;
 
@@ -1121,11 +1201,10 @@ namespace nap
 			return false;
 		
 		mFramesInFlight.resize(getMaxFramesInFlight());
-
 		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
 		{
 			Frame& frame = mFramesInFlight[frame_index];
-			if (!createSyncObject(mDevice, frame.mFence, errorState))
+			if (!createFence(mDevice, frame.mFence, errorState))
 				return false;
 
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
@@ -1138,6 +1217,7 @@ namespace nap
 				return false;
 		}
 
+		mInitialized = true;
 		return true;
 	}
 
@@ -1163,6 +1243,18 @@ namespace nap
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+	}
+
+
+	uint32 RenderService::getVulkanVersionMajor() const
+	{
+		return VK_VERSION_MAJOR(mAPIVersion);
+	}
+
+
+	uint32 RenderService::getVulkanVersionMinor() const
+	{
+		return VK_VERSION_MINOR(mAPIVersion);
 	}
 
 
@@ -1234,67 +1326,62 @@ namespace nap
 
 		ShFinalize();
 		SDL::shutdownVideo();
+		mInitialized = false;
 	}
 	
-	void RenderService::transferTextures(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
+	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
 	{
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
+		// Begin recording commands
 		VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
 
+		// Perform transfer
 		transferFunction();
 
+		// End recoding commands
 		result = vkEndCommandBuffer(commandBuffer);
 		assert(result == VK_SUCCESS);
 
+		// Submit command queue
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
-
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 	}
 
 
-	void RenderService::removeTextureRequests(Texture2D& texture)
+	void RenderService::uploadData()
 	{
-		// When textures are destroyed, we also need to remove any pending texture requests
-		mTexturesToUpload.erase(&texture);
-
-		for (Frame& frame : mFramesInFlight)
-		{
-			frame.mTextureDownloads.erase(std::remove_if(frame.mTextureDownloads.begin(), frame.mTextureDownloads.end(), [&texture](Texture2D* existingTexture)
-			{
-				return existingTexture == &texture;
-			}), frame.mTextureDownloads.end());
-		}
-	}
-
-
-	void RenderService::uploadTextures()
-	{
+		// Fetch upload command buffer to use
 		VkCommandBuffer commandBuffer = mFramesInFlight[mCurrentFrameIndex].mUploadCommandBuffer;
-		transferTextures(commandBuffer, [commandBuffer, this]()
+
+		// Transfer data to the GPU, including texture data and general purpose render buffers.
+		transferData(commandBuffer, [commandBuffer, this]()
 		{
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
-
 			mTexturesToUpload.clear();
+
+			for (GPUBuffer* buffer : mBuffersToUpload)
+				buffer->upload(commandBuffer);
+			mBuffersToUpload.clear();
 		});
 	}
 
 
-	void RenderService::downloadTextures()
+	void RenderService::downloadData()
 	{
 		// Push the download of a texture onto the commandbuffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
 		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
-		transferTextures(commandBuffer, [commandBuffer, this, &frame]()
+		transferData(commandBuffer, [commandBuffer, this, &frame]()
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
@@ -1340,7 +1427,7 @@ namespace nap
 		// destructor queue instead. This flag is set to true for cases of real-time editing and the destruction sequence,
 		// where Vulkan object must be destroyed immediately.
 		mCanDestroyVulkanObjectsImmediately = false;
-		mIsInRenderFrame = true;
+		mIsRenderingFrame = true;
 
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
 
@@ -1350,50 +1437,50 @@ namespace nap
 		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
 		// of the fence.
 		updateTextureDownloads();
-
 		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		for (auto& kvp : mDescriptorSetCaches)
 			kvp.second->release(mCurrentFrameIndex);
 
+		// Destroy all vulkan resources associated with current frame
 		processVulkanDestructors(mCurrentFrameIndex);
-		uploadTextures();
+
+		// Upload data before rendering new set
+		uploadData();
 	}
 
 
 	void RenderService::endFrame()
 	{
 		// Push any texture downloads on the commandbuffer
-		downloadTextures();
+		downloadData();
 
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the commandbuffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
 		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
 
-		mIsInRenderFrame = false;
+		mIsRenderingFrame = false;
 	}
+
 
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
-
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
-
 		return true;
 	}
+
 
 	void RenderService::endHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
-
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
@@ -1404,9 +1491,9 @@ namespace nap
 
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
-	
 		mCurrentCommandBuffer = nullptr;
 	}
+
 
 	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
@@ -1425,9 +1512,7 @@ namespace nap
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 		assert(mCurrentRenderWindow != nullptr);
-
 		mCurrentRenderWindow->swap();
-
 		mCurrentCommandBuffer = nullptr;
 		mCurrentRenderWindow = nullptr;
 	}
@@ -1440,29 +1525,26 @@ namespace nap
 		if (mCanDestroyVulkanObjectsImmediately)
 		{
 			function(*this);
+			return;
 		}
-		else
-		{
-			// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
-			// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).
-			int previousFrameIndex =  mIsInRenderFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
-			if (previousFrameIndex < 0)
-				previousFrameIndex = mFramesInFlight.size() - 1;
 
-			mFramesInFlight[previousFrameIndex].mQueuedVulkanObjectDestructors.push_back(function);
-		}
-	}
+		// Otherwise, we queue the lamdba on the destructor queue. Note that we use the *previous* frame index to
+		// add the object to. This is to ensure that objects can be queued for destruction outside of the render frame (i.e during update).	
+		assert(isInitialized());
+		int previousFrameIndex =  mIsRenderingFrame ? mCurrentFrameIndex : mCurrentFrameIndex - 1;
+		if (previousFrameIndex < 0)
+			previousFrameIndex = mFramesInFlight.size() - 1;
 
-
-	void RenderService::preUpdate(double deltaTime)
-	{
-		//	getPrimaryWindow().makeCurrent();
+		mFramesInFlight[previousFrameIndex].mQueuedVulkanObjectDestructors.emplace_back(function);
 	}
 
 
 	void RenderService::update(double deltaTime)
 	{
-		processEvents();
+		for (const auto& window : mWindows)
+		{
+			window->processEvents();
+		}
 	}
 
 
@@ -1478,6 +1560,21 @@ namespace nap
 	}
 
 
+	void RenderService::removeTextureRequests(Texture2D& texture)
+	{
+		// When textures are destroyed, we also need to remove any pending texture requests
+		mTexturesToUpload.erase(&texture);
+
+		for (Frame& frame : mFramesInFlight)
+		{
+			frame.mTextureDownloads.erase(std::remove_if(frame.mTextureDownloads.begin(), frame.mTextureDownloads.end(), [&texture](Texture2D* existingTexture)
+			{
+				return existingTexture == &texture;
+			}), frame.mTextureDownloads.end());
+		}
+	}
+
+
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
 		mTexturesToUpload.insert(&texture);
@@ -1490,6 +1587,19 @@ namespace nap
 		// we now the download has been processed by the GPU, and we can send the texture a notification that
 		// transfer has completed.
 		mFramesInFlight[mCurrentFrameIndex].mTextureDownloads.push_back(&texture);
+	}
+
+
+	void RenderService::removeBufferRequests(GPUBuffer& buffer)
+	{
+		// When buffers are destroyed, we also need to remove any pending upload requests
+		mBuffersToUpload.erase(&buffer);
+	}
+
+
+	void RenderService::requestBufferUpload(GPUBuffer& buffer)
+	{
+		mBuffersToUpload.insert(&buffer);
 	}
 
 
@@ -1516,13 +1626,9 @@ namespace nap
 
 
 	VkImageAspectFlags RenderService::getDepthAspectFlags() const
-		{
-		VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (mDepthFormat != VK_FORMAT_D32_SFLOAT)
-			flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
-		return flags;
+	{
+		return mDepthFormat != VK_FORMAT_D32_SFLOAT ? 
+			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : 
+			VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
-
-} // Renderservice
-
+}

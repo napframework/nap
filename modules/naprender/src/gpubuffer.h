@@ -1,23 +1,28 @@
 #pragma once
 
 // Local Includes
-#include "vulkan/vulkan_core.h"
-#include "utility/dllexport.h"
 #include "vk_mem_alloc.h"
+#include "renderutils.h"
+
+// External Includes
+#include <vulkan/vulkan_core.h>
+#include <utility/dllexport.h>
 #include <nap/signalslot.h>
 #include <vector>
+#include <utility/errorstate.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
 	class RenderService;
 
 	/**
-	* Flag that determines how the mesh data is used at runtime.
-	*/
+	 * Flag that determines how the mesh data is used at runtime.
+	 */
 	enum class EMeshDataUsage
 	{
-		Static,				///< Data of the mesh does not change
-		DynamicWrite,		///< Data of the mesh is frequently read from GPU to CPU
+		Static,				///< Mesh data does not change
+		DynamicWrite,		///< Mesh data is frequently updated
 	};
 
 	/**
@@ -27,6 +32,7 @@ namespace nap
 	 */
 	class NAPAPI GPUBuffer
 	{
+		friend class RenderService;
 	public:
 		GPUBuffer(RenderService& renderService, EMeshDataUsage usage);
 
@@ -35,28 +41,30 @@ namespace nap
 		 */
 		virtual ~GPUBuffer();
 
+		// Copy construction not allowed
 		GPUBuffer(const GPUBuffer& other) = delete;
+		
+		// Copy assignment not allowed
 		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
-		VkBuffer getBuffer() const { return mBuffers[mCurrentBufferIndex].mBuffer; }
+		VkBuffer getBuffer() const;
 
 		nap::Signal<> bufferChanged;
 
 	protected:
-		void setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage);
+		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
 	private:
-		struct BufferData
-		{
-			VmaAllocation		mAllocation = VK_NULL_HANDLE;
-			VmaAllocationInfo	mAllocationInfo;
-			VkBuffer			mBuffer = VK_NULL_HANDLE;
-		};
+		RenderService*			mRenderService = nullptr;			///< Handle to the render service
+		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
+		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry
+		int						mCurrentBufferIndex = 0;			///< Current render buffer index
+		EMeshDataUsage			mUsage;								///< How the buffer is used, static, updated frequently etc.
+		uint32					mSize = 0;							///< Current used buffer size in bytes
 
-		RenderService*			mRenderService = nullptr;
-		std::vector<BufferData>	mBuffers;
-		int						mCurrentBufferIndex = 0;
-		EMeshDataUsage			mUsage;
+		bool setDataInternalStatic(void* data, int elementSize, size_t numVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalDynamic(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		void upload(VkCommandBuffer commandBuffer);
 	};
 
 } // opengl

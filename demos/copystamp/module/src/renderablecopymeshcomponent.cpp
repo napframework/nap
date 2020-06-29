@@ -90,6 +90,9 @@ namespace nap
 
 			// Store renderable mesh
 			mCopyMeshes.emplace_back(render_mesh);
+
+			// Create list of positions to associate with every renderable mesh
+			mPositions.emplace(std::make_pair(render_mesh, std::vector<glm::vec3>()));	
 		}
 
 		// Store handle to target mesh

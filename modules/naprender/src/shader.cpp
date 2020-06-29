@@ -568,14 +568,19 @@ namespace nap
 
 	}
 
+
 	Shader::Shader(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
 
 	}
 
+
 	Shader::~Shader()
 	{
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
 		{
 			if (descriptorSetLayout != nullptr)
@@ -589,9 +594,11 @@ namespace nap
 		});
 	}
 
+
 	// Store path and create display names
 	bool Shader::init(utility::ErrorState& errorState)
 	{
+		assert(mRenderService->isInitialized());
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
 

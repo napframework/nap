@@ -1,167 +1,228 @@
 #pragma once
 
 // Local Includes
+#include "uniforms.h"
 
 // External Includes
 #include <rtti/objectptr.h>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
-#include "uniforms.h"
 
 namespace nap
 {
+	// Forward Declares
 	class Texture2D;
 	class UniformInstance;
 
 	using UniformCreatedCallback = std::function<void()>;
 
+	/**
+	 * Instantiated version of a nap::Uniform.
+	 * Every uniform 'resource' has an associative 'instance', ie: nap::UniformValue -> nap::UniformValueInstance.
+	 * An instance can be updated / inspected at run-time and is associated with a declaration.
+	 */
 	class NAPAPI UniformInstance
 	{
 		RTTI_ENABLE()
 
 	public:
+		// Default Destructor
 		virtual ~UniformInstance() = default;
 
+		/**
+		 * Required virtual, needs to be implemented in derived classes
+		 * @return the declaration associated with this uniform instance
+		 */
 		virtual const UniformDeclaration& getDeclaration() const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// UniformStructInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Contains other uniform instances, including: values, structs and arrays. 
+	 * A uniform value, struct or array must be declared as part of a uniform struct.
+	 */
 	class NAPAPI UniformStructInstance : public UniformInstance
 	{
 		RTTI_ENABLE(UniformInstance)
 
 	public:
+
+		// Constructor
 		UniformStructInstance(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
 			mUniformCreatedCallback(uniformCreatedCallback),
 			mDeclaration(declaration)
-		{
-		}
+		{ }
 
+		// Delete copy assignment operator and copy constructor
 		UniformStructInstance(const UniformStructInstance&) = delete;
 		UniformStructInstance& operator=(const UniformStructInstance&) = delete;
 
-		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const { return mUniforms; }
+		/**
+		 * @return all uniform instances contained by this struct.
+		 */
+		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const		{ return mUniforms; }
 
-		UniformInstance* findUniform(const std::string& name)
-		{
-			UniformInstance* instance = nullptr;
-			for (auto& uniform_instance : mUniforms)
-			{
-				if (uniform_instance->getDeclaration().mName == name)
-					return uniform_instance.get();
-			}
+		/**
+		 * Tries to find a uniform with the given name.
+		 * @param name the name of the uniform to find.
+		 * @return found uniform instance, nullptr if it does not exist.
+		 */
+		UniformInstance* findUniform(const std::string& name);
 
-			return nullptr;
-		}
-
+		/**
+		 * Tries to find a uniform of a specific type with the given name.
+		 * @param name the name of the uniform to find.
+		 * @return the uniform instance, nullptr if it does not exist
+		 */
 		template<typename T>
-		T* findUniform(const std::string& name)
-		{
-			UniformInstance* instance = findUniform(name);
-			if (instance != nullptr)
-				return rtti_cast<T>(instance);
+		T* findUniform(const std::string& name);
 
-			return nullptr;
-		}
-
+		/**
+		 * Tries to find a uniform of a specific type with the given name, creates it if it does not exist.
+		 * @param name the name of the uniform to find or create
+		 * @return the uniform instance, nullptr if it can't be found and created.
+		 */
 		template<typename T>
-		T* getOrCreateUniform(const std::string& name)
-		{
-			UniformInstance* instance = findUniform(name);
-			if (instance != nullptr)
-			{
-				assert(instance->get_type().is_derived_from<T>());
-				return rtti_cast<T>(instance);
-			}
+		T* getOrCreateUniform(const std::string& name);
 
-			const UniformDeclaration* declaration = mDeclaration.findMember(name);
-			if (declaration == nullptr)
-				return nullptr;
-
-			std::unique_ptr<UniformInstance> new_instance = createUniformFromDeclaration(*declaration, mUniformCreatedCallback);
-			
-			T* result = rtti_cast<T>(new_instance.get());
-			assert(result != nullptr);
-			
-			mUniforms.emplace_back(std::move(new_instance));
-
-			if (mUniformCreatedCallback)
-				mUniformCreatedCallback();
-
-			return result;
-		}
-
-		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
+		/**
+		 * @return the uniform declaration, used to create the uniform instance.
+		 */
+		virtual const UniformDeclaration& getDeclaration() const override				{ return mDeclaration; }
 
 	private:
 		friend class Material;
 		friend class MaterialInstance;
+
+		/**
+		 * Adds all associated uniforms recursively to this instance, based on the struct declaration and resource.
+		 */
 		bool addUniformRecursive(const UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
 
+		/**
+		 * Creates a uniform instance from a uniform declaration. 
+		 * @param declaration the uniform declaration
+		 * @param uniformCreatedCallback callback that is triggered when the uniform is created.
+		 */
 		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 
 	private:
-		UniformCreatedCallback mUniformCreatedCallback;
-		const UniformStructDeclaration& mDeclaration;
-		std::vector<std::unique_ptr<UniformInstance>> mUniforms;
+		UniformCreatedCallback							mUniformCreatedCallback;
+		const UniformStructDeclaration&					mDeclaration;
+		std::vector<std::unique_ptr<UniformInstance>>	mUniforms;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// UniformStructArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a list of uniform struct instances.
+	 */
 	class NAPAPI UniformStructArrayInstance : public UniformInstance
 	{
+		friend class UniformStructInstance;
 		RTTI_ENABLE(UniformInstance)
-
 	public:
+		// Constructor
 		UniformStructArrayInstance(const UniformStructArrayDeclaration& declaration) :
 			mDeclaration(declaration)
-		{
-		}
+		{ }
 
+		// Copy construction and copy assignment not allowed
 		UniformStructArrayInstance(const UniformStructArrayInstance&) = delete;
 		UniformStructArrayInstance& operator=(const UniformStructArrayInstance&) = delete;
 
-		const std::vector<std::unique_ptr<UniformStructInstance>>& getElements() const { return mElements; }
+		/**
+		 * @return all uniform struct instance elements
+		 */
+		const std::vector<std::unique_ptr<UniformStructInstance>>& getElements() const	{ return mElements; }
 
+		/**
+		 * @return the uniform struct at the given index.
+		 */
 		UniformStructInstance& getElement(int index)
 		{
 			assert(index < mElements.size());
 			return *mElements[index];
 		}
 
+		/**
+		 * @return the uniform struct at the given index
+		 */
+		UniformStructInstance& operator[](size_t index)									{ return getElement(index); }
+
+		/**
+		 * @return declaration used to create this instance. 
+		 */
 		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
-		friend class UniformStructInstance;
-		void addElement(std::unique_ptr<UniformStructInstance> element);
+		const UniformStructArrayDeclaration&					mDeclaration;
+		std::vector<std::unique_ptr<UniformStructInstance>>		mElements;
 
-	private:
-		const UniformStructArrayDeclaration&		mDeclaration;
-		std::vector<std::unique_ptr<UniformStructInstance>> mElements;
+		/**
+		 * Adds a uniform struct instance.
+		 * @param element the element to add
+		 */
+		void addElement(std::unique_ptr<UniformStructInstance> element);
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// UniformLeafInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class of all concrete uniform instances and uniform instance array types, including
+	 * value and value array types. Every leaf can push data on to the GPU. 
+	 */
 	class NAPAPI UniformLeafInstance : public UniformInstance
 	{
 		RTTI_ENABLE(UniformInstance)
-
 	public:
+		/**
+		 * Needs to be implemented in derived classes, pushes buffer to the GPU.
+		 */
 		virtual void push(uint8_t* uniformBuffer) const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Uniform Values
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class of a uniform value instance.
+	 */
 	class NAPAPI UniformValueInstance : public UniformLeafInstance
 	{
 		RTTI_ENABLE(UniformLeafInstance)
-
 	public:
-		UniformValueInstance(const UniformValueDeclaration& declaration) :
-			mDeclaration(&declaration)
-		{
-		}
 
-		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
+		// Constructor
+		UniformValueInstance(const UniformValueDeclaration& declaration) :
+			mDeclaration(&declaration)												{ }
+
+		/**
+		 * @return the uniform value declaration.
+		 */
+		virtual const UniformDeclaration& getDeclaration() const override			{ return *mDeclaration; }
 
 	protected:
 		const UniformValueDeclaration*	mDeclaration = nullptr;
 	};
 
+
+	/**
+	 * Specific type of uniform value instance, for example: float -> TypedUniformValueInstance<float>.
+	 */
 	template<class T>
 	class TypedUniformValueInstance : public UniformValueInstance
 	{
@@ -169,51 +230,66 @@ namespace nap
 
 	public:
 		TypedUniformValueInstance(const UniformValueDeclaration& declaration) :
-			UniformValueInstance(declaration)
-		{
-		}
+			UniformValueInstance(declaration)										{ }
 
 		/**
-		* @param value integer value to set.
-		*/
-		void setValue(T value) { mValue = value; }
-
-		void set(const TypedUniformValue<T>& resource)
-		{
-			mValue = resource.mValue;
-		}
+		 * Updates the uniform value, data is not pushed immediately. 
+		 * @param value new uniform value
+		 */
+		void setValue(T value)									{ mValue = value; }
+		
+		/**
+		 * Update instance from resource, data is not pushed immediately. 
+		 * @param resource the resource to copy the value from
+		 */
+		void set(const TypedUniformValue<T>& resource)			{ mValue = resource.mValue; 	}
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override
-		{
-			assert(sizeof(mValue) == mDeclaration->mSize);
-			memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
-		}
+		 * Pushes the data to the 'Shader'.
+		 * @param uniformBuffer: the buffer in which to copy the value.
+		 */
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 	private:
 		T mValue = T();
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Uniform Value Array
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class of all uniform value array instances.
+	 */
 	class NAPAPI UniformValueArrayInstance : public UniformLeafInstance
 	{
 		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
 		UniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			mDeclaration(&declaration)
-		{
-		}
+			mDeclaration(&declaration)													{ }
 
+		/**
+		 * @return uniform declaration.
+		 */
+		virtual const UniformDeclaration& getDeclaration() const override				{ return *mDeclaration; }
+
+		/**
+		 * Required override, sets up default values.
+		 */
 		virtual void setDefault() = 0;
-		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 	protected:
 		const UniformValueArrayDeclaration* mDeclaration;
 	};
 
+
+	/**
+	 * Specific type of uniform value array instance, for example: 
+	 * std::vector<float> -> TypedUniformValueArrayInstance<float>.
+	 * All supported types are defined below for easier readability. 
+	 */
 	template<typename T>
 	class TypedUniformValueArrayInstance : public UniformValueArrayInstance
 	{
@@ -221,48 +297,132 @@ namespace nap
 
 	public:
 		TypedUniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			UniformValueArrayInstance(declaration)
+			UniformValueArrayInstance(declaration)										{ }
+
+		/**
+		 * Updates the uniform value from a resource, data is not pushed immediately. 
+		 * @param resource resource to copy data from.
+		 */
+		void set(const TypedUniformValueArray<T>& resource)								{ mValues = resource.mValues; }
+
+		/**
+		 * Updates the uniform value, data is not pushed immediately.
+		 * @param values new list of values
+		 */
+		void setValues(const std::vector<T> values)
 		{
+			assert(values.size() <= mDeclaration->mNumElements);
+			mValues = values;
 		}
 
 		/**
-		* Updates the uniform in the shader.
-		* @param declaration: the uniform declaration from the shader that is used to set the value.
-		*/
-		virtual void push(uint8_t* uniformBuffer) const override
+		 * Populate defaults
+		 */
+		virtual void setDefault() override												{ mValues.resize(mDeclaration->mNumElements, T()); }
+
+		/**
+		 * Array subscript operator, returns a specific value in the array as a reference, 
+		 * making the following possible: `mUniformArray[0] = 12`;
+		 * @return a specific value in the array as a reference. 
+		 */
+		T& operator[](size_t index)
 		{
-			size_t size = mValues.size() * sizeof(T);
-			assert(size == mDeclaration->mSize);
-			memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+			assert(index < mValues.size());
+			return mValues[index];
 		}
 
-		virtual void setDefault() override
-		{
-			mValues.resize(mDeclaration->mNumElements, T());
-		}
-
-		void set(const TypedUniformValueArray<T>& resource)
-		{
-			mValues = resource.mValues;
-		}
-
+		/**
+		 * @return entire array as a reference
+		 */
 		std::vector<T>& getValues() { return mValues; }
+
+		/**
+		 * Pushes the data to the 'Shader'
+		 * @param uniformBuffer the buffer to copy the array into.
+		 */
+		virtual void push(uint8_t* uniformBuffer) const override;
 
 	private:
 		std::vector<T> mValues;
 	};
 
-	using UniformIntInstance = TypedUniformValueInstance<int>;
-	using UniformFloatInstance = TypedUniformValueInstance<float>;
-	using UniformVec2Instance = TypedUniformValueInstance<glm::vec2>;
-	using UniformVec3Instance = TypedUniformValueInstance<glm::vec3>;
-	using UniformVec4Instance = TypedUniformValueInstance<glm::vec4>;
-	using UniformMat4Instance = TypedUniformValueInstance<glm::mat4>;
 
-	using UniformIntArrayInstance = TypedUniformValueArrayInstance<int>;
+	//////////////////////////////////////////////////////////////////////////
+	// Type definitions for all supported uniform instance value types
+	//////////////////////////////////////////////////////////////////////////
+
+	using UniformIntInstance	= TypedUniformValueInstance<int>;
+	using UniformFloatInstance	= TypedUniformValueInstance<float>;
+	using UniformVec2Instance	= TypedUniformValueInstance<glm::vec2>;
+	using UniformVec3Instance	= TypedUniformValueInstance<glm::vec3>;
+	using UniformVec4Instance	= TypedUniformValueInstance<glm::vec4>;
+	using UniformMat4Instance	= TypedUniformValueInstance<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Type definitions for all supported uniform instance array value types
+	//////////////////////////////////////////////////////////////////////////
+
+	using UniformIntArrayInstance	= TypedUniformValueArrayInstance<int>;
 	using UniformFloatArrayInstance = TypedUniformValueArrayInstance<float>;
-	using UniformVec2ArrayInstance = TypedUniformValueArrayInstance<glm::vec2>;
-	using UniformVec3ArrayInstance = TypedUniformValueArrayInstance<glm::vec3>;
-	using UniformVec4ArrayInstance = TypedUniformValueArrayInstance<glm::vec4>;
-	using UniformMat4ArrayInstance = TypedUniformValueArrayInstance<glm::mat4>;
+	using UniformVec2ArrayInstance	= TypedUniformValueArrayInstance<glm::vec2>;
+	using UniformVec3ArrayInstance	= TypedUniformValueArrayInstance<glm::vec3>;
+	using UniformVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::vec4>;
+	using UniformMat4ArrayInstance	= TypedUniformValueArrayInstance<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* nap::UniformStructInstance::findUniform(const std::string& name)
+	{
+		UniformInstance* instance = findUniform(name);
+		if (instance != nullptr)
+			return rtti_cast<T>(instance);
+		return nullptr;
+	}
+
+	template<typename T>
+	T* nap::UniformStructInstance::getOrCreateUniform(const std::string& name)
+	{
+		// First try to find it, if found cast and return
+		UniformInstance* instance = findUniform(name);
+		if (instance != nullptr)
+		{
+			assert(instance->get_type().is_derived_from<T>());
+			return rtti_cast<T>(instance);
+		}
+
+		// Otherwise fetch the declaration and use it to create the new instance
+		const UniformDeclaration* declaration = mDeclaration.findMember(name);
+		if (declaration == nullptr)
+			return nullptr;
+
+		std::unique_ptr<UniformInstance> new_instance = createUniformFromDeclaration(*declaration, mUniformCreatedCallback);
+		T* result = rtti_cast<T>(new_instance.get());
+		assert(result != nullptr);
+		mUniforms.emplace_back(std::move(new_instance));
+
+		// Notify listeners
+		if (mUniformCreatedCallback)
+			mUniformCreatedCallback();
+		return result;
+	}
+
+	template<class T>
+	void nap::TypedUniformValueInstance<T>::push(uint8_t* uniformBuffer) const
+	{
+		assert(sizeof(mValue) == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
+	}
+
+	template<typename T>
+	void nap::TypedUniformValueArrayInstance<T>::push(uint8_t* uniformBuffer) const
+	{
+		size_t size = mValues.size() * sizeof(T);
+		assert(size == mDeclaration->mSize);
+		memcpy(uniformBuffer + mDeclaration->mOffset, mValues.data(), size);
+	}
 }

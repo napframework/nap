@@ -8,11 +8,12 @@
 
 namespace nap
 {
+	// Forward Declares
 	class Renderable2DTextComponentInstance;
 	class RenderService;
 
 	/**
-	 * Draws a single line of text in screen space (pixel) coordinates.
+	 * Draws a selected line of text in screen space (pixel) coordinates.
 	 * Use this component when you want to render text at a specific location on screen or in a render-target.
 	 * Use the Renderable3DTextComponent to draw text in 3D space with a perspective camera.
 	 *
@@ -23,6 +24,38 @@ namespace nap
 	 * When the parent entity has a transform component attached to it the x/y Translate values are used as text offset in pixel space.
 	 * 2D text cannot be scaled or rotated, this ensures that every Glyph is rendered in it's native resolution.
 	 * When rendering this component through the render interface of the render service it is advised to use an orthographic camera.
+	 *
+	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
+	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
+	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
+	 *
+	 * For example, on update:
+	 * ~~~~~
+	 *		// Set text for next draw operation
+	 *		text_component.resize(blobs.size());
+	 *		for (int i = 0; i < blobs.size(); i++)
+	 *		{
+	 *			text_component.setText(i, utility::stringFormat("Blob %d", i + 1), error);
+	 *		}
+	 * ~~~~~
+	 *
+	 * And on render:
+	 * ~~~~~
+	 *		// Set text for next draw operation
+	 *		for (int i = 0; i < blobs.size(); i++)
+	 *		{
+	 *			// Get blob location in screen space
+	 *			glm::vec3 blob_pos = locs[i];
+	 *			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
+	 *
+	 *			// Set location, select line and draw
+	 *			text_comp.setLocation(text_pos);
+	 *			text_comp.setLineIndex(i);
+	 *			text_comp.draw(*mRenderWindow)
+	 *		}
+	 * ~~~~~
+	 *
 	 */
 	class NAPAPI Renderable2DTextComponent : public RenderableTextComponent
 	{
@@ -37,7 +70,7 @@ namespace nap
 
 	/**
 	 * Runtime version of the Renderable2DTextComponent.
-	 * This component allows you to render a single line of text to screen at a specific location in pixel space.
+	 * This component allows you to render a selected line of text to screen at a specific location in pixel space.
 	 *
 	 * Call draw() in the render part of your application to render text to a specific location on screen or a render-target.
 	 * It is also possible to render the text using RenderService::renderObjects(), this is similar to how meshes are rendered.
@@ -46,6 +79,38 @@ namespace nap
 	 * When the parent entity has a transform component attached to it the x/y Translate values are used as text offset in pixel space.
 	 * 2D text cannot be scaled or rotated, this ensures that every Glyph is rendered in it's native resolution.
 	 * When rendering this component through the render interface of the render service it is advised to use an orthographic camera.
+	 *
+	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
+	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
+	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
+	 *
+	 * For example, on update:
+	 * ~~~~~
+	 *		// Set text for next draw operation
+	 *		text_component.resize(blobs.size());
+	 *		for (int i = 0; i < blobs.size(); i++)
+	 *		{
+	 *			text_component.setText(i, utility::stringFormat("Blob %d", i + 1), error);
+	 *		}
+	 * ~~~~~
+	 *
+	 * And on render:
+	 * ~~~~~
+	 *		// Set text for next draw operation
+	 *		for (int i = 0; i < blobs.size(); i++)
+	 *		{
+	 *			// Get blob location in screen space
+	 *			glm::vec3 blob_pos = locs[i];
+	 *			glm::vec2 text_pos = persp_camera.worldToScreen(blob_pos, mRenderWindow->getRectPixels());
+	 *
+	 *			// Set location, select line and draw
+	 *			text_comp.setLocation(text_pos);
+	 *			text_comp.setLineIndex(i);
+	 *			text_comp.draw(*mRenderWindow)
+	 *		}
+	 * ~~~~~
+	 *
 	 */
 	class NAPAPI Renderable2DTextComponentInstance : public RenderableTextComponentInstance
 	{

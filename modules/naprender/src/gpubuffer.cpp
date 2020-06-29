@@ -16,70 +16,162 @@ RTTI_END_ENUM
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
+
 	GPUBuffer::GPUBuffer(RenderService& renderService, EMeshDataUsage usage) :
 		mRenderService(&renderService),
 		mUsage(usage)
 	{
-		mBuffers.resize(mUsage == EMeshDataUsage::Static ? 1 : renderService.getMaxFramesInFlight() + 1);
+		// Scale buffers based on number of frames in flight when not static.
+		mRenderBuffers.resize(mUsage == EMeshDataUsage::Static ? 1 : 
+			renderService.getMaxFramesInFlight() + 1);
+	}
+
+
+	VkBuffer GPUBuffer::getBuffer() const
+	{
+		return mRenderBuffers[mCurrentBufferIndex].mBuffer;
 	}
 
 
 	GPUBuffer::~GPUBuffer()
-	{
-		mRenderService->queueVulkanObjectDestructor([buffers = mBuffers](RenderService& renderService)
+	{	
+		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
+		// This ensures the buffers are destroyed when certain they are not in use.
+		mRenderService->removeBufferRequests(*this);
+		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers](RenderService& renderService)
 		{
+			// Destroy render buffers
 			for (const BufferData& buffer : buffers)
-				if (buffer.mAllocation != VK_NULL_HANDLE)
-					vmaDestroyBuffer(renderService.getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
 		});
 	}
 
 	
-	void GPUBuffer::setDataInternal(VkPhysicalDevice physicalDevice, VkDevice device, void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage)
+	bool GPUBuffer::setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{
 		if (numVertices == 0)
-			return;
+			return true;
 
-		// For each update of data, we cycle through the buffers. This has the effect that if you only ever need a single buffer (static data), you 
-		// will use only one buffer.
-		mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mBuffers.size();
+		// Update buffers based on selected data usage type
+		switch (mUsage)
+		{
+			case EMeshDataUsage::DynamicWrite:
+				return setDataInternalDynamic(data, elementSize, numVertices, reservedNumVertices, usage, error);
+			case EMeshDataUsage::Static:
+				return setDataInternalStatic(data, elementSize, numVertices, usage, error);
+			default:
+				assert(false);
+				break;
+		}
+		error.fail("Unsupported buffer usage");
+		return false;
+	}
 
-		uint32_t required_size_bytes = elementSize * reservedNumVertices;
 
+	bool GPUBuffer::setDataInternalStatic(void* data, int elementSize, size_t numVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
+	{
+		// Calculate buffer byte size and fetch allocator
+		mSize = elementSize * numVertices;
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
-		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. The buffer size depends on reservedNumVertices.
-		BufferData& buffer_data = mBuffers[mCurrentBufferIndex];
-		if (buffer_data.mBuffer == VK_NULL_HANDLE || required_size_bytes > buffer_data.mAllocationInfo.size)
+		// Make sure we haven't already uploaded or are attempting to upload data
+		if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || mStagingBuffer.mBuffer != VK_NULL_HANDLE)
 		{
-			if (buffer_data.mBuffer != VK_NULL_HANDLE)
-				vmaDestroyBuffer(allocator, buffer_data.mBuffer, buffer_data.mAllocation);
-
-			VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = required_size_bytes;
-			bufferInfo.usage = usage;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			// We use CPU_TO_GPU to be able to update on CPU easily. This is mostly convenient for dynamic geometry and suboptimal
-			// for static geometry. To solve this, we'd need to have special handling for static geometry where we use a GPU only buffer
-			// and use a staging buffer to upload from CPU to GPU.
-			VmaAllocationCreateInfo allocInfo = {};
-			allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-			allocInfo.flags = 0;
-
-			VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer_data.mBuffer, &buffer_data.mAllocation, &buffer_data.mAllocationInfo);
-			assert(result == VK_SUCCESS);
+			error.fail("Buffer already allocated!");
+			return false;
 		}
 
-		uint32_t used_size_bytes = elementSize * numVertices;
+		// Create staging buffer
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, mStagingBuffer, error))
+		{
+			error.fail("Staging buffer error");
+			return false;
+		}
+			
+		// Copy data into staging buffer
+		if (!error.check(uploadToBuffer(allocator, mSize, data, mStagingBuffer), "Unable to upload data to staging buffer"))
+			return false;
 
-		void* mapped_memory;
-		VkResult result = vmaMapMemory(allocator, buffer_data.mAllocation, &mapped_memory);
-		assert(result == VK_SUCCESS);
+		// Now create the GPU buffer to transfer data to, create buffer information
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, mRenderBuffers[0], error))
+		{
+			error.fail("Render buffer error");
+			return false;
+		}
 
-		memcpy(mapped_memory, data, used_size_bytes);
-		vmaUnmapMemory(allocator, buffer_data.mAllocation);
+		// Request upload
+		mRenderService->requestBufferUpload(*this);
+		return true;
+	}
 
+
+	bool GPUBuffer::setDataInternalDynamic(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
+	{
+		// For each update of data, we cycle through the buffers. This has the effect that if you only ever need a single buffer (static data), you 
+		// will use only one buffer.
+		mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mRenderBuffers.size();
+
+		// Calculate buffer byte size and fetch allocator
+		uint32_t required_size_bytes = elementSize * reservedNumVertices;
+		VmaAllocator allocator = mRenderService->getVulkanAllocator();
+
+		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. 
+		// The final buffer size is calculated based on the reservedNumVertices.
+		BufferData& buffer_data = mRenderBuffers[mCurrentBufferIndex];
+		if (buffer_data.mBuffer == VK_NULL_HANDLE || required_size_bytes > buffer_data.mAllocationInfo.size)
+		{
+			// Queue buffer for destruction if already allocated, the buffer data is copied, not captured by reference.
+			if (buffer_data.mBuffer != VK_NULL_HANDLE)
+			{
+				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService)
+				{
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				});
+			}
+
+			// Create buffer new buffer
+			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer_data, error))
+			{
+				error.fail("Render buffer error");
+				return false;
+			}
+		}
+
+		// Upload directly into buffer, use exact data size
+		mSize = elementSize * numVertices;
+		if (!error.check(uploadToBuffer(allocator, mSize, data, buffer_data), "Buffer upload failed"))
+			return false;
+		bufferChanged();
+
+		return true;
+	}
+
+
+	void GPUBuffer::upload(VkCommandBuffer commandBuffer)
+	{
+		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
+		assert(mStagingBuffer.mBuffer != VK_NULL_HANDLE);
+		assert(mUsage == EMeshDataUsage::Static);
+		assert(mRenderBuffers.size() == 1);
+		
+		// Copy staging buffer to GPU
+		VkBufferCopy copyRegion{};
+		copyRegion.size = mSize;
+		vkCmdCopyBuffer(commandBuffer, mStagingBuffer.mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
+
+		// Queue destruction of staging buffer
+		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
+		// Explicitly release the buffer, so it's not deleted twice
+		mRenderService->queueVulkanObjectDestructor([buffer = mStagingBuffer](RenderService& renderService)
+		{
+			destroyBuffer(renderService.getVulkanAllocator(), buffer);
+		});
+		mStagingBuffer.release();
+
+		// Signal change
 		bufferChanged();
 	}
 }

@@ -6,8 +6,9 @@
 #include <componentptr.h>
 #include <transformcomponent.h>
 #include <color.h>
-#include "uniforminstance.h"
-#include "materialinstance.h"
+#include <uniforminstance.h>
+#include <materialinstance.h>
+#include <renderservice.h>
 
 namespace nap
 {
@@ -93,21 +94,23 @@ namespace nap
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position instanced meshes
-		std::vector<RenderableMesh> mMeshes;							///< All the valid mesh / material combinations
-		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
-		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;			///< Handle to the vertices we want to stamp
-		IMesh* mTargetMesh;												///< Mesh to copy onto
-		std::vector<RenderableMesh> mCopyMeshes;						///< All renderable variants of the mesh to copy
-		Vec3VertexAttribute* mTargetVertices = nullptr;					///< Point positions to copy meshes onto
-		Vec3VertexAttribute* mTargetNormals = nullptr;					///< Point orientation of target mesh
-		nap::UniformVec3Instance* mColorUniform = nullptr;				///< Color uniform slot
-		nap::UniformMat4Instance* mProjectionUniform = nullptr;			///< Projection matrix uniform slot
-		nap::UniformMat4Instance* mViewUniform = nullptr;				///< View matrix uniform slot
-		nap::UniformMat4Instance* mModelUniform = nullptr;				///< Model matrix uniform slot
-		std::vector<RGBColorFloat> mColors;								///< All selectable colors 
-		double mTime = 0.0;												///< Total running time
-		float mRandomRotation = 0.0f;									///< Amount of randomization of rotation speed
-		RenderService* mRenderService = nullptr;						///< Renderer
+		TransformComponentInstance* mTransform = nullptr;								///< Transform used to position instanced meshes
+		std::vector<RenderableMesh> mMeshes;											///< All the valid mesh / material combinations
+		MaterialInstance mMaterialInstance;												///< The MaterialInstance as created from the resource. 
+		VertexAttribute<glm::vec3>* mPositionAttr = nullptr;							///< Handle to the vertices we want to stamp
+		IMesh* mTargetMesh;																///< Mesh to copy onto
+		std::vector<RenderableMesh> mCopyMeshes;										///< All renderable variants of the mesh to copy
+		std::unordered_map<RenderableMesh, std::vector<glm::vec3>> mPositions;			///< All renderable meshes and their positions
+		std::unordered_map<RenderableMesh, RenderService::Pipeline> mPipelines;		///< All pipelines associated with a specific renable mesh combination
+		Vec3VertexAttribute* mTargetVertices = nullptr;									///< Point positions to copy meshes onto
+		Vec3VertexAttribute* mTargetNormals = nullptr;									///< Point orientation of target mesh
+		nap::UniformVec3Instance* mColorUniform = nullptr;								///< Color uniform slot
+		nap::UniformMat4Instance* mProjectionUniform = nullptr;							///< Projection matrix uniform slot
+		nap::UniformMat4Instance* mViewUniform = nullptr;								///< View matrix uniform slot
+		nap::UniformMat4Instance* mModelUniform = nullptr;								///< Model matrix uniform slot
+		std::vector<RGBColorFloat> mColors;												///< All selectable colors 
+		double mTime = 0.0;																///< Total running time
+		float mRandomRotation = 0.0f;													///< Amount of randomization of rotation speed
+		RenderService* mRenderService = nullptr;										///< Renderer
 	};
 }

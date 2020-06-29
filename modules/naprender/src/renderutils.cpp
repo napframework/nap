@@ -17,8 +17,9 @@ RTTI_END_ENUM;
 
 namespace nap
 {
-	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, const VmaAllocationCreateInfo& allocationUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
+	bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 	{
+		// Image creation info
 		VkImageCreateInfo image_info = {};
 		image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -34,7 +35,13 @@ namespace nap
 		image_info.samples = samples;
 		image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VkResult result = vmaCreateImage(allocator, &image_info, &allocationUsage, &outImage, &outAllocation, &outAllocationInfo);
+		// Allocation creation info
+		VmaAllocationCreateInfo alloc_info = {};
+		alloc_info.flags = 0;
+		alloc_info.usage = memoryUsage;
+
+		// Create image using allocator and allocation instructions
+		VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
 		if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
 			return false;
 
@@ -62,12 +69,59 @@ namespace nap
 	}
 
 
-	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
+	void destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
-		if (data.mTextureView != nullptr)
+		if (data.mTextureView != VK_NULL_HANDLE)
 			vkDestroyImageView(device, data.mTextureView, nullptr);
 
-		if (data.mTextureImage != nullptr)
+		if (data.mTextureImage != VK_NULL_HANDLE)
 			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
+	}
+
+
+	bool createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, BufferData& outBuffer, utility::ErrorState& error)
+	{
+		// Create buffer information 
+		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = size;
+		bufferInfo.usage = bufferUsage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		// Create allocation information
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = memoryUsage;
+		allocInfo.flags = 0;
+
+		// Create buffer
+		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);
+		if (!error.check(result == VK_SUCCESS, "Unable to create buffer"))
+			return false;
+		return true;
+	}
+
+
+	void destroyBuffer(VmaAllocator allocator, const BufferData& buffer)
+	{
+		if(buffer.mBuffer != VK_NULL_HANDLE)
+			vmaDestroyBuffer(allocator, buffer.mBuffer, buffer.mAllocation);
+	}
+
+
+	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer)
+	{
+		void* mapped_memory;
+		if (vmaMapMemory(allocator, buffer.mAllocation, &mapped_memory) != VK_SUCCESS)
+			return false;
+
+		memcpy(mapped_memory, data, (size_t)size);
+		vmaUnmapMemory(allocator, buffer.mAllocation);
+		return true;
+	}
+
+
+	void nap::BufferData::release()
+	{
+		mAllocation = VK_NULL_HANDLE;
+		mBuffer = VK_NULL_HANDLE;
 	}
 }
