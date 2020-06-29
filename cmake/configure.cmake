@@ -16,11 +16,10 @@ if(MSVC OR APPLE)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-
-
     endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
     add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+    add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
 else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
@@ -45,6 +44,7 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
     add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+    add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 endif()
 
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
