@@ -213,6 +213,16 @@ namespace napkin
 		 */
 		void handleURI(const QString& uri);
 
+		/**
+		 * Disable opening of project from recently opened file list on startup
+		 */
+		void disableRecentProjectOpening();
+
+		/**
+		 * Set to exit upon failure loading any project
+		 */
+		void enableExitOnProjectLoadFailure();
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -361,5 +371,7 @@ namespace napkin
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 		QString mCurrentFilename;								// The currently opened file
+		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
+		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
 	};
 };

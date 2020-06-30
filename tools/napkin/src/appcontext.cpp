@@ -106,6 +106,10 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	{
 		nap::Logger::error("Failed to load project info %s: %s",
 						   projectFilename.toStdString().c_str(), err.toString().c_str());
+
+		if (mExitOnLoadFailure) 
+			getQApplication()->exit(1);
+
 		return nullptr;
 	}
 
@@ -115,6 +119,10 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	{
 		nap::Logger::error("Failed to load path mapping %s: %s",
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
+
+		if (mExitOnLoadFailure) 
+			getQApplication()->exit(1);
+
 		return nullptr;
 	}
 
@@ -126,6 +134,10 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (!mCore->initializeEngine(err, std::move(projectInfo)))
 	{
 		nap::Logger::error(err.toString());
+
+		if (mExitOnLoadFailure) 
+			getQApplication()->exit(1);
+
 		return nullptr;
 	}
 
@@ -135,7 +147,11 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
+	{
 		nap::Logger::warn("No data file specified");
+		if (mExitOnLoadFailure) 
+			getQApplication()->exit(1);
+	}
 
 	return mCore->getProjectInfo();
 }
@@ -343,7 +359,7 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	if (!getProject())
+	if (!getProject() && mOpenRecentProjectAtStartup)
 	{
 		QTimer::singleShot(100, [this]()
 		{
@@ -479,4 +495,14 @@ void napkin::AppContext::closeDocument()
 	QString prev_doc_name = mDocument->getCurrentFilename();
 	documentClosing(prev_doc_name);
 	mDocument.reset(nullptr);
+}
+
+void AppContext::disableRecentProjectOpening()
+{
+	mOpenRecentProjectAtStartup = false;
+}
+
+void AppContext::enableExitOnProjectLoadFailure()
+{
+	mExitOnLoadFailure = true;
 }

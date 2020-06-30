@@ -64,6 +64,11 @@ int main(int argc, char* argv[])
 
 	QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
 	parser.addOption(opProject);
+    // Options to assist with automated testing
+	QCommandLineOption opExitFailure("exit-on-failure", "Exit on on failure loading project", "", "");
+	parser.addOption(opExitFailure);
+	QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
+	parser.addOption(opNoOpenRecent);
 
 	parser.process(app);
 
@@ -74,7 +79,16 @@ int main(int argc, char* argv[])
 		return 0;
 
 	if (parser.isSet(opProject))
+	{
 		AppContext::get().addRecentlyOpenedProject(parser.value(opProject));
+	}
+	else if (parser.isSet(opNoOpenRecent))
+	{
+		AppContext::get().disableRecentProjectOpening();
+	}
+
+	if (parser.isSet(opExitFailure))
+		AppContext::get().enableExitOnProjectLoadFailure();
 
 	// Create main window and run
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
