@@ -50,9 +50,6 @@ namespace nap
 		// Reserve some memory for the osc output tag
 		mOscOutputTag.reserve(512);
 
-		// Select GUI window
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	

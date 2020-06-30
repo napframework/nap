@@ -52,10 +52,6 @@ namespace nap
         mFadeOutTime = playbackComponent->getFadeOutTime();
         mPitch = playbackComponent->getPitch();
         mPanning = playbackComponent->getStereoPanning();
-
-		// Select GUI window
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	
@@ -157,12 +153,6 @@ namespace nap
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void AudioPlaybackApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 

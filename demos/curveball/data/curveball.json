@@ -99,6 +99,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "InheritFromBlendMode"
                     },
@@ -127,6 +128,7 @@
                     "MaterialInstance": {
                         "Material": "BallMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -174,19 +176,17 @@
         {
             "Type": "nap::Material",
             "mID": "BallMaterial",
-            "Uniforms": 
-            [
+            "Uniforms": [
                 {
-                    "Type" : "nap::UniformStruct",
-                    "Name" : "UBO",
-                    "Uniforms" :
-                    [
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
                         {
                             "Type": "nap::UniformVec3",
                             "mID": "UniformVec3",
                             "Name": "inCameraPosition",
-                            "Value": 
-                            {
+                            "Value": {
                                 "x": 0.0,
                                 "y": 0.0,
                                 "z": 4.0
@@ -196,14 +196,12 @@
                             "Type": "nap::UniformStruct",
                             "mID": "UniformStruct_af2d9fe4",
                             "Name": "light",
-                            "Uniforms": 
-                            [
+                            "Uniforms": [
                                 {
                                     "Type": "nap::UniformVec3",
                                     "mID": "UniformVec3_de59dce3",
                                     "Name": "mPosition",
-                                    "Value": 
-                                    {
+                                    "Value": {
                                         "x": 0.0,
                                         "y": 20.0,
                                         "z": 10.0
@@ -220,6 +218,7 @@
                     ]
                 }
             ],
+            "Samplers": [],
             "Shader": "BallShader",
             "VertexAttributeBindings": [
                 {
@@ -246,6 +245,7 @@
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
             "Uniforms": [],
+            "Samplers": [],
             "Shader": "PlaneShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -254,6 +254,8 @@
         {
             "Type": "nap::PlaneMesh",
             "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -268,20 +270,21 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
-            "Title": "Window 1",
-            "PresentationMode": "Mailbox",
-            "Samples": "Four",
+            "Visible": true,
             "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Mailbox",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
@@ -316,6 +319,8 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "SphereMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0

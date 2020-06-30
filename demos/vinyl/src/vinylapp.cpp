@@ -51,9 +51,6 @@ namespace nap
 		// Get entity that holds the camera
 		mCameraEntity = scene->findEntity("CameraEntity");
 
-		// Select window to draw GUI to
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	

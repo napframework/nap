@@ -59,11 +59,7 @@ namespace nap
         levelMeter->setFilterGain(mAnalysisGain);
         
         // Resize the vector containing the results of the analysis
-        mPlotvalues.resize(128, 0);
-
-		// Select render window
-		mGuiService->selectWindow(mRenderWindow);
-
+        mPlotvalues.resize(2048, 0);
 		return true;
 	}
 	
@@ -93,7 +89,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Audio analysis");
-        ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
+        ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(ImGui::GetColumnWidth(), 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);

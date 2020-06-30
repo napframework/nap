@@ -7,6 +7,7 @@
 #include <inputrouter.h>
 #include <imgui/imgui.h>
 #include <pythonscriptcomponent.h>
+#include <renderservice.h>
 
 // Register this application with RTTI, this is required by the AppRunner to
 // validate that this object is indeed an application
@@ -50,9 +51,6 @@ namespace nap
         auto pythonComponent = mPythonEntity->findComponent<PythonScriptComponentInstance>();
         if (!pythonComponent->get<float>("getValue", error, mValue)) // Initialize mValue using the getter in the python script.
             return false;
-
-		// Select GUI window
-		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}

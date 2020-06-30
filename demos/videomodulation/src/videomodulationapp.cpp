@@ -60,8 +60,6 @@ namespace nap
 		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
 		mCurrentVideo = video_selector.getIndex();
 
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	

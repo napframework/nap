@@ -234,7 +234,7 @@
             "mID": "WorldTexture",
             "Usage": "Static",
             "ImagePath": "world_texture.png",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::Material",
@@ -273,6 +273,12 @@
                     "Type": "nap::Sampler2D",
                     "mID": "world_input_tex_uniform",
                     "Name": "inWorldTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "WorldTexture"
                 }
             ],
@@ -303,6 +309,7 @@
             "mID": "Window0",
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
             "SampleShading": true,
             "Title": "Window 1",
             "Width": 1280,
@@ -353,6 +360,8 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "WorldMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0

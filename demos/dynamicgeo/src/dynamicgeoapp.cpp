@@ -28,7 +28,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("objects.json", error))
+		if (!mResourceManager->loadFile("dynamicgeo.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;                

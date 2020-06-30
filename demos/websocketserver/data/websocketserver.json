@@ -32,6 +32,7 @@
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -70,13 +71,12 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms" : 
-            [
+            "Uniforms": [
                 {
-                    "Type" : "nap::UniformStruct",
-                    "Name" : "UBO",
-                    "Uniforms" :
-                    [
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
                         {
                             "Type": "nap::UniformVec3",
                             "mID": "UniformVec3",
@@ -87,9 +87,10 @@
                                 "z": 0.8587999939918518
                             }
                         }
-                    ]                              
+                    ]
                 }
             ],
+            "Samplers": [],
             "Shader": "FontShader",
             "VertexAttributeBindings": [],
             "BlendMode": "AlphaBlend",
@@ -98,18 +99,21 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "WebSocketServer",
-            "Sync": false,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Mailbox",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
@@ -133,6 +137,7 @@
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 80,
+            "IPAddress": "",
             "AccessMode": "Reserved",
             "ConnectionLimit": 20,
             "LibraryLogLevel": "Warning",

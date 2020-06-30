@@ -54,11 +54,6 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 		
 		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-		
-		/**
 		 *	Called when loop finishes
 		 */
 		int shutdown() override;

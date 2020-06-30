@@ -41,10 +41,6 @@ namespace nap
 
 		// Find the entities we're interested in
 		mTextEntity = scene->findEntity("TextEntity");
-
-		// Select GUI window
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 	
