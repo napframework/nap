@@ -10,6 +10,7 @@ from multiprocessing import cpu_count
 import os
 import re
 from subprocess import call, Popen, PIPE, check_output
+import shlex
 import shutil
 import signal
 import sys
@@ -27,6 +28,9 @@ PROJECT_BUILD_TYPE = 'Release'
 
 # Directory to iterate for testing
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
+
+# Main project structure filename
+PROJECT_FILENAME = 'project.json'
 
 # JSON report filename
 REPORT_FILENAME = 'report.json'
@@ -318,7 +322,7 @@ def is_debian():
 
     return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
 
-def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
+def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
 
@@ -332,8 +336,6 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         single apps.
     testing_napkin : bool
         Whether testing Napkin
-    wait_time_seconds : str
-        Number of seconds to wait before checking the process is still running and terminating it
 
     Returns
     -------
@@ -350,10 +352,11 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     # For shared libraries tracking on macOS
     if sys.platform == 'darwin':
         my_env['DYLD_PRINT_LIBRARIES'] = '1'
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
+    args = shlex.split(cmd)
+    p = Popen(args, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
-    time.sleep(wait_time_seconds)
+    time.sleep(WAIT_SECONDS_FOR_PROCESS_HEALTH)
 
     if sys.platform.startswith('linux'):
         unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
@@ -1170,40 +1173,100 @@ def run_build_directory_template_project(template_results, nap_framework_full_pa
 
     os.chdir(projects_dir)
 
-def run_framework_release_napkin(napkin_results, nap_framework_full_path):
-    """Run Napkin from the framework release
+def run_framework_release_napkin(demo_results, napkin_results, template_results, nap_framework_full_path):
+    """Run Napkin against demos from the framework release
 
     Parameters
     ----------
+    demo_results : dict
+        Results for demos
     napkin_results : dict
         Results for Napkin
+    tempate_results : dict
+        Results for template project
     nap_framework_full_path : str
         Absolute path to NAP framework
     """
 
     napkin_results['runFromFrameworkRelease'] = {}    
 
-    print("- Run Napkin from framework release...")
-    cwd = os.getcwd()
+    print("Without project")
+    print("- Run Napkin from framework release without opening project...")
+    demos_root_dir = os.getcwd()
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin', nap_framework_full_path, True)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', nap_framework_full_path, True)
     napkin_results['runFromFrameworkRelease']['success'] = success
     napkin_results['runFromFrameworkRelease']['stdout'] = stdout
     napkin_results['runFromFrameworkRelease']['stderr'] = stderr
     napkin_results['runFromFrameworkRelease']['unexpectedLibraries'] = unexpected_libs
 
-    os.chdir(cwd)
     if success:
         print("  Done.")
     else:
-        print("  Error: Running Napkin from build directory failed")
+        print("  Error: Running Napkin from Framework Release without project failed")
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
 
     print("----------------------------")
+
+    for demo_name, this_demo in sorted(demo_results.items()):
+        print("Demo: %s" % demo_name)
+
+        print("- Open with Napkin from framework release...")
+        demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
+
+        # If demo didn't build skip it
+        if not 'build' in this_demo or not this_demo['build']['success']:
+            continue
+
+        # Run
+        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure' % demo_project_json, nap_framework_full_path, True)
+        this_demo['openWithNapkinBuildOutput'] = {}
+        this_demo['openWithNapkinBuildOutput']['success'] = success
+        this_demo['openWithNapkinBuildOutput']['stdout'] = stdout
+        this_demo['openWithNapkinBuildOutput']['stderr'] = stderr
+        this_demo['openWithNapkinBuildOutput']['unexpectedLibraries'] = unexpected_libs
+
+        if success:
+            print("  Done.")
+        else:
+            print("  Error: Failed to open project")
+            print("  STDOUT: %s" % stdout)
+            print("  STDERR: %s" % stderr)
+            print("  Unexpected libraries: %s" % repr(unexpected_libs))
+
+        print("----------------------------")
+
+
+    # Template project
+
+    print("Template project")
+    print("- Open with Napkin from framework release...")
+    if 'build' in template_results and template_results['build']['success']:
+        template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
+        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure' % template_project_json, nap_framework_full_path, True)
+        template_results['openWithNapkinBuildOutput'] = {}
+        template_results['openWithNapkinBuildOutput']['success'] = success
+        template_results['openWithNapkinBuildOutput']['stdout'] = stdout
+        template_results['openWithNapkinBuildOutput']['stderr'] = stderr
+        template_results['openWithNapkinBuildOutput']['unexpectedLibraries'] = unexpected_libs
+
+        if success:
+            print("  Done.")
+        else:
+            print("  Error: Failed to open project")
+            print("  STDOUT: %s" % stdout)
+            print("  STDERR: %s" % stderr)
+            print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+    else:
+        print("  Skipping due to build failure")
+
+    print("----------------------------")
+
+    os.chdir(demos_root_dir)
 
 def run_napkin_from_packaged_demo(napkin_results, root_output_dir, timestamp):
     """Run Napkin from packaged output
@@ -1383,6 +1446,8 @@ def determine_run_success(demo_results, template_results, napkin_results, other_
             return False
         elif not this_demo['runFromPackagedOutput']['success'] or len(this_demo['runFromPackagedOutput']['unexpectedLibraries']) > 0:
             return False
+        if not 'openWithNapkinBuildOutput' in this_demo or not this_demo['openWithNapkinBuildOutput']['success']:
+            return False
 
     # Check template project for failure
     if not 'create' in template_results or not template_results['create']['success']:
@@ -1401,6 +1466,8 @@ def determine_run_success(demo_results, template_results, napkin_results, other_
         return False
     elif not template_results['runFromPackagedOutput']['success'] or len(template_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
+    if not 'openWithNapkinBuildOutput' in template_results or not template_results['openWithNapkinBuildOutput']['success']:
+         return False
 
     # Check other build type demo for failure
     if not 'generate' in other_build_type_results or not other_build_type_results['generate']['success']:
@@ -1466,29 +1533,33 @@ def dict_entry_to_libs_success(dict_in, phase):
         return 'FAIL'
     return 'PASS' if len(dict_in[phase]['unexpectedLibraries']) == 0 else 'FAIL'
 
-def log_single_project_summary(dict_in, run_from_package=False):
+def log_single_project_summary(dict_in, log_packaging_result=True, log_napkin_result=False):
     """Log summary of testing for single project
 
     Parameters
     ----------
     dict_in: dict
         Results for single project
-    run_from_package: bool
-        Whether the project was packaged
+    log_packaging_result: bool
+        Whether to log packaging results
+    log_napkin_result: bool
+        Whether to log Napkin run results
     """
     print("- Generate: %s" % dict_entry_to_success(dict_in, 'generate'))
     print("- Build: %s" % dict_entry_to_success(dict_in, 'build'))
-    if run_from_package:
+    if log_packaging_result:
         print("- Package: %s" % dict_entry_to_success(dict_in, 'package'))
     success = dict_entry_to_success(dict_in, 'runFromBuildOutput')
     print("- Run from build output: %s" % success)
     if success == 'PASS':
         print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromBuildOutput'))
-    if run_from_package:
+    if log_packaging_result:
         success = dict_entry_to_success(dict_in, 'runFromPackagedOutput')
         print("- Run from packaged output: %s" % success)
         if success == 'PASS':
             print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromPackagedOutput'))
+    if log_napkin_result:
+        print("- Open with Napkin (from framework release): %s" % dict_entry_to_success(dict_in, 'openWithNapkinBuildOutput'))
 
 def log_summary(demo_results, template_results, napkin_results, other_build_type_results):
     """Log of a summary of the test run
@@ -1507,11 +1578,11 @@ def log_summary(demo_results, template_results, napkin_results, other_build_type
 
     for demo_name, this_demo in sorted(demo_results.items()):
         print("Demo: " + demo_name)
-        log_single_project_summary(this_demo)
+        log_single_project_summary(this_demo, True, True)
         print("----------------------------")        
 
     print("Template project")
-    log_single_project_summary(template_results)
+    log_single_project_summary(template_results, True, True)
     print("----------------------------")
 
     if other_build_type_results:
@@ -1527,11 +1598,11 @@ def log_summary(demo_results, template_results, napkin_results, other_build_type
     print("Napkin")
     print("- Package with demo: %s" % dict_entry_to_success(napkin_results, 'packageWithDemo'))
     success = dict_entry_to_success(napkin_results, 'runFromFrameworkRelease')
-    print("- Run from framework release: %s" % success)
+    print("- Run from framework release without project: %s" % success)
     if success == 'PASS':
         print("- Run from framework release, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromFrameworkRelease'))
     success = dict_entry_to_success(napkin_results, 'runFromPackagedOutput')
-    print("- Run from packaged output: %s" % success)
+    print("- Run from packaged output without project: %s" % success)
     if success == 'PASS':
         print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
     if 'packaged' in napkin_results and napkin_results['packaged']['success']:
@@ -1596,7 +1667,7 @@ def dump_json_report(starting_dir,
     # If we aren't forcing logs remove them from each successfully phase
     if not always_include_logs:
         for demo_name, demo in sorted(demo_results.items()):
-            for phase in ('generate', 'build', 'package', 'runFromBuildOutput', 'runFromPackagedOutput'):
+            for phase in ('generate', 'build', 'package', 'runFromBuildOutput', 'runFromPackagedOutput', 'openWithNapkinBuildOutput'):
                 if phase in demo and demo[phase]['success']:
                     del(demo[phase]['stdout'])
                     del(demo[phase]['stderr'])
@@ -1606,7 +1677,7 @@ def dump_json_report(starting_dir,
     template_results = copy.deepcopy(template_results)
     # If we aren't forcing logs remove them from each successfully phase
     if not always_include_logs:
-        for phase in ('create', 'generate', 'build', 'package', 'runFromBuildOutput', 'runFromPackagedOutput'):
+        for phase in ('create', 'generate', 'build', 'package', 'runFromBuildOutput', 'runFromPackagedOutput', 'openWithNapkinBuildOutput'):
             if phase in template_results and template_results[phase]['success']:
                 del(template_results[phase]['stdout'])
                 del(template_results[phase]['stderr'])
@@ -1814,14 +1885,14 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     # Configure and build a demo as other build type
     other_build_type = 'Debug' if PROJECT_BUILD_TYPE.lower() == 'release' else 'Release'
     print("============ Phase #4 - Building demo as %s ============" % other_build_type.lower())
-    os.chdir(os.path.join(nap_framework_full_path, 'demos'))
+    os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
     other_build_type_results = build_other_build_type_demo(other_build_type)
     if not other_build_type_results:
         print("Error: Didn't build %s build type demo" % other_build_type)
 
     # Run all demos from normal build output
     print("============ Phase #5 - Running demos from build output directory ============")
-    os.chdir(os.path.join(nap_framework_full_path, 'demos'))
+    os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
     run_build_directory_demos(demo_results)
 
     # Run template project from normal build output
@@ -1845,12 +1916,12 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         qt_top_level_path = rename_qt_dir(warnings)
 
     # Run Napkin from normal build output
-    print("============ Phase #8 - Running Napkin from framework release ============")
-    run_framework_release_napkin(napkin_results, nap_framework_full_path)
+    print("============ Phase #8 - Opening demos in Napkin from framework release ============")
+    run_framework_release_napkin(demo_results, napkin_results, template_results, nap_framework_full_path)
 
     os.chdir(starting_dir)
 
-    print("============ Phase #9 - Running Napkin from packaged app ============")
+    print("============ Phase #9 - Opening single demo in Napkin from packaged app ============")
 
     # Rename NAP framework (to avoid dependencies being sourced from there)
     if rename_framework:
@@ -1940,7 +2011,7 @@ if __name__ == '__main__':
     parser.add_argument('--testing-projects-dir', type=str,
                         default=DEFAULT_TESTING_PROJECTS_DIR,
                         action='store', nargs='?',
-                        help="Directory to test on (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
+                        help="Directory to test on, relative to framework root (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
     parser.add_argument('-nj', '--no-json-report', action='store_true',
                         help="Don't create a JSON report to %s" % REPORT_FILENAME)
     parser.add_argument('-fl', '--force-log-reporting', action='store_true',
