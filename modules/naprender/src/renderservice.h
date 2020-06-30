@@ -678,7 +678,6 @@ namespace nap
 
 		bool									mEnableHighDPIMode = true;
 		bool									mSampleShadingSupported = false;
-		VmaAllocator							mVulkanAllocator = nullptr;
 		WindowList								mWindows;												
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
@@ -689,24 +688,25 @@ namespace nap
 
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
-		VkCommandBuffer							mCurrentCommandBuffer = nullptr;
+		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
 		RenderWindow*							mCurrentRenderWindow = nullptr;		
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
-		VkInstance								mInstance = nullptr;
-		VkDebugReportCallbackEXT				mDebugCallback = nullptr;
-		VkPhysicalDevice						mPhysicalDevice = nullptr;
+		VkInstance								mInstance = VK_NULL_HANDLE;
+		VmaAllocator							mVulkanAllocator = VK_NULL_HANDLE;
+		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
+		VkPhysicalDevice						mPhysicalDevice = VK_NULL_HANDLE;
 		VkPhysicalDeviceFeatures				mPhysicalDeviceFeatures;
 		VkPhysicalDeviceProperties				mPhysicalDeviceProperties;
 		uint32_t								mPhysicalDeviceVersion = 0;
-		VkDevice								mDevice = nullptr;
-		VkCommandPool							mCommandPool = nullptr;
-		VkFormat								mDepthFormat;
+		VkDevice								mDevice = VK_NULL_HANDLE;
+		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
+		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
 		int										mGraphicsQueueIndex = -1;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		VkQueue									mGraphicsQueue = nullptr;
+		VkQueue									mGraphicsQueue = VK_NULL_HANDLE;
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;

@@ -286,8 +286,9 @@ namespace nap
 
 		/**
 		 * Called by the render service. 
-		 * Starts a new record operation for this window.
-		 * @return the command buffer currently recorded for this frame
+		 * Starts a new record operation for this window, returns a 
+		 * VK_NULL_HANDLE if there is nothing to record.
+		 * @return the command buffer currently recorded for this frame, VK_NULL_HANDLE if nothing to record.
 		 */
 		VkCommandBuffer beginRecording();
 

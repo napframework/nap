@@ -582,7 +582,7 @@ namespace nap
 			return;
 
 		// Wait for device to go idle before destroying the window-related resources
-		if (mDevice != nullptr)
+		if (mDevice != VK_NULL_HANDLE)
 		{
 			VkResult result = vkDeviceWaitIdle(mDevice);
 			assert(result == VK_SUCCESS);
@@ -600,11 +600,15 @@ namespace nap
 
 		// Destroy all resources associated with swapchain
 		destroySwapChainResources();
-		if (mSurface != nullptr)
+		if (mSurface != VK_NULL_HANDLE)
+		{
 			vkDestroySurfaceKHR(mRenderService->getVulkanInstance(), mSurface, nullptr);
+			mSurface = VK_NULL_HANDLE;
+		}
 
 		// Destroy SDL Window
 		SDL_DestroyWindow(mSDLWindow);
+		mSDLWindow = nullptr;
 	}
 
 
@@ -799,9 +803,8 @@ namespace nap
 		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		bool is_zero_size_window = window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0;
-		if (is_zero_size_window)
-			return nullptr;
+		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
+			return VK_NULL_HANDLE;
 
 		// When the window size has changed, we need to recreate the swapchain.
 		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches 
@@ -987,12 +990,12 @@ namespace nap
 		if (mRenderPass != VK_NULL_HANDLE)
 		{
 			vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
-			mRenderPass = nullptr;
+			mRenderPass = VK_NULL_HANDLE;
 		}
 
 		// finally, destroy swapchain
 		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-		mSwapchain = nullptr;
+		mSwapchain = VK_NULL_HANDLE;
 	}
 
 

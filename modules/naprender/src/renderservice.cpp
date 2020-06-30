@@ -197,7 +197,7 @@ namespace nap
 	static VkResult createDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 	{
 		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-		return func != nullptr ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
+		return func != VK_NULL_HANDLE ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
 
@@ -207,7 +207,7 @@ namespace nap
 	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
 	{
 		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
-		if (func != nullptr)
+		if (func != VK_NULL_HANDLE)
 			func(instance, pCallback, nullptr);
 	}
 
@@ -1051,7 +1051,7 @@ namespace nap
 
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
-		assert(mCurrentCommandBuffer != nullptr);	// BeginRendering is not called if this assert is fired	
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired	
 
 		// Sort objects to render
 		std::vector<RenderableComponentInstance*> components_to_render = comps;
@@ -1298,34 +1298,34 @@ namespace nap
 		mDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
-		if (mVulkanAllocator != nullptr)
+		if (mVulkanAllocator != VK_NULL_HANDLE)
 		{
 			vmaDestroyAllocator(mVulkanAllocator);
-			mVulkanAllocator = nullptr;
+			mVulkanAllocator = VK_NULL_HANDLE;
 		}
 
-		if (mCommandPool != nullptr)
+		if (mCommandPool != VK_NULL_HANDLE)
 		{
 			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-			mCommandPool = nullptr;
+			mCommandPool = VK_NULL_HANDLE;
 		}
 
-		if (mDevice != nullptr)
+		if (mDevice != VK_NULL_HANDLE)
 		{
 			vkDestroyDevice(mDevice, nullptr);
-			mDevice = nullptr;
+			mDevice = VK_NULL_HANDLE;
 		}
 
-		if (mDebugCallback != nullptr)
+		if (mDebugCallback != VK_NULL_HANDLE)
 		{
 			destroyDebugReportCallbackEXT(mInstance, mDebugCallback);
-			mDebugCallback = nullptr;
+			mDebugCallback = VK_NULL_HANDLE;
 		}
 
-		if (mInstance != nullptr)
+		if (mInstance != VK_NULL_HANDLE)
 		{
 			vkDestroyInstance(mInstance, nullptr);
-			mInstance = nullptr;
+			mInstance = VK_NULL_HANDLE;
 		}
 
 		ShFinalize();
@@ -1482,7 +1482,7 @@ namespace nap
 
 	bool RenderService::beginHeadlessRecording()
 	{
-		assert(mCurrentCommandBuffer == nullptr);
+		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -1497,7 +1497,7 @@ namespace nap
 
 	void RenderService::endHeadlessRecording()
 	{
-		assert(mCurrentCommandBuffer != nullptr);
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
@@ -1508,18 +1508,18 @@ namespace nap
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		mCurrentCommandBuffer = nullptr;
+		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
 
 	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
-		assert(mCurrentCommandBuffer == nullptr);
-		assert(mCurrentRenderWindow == nullptr);
+		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  == VK_NULL_HANDLE);
 
 		// Ask the window to begin recording commands.
 		mCurrentCommandBuffer = renderWindow.beginRecording();
-		if (mCurrentCommandBuffer == nullptr)
+		if (mCurrentCommandBuffer == VK_NULL_HANDLE)
 			return false;
 
 		mCurrentRenderWindow = &renderWindow;
@@ -1529,13 +1529,13 @@ namespace nap
 
 	void RenderService::endRecording()
 	{
-		assert(mCurrentCommandBuffer != nullptr);
-		assert(mCurrentRenderWindow != nullptr);
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  != VK_NULL_HANDLE);
 		
 		// Stop recording, submit queue and ask for presentation
 		mCurrentRenderWindow->endRecording();
-		mCurrentCommandBuffer = nullptr;
-		mCurrentRenderWindow = nullptr;
+		mCurrentCommandBuffer = VK_NULL_HANDLE;
+		mCurrentRenderWindow  = VK_NULL_HANDLE;
 	}
 
 
