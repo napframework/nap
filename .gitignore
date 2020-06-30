@@ -46,9 +46,7 @@ CMakeFiles/cmake.check_cache
 arch.c
 modules/.vs/Project/v14/.suo
 .DS_Store
-apps/**/*.mesh
-test/**/*.mesh
-demos/**/*.mesh
+*.mesh
 nap.sublime-project
 nap.sublime-workspace
 *.mesh
@@ -56,6 +54,8 @@ nap.sublime-workspace
 docs/html
 docs/latex
 !/docs/doxygen/bin
+apps/*
+!apps/example
 imgui.ini
 packaging_staging
 packaging_build

@@ -119,24 +119,9 @@ add_subdirectory(tools/napkin)
 # executable targets
 add_subdirectory(test/render)
 
-# app targets
-add_subdirectory(apps/kalvertoren)
-add_subdirectory(apps/kalvertoren/module)
-add_subdirectory(apps/artnetcolor)
+# app targets, add your own app targets here!
 add_subdirectory(apps/example)
 add_subdirectory(apps/example/module)
-add_subdirectory(apps/atmos)
-add_subdirectory(apps/atmos/module)
-add_subdirectory(apps/random)
-add_subdirectory(apps/random/module)
-add_subdirectory(apps/aura)
-add_subdirectory(apps/aura/module)
-add_subdirectory(apps/emography)
-add_subdirectory(apps/emography/module)
-add_subdirectory(apps/flexblock)
-add_subdirectory(apps/flexblock/module)
-add_subdirectory(apps/anima)
-add_subdirectory(apps/anima/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
