@@ -497,8 +497,12 @@ namespace nap
 			{"BUILD_CONFIG", sBuildConf},
 			{"BUILD_TYPE", sBuildType},
 			{"PROJECT_DIR", projectInfo.getDirectory()},
-			{"EXE_DIR", utility::getExecutableDir()},
 		};
+
+        // As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
+        // try and populate it
+        if (!editorMode)
+            reps["EXE_DIR"] = utility::getExecutableDir();
 
 		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
 		{
