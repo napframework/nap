@@ -58,8 +58,6 @@ namespace nap
 		mParameters = mResourceManager->findObject<ParameterGroup>("Parameters");
 		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
 		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
-		mDisplayImage = mResourceManager->findObject<ImageFromFile>("DisplayImage");
-		mBrickImage = mResourceManager->findObject<ImageFromFile>("BrickImage");
 
 		return true;
 	}
@@ -88,22 +86,6 @@ namespace nap
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
-		static bool flip = false;
-		ImGui::Checkbox("Flip?", &flip);
-		if(flip)
-		{
-			// Display test texture
-			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
-			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-		}
-		else
-		{
-			// Display test texture
-			ImGui::Image(*mBrickImage, ImVec2(256, 256), ImVec2(0, 1), ImVec2(1, 0));
-			ImGui::Image(*mDisplayImage, ImVec2(256, 256));
-		}
-
 		ImGui::End();
 
 		// The default input router forwards messages to key and mouse input components

@@ -346,23 +346,9 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "BrickImage",
-            "Usage": "Static",
-            "ImagePath": "brick.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
             "mID": "CanvasImage",
             "Usage": "Static",
             "ImagePath": "laser_canvas.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "DisplayImage",
-            "Usage": "Static",
-            "ImagePath": "test.jpg",
             "GenerateLods": true
         },
         {
