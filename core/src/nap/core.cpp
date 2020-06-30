@@ -453,7 +453,7 @@ namespace nap
 		mProjectInfo->mFilename = projectFilename;
 
 		// Load path mapping
-		mProjectInfo->mPathMapping = std::move(loadPathMapping(*mProjectInfo, false, err));
+		loadPathMapping(*mProjectInfo, err);
 
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
@@ -462,17 +462,16 @@ namespace nap
 
 		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
-						  mProjectInfo->mVersion.c_str(),
-						  mProjectInfo->getDirectory().c_str());
+						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 
 		return true;
 	}
 
-	std::unique_ptr<nap::PathMapping> Core::loadPathMapping(nap::ProjectInfo& projectInfo, bool editorMode,
+	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo,
 															nap::utility::ErrorState& err)
 	{
 		// Load path mapping (relative to the project.json file)
-		auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
+		auto pathMappingFilename = projectInfo.getProjectDir() + '/' + projectInfo.mPathMappingFile;
 		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
@@ -480,37 +479,31 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
-
 		if (err.hasErrors())
 		{
 			nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
-			return nullptr;
+			return false;
 		}
 
-		auto exepath = nap::utility::getExecutableDir();
+		// Store loaded path mapping first
+		projectInfo.mPathMapping = std::move(pathMapping);
 
-		const std::string rootPath = utility::joinPath({exepath, editorMode ? pathMapping->mNapkinExeToRoot : pathMapping->mProjectExeToRoot});
-
-		// Do string/template replacement
 		std::unordered_map<std::string, std::string> reps = {
-			{"ROOT", rootPath},
+			{"ROOT", projectInfo.getNAPRootDir()},
 			{"BUILD_CONFIG", sBuildConf},
 			{"BUILD_TYPE", sBuildType},
-			{"PROJECT_DIR", projectInfo.getDirectory()},
+			{"PROJECT_DIR", projectInfo.getProjectDir()},
 		};
 
-        // As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
-        // try and populate it
-        if (!editorMode)
-            reps["EXE_DIR"] = utility::getExecutableDir();
+		// As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
+		// try and populate it
+		if (!projectInfo.mEditorMode)
+			reps["EXE_DIR"] = utility::getExecutableDir();
 
-		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
-		{
-			auto newPath = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
-			pathMapping->mModulePaths[i] = newPath;
-		}
+		// Do string/template replacement
+		projectInfo.mPathMapping->mModulePaths = utility::namedFormat(projectInfo.mPathMapping->mModulePaths, reps);
 
-		return pathMapping;
+		return true;
 	}
 
 	nap::ProjectInfo* nap::Core::getProjectInfo()

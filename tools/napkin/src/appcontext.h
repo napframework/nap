@@ -100,8 +100,6 @@ namespace napkin
 		 */
 		nap::ProjectInfo* loadProject(const QString& projectFilename);
 
-		std::unique_ptr<nap::PathMapping> loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
-
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
 		 */

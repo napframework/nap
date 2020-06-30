@@ -3,18 +3,25 @@
 #include <assert.h>
 
 #define WIN32_LEAN_AND_MEAN
+#include <nap/logger.h>
 #include <windows.h> // Windows dll loading
 
 namespace nap
 {
-	void initModules()
+	// Convert std::string to a Windows string
+	PCWSTR toPCWSTR(const std::string& s)
 	{
-		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
-		SetErrorMode(SEM_FAILCRITICALERRORS);
+		int len;
+		int slength = (int)s.length() + 1;
+		len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+		wchar_t* buf = new wchar_t[len];
+		MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+		std::wstring r(buf);
+		delete[] buf;
+		return r.c_str();
 	}
 
-
-	std::string getModuleLoadErrorString()
+	std::string getLastErrorStr()
 	{
 		// Get the error code
 		DWORD error_code = ::GetLastError();
@@ -23,23 +30,62 @@ namespace nap
 
 		LPSTR messageBuffer = nullptr;
 		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+									 NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
 		std::string message(messageBuffer, size);
 		LocalFree(messageBuffer);
 
-		return message;
+		return utility::rTrim(message);
 	}
 
-
-	void* loadModule(const std::string& modulePath, std::string& errorString)
+	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
+	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
 	{
+		std::vector<DLL_DIRECTORY_COOKIE> dllDirCookies;
+		for (const auto& searchPath : paths)
+		{
+			auto cookie = AddDllDirectory(toPCWSTR(searchPath));
+			if (!cookie)
+			{
+				nap::Logger::error("Failed to add dll path: %s (%s)", searchPath.c_str(), getLastErrorStr().c_str());
+				continue;
+			}
+			dllDirCookies.emplace_back(cookie);
+		}
+		return dllDirCookies;
+	}
+
+	// Remove dll search paths added by addDLLSearchPaths
+	void removeDLLSearchPaths(const std::vector<DLL_DIRECTORY_COOKIE>& paths)
+	{
+		for (const auto& path : paths)
+		{
+			if (!RemoveDllDirectory(path))
+				nap::Logger::error("Failed to remove path: %s", path);
+		}
+	}
+
+	void initModules()
+	{
+		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
+		SetErrorMode(SEM_FAILCRITICALERRORS);
+	}
+
+	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
+	{
+		// Temporarily set search paths for this module's dependencies
+		auto searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
+
+		// Load our module
 		void* result;
 		result = LoadLibraryA(modulePath.c_str());
 
 		// If we failed to load the module, get the error string
 		if (!result)
-			errorString = getModuleLoadErrorString();
+			errorString = getLastErrorStr();
+
+		// Remove temporarily added search paths
+		removeDLLSearchPaths(searchPathCookies);
 
 		return result;
 	}
@@ -57,18 +103,6 @@ namespace nap
 	}
 
 
-	std::string getModuleNameFromPath(const std::string& path)
-	{
-		return utility::getFileNameWithoutExtension(path);
-	}
-
-
-	NAPAPI bool isModule(const std::string& path)
-	{
-		return utility::getFileExtension(path) == getModuleExtension();
-	}
-	
-	
 	std::string getModuleExtension()
 	{
 		return "dll";

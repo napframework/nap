@@ -10,7 +10,6 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <nap/logger.h>
 
 // local
 #include <naputils.h>
@@ -23,7 +22,6 @@ using namespace nap::utility;
 using namespace napkin;
 
 std::unique_ptr<AppContext> appContextInstance = nullptr;
-
 
 
 AppContext::AppContext()
@@ -101,6 +99,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 		mCore->getResourceManager()->getFactory(),
 		err);
+	projectInfo->mEditorMode = true;
 
 	if (err.hasErrors())
 	{
@@ -114,7 +113,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	projectInfo->mFilename = projectFilename.toStdString();
-	projectInfo->mPathMapping = std::move(mCore->loadPathMapping(*projectInfo, true, err));
+	mCore->loadPathMapping(*projectInfo, err);
 	if (projectInfo->mPathMapping == nullptr)
 	{
 		nap::Logger::error("Failed to load path mapping %s: %s",
@@ -129,7 +128,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	nap::Logger::info("Loading project '%s' ver. %s (%s)",
 					  projectInfo->mTitle.c_str(),
 					  projectInfo->mVersion.c_str(),
-					  projectInfo->getDirectory().c_str());
+					  projectInfo->getProjectDir().c_str());
 
 	if (!mCore->initializeEngine(err, std::move(projectInfo)))
 	{
@@ -154,43 +153,6 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	return mCore->getProjectInfo();
-}
-
-std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& projectInfo,
-															  nap::utility::ErrorState& err)
-{
-	auto projectDir = projectInfo.getDirectory();
-
-	// Load path mapping (relative to the project.json file)
-	auto pathMappingFilename = projectDir + '/' + projectInfo.mPathMappingFile;
-	auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
-		pathMappingFilename,
-		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
-		mCore->getResourceManager()->getFactory(),
-		err);
-
-
-	if (err.hasErrors())
-	{
-		nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
-		return nullptr;
-	}
-
-	auto projToRootPath = nap::utility::getExecutableDir() + '/' + pathMapping->mNapkinExeToRoot;
-
-	// Do string/template replacement
-	std::unordered_map<std::string, std::string> reps = {
-		{"ROOT", projToRootPath},
-		{"BUILD_TYPE", sBuildType},
-		{"BUILD_CONFIG", sBuildConf} // ,
-//		{"PROJECT_DIR", }
-	};
-
-	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
-		pathMapping->mModulePaths[i] = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
-
-	return pathMapping;
 }
 
 nap::ProjectInfo* AppContext::getProject() const

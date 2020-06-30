@@ -3,6 +3,7 @@
 
 // Std Includes
 #include <regex>
+#include <cctype>
 
 namespace nap
 {
@@ -160,12 +161,39 @@ namespace nap
 			return s.substr(first, (last - first + 1));
 		}
 
+		std::string lTrim(const std::string& str)
+		{
+			auto s = str;
+			s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+						return !std::isspace(static_cast<unsigned char>(ch));
+					}));
+			return s;
+		}
+
+		std::string rTrim(const std::string& str)
+		{
+			auto s = str;
+			s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+						return !std::isspace(static_cast<unsigned char>(ch));
+					}).base(), s.end());
+			return s;
+		}
+
 		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
 			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
 			std::string result = subject;
 			for (const auto& e : rep)
 				replaceAllInstances(result, '{' + e.first + '}', e.second);
+			return result;
+		}
+
+		std::vector<std::string> namedFormat(const std::vector<std::string>& subjects,
+								const std::unordered_map<std::string, std::string>& rep)
+		{
+			std::vector<std::string> result;
+			for (const auto s : subjects)
+				result.emplace_back(namedFormat(s, rep));
 			return result;
 		}
 

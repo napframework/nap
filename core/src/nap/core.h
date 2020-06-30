@@ -210,7 +210,7 @@ namespace nap
          * @param err The resulting errors if there were any
          * @return The path mapping that was loaded or nullptr if loading failed
          */
-        std::unique_ptr<nap::PathMapping> loadPathMapping(nap::ProjectInfo& projectInfo, bool editorMode, nap::utility::ErrorState& err);
+		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
     private:
 		/**

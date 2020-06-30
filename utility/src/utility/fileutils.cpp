@@ -377,9 +377,9 @@ namespace nap
 			return {};
 		}
 
-		std::string joinPath(const std::vector<std::string>& parts)
+		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep)
 		{
-			return joinString(parts, pathSep());
+			return joinString(parts, sep);
 		}
 
 		std::string pathSep() {

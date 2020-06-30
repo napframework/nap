@@ -1,7 +1,6 @@
 // Local Includes
 #include "nap/modulemanager.h"
 #include "nap/logger.h"
-#include "nap/service.h"
 #include "nap/module.h"
 #include "nap/core.h"
 #include "rtti/jsonreader.h"
@@ -14,7 +13,7 @@ namespace nap
 
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
-		for (const std::string& moduleName : projectInfo.mModuleNames)
+		for (const std::string& moduleName : projectInfo.mRequiredModules)
 			if (!loadModule_(projectInfo, moduleName, err))
 				return false;
 
@@ -58,8 +57,11 @@ namespace nap
 		// Store the path so we can find more files later on
 		modinfo->mFilename = moduleFile;
 
+		// Patch template variables
+		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, {{"ROOT", project.getNAPRootDir()}});
+
 		// Load module dependencies first
-		for (const auto& modName : modinfo->mDependencies)
+		for (const auto& modName : modinfo->mRequiredModules)
 		{
 			// Skip already loaded modules
 			if (getLoadedModule(modName))
@@ -71,7 +73,7 @@ namespace nap
 
 		// Load module binary
 		std::string loadModuleError;
-		void* module_handle = loadModule(moduleFile, loadModuleError);
+		void* module_handle = loadModule(*modinfo, moduleFile, loadModuleError);
 		if (!module_handle)
 		{
 			err.fail(utility::stringFormat("Failed to load module '%s': %s",
@@ -143,14 +145,7 @@ namespace nap
 			return false;
 
         // Substitute module name in given directories
-        std::string token = "{MODULE_NAME}";
-		for (auto& dir : moduleDirs)
-        {
-            size_t found_pos = dir.find(token);
-            if(found_pos == std::string::npos)
-                continue;
-            dir.replace(found_pos, token.length(), moduleName);
-        }
+		moduleDirs = utility::namedFormat(moduleDirs, {{"MODULE_NAME", moduleName}});
 
 		// Find module json in given directories
 		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());

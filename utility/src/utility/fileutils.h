@@ -22,6 +22,11 @@ namespace nap
 		*/
 		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute=true);
 
+		/**
+		 * Check if the given path is absolute
+		 * @param path The path to check
+		 * @return True if the path is absolute, false otherwise
+		 */
 		bool isAbsolutePath(const std::string& path);
 
 		/**
@@ -176,7 +181,7 @@ namespace nap
 		/**
 		 * Join parts path parts using the correct path separator for the current platform
 		 */
-		std::string joinPath(const std::vector<std::string>& parts);
+		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep = "/");
 
 		/**
 		 * @return The current platform's file path separator

@@ -122,6 +122,20 @@ namespace nap
 		std::string trim(const std::string& string);
 
 		/**
+		 * Strips white space characters from the start(left) of a string
+		 * @param string the string to remove white space characters from
+		 * @return the string without white space characters
+		 */
+		std::string lTrim(const std::string& string);
+
+		/**
+		 * Strips white space characters from the end(right) of a string string
+		 * @param string the string to remove white space characters from
+		 * @return the string without white space characters
+		 */
+		std::string rTrim(const std::string& string);
+
+		/**
 		 * Converts T in to a string using an std stringstream.
 		 * @param thing the object to convert into a string
 		 * @return the object as a string
@@ -141,6 +155,7 @@ namespace nap
 
 		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
 
+		std::vector<std::string> namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.
 		 * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"
