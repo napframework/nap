@@ -52,7 +52,6 @@ namespace nap
 		mRenderService->beginFrame();
 
 		// Begin recording the render commands for the main render window
-		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Begin render pass
