@@ -464,7 +464,7 @@
             "Type": "nap::PlaneMesh",
             "mID": "PlaneMesh",
             "Usage": "Static",
-            "CullMode": "None",
+            "CullMode": "Back",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -493,7 +493,7 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Two"
+            "Samples": "Four"
         },
         {
             "Type": "nap::RenderWindow",
@@ -531,7 +531,7 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Two"
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
