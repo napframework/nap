@@ -1466,6 +1466,30 @@ def dict_entry_to_libs_success(dict_in, phase):
         return 'FAIL'
     return 'PASS' if len(dict_in[phase]['unexpectedLibraries']) == 0 else 'FAIL'
 
+def log_single_project_summary(dict_in, run_from_package=False):
+    """Log summary of testing for single project
+
+    Parameters
+    ----------
+    dict_in: dict
+        Results for single project
+    run_from_package: bool
+        Whether the project was packaged
+    """
+    print("- Generate: %s" % dict_entry_to_success(dict_in, 'generate'))
+    print("- Build: %s" % dict_entry_to_success(dict_in, 'build'))
+    if run_from_package:
+        print("- Package: %s" % dict_entry_to_success(dict_in, 'package'))
+    success = dict_entry_to_success(dict_in, 'runFromBuildOutput')
+    print("- Run from build output: %s" % success)
+    if success == 'PASS':
+        print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromBuildOutput'))
+    if run_from_package:
+        success = dict_entry_to_success(dict_in, 'runFromPackagedOutput')
+        print("- Run from packaged output: %s" % success)
+        if success == 'PASS':
+            print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromPackagedOutput'))
+
 def log_summary(demo_results, template_results, napkin_results, other_build_type_results):
     """Log of a summary of the test run
 
@@ -1483,40 +1507,33 @@ def log_summary(demo_results, template_results, napkin_results, other_build_type
 
     for demo_name, this_demo in sorted(demo_results.items()):
         print("Demo: " + demo_name)
-        print("- Generate: %s" % dict_entry_to_success(this_demo, 'generate'))
-        print("- Build: %s" % dict_entry_to_success(this_demo, 'build'))
-        print("- Package: %s" % dict_entry_to_success(this_demo, 'package'))
-        print("- Run from build output: %s" % dict_entry_to_success(this_demo, 'runFromBuildOutput'))
-        print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(this_demo, 'runFromBuildOutput'))
-        print("- Run from packaged output: %s" % dict_entry_to_success(this_demo, 'runFromPackagedOutput'))
-        print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(this_demo, 'runFromPackagedOutput'))
+        log_single_project_summary(this_demo)
         print("----------------------------")        
 
     print("Template project")
-    print("- Create: %s" % dict_entry_to_success(template_results, 'create'))
-    print("- Generate: %s" % dict_entry_to_success(template_results, 'generate'))
-    print("- Build: %s" % dict_entry_to_success(template_results, 'build'))
-    print("- Package: %s" % dict_entry_to_success(template_results, 'package'))
-    print("- Run from build output: %s" % dict_entry_to_success(template_results, 'runFromBuildOutput'))
-    print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(template_results, 'runFromBuildOutput'))
-    print("- Run from packaged output: %s" % dict_entry_to_success(template_results, 'runFromPackagedOutput'))
-    print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(template_results, 'runFromPackagedOutput'))
+    log_single_project_summary(template_results)
     print("----------------------------")
 
-    print("%s build (other results are %s)" % (other_build_type_results['buildType'], PROJECT_BUILD_TYPE.lower()))
-    print("- Generate: %s" % dict_entry_to_success(other_build_type_results, 'generate'))
-    print("- Build: %s" % dict_entry_to_success(other_build_type_results, 'build'))
-    print("- Run from build output: %s" % dict_entry_to_success(other_build_type_results, 'runFromBuildOutput'))
-    print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(other_build_type_results, 'runFromBuildOutput'))
-    print("  (was with demo '%s')" % other_build_type_results['demoName'])
+    if other_build_type_results:
+        print("%s build (other results are %s)" % (other_build_type_results['buildType'], PROJECT_BUILD_TYPE.lower()))
+        log_single_project_summary(other_build_type_results, False)
+        print("  (was with demo '%s')" % other_build_type_results['demoName'])
+    else:
+        print("Other build type testing")
+        print("- Project selection: FAIL")
+        print("  (Common cause: the testing looks for a demo with a module to use)")
     print("----------------------------")
 
     print("Napkin")
     print("- Package with demo: %s" % dict_entry_to_success(napkin_results, 'packageWithDemo'))
-    print("- Run from framework release: %s" % dict_entry_to_success(napkin_results, 'runFromFrameworkRelease'))
-    print("- Run from framework release, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromFrameworkRelease'))
-    print("- Run from packaged output: %s" % dict_entry_to_success(napkin_results, 'runFromPackagedOutput'))
-    print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
+    success = dict_entry_to_success(napkin_results, 'runFromFrameworkRelease')
+    print("- Run from framework release: %s" % success)
+    if success == 'PASS':
+        print("- Run from framework release, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromFrameworkRelease'))
+    success = dict_entry_to_success(napkin_results, 'runFromPackagedOutput')
+    print("- Run from packaged output: %s" % success)
+    if success == 'PASS':
+        print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
     if 'packaged' in napkin_results and napkin_results['packaged']['success']:
         print("  (was packaged with demo '%s')" % napkin_results['demoPackagedWith'])
     print("----------------------------")
@@ -1598,7 +1615,7 @@ def dump_json_report(starting_dir,
     # Add other build type results
     other_build_type_results = copy.deepcopy(other_build_type_results)
     # If we aren't forcing logs remove them from each successfully phase
-    if not always_include_logs:
+    if not always_include_logs and other_build_type_results:
         for phase in ('generate', 'build',  'runFromBuildOutput'):
             if phase in other_build_type_results and other_build_type_results[phase]['success']:
                 del(other_build_type_results[phase]['stdout'])
@@ -1799,6 +1816,8 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     print("============ Phase #4 - Building demo as %s ============" % other_build_type.lower())
     os.chdir(os.path.join(nap_framework_full_path, 'demos'))
     other_build_type_results = build_other_build_type_demo(other_build_type)
+    if not other_build_type_results:
+        print("Error: Didn't build %s build type demo" % other_build_type)
 
     # Run all demos from normal build output
     print("============ Phase #5 - Running demos from build output directory ============")
