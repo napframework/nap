@@ -86,11 +86,6 @@ namespace nap
 		void render() override;
 
 		/**
-		 *	Called when a window event is received
-		 */
-		void handleWindowEvent(const WindowEvent& windowEvent);
-
-		/**
 		 *	Forwards the received window event to the render service
 		 */
 		void windowMessageReceived(WindowEventPtr windowEvent) override;

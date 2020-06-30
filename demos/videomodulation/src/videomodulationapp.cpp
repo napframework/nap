@@ -94,43 +94,46 @@ namespace nap
 	
 	
 	/**
-	* We first render the video to it's off screen texture target. The texture it renders to
-	* is linked by both the background and displacement material in JSON.
-	* We don't have to manually bind the rendered texture to a shader input.
-	* Next we apply a grey-scale effect to the rendered video texture using a RenderToTextureComponent.
-	* After rendering these passes the background is rendered using an orthographic camera.
-	* The mesh is rendered on top of the background using a perspective camera.
-	* As a last step we render the GUI
-	*/
+	 * We first render the video to it's off screen texture target. The texture it renders to
+	 * is linked by both the background and displacement material in JSON.
+	 * Next we apply a gray-scale effect to the rendered video texture using a RenderToTextureComponent.
+	 * After rendering these passes into their render targets, we render the background using an orthographic camera.
+	 * The mesh is rendered on top of the background using a perspective camera.
+	 * As a last step the GUI is rendered.
+	 */
 	void VideoModulationApp::render()
 	{
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
 		// Get orthographic camera
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 
-		// Video render target
+		// Start recording into the headless recording buffer.
 		if (mRenderService->beginHeadlessRecording())
 		{
 			// Get objects to render
 			std::vector<RenderableComponentInstance*> render_objects;
 			render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
 
-			// Render
+			// Render the video into the video target
 			mVideoRenderTarget->beginRendering();
 			mRenderService->renderObjects(*mVideoRenderTarget, ortho_cam, render_objects);
 			mVideoRenderTarget->endRendering();
 
-			// Apply video effect to rendered video texture
-			{
-				RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
-				to_tex_comp.draw();
-			}
+			// Render the gray-scale version of video into the fx target
+			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+			to_tex_comp.draw();
 
+			// Tell the render service we are done rendering into render-targets.
+			// The queue is submitted and executed.
 			mRenderService->endHeadlessRecording(); 
 		}
 
 		// Render everything to screen
+		// Stat recording commands for the main window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Clear target and begin render pass
@@ -167,16 +170,8 @@ namespace nap
 			mRenderService->endRecording();
 		}
 
+		// Always tell the render engine we are done recording / rendering into this frame
 		mRenderService->endFrame();
-	}
-
-
-	/**
-	* Handles the window event
-	*/
-	void VideoModulationApp::handleWindowEvent(const WindowEvent& windowEvent)
-	{
-		
 	}
 	
 	
