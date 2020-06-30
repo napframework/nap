@@ -241,6 +241,12 @@
                                 "Type": "nap::Sampler2D",
                                 "mID": "plane_texture_two_input",
                                 "Name": "inTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
                                 "Texture": "TextureTwo"
                             }
                         ],
@@ -350,44 +356,23 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "TextureOne",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "texture_one.jpg",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::ImageFromFile",
             "mID": "TextureTwo",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "texture_two.png",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "world_texture.png",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::Material",
@@ -398,6 +383,12 @@
                     "Type": "nap::Sampler2D",
                     "mID": "plane_texture",
                     "Name": "inTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "TextureOne"
                 }
             ],
@@ -442,6 +433,12 @@
                     "Type": "nap::Sampler2D",
                     "mID": "world_texture_input",
                     "Name": "inWorldTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "WorldTexture"
                 }
             ],
@@ -466,6 +463,8 @@
         {
             "Type": "nap::PlaneMesh",
             "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -482,6 +481,7 @@
             "mID": "Window0",
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
             "SampleShading": true,
             "Title": "Window 1",
             "Width": 512,
@@ -500,6 +500,7 @@
             "mID": "Window1",
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
             "SampleShading": true,
             "Title": "Window 2",
             "Width": 512,
@@ -518,6 +519,7 @@
             "mID": "Window2",
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
             "SampleShading": true,
             "Title": "Window 3",
             "Width": 512,
@@ -576,6 +578,8 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "WorldMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0

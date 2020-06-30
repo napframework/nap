@@ -20,6 +20,13 @@ RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::TriangleFan,	"TriangleFan")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::ECullMode)
+	RTTI_ENUM_VALUE(nap::ECullMode::Back,			"Back"),
+	RTTI_ENUM_VALUE(nap::ECullMode::Front,			"Front"),
+	RTTI_ENUM_VALUE(nap::ECullMode::FrontAndBack,	"FrontAndBack"),
+	RTTI_ENUM_VALUE(nap::ECullMode::None,			"None")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::MeshShape)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
