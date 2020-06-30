@@ -118,9 +118,6 @@ add_subdirectory(tools/napkin)
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
 add_subdirectory(test/render)
-add_subdirectory(test/tommy)
-add_subdirectory(test/audiotest)
-add_subdirectory(test/solarsystem)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
