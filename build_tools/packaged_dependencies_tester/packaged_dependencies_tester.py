@@ -1603,7 +1603,7 @@ def dump_json_report(starting_dir,
             if phase in other_build_type_results and other_build_type_results[phase]['success']:
                 del(other_build_type_results[phase]['stdout'])
                 del(other_build_type_results[phase]['stderr'])
-    report['otherBuildType'] = template_results
+    report['otherBuildType'] = other_build_type_results
 
     # Add Napkin results
     napkin_results = copy.deepcopy(napkin_results)
@@ -1798,7 +1798,6 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     other_build_type = 'Debug' if PROJECT_BUILD_TYPE.lower() == 'release' else 'Release'
     print("============ Phase #4 - Building demo as %s ============" % other_build_type.lower())
     os.chdir(os.path.join(nap_framework_full_path, 'demos'))
-    print(os.getcwd())
     other_build_type_results = build_other_build_type_demo(other_build_type)
 
     # Run all demos from normal build output
