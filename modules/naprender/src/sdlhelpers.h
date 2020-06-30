@@ -4,6 +4,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 // SDL Forward declares
 struct SDL_Window;
@@ -38,6 +39,12 @@ namespace nap
 		 * @return the window size
 		 */
 		glm::ivec2 NAPAPI getWindowSize(SDL_Window* window);
+
+		/**
+		 * @param window the window to get the flags for
+		 * @return flags associated with the given window
+		 */
+		uint32 NAPAPI getWindowFlags(SDL_Window* window);
 
 		/**
 		 * @param screenIndex the number of the display

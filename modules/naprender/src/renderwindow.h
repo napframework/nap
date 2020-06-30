@@ -249,7 +249,6 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
-	public:
 		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
 		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
@@ -262,22 +261,16 @@ namespace nap
 		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
 
 	private:
-
-		// NAP
-		RenderService*					mRenderService	= nullptr;						// Render service
-
-		// SDL
-		bool							mFullscreen		= false;						// If the window is full screen or not
-		SDL_Window*						mSDLWindow		= nullptr;						// SDL window
-
-		// Vulkan
-		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;		// Number of available MSAA samples
-		VkDevice						mDevice = nullptr;
-		VkSurfaceKHR					mSurface = nullptr;
-		VkSwapchainKHR					mSwapchain = nullptr;
-		VkRenderPass					mRenderPass = nullptr;
-		VkQueue							mPresentQueue = nullptr;
-		VkFormat						mSwapchainFormat;
+		RenderService*					mRenderService	= nullptr;						
+		bool							mFullscreen		= false;						
+		SDL_Window*						mSDLWindow		= nullptr;						
+		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkDevice						mDevice = VK_NULL_HANDLE;
+		VkSurfaceKHR					mSurface = VK_NULL_HANDLE;
+		VkSwapchainKHR					mSwapchain = VK_NULL_HANDLE;
+		VkRenderPass					mRenderPass = VK_NULL_HANDLE;
+		VkQueue							mPresentQueue = VK_NULL_HANDLE;
+		VkFormat						mSwapchainFormat = VK_FORMAT_UNDEFINED;
 		std::vector<VkImageView>		mSwapChainImageViews;
 		std::vector<VkFramebuffer>		mSwapChainFramebuffers;
 		std::vector<VkCommandBuffer>	mCommandBuffers;
@@ -291,13 +284,41 @@ namespace nap
 		glm::ivec2						mPreviousWindowSize;
 		uint32_t						mCurrentImageIndex = 0;
 
-		// Called by render service
-		VkCommandBuffer makeActive();
-		void swap();
+		/**
+		 * Called by the render service. 
+		 * Starts a new record operation for this window.
+		 * @return the command buffer currently recorded for this frame
+		 */
+		VkCommandBuffer beginRecording();
+
+		/**
+		 * Called by the render service.
+		 * Ends the recording operation, submits the queue and asks for presentation.
+		 */
+		void endRecording();
+		
+		/**
+		 * Checks if the event is a window resize event and updates size accordingly.
+		 */
 		void handleEvent(const Event& event);
 
+		/**
+		 * Destroys currently active swapchain and creates a new one based on the current window size and settings.
+		 * @param errorState contains the error if creation fails
+		 * @return if the swapchain has been recreated.
+		 */
 		bool recreateSwapChain(utility::ErrorState& errorState);
+		
+		/**
+		 * Creates the swapchain based on the current window size and settings
+		 * @param errorState contains the error if creation fails.
+		 * @return if creation succeeded
+		 */
 		bool createSwapChainResources(utility::ErrorState& errorState);
+
+		/**
+		 * Destroys all Vulkan swapchain related resources.
+		 */
 		void destroySwapChainResources();
 	};
 }

@@ -483,7 +483,8 @@ namespace nap
 		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers");
 	}
 
-	bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, int numFramesInFlight, utility::ErrorState& errorState)
+
+	static bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, int numFramesInFlight, utility::ErrorState& errorState)
 	{
 		imageAvailableSemaphores.resize(numFramesInFlight);
 		renderFinishedSemaphores.resize(numFramesInFlight);
@@ -499,7 +500,6 @@ namespace nap
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -620,8 +620,9 @@ namespace nap
 		mDevice = mRenderService->getDevice();
 
 		// Set size and store for future reference
-		setSize(glm::vec2(mWidth, mHeight));
-		mPreviousWindowSize = glm::ivec2(mWidth, mHeight);
+		glm::ivec2 window_size = { mWidth, mHeight };
+		setSize(window_size);
+		mPreviousWindowSize = window_size;
 
 		// Acquire max number of MSAA samples, issue warning if requested number
 		// of samples is not obtained.
@@ -666,8 +667,6 @@ namespace nap
 		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
 		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
 			return false;
-
-		// Get queue
 		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);
 
 		// Add window to render service
@@ -791,24 +790,20 @@ namespace nap
 	}
 
 
-	VkCommandBuffer RenderWindow::makeActive()
+	VkCommandBuffer RenderWindow::beginRecording()
 	{
-		int	current_frame = mRenderService->getCurrentFrameIndex();
-
 		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
-		uint32_t window_state = SDL_GetWindowFlags(mSDLWindow);
+		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
 
 		// Check if the window has a zero size. Note that in the case where the window is minimized, it seems SDL still reports
 		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
-		//
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
 		bool is_zero_size_window = window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0;
 		if (is_zero_size_window)
 			return nullptr;
 
 		// When the window size has changed, we need to recreate the swapchain.
-		//
 		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches 
 		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about 
 		// resources still being used / device lost error messages. Since our main loop is single threaded, and Window events are processed before update/render, we just deal with resizes here,
@@ -826,15 +821,17 @@ namespace nap
 
 		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
+		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		assert(result == VK_SUCCESS);
 
+		// Reset command buffer for current frame
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
+		// Start recording commands
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 		result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
 
@@ -842,7 +839,7 @@ namespace nap
 	}
 
 
-	void RenderWindow::swap()
+	void RenderWindow::endRecording()
 	{
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
@@ -922,10 +919,9 @@ namespace nap
 
 	bool RenderWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		// TODO: getSize() needs to be drawable size on OSX, je pense!
-		VkExtent2D swapchainExtent;
-		VkPresentModeKHR out_mode;
-		if (!createSwapChain(getSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, out_mode, errorState))
+		// Create swapchain, allowing us to acquire images to render to.
+		VkExtent2D swapchainExtent; VkPresentModeKHR out_mode;
+		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, out_mode, errorState))
 			return false;
 		
 		// Check if the selected presentation mode matches our request
@@ -965,70 +961,78 @@ namespace nap
 
 	void RenderWindow::destroySwapChainResources()
 	{
-		if (mSwapchain == nullptr)
+		if (mSwapchain == VK_NULL_HANDLE)
 			return;
 
+		// It's important that we wait here for the device to be idle, 
+		// otherwise we might destroy resources that are still in use on the GPU.
 		VkResult result = vkDeviceWaitIdle(mDevice);
 		assert(result == VK_SUCCESS);
+
+		// Now destroy all the framebuffers
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
 			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
-
 		mSwapChainFramebuffers.clear();
+
+		// Destroy owned depth and color images
 		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
 		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
 
+		// Separately delete the views associated with the presentable swapchain images
 		for (VkImageView image_view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, image_view, nullptr);
-
 		mSwapChainImageViews.clear();
-		if (mRenderPass != nullptr)
+
+		// Destroy render pass if present
+		if (mRenderPass != VK_NULL_HANDLE)
 		{
 			vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
 			mRenderPass = nullptr;
 		}
 
-		if (mSwapchain != nullptr)
-		{
-			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-			mSwapchain = nullptr;
-		}
+		// finally, destroy swapchain
+		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+		mSwapchain = nullptr;
 	}
 
 
 	void RenderWindow::beginRendering()
 	{
-		int	current_frame = mRenderService->getCurrentFrameIndex();
+		// Always use actual buffer size, not size of window. 
+		// Window size != buffer size on HighDPI monitors
+		glm::ivec2 buffer_size = getBufferSize();
 
-		// TODO: This could be incorrect on HighDPI monitors, in that case use drawable size
-		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
+		// Create information for render pass
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { (uint32_t)window_size.x, (uint32_t)window_size.y };
+		renderPassInfo.renderArea.extent = { (uint32_t)buffer_size.x, (uint32_t)buffer_size.y };
 
+		// Clear color
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
-
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
+		// Begin render pass, using command buffer associated with current frame.
+		int	current_frame = mRenderService->getCurrentFrameIndex();
 		vkCmdBeginRenderPass(mCommandBuffers[current_frame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkRect2D rect;
 		rect.offset.x = 0;
 		rect.offset.y = 0;
-		rect.extent.width = window_size.x;
-		rect.extent.height = window_size.y;
+		rect.extent.width = buffer_size.x;
+		rect.extent.height = buffer_size.y;
 		vkCmdSetScissor(mCommandBuffers[current_frame], 0, 1, &rect);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = window_size.x;
-		viewport.height = window_size.y;
+		viewport.width = buffer_size.x;
+		viewport.height = buffer_size.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mCommandBuffers[current_frame], 0, 1, &viewport);

@@ -1483,13 +1483,11 @@ namespace nap
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == nullptr);
-
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
 
@@ -1500,7 +1498,6 @@ namespace nap
 	void RenderService::endHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
-
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
@@ -1508,7 +1505,6 @@ namespace nap
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &mCurrentCommandBuffer;
-
 		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
@@ -1521,7 +1517,8 @@ namespace nap
 		assert(mCurrentCommandBuffer == nullptr);
 		assert(mCurrentRenderWindow == nullptr);
 
-		mCurrentCommandBuffer = renderWindow.makeActive();
+		// Ask the window to begin recording commands.
+		mCurrentCommandBuffer = renderWindow.beginRecording();
 		if (mCurrentCommandBuffer == nullptr)
 			return false;
 
@@ -1529,11 +1526,14 @@ namespace nap
 		return true;
 	}
 
+
 	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != nullptr);
 		assert(mCurrentRenderWindow != nullptr);
-		mCurrentRenderWindow->swap();
+		
+		// Stop recording, submit queue and ask for presentation
+		mCurrentRenderWindow->endRecording();
 		mCurrentCommandBuffer = nullptr;
 		mCurrentRenderWindow = nullptr;
 	}

@@ -67,6 +67,12 @@ namespace nap
 		}
 
 
+		uint32 NAPAPI getWindowFlags(SDL_Window* window)
+		{
+			return SDL_GetWindowFlags(window);
+		}
+
+
 		glm::ivec2 getScreenSize(int screenIndex)
 		{
 			SDL_DisplayMode mode;
