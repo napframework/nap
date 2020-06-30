@@ -1,10 +1,10 @@
 {
-    "title": "Skeleton",
-    "version": "0.3.0",
-    "modules": [
+    "title": "Example",
+    "version": "1.0.0",
+    "modules": 
+    [
+    	"mod_example",
         "mod_napapp",
-        "mod_napsvg",
-        "mod_napvideo",
-        "mod_napimgui"
+        "mod_napparametergui"
     ]
 }

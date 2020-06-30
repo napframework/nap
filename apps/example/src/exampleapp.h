@@ -9,7 +9,6 @@
 #include <imguiservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
-#include <renderservice.h>
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
@@ -20,12 +19,15 @@ namespace nap
 	using namespace rtti;
 
     /**
-     * Main application called from within the main loop
+     * Example application, called from within the main loop.
+	 * 
+	 * Use this app as a template for other apps that are created directly in 'source'.
+	 * This example links to and uses it's own custom module: 'mod_example'.
+	 * More information and documentation can be found at: https://www.napframework.com/doxygen/
      */
     class CoreApp : public App 
 	{
     public:
-
 		/**
 		 * Constructor
 		 */

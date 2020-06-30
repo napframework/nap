@@ -1,5 +1,5 @@
 // Local Includes
-#include "skeleton.h"
+#include "exampleapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -81,6 +81,16 @@ namespace nap
 
     void CoreApp::inputMessageReceived(InputEventPtr inputEvent)
     {
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit();
+
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+				mRenderWindow->toggleFullscreen();
+		}
 		mInputService->addEvent(std::move(inputEvent));
     }
 
@@ -93,7 +103,8 @@ namespace nap
 
     void CoreApp::update(double deltaTime)
     {
-		// Use a default input router to forward input events (recursively) to all input components in the default scene
+		// Use a default input router to forward input events (recursively) to all input components in the scene
+		// This is explicit because we don't know what entity should handle the events from a specific window.
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
     }
