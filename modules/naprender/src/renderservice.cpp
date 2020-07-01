@@ -49,6 +49,14 @@ RTTI_END_CLASS
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// Min Supported Vulkan Version
+	//////////////////////////////////////////////////////////////////////////
+
+	constexpr uint32 MIN_VK_VERSION_MAJOR = 1;
+	constexpr uint32 MIN_VK_VERSION_MINOR = 1;
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Static Methods
 	//////////////////////////////////////////////////////////////////////////
 
@@ -303,19 +311,22 @@ namespace nap
 			ext_names.emplace_back(ext.c_str());
 
 		// Get the supported vulkan instance version
-		uint32 current_api(0);
-		if (!errorState.check(vkEnumerateInstanceVersion(&current_api) == VK_SUCCESS,
+		uint32 current_version(0);
+		if (!errorState.check(vkEnumerateInstanceVersion(&current_version) == VK_SUCCESS,
 			"Unable Query instance-level version of Vulkan before instance creation"))
 			return false;
 
 		// Log used SDK version
-		uint32 major_version = VK_VERSION_MAJOR(current_api);
-		uint32 minor_version = VK_VERSION_MINOR(current_api);
-		uint32 patch_version = VK_VERSION_PATCH(current_api);
-		nap::Logger::info("Vulkan SDK Version: %d.%d.%d", major_version, minor_version, patch_version);
+		uint32 major_version = VK_VERSION_MAJOR(current_version);
+		uint32 minor_version = VK_VERSION_MINOR(current_version);
+		uint32 patch_version = VK_VERSION_PATCH(current_version);
+		nap::Logger::info("Vulkan Instance Version: %d.%d.%d", major_version, minor_version, patch_version);
 
 		// Create api version without patch, not used when creating instance
-		outVersion = VK_MAKE_VERSION(major_version, minor_version, 0);
+		uint32 req_vulkan_version = VK_MAKE_VERSION(MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
+		if (!errorState.check(current_version >= req_vulkan_version, "Incompatible Vulkan instance, min required version: %d.%d", 
+			MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR))
+			return false;
 
 		// initialize the VkApplicationInfo structure
 		VkApplicationInfo app_info = {};
@@ -325,7 +336,7 @@ namespace nap
 		app_info.applicationVersion = 1;
 		app_info.pEngineName = "NAP";
 		app_info.engineVersion = 1;
-		app_info.apiVersion = outVersion;
+		app_info.apiVersion = req_vulkan_version;
 
 		// initialize the VkInstanceCreateInfo structure
 		VkInstanceCreateInfo inst_info = {};
@@ -337,6 +348,9 @@ namespace nap
 		inst_info.ppEnabledExtensionNames = ext_names.data();
 		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
+
+		// Store version
+		outVersion = req_vulkan_version;
 
 		// Create vulkan runtime instance
 		VkResult res = vkCreateInstance(&inst_info, NULL, &outInstance);
