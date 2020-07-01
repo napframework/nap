@@ -259,6 +259,7 @@ namespace nap
 		std::string				mTitle			= "";								///< Property: 'Title' window title
 		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
 		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
+		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:
 		RenderService*					mRenderService	= nullptr;						
@@ -282,7 +283,8 @@ namespace nap
 		ImageData						mColorImage;
 		bool							mSampleShadingEnabled = false;
 		glm::ivec2						mPreviousWindowSize;
-		uint32_t						mCurrentImageIndex = 0;
+		uint32							mCurrentImageIndex = 0;
+		uint32							mSwapChainImageCount = 0;
 
 		/**
 		 * Called by the render service. 

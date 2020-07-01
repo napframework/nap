@@ -15,16 +15,17 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Visible",		&nap::RenderWindow::mVisible,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleShading",	&nap::RenderWindow::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",			&nap::RenderWindow::mHeight,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Mode",			&nap::RenderWindow::mMode,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",		&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Borderless",				&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resizable",				&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Visible",				&nap::RenderWindow::mVisible,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleShading",			&nap::RenderWindow::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Title",					&nap::RenderWindow::mTitle,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",					&nap::RenderWindow::mWidth,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",					&nap::RenderWindow::mHeight,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Mode",					&nap::RenderWindow::mMode,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",				&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",				&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AdditionalSwapImages",	&nap::RenderWindow::mAddedSwapImages,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -64,23 +65,6 @@ namespace nap
 	// Static Vulkan Functions
 	//////////////////////////////////////////////////////////////////////////
 
-	/**
-	*	Creates the vulkan surface that is rendered to by the device using SDL
-	*/
-	static bool createSurface(SDL_Window* window, VkInstance instance, VkPhysicalDevice gpu, uint32_t graphicsFamilyQueueIndex, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-
-		// Make sure the surface is compatible with the queue family and gpu
-		VkBool32 supported = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(gpu, graphicsFamilyQueueIndex, outSurface, &supported);
-		if (!errorState.check(supported != 0, "Surface is not supported by physical device"))
-			return false;
-
-		return true;
-	}
-
 
 	/**
 	 * Obtain the surface properties that are required for the creation of the swap chain
@@ -88,6 +72,25 @@ namespace nap
 	static bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
+			return false;
+
+		return true;
+	}
+
+
+	/**
+	 *	Creates the vulkan surface that is rendered to by the device using SDL
+	 */
+	static bool createSurface(SDL_Window* window, VkInstance instance, VkPhysicalDevice gpu, uint32_t graphicsFamilyQueueIndex, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
+	{
+		// Use SDL to create the surface
+		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
+			return false;
+
+		// Make sure the surface is compatible with the queue family and gpu
+		VkBool32 supported = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(gpu, graphicsFamilyQueueIndex, outSurface, &supported);
+		if (!errorState.check(supported != 0, "Surface is not supported by physical device"))
 			return false;
 
 		return true;
@@ -144,18 +147,6 @@ namespace nap
 		// Fall back on FIFO if requested mode is not supported
 		outMode = VK_PRESENT_MODE_FIFO_KHR;
 		return true;
-	}
-
-
-	/**
-	* Figure out the number of images that are used by the swapchain and
-	* available to us in the application, based on the minimum amount of necessary images
-	* provided by the capabilities struct.
-	*/
-	static unsigned int getNumberOfSwapImages(const VkSurfaceCapabilitiesKHR& capabilities)
-	{
- 		unsigned int number = capabilities.minImageCount + 1;
- 		return number > capabilities.maxImageCount ? capabilities.minImageCount : number;
 	}
 
 
@@ -277,30 +268,18 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, VkPresentModeKHR& outPresentMode, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
-		// Get properties of surface, necessary for creation of swap-chain
-		VkSurfaceCapabilitiesKHR surface_properties;
-		if (!getSurfaceProperties(physicalDevice, surface, surface_properties, errorState))
-			return false;
-
-		// Get the image presentation mode (synced, immediate etc.)
-		if (!getPresentMode(surface, physicalDevice, presentMode, outPresentMode, errorState))
-			return false;
-
-		// Get other swap chain related features
-		unsigned int swap_image_count = getNumberOfSwapImages(surface_properties);
-
 		// Size of the images
-		outSwapChainExtent = getSwapImageSize(windowSize, surface_properties);
+		outSwapChainExtent = getSwapImageSize(windowSize, surfaceCapabilities);
 
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
-		if (!getImageUsage(surface_properties, usage_flags, errorState))
+		if (!getImageUsage(surfaceCapabilities, usage_flags, errorState))
 			return false;
 
 		// Get the transform, falls back on current transform when transform is not supported
-		VkSurfaceTransformFlagBitsKHR transform = getTransform(surface_properties);
+		VkSurfaceTransformFlagBitsKHR transform = getTransform(surfaceCapabilities);
 
 		// Get swapchain image format
 		VkSurfaceFormatKHR image_format;
@@ -312,7 +291,7 @@ namespace nap
 		swap_info.pNext = nullptr;
 		swap_info.flags = 0;
 		swap_info.surface = surface;
-		swap_info.minImageCount = swap_image_count;
+		swap_info.minImageCount = swapImageCount;
 		swap_info.imageFormat = image_format.format;
 		swap_info.imageColorSpace = image_format.colorSpace;
 		swap_info.imageExtent = outSwapChainExtent;
@@ -323,7 +302,7 @@ namespace nap
 		swap_info.pQueueFamilyIndices = nullptr;
 		swap_info.preTransform = transform;
 		swap_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		swap_info.presentMode = outPresentMode;
+		swap_info.presentMode = presentMode;
 		swap_info.clipped = true;
 		swap_info.oldSwapchain = NULL;
 		swap_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -332,7 +311,7 @@ namespace nap
 		if (!errorState.check(vkCreateSwapchainKHR(device, &swap_info, nullptr, &outSwapChain) == VK_SUCCESS, "Unable to create swap chain"))
 			return false;
 
-		// Store handle
+		// Successfully created swapchain, store format and return
 		outSwapChainFormat = image_format.format;
 		return true;
 	}
@@ -642,20 +621,31 @@ namespace nap
 			mSampleShadingEnabled = false;
 		}
 
-		// Convert presentation mode
-		mPresentationMode = mMode == RenderWindow::EPresentationMode::FIFO ? 
-			VK_PRESENT_MODE_FIFO_RELAXED_KHR :
-			mMode == RenderWindow::EPresentationMode::Mailbox ? 
-			VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
-
-		// acquire handle to physical device
-		VkPhysicalDevice physicalDevice = mRenderService->getPhysicalDevice();
-
 		// Create render surface for window
-		if (!createSurface(mSDLWindow, mRenderService->getVulkanInstance(), physicalDevice, mRenderService->getGraphicsQueueIndex(), mSurface, errorState))
+		VkPhysicalDevice pyshical_device = mRenderService->getPhysicalDevice();
+		if (!createSurface(mSDLWindow, mRenderService->getVulkanInstance(), pyshical_device, mRenderService->getGraphicsQueueIndex(), mSurface, errorState))
 			return false;
 
-		// Create swapchain and associated resources
+		// Convert presentation mode
+		VkPresentModeKHR req_present_mode = mMode == RenderWindow::EPresentationMode::FIFO ?
+			VK_PRESENT_MODE_FIFO_RELAXED_KHR :
+			mMode == RenderWindow::EPresentationMode::Mailbox ?
+			VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
+
+		// Get compatible presentation mode
+		if (!getPresentMode(mSurface, pyshical_device, req_present_mode, mPresentationMode, errorState))
+			return false;
+
+		// Check if the selected presentation mode matches our request
+		if (req_present_mode != mPresentationMode)
+			nap::Logger::warn("%s: Unsupported presentation mode: %s, switched to: %s", mID.c_str(), getPresentModeName(req_present_mode).c_str(), getPresentModeName(mPresentationMode).c_str());
+
+		// Get surface capabilities
+		VkSurfaceCapabilitiesKHR surface_capabilities;
+		if (!getSurfaceProperties(pyshical_device, mSurface, surface_capabilities, errorState))
+			return false;
+
+		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
 			return false;
 
@@ -668,7 +658,7 @@ namespace nap
 			return false;
 
 		// Get presentation queue
-		unsigned int presentQueueIndex = findPresentFamilyIndex(physicalDevice, mSurface);
+		unsigned int presentQueueIndex = findPresentFamilyIndex(pyshical_device, mSurface);
 		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
 			return false;
 		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);
@@ -915,24 +905,33 @@ namespace nap
 
 	bool RenderWindow::recreateSwapChain(utility::ErrorState& errorState)
 	{
+		// Destroy all swapchain related Vulkan resources
 		destroySwapChainResources();
+
+		// Create new swapchain based on current window properties
 		return createSwapChainResources(errorState);
 	}
 
 
 	bool RenderWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		// Create swapchain, allowing us to acquire images to render to.
-		VkExtent2D swapchainExtent; VkPresentModeKHR out_mode;
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapchain, swapchainExtent, mSwapchainFormat, out_mode, errorState))
+		// Get surface capabilities
+		VkSurfaceCapabilitiesKHR surface_capabilities;
+		if (!getSurfaceProperties(mRenderService->getPhysicalDevice(), mSurface, surface_capabilities, errorState))
 			return false;
-		
-		// Check if the selected presentation mode matches our request
-		if (out_mode != mPresentationMode)
+
+		// Check if number of requested images is supported based on queried abilities
+		mSwapChainImageCount = surface_capabilities.minImageCount + mAddedSwapImages;
+		if (mSwapChainImageCount > surface_capabilities.maxImageCount)
 		{
-			nap::Logger::warn("%s: Unsupported presentation mode: %s, switched to: %s", mID.c_str(), getPresentModeName(mPresentationMode).c_str(), getPresentModeName(out_mode).c_str());
-			mPresentationMode = out_mode;
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit of: %d", mID.c_str(), mSwapChainImageCount, surface_capabilities.maxImageCount);
+			mSwapChainImageCount = surface_capabilities.maxImageCount;
 		}
+
+		// Create swapchain, allowing us to acquire images to render to.
+		VkExtent2D swap_chain_extent; VkPresentModeKHR out_mode; uint32 out_images;
+		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
+			return false;
 
 		// Get image handles from swap chain
 		std::vector<VkImage> chain_images;
@@ -945,13 +944,13 @@ namespace nap
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthResource(*mRenderService, swapchainExtent, mRasterizationSamples, mDepthImage, errorState))
+		if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
 			return false;
 
-		if (!createColorResource(*mRenderService, swapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+		if (!createColorResource(*mRenderService, swap_chain_extent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
 			return false;
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swapchainExtent, errorState))
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, errorState))
 			return false;
 
 		mImagesInFlight.resize(chain_images.size());
