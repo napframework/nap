@@ -187,7 +187,7 @@ namespace nap
 			mesh_data.mProperties.mShapes.push_back(MeshShape());
 			MeshShape& shape = mesh_data.mProperties.mShapes.back();
 
-			MeshShape::IndexList& indices = shape.getIndices();
+			std::vector<uint32>& indices = shape.getIndices();
 			indices.reserve(fbx_mesh->mNumFaces * 3);
 			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
@@ -195,7 +195,7 @@ namespace nap
 				assert(face.mNumIndices == 3);
 
 				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
-					indices.push_back(face.mIndices[point_index]);
+					indices.emplace_back(face.mIndices[point_index]);
 			}
 
 			rtti::BinaryWriter binaryWriter;

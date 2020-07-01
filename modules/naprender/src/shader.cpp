@@ -1,20 +1,21 @@
 // Local Includes
 #include "shader.h"
 #include "material.h"
+#include "renderservice.h"
 
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
-#include "renderservice.h"
 #include <fstream>
 #include <assert.h>
-#include "utility/stringutils.h"
-#include "spirv_cross/spirv_cross.hpp"
-#include "spirv_cross/spirv_parser.hpp"
-#include "glslang/Public/ShaderLang.h"
-#include "glslang/SPIRV/GlslangToSpv.h"
-#include "glslang/MachineIndependent/iomapper.h"
-#include "nap/core.h"
+#include <utility/stringutils.h>
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_parser.hpp>
+#include <glslang/Public/ShaderLang.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <glslang/MachineIndependent/iomapper.h>
+#include <nap/core.h>
+#include <nap/numeric.h>
 
 RTTI_BEGIN_CLASS(nap::Shader)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -211,19 +212,19 @@ static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffe
 }
 
 
-static VkShaderModule createShaderModule(const std::vector<unsigned int>& code, VkDevice device)
+static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, VkDevice device)
 {
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size() * sizeof(unsigned int);
+	createInfo.codeSize = code.size() * sizeof(nap::uint32);
 	createInfo.pCode = code.data();
 
 	VkShaderModule shaderModule;
 	if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return nullptr;
-
 	return shaderModule;
 }
+
 
 static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& file, EShLanguage stage, nap::utility::ErrorState& errorState)
 {
@@ -277,7 +278,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 }
 
 
-static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const std::string& vertexFile, const std::string& fragmentFile, std::vector<unsigned int>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const std::string& vertexFile, const std::string& fragmentFile, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
 	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertexFile, EShLangVertex, errorState);
 	if (vertex_shader == nullptr)
@@ -614,8 +615,8 @@ namespace nap
 		uint32_t deviceVersion = mRenderService->getPhysicalDeviceVersion();
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
-		std::vector<unsigned int> vertex_shader_spirv;
-		std::vector<unsigned int> fragment_shader_spirv;
+		std::vector<uint32> vertex_shader_spirv;
+		std::vector<uint32> fragment_shader_spirv;
 		if (!compileProgram(device, deviceVersion, mVertPath, mFragPath, vertex_shader_spirv, fragment_shader_spirv, errorState))
 			return false;
 

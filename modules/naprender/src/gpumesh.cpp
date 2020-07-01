@@ -10,13 +10,13 @@ namespace nap
 	}
 
 
-	void GPUMesh::addVertexAttribute(const std::string& id, VkFormat format)
+	void GPUMesh::addVertexBuffer(const std::string& id, VkFormat format)
 	{
-		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(*mRenderService, format, mUsage)));
+		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexBuffer>(*mRenderService, format, mUsage)));
 	}
 
 
-	const VertexAttributeBuffer* GPUMesh::findVertexAttributeBuffer(const std::string& id) const
+	const VertexBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	VertexAttributeBuffer& GPUMesh::getVertexAttributeBuffer(const std::string& id)
+	VertexBuffer& GPUMesh::getVertexBuffer(const std::string& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());

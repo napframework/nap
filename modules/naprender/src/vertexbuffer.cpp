@@ -30,16 +30,15 @@ namespace nap
 	}
 
 
-	VertexAttributeBuffer::VertexAttributeBuffer(RenderService& renderService, VkFormat inFormat, EMeshDataUsage inUsage) :
+	VertexBuffer::VertexBuffer(RenderService& renderService, VkFormat inFormat, EMeshDataUsage inUsage) :
 		GPUBuffer(renderService, inUsage),
 		mFormat(inFormat),
 		mVertexSize(getVertexSize(inFormat))
-	{
-	}
+	{ }
 
 
 	// Uploads the data block to the GPU
-	bool VertexAttributeBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error)
+	bool VertexBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error)
 	{
 		return setDataInternal(data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,  error);
 	}

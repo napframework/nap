@@ -16,7 +16,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			VertexAttributeBuffer& vertex_buffer = gpu_mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			VertexBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			vertex_buffer.bufferChanged.connect(mVertexBufferDataChangedSlot);
 			mVertexBufferOffsets.push_back(0);
 		}
@@ -72,7 +72,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			VertexAttributeBuffer& vertex_buffer = gpu_mesh.getVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			VertexBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			mVertexBuffers.push_back(vertex_buffer.getBuffer());
 		}
 

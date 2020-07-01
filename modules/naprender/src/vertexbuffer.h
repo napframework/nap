@@ -10,25 +10,42 @@
 namespace nap
 {
 	/**
-	 * Defines a vertex buffer on the GPU that is associated with a single set of vertex data
-	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
-	 * This object does not manage or owns any data
+	 * Returns the size in bytes, for a single element, of the given format.
+	 * @param format requested format
+	 * @return size in bytes, for a single element, of the given format. -1 if unsupported.
 	 */
-	class NAPAPI VertexAttributeBuffer : public GPUBuffer
+	int getVertexSize(VkFormat format);
+
+	/**
+	 * A list of vertices on the GPU that represent a specific attribute of the geometry, for example:
+	 * position, uv0, uv1, color0, color1, normals etc.
+	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
+	 */
+	class NAPAPI VertexBuffer : public GPUBuffer
 	{
 	public:
-		VertexAttributeBuffer(RenderService& renderService, VkFormat inFormat, EMeshDataUsage inUsage);
+		/**
+		 * Every vertex buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed. 
+		 * The format defines the vertex element size in bytes.
+		 * @param renderService the render engine
+		 * @param format buffer format, defines element size in bytes
+		 * @param usage how the buffer is used at runtime.
+		 */
+		VertexBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage);
 
+		/**
+		 * @return vertex buffer format
+		 */
 		VkFormat getFormat() const { return mFormat; }
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
-		 * This function binds the buffer before uploading the data and
-		 * automatically allocates GPU memory if required. 
+		 * This function automatically allocates GPU memory if required. 
 		 * Ensure reservedNumVertices >= numVertices. Capacity is calculated based on reservedNumVertices.
-		 * @param data pointer to the block of data that needs to be uploaded
-		 * @param numVertices number of vertices represented by data
-		 * @param reservedNumVertices used when current capacity is lower than current size. Used to calculate GPU buffer size.
+		 * @param data pointer to the block of data that needs to be uploaded.
+		 * @param numVertices number of vertices represented by data.
+		 * @param reservedNumVertices used to calculate final buffer size, needs to be >= numVertices
 		 */
 		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
 
@@ -36,6 +53,4 @@ namespace nap
 		VkFormat		mFormat;
 		int				mVertexSize			= -1;
 	};
-
-	int getVertexSize(VkFormat format);
 }

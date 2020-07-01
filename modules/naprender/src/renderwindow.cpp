@@ -6,6 +6,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <SDL_vulkan.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
@@ -156,13 +157,13 @@ namespace nap
 	static VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		// Default size = window size
-		VkExtent2D size = { (unsigned int)windowSize.x, (unsigned int)windowSize.y };
+		VkExtent2D size = { (uint32)windowSize.x, (uint32)windowSize.y };
 
 		// This happens when the window scales based on the size of an image
 		if (capabilities.currentExtent.width == 0xFFFFFFF)
 		{
-			size.width = glm::clamp<unsigned int>(size.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-			size.height = glm::clamp<unsigned int>(size.height, capabilities.maxImageExtent.height, capabilities.maxImageExtent.height);
+			size.width  = math::clamp<uint32>(size.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
+			size.height = math::clamp<uint32>(size.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 		}
 		else
 		{
@@ -216,7 +217,7 @@ namespace nap
 	*/
 	static bool getFormat(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceFormatKHR& outFormat, utility::ErrorState& errorState)
 	{
-		unsigned int count(0);
+		uint32 count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, nullptr) == VK_SUCCESS, "Unable to query number of supported surface formats"))
 			return false;
 
@@ -322,7 +323,7 @@ namespace nap
 	 */
 	static bool getSwapChainImageHandles(VkDevice device, VkSwapchainKHR chain, std::vector<VkImage>& outImageHandles, utility::ErrorState& errorState)
 	{
-		unsigned int image_count(0);
+		uint32 image_count(0);
 		if (!errorState.check(vkGetSwapchainImagesKHR(device, chain, &image_count, nullptr) == VK_SUCCESS, "Unable to get number of images in swap chain"))
 			return false;
 
@@ -483,7 +484,7 @@ namespace nap
 	}
 
 
-	static unsigned int findPresentFamilyIndex(VkPhysicalDevice device, VkSurfaceKHR surface)
+	static uint32 findPresentFamilyIndex(VkPhysicalDevice device, VkSurfaceKHR surface)
 	{
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -658,7 +659,7 @@ namespace nap
 			return false;
 
 		// Get presentation queue
-		unsigned int presentQueueIndex = findPresentFamilyIndex(pyshical_device, mSurface);
+		uint32 presentQueueIndex = findPresentFamilyIndex(pyshical_device, mSurface);
 		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
 			return false;
 		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);

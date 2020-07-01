@@ -71,7 +71,7 @@ namespace nap
 		void  setTriangleIndices(MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices)
 		{
 			// Copy triangle index over
-			MeshShape::IndexList& mesh_indices = mesh.getIndices();
+			std::vector<uint32>& mesh_indices = mesh.getIndices();
 
 			switch (drawMode)
 			{
@@ -81,7 +81,7 @@ namespace nap
 				assert((number * 3) + 2 < mesh_indices.size());
 
 				// Fill the data
-				unsigned int* id = mesh_indices.data() + (number * 3);
+				uint32* id = mesh_indices.data() + (number * 3);
 				*(id + 0) = indices[0];
 				*(id + 1) = indices[1];
 				*(id + 2) = indices[2];
@@ -90,7 +90,7 @@ namespace nap
 			case EDrawMode::TriangleFan:
 			{
 				assert(number + 2 < mesh_indices.size());
-				unsigned int* id = mesh_indices.data();
+				uint32* id = mesh_indices.data();
 				*id = indices[0];
 				*(id + number + 1) = indices[1];
 				*(id + number + 2) = indices[2];
@@ -99,7 +99,7 @@ namespace nap
 			case EDrawMode::TriangleStrip:
 			{
 				assert(number + 2 < mesh_indices.size());
-				unsigned int* id = mesh_indices.data() + number;
+				uint32* id = mesh_indices.data() + number;
 				*(id + 0) = indices[0];
 				*(id + 1) = indices[1];
 				*(id + 2) = indices[2];
@@ -191,7 +191,7 @@ namespace nap
 
 		void generateIndices(nap::MeshShape& shape, int vertexCount, bool loop, int offset)
 		{
-			MeshShape::IndexList& indices = shape.getIndices();
+			std::vector<uint32>& indices = shape.getIndices();
 			int vert_count = loop ? vertexCount + 1 : vertexCount;
 			indices.resize(vert_count);
 			

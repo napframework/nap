@@ -1,14 +1,29 @@
 #pragma once
 
+// Local Includes
 #include "gpubuffer.h"
+
+// External Includes
 #include <vector>
+#include <nap/numeric.h>
+
 
 namespace nap
 {
-
+	/**
+	 * Index buffer, controls how triangles are formed when rendered.
+	 * For more information on GPU buffers in general see: nap::GPUBuffer
+	 */
 	class NAPAPI IndexBuffer : public GPUBuffer
 	{
 	public:
+		/**
+		 * Every index buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a mesh can be updated more than once, 
+		 * and in which memory space it is placed.
+		 * @param renderService the render engine
+		 * @param usage how the buffer is used at runtime.
+		 */
 		IndexBuffer(RenderService& renderService, EMeshDataUsage usage);
 
 		/**
@@ -17,15 +32,14 @@ namespace nap
 		std::size_t getCount() const							{ return mCount; }
 
 		/**
-		 * Uploads index data to associated buffer
-		 * Note that the pointer to that data needs to be of equal
-		 * length as the current number of associated indices stored in the settings
-		 * of this object
-		 * @param indices: Index data to upload to the GPU
+		 * Uploads index data to the GPU buffer.
+		 * @param indices: Index data to upload to the GPU.
+		 * @param error: contains the error message when the operation fails.
+		 * @return if index data has been set correctly.
 		 */
-		bool setData(const std::vector<unsigned int>& indices, utility::ErrorState& error);
+		bool setData(const std::vector<uint32>& indices, utility::ErrorState& error);
 
 	private:
-		size_t		mCount = 0;					// number of indices used to construct the triangles
+		size_t		mCount = 0;			///< number of indices used to construct the triangles
 	};
 }

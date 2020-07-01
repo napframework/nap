@@ -130,8 +130,8 @@ namespace nap
 
 		// Generate the indices
 
-		std::vector<unsigned int> indices(triCount * 3, 0);
-		unsigned int* index_ptr = indices.data();
+		std::vector<uint32> indices(triCount * 3, 0);
+		uint32* index_ptr = indices.data();
 
 		for (int side = 0; side < 6; side++)
 		{

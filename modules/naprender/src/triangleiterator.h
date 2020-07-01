@@ -217,11 +217,11 @@ namespace nap
 		virtual const ShapeTriangle next() = 0;
 
 	protected:
-		const unsigned int*	mCurrentIndex;	///< The current position in the index buffer of the shape that we're iterating through
+		const uint32*	mCurrentIndex;		///< The current position in the index buffer of the shape that we're iterating through
 		int mCurrentTriangle = 0;
 	
 	private:
-		const unsigned int*	mIndexEnd;		///< End of the index buffer of the shape that we're iterating through
+		const uint32*	mIndexEnd;			///< End of the index buffer of the shape that we're iterating through
 	};
 
 
@@ -256,7 +256,7 @@ namespace nap
 		virtual const ShapeTriangle next() override;
 
 	private:
-		unsigned int mFanStartIndex;	///< First index of the fan (all triangles share this index)
+		uint32	mFanStartIndex;			///< First index of the fan (all triangles share this index)
 	};
 
 

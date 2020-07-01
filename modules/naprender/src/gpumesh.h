@@ -34,19 +34,19 @@ namespace nap
 		 * @param numComponents number of component per element (for instance, 3 for vector with 3 floats)
 		 * @param usage attribute usage definition, for example: GL_STATIC_DRAW
 		 */
-		void addVertexAttribute(const std::string& id, VkFormat format);
+		void addVertexBuffer(const std::string& id, VkFormat format);
 
 		/**
 		 * @param id name of the vertex attribute
 		 * @return reference to the attribute buffer if found, otherwise nullptr.
 		 */
-		const VertexAttributeBuffer* findVertexAttributeBuffer(const std::string& id) const;
+		const VertexBuffer* findVertexBuffer(const std::string& id) const;
 
 		/**
 		 * @param id name of the vertex attribute
 		 * @return reference to the attribute buffer. If not found, the function will assert.
 		 */
-		VertexAttributeBuffer& getVertexAttributeBuffer(const std::string& id);
+		VertexBuffer& getVertexBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer is one does not exist, otherwise returns the existing buffer.
@@ -62,7 +62,7 @@ namespace nap
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexAttributeBuffer>>;
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexBuffer>>;
 		RenderService*								mRenderService;
 		AttributeMap								mAttributes;		///< Map from vertex attribute ID to buffer
 		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;		///< Index buffers

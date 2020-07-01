@@ -53,7 +53,7 @@ namespace nap
 			{ 1.0f, 1.0f, 1.0f }
 		};
 
-		std::vector<unsigned int> indices = {
+		std::vector<uint32> indices = {
 			0, 1, 2, 3
 		};
 

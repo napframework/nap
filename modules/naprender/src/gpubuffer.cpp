@@ -80,14 +80,15 @@ namespace nap
 		// Make sure we haven't already uploaded or are attempting to upload data
 		if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || mStagingBuffer.mBuffer != VK_NULL_HANDLE)
 		{
-			error.fail("Buffer already allocated!");
+			error.fail("Attempting to upload data to previously allocated buffer.");
+			error.fail("Not allowed when usage is static");
 			return false;
 		}
 
 		// Create staging buffer
 		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, mStagingBuffer, error))
 		{
-			error.fail("Staging buffer error");
+			error.fail("Unable to create staging buffer");
 			return false;
 		}
 			
@@ -98,7 +99,7 @@ namespace nap
 		// Now create the GPU buffer to transfer data to, create buffer information
 		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, mRenderBuffers[0], error))
 		{
-			error.fail("Render buffer error");
+			error.fail("Unable to create render buffer");
 			return false;
 		}
 

@@ -35,14 +35,14 @@ namespace nap
 		std::vector<glm::vec3> normals;
 		std::vector<glm::vec3> texcoords;
 		std::vector<glm::vec4> colors;
-		std::vector<unsigned int> indices;
+		std::vector<uint32> indices;
 
 		float const R = 1. / (float)(mRings - 1);
 		float const S = 1. / (float)(mSectors - 1);
 		int r, s;
 
 		// Get total amount of vertices
-		unsigned int vertex_count = mRings * mSectors;
+		uint32 vertex_count = mRings * mSectors;
 
 		vertices.resize(vertex_count);
 		normals.resize(vertex_count);
@@ -79,9 +79,9 @@ namespace nap
 		// Calculate sphere indices
 		int irings = mRings - 1;
 		int isectors = mSectors - 1;
-		unsigned int index_count = irings * isectors * 6;
+		uint32 index_count = irings * isectors * 6;
 		indices.resize(index_count);
-		std::vector<unsigned int>::iterator i = indices.begin();
+		std::vector<uint32>::iterator i = indices.begin();
 		for (r = 0; r < irings; r++)
 		{
 			for (s = 0; s < isectors; s++)

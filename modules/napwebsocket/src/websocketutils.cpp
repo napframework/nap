@@ -18,7 +18,7 @@ namespace nap
 	RTTI_END_ENUM
 
 
-	unsigned int computeWebSocketLogLevel(EWebSocketLogLevel level)
+	uint32 computeWebSocketLogLevel(EWebSocketLogLevel level)
 	{
 		// All levels will be logged
 		if (level == EWebSocketLogLevel::All)

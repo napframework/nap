@@ -105,8 +105,8 @@ namespace nap
 
 		// Create indices, every cell in the grid contains 2 triangles
 		int triangle_count = mRows * mColumns * 2;
-		std::vector<unsigned int> indices(triangle_count * 3, 0);
-		unsigned int* index_ptr = indices.data();
+		std::vector<uint32> indices(triangle_count * 3, 0);
+		uint32* index_ptr = indices.data();
 
 		for (int row = 0; row < mRows; row++)
 		{

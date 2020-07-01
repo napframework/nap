@@ -52,7 +52,8 @@ namespace nap
 
 		/**
 		 * Every buffer needs to have access to the render engine.
-		 * 'usage' controls if a mesh can be updated more than once and in which memory space it is placed.
+		 * The given 'usage' controls if a buffer can be updated more than once 
+		 * and in which memory space it is placed.
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */

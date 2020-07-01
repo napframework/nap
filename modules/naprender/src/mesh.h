@@ -93,8 +93,6 @@ namespace nap
 	class MeshShape
 	{
 	public:
-		using IndexList = std::vector<unsigned int>;
-
 		/**
 		 * @return The number of indices in this shape
 		 */
@@ -121,21 +119,21 @@ namespace nap
 		* @param indices: array of indices to add.
 		* @param numIndices: size of the array.
 		*/
-		void setIndices(uint32_t* indices, int numIndices)
+		void setIndices(uint32* indices, int numIndices)
 		{
 			mIndices.resize(numIndices);
-			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
+			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32));
 		}
 
 		/**
 		 * @return The index list for this shape
 		 */
-		const IndexList& getIndices() const { return mIndices; }
+		const std::vector<uint32>& getIndices() const { return mIndices; }
 
 		/**
 		 * @return The index list for this shape
 		 */
-		IndexList& getIndices() { return mIndices; }
+		std::vector<uint32>& getIndices() { return mIndices; }
 
 		/**
 		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
@@ -144,11 +142,11 @@ namespace nap
 		* @param indices List of indices to update.
 		* @param numIndices Number of indices in the list.
 		*/
-		void addIndices(uint32_t* indices, int numIndices)
+		void addIndices(uint32* indices, int numIndices)
 		{
 			int cur_num_indices = mIndices.size();
 			mIndices.resize(cur_num_indices + numIndices);
-			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
+			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32));
 		}
 
 		/**
@@ -159,7 +157,7 @@ namespace nap
 		void addIndex(int index) { mIndices.push_back(index); }
 
 	public:
-		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
+		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
 
@@ -347,9 +345,9 @@ namespace nap
 		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
 		/**
-		 * Get the usage for this mesh
+		 * @return how this mesh is used at runtime
 		 */
-		EMeshDataUsage getUsage(EMeshDataUsage inUsage) const					{ return mProperties.mUsage; }
+		EMeshDataUsage getUsage() const											{ return mProperties.mUsage; }
 
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),

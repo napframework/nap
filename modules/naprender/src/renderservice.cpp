@@ -235,7 +235,7 @@ namespace nap
 	{
 		// Figure out the amount of available layers
 		// Layers are used for debugging / validation etc / profiling..
-		unsigned int instance_layer_count = 0;
+		uint32 instance_layer_count = 0;
 		if (!errorState.check(vkEnumerateInstanceLayerProperties(&instance_layer_count, NULL) == VK_SUCCESS, "Unable to query vulkan instance layer property count"))
 			return false;
 
@@ -351,7 +351,7 @@ namespace nap
 	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
-		unsigned int physical_device_count(0);
+		uint32 physical_device_count(0);
 		vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
 		if (!errorState.check(physical_device_count != 0, "No physical devices found"))
 			return false;
@@ -403,7 +403,7 @@ namespace nap
 
 			// Make sure the family of commands contains an option to issue graphical commands.
 			int queue_node_index = -1;
-			for (unsigned int i = 0; i < family_queue_count; i++)
+			for (uint32 i = 0; i < family_queue_count; i++)
 			{
 				if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & required_flags)
 				{
@@ -456,7 +456,7 @@ namespace nap
 	/**
 	 * Creates the logical device based on the selected physical device, queue index and required extensions
 	 */
-	static bool createLogicalDevice(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceFeatures& physicalDeviceFeatures, unsigned int queueFamilyIndex, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
+	static bool createLogicalDevice(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceFeatures& physicalDeviceFeatures, uint32 queueFamilyIndex, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -533,7 +533,7 @@ namespace nap
 	/**
 	 * Creates a command pool associated with the given queue index
 	 */
-	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, unsigned int graphicsQueueIndex, VkCommandPool& commandPool)
+	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, uint32 graphicsQueueIndex, VkCommandPool& commandPool)
 	{
 		VkCommandPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -954,7 +954,7 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			const VertexBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 

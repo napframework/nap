@@ -443,7 +443,7 @@ namespace nap
 		 * Returns the index of the selected queue family.
 		 * @return the main queue index.
 		 */
-		unsigned int getQueueIndex() const											{ return mQueueIndex; }
+		uint32 getQueueIndex() const												{ return mQueueIndex; }
 		
 		/**
 		 * Returns the selected queue, used to execute recorded command buffers.
