@@ -43,9 +43,10 @@ namespace nap
 		 */
 		enum class EPresentationMode : int
 		{
-			Immediate,					///< The new image immediately replaces the display image, screen tearing may occur.
-			Mailbox,					///< The new image replaces the one image waiting in the queue, becoming the first to be displayed. No screen tearing occurs. Could result in not-shown images, but ensures CPU does not stall.
-			FIFO,						///< Based on first in first out, where every image is presented in order. No screen tearing occurs when drawing faster than monitor refresh rate. CPU could stall.
+			Immediate,					///< The new image immediately replaces the display image, screen tearing may occur. 
+			Mailbox,					///< The new image replaces the one image waiting in the queue, becoming the first to be displayed. No screen tearing occurs. Could result in not-shown images. CPU not synced to display refresh rate.
+			FIFO_Relaxed,				///< Every image is presented in order. No screen tearing occurs when drawing faster than monitor refresh rate. CPU synced to display refresh rate.
+			FIFO						///< Every image is presented in order. No screen tearing occurs, also when drawing slower then monitor refresh rate. CPU synced to display refresh rate.
 		};
 
 		/**

@@ -11,6 +11,7 @@
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Mailbox,		"Mailbox"),
+	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::FIFO_Relaxed,	"FIFO Relaxed"),
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::FIFO,			"FIFO")
 RTTI_END_ENUM
 
@@ -124,9 +125,31 @@ namespace nap
 
 
 	/**
+	 * @return the Vulkan image presentation mode for the given NAP mode
+	 */
+	static VkPresentModeKHR getPresentMode(RenderWindow::EPresentationMode presentationMode)
+	{
+		switch (presentationMode)
+		{
+		case RenderWindow::EPresentationMode::FIFO:
+			return VK_PRESENT_MODE_FIFO_KHR;
+		case RenderWindow::EPresentationMode::FIFO_Relaxed:
+			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+		case RenderWindow::EPresentationMode::Immediate:
+			return VK_PRESENT_MODE_IMMEDIATE_KHR;
+		case RenderWindow::EPresentationMode::Mailbox:
+			return VK_PRESENT_MODE_MAILBOX_KHR;
+		default:
+			assert(false);
+		}
+		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+
+	/**
 	 * Returns if the requested presentation mode is supported, fall-back = FIFO_KHR
 	 */
-	static bool getPresentMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR requestedMode, VkPresentModeKHR& outMode, utility::ErrorState& errorState)
+	static bool findCompatiblePresentMode(VkSurfaceKHR surface, VkPhysicalDevice device, VkPresentModeKHR requestedMode, VkPresentModeKHR& outMode, utility::ErrorState& errorState)
 	{
 		uint32_t mode_count(0);
 		if (!errorState.check(vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &mode_count, NULL) == VK_SUCCESS, "Unable to query present mode count for physical device"))
@@ -627,14 +650,9 @@ namespace nap
 		if (!createSurface(mSDLWindow, mRenderService->getVulkanInstance(), pyshical_device, mRenderService->getQueueIndex(), mSurface, errorState))
 			return false;
 
-		// Convert presentation mode
-		VkPresentModeKHR req_present_mode = mMode == RenderWindow::EPresentationMode::FIFO ?
-			VK_PRESENT_MODE_FIFO_RELAXED_KHR :
-			mMode == RenderWindow::EPresentationMode::Mailbox ?
-			VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
-
-		// Get compatible presentation mode
-		if (!getPresentMode(mSurface, pyshical_device, req_present_mode, mPresentationMode, errorState))
+		// Get compatible Vulkan presentation mode
+		VkPresentModeKHR req_present_mode = getPresentMode(mMode);
+		if (!findCompatiblePresentMode(mSurface, pyshical_device, req_present_mode, mPresentationMode, errorState))
 			return false;
 
 		// Check if the selected presentation mode matches our request
