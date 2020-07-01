@@ -153,6 +153,10 @@ if(NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+else()
+    if(NAP_PACKAGED_APP_BUILD)
+        copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+    endif()
 endif()
 
 # Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin
