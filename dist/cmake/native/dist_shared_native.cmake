@@ -468,10 +468,12 @@ function(deploy_single_path_mapping PROJECT_DIR)
                        COMMENT "Deploying path mapping to bin")
 
     set(PROJ_DEST_CACHE_PATH ${PROJECT_DIR}/cache/path_mapping.json)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
-                       COMMENT "Deploying path mapping to project directory")
+    if(NOT (WIN32 AND NAP_PACKAGED_APP_BUILD))
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                           COMMENT "Deploying path mapping to project directory")
+    endif()
 
     # Install into packaged app
     find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} packaged_app)
@@ -481,4 +483,11 @@ function(deploy_single_path_mapping PROJECT_DIR)
         message(FATAL_ERROR "Couldn't locate path mapping")
     endif()
     install(FILES ${PATH_MAPPING_FILE} DESTINATION cache RENAME path_mapping.json)
+    if(WIN32 AND NAP_PACKAGED_APP_BUILD)
+        set(PROJ_DEST_CACHE_PATH ${CMAKE_INSTALL_PREFIX}/cache/path_mapping.json)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                           COMMENT "Deploying Win64 path mapping to packaged app project directory")
+    endif()
 endfunction()
