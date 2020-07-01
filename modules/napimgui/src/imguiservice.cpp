@@ -83,10 +83,10 @@ namespace nap
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		err = vkQueueSubmit(renderService.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		err = vkQueueSubmit(renderService.getQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		checkVKResult(err);
 
-		err = vkQueueWaitIdle(renderService.getGraphicsQueue());
+		err = vkQueueWaitIdle(renderService.getQueue());
 		checkVKResult(err);
 		
 		vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
@@ -588,8 +588,8 @@ namespace nap
 		init_info.Instance = mRenderService->getVulkanInstance();
 		init_info.PhysicalDevice = mRenderService->getPhysicalDevice();
 		init_info.Device = mRenderService->getDevice();
-		init_info.QueueFamily = mRenderService->getGraphicsQueueIndex();
-		init_info.Queue = mRenderService->getGraphicsQueue();
+		init_info.QueueFamily = mRenderService->getQueueIndex();
+		init_info.Queue = mRenderService->getQueue();
 		init_info.PipelineCache = VK_NULL_HANDLE;
 		init_info.DescriptorPool = gDescriptorPool;
 		init_info.Allocator = VK_NULL_HANDLE;

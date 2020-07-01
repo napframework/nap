@@ -443,14 +443,14 @@ namespace nap
 		 * Returns the index of the selected queue family.
 		 * @return the main queue index.
 		 */
-		unsigned int getGraphicsQueueIndex() const									{ return mGraphicsQueueIndex; }
+		unsigned int getQueueIndex() const											{ return mQueueIndex; }
 		
 		/**
 		 * Returns the selected queue, used to execute recorded command buffers.
 		 * The queue must support Graphics and Transfer operations.
 		 * @return the queue that is used to execute recorded command buffers.
 		 */
-		VkQueue getGraphicsQueue() const											{ return mGraphicsQueue; }
+		VkQueue getQueue() const													{ return mQueue; }
 
 		/**
 		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
@@ -704,9 +704,9 @@ namespace nap
 		VkDevice								mDevice = VK_NULL_HANDLE;
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
 		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
-		int										mGraphicsQueueIndex = -1;
+		int										mQueueIndex = -1;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		VkQueue									mGraphicsQueue = VK_NULL_HANDLE;
+		VkQueue									mQueue = VK_NULL_HANDLE;
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;

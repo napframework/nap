@@ -337,43 +337,43 @@ namespace nap
 
 	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
-		VkAttachmentDescription colorAttachment = {};
-		colorAttachment.format = swapChainImageFormat;
-		colorAttachment.samples = samples;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		VkAttachmentDescription color_attachment = {};
+		color_attachment.format = swapChainImageFormat;
+		color_attachment.samples = samples;
+		color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription depthAttachment = {};
-		depthAttachment.format = depthFormat;
-		depthAttachment.samples = samples;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		VkAttachmentDescription depth_attachment = {};
+		depth_attachment.format = depthFormat;
+		depth_attachment.samples = samples;
+		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription colorAttachmentResolve{};
-		colorAttachmentResolve.format = swapChainImageFormat;
-		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		VkAttachmentDescription color_resolve_attachment{};
+		color_resolve_attachment.format = swapChainImageFormat;
+		color_resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		color_resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		color_resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		color_resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		color_resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		color_resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		color_resolve_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-		VkAttachmentReference colorAttachmentRef = {};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		VkAttachmentReference color_attachment_ref = {};
+		color_attachment_ref.attachment = 0;
+		color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentReference depthAttachmentRef = {};
-		depthAttachmentRef.attachment = 1;
-		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		VkAttachmentReference depth_attachment_ref = {};
+		depth_attachment_ref.attachment = 1;
+		depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorAttachmentResolveRef{};
 		colorAttachmentResolveRef.attachment = 2;
@@ -382,8 +382,8 @@ namespace nap
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
-		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pColorAttachments = &color_attachment_ref;
+		subpass.pDepthStencilAttachment = &depth_attachment_ref;
 		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
 		VkSubpassDependency dependency = {};
@@ -394,7 +394,7 @@ namespace nap
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+		std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, color_resolve_attachment };
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -505,6 +505,7 @@ namespace nap
 		return -1;
 	}
 
+
 	static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
@@ -515,7 +516,6 @@ namespace nap
 				return i;
 			}
 		}
-
 		return -1;
 	}
 
@@ -623,7 +623,7 @@ namespace nap
 
 		// Create render surface for window
 		VkPhysicalDevice pyshical_device = mRenderService->getPhysicalDevice();
-		if (!createSurface(mSDLWindow, mRenderService->getVulkanInstance(), pyshical_device, mRenderService->getGraphicsQueueIndex(), mSurface, errorState))
+		if (!createSurface(mSDLWindow, mRenderService->getVulkanInstance(), pyshical_device, mRenderService->getQueueIndex(), mSurface, errorState))
 			return false;
 
 		// Convert presentation mode
@@ -835,9 +835,9 @@ namespace nap
 	void RenderWindow::endRecording()
 	{
 		int	current_frame = mRenderService->getCurrentFrameIndex();
-		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
+		VkCommandBuffer command_buffer = mCommandBuffers[current_frame];
 
-		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) 
+		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
 
 		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
@@ -850,44 +850,44 @@ namespace nap
 		// finish if we encounter this image index again in the future.
 		mImagesInFlight[mCurrentImageIndex] = current_frame;
 
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
 		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores = waitSemaphores;
+		submit_info.pWaitDstStageMask = waitStages;
 
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &mCommandBuffers[current_frame];
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
 		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = signalSemaphores;
 
-		VkResult result = vkQueueSubmit(mRenderService->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		VkPresentInfoKHR presentInfo = {};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		// Create present information
+		VkPresentInfoKHR present_info = {};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		present_info.waitSemaphoreCount = 1;
+		present_info.pWaitSemaphores = signalSemaphores;
 
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		VkSwapchainKHR swapChains[] = { mSwapchain };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-
-		presentInfo.pImageIndices = &mCurrentImageIndex;
+		// Add swap chain
+		VkSwapchainKHR swap_chains[] = { mSwapchain };
+		present_info.swapchainCount = 1;
+		present_info.pSwapchains = swap_chains;
+		present_info.pImageIndices = &mCurrentImageIndex;
 
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
-		result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
+		result = vkQueuePresentKHR(mPresentQueue, &present_info);
 		assert(result == VK_SUCCESS);
 	}
 
@@ -1005,23 +1005,23 @@ namespace nap
 		glm::ivec2 buffer_size = getBufferSize();
 
 		// Create information for render pass
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { (uint32_t)buffer_size.x, (uint32_t)buffer_size.y };
+		VkRenderPassBeginInfo render_pass_info = {};
+		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		render_pass_info.renderPass = mRenderPass;
+		render_pass_info.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
+		render_pass_info.renderArea.offset = { 0, 0 };
+		render_pass_info.renderArea.extent = { (uint32_t)buffer_size.x, (uint32_t)buffer_size.y };
 
 		// Clear color
-		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
-		clearValues[1].depthStencil = { 1.0f, 0 };
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		std::array<VkClearValue, 2> clear_values = {};
+		clear_values[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
+		clear_values[1].depthStencil = { 1.0f, 0 };
+		render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+		render_pass_info.pClearValues = clear_values.data();
 
 		// Begin render pass, using command buffer associated with current frame.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
-		vkCmdBeginRenderPass(mCommandBuffers[current_frame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mCommandBuffers[current_frame], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkRect2D rect;
 		rect.offset.x = 0;

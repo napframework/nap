@@ -79,9 +79,9 @@ namespace nap
 	 */
 	static VkSampleCountFlagBits getMaxSampleCount(VkPhysicalDevice physicalDevice)
 	{
-		VkPhysicalDeviceProperties physicalDeviceProperties;
-		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
-		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+		VkSampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 		if (counts & VK_SAMPLE_COUNT_64_BIT)	{ return VK_SAMPLE_COUNT_64_BIT; }
 		if (counts & VK_SAMPLE_COUNT_32_BIT)	{ return VK_SAMPLE_COUNT_32_BIT; }
 		if (counts & VK_SAMPLE_COUNT_16_BIT)	{ return VK_SAMPLE_COUNT_16_BIT; }
@@ -217,12 +217,12 @@ namespace nap
 	 */
 	static bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
 	{
-		VkDebugReportCallbackCreateInfoEXT createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-		createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		createInfo.pfnCallback = debugCallback;
+		VkDebugReportCallbackCreateInfoEXT create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+		create_info.pfnCallback = debugCallback;
 
-		if (!errorState.check(createDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
+		if (!errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
 			return false;
 		return true;
 	}
@@ -292,11 +292,13 @@ namespace nap
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
+		layer_names.reserve(layerNames.size());
 		for (const auto& layer : layerNames)
 			layer_names.emplace_back(layer.c_str());
 
 		// Copy extensions
 		std::vector<const char*> ext_names;
+		ext_names.reserve(extensionNames.size());
 		for (const auto& ext : extensionNames)
 			ext_names.emplace_back(ext.c_str());
 
@@ -533,11 +535,11 @@ namespace nap
 	 */
 	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, unsigned int graphicsQueueIndex, VkCommandPool& commandPool)
 	{
-		VkCommandPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		poolInfo.queueFamilyIndex = graphicsQueueIndex;
-		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		return vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS;
+		VkCommandPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		pool_info.queueFamilyIndex = graphicsQueueIndex;
+		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		return vkCreateCommandPool(device, &pool_info, nullptr, &commandPool) == VK_SUCCESS;
 	}
 
 
@@ -566,13 +568,13 @@ namespace nap
 	 */
 	static bool createCommandBuffer(VkDevice device, VkCommandPool commandPool, VkCommandBuffer& commandBuffer, utility::ErrorState& errorState)
 	{
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = commandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
+		VkCommandBufferAllocateInfo alloc_info = {};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.commandPool = commandPool;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandBufferCount = 1;
 
-		if (!errorState.check(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
+		if (!errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
 			return false;
 
 		return true;
@@ -584,11 +586,11 @@ namespace nap
 	 */
 	static bool createFence(VkDevice device, VkFence& fence, utility::ErrorState& errorState)
 	{
-		VkFenceCreateInfo fenceInfo = {};
-		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		VkFenceCreateInfo fence_info = {};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		return errorState.check(vkCreateFence(device, &fenceInfo, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
+		return errorState.check(vkCreateFence(device, &fence_info, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
 	}
 
 
@@ -717,35 +719,35 @@ namespace nap
 			shader_attribute_binding++;
 		}
 
-		VkShaderModule vertShaderModule = shader.getVertexModule();
-		VkShaderModule fragShaderModule = shader.getFragmentModule();
+		VkShaderModule vert_shader_module = shader.getVertexModule();
+		VkShaderModule frag_shader_module = shader.getFragmentModule();
 
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
-		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertShaderModule;
-		vertShaderStageInfo.pName = "main";
+		VkPipelineShaderStageCreateInfo vert_shader_stage_info = {};
+		vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vert_shader_stage_info.module = vert_shader_module;
+		vert_shader_stage_info.pName = "main";
 
-		VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = fragShaderModule;
-		fragShaderStageInfo.pName = "main";
+		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
+		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		frag_shader_stage_info.module = frag_shader_module;
+		frag_shader_stage_info.pName = "main";
 
-		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
+		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-		vertexInputInfo.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
+		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
-		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = getTopology(drawMode);
-		inputAssembly.primitiveRestartEnable = VK_FALSE;
+		VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
+		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		input_assembly.topology = getTopology(drawMode);
+		input_assembly.primitiveRestartEnable = VK_FALSE;
 
 		VkDynamicState dynamic_states[2] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -757,12 +759,12 @@ namespace nap
 		dynamic_state_create_info.dynamicStateCount = 2;
 		dynamic_state_create_info.pDynamicStates = dynamic_states;
 
-		VkPipelineViewportStateCreateInfo viewportState = {};
-		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportState.viewportCount = 1;
-		viewportState.pViewports = nullptr;
-		viewportState.scissorCount = 1;
-		viewportState.pScissors = nullptr;
+		VkPipelineViewportStateCreateInfo viewport_state = {};
+		viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewport_state.viewportCount = 1;
+		viewport_state.pViewports = nullptr;
+		viewport_state.scissorCount = 1;
+		viewport_state.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizer = {};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -782,7 +784,7 @@ namespace nap
 		multisampling.flags = 0;
 		multisampling.minSampleShading = 1.0f;
 
-		VkPipelineDepthStencilStateCreateInfo depthStencil = getDepthStencilCreateInfo(materialInstance);
+
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
 
 		VkPipelineColorBlendStateCreateInfo colorBlending = {};
@@ -798,33 +800,35 @@ namespace nap
 
 		VkDescriptorSetLayout set_layout = material.getShader().getDescriptorSetLayout();
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &set_layout;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
+		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
+		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipeline_layout_info.setLayoutCount = 1;
+		pipeline_layout_info.pSetLayouts = &set_layout;
+		pipeline_layout_info.pushConstantRangeCount = 0;
 
-		if (!errorState.check(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
+		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
 			return false;
 
-		VkGraphicsPipelineCreateInfo pipelineInfo = {};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = shaderStages;
-		pipelineInfo.pVertexInputState = &vertexInputInfo;
-		pipelineInfo.pInputAssemblyState = &inputAssembly;
-		pipelineInfo.pViewportState = &viewportState;
-		pipelineInfo.pRasterizationState = &rasterizer;
-		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pColorBlendState = &colorBlending;
-		pipelineInfo.pDepthStencilState = &depthStencil;
-		pipelineInfo.layout = pipelineLayout;
-		pipelineInfo.renderPass = renderPass;
-		pipelineInfo.pDynamicState = &dynamic_state_create_info;
-		pipelineInfo.subpass = 0;
-		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+		VkPipelineDepthStencilStateCreateInfo depth_stencil = getDepthStencilCreateInfo(materialInstance);
 
-		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
+		VkGraphicsPipelineCreateInfo pipeline_info = {};
+		pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipeline_info.stageCount = 2;
+		pipeline_info.pStages = shader_stages;
+		pipeline_info.pVertexInputState = &vertex_input_info;
+		pipeline_info.pInputAssemblyState = &input_assembly;
+		pipeline_info.pViewportState = &viewport_state;
+		pipeline_info.pRasterizationState = &rasterizer;
+		pipeline_info.pMultisampleState = &multisampling;
+		pipeline_info.pColorBlendState = &colorBlending;
+		pipeline_info.pDepthStencilState = &depth_stencil;
+		pipeline_info.layout = pipelineLayout;
+		pipeline_info.renderPass = renderPass;
+		pipeline_info.pDynamicState = &dynamic_state_create_info;
+		pipeline_info.subpass = 0;
+		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+
+		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
 			return false;
 		return true;
 	}
@@ -1153,7 +1157,7 @@ namespace nap
 		VkPhysicalDeviceProperties	physical_device_properties;
 
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mGraphicsQueueIndex, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
@@ -1172,18 +1176,19 @@ namespace nap
 
 		// Create a logical device that interfaces with the physical device.
 		bool print_extensions = getConfiguration<RenderServiceConfiguration>()->mPrintAvailableExtensions;
-		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mGraphicsQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
+		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
 			return false;
 
 		// Create command pool
-		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mGraphicsQueueIndex, mCommandPool), "Failed to create Command Pool"))
+		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mQueueIndex, mCommandPool), "Failed to create Command Pool"))
 			return false;
 
 		// Determine depth format for the current device
 		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
 			return false;
 
-		vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0, &mGraphicsQueue);
+		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+		vkGetDeviceQueue(mDevice, mQueueIndex, 0, &mQueue);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice;
@@ -1337,11 +1342,11 @@ namespace nap
 	{
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 		// Begin recording commands
-		VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		VkResult result = vkBeginCommandBuffer(commandBuffer, &begin_info);
 		assert(result == VK_SUCCESS);
 
 		// Perform transfer
@@ -1352,11 +1357,11 @@ namespace nap
 		assert(result == VK_SUCCESS);
 
 		// Submit command queue
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &commandBuffer;
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 	}
 
@@ -1371,12 +1376,10 @@ namespace nap
 		{
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
-
 			mTexturesToUpload.clear();
 
 			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
-
 			mBuffersToUpload.clear();
 		});
 	}
@@ -1384,7 +1387,7 @@ namespace nap
 
 	void RenderService::downloadData()
 	{
-		// Push the download of a texture onto the commandbuffer
+		// Push the download of a texture onto the command buffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
 		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
 		transferData(commandBuffer, [commandBuffer, this, &frame]()
@@ -1422,7 +1425,6 @@ namespace nap
 	{
 		for (VulkanObjectDestructor& destructor : mFramesInFlight[frameIndex].mQueuedVulkanObjectDestructors)
 			destructor(*this);
-
 		mFramesInFlight[frameIndex].mQueuedVulkanObjectDestructors.clear();
 	}
 
@@ -1468,14 +1470,13 @@ namespace nap
 		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
 		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
-		// Push any texture downloads on the commandbuffer
+		// Push any texture downloads on the command buffer
 		downloadData();
 
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
-		// the commandbuffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		vkQueueSubmit(mGraphicsQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
+		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
+		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
-
 		mIsRenderingFrame = false;
 	}
 
@@ -1486,9 +1487,9 @@ namespace nap
 		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &beginInfo);
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &begin_info);
 		assert(result == VK_SUCCESS);
 
 		return true;
@@ -1501,11 +1502,11 @@ namespace nap
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &mCurrentCommandBuffer;
-		result = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
