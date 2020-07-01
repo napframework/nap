@@ -320,7 +320,7 @@ namespace nap
 		uint32 major_version = VK_VERSION_MAJOR(current_version);
 		uint32 minor_version = VK_VERSION_MINOR(current_version);
 		uint32 patch_version = VK_VERSION_PATCH(current_version);
-		nap::Logger::info("Vulkan Instance Version: %d.%d.%d", major_version, minor_version, patch_version);
+		nap::Logger::info("Vulkan instance version: %d.%d.%d", major_version, minor_version, patch_version);
 
 		// Create api version without patch, not used when creating instance
 		uint32 req_vulkan_version = VK_MAKE_VERSION(MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
