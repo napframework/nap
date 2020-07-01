@@ -308,8 +308,14 @@ namespace nap
 			"Unable Query instance-level version of Vulkan before instance creation"))
 			return false;
 
+		// Log used SDK version
+		uint32 major_version = VK_VERSION_MAJOR(current_api);
+		uint32 minor_version = VK_VERSION_MINOR(current_api);
+		uint32 patch_version = VK_VERSION_PATCH(current_api);
+		nap::Logger::info("Vulkan SDK Version: %d.%d.%d", major_version, minor_version, patch_version);
+
 		// Create api version without patch, not used when creating instance
-		outVersion = VK_MAKE_VERSION(VK_VERSION_MAJOR(current_api), VK_VERSION_MINOR(current_api), 0);
+		outVersion = VK_MAKE_VERSION(major_version, minor_version, 0);
 
 		// initialize the VkApplicationInfo structure
 		VkApplicationInfo app_info = {};
