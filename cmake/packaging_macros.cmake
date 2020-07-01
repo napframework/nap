@@ -670,7 +670,6 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
     # Add the runtime paths for RTTR & GLEW on macOS
     if(APPLE)
         add_macos_rttr_rpath()
-        add_macos_glew_rpath()
     endif()
 
     # Run FBX converter

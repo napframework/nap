@@ -166,7 +166,7 @@ namespace nap
 		/**
 		 *	Actually performs the poll request
 		 */
-		void doPoll();
+		void poll();
 
 		/**
 		 * Update called by service on main thread

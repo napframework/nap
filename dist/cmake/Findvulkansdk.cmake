@@ -1,12 +1,12 @@
 # default vulkansdk directory
 find_path(VULKANSDK_DIR
           NO_CMAKE_FIND_ROOT_PATH
-          NAMES msvc/Include/vulkan/vulkan.h
+          NAMES Include/vulkan/vulkan.h
           HINTS ${THIRDPARTY_DIR}/vulkansdk
           )
 
-set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/msvc/Lib)
-set(VULKANSDK_LIBS ${VULKANSDK_LIBS_DIR}/vulkan-1.lib)
+set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/lib/msvc)
+set(VULKANSDK_LIBS ${VULKANSDK_LIBS_DIR}/msvc/vulkan-1.lib)
 set(VULKANSDK_INCLUDE_DIRS ${VULKANSDK_DIR}/msvc/Include)
 
 mark_as_advanced(VULKANSDK_INCLUDE_DIRS)

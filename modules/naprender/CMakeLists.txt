@@ -178,3 +178,10 @@ elseif(UNIX)
     install(FILES ${SDL_DYLIBS} ${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2main.a
             DESTINATION thirdparty/SDL2/lib)
 endif()
+
+#vulkansdk
+install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vulkansdk/LICENSE.txt)
+if (WIN32)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/INCLUDE DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/LIB DESTINATION thirdparty/vulkansdk)
+endif()

@@ -191,9 +191,6 @@ add_subdirectory(modules/napopencv)
 add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
 
-# Leftover components can go here for now
-add_subdirectory(modules/napsandbox)
-
 # Packaging
 include(cmake/packaging_macros.cmake)
 package_nap()

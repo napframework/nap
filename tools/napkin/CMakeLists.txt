@@ -72,7 +72,6 @@ nap_qt_post(${PROJECT_NAME})
 # Add the runtime paths for RTTR & GLEW on macOS
 if(APPLE)
     add_macos_rttr_rpath()
-    add_macos_glew_rpath()
 endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -113,7 +112,6 @@ set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 set(PATH_TO_THIRDPARTY "../../../../thirdparty")
 if(APPLE)
     set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
@@ -141,7 +139,6 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
     list(APPEND EXTRA_RPATH lib)
 
     set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")

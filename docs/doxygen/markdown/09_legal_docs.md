@@ -174,7 +174,6 @@ These Terms of Use constitute an agreement between You and Naivi. These Terms of
 		- ffmpeg: https://www.ffmpeg.org/legal.html
 		- freeimage: http://freeimage.sourceforge.net/license.html
 		- etherdream: https://github.com/tgreiser/etherdream/blob/master/LICENSE
-		- glew: https://github.com/nigels-com/glew#copyright-and-licensing
 		- glm: https://glm.g-truc.net/copying.txt
 		- libartnet: https://github.com/OpenLightingProject/libartnet
 		- mpg123: https://github.com/dominictarr/mpg123/blob/master/LICENSE
