@@ -392,13 +392,12 @@ namespace nap
 		if (packagedBuild)
 		{
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
-			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../..";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			const std::string pythonHome = utility::joinPath(mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "python-embed-amd64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #elif ANDROID
@@ -408,21 +407,20 @@ namespace nap
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
 				setenv("PYTHONHOME", exeDir.c_str(), 1);
 			}
 			else {
 				// Set PYTHONHOME to thirdparty location within packaged NAP release
-				const std::string napRoot = exeDir + "/../../../../";
-				const std::string pythonHome = napRoot + "/thirdparty/python/";
+				const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
 			}
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../../";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, "install"});
+            nap::Logger::warn("Setting PYTHONHOME: %s", pythonHome.c_str());
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
