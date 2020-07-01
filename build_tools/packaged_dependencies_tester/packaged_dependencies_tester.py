@@ -352,8 +352,10 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     # For shared libraries tracking on macOS
     if sys.platform == 'darwin':
         my_env['DYLD_PRINT_LIBRARIES'] = '1'
-    args = shlex.split(cmd)
-    p = Popen(args, stdout=PIPE, stderr=PIPE, env=my_env)
+    # Split command on Unix
+    if sys.platform != 'win32':
+        cmd = shlex.split(cmd)
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
     time.sleep(WAIT_SECONDS_FOR_PROCESS_HEALTH)
