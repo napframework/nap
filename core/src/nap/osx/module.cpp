@@ -10,8 +10,7 @@ namespace nap
 	{
 	}
 
-
-	void* loadModule(const std::string& modulePath, std::string& errorString)
+ 	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{
 		void* result;
 		result = dlopen(modulePath.c_str(), RTLD_LAZY);
@@ -36,20 +35,6 @@ namespace nap
 	}
 
 
-	std::string getModuleNameFromPath(const std::string& path)
-	{
-		assert(isModule(path));
-		std::string moduleName = utility::getFileNameWithoutExtension(path);
-		return moduleName;
-	}
-
-
-	NAPAPI bool isModule(const std::string& path)
-	{
-		return utility::getFileExtension(path) == getModuleExtension();
-	}
-	
-	
 	std::string getModuleExtension()
 	{
 		return "dylib";
