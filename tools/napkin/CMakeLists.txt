@@ -210,7 +210,7 @@ if(MSVC)
     # On Windows, for now, dump our whole napkin directory from packaging_bin
     # into the release as it contains the required DLLs (as we loaded them in 
     # there for running Napkin against source from its own directory)
-    install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release/napkin
+    install(DIRECTORY ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-Release/napkin
             DESTINATION tools/)
 else()
     # Deploy Napkin binary into release on *nix
