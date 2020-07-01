@@ -1,5 +1,4 @@
 #include "../module.h"
-#include <utility/fileutils.h>
 #include <assert.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -8,8 +7,7 @@
 
 namespace nap
 {
-	// Convert std::string to a Windows string
-	PCWSTR toPCWSTR(const std::string& s)
+	std::wstring toWStr(const std::string& s)
 	{
 		int len;
 		int slength = (int)s.length() + 1;
@@ -18,7 +16,7 @@ namespace nap
 		MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
 		std::wstring r(buf);
 		delete[] buf;
-		return r.c_str();
+		return r;
 	}
 
 	std::string getLastErrorStr()
@@ -41,13 +39,23 @@ namespace nap
 	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
 	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
 	{
+		SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_USER_DIRS);
 		std::vector<DLL_DIRECTORY_COOKIE> dllDirCookies;
 		for (const auto& searchPath : paths)
 		{
-			auto cookie = AddDllDirectory(toPCWSTR(searchPath));
+			auto abspath = utility::getAbsolutePath(searchPath);
+			auto abspathw = toWStr(abspath);
+
+			if (!utility::fileExists(abspath))
+			{
+				nap::Logger::error("Path does not exist: %s (resolved from: %s)", abspath.c_str(), searchPath.c_str());
+				continue;
+			}
+
+			auto cookie = AddDllDirectory(abspathw.c_str());
 			if (!cookie)
 			{
-				nap::Logger::error("Failed to add dll path: %s (%s)", searchPath.c_str(), getLastErrorStr().c_str());
+				nap::Logger::error("Failed to add dll path: %s (%s)", abspath.c_str(), getLastErrorStr().c_str());
 				continue;
 			}
 			dllDirCookies.emplace_back(cookie);
