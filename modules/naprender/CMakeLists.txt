@@ -180,8 +180,8 @@ elseif(UNIX)
 endif()
 
 #vulkansdk
-install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vulkansdk/LICENSE.txt)
+install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vulkansdk)
 if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/INCLUDE DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/LIB DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/Include DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/Lib DESTINATION thirdparty/vulkansdk)
 endif()
