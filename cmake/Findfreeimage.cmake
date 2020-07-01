@@ -54,7 +54,7 @@ macro(copy_freeimage_dll)
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                         $<TARGET_FILE:freeimagelib> 
-                        "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
+                        $<TARGET_FILE_DIR:${PROJECT_NAME}>
                 )
     endif()
 endmacro()

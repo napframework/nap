@@ -17,8 +17,13 @@ endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 if(MSVC)
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/Release/napkin)
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/Debug/napkin)
+    if(NOT DEFINED NAP_PACKAGED_BUILD)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+    else()
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+    endif()
 else()
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         if(APPLE)
@@ -114,9 +119,7 @@ if(MSVC)
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
                                    -E copy
-# TODO CH Temporarily revert build conf to build type directory change
-#                                  ${NAPKIN_COPY_SRC}/$<CONFIG>/${MODULE_NAME}.dll
-                                   ${NAPKIN_COPY_SRC}/${BUILD_CONF}/${MODULE_NAME}.dll
+                                   $<TARGET_FILE:${MODULE_NAME}>
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
     endforeach()
@@ -133,18 +136,14 @@ if(MSVC)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-# TODO CH Temporarily revert build conf to build type directory change
-#       COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/${BUILD_CONF}/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:naprtti> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
 
     # NAP core 
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-# TODO CH Temporarily revert build conf to build type directory change
-#       COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/${BUILD_CONF}/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:napcore> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
 
     # Copy freeimage DLL to build directory
