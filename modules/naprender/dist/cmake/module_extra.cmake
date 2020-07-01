@@ -21,7 +21,7 @@ endif()
 add_include_to_interface_target(mod_naprender ${FREEIMAGE_INCLUDE_DIRS})
 
 # add vulkan library
-set(MODULE_NAME_EXTRA_LIBS ${VULKANSDK_LIBS_DIR})
+set(MODULE_NAME_EXTRA_LIBS vulkansdk)
 
 if(UNIX)
     # Package assimp into packaged project on *nix
