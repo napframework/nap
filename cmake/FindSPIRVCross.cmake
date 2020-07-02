@@ -1,13 +1,16 @@
-find_path(SPIRVCROSS_DIR
-          NAMES spirv_cross/spirv.h
-          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/install/include
+if(WIN32)
+
+	find_path(SPIRVCROSS_DIR
+          NAMES include/spirv_cross/spirv.h
+          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/msvc/install
           )
 
-set(SPIRVCROSS_INCLUDE_DIR ${SPIRVCROSS_DIR})
+	# include dir
+	set(SPIRVCROSS_INCLUDE_DIR ${SPIRVCROSS_DIR}/include)
 
-if(WIN32)
-    set(SPIRVCROSS_LIBS_DEBUG ${SPIRVCROSS_DIR}/../lib/msvc/Debug/spirv-cross-core.lib)
-    set(SPIRVCROSS_LIBS_RELEASE ${SPIRVCROSS_DIR}/../lib/msvc/Release/spirv-cross-core.lib)
+	# required libs, only core!
+    set(SPIRVCROSS_LIBS_DEBUG ${SPIRVCROSS_DIR}/lib/spirv-cross-cored.lib)
+    set(SPIRVCROSS_LIBS_RELEASE ${SPIRVCROSS_DIR}/lib/spirv-cross-core.lib)
 endif()
 
 
@@ -16,4 +19,4 @@ mark_as_advanced(SPIRVCROSS_LIBS_DEBUG)
 mark_as_advanced(SPIRVCROSS_LIBS_RELEASE)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SPIRVCross REQUIRED_VARS SPIRVCROSS_DIR)
+find_package_handle_standard_args(SPIRVCross REQUIRED_VARS SPIRVCROSS_DIR SPIRVCROSS_INCLUDE_DIR SPIRVCROSS_LIBS_DEBUG SPIRVCROSS_LIBS_RELEASE)

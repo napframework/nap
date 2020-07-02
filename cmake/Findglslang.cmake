@@ -1,8 +1,3 @@
-find_path(GLSLANG_INCLUDE_DIR
-		  NAMES glslang/Public/ShaderLang.h
-		  HINTS ${THIRDPARTY_DIR}/glslang/install/include
-		  )
-		  
 if(APPLE)
 	find_library(GLSLANG_LIBRARY
 				 NAMES glslang
@@ -26,51 +21,56 @@ elseif(UNIX)
 		set(GLSLANG_LIBS_RELEASE ${GLSLANG_LIBRARY})
 	endif()
 else()
+	find_path(GLSLANG_INCLUDE_DIR
+		  NAMES glslang/Public/ShaderLang.h
+		  HINTS ${THIRDPARTY_DIR}/glslang/msvc/install/include
+		  )
+
 	find_library(GLSLANG_LIBRARY_DEBUG
 				 NAMES glslangd
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/debug				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib				   
 				 NO_DEFAULT_PATH
 				)
 				
 	find_library(OSDEPENDENT_LIBRARY_DEBUG
 				 NAMES OSDependentd
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/debug				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib				   
 				 NO_DEFAULT_PATH
 				)
 				
 	find_library(SPIRV_LIBRARY_DEBUG
 				 NAMES SPIRVd
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/debug				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)
 				
 	find_library(OGLCOMPILER_LIBRARY_DEBUG
 				 NAMES OGLCompilerd
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/debug				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)					
 
 	find_library(GLSLANG_LIBRARY_RELEASE
 				 NAMES glslang
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/release				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)
 				
 	find_library(OSDEPENDENT_LIBRARY_RELEASE
 				 NAMES OSDependent
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/release				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)	
 				
 	find_library(SPIRV_LIBRARY_RELEASE
 				 NAMES SPIRV
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/release				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)
 				
 	find_library(OGLCOMPILER_LIBRARY_RELEASE
 				 NAMES OGLCompiler
-				 PATHS ${THIRDPARTY_DIR}/glslang/install/lib/windows/release				   
+				 PATHS ${THIRDPARTY_DIR}/glslang/msvc/install/lib
 				 NO_DEFAULT_PATH
 				)					
 				
