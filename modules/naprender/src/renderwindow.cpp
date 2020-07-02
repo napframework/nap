@@ -940,10 +940,11 @@ namespace nap
 			return false;
 
 		// Check if number of requested images is supported based on queried abilities
+		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
 		mSwapChainImageCount = surface_capabilities.minImageCount + mAddedSwapImages;
-		if (mSwapChainImageCount > surface_capabilities.maxImageCount)
+		if (surface_capabilities.maxImageCount != 0 && mSwapChainImageCount > surface_capabilities.maxImageCount)
 		{
-			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit of: %d", mID.c_str(), mSwapChainImageCount, surface_capabilities.maxImageCount);
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, surface_capabilities.maxImageCount);
 			mSwapChainImageCount = surface_capabilities.maxImageCount;
 		}
 
