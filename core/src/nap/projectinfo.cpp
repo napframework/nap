@@ -48,8 +48,7 @@ namespace nap
 
 		if (mPathMapping->mModulePaths.empty())
 		{
-			nap::Logger::error("No module paths specified in path mapping: %s",
-							   mPathMapping->mFilename.c_str());
+			nap::Logger::error("No module paths specified in path mapping: %s", mPathMapping->getFilename().c_str());
 			return {};
 		}
 
@@ -79,5 +78,19 @@ namespace nap
 		if (dataFile.empty())
 			return utility::joinPath({getProjectDir(), "data"});
 		return utility::joinPath({getProjectDir(), utility::getFileDir(mDefaultData)});
+	}
+
+	const PathMapping& ProjectInfo::getPathMapping() const
+	{
+		// Expected to exist when created
+		assert(mPathMapping);
+		return *mPathMapping;
+	}
+
+	const ProjectInfo& ModuleInfo::getProjectInfo() const
+	{
+		// Expected to exist when created
+		assert(mProjectInfo);
+		return *mProjectInfo;
 	}
 }

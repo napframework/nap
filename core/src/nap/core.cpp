@@ -495,7 +495,7 @@ namespace nap
 
 		// As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
 		// try and populate it
-		if (!projectInfo.mEditorMode)
+		if (!projectInfo.isEditorMode())
 			reps["EXE_DIR"] = utility::getExecutableDir();
 
 		// Do string/template replacement

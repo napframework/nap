@@ -54,8 +54,10 @@ namespace nap
 					   moduleJson.c_str()))
 			return false;
 
-		// Store the path so we can find more files later on
+
+		// Store useful references so we can backtrack if necessary
 		modinfo->mFilename = moduleFile;
+		modinfo->mProjectInfo = &project;
 
         // Add project directory default search path for modules, used by Windows packaged apps
 		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
@@ -145,7 +147,7 @@ namespace nap
 	{
 		// Require module directories to be provided
 		auto moduleDirs = projectInfo.getModuleDirectories();
-		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.mFilename.c_str()))
+		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
 			return false;
 
         // Substitute module name in given directories

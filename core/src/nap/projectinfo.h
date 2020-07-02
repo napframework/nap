@@ -6,22 +6,30 @@
 
 namespace nap
 {
+	class ModuleManager;
 
 	class PathMapping : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
-		std::string mFilename;
 		std::string mProjectExeToRoot;
 		std::string mNapkinExeToRoot;
 		std::vector<std::string> mModulePaths;
+
+		/**
+		 * @return The absolute file path this PathMapping was loaded from
+		 */
+		std::string getFilename() const { return mFilename; }
+
+	private:
+		std::string mFilename;
 	};
 
 	class ProjectInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
+		friend class nap::Core;
 	public:
-		std::string mFilename;					// The filename from which this data was loaded
 		std::string mTitle;						// Title of the project
 		std::string mVersion;					// Version of this project
 		std::string mDefaultData;				// Relative path of the default data (json) file
@@ -29,15 +37,15 @@ namespace nap
 		std::vector<std::string> mRequiredModules;	// Names of modules this project depends on
 		std::vector<nap::ServiceConfiguration*> mServiceConfigurations; // Any service configs in this project
 
-		// not in RTTI
-		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
-		bool mEditorMode = false;
+		/**
+		 * @return True if this process is running in an editor
+		 */
+		bool isEditorMode() const { return mEditorMode; }
 
-
-		std::string getFilename() const
-		{
-			return mFilename;
-		}
+		/**
+		 * @return The absolute file path this ProjectInfo was loaded from
+		 */
+		std::string getFilename() const { return mFilename; }
 
 		/**
 		 * @return Absolute path of the project directory
@@ -69,14 +77,38 @@ namespace nap
 		 * @return Absolute path of this project's data directory
 		 */
 		std::string dataDirectory() const;
+
+		/**
+		 * @return The path mapping for this project
+		 */
+		const PathMapping& getPathMapping() const;
+
+	private:
+		std::string mFilename;					// The filename from which this data was loaded
+		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
+		bool mEditorMode = false;
 	};
 
 	class ModuleInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
+		friend class nap::ModuleManager;
 	public:
-		std::string mFilename;					// The filename from which this data was loaded
-		std::vector<std::string> mRequiredModules; // The modules this module depends on
+		std::vector<std::string> mRequiredModules; 	// The modules this module depends on
 		std::vector<std::string> mLibSearchPaths;
+
+		/**
+		 * @return The absolute file path this ModuleInfo was loaded from
+		 */
+		std::string getFilename() const { return mFilename; }
+
+		/**
+		 * @return The ProjectInfo instance this ModuleInfo 'belongs' to.
+		 */
+		const ProjectInfo& getProjectInfo() const;
+
+	private:
+		std::string mFilename;						// The filename from which this data was loaded
+		const ProjectInfo* mProjectInfo;			// The project this module 'belongs' to during the session
 	};
 } // namespace nap

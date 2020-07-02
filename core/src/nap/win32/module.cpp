@@ -82,7 +82,9 @@ namespace nap
 	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{
 		// Temporarily set search paths for this module's dependencies
-		auto searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
+		std::vector<DLL_DIRECTORY_COOKIE> searchPathCookies;
+		if (modInfo.getProjectInfo().isEditorMode())
+			searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
 
 		// Load our module
 		void* result;
@@ -93,7 +95,8 @@ namespace nap
 			errorString = getLastErrorStr();
 
 		// Remove temporarily added search paths
-		removeDLLSearchPaths(searchPathCookies);
+		if (modInfo.getProjectInfo().isEditorMode())
+			removeDLLSearchPaths(searchPathCookies);
 
 		return result;
 	}
