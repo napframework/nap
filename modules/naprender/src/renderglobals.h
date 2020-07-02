@@ -11,20 +11,20 @@ namespace nap
 	/**
 	 * GLSL uniform attribute name for root nap struct
 	 */
-	constexpr char* mvpStructUniform = "nap";
+	constexpr const char* mvpStructUniform = "nap";
 
 	/**
 	 * GLSL uniform attribute name of model matrix
 	 */
-	constexpr char* modelMatrixUniform = "modelMatrix";
+	constexpr const char* modelMatrixUniform = "modelMatrix";
 
 	/**
 	 * GLSL uniform attribute name for view matrix
 	 */
-	constexpr char* viewMatrixUniform = "viewMatrix";
+	constexpr const char* viewMatrixUniform = "viewMatrix";
 
 	/**
 	 * GLSL uniform attribute name for projection matrix
 	 */
-	constexpr char* projectionMatrixUniform = "projectionMatrix";
+	constexpr const char* projectionMatrixUniform = "projectionMatrix";
 }

@@ -1,19 +1,19 @@
-# find directory
+# find vulkan directory
 if(WIN32)
 	find_path(VULKANSDK_DIR
-		NO_CMAKE_FIND_ROOT_PATH
+		NO_DEFAULT_PATH
         NAMES Include/vulkan/vulkan.h
         HINTS ${THIRDPARTY_DIR}/vulkansdk/msvc
         )
 elseif(APPLE)
 	find_path(VULKANSDK_DIR
-		NO_CMAKE_FIND_ROOT_PATH
+		NO_DEFAULT_PATH
         NAMES Include/vulkan/vulkan.h
         HINTS ${THIRDPARTY_DIR}/vulkansdk/osx
         )
 elseif(UNIX)
 	find_path(VULKANSDK_DIR
-		NO_CMAKE_FIND_ROOT_PATH
+		NO_DEFAULT_PATH
         NAMES Include/vulkan/vulkan.h
         HINTS ${THIRDPARTY_DIR}/vulkansdk/linux
         )
@@ -21,7 +21,7 @@ endif()
 
 # include directory
 find_path(VULKANSDK_INCLUDE_DIRS
-			NO_CMAKE_FIND_ROOT_PATH
+			NO_DEFAULT_PATH
 			NAMES vulkan/vulkan.h
 			HINTS ${VULKANSDK_DIR}/Include
 			)
@@ -29,12 +29,22 @@ find_path(VULKANSDK_INCLUDE_DIRS
 # vulkan library directory
 set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/Lib)
 
-# vulkan core lib
-find_library(VULKANSDK_LIBS
-			NO_CMAKE_FIND_ROOT_PATH
-			NAMES vulkan-1
+# find vulkan library
+if(WIN32)
+	# vulkan core lib
+	find_library(VULKANSDK_LIBS
+				NO_DEFAULT_PATH
+				NAMES vulkan-1
+				PATHS ${VULKANSDK_LIBS_DIR}		   
+				)
+elseif(UNIX)
+	# vulkan core lib
+	find_library(VULKANSDK_LIBS
+			NO_DEFAULT_PATH
+			NAMES libvulkan.so
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
+endif()
 
 mark_as_advanced(VULKANSDK_INCLUDE_DIRS)
 mark_as_advanced(VULKANSDK_LIBS_DIR)

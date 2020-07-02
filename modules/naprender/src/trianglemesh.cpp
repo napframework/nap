@@ -1,9 +1,12 @@
-#include "TriangleMesh.h"
+// Local Includes
+#include "trianglemesh.h"
 #include "mesh.h"
 #include "material.h"
-#include <glm/glm.hpp>
 #include "renderservice.h"
-#include "nap/core.h"
+
+// External Includes
+#include <glm/glm.hpp>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)

@@ -4,7 +4,7 @@
 #include "image.h"
 
 // External Includes
-#include <rtti\factory.h>
+#include <rtti/factory.h>
 
 namespace nap
 {

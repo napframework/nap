@@ -15,12 +15,22 @@ find_path(VULKANSDK_INCLUDE_DIRS
 # vulkan library directory
 set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/Lib)
 
-# vulkan core lib
-find_library(VULKANSDK_LIBS
+# find vulkan library
+if(WIN32)
+	# vulkan core lib
+	find_library(VULKANSDK_LIBS
+				NO_DEFAULT_PATH
+				NAMES vulkan-1
+				PATHS ${VULKANSDK_LIBS_DIR}		   
+				)
+elseif(UNIX)
+	# vulkan core lib
+	find_library(VULKANSDK_LIBS
 			NO_DEFAULT_PATH
-			NAMES vulkan-1
+			NAMES libvulkan.so
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
+endif()
 
 # hide from gui
 mark_as_advanced(VULKANSDK_INCLUDE_DIRS)

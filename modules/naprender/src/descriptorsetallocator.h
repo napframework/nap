@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility/dllexport.h>
 #include <vulkan/vulkan_core.h>
+#include <vector>
 
 namespace nap
 {

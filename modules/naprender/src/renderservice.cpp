@@ -522,8 +522,8 @@ namespace nap
 		queue_create_info.queueCount = 1;
 		std::vector<float> queue_prio = { 1.0f };
 		queue_create_info.pQueuePriorities = queue_prio.data();
-		queue_create_info.pNext = NULL;
-		queue_create_info.flags = NULL;
+		queue_create_info.pNext = nullptr;
+		queue_create_info.flags = 0;
 
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
@@ -538,9 +538,9 @@ namespace nap
 		create_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		create_info.ppEnabledExtensionNames = device_property_names.data();
 		create_info.enabledExtensionCount = static_cast<uint32_t>(device_property_names.size());
-		create_info.pNext = NULL;
+		create_info.pNext = nullptr;
 		create_info.pEnabledFeatures = &device_features;
-		create_info.flags = NULL;
+		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
 		if (!errorState.check(vkCreateDevice(physicalDevice, &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
