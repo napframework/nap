@@ -48,7 +48,7 @@ namespace nap
 
 			if (!utility::fileExists(abspath))
 			{
-				nap::Logger::error("Path does not exist: %s (resolved from: %s)", abspath.c_str(), searchPath.c_str());
+				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), searchPath.c_str());
 				continue;
 			}
 
