@@ -148,34 +148,41 @@ if(MSVC)
         )
 
     # Copy freeimage DLL to build directory
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
+    if(NOT TARGET FreeImage)
+        find_package(freeimage REQUIRED)
+    endif()
+    copy_files_to_target_file_dir($<TARGET_FILE:FreeImage>)
 
     # Copy over Windows graphics DLLs to build directory
-    copy_base_windows_graphics_dlls()
+    set(FILES_TO_COPY
+        ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
+        ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
+        )
+    copy_files_to_target_file_dir(${FILES_TO_COPY})
 
-    # Copy over Assimp to build directory
-    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
+    # Copy over Assimp
+    copy_files_to_target_file_dir(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
 
     # RTTR
     find_rttr()
-    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+    copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    copy_windows_python_dlls_to_bin()
-
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    copy_files_to_target_file_dir(${PYTHON_DLLS})
 
     # Transitional thirdparty DLL copying until source and framework release 
     # structures are aligned (and we can use a shared module_extra.cmake) ##
 
     # mod_napvideo
-    copy_windows_ffmpeg_dlls()
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
+    copy_files_to_target_file_dir(${FFMPEGDLLS})
 
     # mod_napfont
-    if(NOT DEFINED FREETYPE_INCLUDE_DIRS)
+    if(NOT TARGET freetype)
         find_package(freetype REQUIRED)
     endif()
-    copy_freetype_dll()
+    copy_files_to_target_file_dir($<TARGET_FILE:freetype>)
 
     # mod_napaudio
     if(NOT DEFINED LIBSNDFILE_LIB_DIR)
@@ -192,7 +199,7 @@ if(MSVC)
         ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
         ${LIBMPG123_LIB_DIR}/libmpg123.dll
         )
-    copy_files_to_bin(${FILES_TO_COPY})
+    copy_files_to_target_file_dir(${FILES_TO_COPY})
 
     ########################################################################
 
