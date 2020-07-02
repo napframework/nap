@@ -272,7 +272,7 @@ static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory
     p_buffer_size = new_size;
 }
 
-static VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples, VkRenderPass renderPass)
+VkPipeline ImGui_ImplVulkan_CreatePipeline(VkSampleCountFlagBits samples, VkRenderPass renderPass)
 {
 	VkPipelineShaderStageCreateInfo stage[2] = {};
 	stage[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
