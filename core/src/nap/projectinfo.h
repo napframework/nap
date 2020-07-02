@@ -36,10 +36,6 @@ namespace nap
 		std::string mPathMappingFile;			// Points to a file with a path mapping
 		std::vector<std::string> mRequiredModules;	// Names of modules this project depends on
 		std::vector<nap::ServiceConfiguration*> mServiceConfigurations; // Any service configs in this project
-		bool mEditorMode = false;
-		std::string mFilename;					// The filename from which this data was loaded
-		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
-
 
 		/**
 		 * @return True if this process is running in an editor
@@ -88,6 +84,9 @@ namespace nap
 		const PathMapping& getPathMapping() const;
 
 	private:
+		std::string mFilename;					// The filename from which this data was loaded
+		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
+		bool mEditorMode = false;
 	};
 
 	class ModuleInfo : public rtti::Object
