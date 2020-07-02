@@ -8,6 +8,6 @@
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/etherdream/msvc/bin/Release",
         "{ROOT}/../thirdparty/etherdream/msvc/bin/Debug",
-        "{ROOT}/thirdparty/etherdream/lib"
+        "{ROOT}/thirdparty/etherdream/bin"
     ]
 }

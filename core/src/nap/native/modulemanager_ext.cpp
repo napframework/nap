@@ -57,7 +57,11 @@ namespace nap
 		// Store the path so we can find more files later on
 		modinfo->mFilename = moduleFile;
 
+        // Add project directory default search path for modules, used by Windows packaged apps
+		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
+
 		// Patch template variables
+        // TODO Add support for other template variables, especially MODULE_DIR
 		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, {{"ROOT", project.getNAPRootDir()}});
 
 		// Load module dependencies first

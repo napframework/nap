@@ -16,6 +16,7 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+# TODO CH Review need to directly use generator expressions here, otherwise merge macOS and Win64
 if(MSVC)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
@@ -275,7 +276,7 @@ if(APPLE)
                                                   "@rpath"
                                                   )
 
-#   ######### TODO review the need for an equivalent of these in Napkin relocation ############
+#   ######### TODO CH review the need for an equivalent of these in Napkin relocation ############
 
 #   set(PATH_TO_NAP_ROOT "@executable_path/../../../..")
 
