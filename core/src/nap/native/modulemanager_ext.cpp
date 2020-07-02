@@ -61,6 +61,7 @@ namespace nap
 		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
 
 		// Patch template variables
+        // TODO Add support for other template variables, especially MODULE_DIR
 		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, {{"ROOT", project.getNAPRootDir()}});
 
 		// Load module dependencies first
