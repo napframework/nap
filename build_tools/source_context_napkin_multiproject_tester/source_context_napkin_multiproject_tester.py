@@ -282,6 +282,10 @@ def perform_test_run(testing_projects_dir, build_type, create_json_report, force
         return False
     binary_dir = os.path.join(bin_dir_root, build_conf)
 
+    if not os.path.exists(os.path.join(binary_dir, 'napkin')):
+        print("Error, can't find built Napkin, have you done a build all?")
+        return False
+
     print("Framework root: %s" % nap_framework_full_path)
     print("Binary dir.: %s" % binary_dir)
 
