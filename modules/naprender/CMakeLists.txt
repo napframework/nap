@@ -184,4 +184,7 @@ install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vul
 if (WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/Include DESTINATION thirdparty/vulkansdk)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/Lib DESTINATION thirdparty/vulkansdk)
+elseif(UNIX)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/Include DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/Lib DESTINATION thirdparty/vulkansdk)
 endif()

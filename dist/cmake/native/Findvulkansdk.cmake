@@ -17,17 +17,17 @@ set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/Lib)
 
 # find vulkan library
 if(WIN32)
-	# vulkan core lib
+	# vulkan core lib -> vulkan-1.lib
 	find_library(VULKANSDK_LIBS
 				NO_DEFAULT_PATH
 				NAMES vulkan-1
 				PATHS ${VULKANSDK_LIBS_DIR}		   
 				)
 elseif(UNIX)
-	# vulkan core lib
+	# vulkan core lib -> libvulkan.so
 	find_library(VULKANSDK_LIBS
 			NO_DEFAULT_PATH
-			NAMES libvulkan.so
+			NAMES vulkan
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
 endif()
@@ -37,12 +37,22 @@ mark_as_advanced(VULKANSDK_INCLUDE_DIRS)
 mark_as_advanced(VULKANSDK_LIBS_DIR)
 mark_as_advanced(VULKANSDK_LIBS)
 
-# allows the target to refer to 'vulkansdk' to import libraries
+# allows the target to refer to 'vulkansdk' as library target
 add_library(vulkansdk SHARED IMPORTED)
-set_target_properties(vulkansdk PROPERTIES
-                          IMPORTED_IMPLIB_RELEASE ${VULKANSDK_LIBS}
-                          IMPORTED_IMPLIB_DEBUG ${VULKANSDK_LIBS}
-                          )
+
+# Setup library properties for linux
+if(UNIX)
+	set_target_properties(vulkansdk PROPERTIES
+    		IMPORTED_CONFIGURATIONS "Debug;Release"
+        	IMPORTED_LOCATION_RELEASE ${VULKANSDK_LIBS}
+     		IMPORTED_LOCATION_DEBUG ${VULKANSDK_LIBS}
+        	)
+elseif(WIN32)
+	set_target_properties(vulkansdk PROPERTIES
+    		IMPORTED_IMPLIB_RELEASE ${VULKANSDK_LIBS}
+      		IMPORTED_IMPLIB_DEBUG ${VULKANSDK_LIBS}
+          	)
+endif()
 
 # promote package for find
 include(FindPackageHandleStandardArgs)

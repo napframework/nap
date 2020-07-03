@@ -31,17 +31,17 @@ set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/Lib)
 
 # find vulkan library
 if(WIN32)
-	# vulkan core lib
+	# vulkan core lib -> vulkan-1.lib
 	find_library(VULKANSDK_LIBS
 				NO_DEFAULT_PATH
 				NAMES vulkan-1
 				PATHS ${VULKANSDK_LIBS_DIR}		   
 				)
 elseif(UNIX)
-	# vulkan core lib
+	# vulkan core lib -> libvulkan.so
 	find_library(VULKANSDK_LIBS
 			NO_DEFAULT_PATH
-			NAMES libvulkan.so
+			NAMES vulkan
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
 endif()
