@@ -274,12 +274,12 @@ namespace nap
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
 		unsigned int ext_count = 0;
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr) == SDL_TRUE, "Unable to query the number of Vulkan instance extensions"))
+		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr) == SDL_TRUE, "Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
 			return false;
 
 		// Use the amount of extensions queried before to retrieve the names of the extensions
 		std::vector<const char*> ext_names(ext_count);
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to query the number of Vulkan instance extension names"))
+		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to get the number of SDL Vulkan extension names"))
 			return false;
 
 		// Store
@@ -1289,12 +1289,14 @@ namespace nap
 
 	void RenderService::preShutdown()
 	{
-		waitDeviceIdle();
+	    if(isInitialized())
+		    waitDeviceIdle();
 	}
 
 
 	void RenderService::preResourcesLoaded()
 	{
+	    assert(isInitialized());
 		waitDeviceIdle();
 	}
 
