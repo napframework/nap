@@ -11,7 +11,7 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * Predefined box mesh. Contains per face UV coordinates, color information and normals.
+	 * Predefined box mesh with additional uv, color and normal vertex attributes.
 	 * The UV coordinates are always 0-1. The box consists of 6 planes.
 	 * The vertices of the individual planes are not shared.
 	 */

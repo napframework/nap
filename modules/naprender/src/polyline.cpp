@@ -1,11 +1,12 @@
 // Local Includes
 #include "renderservice.h"
 #include "polyline.h"
+#include "meshutils.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
-#include <meshutils.h>
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
@@ -128,10 +129,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes(MeshInstance& instance)
 	{
 		// Create attributes
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		instance.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
@@ -376,49 +377,49 @@ namespace nap
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::position);
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getPositionAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::position);
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(vertexid::getColorName(0));
 	}
 
 
 	const nap::Vec4VertexAttribute& PolyLine::getColorAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(vertexid::getColorName(0));
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getNormalAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::getUVName(0));
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getUvAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::getUVName(0));
 	}
 
 

@@ -1,16 +1,17 @@
 // Local Includes
 #include "renderablemeshcomponent.h"
 #include "mesh.h"
-#include "transformcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
 #include "uniforminstance.h"
+#include "indexbuffer.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
 #include <nap/core.h>
-#include "indexbuffer.h"
+#include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)
@@ -98,21 +99,21 @@ namespace nap
 
 		// Fetch mvp uniform and update individual matrices
 		MaterialInstance& mat_instance = getMaterialInstance();
-		UniformStructInstance* mvp_uniform = mat_instance.getOrCreateUniform(mvpStructUniform);
+		UniformStructInstance* mvp_uniform = mat_instance.getOrCreateUniform(uniform::mvpStruct);
 		if (mvp_uniform != nullptr)
 		{
 			// Set projection uniform in shader
-			UniformMat4Instance* projection_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+			UniformMat4Instance* projection_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
 			if (projection_uniform != nullptr)
 				projection_uniform->setValue(projectionMatrix);
 
 			// Set view uniform in shader
-			UniformMat4Instance* view_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
+			UniformMat4Instance* view_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
 			if (view_uniform != nullptr)
 				view_uniform->setValue(viewMatrix);
 
 			// Set model matrix uniform in shader
-			UniformMat4Instance* model_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
+			UniformMat4Instance* model_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
 			if (model_uniform != nullptr)
 			{
 				const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();

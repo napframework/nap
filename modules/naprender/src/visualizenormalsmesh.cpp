@@ -1,7 +1,10 @@
+// Local Includes
 #include "visualizenormalsmesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
+#include "renderglobals.h"
 
+// External Includes
 #include <rtti/rtti.h>
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -47,8 +50,8 @@ namespace nap
 		const nap::MeshInstance& reference_mesh = mCurrentReferenceMesh->getMeshInstance();
 
 		// Get reference normals and vertices
-		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()).getData();
-		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()).getData();
+		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(vertexid::normal).getData();
+		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(vertexid::position).getData();
 
 		// Get reference uvs
 		std::vector<const std::vector<glm::vec3>*> ref_uvs;
@@ -65,7 +68,7 @@ namespace nap
 		// Query uv data
 		for (int i = 0; i < mUvAttrs.size(); i++)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = reference_mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(i));
+			const Vec3VertexAttribute* ref_uv_attr = reference_mesh.findAttribute<glm::vec3>(vertexid::getUVName(i));
 			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mCurrentReferenceMesh->mID.c_str(), i))
 				return false;
 
@@ -76,7 +79,7 @@ namespace nap
 		// Query color data
 		for (int i = 0; i < mColorAttrs.size(); i++)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = reference_mesh.findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(i));
+			const Vec4VertexAttribute* ref_clr_attr = reference_mesh.findAttribute<glm::vec4>(vertexid::getColorName(i));
 			if (!error.check(ref_clr_attr!= nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mCurrentReferenceMesh->mID.c_str(), i))
 				return false;
 
@@ -176,27 +179,27 @@ namespace nap
 		assert(mCurrentReferenceMesh != nullptr);
 
 		// Make sure the reference mesh has normals
-		if (mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()) == nullptr)
+		if (mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) == nullptr)
 			return error.check(false, "reference mesh has no normals");
 
 		// Create position and vertex attribute
-		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
+		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position));
 
 		// Create tip attribute
 		mTipAttr = &(mMeshInstance->getOrCreateAttribute<float>("Tip"));
 
 		// Create normals attribute
-		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()));
+		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal));
 
 		// Sample all uv sets
 		mUvAttrs.clear();
 		int uv_idx = 0;
 		while (true)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
+			const Vec3VertexAttribute* ref_uv_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(uv_idx));
 			if (ref_uv_attr != nullptr)
 			{
-				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx))));
+				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(uv_idx))));
 				uv_idx++;
 				continue;
 			}
@@ -208,10 +211,10 @@ namespace nap
 		int clr_idx = 0;
 		while (true)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx));
+			const Vec4VertexAttribute* ref_clr_attr = mCurrentReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(vertexid::getColorName(clr_idx));
 			if (ref_clr_attr != nullptr)
 			{
-				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx))));
+				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(clr_idx))));
 				clr_idx++;
 				continue;
 			}

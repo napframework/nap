@@ -6,7 +6,8 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
-#include "indexbuffer.h"
+#include <indexbuffer.h>
+#include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)
@@ -40,9 +41,8 @@ namespace nap
 
 	RenderableCopyMeshComponentInstance::RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<RenderService>())
-	{
+	{ }
 
-	}
 
 	/**
 	 * Initializes this component. For this component to work a reference mesh + at least one mesh to copy onto it is needed.
@@ -99,12 +99,12 @@ namespace nap
 		mTargetMesh = resource->mTargetMesh.get();
 
 		// Ensure the reference mesh has vertices (position attribute).
-		mTargetVertices = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		mTargetVertices = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position);
 		if (!errorState.check(mTargetVertices != nullptr, "%s: unable to find target vertex position attribute", resource->mID.c_str()))
 			return false;
 
 		// Ensure the reference mesh has normals.
-		mTargetNormals = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		mTargetNormals = mTargetMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal);
 		if (!errorState.check(mTargetNormals != nullptr, "%s: unable to find target normal attribute", resource->mID.c_str()))
 			return false;
 

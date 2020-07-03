@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include "material.h"
 #include "renderservice.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <glm/glm.hpp>
@@ -60,8 +61,8 @@ namespace nap
 			0, 1, 2, 3
 		};
 
-		Vec2VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec2>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::GetColorName(0));
+		Vec2VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec2>(vertexid::position);
+		Vec3VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getColorName(0));
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vertices.size());

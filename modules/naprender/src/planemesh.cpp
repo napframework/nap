@@ -1,8 +1,12 @@
+// Local Includes
 #include "planemesh.h"
 #include "material.h"
-#include <glm/glm.hpp>
 #include "renderservice.h"
-#include "nap/core.h"
+#include "renderglobals.h"
+
+// External Includes
+#include <glm/glm.hpp>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -124,10 +128,10 @@ namespace nap
 			}
 		}
 
-		Vec3VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& normal_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		Vec3VertexAttribute& uv_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& normal_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		Vec3VertexAttribute& uv_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec4VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);

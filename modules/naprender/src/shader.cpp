@@ -17,7 +17,7 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
-RTTI_BEGIN_CLASS(nap::Shader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Shader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("mFragShader", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
@@ -544,39 +544,8 @@ bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStag
 
 namespace nap
 {
-	const std::string Shader::VertexAttributeIDs::getPositionVertexAttr() { return "in_Position"; }
-	const std::string Shader::VertexAttributeIDs::getNormalVertexAttr() { return "in_Normals"; }
-	const std::string Shader::VertexAttributeIDs::getTangentVertexAttr() { return "in_Tangent"; }
-	const std::string Shader::VertexAttributeIDs::getBitangentVertexAttr() { return "in_Bitangent"; }
-
-	const std::string Shader::VertexAttributeIDs::getUVVertexAttr(int uvChannel)
-	{
-		std::ostringstream stream;
-		stream << "in_UV" << uvChannel;
-		return stream.str();
-	}
-
-
-	const std::string Shader::VertexAttributeIDs::getColorVertexAttr(int colorChannel)
-	{
-		std::ostringstream stream;
-		stream << "in_Color" << colorChannel;
-		return stream.str();
-	}
-
-
-	Shader::Shader() :
-		mRenderService(nullptr)
-	{
-
-	}
-
-
 	Shader::Shader(Core& core) :
-		mRenderService(core.getService<RenderService>())
-	{
-
-	}
+		mRenderService(core.getService<RenderService>()) { }
 
 
 	Shader::~Shader()

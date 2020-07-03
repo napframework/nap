@@ -4,8 +4,9 @@
 #include <fbxconverter.h>
 #include <meshutils.h>
 #include <triangleiterator.h>
-#include "nap/core.h"
-#include "renderservice.h"
+#include <renderglobals.h>
+#include <nap/core.h>
+#include <renderservice.h>
 
 // nap::videomesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
@@ -38,17 +39,17 @@ namespace nap
 		mMeshInstance->setUsage(EMeshDataUsage::Static);
 
 		// Get position
-		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::position);
 		assert(mPositionAttribute != nullptr);
 
 		// Get uv
-		mUVAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", VertexAttributeIDs::getUVName(0).c_str(), mPath.c_str()))
+		mUVAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::getUVName(0));
+		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", vertexid::getUVName(0).c_str(), mPath.c_str()))
 			return false;
 
 		// Now check for the color attribute
-		mNormalAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		if (!errorState.check(mNormalAttribute != nullptr, "unable to find normal attribute: %s on mesh: %s", VertexAttributeIDs::getNormalName().c_str(), mPath.c_str()))
+		mNormalAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::normal);
+		if (!errorState.check(mNormalAttribute != nullptr, "unable to find normal attribute: %s on mesh: %s", vertexid::normal, mPath.c_str()))
 			return false;
 
 		// We add the direction attribute and copy our normal information

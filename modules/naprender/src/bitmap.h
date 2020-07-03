@@ -98,27 +98,27 @@ namespace nap
 		size_t getSizeInBytes() const;
 
 		/**
-		* Creates a color that is compatible with the data stored in this bitmap.
-		* This is a utility function that works in conjunction with getPixel() and setPixel(). 
-		* Making the pixel once before iterating over all the values in this map avoids unnecessary allocations.
-		*
-		*~~~~~{.cpp}
-		* // Create the pixel that will hold the original color value
-		* auto source_color = mBitmap.makePixel();
-		*
-		* // Create color that will hold the converted color values
-		* RGBColor8 converted_color;
-		* 
-		* while(...)
-		* {			
-		*		// retrieve pixel value and convert into requested color
-		*		mBitmap.getPixel(x, y, *source_color);
-		*		source_color->convert(converted_color);
-		* }
-		*~~~~~
-		*
-		* @return a new pixel as a color that matches the amount of channels and data type of this bitmap
-		*/
+		 * Creates a color that is compatible with the data stored in this bitmap.
+		 * This is a utility function that works in conjunction with getPixel() and setPixel().
+		 * Making the pixel once before iterating over all the values in this map avoids unnecessary allocations.
+		 *
+		 *~~~~~{.cpp}
+		 * // Create the pixel that will hold the original color value
+		 * auto source_color = mBitmap.makePixel();
+		 *
+		 * // Create color that will hold the converted color values
+		 * RGBColor8 converted_color;
+		 *
+		 * while(...)
+		 * {
+		 *		// retrieve pixel value and convert into requested color
+		 *		mBitmap.getPixel(x, y, *source_color);
+		 *		source_color->convert(converted_color);
+		 * }
+		 *~~~~~
+		 *
+		 * @return a new pixel as a color that matches the amount of channels and data type of this bitmap
+		 */
 		std::unique_ptr<BaseColor> makePixel() const;
 
 		/**
@@ -498,7 +498,6 @@ namespace nap
 	{
 		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-//		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
 		switch (mSurfaceDescriptor.getChannels())

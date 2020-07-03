@@ -46,47 +46,6 @@ namespace nap
 
 
 	/**
-	 * Known vertex attribute IDs in the system
-	 * These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
-	 */
-	namespace VertexAttributeIDs
-	{
-		/**
-		* @return Default position vertex attribute name "Position"
-		*/
-		const NAPAPI std::string getPositionName();
-
-		/**
-		* @return Default normal vertex attribute name: "Normal"
-		*/
-		const NAPAPI std::string getNormalName();
-
-		/**
-		* @return Default tangent vertex attribute name: "Tangent"
-		*/
-		const NAPAPI std::string getTangentName();
-
-		/**
-		* @return Default bi-tangent vertex attribute name: "Bitangent"
-		*/
-		const NAPAPI std::string getBitangentName();
-
-		/**
-		* Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
-		* @param uvChannel: the uv channel index to query
-		* @return the name of the vertex attribute
-		*/
-		const NAPAPI std::string getUVName(int uvChannel);
-
-		/**
-		* Returns the name of the vertex color attribute based on the queried color channel, ie: "Color0", "Color1" etc.
-		* @param colorChannel: the color channel index to query
-		* @return the name of the color vertex attribute
-		*/
-		const NAPAPI std::string GetColorName(int colorChannel);
-	};
-
-	/**
 	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
 	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
 	 */

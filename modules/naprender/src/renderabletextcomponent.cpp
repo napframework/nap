@@ -37,6 +37,7 @@ namespace nap
 	{
 	}
 
+
 	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource
@@ -63,18 +64,17 @@ namespace nap
 		 	return false;
 
 		// Find MVP uniforms
-		UniformStructInstance* mvp_uniform = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
+		UniformStructInstance* mvp_uniform = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
 		if (mvp_uniform != nullptr)
 		{
-			mModelUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(modelMatrixUniform);
-			mViewUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(viewMatrixUniform);
-			mProjectionUniform	= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(projectionMatrixUniform);
+			mModelUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectionUniform	= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
 		}
 
 		// Make sure there's a model matrix
 		if (!errorState.check(mModelUniform != nullptr, "%s: Unable to position character, no model matrix with name: %s found in UBO: %s in material %s",
-			mID.c_str(), modelMatrixUniform, 
-			mvpStructUniform, mMaterialInstance.getMaterial().mID.c_str()))
+			mID.c_str(), uniform::modelMatrix, uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Setup the plane, 1x1 with lower left corner at origin {0, 0}
@@ -88,7 +88,7 @@ namespace nap
 			return false;
 
 		// Update the uv coordinates
-		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(0));
 		if (!errorState.check(uv_attr != nullptr, "%s: unable to find uv vertex attribute on plane", mID.c_str()))
 			return false;
 
@@ -103,7 +103,7 @@ namespace nap
 			return false;
 
 		// Get position attribute buffer, we will update the vertex positions of this plane
-		mPositionAttr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		mPositionAttr = mPlane.getMeshInstance().findAttribute<glm::vec3>(vertexid::position);
 		if (!errorState.check(mPositionAttr != nullptr, "%s: unable to get plane vertex attribute handle", mID.c_str()))
 			return false;
 

@@ -1,6 +1,6 @@
 // Local Includes
 #include "particleemittercomponent.h"
-#include "renderservice.h"
+
 // External Includes
 #include <entity.h>
 #include <rect.h>
@@ -8,6 +8,7 @@
 #include <mathutils.h>
 #include <nap/core.h>
 #include <renderservice.h>
+#include <renderglobals.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
@@ -80,9 +81,9 @@ namespace nap
 			mMeshInstance->setCullMode(ECullMode::None);
 
 			// Create the necessary attributes
-			Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-			Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-			Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+			Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+			Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+			Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 			FloatVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<float>("pid");
 
 			MeshShape& shape = mMeshInstance->createShape();
@@ -219,9 +220,9 @@ namespace nap
 		mesh_instance.setNumVertices(num_vertices);
 
 		// Get the attributes we want to modify
-		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 		FloatVertexAttribute& id_attribute		= mesh_instance.getOrCreateAttribute<float>("pid");
 
 		// Clear all of 'm

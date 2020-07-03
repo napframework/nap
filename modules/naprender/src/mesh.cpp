@@ -51,28 +51,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const std::string VertexAttributeIDs::getPositionName() { return "Position"; }
-	const std::string VertexAttributeIDs::getNormalName() { return "Normal"; }
-	const std::string VertexAttributeIDs::getTangentName() { return "Tangent"; }
-	const std::string VertexAttributeIDs::getBitangentName() { return "Bitangent"; }
-
-
-	const std::string VertexAttributeIDs::getUVName(int uvChannel)
-	{
-		std::ostringstream stream;
-		stream << "UV" << uvChannel;
-		return stream.str();
-	}
-
-
-	const std::string VertexAttributeIDs::GetColorName(int colorChannel)
-	{
-		std::ostringstream stream;
-		stream << "Color" << colorChannel;
-		return stream.str();
-	}
-	
-
 	//////////////////////////////////////////////////////////////////////////
 	// MeshInstance
 	//////////////////////////////////////////////////////////////////////////

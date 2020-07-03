@@ -1,6 +1,10 @@
+// Local Includes
 #include "boxmesh.h"
 #include "renderservice.h"
-#include "nap/core.h"
+#include "renderglobals.h"
+
+// External Includes
+#include <nap/core.h>
 
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
@@ -16,9 +20,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static constexpr int planeVertCount = 4;					//< Number of vertices per plane
-	static constexpr int boxVertCount = planeVertCount * 6;		//< Total number of box vertices
-	static constexpr int triCount = 6 * 2;						//< Total number of box triangles
+	constexpr int planeVertCount = 4;					//< Number of vertices per plane
+	constexpr int boxVertCount = planeVertCount * 6;	//< Total number of box vertices
+	constexpr int triCount = 6 * 2;						//< Total number of box triangles
 
 	BoxMesh::BoxMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
@@ -150,10 +154,10 @@ namespace nap
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
@@ -171,5 +175,4 @@ namespace nap
 		MeshShape& shape = mesh.createShape();
 		shape.setIndices(indices.data(), indices.size());
 	}
-
 }

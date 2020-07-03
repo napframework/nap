@@ -1,13 +1,15 @@
 #pragma once
 
-// External Includes
-#include <utility/dllexport.h>
-#include <nap/resource.h>
-#include "rtti/factory.h"
+// Local Includes
 #include "rendertarget.h"
 #include "vertexattributedeclaration.h"
 #include "samplerdeclaration.h"
 #include "uniformdeclarations.h"
+
+// External Includes
+#include <utility/dllexport.h>
+#include <nap/resource.h>
+#include <rtti/factory.h>
 
 namespace nap
 {
@@ -23,44 +25,6 @@ namespace nap
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE(Resource)
 	public:
-
-		/**
-		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-		*/
-		struct VertexAttributeIDs
-		{
-			/**
-			* @return Default position shader vertex attribute name: "in_Position"
-			*/
-			static const std::string getPositionVertexAttr();
-
-			/**
-			* @return Default normal shader vertex attribute name: "in_Normals"
-			*/
-			static const std::string getNormalVertexAttr();
-
-			/**
-			* @return Default UV shader vertex attribute name: "in_UV#"
-			*/
-			static const std::string getUVVertexAttr(int uvChannel);
-
-			/**
-			* @return Default color shader vertex attribute name: "in_Color#"
-			*/
-			static const std::string getColorVertexAttr(int colorChannel);
-
-			/**
-			* @return Default tangent shader vertex attribute name: "in_Tangent"
-			*/
-			static const std::string getTangentVertexAttr();
-
-			/**
-			* @return Default bi-tangent shader vertex attribute name: "in_Bitangent"
-			*/
-			static const std::string getBitangentVertexAttr();
-		};
-
-		Shader();
 		Shader(Core& core);
 		~Shader();
 

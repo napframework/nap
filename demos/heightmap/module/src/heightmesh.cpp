@@ -4,6 +4,7 @@
 #include <meshutils.h>
 #include <nap/logger.h>
 #include <nap/core.h>
+#include <renderglobals.h>
 
 // nap::heightmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightMesh)
@@ -39,9 +40,9 @@ namespace nap
 		nap::MeshInstance& mesh_instance = getMeshInstance();
 
 		// Get attributes
-		Vec3VertexAttribute& pos_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uvs_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec3VertexAttribute& nor_attr = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mesh_instance.getAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& uvs_attr = mesh_instance.getAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec3VertexAttribute& nor_attr = mesh_instance.getAttribute<glm::vec3>(vertexid::normal);
 
 		// Store the original point positions in a new attribute
 		mOriginalPosAttr = &mesh_instance.getOrCreateAttribute<glm::vec3>("OriginalPosition");

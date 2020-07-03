@@ -12,6 +12,7 @@
 #include <mathutils.h>
 #include <nap/logger.h>
 #include <nap/core.h>
+#include <renderglobals.h>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::PX,		"px"),
@@ -348,10 +349,10 @@ namespace nap
 
 	void LineFromFile::addShape(bool closed, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs)
 	{		
-		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& col_attr = mMeshInstance->getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		Vec3VertexAttribute& nor_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec4VertexAttribute& col_attr = mMeshInstance->getAttribute<glm::vec4>(vertexid::getColorName(0));
+		Vec3VertexAttribute& nor_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::normal);
 
 		int vertex_count = static_cast<int>(pathVertices.size());
 		// Set position buffer

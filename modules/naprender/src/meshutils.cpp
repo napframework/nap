@@ -1,4 +1,8 @@
+// Local Includes
 #include "meshutils.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
 #include <triangleiterator.h>
@@ -117,7 +121,7 @@ namespace nap
 			glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
 			glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
 
-			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(vertexid::position);
 			for (const auto& point : positions.getData())
 			{
 				if (point.x < min.x) { min.x = point.x; }

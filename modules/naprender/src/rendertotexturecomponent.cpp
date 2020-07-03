@@ -1,4 +1,11 @@
+// Local Includes
 #include "rendertotexturecomponent.h"
+#include "rendertarget.h"
+#include "renderservice.h"
+#include "indexbuffer.h"
+#include "renderglobals.h"
+#include "uniforminstance.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
@@ -6,11 +13,6 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <orthocameracomponent.h>
-#include "rendertarget.h"
-#include "renderservice.h"
-#include "indexbuffer.h"
-#include "renderglobals.h"
-#include "uniforminstance.h"
 
 // nap::rendertotexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
@@ -166,7 +168,7 @@ namespace nap
 		// Update the model matrix so that the plane mesh is of the same size as the render target
 		computeModelMatrix();
 
-		UniformStructInstance* nap_uniform = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
+		UniformStructInstance* nap_uniform = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
 		if (nap_uniform != nullptr)
 		{
 			// Set projection uniform in shader

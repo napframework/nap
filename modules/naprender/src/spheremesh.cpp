@@ -2,13 +2,14 @@
 #include "spheremesh.h"
 #include "mesh.h"
 #include "material.h"
+#include "renderservice.h"
+#include "renderglobals.h"
+#include "meshutils.h"
 
 // External Includes
 #include <glm/glm.hpp>
 #include <cmath>
-#include <meshutils.h>
-#include "renderservice.h"
-#include "nap/core.h"
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -103,10 +104,10 @@ namespace nap
 		mMeshInstance->setCullMode(mCullMode);
 		mMeshInstance->setUsage(mUsage);
 
-		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);

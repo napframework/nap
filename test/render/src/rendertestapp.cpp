@@ -110,12 +110,12 @@ namespace nap
 // 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
 // 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
 // 		assert(rtti_mesh != nullptr);
-// 		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+// 		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(vertexid::position);
 // 		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
 // 		
 // 		// Retrieve destination (instance) mesh data
 // 		MeshInstance& mesh_instance = mesh.getMeshInstance();
-// 		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+// 		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(vertexid::position);
 // 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
 // 		
 // 		// Sine wave over our quad

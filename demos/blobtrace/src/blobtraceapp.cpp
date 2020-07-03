@@ -14,6 +14,7 @@
 #include <meshutils.h>
 #include <mathutils.h>
 #include <uniforminstance.h>
+#include <renderglobals.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -269,8 +270,8 @@ namespace nap
 		// Get the attributes we need, the vertices (position data) is used to perform a world space triangle intersection
 		// The uv attribute is to compute the uv coordinates when a triangle is hit
 		MeshInstance& mesh = mIntersectMesh->getMeshInstance();
-		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
 
 		// Get ray from screen in to scene (world space)
 		// The result is a normal pointing away from the camera in to the scene

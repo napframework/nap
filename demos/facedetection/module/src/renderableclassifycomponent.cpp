@@ -78,8 +78,8 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Get the mvp uniform buffer object
-		UniformStructInstance* mvp_ubo = mMaterialInstance.getOrCreateUniform(mvpStructUniform);
-		if (!errorState.check(mvp_ubo != nullptr, "%s: missing model view projection 'ubo' with name: %s", resource->mID.c_str(), mvpStructUniform))
+		UniformStructInstance* mvp_ubo = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (!errorState.check(mvp_ubo != nullptr, "%s: missing model view projection 'ubo' with name: %s", resource->mID.c_str(), uniform::mvpStruct))
 			return false;
 
 		// Get handle to matrices, which we set in the draw call

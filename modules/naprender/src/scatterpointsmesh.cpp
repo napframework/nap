@@ -1,6 +1,7 @@
 #include "scatterpointsmesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <mathutils.h>
@@ -74,20 +75,20 @@ namespace nap
 		mMeshInstance->setDrawMode(EDrawMode::Points);
 
 		// Create position attribute
-		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
+		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position));
 
 		// Create normal attribute
-		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()));
+		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal));
 
 		// Sample all uv sets
 		mUvAttrs.clear();
 		int uv_idx = 0;
 		while (true)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
+			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(uv_idx));
 			if (ref_uv_attr != nullptr)
 			{
-				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx))));
+				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(uv_idx))));
 				uv_idx++;
 				continue;
 			}
@@ -99,10 +100,10 @@ namespace nap
 		int clr_idx = 0;
 		while (true)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx));
+			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(vertexid::getColorName(clr_idx));
 			if (ref_clr_attr != nullptr)
 			{
-				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx))));
+				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(clr_idx))));
 				clr_idx++;
 				continue;
 			}
@@ -144,10 +145,10 @@ namespace nap
 		assert(mMeshInstance->getNumVertices() == mNumberOfPoints);
 
 		// Get reference vertex positions
-		const VertexAttribute<glm::vec3>* ref_pos = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		const VertexAttribute<glm::vec3>* ref_pos = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position);
 		assert(ref_pos != nullptr);
 
-		const VertexAttribute<glm::vec3>* ref_nor = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		const VertexAttribute<glm::vec3>* ref_nor = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal);
 
 		// Get reference uvs
 		std::vector<const Vec3VertexAttribute*> ref_uvs;
@@ -160,7 +161,7 @@ namespace nap
 		// Query uv data
 		for (int i = 0; i < mUvAttrs.size(); i++)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(i));
+			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(i));
 			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
 				return false;
 			ref_uvs.emplace_back(ref_uv_attr);
@@ -169,7 +170,7 @@ namespace nap
 		// Query color data
 		for (int i = 0; i < mColorAttrs.size(); i++)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(i));
+			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(vertexid::getColorName(i));
 			if (!error.check(ref_clr_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
 				return false;
 			ref_clrs.emplace_back(ref_clr_attr);
@@ -236,7 +237,7 @@ namespace nap
 	float ScatterPointsMesh::computeArea(TriangleAreaMap& areaMap)
 	{
 		MeshInstance& mesh = mReferenceMesh->getMeshInstance();
-		const VertexAttribute<glm::vec3>* ref_pos = mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		const VertexAttribute<glm::vec3>* ref_pos = mesh.findAttribute<glm::vec3>(vertexid::position);
 		assert(ref_pos != nullptr);
 
 		// Clear list

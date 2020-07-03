@@ -1,6 +1,7 @@
 // Local Includes
 #include "material.h"
 #include "mesh.h"
+#include "renderglobals.h"
 
 // External includes
 #include <nap/logger.h>
@@ -141,16 +142,16 @@ namespace nap
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ VertexAttributeIDs::getPositionName(),		Shader::VertexAttributeIDs::getPositionVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getNormalName(),		Shader::VertexAttributeIDs::getNormalVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getTangentName(),		Shader::VertexAttributeIDs::getTangentVertexAttr() });
-			bindings.push_back({ VertexAttributeIDs::getBitangentName(),	Shader::VertexAttributeIDs::getBitangentVertexAttr() });
+			bindings.push_back({ vertexid::position,	vertexid::shader::position });
+			bindings.push_back({ vertexid::normal,		vertexid::shader::normal });
+			bindings.push_back({ vertexid::tangent,		vertexid::shader::tangent });
+			bindings.push_back({ vertexid::bitangent,	vertexid::shader::bitangent });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)
 			{
-				bindings.push_back({ VertexAttributeIDs::GetColorName(channel), Shader::VertexAttributeIDs::getColorVertexAttr(channel) });
-				bindings.push_back({ VertexAttributeIDs::getUVName(channel),	Shader::VertexAttributeIDs::getUVVertexAttr(channel) });
+				bindings.push_back({ vertexid::getColorName(channel), vertexid::shader::getColorInputName(channel) });
+				bindings.push_back({ vertexid::getUVName(channel), vertexid::shader::getUVInputName(channel) });
 			}
 		}
 		return bindings;
