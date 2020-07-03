@@ -139,6 +139,7 @@ elseif(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/vulkansdk/Lib)
     list(APPEND EXTRA_RPATH lib)
 
     set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../../../.." "${EXTRA_RPATH}")
