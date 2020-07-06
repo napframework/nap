@@ -143,7 +143,7 @@ def add_module_to_project_json(project_name, full_module_name):
 def get_nap_root():
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
-    framework_release_context_known_path = os.path.join(os.path.dirname(script_path), script_to_nap_root)
+    framework_release_context_known_path = os.path.join(os.path.dirname(script_path), script_to_nap_root, 'modules')
     if os.path.exists(framework_release_context_known_path):
         return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
     else:
