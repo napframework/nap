@@ -14,6 +14,7 @@ source_group("sources" FILES ${SOURCES})
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
+# find SDL2
 if(WIN32)
     if(MSVC)
         set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
@@ -31,6 +32,7 @@ elseif(UNIX)
 endif()
 find_package(SDL2 REQUIRED)
 
+# find assimp
 if(WIN32)
     set(assimp_DIR ${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3)
 elseif(APPLE)
@@ -40,28 +42,41 @@ elseif(UNIX)
 endif()
 find_package(assimp REQUIRED)
 
+# find other package dependencies
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(vulkansdk REQUIRED)
 find_package(SPIRVCross REQUIRED)
 find_package(glslang REQUIRED)
 
-# LIBRARY
+# compile shared lib as target
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
+# add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
-	${SPIRVCROSS_INCLUDE_DIR}
-	${GLSLANG_INCLUDE_DIR}
+    ${SPIRVCROSS_INCLUDE_DIR}
+    ${GLSLANG_INCLUDE_DIR}
     )
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES} src)
 
+# set compile definitions
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+if(APPLE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT=1)
+endif()
+
+# add libraries
 set(LIBRARIES
-	${VULKANSDK_LIBS}
+    ${VULKANSDK_LIBS}
     ${SDL2_LIBRARY}
-	${FREEIMAGE_LIBRARIES}
+    ${FREEIMAGE_LIBRARIES}
     )
 
 # TODO Investigate why we're using a static lib for Win64 only
@@ -75,16 +90,7 @@ elseif(UNIX)
          )
 endif()
 
-# compile shared lib as target
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
-
-# add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES} src)
-
-# link with external libs
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
-target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+# link libraries
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
 target_link_libraries(${PROJECT_NAME} debug "${GLSLANG_LIBS_DEBUG}" optimized "${GLSLANG_LIBS_RELEASE}")

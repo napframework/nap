@@ -24,6 +24,17 @@ elseif(APPLE)
           NAMES include/spirv_cross/spirv.h
           HINTS ${THIRDPARTY_DIR}/SPIRV-cross/osx/install
           )
+
+	# release core lib
+	find_library(SPIRVCROSS_LIBS_RELEASE
+			 NAMES spirv-cross-core
+			 PATHS ${SPIRVCROSS_DIR}
+			 PATH_SUFFIXES lib			   
+			 NO_DEFAULT_PATH
+			)
+
+	set(SPIRVCROSS_LIBS_DEBUG ${SPIRVCROSS_LIBS_RELEASE})
+
 elseif(UNIX)
 	find_path(SPIRVCROSS_DIR
           NAMES include/spirv_cross/spirv.h
