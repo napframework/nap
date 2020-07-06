@@ -16,7 +16,6 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
-# TODO CH Review need to directly use generator expressions here, otherwise merge macOS and Win64
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
@@ -272,30 +271,6 @@ if(APPLE)
                                                   ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                   "@rpath"
                                                   )
-
-#   ######### TODO CH review the need for an equivalent of these in Napkin relocation ############
-
-#   set(PATH_TO_NAP_ROOT "@executable_path/../../../..")
-
-#   # Add core libs path to RPATH
-#   add_custom_command(TARGET ${PROJECT_NAME}
-#                      POST_BUILD
-#                      COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-#                              -add_rpath ${PATH_TO_NAP_ROOT}/lib/Release
-#                              ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-#                      )
-
-#   # Add module paths to RPATH
-#   foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
-#       add_custom_command(TARGET ${PROJECT_NAME}
-#                          POST_BUILD
-#                          COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-#                                  -add_rpath ${PATH_TO_NAP_ROOT}/modules/${MODULE_NAME}/lib/Release
-#                                  ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-#                          )
-#   endforeach()
-
-#   ###########################################################################################
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
