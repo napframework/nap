@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )/../..
 
 thirdparty="$nap_root/../thirdparty"
 if [ ! -d $thirdparty ]; then
     echo "Error: The third party repository ('thirdparty') needs to be cloned alongside the main repository."
     echo
     echo "Once thirdparty is in place run check_build_environment.sh first."
+    exit 1
 fi
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -16,4 +17,4 @@ fi
 
 unset PYTHONHOME
 unset PYTHONPATH
-$python $nap_root/build_tools/generate_solution/generate_solution.py "$@"
+$python $nap_root/build_tools/cli_single_project_build/cli_single_project_build.py "$@"
