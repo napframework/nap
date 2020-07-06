@@ -54,7 +54,9 @@ find_package(assimp REQUIRED)
 # find other 3rd party packages
 find_package(OpenGL)
 find_package(glm REQUIRED)
-find_package(freeimage REQUIRED)
+if(NOT TARGET FreeImage)
+    find_package(freeimage REQUIRED)
+endif()
 
 # get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -105,7 +107,9 @@ endif()
 # Windows thirdparty DLL copying
 if(WIN32)
     # Copy freeimage DLL to build directory
-    find_package(freeimage REQUIRED)
+    if(NOT TARGET FreeImage)
+        find_package(freeimage REQUIRED)
+    endif()
     copy_freeimage_dll()
 
     # Copy over Windows graphics DLLs to build directory

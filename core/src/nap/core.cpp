@@ -407,9 +407,9 @@ namespace nap
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "lib", "python3.6"});
+			const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
-				setenv("PYTHONHOME", exeDir.c_str(), 1);
+				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
 			else {
 				// Set PYTHONHOME to thirdparty location within packaged NAP release

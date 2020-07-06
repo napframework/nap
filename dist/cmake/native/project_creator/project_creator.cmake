@@ -38,9 +38,11 @@ configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_N
 if(UNIX)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package ${PROJECT_DIR}/package @ONLY)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate ${PROJECT_DIR}/regenerate @ONLY)
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/build_cli ${PROJECT_DIR}/build_cli @ONLY)
 elseif(WIN32)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package.bat ${PROJECT_DIR}/package.bat @ONLY)
     configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
+    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/build_cli.bat ${PROJECT_DIR}/build_cli.bat @ONLY)    
 endif()
 
 # Make a shaders directory

@@ -89,14 +89,25 @@ macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
                            COMMENT "Copying ${F} -> bin dir")
+    endforeach()
+endmacro()
+
+# Copy files to project target file dir
+# ARGN: Files to copy
+macro(copy_files_to_target_file_dir)
+    foreach(F ${ARGN})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           )
     endforeach()
 endmacro()
 
 # Copy Windows SD2 and GLEW DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
-    # Copy over some crap window dlls
+    # Copy over some window DLLs
     set(FILES_TO_COPY
         ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
         ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll

@@ -59,6 +59,9 @@ macro(package_nap)
             install(FILES ${NAP_ROOT}/build_tools/check_build_environment/win64/check_build_environment_continued.py DESTINATION tools/platform)
         endif()
 
+        # Package single project CLI build script
+        install(FILES ${NAP_ROOT}/build_tools/cli_single_project_build/cli_single_project_build.py DESTINATION tools/platform)
+
         # Create empty projects and usermodules directories
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
@@ -311,10 +314,12 @@ macro(package_project_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/build_cli.bat
                 DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/build_cli
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()

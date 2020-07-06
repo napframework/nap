@@ -23,7 +23,7 @@ def call_except_on_failure(cwd, cmd):
 
 # Locate module specified by name
 def find_module(module_name):
-    nap_root = get_nap_root_from_project_dir()
+    nap_root = get_nap_root()
 
     # Create module dir name
     module_dir_name = module_name.lower()
@@ -48,7 +48,7 @@ def find_module(module_name):
 
 # Locate project specified by name
 def find_project(project_name, silent_failure=False, silent_success=False):
-    nap_root = get_nap_root_from_project_dir()
+    nap_root = get_nap_root()
 
     project_dir_name = project_name.lower()
 
@@ -139,15 +139,20 @@ def add_module_to_project_json(project_name, full_module_name):
 
     return True
 
-# Get absolute path to NAP root from a project/module working directory
-def get_nap_root_from_project_dir():
+# Get absolute path to NAP root
+def get_nap_root():
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
-    return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
+    framework_release_context_known_path = os.path.join(os.path.dirname(script_path), script_to_nap_root, 'modules')
+    if os.path.exists(framework_release_context_known_path):
+        return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
+    else:
+        script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
+        return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
     
 # Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty
 def get_cmake_path():
-    nap_root = get_nap_root_from_project_dir()
+    nap_root = get_nap_root()
     return os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')
 
 # Fetch deep module dependencies for a project
