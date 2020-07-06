@@ -23,8 +23,8 @@ class SingleProjectBuilder:
         pass
 
     def call(self, cwd, cmd, shell=False):
-        print('Dir: %s' % cwd)
-        print('Command: %s' % ' '.join(cmd))
+#       print('Dir: %s' % cwd)
+#       print('Command: %s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=cwd, shell=shell)
         proc.communicate()
         return proc.returncode
