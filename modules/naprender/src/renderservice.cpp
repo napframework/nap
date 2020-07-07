@@ -310,11 +310,21 @@ namespace nap
 		for (const auto& ext : extensionNames)
 			ext_names.emplace_back(ext.c_str());
 
-		// Get the supported vulkan instance version
+		// Get the supported vulkan instance version, only supported by newer (1.1) loaders.
+		// We therefore first find out if the function is exposed, if so use it.
 		uint32 current_version(0);
-		if (!errorState.check(vkEnumerateInstanceVersion(&current_version) == VK_SUCCESS,
-			"Unable Query instance-level version of Vulkan before instance creation"))
-			return false;
+		PFN_vkEnumerateInstanceVersion enum_instance_version_fn = (PFN_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceVersion");
+		if (enum_instance_version_fn != nullptr)
+		{
+			if (!errorState.check(enum_instance_version_fn(&current_version) == VK_SUCCESS,
+				"Unable Query instance-level version of Vulkan before instance creation"))
+				return false;
+		}
+		else 
+		{
+			// Otherwise current version is known to be 1.0
+			current_version = VK_MAKE_VERSION(1, 0, 0);
+		}
 
 		// Log used SDK version
 		uint32 major_version = VK_VERSION_MAJOR(current_version);
@@ -324,6 +334,8 @@ namespace nap
 
 		// Create api version without patch, not used when creating instance
 		uint32 req_vulkan_version = VK_MAKE_VERSION(MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
+		
+		// Ensure the found instance version is compatible
 		if (!errorState.check(current_version >= req_vulkan_version, "Incompatible Vulkan instance, min required version: %d.%d", 
 			MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR))
 			return false;
