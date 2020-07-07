@@ -176,7 +176,7 @@ namespace nap
 
 		// Set framebuffer size
 		glm::ivec2 size = mColorTexture->getSize();
-		VkExtent2D framebuffer_size = { size.x, size.y };
+		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
 
 		// Create multi-sampled color attachment
 		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getFormat(), mRasterizationSamples, mColorImage, errorState))

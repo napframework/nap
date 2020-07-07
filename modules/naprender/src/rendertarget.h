@@ -1,11 +1,13 @@
 #pragma once
 
+// Local Includes
+#include "irendertarget.h"
+#include "rendertexture2d.h"
+
 // External Includes
 #include <nap/resource.h>
-#include "irendertarget.h"
-#include "rtti/objectptr.h"
-#include "vulkan/vulkan_core.h"
-#include "rendertexture2d.h"
+#include <nap/resourceptr.h>
+#include <vulkan/vulkan_core.h>
 
 namespace nap
 {
@@ -155,7 +157,7 @@ namespace nap
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		glm::vec4							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results turn on 'SampleShading'.
-		rtti::ObjectPtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
+		nap::ResourcePtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:
 		RenderService*			mRenderService;
