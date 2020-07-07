@@ -119,6 +119,8 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libstdc\+\+',
     'libsystemd',
     'libtinfo',
+    'libudev',
+    r'libusb-[0-9]+\.[0-9]+',
     r'libutil-[0-9]+\.[0-9]+',
     'libvorbis',
     'libvorbisenc',
