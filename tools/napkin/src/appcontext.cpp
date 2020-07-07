@@ -99,7 +99,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 		mCore->getResourceManager()->getFactory(),
 		err);
-	projectInfo->mEditorMode = true;
+	projectInfo->setEditorMode();
 
 	if (err.hasErrors())
 	{
@@ -112,9 +112,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
-	projectInfo->mFilename = projectFilename.toStdString();
-	mCore->loadPathMapping(*projectInfo, err);
-	if (projectInfo->mPathMapping == nullptr)
+	projectInfo->getFilename() = projectFilename.toStdString();
+	if (mCore->loadPathMapping(*projectInfo, err))
 	{
 		nap::Logger::error("Failed to load path mapping %s: %s",
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());

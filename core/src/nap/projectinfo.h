@@ -43,6 +43,11 @@ namespace nap
 		bool isEditorMode() const { return mEditorMode; }
 
 		/**
+		 * WARNING: Only to be used from the editor.
+		 */
+		void setEditorMode() { mEditorMode = true; }
+
+		/**
 		 * @return The absolute file path this ProjectInfo was loaded from
 		 */
 		std::string getFilename() const { return mFilename; }
