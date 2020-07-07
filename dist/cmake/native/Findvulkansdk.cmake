@@ -23,6 +23,25 @@ if(WIN32)
 				NAMES vulkan-1
 				PATHS ${VULKANSDK_LIBS_DIR}		   
 				)
+elseif(APPLE)
+	# moltenvk -> libMoltenVK.a
+	find_library(MOLTENVK_LIB
+			NO_DEFAULT_PATH
+			NAMES MoltenVK
+			PATHS ${VULKANSDK_LIBS_DIR}		   
+			)
+
+	find_library(METAL_LIB Metal)
+	find_library(FOUNDATION_LIB Foundation)
+	find_library(QUARTZ_LIB QuartzCore)
+	find_library(IOKIT_LIB IOKit)
+	find_library(IOSURFACE_LIB IOSurface)
+
+	if(MOLTENVK_LIB AND METAL_LIB AND FOUNDATION_LIB
+		AND QUARTZ_LIB AND IOKIT_LIB AND IOSURFACE_LIB)
+		set(VULKANSDK_LIBS ${MOLTENVK_LIB} ${METAL_LIB} ${FOUNDATION_LIB} ${QUARTZ_LIB} ${IOKIT_LIB} ${IOSURFACE_LIB})
+	endif()
+
 elseif(UNIX)
 	# vulkan core lib -> libvulkan.so
 	find_library(VULKANSDK_LIBS
@@ -41,7 +60,12 @@ mark_as_advanced(VULKANSDK_LIBS)
 add_library(vulkansdk SHARED IMPORTED)
 
 # Setup library properties for linux
-if(UNIX)
+if(APPLE)
+	set_target_properties(vulkansdk PROPERTIES
+    		IMPORTED_IMPLIB_RELEASE ${VULKANSDK_LIBS}
+      		IMPORTED_IMPLIB_DEBUG ${VULKANSDK_LIBS}
+          	)
+elseif(UNIX)
 	set_target_properties(vulkansdk PROPERTIES
     		IMPORTED_CONFIGURATIONS "Debug;Release"
         	IMPORTED_LOCATION_RELEASE ${VULKANSDK_LIBS}

@@ -38,7 +38,7 @@ if(WIN32)
 				PATHS ${VULKANSDK_LIBS_DIR}		   
 				)
 elseif(APPLE)
-	# vulkan core lib -> libvulkan.so
+	# moltenvk -> libMoltenVK.a
 	find_library(MOLTENVK_LIB
 			NO_DEFAULT_PATH
 			NAMES MoltenVK
