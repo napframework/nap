@@ -170,6 +170,14 @@ add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 
+# Temporary dummy demos testing module thirdparty requirements in Napkin for modules 
+# not included in other demos
+add_subdirectory(demos/napkintestmodnapartnet)
+add_subdirectory(demos/napkintestmodnapdatabase)
+add_subdirectory(demos/napkintestmodnapserial)
+add_subdirectory(demos/napkintestmodnapsoem)
+add_subdirectory(demos/napkintestmodnapyoctopuce)
+
 # Unit tests
 add_subdirectory(unittests)
 
