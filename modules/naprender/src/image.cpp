@@ -12,6 +12,7 @@ namespace nap
 	{
 	}
 
+
 	void Image::update()
 	{
 		assert(!mBitmap.empty());

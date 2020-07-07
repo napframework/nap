@@ -1,17 +1,18 @@
 #pragma once
 
 // Internal includes
+#include "vk_mem_alloc.h"
 
 // External Includes
 #include <vector>
 #include <list>
 #include <array>
 #include <utility/dllexport.h>
-#include "vulkan/vulkan_core.h"
-#include "vk_mem_alloc.h"
+#include <vulkan/vulkan_core.h>
 
 namespace nap
 {
+	// Forward Declares
 	class UniformBufferObject;
 	class SamplerInstance;
 	class RenderService;
@@ -41,12 +42,13 @@ namespace nap
 	 * Responsible for caching DescriptorSets and allocating them when the DescriptorSet is not in the cache.
 	 * A DescriptorSetAllocator allocates DescriptorSets for a specific VkDescriptorSetLayout. Any DescriptorSet
 	 * that is returned will be compatible with that VkDescriptorSetLayout.
-	 * Internally it will maintain a freelist of available DescriptorSets. When a VkDescriptorSet is acquired,
+	 *
+	 * Internally it will maintain a free-list of available DescriptorSets. When a VkDescriptorSet is acquired,
 	 * it is marked for use by that frame (the current RenderService frame is used). When a frame is fully  
-	 * completed, release should be called for that frame so that the resources are return to the freelist, to 
+	 * completed, release should be called for that frame so that the resources are return to the freel-ist, to 
 	 * be used by subsequent frames.
 	 */
-	class NAPAPI DescriptorSetCache
+	class NAPAPI DescriptorSetCache final
 	{
 	public:
 		DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator);

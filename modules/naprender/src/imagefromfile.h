@@ -9,22 +9,27 @@
 namespace nap
 {
 	/**
-	 * An image from file holds both the cpu and gpu data associated with a 2d image, 
-	 * resulting in a 2d texture (GPU) and Bitmap (CPU)
-	 * The bitmap is loaded automatically and populates the opengl texture with the right data on initialization
+	 * Resource that contains both the CPU and GPU data, associated with a 2d image, loaded from disk.
+	 * The bitmap is loaded on initialization and scheduled for upload to the GPU on success.
+	 * Mip-maps are generated when 'GenerateLods' is set to true.
 	 */
 	class NAPAPI ImageFromFile : public Image
 	{
 		RTTI_ENABLE(Image)
 	public:
-		// Constructor using image path
+		/**
+		 * @param core the core instance.
+		 * @param imgPath path to the image on disk.
+		 */
 		ImageFromFile(Core& core, const std::string& imgPath);
 
-		// Default Constructor
+		/**
+		 * @param core the core instance
+		 */
 		ImageFromFile(Core& core);
 
 		/**
-		* Loads the image from mImagePath.
+		* Loads the image from disk and schedules the upload to the GPU on success.
 		* @param errorState contains the error when initialization fails
 		* @return true when successful, otherwise false.
 		*/

@@ -6,8 +6,7 @@ namespace nap
 	GPUMesh::GPUMesh(RenderService& renderService, EMeshDataUsage inUsage) :
 		mRenderService(&renderService),
 		mUsage(inUsage)
-	{
-	}
+	{ }
 
 
 	void GPUMesh::addVertexBuffer(const std::string& id, VkFormat format)
@@ -21,7 +20,6 @@ namespace nap
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
 			return attribute->second.get();
-
 		return nullptr;
 	}
 
@@ -41,7 +39,6 @@ namespace nap
 		
 		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(*mRenderService, mUsage);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
-
 		return *mIndexBuffers.back();
 	}
 

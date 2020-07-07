@@ -6,14 +6,10 @@
 namespace nap
 {
 	/**
-	 * Represents both CPU and GPU data for a texture. The CPU data is stored internally as a bitmap and is optional
-	 * GPU textures can be read back to CPU using the getData functions. This will fill the internal bitmap with the data read-back from the GPU.
-	 * A texture can be modified in two ways:
-	 * - By modifying the internal bitmap (retrieved through getBitmap()) and calling update(). This is the most common way of updating the texture.
-	 *   When updating the texture in this way, the formats & size of the CPU and GPU textures are guaranteed to match.
-	 * - By calling update directly with a custom data buffer. This is useful if you already have data available and don't want the extra overhead of 
-	 *   copying to the internal bitmap first. When updating the texture in this way, you are responsible for making sure that the data buffer you pass in 
-	 *   matches the format & size of the GPU texture.
+	 * Represents both CPU and GPU data of a texture. The CPU data is stored internally as a bitmap and is optional.
+	 * GPU textures can be read back to CPU using the asyncGetData() function. This will fill the internal bitmap with the data read-back from the GPU.
+	 * To update the GPU texture, update the bitmap (using getBitmap()) and call update() afterwards.
+	 * The format & size of the CPU and GPU textures are guaranteed to match afterwards.
 	 */
 	class NAPAPI Image : public Texture2D
 	{
@@ -23,6 +19,9 @@ namespace nap
 		using Texture2D::update;
 		using Texture2D::asyncGetData;
 
+		/**
+		 * @param core the core instance.
+		 */
 		Image(Core& core);
 
 		/**
@@ -31,7 +30,7 @@ namespace nap
 		Bitmap& getBitmap() { return mBitmap; }
 
 		/**
-		 *	Converts the CPU data in the internal Bitmap to the GPU. The bitmap should contain valid data and not be empty.
+		 * Uploads the CPU data in the internal Bitmap to the GPU. The bitmap should contain valid data and not be empty.
 		 */
 		void update();
 

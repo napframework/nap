@@ -7,7 +7,6 @@
 
 namespace nap
 {
-
 	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation, VmaAllocationInfo& bufferAllocationInfo)
 	{
 		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
@@ -18,9 +17,9 @@ namespace nap
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
 		allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
 		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 

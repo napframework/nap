@@ -5,8 +5,8 @@ namespace nap
 {
 	DescriptorSetAllocator::DescriptorSetAllocator(VkDevice device) :
 		mDevice(device)
-	{
-	}
+	{ }
+
 
 	DescriptorSetAllocator::~DescriptorSetAllocator()
 	{
@@ -19,6 +19,7 @@ namespace nap
 			}
 		}
 	}
+
 
 	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
 	{
@@ -84,12 +85,9 @@ namespace nap
 		allocInfo.pSetLayouts = &layout;
 
 		VkDescriptorSet descriptor_set = nullptr;
-
 		vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptor_set);
 		assert(descriptor_set != nullptr);
-
 		free_descriptor_pool->mAllocatedDescriptorSets.push_back(descriptor_set);
-
 		return descriptor_set;
 	}
 

@@ -15,16 +15,14 @@ namespace nap
 {
 	ImageFromFile::ImageFromFile(Core& core) :
 		Image(core)
-	{
-	}
+	{ }
 
 
 	// Constructor
 	ImageFromFile::ImageFromFile(Core& core, const std::string& imgPath) :
 		Image(core),
 		mImagePath(imgPath)
-	{
-	}
+	{ }
 
 
 	bool ImageFromFile::init(utility::ErrorState& errorState)
