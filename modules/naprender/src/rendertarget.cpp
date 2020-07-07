@@ -19,7 +19,12 @@ namespace nap
 {
 	namespace 
 	{
-		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		//////////////////////////////////////////////////////////////////////////
+		// Static functions
+		//////////////////////////////////////////////////////////////////////////
+
+		// Create the render pass based on the given color, depth and additional information
+		static bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
 			VkAttachmentDescription colorAttachment = {};
 			colorAttachment.format = colorFormat;
@@ -99,12 +104,12 @@ namespace nap
 
 			if (!errorState.check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass"))
 				return false;
-
 			return true;
 		}
 	}
 
 
+	// Creates the color image and view
 	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
 		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
@@ -117,6 +122,7 @@ namespace nap
 	}
 
 
+	// Create the depth image and view
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
@@ -129,10 +135,14 @@ namespace nap
 	}
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// RenderTarget
+	//////////////////////////////////////////////////////////////////////////
+
 	RenderTarget::RenderTarget(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{}
+
 
 	RenderTarget::~RenderTarget()
 	{
@@ -160,13 +170,13 @@ namespace nap
 			mSampleShading = false;
 		}
 
+		// Create using the provided settings and textures
 		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
 			return false;
 
+		// Set framebuffer size
 		glm::ivec2 size = mColorTexture->getSize();
-		VkExtent2D framebuffer_size;
-		framebuffer_size.width = size.x;
-		framebuffer_size.height = size.y;
+		VkExtent2D framebuffer_size = { size.x, size.y };
 
 		// Create multi-sampled color attachment
 		if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getFormat(), mRasterizationSamples, mColorImage, errorState))
@@ -176,6 +186,7 @@ namespace nap
 		if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 			return false;
 
+		// Store as attachments
 		std::array<VkImageView, 3> attachments = 
 		{
 			mColorImage.mTextureView,
@@ -183,6 +194,7 @@ namespace nap
 			mColorTexture->getImageView(),
 		};
 
+		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = mRenderPass;
@@ -194,14 +206,13 @@ namespace nap
 
 		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
 			return false;
-
 		return true;
 	}
+
 
 	void RenderTarget::beginRendering()
 	{
 		glm::ivec2 size = mColorTexture->getSize();
-
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;

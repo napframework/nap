@@ -9,43 +9,146 @@
 
 namespace nap
 {
+	// Forward Declares
 	class RenderTexture2D;
 	class RenderService;
 
 	/**
-	 * A resource that is used to render objects to an off screen surface (set of textures).
-	 * This objects requires a link to a color and depth texture and internally manages an opengl render target.
-	 * The result of the render step is stored in the linked textures.
+	 * The render target is used to render one or multiple objects to an off screen surface.
+	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
+	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
+	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
+	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
+	 *
+	 * ~~~~~{.cpp} 
+	 *		mRenderService->beginFrame();
+	 *		if (mRenderService->beginHeadlessRecording())
+	 *		{
+	 *			...
+	 *			mTargetOne->beginRendering();
+	 *			mRenderService->renderObjects(*mTargetOne, ortho_cam, objects_one);
+	 *			mTargetOne->endRendering();
+	 *			...
+	 *			mTargetTwo->beginRendering();
+	 *			mRenderService->renderObjects(*mTargetTwo, ortho_cam, objects_two);
+	 *			mTargetTwo->endRendering();
+	 *			...
+	 *			mRenderService->endHeadlessRecording();
+	 *		}
+	 *		mRenderService->endFrame();
+	 * ~~~~~
+	 *
 	 */
 	class NAPAPI RenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		/**
+		 * Every render target requires a reference to core.
+		 * @param core link to a nap core instance
+		 */
 		RenderTarget(Core& core);
+		
+		/**
+		 * Destroys allocated render resources
+		 */
 		~RenderTarget();
 
 		/**
-		* Creates internal OpengL render target, bound to color and depth textures.
-		*/
+		 * Initializes the render target, including all the required resources.
+		 * @param errorState contains the error if initialization failed.
+		 * @return if initialization succeeded.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Starts the render pass.
+		 * Only start the render pass after a successful call to RenderService::beginHeadlessRecording().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mTarget->beginRendering();
+		 *			mRenderService->renderObjects(*mTarget, ortho_cam, objects_one);
+		 *			mTarget->endRendering();
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		virtual void beginRendering() override;
+
+		/**
+		 * Ends the render pass. Always call this after beginRendering().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mTarget->beginRendering();
+		 *			mTarget->renderObjects(*mTarget, ortho_cam, objects_one);
+		 *			mTarget->endRendering();
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		*/
 		virtual void endRendering() override;
 
+		/**
+		 * @return size in pixels of the render target.
+		 */
 		virtual const glm::ivec2 getBufferSize() const override;
 
-		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
-		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
+		/**
+		 * Updates the render target clear color.
+		 * @param color the new clear color to use.
+		 */
+		virtual void setClearColor(const glm::vec4& color) override				{ mClearColor = color; }
+		
+		/**
+		 * @return the currently used render target clear color.
+		 */
+		virtual const glm::vec4& getClearColor() const override					{ return mClearColor; }
 
-		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::Clockwise; }
+		/**
+		 * Geometry winding order, defaults to clockwise. 
+		 */
+		virtual ECullWindingOrder getWindingOrder() const override				{ return ECullWindingOrder::Clockwise; }
 
-		virtual VkRenderPass getRenderPass() const override { return mRenderPass; }
+		/**
+		 * @return the render pass
+		 */
+		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
+		/**
+		 * @return the texture that holds the result of the render pass.
+		 */
 		RenderTexture2D& getColorTexture();
 
+		/**
+		 * @return render target color format. This is the format of the linked in color texture.
+		 */
 		virtual VkFormat getColorFormat() const override;
+
+		/**
+		 * @return render target depth format
+		 */
 		virtual VkFormat getDepthFormat() const override;
+
+		/**
+		 * @return current number of MSAA samples used when rendering to the window.
+		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override;
+		
+		/**
+		 * @return if sample based shading is enabled when rendering to the target.
+		 */
 		virtual bool getSampleShadingEnabled() const override;
 
 	public:
