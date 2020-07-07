@@ -9,9 +9,9 @@
 namespace nap
 {
 	/**
-	 * Resource that contains both the CPU and GPU data, associated with a 2d image, loaded from disk.
+	 * Contains both the CPU and GPU data of 2D image that is loaded from disk.
 	 * The bitmap is loaded on initialization and scheduled for upload, into a texture on the GPU, on success.
-	 * Mip-maps are generated when 'GenerateLods' is set to true.
+	 * Mip-maps are automatically generated when 'GenerateLods' is set to true.
 	 */
 	class NAPAPI ImageFromFile : public Image
 	{

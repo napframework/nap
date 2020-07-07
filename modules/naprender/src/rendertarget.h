@@ -16,7 +16,7 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * The render target is used to render one or multiple objects to an off screen surface.
+	 * A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
 	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
 	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
 	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.

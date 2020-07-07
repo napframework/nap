@@ -34,7 +34,7 @@ RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 RTTI_END_STRUCT
 
 
-RTTI_BEGIN_CLASS(nap::Material)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
@@ -101,7 +101,6 @@ namespace nap
 					return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
-
 			std::unique_ptr<SamplerInstance> sampler_instance;
 			for (auto& sampler : mSamplers)
 			{
@@ -171,4 +170,10 @@ namespace nap
 		}
 		return nullptr;
 	}
+
+
+	Material::VertexAttributeBinding::VertexAttributeBinding(const std::string& meshAttributeID, const std::string& shaderAttributeID) :
+		mMeshAttributeID(meshAttributeID),
+		mShaderAttributeID(shaderAttributeID)
+	{ }
 }

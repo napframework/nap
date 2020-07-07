@@ -12,73 +12,94 @@
 
 namespace nap
 {
+	// Forward Declares
 	struct DescriptorSet;
 	class DescriptorSetCache;
 	class Core;
 
 	/**
-	 * A Material is a resource that acts as an interface to a shader.
-	 * It contains default mappings for how mesh vertex attributes are bound to a shader vertex attributes.
-	 * It also holds the uniform values for all the uniforms present in the shader. If a uniform is updated 
-	 * on the material, all the objects that use this material will use that value. To change uniform values
-	 * per object, set uniform values on MaterialInstances.
+	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
+	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
+	 * that same value, unless overridden by a nap::MaterialInstance. 
 	 */
 	class NAPAPI Material : public Resource, public UniformContainer
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		Material() = default;
+		/**
+		 * @param core the core instance
+		 */
 		Material(Core& core);
 
 		/**
-		 * Binding between mesh vertex attr and shader vertex attr
-		*/
+		 * Binds a mesh vertex buffer to a shader input.
+		 */
 		struct VertexAttributeBinding
 		{
+			/**
+			 * @param meshAttributeID the mesh vertex buffer name
+			 * @param shaderAttributeID the shader vertex buffer name
+			 */
+			VertexAttributeBinding(const std::string& meshAttributeID, const std::string& shaderAttributeID);
+
+			// Default constructor
 			VertexAttributeBinding() = default;
 
-			VertexAttributeBinding(const std::string& meshAttributeID, const std::string& shaderAttributeID) :
-				mMeshAttributeID(meshAttributeID),
-				mShaderAttributeID(shaderAttributeID)  {}
-
-			std::string mMeshAttributeID;
-			std::string mShaderAttributeID;
+			std::string mMeshAttributeID;				///< mesh vertex buffer name
+			std::string mShaderAttributeID;				///< shader vertex buffer name
 		};
 
 		/**
-		* Creates mappings for uniform and vertex attrs.
-		*/
+		 * Initializes the material. 
+		 * Validates and converts all the declared uniform values into instances and sets up the vertex buffer bindings.
+		 * @param errorState contains the error if initialization fails.
+		 * @return if initialization succeeded.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Utility for getting the shader resource
-		 * @return the link as a shader resource, nullptr if not linked
+		 * @return The underlying shader
 		 */
-		const Shader& getShader() const			{ return *mShader; }
+		const Shader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
 
 		/**
-		* @return Blending mode for this material
-		*/
-		EBlendMode getBlendMode() const			{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
-
-		void setBlendMode(EBlendMode blendMode) { mBlendMode = blendMode; }
-
-		/**
-		* @return Depth mode mode for this material
-		*/
-		EDepthMode getDepthMode() const			{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
-
-		void setDepthMode(EDepthMode depthMode) { mDepthMode = depthMode; }
+		 * Returns the current blend mode.
+		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
+		 * @return Active blend mode
+		 */
+		EBlendMode getBlendMode() const						{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
-		* Finds the mesh/shader attribute binding based on the shader attribute ID.
-		* @param shaderAttributeID: ID of the shader vertex attribute.
-		*/
+		 * Sets the blend mode to use. 
+		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
+		 * @param blendMode new blend mode to use
+		 */
+		void setBlendMode(EBlendMode blendMode)				{ mBlendMode = blendMode; }
+
+		/**
+		 * Returns the current depth mode.
+		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
+		 * @return Depth mode
+		 */
+		EDepthMode getDepthMode() const						{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+
+		/**
+		 * Sets the depth mode to use.
+		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
+		 * @param depthMode new depth mode to use.
+		 */
+		void setDepthMode(EDepthMode depthMode)				{ mDepthMode = depthMode; }
+
+		/**
+		 * Finds the mesh / shader attribute binding based on the given shader attribute ID.
+		 * @param shaderAttributeID: ID of the shader vertex attribute.
+		 */
 		const VertexAttributeBinding* findVertexAttributeBinding(const std::string& shaderAttributeID) const;
 
 		/**
-		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
-		*/
+		 * @return Returns a mapping with default values for mesh to shader vertex attribute IDs.
+		 */
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	public:
