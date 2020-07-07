@@ -43,7 +43,7 @@ namespace nap
 	}
 
 
-	bool RenderableGlyph::onInit(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode)
+	bool RenderableGlyph::setup(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode)
 	{
 		// Get handle to the glyph
 		FT_Glyph bitmap = toFreeTypeGlyph(glyph.getHandle());
@@ -100,7 +100,7 @@ namespace nap
 
 	bool Renderable2DGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
-		if (!RenderableGlyph::onInit(glyph, false, errorCode))
+		if (!RenderableGlyph::setup(glyph, false, errorCode))
 			return false;
 		return true;
 	}
@@ -112,7 +112,7 @@ namespace nap
 
 	bool Renderable2DMipMapGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
-		if (!RenderableGlyph::onInit(glyph, true, errorCode))
+		if (!RenderableGlyph::setup(glyph, true, errorCode))
 			return false;
 		return true;
 	}

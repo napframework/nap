@@ -89,7 +89,7 @@ namespace nap
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
-		virtual bool onInit(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode);
+		virtual bool setup(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode);
 
 	private:
 		std::unique_ptr<Texture2D> mTexture = nullptr;
