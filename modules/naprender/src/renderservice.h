@@ -552,7 +552,7 @@ namespace nap
 		/**
 		 * Waits for the device to be idle and deletes queued resources.
 		 */
-		virtual void preShutdown();
+		virtual void preShutdown() override;
 
 		/**
 		 * Shuts down the renderer, local Vulkan resources are destroyed.

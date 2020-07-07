@@ -93,7 +93,6 @@ namespace nap
 		 */
 		void asyncGetData(Bitmap& bitmap);
 
-
 		/**
 		 * @return Vulkan image view
 		 */
@@ -115,6 +114,9 @@ namespace nap
 		void upload(VkCommandBuffer commandBuffer);
 		void notifyDownloadReady(int frameIndex);		
 		void download(VkCommandBuffer commandBuffer);
+        
+        // Hide resource init explicitly
+        using Resource::init;
 
 	protected:
 		RenderService*				mRenderService = nullptr;

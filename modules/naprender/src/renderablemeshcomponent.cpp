@@ -130,7 +130,6 @@ namespace nap
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
-		Material& material = mat_instance.getMaterial();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Bind vertex buffers

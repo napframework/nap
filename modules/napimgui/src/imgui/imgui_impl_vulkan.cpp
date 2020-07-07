@@ -78,7 +78,6 @@ struct ImGui_ImplVulkanH_WindowRenderBuffers
 
 // Vulkan data
 static ImGui_ImplVulkan_InitInfo	g_VulkanInitInfo = {};
-static VkRenderPass					g_RenderPass = VK_NULL_HANDLE;
 static VkDeviceSize					g_BufferMemoryAlignment = 256;
 static VkPipelineCreateFlags		g_PipelineCreateFlags = 0x00;
 static VkDescriptorSetLayout		g_DescriptorSetLayout = VK_NULL_HANDLE;
@@ -435,7 +434,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, ImGuiContext* contex
 	auto it = g_RenderBuffers.find(context);
 	if (it == g_RenderBuffers.end())
 	{
-		it = g_RenderBuffers.emplace(std::make_pair(context, std::move(ImGui_ImplVulkanH_WindowRenderBuffers()))).first;
+		it = g_RenderBuffers.emplace(std::make_pair(context, ImGui_ImplVulkanH_WindowRenderBuffers())).first;
 	}
 
 	ImGui_ImplVulkanH_WindowRenderBuffers* wrb = &it->second;

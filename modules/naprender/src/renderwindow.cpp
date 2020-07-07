@@ -949,7 +949,7 @@ namespace nap
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		VkExtent2D swap_chain_extent; VkPresentModeKHR out_mode; uint32 out_images;
+		VkExtent2D swap_chain_extent;
 		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
 			return false;
 

@@ -161,10 +161,7 @@ namespace nap
 			assert(false);
 			return;
 		}
-
-		// Get the parent material
-		Material& comp_mat = mMaterialInstance.getMaterial();		 
-
+        
 		// Update the model matrix so that the plane mesh is of the same size as the render target
 		computeModelMatrix();
 
@@ -191,9 +188,6 @@ namespace nap
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-
-		Material& material = mRenderableMesh.getMaterialInstance().getMaterial();
-
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();

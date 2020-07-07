@@ -26,8 +26,8 @@ namespace nap
 
 	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
 		mRenderService(&renderService),
-		mLayout(layout),
-		mDescriptorSetAllocator(&descriptorSetAllocator)
+		mDescriptorSetAllocator(&descriptorSetAllocator),
+        mLayout(layout)
 	{
 		mUsedList.resize(mRenderService->getMaxFramesInFlight());
 	}

@@ -192,7 +192,7 @@ namespace nap
 		for (auto& source_parameter : mBlendParameters->mParameters)
 		{
 			// Create new blender
-			std::unique_ptr<BaseParameterBlender> new_blender = std::move(getParameterBlender(*source_parameter));
+			std::unique_ptr<BaseParameterBlender> new_blender = getParameterBlender(*source_parameter);
 			if (new_blender == nullptr)
 			{
 				error.fail("%s: Parameter %s can't be blended, no blender available for: %s", 

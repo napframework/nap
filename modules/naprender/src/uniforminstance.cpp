@@ -121,13 +121,11 @@ namespace nap
 
 	nap::UniformInstance* UniformStructInstance::findUniform(const std::string& name)
 	{
-		UniformInstance* instance = nullptr;
 		for (auto& uniform_instance : mUniforms)
 		{
 			if (uniform_instance->getDeclaration().mName == name)
 				return uniform_instance.get();
 		}
-
 		return nullptr;
 	}
 

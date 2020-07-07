@@ -45,6 +45,7 @@ namespace nap
 
 	public:
 		SurfaceDescriptor() = default;
+        virtual ~SurfaceDescriptor() = default;
 		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels);
 		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace);
 

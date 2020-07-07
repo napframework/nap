@@ -32,14 +32,14 @@ namespace nap
 		virtual void beginRendering() override;
 		virtual void endRendering() override;
 
-		virtual const glm::ivec2 getBufferSize() const;
+		virtual const glm::ivec2 getBufferSize() const override;
 
 		virtual void setClearColor(const glm::vec4& color) override { mClearColor = color; }
 		virtual const glm::vec4& getClearColor() const override { return mClearColor; }
 
 		virtual ECullWindingOrder getWindingOrder() const override { return ECullWindingOrder::Clockwise; }
 
-		virtual VkRenderPass getRenderPass() const { return mRenderPass; }
+		virtual VkRenderPass getRenderPass() const override { return mRenderPass; }
 
 		RenderTexture2D& getColorTexture();
 

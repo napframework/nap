@@ -478,7 +478,6 @@ namespace nap
 		outQueueFamilyIndex = queue_indices[device_idx];
 
 		// Extract device features
-		VkPhysicalDeviceFeatures selected_device_featues;
 		vkGetPhysicalDeviceFeatures(physical_devices[device_idx], &outFeatures);
 		nap::Logger::info("Selected device: %d", device_idx, physical_device_properties[device_idx].deviceName);
 		return true;
@@ -1185,9 +1184,6 @@ namespace nap
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
 		// Select GPU after successful creation of a vulkan instance
-		VkPhysicalDeviceFeatures	physical_device_features;
-		VkPhysicalDeviceProperties	physical_device_properties;
-
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
 			return false;
@@ -1424,7 +1420,7 @@ namespace nap
 		// Push the download of a texture onto the command buffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
 		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
-		transferData(commandBuffer, [commandBuffer, this, &frame]()
+		transferData(commandBuffer, [commandBuffer, &frame]()
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
