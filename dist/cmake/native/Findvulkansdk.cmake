@@ -31,6 +31,9 @@ elseif(APPLE)
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
 
+	message("CHECKING")
+	message(${MOLTENVK_LIB})
+
 	find_library(METAL_LIB Metal)
 	find_library(FOUNDATION_LIB Foundation)
 	find_library(QUARTZ_LIB QuartzCore)
@@ -60,12 +63,7 @@ mark_as_advanced(VULKANSDK_LIBS)
 add_library(vulkansdk SHARED IMPORTED)
 
 # Setup library properties for linux
-if(APPLE)
-	set_target_properties(vulkansdk PROPERTIES
-    		IMPORTED_IMPLIB_RELEASE ${VULKANSDK_LIBS}
-      		IMPORTED_IMPLIB_DEBUG ${VULKANSDK_LIBS}
-          	)
-elseif(UNIX)
+if(UNIX)
 	set_target_properties(vulkansdk PROPERTIES
     		IMPORTED_CONFIGURATIONS "Debug;Release"
         	IMPORTED_LOCATION_RELEASE ${VULKANSDK_LIBS}
