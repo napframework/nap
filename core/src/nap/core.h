@@ -212,7 +212,14 @@ namespace nap
          */
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
-    private:
+		/**
+ 		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
+ 		 * @param errorState Serialization errors will be logged to errorState.
+ 		 * @return true on sucess.
+		 */
+		bool writeConfigFile(utility::ErrorState& errorState);
+
+	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
 		* Note that a module does not need to define a service, only if it has been defined
