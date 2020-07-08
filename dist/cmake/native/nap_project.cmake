@@ -1,9 +1,3 @@
-cmake_minimum_required(VERSION 3.15.4)
-include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
-
-get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
-project(${project_name_from_dir})
-
 # Enforce GCC on Linux for now
 if(UNIX AND NOT APPLE)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

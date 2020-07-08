@@ -19,6 +19,7 @@ endif()
 
 find_package(OpenGL)
 if(NOT TARGET glm)
+    set(GLM_FIND_QUIETLY TRUE)
     find_package(glm REQUIRED)
 endif()
 
