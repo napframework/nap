@@ -82,8 +82,9 @@ namespace nap
 		void* module_handle = loadModule(*modinfo, moduleFile, loadModuleError);
 		if (!module_handle)
 		{
-			err.fail(utility::stringFormat("Failed to load module '%s': %s",
-										   moduleFile.c_str(), loadModuleError.c_str()));
+			auto resolved = utility::getAbsolutePath(moduleFile);
+			err.fail(utility::stringFormat("Failed to load module '%s' (resolved as %s): %s",
+										   moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str()));
 			return false;
 		}
 
