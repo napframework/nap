@@ -121,7 +121,9 @@ def convert_project_info(directory):
             ('Title', proj_info_json.get('title')),
             ('Version', proj_info_json.get('version')),
             ('RequiredModules', proj_info_json.get('modules', [])),
-            ('ServiceConfig', list(_convert_service_config(directory))),
+            # TODO ServiceConfig changes disabled until resolved
+            #('ServiceConfig', list(_convert_service_config(directory))),
+            ('ServiceConfig', []),
         ))
 
     else:
@@ -140,12 +142,11 @@ def convert_project(project_dir):
 
     module_dir = os.path.join(project_dir, 'module')
     if os.path.exists(module_dir):
-        convert_module_info(module_dir)
         convert_module(module_dir)
 
 
 def convert_repository(root_directory):
-    print('Convert project and moduleinfo files in nap repository: %s' % root_directory)
+    print('Convert projectinfo and moduleinfo files in NAP repository: %s' % root_directory)
     project_dirs = [
         'apps',
         'demos',
