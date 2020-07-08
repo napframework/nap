@@ -23,11 +23,11 @@ endif()
 find_path(VULKANSDK_INCLUDE_DIRS
 			NO_DEFAULT_PATH
 			NAMES vulkan/vulkan.h
-			HINTS ${VULKANSDK_DIR}/Include
+			HINTS ${VULKANSDK_DIR}/include
 			)
 
 # vulkan library directory
-set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/Lib)
+set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/lib)
 
 # find vulkan library
 if(WIN32)
@@ -38,12 +38,14 @@ if(WIN32)
 				PATHS ${VULKANSDK_LIBS_DIR}		   
 				)
 elseif(APPLE)
-	# moltenvk -> libMoltenVK.a
-	find_library(MOLTENVK_LIB
+	# moltenvk -> libvulkan.so
+	find_library(VULKAN_LIB
 			NO_DEFAULT_PATH
-			NAMES MoltenVK
+			NAMES vulkan
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
+
+	message(${VULKAN_LIB})
 
 	find_library(METAL_LIB Metal)
 	find_library(FOUNDATION_LIB Foundation)
@@ -51,9 +53,9 @@ elseif(APPLE)
 	find_library(IOKIT_LIB IOKit)
 	find_library(IOSURFACE_LIB IOSurface)
 
-	if(MOLTENVK_LIB AND METAL_LIB AND FOUNDATION_LIB
+	if(VULKAN_LIB AND METAL_LIB AND FOUNDATION_LIB
 		AND QUARTZ_LIB AND IOKIT_LIB AND IOSURFACE_LIB)
-		set(VULKANSDK_LIBS ${MOLTENVK_LIB} ${METAL_LIB} ${FOUNDATION_LIB} ${QUARTZ_LIB} ${IOKIT_LIB} ${IOSURFACE_LIB})
+		set(VULKANSDK_LIBS ${VULKAN_LIB} ${METAL_LIB} ${FOUNDATION_LIB} ${QUARTZ_LIB} ${IOKIT_LIB} ${IOSURFACE_LIB})
 	endif()
 
 elseif(UNIX)
