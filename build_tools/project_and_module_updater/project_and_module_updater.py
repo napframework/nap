@@ -11,6 +11,7 @@ See the main() function below.
 
 """
 
+import argparse
 import json
 import logging
 import os
@@ -79,7 +80,7 @@ def _find_data_file(root_dir):
         return os.path.relpath(found_path, root_dir)
 
 
-def convert_module_info(directory):
+def convert_module(directory):
     """Find a moduleinfo file in the specified directory, convert to new format and write to same file"""
     filepath, mod_info_json = _load_json(directory, 'module.json')
     if not filepath:
@@ -140,6 +141,7 @@ def convert_project(project_dir):
     module_dir = os.path.join(project_dir, 'module')
     if os.path.exists(module_dir):
         convert_module_info(module_dir)
+        convert_module(module_dir)
 
 
 def convert_repository(root_directory):
@@ -165,20 +167,38 @@ def convert_repository(root_directory):
         parent_dir = os.path.join(root_directory, p)
         for d in os.listdir(parent_dir):
             directory = os.path.join(parent_dir, d)
-            convert_module_info(directory)
+            convert_module(directory)
 
+
+def convert_project_wrapper(args):
+    convert_project(args.PROJECT_PATH)
+
+def convert_module_wrapper(args):
+    convert_module(args.MODULE_PATH)
+
+def convert_repository_wrapper(args):
+    nap_root_dir = os.path.realpath('%s/../../' % os.path.dirname(__file__))
+    verify_path = os.path.join(nap_root_dir, 'modules')
+    assert os.path.exists(verify_path), 'NAP root dir not found at: %s' % nap_root_dir
+    convert_repository(nap_root_dir)
 
 def main():
-    if len(sys.argv) < 2:
-        raise Exception('No project directory given')
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(metavar='COMMAND', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_REPO')
 
-    # TODO: Find some other means of determining the root dir here
-    nap_root_dir = os.path.realpath('%s/../../..' % os.path.dirname(__file__))
-    assert os.path.exists(nap_root_dir), 'NAP root dir not found at: %s' % nap_root_dir
+    project_subparser = subparsers.add_parser('UPGRADE_PROJECT')
+    project_subparser.add_argument('PROJECT_PATH', type=str, help='Path to project to upgrade')
+    project_subparser.set_defaults(func=convert_project_wrapper)
 
-    convert_repository(nap_root_dir)
-    # convertProject(sys.argv[1])
+    module_subparser = subparsers.add_parser('UPGRADE_MODULE')
+    module_subparser.add_argument('MODULE_PATH', type=str, help='Path to module to upgrade')
+    module_subparser.set_defaults(func=convert_module_wrapper)
 
+    repo_subparser = subparsers.add_parser('UPGRADE_REPO')
+    repo_subparser.set_defaults(func=convert_repository_wrapper)
+
+    args = parser.parse_args()
+    args.func(args)
 
 if __name__ == '__main__':
     main()
