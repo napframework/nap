@@ -99,6 +99,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 		mCore->getResourceManager()->getFactory(),
 		err);
+	projectInfo->setFilename(projectFilename.toStdString());
 	projectInfo->setEditorMode();
 
 	if (err.hasErrors())
@@ -106,19 +107,19 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::error("Failed to load project info %s: %s",
 						   projectFilename.toStdString().c_str(), err.toString().c_str());
 
-		if (mExitOnLoadFailure) 
+		if (mExitOnLoadFailure)
 			getQApplication()->exit(1);
 
 		return nullptr;
 	}
 
 	projectInfo->getFilename() = projectFilename.toStdString();
-	if (mCore->loadPathMapping(*projectInfo, err))
+	if (!mCore->loadPathMapping(*projectInfo, err))
 	{
 		nap::Logger::error("Failed to load path mapping %s: %s",
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
 
-		if (mExitOnLoadFailure) 
+		if (mExitOnLoadFailure)
 			getQApplication()->exit(1);
 
 		return nullptr;

@@ -53,6 +53,11 @@ namespace nap
 		std::string getFilename() const { return mFilename; }
 
 		/**
+		 * Set the filename of this projectinfo, only to be called while loading.
+		 */
+		void setFilename(const std::string& filename) { mFilename = filename; }
+
+		/**
 		 * @return Absolute path of the project directory
 		 */
 		std::string getProjectDir() const {

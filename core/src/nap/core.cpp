@@ -464,11 +464,10 @@ namespace nap
 		return true;
 	}
 
-	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo,
-															nap::utility::ErrorState& err)
+	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
 	{
 		// Load path mapping (relative to the project.json file)
-		auto pathMappingFilename = projectInfo.getProjectDir() + '/' + projectInfo.mPathMappingFile;
+		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
 		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,

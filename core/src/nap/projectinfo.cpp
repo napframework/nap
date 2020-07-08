@@ -5,7 +5,7 @@
 RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ModulePaths", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RequiredModules", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
