@@ -22,10 +22,7 @@ if __name__ == '__main__':
     script_path = os.path.join(nap_root, 'tools', 'platform', 'cli_single_project_build.py')
 
     # Determine our Python interpreter location
-    if sys.platform == 'win32':
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-    else:
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+    python = get_python_path()
 
     cmd = [python, script_path, '--build-type=%s' % args.build_type, project_name]
     exit_code = call(cmd)

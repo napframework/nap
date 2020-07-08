@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import validate_pascalcase_name, get_cmake_path
+from nap_shared import validate_pascalcase_name, get_cmake_path, get_python_path
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -46,10 +46,7 @@ def create_module(module_name, generate_solution):
         print("Generating solution")        
 
         # Determine our Python interpreter location
-        if sys.platform == 'win32':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-        else:
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+        python = get_python_path()
 
         cmd = [python, './tools/platform/regenerate_module_by_name.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:

@@ -193,3 +193,12 @@ def get_full_project_module_requirements(framework_root, project_name, project_p
         modules.extend(new_modules)
 
     return modules
+
+def get_python_path():
+    """Determine Python interpreter location"""
+    nap_root = get_nap_root()
+    if sys.platform == 'win32':
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
+    else:
+        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+    return python

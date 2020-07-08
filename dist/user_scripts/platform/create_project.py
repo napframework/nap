@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json, get_cmake_path
+from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json, get_cmake_path, get_python_path
 
 # Default modules if none are specified
 DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio,mod_napimgui"
@@ -63,11 +63,8 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
         print("Generating solution")
 
         # Determine our Python interpreter location
-        if sys.platform == 'win32':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-        else:
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
-                
+        python = get_python_path()
+
         cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
         if not show_solution and not sys.platform.startswith('linux'):
             cmd.append('--no-show')        

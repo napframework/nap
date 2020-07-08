@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys 
 
-from nap_shared import read_console_char
+from nap_shared import read_console_char, get_python_path
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='regenerate')
@@ -27,10 +27,7 @@ if __name__ == '__main__':
     show_solution = sys.platform in ('win32', 'darwin') and not args.no_show
 
     # Determine our Python interpreter location
-    if sys.platform == 'win32':
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-    else:
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+    python = get_python_path()
 
     cmd = [python, script_path, project_name] 
     # Add our build type for Linux

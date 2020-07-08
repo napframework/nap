@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys
 
-from nap_shared import read_console_char
+from nap_shared import read_console_char, get_python_path
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='package')
@@ -26,10 +26,7 @@ if __name__ == '__main__':
     script_path = os.path.join(nap_root, 'tools', 'platform', 'package_project_by_name.py')
 
     # Determine our Python interpreter location
-    if sys.platform == 'win32':
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-    else:
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+    python = get_python_path()
 
     # Build our command
     cmd = [python, script_path, project_name]
