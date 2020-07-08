@@ -123,7 +123,7 @@ def convert_project_info(directory):
             ('RequiredModules', proj_info_json.get('modules', [])),
             # TODO ServiceConfig changes disabled until resolved
             #('ServiceConfig', list(_convert_service_config(directory))),
-            ('ServiceConfig', []),
+            ('ServiceConfig', ''),
         ))
 
     else:
