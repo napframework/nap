@@ -185,7 +185,7 @@ def convert_repository_wrapper(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(metavar='COMMAND', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_REPO')
+    subparsers = parser.add_subparsers(metavar='command', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_REPO')
 
     project_subparser = subparsers.add_parser('UPGRADE_PROJECT')
     project_subparser.add_argument('PROJECT_PATH', type=str, help='Path to project to upgrade')
@@ -199,6 +199,10 @@ def main():
     repo_subparser.set_defaults(func=convert_repository_wrapper)
 
     args = parser.parse_args()
+    if not hasattr(args, 'func'):
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     args.func(args)
 
 if __name__ == '__main__':
