@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys 
 
-from nap_shared import read_console_char
+from nap_shared import read_console_char, get_python_path
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='build')
