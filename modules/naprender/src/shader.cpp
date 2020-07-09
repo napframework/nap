@@ -581,12 +581,12 @@ namespace nap
 		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
 
 		VkDevice device = mRenderService->getDevice();
-		uint32_t deviceVersion = mRenderService->getPhysicalDeviceVersion();
+		uint32_t vulkan_version = mRenderService->getVulkanVersion();
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<uint32> vertex_shader_spirv;
 		std::vector<uint32> fragment_shader_spirv;
-		if (!compileProgram(device, deviceVersion, mVertPath, mFragPath, vertex_shader_spirv, fragment_shader_spirv, errorState))
+		if (!compileProgram(device, vulkan_version, mVertPath, mFragPath, vertex_shader_spirv, fragment_shader_spirv, errorState))
 			return false;
 
 		// Create vertex shader module
