@@ -10,26 +10,30 @@ using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&getContext(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	connect(&getContext(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	connect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	connect(&getContext(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	connect(&getContext(), &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
 
 void MainWindow::unbindSignals()
 {
-	disconnect(&getContext(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	disconnect(&getContext(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	disconnect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	disconnect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	disconnect(&getContext(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	disconnect(&getContext(), &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
@@ -212,6 +216,40 @@ void MainWindow::onLog(nap::LogMessage msg)
 		showError(msg);
 }
 
+void MainWindow::onBlockingProgress(float fraction, const QString& message)
+{
+	const int scale = 100;
+	if (fraction >= 1)
+	{
+		// Done
+		if (mProgressDialog)
+			mProgressDialog.reset();
+	}
+	else
+	{
+		// In progress
+		if (!mProgressDialog)
+		{
+			mProgressDialog = std::make_unique<QProgressDialog>(message, "Cancel", 0, 0, this);
+            mProgressDialog->setWindowTitle("Working...");
+			mProgressDialog->setCancelButton(nullptr);
+		}
+
+		if (fraction > 0)
+		{
+			mProgressDialog->setRange(0, scale);
+			mProgressDialog->setValue((int) fraction * scale);
+		}
+		else
+		{
+			mProgressDialog->setRange(0, 0);
+			mProgressDialog->setValue(0);
+		}
+		mProgressDialog->show();
+	}
+	QApplication::processEvents();
+}
+
 void MainWindow::showError(nap::LogMessage msg)
 {
 	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
@@ -267,5 +305,3 @@ AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
 }
-
-

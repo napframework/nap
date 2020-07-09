@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QObject>
+#include <QProgressDialog>
 #include <QUndoCommand>
 #include <QMainWindow>
 
@@ -49,7 +50,7 @@ namespace napkin
 		 * Construct the singleton
 		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
 		 */
-		static void create();
+		static AppContext& create();
 
 		/**
 		 * Destruct the singleton
@@ -214,12 +215,12 @@ namespace napkin
 		/**
 		 * Disable opening of project from recently opened file list on startup
 		 */
-		void disableRecentProjectOpening();
+		void setOpenRecentProjectOnStartup(bool b);
 
 		/**
 		 * Set to exit upon failure loading any project
 		 */
-		void enableExitOnProjectLoadFailure();
+		void setExitOnLoadFailure(bool b);
 
 	Q_SIGNALS:
 		/**
@@ -343,6 +344,14 @@ namespace napkin
 		 * @param msg The log message being handled
 		 */
 		void logMessage(nap::LogMessage msg);
+
+		/**
+		 * Emits when an application-wide blocking operation started, progresses or finishes
+		 * @param fraction How far we are along the process.
+		 * 		           A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * @param message A short message describing what's happening.
+		 */
+		void blockingProgressChanged(float fraction, const QString& message = {});
 
 	private:
 

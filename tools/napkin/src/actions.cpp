@@ -5,6 +5,7 @@
 #include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
+#include "napkinutils.h"
 
 using namespace napkin;
 
@@ -50,8 +51,9 @@ OpenFileAction::OpenFileAction()
 void OpenFileAction::perform()
 {
 	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
-	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
-													lastFilename, JSON_FILE_FILTER);
+    auto topLevelWidgets = QApplication::topLevelWidgets();
+
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_FILE_FILTER);
 	if (filename.isNull())
 		return;
 

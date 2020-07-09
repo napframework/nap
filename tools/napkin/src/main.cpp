@@ -37,6 +37,7 @@ void initializeSettings()
 	}
 }
 
+
 /**
  * Initialize the application and spawn its window
  */
@@ -46,7 +47,7 @@ int main(int argc, char* argv[])
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
 
     // Construct the app context singleton
-    AppContext::create();
+    auto& ctx = AppContext::create();
 
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("napframework");
@@ -57,38 +58,36 @@ int main(int argc, char* argv[])
 
 	QApplication app(argc, argv);
 
-	// handle commandline
-	QCommandLineParser parser;
-	auto opHelp = parser.addHelpOption();
-	auto opVer = parser.addVersionOption();
-
-	QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
-	parser.addOption(opProject);
-    // Options to assist with automated testing
-	QCommandLineOption opExitFailure("exit-on-failure", "Exit on on failure loading project", "", "");
-	parser.addOption(opExitFailure);
-	QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
-	parser.addOption(opNoOpenRecent);
-
-	parser.process(app);
-
-	if (parser.isSet(opHelp))
-		return 0;
-
-	if (parser.isSet(opVer))
-		return 0;
-
-	if (parser.isSet(opProject))
 	{
-		AppContext::get().addRecentlyOpenedProject(parser.value(opProject));
-	}
-	else if (parser.isSet(opNoOpenRecent))
-	{
-		AppContext::get().disableRecentProjectOpening();
-	}
+		// handle commandline
+		QCommandLineParser parser;
+		auto opHelp = parser.addHelpOption();
+		auto opVer	= parser.addVersionOption();
 
-	if (parser.isSet(opExitFailure))
-		AppContext::get().enableExitOnProjectLoadFailure();
+		QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
+		parser.addOption(opProject);
+		// Options to assist with automated testing
+		QCommandLineOption opExitFailure("exit-on-failure", "Exit on on failure loading project", "", "");
+		parser.addOption(opExitFailure);
+		QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
+		parser.addOption(opNoOpenRecent);
+
+		parser.process(app);
+
+		if (parser.isSet(opHelp))
+			return 0;
+
+		if (parser.isSet(opVer))
+			return 0;
+
+		if (parser.isSet(opProject))
+			ctx.addRecentlyOpenedProject(parser.value(opProject));
+		else if (parser.isSet(opNoOpenRecent))
+			ctx.setOpenRecentProjectOnStartup(false);
+
+		if (parser.isSet(opExitFailure))
+			ctx.setExitOnLoadFailure(true);
+	}
 
 	// Create main window and run
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));

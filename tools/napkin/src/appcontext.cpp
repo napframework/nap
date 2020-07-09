@@ -6,6 +6,7 @@
 // qt
 #include <QSettings>
 #include <QTimer>
+#include <QProcess>
 
 // nap
 #include <rtti/jsonreader.h>
@@ -43,10 +44,11 @@ AppContext& AppContext::get()
 }
 
 
-void AppContext::create()
+AppContext& AppContext::create()
 {
 	assert(appContextInstance == nullptr);
     appContextInstance = std::make_unique<AppContext>();
+    return *appContextInstance;
 }
 
 
@@ -58,6 +60,8 @@ void AppContext::destroy()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
+	blockingProgressChanged(0, "Loading: " + filename);
+
 	mCurrentFilename = filename;
 
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
@@ -68,27 +72,45 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	if (!QFile::exists(filename))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!QFileInfo(filename).isFile())
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
+
+	blockingProgressChanged(1);
 
 	return loadDocumentFromString(buffer, filename);
 }
 
 nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	blockingProgressChanged(0, "Loading: " + projectFilename);
+
+	if (mCore)
+	{
+		auto args = qApp->arguments();
+		QProcess::startDetached(args[0], args);
+		getQApplication()->exit(0);
+		return nullptr;
+	}
+
 	mCore = std::make_unique<nap::Core>();
 
 	ErrorState err;
@@ -104,6 +126,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	if (err.hasErrors())
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Failed to load project info %s: %s",
 						   projectFilename.toStdString().c_str(), err.toString().c_str());
 
@@ -116,6 +140,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	projectInfo->getFilename() = projectFilename.toStdString();
 	if (!mCore->loadPathMapping(*projectInfo, err))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Failed to load path mapping %s: %s",
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
 
@@ -132,6 +158,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	if (!mCore->initializeEngine(err, std::move(projectInfo)))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error(err.toString());
 
 		if (mExitOnLoadFailure) 
@@ -147,10 +175,14 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		loadDocument(dataFilename);
 	else
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::warn("No data file specified");
 		if (mExitOnLoadFailure) 
 			getQApplication()->exit(1);
 	}
+
+	blockingProgressChanged(1);
 
 	return mCore->getProjectInfo();
 }
@@ -459,12 +491,12 @@ void napkin::AppContext::closeDocument()
 	mDocument.reset(nullptr);
 }
 
-void AppContext::disableRecentProjectOpening()
+void AppContext::setOpenRecentProjectOnStartup(bool b)
 {
-	mOpenRecentProjectAtStartup = false;
+	mOpenRecentProjectAtStartup = b;
 }
 
-void AppContext::enableExitOnProjectLoadFailure()
+void AppContext::setExitOnLoadFailure(bool b)
 {
-	mExitOnLoadFailure = true;
+	mExitOnLoadFailure = b;
 }
