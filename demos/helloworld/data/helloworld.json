@@ -361,7 +361,7 @@
             "Type": "nap::SphereMesh",
             "mID": "WorldMesh",
             "Usage": "Static",
-            "CullMode": "Back",
+            "CullMode": "None",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0

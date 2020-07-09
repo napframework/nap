@@ -194,7 +194,7 @@ namespace nap
 		const char* msg,
 		void* userData)
 	{
-		nap::Logger::info("Validation Layer [%s]: %s", layerPrefix, msg);
+		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
 		return VK_FALSE;
 	}
 
@@ -1363,8 +1363,8 @@ namespace nap
 			mInstance = VK_NULL_HANDLE;
 		}
 
-		ShFinalize();
 		SDL::shutdownVideo();
+		ShFinalize();
 		mInitialized = false;
 	}
 	
