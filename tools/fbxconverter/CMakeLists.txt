@@ -72,7 +72,7 @@ if(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/Lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/lib)
 endif()
 
 if (WIN32)   

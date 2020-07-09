@@ -43,15 +43,14 @@ if(UNIX)
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)
-endif()
 
-# Package VulkanSDK into packaged project on Linux
-if(UNIX AND NOT APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/Lib/
+
+    # Package VulkanSDK into packaged project on Linux
+    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/lib/
             DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
-            PATTERN "*.a" EXCLUDE)    
+            PATTERN "*.a" EXCLUDE)   
 endif()
 
 # Install thirdparty licenses into lib

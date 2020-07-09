@@ -45,8 +45,7 @@ elseif(APPLE)
 			PATHS ${VULKANSDK_LIBS_DIR}		   
 			)
 
-	message(${VULKAN_LIB})
-
+	# additional library dependencies on apple
 	find_library(METAL_LIB Metal)
 	find_library(FOUNDATION_LIB Foundation)
 	find_library(QUARTZ_LIB QuartzCore)
