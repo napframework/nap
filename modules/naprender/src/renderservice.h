@@ -495,6 +495,13 @@ namespace nap
 		bool isRenderingFrame() const												{ return mIsRenderingFrame; }
 
 		/**
+		 * Returns the api version used to create the Vulkan instance.
+		 * Note that the physical device is required to support at least that version.
+		 * @return The api version used to create the Vulkan instance.
+		 */
+		uint32 getVulkanVersion() const												{ return mAPIVersion; }
+
+		/**
 		 * Returns the major api version used to create the Vulkan instance.
 		 * The vulkan instance is created using a combination of the major and minor api version.
 		 * Note that the physical device is required to support at least that version.

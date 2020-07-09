@@ -312,31 +312,32 @@ namespace nap
 
 		// Get the supported vulkan instance version, only supported by newer (1.1) loaders.
 		// We therefore first find out if the function is exposed, if so use it.
-		uint32 current_version(0);
+		uint32 instance_version(0);
 		PFN_vkEnumerateInstanceVersion enum_instance_version_fn = (PFN_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceVersion");
 		if (enum_instance_version_fn != nullptr)
 		{
-			if (!errorState.check(enum_instance_version_fn(&current_version) == VK_SUCCESS,
+			if (!errorState.check(enum_instance_version_fn(&instance_version) == VK_SUCCESS,
 				"Unable Query instance-level version of Vulkan before instance creation"))
 				return false;
 		}
 		else 
 		{
 			// Otherwise current version is known to be 1.0
-			current_version = VK_MAKE_VERSION(1, 0, 0);
+			instance_version = VK_MAKE_VERSION(1, 0, 0);
 		}
 
 		// Log used SDK version
-		uint32 major_version = VK_VERSION_MAJOR(current_version);
-		uint32 minor_version = VK_VERSION_MINOR(current_version);
-		uint32 patch_version = VK_VERSION_PATCH(current_version);
+		uint32 major_version = VK_VERSION_MAJOR(instance_version);
+		uint32 minor_version = VK_VERSION_MINOR(instance_version);
+		uint32 patch_version = VK_VERSION_PATCH(instance_version);
 		nap::Logger::info("Vulkan instance version: %d.%d.%d", major_version, minor_version, patch_version);
+		nap::Logger::info("Vulkan requested version: %d.%d.%d", MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
 
 		// Create api version without patch, not used when creating instance
 		uint32 req_vulkan_version = VK_MAKE_VERSION(MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
 		
 		// Ensure the found instance version is compatible
-		if (!errorState.check(current_version >= req_vulkan_version, "Incompatible Vulkan instance, min required version: %d.%d", 
+		if (!errorState.check(instance_version >= req_vulkan_version, "Incompatible Vulkan instance, min required version: %d.%d",
 			MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR))
 			return false;
 
