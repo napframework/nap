@@ -1,7 +1,7 @@
 # default vulkansdk directory
 find_path(VULKANSDK_DIR
           NO_DEFAULT_PATH
-          NAMES Include/vulkan/vulkan.h
+          NAMES include/vulkan/vulkan.h
           HINTS ${THIRDPARTY_DIR}/vulkansdk
           )
 
