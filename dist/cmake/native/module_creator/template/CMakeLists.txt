@@ -3,4 +3,10 @@
 # Extra module CMake logic belongs in module_extra.cmake
 cmake_minimum_required(VERSION 3.15.4)
 set(NAP_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/@PATH_FROM_MODULE_TO_NAP_ROOT@)
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
+@MODULE_NAME_POPULATOR@
+if(TARGET ${MODULE_NAME})
+    return()
+endif()
+project(${MODULE_NAME})
 include(${NAP_ROOT}/cmake/nap_module.cmake)

@@ -19,9 +19,9 @@ def create_module(module_name, generate_solution):
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
-    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/module_creator'))
-    module_path = os.path.abspath(os.path.join(nap_root, 'user_modules/mod_%s' % module_name.lower()))
-    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_%s' % module_name.lower()))
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
+    module_path = os.path.abspath(os.path.join(nap_root, 'user_modules', 'mod_%s' % module_name.lower()))
+    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
 
     # Check for existing module with same name
     if os.path.exists(module_path):

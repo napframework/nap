@@ -26,9 +26,9 @@ def create_project_module(project_name, update_project_json, generate_solution, 
     module_path = os.path.join(project_path, 'module')    
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
-    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/module_creator'))
-    user_module_path = os.path.abspath(os.path.join(nap_root, 'user_modules/mod_%s' % module_name.lower()))
-    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_%s' % module_name.lower()))
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
+    user_module_path = os.path.abspath(os.path.join(nap_root, 'user_modules', 'mod_%s' % module_name.lower()))
+    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
 
     # Ensure project doesn't already have module
     if os.path.exists(module_path):
