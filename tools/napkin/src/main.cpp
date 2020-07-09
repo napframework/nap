@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		auto opHelp = parser.addHelpOption();
 		auto opVer	= parser.addVersionOption();
 
-		QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
+		QCommandLineOption opProject({"p", "project"}, "Load specified project file upon startup", "project", "");
 		parser.addOption(opProject);
 		// Options to assist with automated testing
 		QCommandLineOption opExitFailure("exit-on-failure", "Exit on on failure loading project", "", "");
