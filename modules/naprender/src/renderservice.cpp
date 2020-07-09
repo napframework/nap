@@ -37,6 +37,8 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMajor",		&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMinor",		&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
@@ -48,14 +50,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// Min Supported Vulkan Version
-	//////////////////////////////////////////////////////////////////////////
-
-	constexpr uint32 MIN_VK_VERSION_MAJOR = 1;
-	constexpr uint32 MIN_VK_VERSION_MINOR = 0;
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Static Methods
 	//////////////////////////////////////////////////////////////////////////
@@ -194,7 +188,7 @@ namespace nap
 		const char* msg,
 		void* userData)
 	{
-		nap::Logger::info("Validation Layer [%s]: %s", layerPrefix, msg);
+		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
 		return VK_FALSE;
 	}
 
@@ -296,7 +290,7 @@ namespace nap
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, VkInstance& outInstance, uint32& outVersion, utility::ErrorState& errorState)
+	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, uint32 requestedVersion, VkInstance& outInstance, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -331,14 +325,14 @@ namespace nap
 		uint32 minor_version = VK_VERSION_MINOR(instance_version);
 		uint32 patch_version = VK_VERSION_PATCH(instance_version);
 		nap::Logger::info("Vulkan instance version: %d.%d.%d", major_version, minor_version, patch_version);
-		nap::Logger::info("Vulkan requested version: %d.%d.%d", MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
 
-		// Create api version without patch, not used when creating instance
-		uint32 req_vulkan_version = VK_MAKE_VERSION(MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR, 0);
+		uint32 req_version_major = VK_VERSION_MAJOR(requestedVersion);
+		uint32 req_version_minor = VK_VERSION_MINOR(requestedVersion);
+		nap::Logger::info("Vulkan requested version: %d.%d.%d", req_version_major, req_version_minor, 0);
 		
 		// Ensure the found instance version is compatible
-		if (!errorState.check(instance_version >= req_vulkan_version, "Incompatible Vulkan instance, min required version: %d.%d",
-			MIN_VK_VERSION_MAJOR, MIN_VK_VERSION_MINOR))
+		if (!errorState.check(instance_version >= requestedVersion, "Incompatible Vulkan instance, min required version: %d.%d",
+			req_version_major, req_version_minor))
 			return false;
 
 		// initialize the VkApplicationInfo structure
@@ -349,7 +343,7 @@ namespace nap
 		app_info.applicationVersion = 1;
 		app_info.pEngineName = "NAP";
 		app_info.engineVersion = 1;
-		app_info.apiVersion = req_vulkan_version;
+		app_info.apiVersion = requestedVersion;
 
 		// initialize the VkInstanceCreateInfo structure
 		VkInstanceCreateInfo inst_info = {};
@@ -361,9 +355,6 @@ namespace nap
 		inst_info.ppEnabledExtensionNames = ext_names.data();
 		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
-
-		// Store version
-		outVersion = req_vulkan_version;
 
 		// Create vulkan runtime instance
 		VkResult res = vkCreateInstance(&inst_info, NULL, &outInstance);
@@ -417,7 +408,13 @@ namespace nap
 			if (properties.apiVersion < minAPIVersion)
 			{
 				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+
+				// As far as I can tell all physical devices on Apple only support 1.0.X versions of Vulkan through MoltenVK.
+				// But the vulkan instance supports higher versions and is created based on the min required vulkan version.
+				// This is confusing, until I have a clear answer I will leave this here.
+#ifndef __APPLE__
 				continue;
+#endif // !__APPLE__
 			}
 
 			// Find the number queues this device supports
@@ -1146,7 +1143,8 @@ namespace nap
 			return false;
 
 		// Store render settings, used for initialization and global window creation
-		mEnableHighDPIMode	= getConfiguration<RenderServiceConfiguration>()->mEnableHighDPIMode;
+		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
+		mEnableHighDPIMode	= render_config->mEnableHighDPIMode;
 
 		// Get available vulkan extensions, necessary for interfacing with native window
 		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
@@ -1163,8 +1161,8 @@ namespace nap
 		std::vector<std::string> found_layers;
 #ifndef NDEBUG
 		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = getConfiguration<RenderServiceConfiguration>()->mLayers;
-		bool print_layers = getConfiguration<RenderServiceConfiguration>()->mPrintAvailableLayers;
+		const std::vector<std::string>& requested_layers = render_config->mLayers;
+		bool print_layers = render_config->mPrintAvailableLayers;
 		if (!getAvailableVulkanLayers(requested_layers, print_layers, found_layers, errorState))
 			return false;
 
@@ -1178,14 +1176,15 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		if (!createVulkanInstance(found_layers, found_extensions, mInstance, mAPIVersion, errorState))
+		mAPIVersion = VK_MAKE_VERSION(render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
+		if (!createVulkanInstance(found_layers, found_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
 		// Vulkan messaging callback
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
 		// Select GPU after successful creation of a vulkan instance
-		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(getConfiguration<RenderServiceConfiguration>()->mPreferredGPU);
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
 			return false;
 
@@ -1197,14 +1196,14 @@ namespace nap
 
 		// Create unique set of extensions out of required and additional requested ones
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
-		std::vector<std::string> addition_ext_names = getConfiguration<RenderServiceConfiguration>()->mAdditionalExtensions;
+		std::vector<std::string> addition_ext_names = render_config->mAdditionalExtensions;
 		required_ext_names.insert(required_ext_names.end(), addition_ext_names.begin(), addition_ext_names.end());
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
 		for (const auto& ext : required_ext_names)
 			unique_ext_names.emplace(ext);
 
 		// Create a logical device that interfaces with the physical device.
-		bool print_extensions = getConfiguration<RenderServiceConfiguration>()->mPrintAvailableExtensions;
+		bool print_extensions = render_config->mPrintAvailableExtensions;
 		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
 			return false;
 
@@ -1226,6 +1225,7 @@ namespace nap
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
 
+		// Create allocator for descriptor sets
 		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
 
 		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
@@ -1364,8 +1364,8 @@ namespace nap
 			mInstance = VK_NULL_HANDLE;
 		}
 
-		ShFinalize();
 		SDL::shutdownVideo();
+		ShFinalize();
 		mInitialized = false;
 	}
 	
