@@ -101,12 +101,14 @@ Document* AppContext::loadDocument(const QString& filename)
 
 nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	// TODO: See if we can run this on a thread so the progress dialog may update live.
+
 	blockingProgressChanged(0, "Loading: " + projectFilename);
 
-	if (mCore)
+	// Workaround for issues while unloading the current project: just start a new instance.
+	if (getProject())
 	{
-		auto args = qApp->arguments();
-		QProcess::startDetached(args[0], args);
+		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
 		getQApplication()->exit(0);
 		return nullptr;
 	}
