@@ -2185,6 +2185,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # TODO Look into better options, or at least gracefully handle failure
     sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
     from nap_shared import get_full_project_module_requirements
 

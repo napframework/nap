@@ -19,7 +19,7 @@ import sys
 from collections import OrderedDict
 from subprocess import call
 
-# TODO Move out to wrapper scripts PYTHONPATH
+# TODO Move out to wrapper scripts PYTHONPATH?
 script_dir = os.path.dirname(__file__)
 if not os.path.exists(os.path.join(script_dir, 'nap_shared.py')):
     nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
