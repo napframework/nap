@@ -86,9 +86,17 @@ namespace nap
 		if (modInfo.getProjectInfo().isEditorMode())
 			searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
 
+		auto modulefile = utility::getAbsolutePath(modulePath);
+
+		if (!utility::fileExists(modulefile))
+		{
+			errorString = "File not found: " + modulefile;
+			return nullptr;
+		}
+
 		// Load our module
 		void* result;
-		result = LoadLibraryA(modulePath.c_str());
+		result = LoadLibraryA(modulefile.c_str());
 
 		// If we failed to load the module, get the error string
 		if (!result)

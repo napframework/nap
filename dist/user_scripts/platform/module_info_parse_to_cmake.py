@@ -45,7 +45,7 @@ def read_single_module_dependencies(module_json_path):
     with open(module_json_path) as json_file:
         json_dict = json.load(json_file)
         if not 'RequiredModules' in json_dict:
-            print("Missing element 'RequiredModules' in %s" % MODULE_INFO_FILENAME)
+            print("Missing element 'RequiredModules' in %s" % module_json_path)
             return False
 
         if not type(json_dict['RequiredModules']) is list:

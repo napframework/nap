@@ -101,11 +101,11 @@ def get_camelcase_project_name(project_name):
         print("Error: couldn't find project '%s'" % project_name)
         return None
 
-    project_name = ''
-    with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
+    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
+    with open(project_info_path) as json_file:
         json_dict = json.load(json_file)
         if not 'Title' in json_dict:
-            print("Missing element 'Title' in %s" % PROJECT_INFO_FILENAME)
+            print("Missing element 'Title' in %s" % project_info_path)
             return None
 
         project_name = json_dict['Title']
@@ -124,7 +124,7 @@ def add_module_to_project_json(project_name, full_module_name):
         json_dict = json.load(json_file, object_pairs_hook=OrderedDict)
 
         if not 'RequiredModules' in json_dict:
-            print("Missing element 'RequiredModules' in %s" % PROJECT_INFO_FILENAME)
+            print("Missing element 'RequiredModules' in %s" % project_info_path)
             return False
 
         if not type(json_dict['RequiredModules']) is list:

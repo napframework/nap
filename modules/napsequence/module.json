@@ -1,7 +1,9 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
         "mod_napmath",
         "mod_napsdlinput",
-		"mod_napparameter"
+        "mod_napparameter"
     ]
 }
