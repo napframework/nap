@@ -95,7 +95,6 @@ def package(zip_release,
     if not archive_source_only:
         print("Packaging...")
 
-    # Remove old packaging path if it exists
         # Remove old packaging path if it exists
         if os.path.exists(PACKAGING_DIR):
             remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')

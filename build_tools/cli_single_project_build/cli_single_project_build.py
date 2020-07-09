@@ -80,6 +80,7 @@ class SingleProjectBuilder:
             self.build_packaged_framework_project(project_name, build_type)
 
     def build_source_context_project(self, project_name, build_type):
+        # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'dist', 'user_scripts', 'platform'))
         from nap_shared import find_project
         project_path = find_project(project_name, False, True)
@@ -120,6 +121,7 @@ class SingleProjectBuilder:
             self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', project_name, '--config', build_type])
 
     def build_packaged_framework_project(self, project_name, build_type):
+        # Late import to handle different operating contexts
         from nap_shared import find_project
         project_path = find_project(project_name, False, True)
         if project_path is None:

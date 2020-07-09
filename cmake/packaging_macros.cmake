@@ -365,11 +365,15 @@ macro(package_project_into_release DEST_DIR)
 
     # Package any projectmodule CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
-        set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
-        configure_file(${NAP_ROOT}/dist/cmake/native/module_creator/template/CMakeLists.txt 
-                       ${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt 
-                       @ONLY
-                       )
+        # Generate fresh module CMake
+        install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} 
+                                              -DMODULE_CMAKE_OUTPATH=${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt
+                                              -DPROJECT_MODULE=1
+                                              -DCMAKE_ONLY=1
+                                              -DMODULE_NAME_PASCALCASE=Unused
+                                              -P ${NAP_ROOT}/dist/cmake/native/module_creator/module_creator.cmake
+                                     )")
+        # Package module extra
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
             install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
         endif()

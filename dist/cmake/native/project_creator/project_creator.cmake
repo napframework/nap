@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15.4)
 
 # Verify we have a project name
-if (NOT DEFINED PROJECT_NAME_PASCALCASE)
+if (NOT DEFINED PROJECT_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
     message(FATAL_ERROR "No project name")
 endif()
 
@@ -18,16 +18,26 @@ if(DEFINED MODULE_LIST)
 endif ()
 
 # Set lowercase project name, used for a filenames etc
-string(TOLOWER ${PROJECT_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
+if(DEFINED PROJECT_NAME_PASCALCASE)
+    string(TOLOWER ${PROJECT_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
+endif()
 
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
+if(NOT DEFINED PROJECT_DIR)
+    set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
+endif()
+
+configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
+
+# Allow for use of project creator to upgrade CMakeLists.txt
+if(DEFINED CMAKE_ONLY)
+    return()
+endif()
 
 # Create our project files, with substitutions
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
-configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/app_structure.json ${PROJECT_DIR}/data/app_structure.json @ONLY)
 
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)

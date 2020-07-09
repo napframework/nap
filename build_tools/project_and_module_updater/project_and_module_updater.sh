@@ -17,4 +17,4 @@ fi
 
 unset PYTHONHOME
 unset PYTHONPATH
-$python $nap_root/build_tools/cli_single_project_build/project_and_module_updater.py "$@"
+$python $nap_root/build_tools/project_and_module_updater/project_and_module_updater.py "$@"

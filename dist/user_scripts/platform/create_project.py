@@ -24,8 +24,8 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.join(script_path, os.pardir, os.pardir)
 
-    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/project_creator'))
-    project_path = os.path.abspath(os.path.join(nap_root, 'projects/%s' % project_name.lower()))
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'project_creator'))
+    project_path = os.path.abspath(os.path.join(nap_root, 'projects', '%s' % project_name.lower()))
 
     # Check for duplicate project
     if not find_project(project_name, True) is None:
@@ -43,7 +43,7 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
     # Add project module on request
     if with_module:
         # Create module from template
-        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/module_creator'))
+        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
         cmd = [cmake, 
                '-DMODULE_NAME_PASCALCASE=%s' % project_name, 
                '-DPROJECT_MODULE=1', 

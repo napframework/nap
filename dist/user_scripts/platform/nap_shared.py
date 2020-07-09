@@ -11,8 +11,8 @@ MODULE_INFO_FILENAME = 'module.json'
 CFG_KEY_DEPENDENCIES = 'Dependencies'
 CFG_KEY_MODULES = 'Modules'
 
-# Run command, raising exception on failure
 def call_except_on_failure(cwd, cmd):
+    """Run command, raising exception on failure"""
     # print('dir: %s' % cwd)
     # print('cmd: %s' % cmd)
     proc = Popen(cmd, cwd=cwd)
@@ -21,8 +21,8 @@ def call_except_on_failure(cwd, cmd):
         raise Exception(proc.returncode)
     return out
 
-# Locate module specified by name
 def find_module(module_name):
+    """Locate module specified by name"""
     nap_root = get_nap_root()
 
     # Create module dir name
@@ -46,8 +46,8 @@ def find_module(module_name):
         print("Couldn't find module with name '%s'" % module_name)
         return None
 
-# Locate project specified by name
 def find_project(project_name, silent_failure=False, silent_success=False):
+    """Locate project specified by name"""
     nap_root = get_nap_root()
 
     project_dir_name = project_name.lower()
@@ -63,8 +63,8 @@ def find_project(project_name, silent_failure=False, silent_success=False):
         print("Couldn't find project, demo or example with name '%s'" % project_name)
     return None
 
-# Super basic pascal case validation of name
 def validate_pascalcase_name(module_name):
+    """Super basic pascal case validation of name"""
     # Check we're not a single char
     if len(module_name) < 2:
         return False
@@ -79,8 +79,8 @@ def validate_pascalcase_name(module_name):
 
     return True
 
-# Pause for input
 def read_console_char():
+    """Pause for input"""
     if sys.platform == 'win32':
         from msvcrt import getch
         getch()
@@ -94,8 +94,8 @@ def read_console_char():
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
-# Get camelcase project name
 def get_camelcase_project_name(project_name):
+    """Get camelcase project name"""
     project_path = find_project(project_name, True, True)
     if project_path is None:
         print("Error: couldn't find project '%s'" % project_name)
@@ -111,8 +111,8 @@ def get_camelcase_project_name(project_name):
         project_name = json_dict['Title']
     return project_name
 
-# Add module to project.json
 def add_module_to_project_json(project_name, full_module_name):
+    """Add module to project.json"""
     project_path = find_project(project_name, True, True)
     if project_path is None:
         print("Error: couldn't find project '%s'" % project_name)
@@ -139,8 +139,8 @@ def add_module_to_project_json(project_name, full_module_name):
 
     return True
 
-# Get absolute path to NAP root
 def get_nap_root():
+    """Get absolute path to NAP root"""
     script_path = os.path.realpath(__file__)
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
     framework_release_context_known_path = os.path.join(os.path.dirname(script_path), script_to_nap_root, 'modules')
@@ -150,13 +150,23 @@ def get_nap_root():
         script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
         return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
     
-# Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty
 def get_cmake_path():
+    """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
     nap_root = get_nap_root()
-    return os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')
+    cmake = os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')
+    if not os.path.exists(cmake):
+        # Running against Source
+        cmake_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
+        if sys.platform.startswith('linux'):
+            cmake = os.path.join(cmake_root, 'linux', 'install', 'bin', 'cmake')
+        elif sys.platform == 'darwin':
+            cmake = os.path.join(cmake_root, 'osx', 'install', 'bin', 'cmake')
+        else:
+            cmake = os.path.join(cmake_root, 'msvc', 'install', 'bin', 'cmake.exe')
+    return cmake
 
-# Fetch deep module dependencies for a project
 def get_full_project_module_requirements(framework_root, project_name, project_path):
+    """Fetch deep module dependencies for a project"""
     with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
         json_dict = json.load(json_file)
         modules = []
