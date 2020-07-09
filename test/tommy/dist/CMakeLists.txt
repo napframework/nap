@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 3.15.4)
-set(NAP_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
-include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
-get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
-project(${project_name_from_dir})
-include(${NAP_ROOT}/cmake/nap_project.cmake)
