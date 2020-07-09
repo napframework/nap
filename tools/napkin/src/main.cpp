@@ -1,5 +1,6 @@
 #include <QFontDatabase>
 #include <QCommandLineParser>
+#include <QSplashScreen>
 
 #include <utility/fileutils.h>
 
@@ -58,6 +59,12 @@ int main(int argc, char* argv[])
 
 	QApplication app(argc, argv);
 
+	// Show splash screen
+	QPixmap splashpic(QRC_ICONS_NAPKIN_SPLASH);
+	QSplashScreen splash(splashpic);
+	splash.show();
+	app.processEvents();
+
 	{
 		// handle commandline
 		QCommandLineParser parser;
@@ -93,6 +100,7 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
 	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
 	w->show();
+	splash.finish(w.get());
 	int re = app.exec();
 	QFontDatabase::removeAllApplicationFonts();
 
