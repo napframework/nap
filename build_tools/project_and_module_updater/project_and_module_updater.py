@@ -17,9 +17,16 @@ import logging
 import os
 import sys
 from collections import OrderedDict
+from subprocess import call
+
+# TODO Move out to wrapper scripts PYTHONPATH
+script_dir = os.path.dirname(__file__)
+if not os.path.exists(os.path.join(script_dir, 'nap_shared.py')):
+    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
+    sys.path.append(os.path.join(nap_root, 'dist', 'user_scripts', 'platform'))
+from nap_shared import get_cmake_path, get_nap_root
 
 LOG = logging.getLogger(os.path.basename(os.path.dirname(__file__)))
-
 
 def _convert_module_ref(module_name):
     return {
@@ -79,8 +86,54 @@ def _find_data_file(root_dir):
     else:
         return os.path.relpath(found_path, root_dir)
 
-
 def convert_module(directory):
+    convert_module_info(directory)
+
+    # Determine if it's a project module
+    project_module = os.path.basename(directory) == 'module'
+
+    # Update CMakeLists.txt in module root if in Framework Release context
+    update_module_cmake(directory, project_module)
+
+def update_module_cmake(directory, project_module):
+    # Ensure it's a dist module by verifying CMakeLists.txt contains nap_module.cmake
+    file_path = os.path.join(directory, 'CMakeLists.txt')
+    # Allow for precompiled modules in Framework Release which don't currently have a CMakeLists.txt
+    if not os.path.exists(file_path):
+        return
+    with open(file_path) as f:
+        contents = f.read()
+    if not 'nap_module.cmake' in contents:
+        return
+
+    # Detect if needs update
+    needs_update = False
+    # Check for project definition relocation for v0.4
+    if not 'dist_shared_crossplatform.cmake' in contents:
+        needs_update = True
+    if not needs_update:
+        print("Module at %s doesn't need CMake update" % directory)
+        return
+
+    cmake = get_cmake_path()
+    nap_root = get_nap_root()
+
+    # Create module from template
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
+    if not os.path.exists(cmake_template_dir):
+        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'module_creator'))
+
+    print("Upgrading module CMake at %s" % directory)
+    cmd = [cmake, 
+           '-DMODULE_CMAKE_OUTPATH=%s' % os.path.join(directory, 'CMakeLists.txt'),
+           '%s' % '-DPROJECT_MODULE=1' if project_module else '', 
+           '-DCMAKE_ONLY=1', 
+           '-P', os.path.join(cmake_template_dir, 'module_creator.cmake')
+           ]
+    if call(cmd) != 0:
+        print("CMake upgrade at %s failed" % directory)
+
+def convert_module_info(directory):
     """Find a moduleinfo file in the specified directory, convert to new format and write to same file"""
     filepath, mod_info_json = _load_json(directory, 'module.json')
     if not filepath:
@@ -144,6 +197,42 @@ def convert_project(project_dir):
     if os.path.exists(module_dir):
         convert_module(module_dir)
 
+    # Update CMakeLists.txt in project root if in Framework Release context
+    update_project_cmake(project_dir)
+
+def update_project_cmake(directory):
+    # Ensure it's a Framework Release context by verifying CMakeLists.txt contains nap_project.cmake
+    file_path = os.path.join(directory, 'CMakeLists.txt')
+    with open(file_path) as f:
+        contents = f.read()
+    if not 'nap_project.cmake' in contents:
+        return
+
+    # Detect if needs update
+    needs_update = False
+    # Check for project definition relocation for v0.4
+    if not 'dist_shared_crossplatform.cmake' in contents:
+        needs_update = True
+    if not needs_update:
+        print("Project at %s doesn't need CMake update" % directory)
+        return
+
+    cmake = get_cmake_path()
+    nap_root = get_nap_root()
+
+    # Create module from template
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'project_creator'))
+    if not os.path.exists(cmake_template_dir):
+        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'project_creator'))
+
+    print("Upgrading project CMake at %s" % directory)
+    cmd = [cmake, 
+           '-DPROJECT_DIR=%s' % directory,
+           '-DCMAKE_ONLY=1', 
+           '-P', os.path.join(cmake_template_dir, 'project_creator.cmake')
+           ]
+    if call(cmd) != 0:
+        print("CMake upgrade at %s failed" % directory)
 
 def convert_repository(root_directory):
     print('Convert projectinfo and moduleinfo files in NAP repository: %s' % root_directory)
@@ -170,15 +259,18 @@ def convert_repository(root_directory):
             directory = os.path.join(parent_dir, d)
             convert_module(directory)
 
-
 def convert_project_wrapper(args):
-    convert_project(args.PROJECT_PATH)
+    directory = os.path.abspath(args.PROJECT_PATH)
+    assert os.path.exists(directory), 'Directory does not exist at: %s' % directory
+    convert_project(directory)
 
 def convert_module_wrapper(args):
-    convert_module(args.MODULE_PATH)
+    directory = os.path.abspath(args.MODULE_PATH)
+    assert os.path.exists(directory), 'Directory does not exist at: %s' % directory
+    convert_module(directory)
 
 def convert_repository_wrapper(args):
-    nap_root_dir = os.path.realpath('%s/../../' % os.path.dirname(__file__))
+    nap_root_dir = get_nap_root()
     verify_path = os.path.join(nap_root_dir, 'modules')
     assert os.path.exists(verify_path), 'NAP root dir not found at: %s' % nap_root_dir
     convert_repository(nap_root_dir)
