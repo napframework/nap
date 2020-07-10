@@ -134,7 +134,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 						   projectFilename.toStdString().c_str(), err.toString().c_str());
 
 		if (mExitOnLoadFailure)
-			getQApplication()->exit(1);
+			exit(1);
 
 		return nullptr;
 	}
@@ -148,7 +148,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
 
 		if (mExitOnLoadFailure)
-			getQApplication()->exit(1);
+			exit(1);
 
 		return nullptr;
 	}
@@ -165,7 +165,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::error(err.toString());
 
 		if (mExitOnLoadFailure) 
-			getQApplication()->exit(1);
+			exit(1);
 
 		return nullptr;
 	}
@@ -183,7 +183,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 		nap::Logger::warn("No data file specified");
 		if (mExitOnLoadFailure) 
-			getQApplication()->exit(1);
+			exit(1);
 	}
 
 	blockingProgressChanged(1);
