@@ -46,7 +46,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
-    suppress_showing_solution = sys.platform in ('win32', 'darwin') and not args.no_show
+    suppress_showing_solution = sys.platform in ('win32', 'darwin') and args.no_show
 
     linux_build_type = None
     if sys.platform.startswith('linux'):    
