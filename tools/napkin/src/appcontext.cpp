@@ -170,6 +170,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
+	coreInitialized();
+
 	addRecentlyOpenedProject(projectFilename);
 
 	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDefaultDataFile());
