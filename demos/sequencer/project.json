@@ -11,5 +11,5 @@
     ],
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json",
-    "Data": ""
+    "Data": "data/default.json"
 }
