@@ -44,13 +44,14 @@ if(UNIX)
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)
 
-
     # Package VulkanSDK into packaged project on Linux
+    # We don't include the layers, since they are disabled for release
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/lib/
             DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
-            PATTERN "*.a" EXCLUDE)   
+            PATTERN "*.a" EXCLUDE
+            PATTERN "libVkLayer*" EXCLUDE)
 endif()
 
 # Install thirdparty licenses into lib
