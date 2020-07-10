@@ -392,6 +392,7 @@ namespace nap
 #if _WIN32
 		if (packagedBuild)
 		{
+			// TODO Explore locating Python instead in third party to reduce duplication on disk
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
 			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());

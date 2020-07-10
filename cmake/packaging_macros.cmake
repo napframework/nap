@@ -126,6 +126,11 @@ macro(package_python)
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
 
+        # Install framework for Napkin
+        install(FILES ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python36.zip
+                DESTINATION tools/napkin/
+                CONFIGURATIONS Release)
+
         # Install license
         install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
                 DESTINATION thirdparty/python/
