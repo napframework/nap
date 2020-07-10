@@ -152,6 +152,8 @@ LINUX_EXTRA_DEBIAN = [
     'libavresample',
     'libavutil',
     'libblkid',
+    'libbrotlicommon',
+    'libbrotlidec',
     'libcairo',
     'libcairo-gobject',
     'libcodec2',
