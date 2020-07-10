@@ -39,7 +39,6 @@ namespace nap
 	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
 	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
 	{
-		SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_USER_DIRS);
 		std::vector<DLL_DIRECTORY_COOKIE> dllDirCookies;
 		for (const auto& searchPath : paths)
 		{
@@ -96,7 +95,7 @@ namespace nap
 
 		// Load our module
 		void* result;
-		result = LoadLibraryA(modulefile.c_str());
+		result = LoadLibraryExA(modulefile.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 		// If we failed to load the module, get the error string
 		if (!result)
