@@ -88,13 +88,6 @@ namespace nap
 		// Use SDL to create the surface
 		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
 			return false;
-
-		// Make sure the surface is compatible with the queue family and gpu
-		VkBool32 supported = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(gpu, graphicsFamilyQueueIndex, outSurface, &supported);
-		if (!errorState.check(supported != 0, "Surface is not supported by physical device"))
-			return false;
-
 		return true;
 	}
 
@@ -292,7 +285,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, uint32 graphicsQueue, uint32 presentationQueue, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Size of the images
 		outSwapChainExtent = getSwapImageSize(windowSize, surfaceCapabilities);
@@ -310,8 +303,12 @@ namespace nap
 		if (!getFormat(physicalDevice, surface, image_format, errorState))
 			return false;
 
+		// Sharing mode, exclusive when presentation and graphics queue match, otherwise shared
+		uint32 queue_family_indices[] = {graphicsQueue, presentationQueue};
+		VkSharingMode sharing_mode = graphicsQueue == presentationQueue ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+
 		// Populate swapchain creation info
-		VkSwapchainCreateInfoKHR swap_info;
+		VkSwapchainCreateInfoKHR swap_info = {};
 		swap_info.pNext = nullptr;
 		swap_info.flags = 0;
 		swap_info.surface = surface;
@@ -321,14 +318,14 @@ namespace nap
 		swap_info.imageExtent = outSwapChainExtent;
 		swap_info.imageArrayLayers = 1;
 		swap_info.imageUsage = usage_flags;
-		swap_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		swap_info.queueFamilyIndexCount = 0;
-		swap_info.pQueueFamilyIndices = nullptr;
+		swap_info.imageSharingMode = sharing_mode;
+		swap_info.queueFamilyIndexCount = sharing_mode == VK_SHARING_MODE_CONCURRENT ? 2 : 0;
+		swap_info.pQueueFamilyIndices = sharing_mode == VK_SHARING_MODE_CONCURRENT ? queue_family_indices : nullptr;
 		swap_info.preTransform = transform;
 		swap_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		swap_info.presentMode = presentMode;
 		swap_info.clipped = true;
-		swap_info.oldSwapchain = NULL;
+		swap_info.oldSwapchain = VK_NULL_HANDLE;
 		swap_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 
 		// Create new one
@@ -507,25 +504,31 @@ namespace nap
 	}
 
 
-	static uint32 findPresentFamilyIndex(VkPhysicalDevice device, VkSurfaceKHR surface)
+	static int findPresentFamilyIndex(VkPhysicalDevice device, uint32 graphicsQueueIndex, VkSurfaceKHR surface)
 	{
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+		// First check if the graphics queue supports presentation
+		VkBool32 supported = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, graphicsQueueIndex, surface, &supported);
+		if(supported > 0)
+			return graphicsQueueIndex;
 
+		// Otherwise find a queue that does support presentation
+		uint32 queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
+		// Iterate over every queue family and check support
 		for (int index = 0; index < queueFamilies.size(); ++index)
 		{
 			VkQueueFamilyProperties& queueFamily = queueFamilies[index];
-
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(device, index, surface, &presentSupport);
-
 			if (queueFamily.queueCount > 0 && presentSupport)
 				return index;
 		}
 
+		// No valid presentation queue found!
 		return -1;
 	}
 
@@ -631,8 +634,7 @@ namespace nap
 		setSize(window_size);
 		mPreviousWindowSize = window_size;
 
-		// Acquire max number of MSAA samples, issue warning if requested number
-		// of samples is not obtained.
+		// Acquire max number of MSAA samples, issue warning if requested number of samples is not obtained
 		utility::ErrorState rast_error;
 		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, rast_error))
 			nap::Logger::warn(rast_error.toString().c_str());
@@ -659,6 +661,20 @@ namespace nap
 		if (req_present_mode != mPresentationMode)
 			nap::Logger::warn("%s: Unsupported presentation mode: %s, switched to: %s", mID.c_str(), getPresentModeName(req_present_mode).c_str(), getPresentModeName(mPresentationMode).c_str());
 
+		// Get presentation queue index, this can be different from the graphics / transfer queue index
+		int present_queue_index = findPresentFamilyIndex(pyshical_device, mRenderService->getQueueIndex(), mSurface);
+		if (!errorState.check(present_queue_index >= 0, "Failed to find presentation queue"))
+			return false;
+
+		// If presentation queue is different then graphics queue performance might be impacted.
+		mPresentQueueIndex = present_queue_index;
+		if(mPresentQueueIndex != mRenderService->getQueueIndex())
+			nap::Logger::warn("Present queue family index: %d differs from graphics queue family index: %d, this might have an impact on performance",
+							  present_queue_index, mRenderService->getQueueIndex());
+
+		// Get presentation queue
+		vkGetDeviceQueue(mDevice, mPresentQueueIndex, 0, &mPresentQueue);
+
 		// Get surface capabilities
 		VkSurfaceCapabilitiesKHR surface_capabilities;
 		if (!getSurfaceProperties(pyshical_device, mSurface, surface_capabilities, errorState))
@@ -675,12 +691,6 @@ namespace nap
 		// Create frame / GPU synchronization objects
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
-
-		// Get presentation queue
-		uint32 presentQueueIndex = findPresentFamilyIndex(pyshical_device, mSurface);
-		if (!errorState.check(presentQueueIndex != -1, "Failed to find present queue"))
-			return false;
-		vkGetDeviceQueue(mDevice, presentQueueIndex, 0, &mPresentQueue);
 
 		// Add window to render service
 		if (!mRenderService->addWindow(*this, errorState))
@@ -950,7 +960,7 @@ namespace nap
 
 		// Create swapchain, allowing us to acquire images to render to.
 		VkExtent2D swap_chain_extent;
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
+		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getQueueIndex(), mPresentQueueIndex, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
