@@ -153,8 +153,13 @@ def get_nap_root():
 def get_cmake_path():
     """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
     nap_root = get_nap_root()
-    cmake = os.path.join(nap_root, 'thirdparty', 'cmake', 'bin', 'cmake')
-    if not os.path.exists(cmake):
+    cmake_dir = os.path.join(nap_root, 'thirdparty', 'cmake', 'bin')
+    if os.path.exists(cmake_dir):
+        if sys.platform == 'win32':
+            return os.path.join(cmake_dir, 'cmake.exe')
+        else:
+            return os.path.join(cmake_dir, 'cmake')
+    else:
         # Running against Source
         cmake_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
         if sys.platform.startswith('linux'):
@@ -163,7 +168,6 @@ def get_cmake_path():
             cmake = os.path.join(cmake_root, 'osx', 'install', 'bin', 'cmake')
         else:
             cmake = os.path.join(cmake_root, 'msvc', 'install', 'bin', 'cmake.exe')
-    return cmake
 
 def get_full_project_module_requirements(framework_root, project_name, project_path):
     """Fetch deep module dependencies for a project"""
