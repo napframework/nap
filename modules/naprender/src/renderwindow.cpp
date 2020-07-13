@@ -720,11 +720,7 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
-		if(SDL::getFullscreen(mSDLWindow) == value)
-			return;
-
 		SDL::setFullscreen(mSDLWindow, value);
-		mRecreateSwapchain = true;
 	}
 
 
@@ -749,11 +745,7 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		if(size != getSize())
-		{
-			SDL::setWindowSize(mSDLWindow, size);
-			mRecreateSwapchain = true;
-		}
+		SDL::setWindowSize(mSDLWindow, size);
 	}
 
 
@@ -937,13 +929,10 @@ namespace nap
 
 	void RenderWindow::handleEvent(const Event& event)
 	{
-		// Update window size when resizing
+		// Recreate swapchain when window is resized
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
-		{
-			setSize(glm::ivec2(resized_event->mX, resized_event->mY));
 			mRecreateSwapchain = true;
-		}
 	}
 
 
