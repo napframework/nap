@@ -35,6 +35,11 @@ PROJECT_FILENAME = 'project.json'
 # JSON report filename
 REPORT_FILENAME = 'report.json'
 
+# Build directory names
+LINUX_BUILD_DIR = 'build_dir'
+MACOS_BUILD_DIR = 'xcode'
+MSVC_BUILD_DIR = 'msvc64'
+
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
 # to these paths helps us identify libraries being source from strange locations, hand installed libs.
 # TODO Handle other architectures.. eventually
@@ -668,13 +673,13 @@ def build_cwd_project(project_name, build_type=PROJECT_BUILD_TYPE):
 
     # Build build command
     if sys.platform.startswith('darwin'):
-        os.chdir('xcode')
+        os.chdir(MACOS_BUILD_DIR)
         cmd = 'xcodebuild -configuration %s -jobs %s' % (build_type, cpu_count())
     elif sys.platform.startswith('linux'):
-        os.chdir('build')
+        os.chdir(LINUX_BUILD_DIR)
         cmd = 'make all . -j%s' % cpu_count()
     else:
-        os.chdir('msvc64')
+        os.chdir(MSVC_BUILD_DIR)
         cmd = '..\\..\\..\\thirdparty\\cmake\\bin\\cmake --build . --target %s --config %s' % (project_name, build_type)
 
     # Run
