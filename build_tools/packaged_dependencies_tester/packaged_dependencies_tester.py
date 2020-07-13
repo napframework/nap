@@ -1544,7 +1544,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
                 warnings.append(warning)
 
     # Remove packaged app without Napkin
-    results = misc_results['packagedWithoutNapkin']
+    results = {} if not 'packagedWithoutNapkin' in misc_results else misc_results['packagedWithoutNapkin']
     if 'package' in results and results['package']['success']:
         containing_dir = os.path.join(root_output_dir, '%s-%s-no_napkin' % (results['name'], timestamp))
         try:
@@ -1640,7 +1640,7 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         return False
 
     # Check demo packaged without napkin
-    results = misc_results['packagedWithoutNapkin']
+    results = {} if not 'packagedWithoutNapkin' in misc_results else misc_results['packagedWithoutNapkin']
     if not 'package' in results or not results['package']['success']:
         return False
     if not 'runFromPackagedOutput' in results:
@@ -1765,9 +1765,10 @@ def log_summary(demo_results, template_results, napkin_results, misc_results):
     print("----------------------------")
 
     print("Demo packaged without Napkin")
-    results = misc_results['packagedWithoutNapkin']
+    results = {} if not 'packagedWithoutNapkin' in misc_results else misc_results['packagedWithoutNapkin']
     print("- Package: %s" % dict_entry_to_success(results, 'package'))
-    print("  (was with demo '%s')" % results['name'])
+    if 'name' in results:
+        print("  (was with demo '%s')" % results['name'])
     success = dict_entry_to_success(results, 'runFromPackagedOutput')
     print("- Run from packaged output: %s" % success)
     if success == 'PASS':
@@ -1875,12 +1876,12 @@ def dump_json_report(starting_dir,
     misc_results = copy.deepcopy(misc_results)
     # If we aren't forcing logs remove them from each successfully phase
     if not always_include_logs:
-        results = misc_results['packagedWithoutNapkin']
+        results = {} if not 'packagedWithoutNapkin' in misc_results else misc_results['packagedWithoutNapkin']
         for phase in ('package', 'runFromPackagedOutput'):
             if phase in results and results[phase]['success']:
                 del(results[phase]['stdout'])
                 del(results[phase]['stderr'])
-        results = misc_results['otherBuildType']
+        results = {} if not 'otherBuildType' in misc_results else misc_results['otherBuildType']
         for phase in ('generate', 'build',  'runFromBuildOutput'):
             if phase in results and results[phase]['success']:
                 del(results[phase]['stdout'])
@@ -2159,7 +2160,7 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     # Run demo packaged without Napkin
     phase += 1
     print("============ Phase #%s - Running demo packaged without Napkin ============" % phase)
-    results = misc_results['packagedWithoutNapkin']
+    results = {} if not 'packagedWithoutNapkin' in misc_results else misc_results['packagedWithoutNapkin']
     if 'package' in results and results['package']['success']:
         run_packaged_project(results, root_output_dir, timestamp, results['name'], False)
     else:
