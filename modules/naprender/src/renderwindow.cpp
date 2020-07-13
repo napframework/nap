@@ -168,24 +168,22 @@ namespace nap
 
 
 	/**
-	*	Returns the size of a swapchain image based on the current surface
-	*/
+	 * Returns the size of a swapchain image based on the current surface
+	 */
 	static VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
 	{
-		// Default size = window size
-		VkExtent2D size = { (uint32)windowSize.x, (uint32)windowSize.y };
+		if (capabilities.currentExtent.width != UINT32_MAX)
+			return capabilities.currentExtent;
 
-		// This happens when the window scales based on the size of an image
-		if (capabilities.currentExtent.width == 0xFFFFFFF)
-		{
-			size.width  = math::clamp<uint32>(size.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
-			size.height = math::clamp<uint32>(size.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-		}
-		else
-		{
-			size = capabilities.currentExtent;
-		}
-		return size;
+		VkExtent2D actualExtent ={
+			static_cast<uint32>(windowSize.x),
+			static_cast<uint32>(windowSize.y)
+		};
+
+		actualExtent.width  = std::max(capabilities.minImageExtent.width,  std::min(capabilities.maxImageExtent.width,  actualExtent.width));
+		actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+		return actualExtent;
 	}
 
 
@@ -594,18 +592,17 @@ namespace nap
 			assert(result == VK_SUCCESS);
 		}
 
-		// Destroy all vulkan resources if present
+		// Destroy resources associated with swapchain
+		destroySwapChainResources();
+
+		// Destroy all other  vulkan resources if present
 		for (VkSemaphore semaphore : mImageAvailableSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
 		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
-		if (!mCommandBuffers.empty())
-			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers.size(), mCommandBuffers.data());
-
-		// Destroy all resources associated with swapchain
-		destroySwapChainResources();
+		// Destroy window surface
 		if (mSurface != VK_NULL_HANDLE)
 		{
 			vkDestroySurfaceKHR(mRenderService->getVulkanInstance(), mSurface, nullptr);
@@ -675,17 +672,8 @@ namespace nap
 		// Get presentation queue
 		vkGetDeviceQueue(mDevice, mPresentQueueIndex, 0, &mPresentQueue);
 
-		// Get surface capabilities
-		VkSurfaceCapabilitiesKHR surface_capabilities;
-		if (!getSurfaceProperties(pyshical_device, mSurface, surface_capabilities, errorState))
-			return false;
-
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
-			return false;
-
-		// Create required command buffers for max frames in flight
-		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
 		// Create frame / GPU synchronization objects
@@ -815,6 +803,7 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
+		/*
 		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
 		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
 
@@ -835,16 +824,28 @@ namespace nap
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
 			{
-				Logger::info("Failed to recreate swapchain: %s", errorState.toString().c_str());
-				return nullptr;
+				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
+				return VK_NULL_HANDLE;
 			}
 			mPreviousWindowSize = window_size;
 		}
+		*/
 
 		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			utility::ErrorState errorState;
+			if (!recreateSwapChain(errorState))
+			{
+				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
+				return VK_NULL_HANDLE;
+			}
+			return VK_NULL_HANDLE;
+		}
+
 		assert(result == VK_SUCCESS);
 
 		// Reset command buffer for current frame
@@ -917,6 +918,15 @@ namespace nap
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
 		result = vkQueuePresentKHR(mPresentQueue, &present_info);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			utility::ErrorState error;
+			if(!recreateSwapChain(error))
+			{
+				nap::Logger::error(error.toString());
+			}
+			return;
+		}
 		assert(result == VK_SUCCESS);
 	}
 
@@ -934,6 +944,9 @@ namespace nap
 
 	bool RenderWindow::recreateSwapChain(utility::ErrorState& errorState)
 	{
+		// Wait to ensure all render commands have processed on hardware
+		vkDeviceWaitIdle(mDevice);
+
 		// Destroy all swapchain related Vulkan resources
 		destroySwapChainResources();
 
@@ -983,37 +996,30 @@ namespace nap
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, errorState))
 			return false;
 
-		mImagesInFlight.resize(chain_images.size());
-		for (int& frame : mImagesInFlight)
-			frame = -1;
+		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
+			return false;
 
+		mImagesInFlight.resize(chain_images.size(), -1);
 		return true;
 	}
 
 
 	void RenderWindow::destroySwapChainResources()
 	{
-		if (mSwapchain == VK_NULL_HANDLE)
-			return;
-
-		// It's important that we wait here for the device to be idle, 
-		// otherwise we might destroy resources that are still in use on the GPU.
-		VkResult result = vkDeviceWaitIdle(mDevice);
-		assert(result == VK_SUCCESS);
-
-		// Now destroy all the framebuffers
+		// Destroy all frame buffers
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
 			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
 		mSwapChainFramebuffers.clear();
 
-		// Destroy owned depth and color images
-		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
-		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
+		// Free command buffers
+		if(!mCommandBuffers.empty())
+		{
+			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), static_cast<uint32>(mCommandBuffers.size()), mCommandBuffers.data());
+			mCommandBuffers.clear();
+		}
 
-		// Separately delete the views associated with the presentable swapchain images
-		for (VkImageView image_view : mSwapChainImageViews)
-			vkDestroyImageView(mDevice, image_view, nullptr);
-		mSwapChainImageViews.clear();
+		// Reset image tracking
+		mImagesInFlight.clear();
 
 		// Destroy render pass if present
 		if (mRenderPass != VK_NULL_HANDLE)
@@ -1022,9 +1028,21 @@ namespace nap
 			mRenderPass = VK_NULL_HANDLE;
 		}
 
+		// Destroy swapchain image views
+		for(VkImageView view : mSwapChainImageViews)
+			vkDestroyImageView(mDevice, view, nullptr);
+
+		// Destroy owned depth and color images
+		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
+		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
+
 		// finally, destroy swapchain
-		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-		mSwapchain = VK_NULL_HANDLE;
+		// Nothing to destroy
+		if (mSwapchain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+			mSwapchain = VK_NULL_HANDLE;
+		}
 	}
 
 

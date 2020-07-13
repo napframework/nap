@@ -1393,7 +1393,7 @@ namespace nap
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
-		assert(result == VK_SUCCESS);
+		//assert(result == VK_SUCCESS);
 	}
 
 
