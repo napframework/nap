@@ -42,6 +42,8 @@ if(APPLE)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/glew/lib)
 endif()
 package_module()
 
