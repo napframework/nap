@@ -154,5 +154,12 @@ namespace nap
 		{
 			SDL_ShowCursor(SDL_ENABLE);
 		}
+
+
+		bool getFullscreen(SDL_Window* window)
+		{
+			uint32 flags = SDL_GetWindowFlags(window);
+			return flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
+		}
 	}
 }

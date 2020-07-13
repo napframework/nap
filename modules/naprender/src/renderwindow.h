@@ -263,8 +263,7 @@ namespace nap
 		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:
-		RenderService*					mRenderService	= nullptr;						
-		bool							mFullscreen		= false;						
+		RenderService*					mRenderService	= nullptr;
 		SDL_Window*						mSDLWindow		= nullptr;						
 		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkDevice						mDevice = VK_NULL_HANDLE;
@@ -284,10 +283,9 @@ namespace nap
 		ImageData						mDepthImage;
 		ImageData						mColorImage;
 		bool							mSampleShadingEnabled = false;
-		glm::ivec2						mPreviousWindowSize;
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
-		bool 							mFrameBufferResized = false;
+		bool mRecreateSwapchain								 = false;
 
 		/**
 		 * Called by the render service. 

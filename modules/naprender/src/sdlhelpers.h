@@ -34,6 +34,11 @@ namespace nap
 		void NAPAPI setFullscreen(SDL_Window* window, bool value);
 
 		/**
+		 * Returns if the window is full screen (Desktop)
+		 */
+		 bool NAPAPI getFullscreen(SDL_Window* window);
+
+		/**
 		 * Returns the size of an OpenGL window
 		 * @param window the window to retrieve the size for
 		 * @return the window size

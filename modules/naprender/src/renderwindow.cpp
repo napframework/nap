@@ -637,9 +637,7 @@ namespace nap
 		mDevice = mRenderService->getDevice();
 
 		// Set size and store for future reference
-		glm::ivec2 window_size = { mWidth, mHeight };
-		setSize(window_size);
-		mPreviousWindowSize = window_size;
+		setSize({mWidth, mHeight});
 
 		// Acquire max number of MSAA samples, issue warning if requested number of samples is not obtained
 		utility::ErrorState rast_error;
@@ -722,14 +720,18 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
+		if(SDL::getFullscreen(mSDLWindow) == value)
+			return;
+
 		SDL::setFullscreen(mSDLWindow, value);
-		mFullscreen = value;
+		mRecreateSwapchain = true;
 	}
 
 
 	void RenderWindow::toggleFullscreen()
 	{
-		setFullscreen(!mFullscreen);
+		bool cur_state = SDL::getFullscreen(mSDLWindow);
+		setFullscreen(!cur_state);
 	}
 
 
@@ -747,10 +749,11 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		if(getSize() == size)
-			return;
-		SDL::setWindowSize(mSDLWindow, size);
-		mFrameBufferResized = true;
+		if(size != getSize())
+		{
+			SDL::setWindowSize(mSDLWindow, size);
+			mRecreateSwapchain = true;
+		}
 	}
 
 
@@ -820,7 +823,7 @@ namespace nap
 		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
+		glm::ivec2 window_size = getSize();
 		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
 		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
 			return VK_NULL_HANDLE;
@@ -830,7 +833,7 @@ namespace nap
 		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about
 		// resources still being used / device lost error messages. Since our main loop is single threaded, and Window events are processed before update/render, we just deal with resizes here,
 		// before we start rendering to the window. It is not possible for the window size to change *during* rendering (because, single threaded), so this keeps it simple.
-		if (window_size != mPreviousWindowSize)
+		if (mRecreateSwapchain)
 		{
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
@@ -838,7 +841,6 @@ namespace nap
 				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
 				return VK_NULL_HANDLE;
 			}
-			mPreviousWindowSize = window_size;
 			return VK_NULL_HANDLE;
 		}
 
@@ -916,17 +918,20 @@ namespace nap
 
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
-		result = vkQueuePresentKHR(mPresentQueue, &present_info);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFrameBufferResized)
+		// If the window is resized during a render call, the result should be VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR.
+		// If that's the case the swapchain needs to be re-created at the beginning of the recorded frame.
+		switch(vkQueuePresentKHR(mPresentQueue, &present_info))
 		{
-			utility::ErrorState error;
-			if(!recreateSwapChain(error))
-			{
-				nap::Logger::error(error.toString());
-			}
+		case VK_SUCCESS:
+			return;
+		case VK_ERROR_OUT_OF_DATE_KHR:
+		case VK_SUBOPTIMAL_KHR:
+			mRecreateSwapchain = true;
+			return;
+		default:
+			assert(false);
 			return;
 		}
-		assert(result == VK_SUCCESS);
 	}
 
 
@@ -937,17 +942,20 @@ namespace nap
 		if (resized_event != nullptr)
 		{
 			setSize(glm::ivec2(resized_event->mX, resized_event->mY));
+			mRecreateSwapchain = true;
 		}
 	}
 
 
 	bool RenderWindow::recreateSwapChain(utility::ErrorState& errorState)
 	{
-		// Wait to ensure all render commands have processed on hardware
-		VkResult result = vkQueueWaitIdle(mRenderService->getQueue());
-		assert(result == VK_SUCCESS);
+		// Wait to ensure all command buffers have finished processing
+		VkResult result = vkDeviceWaitIdle(mRenderService->getDevice());
+		if(!errorState.check(result == VK_SUCCESS, "Unable to destroy swap chain resources, device not in idle state"))
+			return false;
 
 		// Destroy all swapchain related Vulkan resources
+		mRecreateSwapchain = false;
 		destroySwapChainResources();
 
 		// Create new swapchain based on current window properties
