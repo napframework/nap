@@ -53,9 +53,8 @@ namespace nap
 		void setFullscreen(SDL_Window* window, bool value)
 		{
 			// Otherwise set
-			std::uint32_t full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-			std::uint32_t flag = value ? full_screen_flag : 0;
-			SDL_SetWindowFullscreen(window, flag);
+			uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+			SDL_SetWindowFullscreen(window, value ? full_screen_flag : 0);
 		}
 
 
