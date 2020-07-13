@@ -172,17 +172,21 @@ namespace nap
 	 */
 	static VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
 	{
+		VkExtent2D actualExtent;
 		if (capabilities.currentExtent.width != UINT32_MAX)
-			return capabilities.currentExtent;
+		{
+			actualExtent = capabilities.currentExtent;
+		}
+		else
+		{
+			actualExtent = {
+				static_cast<uint32>(windowSize.x),
+				static_cast<uint32>(windowSize.y)
+			};
+		}
 
-		VkExtent2D actualExtent ={
-			static_cast<uint32>(windowSize.x),
-			static_cast<uint32>(windowSize.y)
-		};
-
-		actualExtent.width  = std::max(capabilities.minImageExtent.width,  std::min(capabilities.maxImageExtent.width,  actualExtent.width));
-		actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
-
+		actualExtent.width  = math::clamp<uint32>(actualExtent.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
+		actualExtent.height = math::clamp<uint32>(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 		return actualExtent;
 	}
 
@@ -737,7 +741,10 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
+		if(getSize() == size)
+			return;
 		SDL::setWindowSize(mSDLWindow, size);
+		mFrameBufferResized = true;
 	}
 
 
@@ -803,20 +810,18 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
-		/*
-		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
-		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
-
 		// Check if the window has a zero size. Note that in the case where the window is minimized, it seems SDL still reports
 		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
+		glm::ivec2 window_size = SDL::getWindowSize(mSDLWindow);
+		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
 		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
 			return VK_NULL_HANDLE;
 
 		// When the window size has changed, we need to recreate the swapchain.
-		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches 
-		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about 
+		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches
+		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about
 		// resources still being used / device lost error messages. Since our main loop is single threaded, and Window events are processed before update/render, we just deal with resizes here,
 		// before we start rendering to the window. It is not possible for the window size to change *during* rendering (because, single threaded), so this keeps it simple.
 		if (window_size != mPreviousWindowSize)
@@ -828,24 +833,13 @@ namespace nap
 				return VK_NULL_HANDLE;
 			}
 			mPreviousWindowSize = window_size;
+			return VK_NULL_HANDLE;
 		}
-		*/
 
 		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
-		{
-			utility::ErrorState errorState;
-			if (!recreateSwapChain(errorState))
-			{
-				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
-				return VK_NULL_HANDLE;
-			}
-			return VK_NULL_HANDLE;
-		}
-
 		assert(result == VK_SUCCESS);
 
 		// Reset command buffer for current frame
@@ -857,7 +851,6 @@ namespace nap
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 		assert(result == VK_SUCCESS);
-
 		return commandBuffer;
 	}
 
@@ -918,7 +911,7 @@ namespace nap
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
 		result = vkQueuePresentKHR(mPresentQueue, &present_info);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFrameBufferResized)
 		{
 			utility::ErrorState error;
 			if(!recreateSwapChain(error))
@@ -945,7 +938,8 @@ namespace nap
 	bool RenderWindow::recreateSwapChain(utility::ErrorState& errorState)
 	{
 		// Wait to ensure all render commands have processed on hardware
-		vkDeviceWaitIdle(mDevice);
+		VkResult result = vkQueueWaitIdle(mRenderService->getQueue());
+		assert(result == VK_SUCCESS);
 
 		// Destroy all swapchain related Vulkan resources
 		destroySwapChainResources();

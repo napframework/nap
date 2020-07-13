@@ -287,6 +287,7 @@ namespace nap
 		glm::ivec2						mPreviousWindowSize;
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
+		bool 							mFrameBufferResized = false;
 
 		/**
 		 * Called by the render service. 
