@@ -15,7 +15,9 @@ def build_project_by_dir(project_path, build_type, pause_on_failed_build):
     # Determine our Python interpreter location
     python = get_python_path()
 
-    cmd = [python, script_path, '--build-type=%s' % build_type, project_name]
+    cmd = [python, script_path, project_name]
+    if build_type != None:
+        cmd.append('--build-type=%s' % build_type)
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
@@ -30,8 +32,8 @@ def build_project_by_dir(project_path, build_type, pause_on_failed_build):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='build')
     parser.add_argument("PROJECT_PATH", type=str, help=argparse.SUPPRESS)
-    parser.add_argument('-t', '--build-type', type=str.lower, default='debug',
-            choices=['release', 'debug'], help="Build type (default debug)")
+    parser.add_argument('BUILD_TYPE', nargs='?', type=str.lower, default=None,
+            choices=['release', 'debug'], help="Build type (default debug)", metavar='BUILD_TYPE')
     if not sys.platform.startswith('linux'):    
         parser.add_argument("-np", "--no-pause", action="store_true",
                             help="Don't pause afterwards on failed build")
@@ -40,7 +42,7 @@ if __name__ == '__main__':
     pause = False
     if not sys.platform.startswith('linux') and not args.no_pause:
         pause = True
-    exit_code = build_project_by_dir(args.PROJECT_PATH, args.build_type, pause)
+    exit_code = build_project_by_dir(args.PROJECT_PATH, args.BUILD_TYPE, pause)
 
     # Expose exit code
     sys.exit(exit_code)

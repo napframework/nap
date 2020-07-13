@@ -12,6 +12,8 @@ MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 THIRDPARTY = 'thirdparty'
 
+DEFAULT_BUILD_TYPE = 'Debug'
+
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
 ERROR_CANT_LOCATE_PROJECT = 3
@@ -69,6 +71,9 @@ class SingleProjectBuilder:
                 self.__python = os.path.join(self.__nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
     def build(self, project_name, build_type):
+        if not build_type is None:
+            build_type = build_type.lower().capitalize()
+
         # Determine environment, adapt for Source and Framework Release contexts
         self.determine_environment()
 
@@ -79,6 +84,11 @@ class SingleProjectBuilder:
             self.build_packaged_framework_project(project_name, build_type)
 
     def build_source_context_project(self, project_name, build_type):
+        if build_type is None:
+            build_type = DEFAULT_BUILD_TYPE
+        else:
+            build_type = build_type.capitalize()
+
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'dist', 'user_scripts', 'platform'))
         from nap_shared import find_project
@@ -127,15 +137,6 @@ class SingleProjectBuilder:
             print("Error: Can't find project %s" % project_name)
             sys.exit(ERROR_CANT_LOCATE_PROJECT)
 
-        cmd = [self.__python, './tools/platform/regenerate_project_by_name.py', project_name]
-        if sys.platform.startswith('linux'):
-            cmd.append(build_type)        
-        else:
-            cmd.append('--no-show')        
-        if self.call(self.__nap_root, cmd) != 0:
-            print("Error: Solution generation failed")
-            sys.exit(ERROR_CONFIGURE)
-
         build_dir = None
         if platform.startswith('linux'):
             build_dir = LINUX_BUILD_DIR
@@ -144,6 +145,26 @@ class SingleProjectBuilder:
         else:
             build_dir = MSVC_BUILD_DIR
         build_dir = os.path.join(project_path, build_dir)
+
+        # Only explicitly regenerate the solution if it doesn't already exist or a build type has
+        # been specified. Provides quicker CLI build times if regeneration not required while 
+        # ensuring that the right build type will be generated for Napkin on Linux.
+        generate_solution = build_type != None or not os.path.exists(build_dir) 
+
+        if build_type is None:
+            build_type = DEFAULT_BUILD_TYPE
+        else:
+            build_type = build_type.capitalize()
+
+        if generate_solution:
+            cmd = [self.__python, './tools/platform/regenerate_project_by_name.py', project_name]
+            if sys.platform.startswith('linux'):
+                cmd.append(build_type)        
+            else:
+                cmd.append('--no-show')        
+            if self.call(self.__nap_root, cmd) != 0:
+                print("Error: Solution generation failed")
+                sys.exit(ERROR_CONFIGURE)
 
         if platform.startswith('linux'):
             # Linux
@@ -159,9 +180,9 @@ class SingleProjectBuilder:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name")
-    parser.add_argument('-t', '--build-type', type=str.lower, default='debug',
-            choices=['release', 'debug'], help="Build type (default debug)")
+    parser.add_argument('-t', '--build-type', type=str.lower, default=None,
+            choices=['release', 'debug'], help="Build type (default %s)" % DEFAULT_BUILD_TYPE.lower())
     args = parser.parse_args()
 
     b = SingleProjectBuilder()
-    b.build(args.PROJECT_NAME, args.build_type.capitalize())
+    b.build(args.PROJECT_NAME, args.build_type)
