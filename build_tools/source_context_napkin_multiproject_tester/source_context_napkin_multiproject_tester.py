@@ -18,7 +18,7 @@ import time
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 3
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
 
 # Directory to iterate for testing
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
@@ -35,7 +35,13 @@ REPORT_FILENAME = 'report.json'
 # Quicker iteration when debugging this script
 SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
 
-def run_process_then_stop(cmd):
+# Exit code that Napkin will 
+NAPKIN_SUCCESS_EXIT_CODE = 180
+
+# Seconds to wait for a Napkin load project and exit with expected exit code
+NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
+
+def run_process_then_stop(cmd, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH, expect_early_closure=False):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
 
@@ -43,6 +49,12 @@ def run_process_then_stop(cmd):
     ----------
     cmd : str
         Command to run
+    success_exit_code : int
+        Process exit code representing success
+    wait_for_seconds : int
+        Seconds to wait before determining run success
+    expect_early_closure: bool
+        Whether process having closed before we kill it is OK
 
     Returns
     -------
@@ -62,23 +74,38 @@ def run_process_then_stop(cmd):
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
-    time.sleep(WAIT_SECONDS_FOR_PROCESS_HEALTH)
+    waited_time = 0
+    while waited_time < wait_for_seconds and p.returncode is None:
+        time.sleep(0.5)
+        waited_time += 0.5
+        p.poll()
 
-    # Check and make sure the app's still running
-    p.poll()
-    if p.returncode != None:
-        print("  Error: Process already done?")
-        (stdout, stderr) = p.communicate()
-        if type(stdout) == bytes:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-            
-        return (False, stdout, stderr)
+    # Track success
+    success = True
+
+    if p.returncode == None:
+        # Process isn't done, if we were running for Napkin that's a failure
+        if expect_early_closure:
+            success = False
+    else:
+        if expect_early_closure:
+            # Process done, if the success code matches we've had a successful Napkin run
+            success = p.returncode == success_exit_code
+        else:
+            # Check and make sure the project binary's still running
+            print("  Error: Process already done?")
+            (stdout, stderr) = p.communicate()
+            if type(stdout) == bytes:
+                stdout = stdout.decode('utf8')
+                stderr = stderr.decode('utf8')
+                
+            return (False, stdout, stderr)
 
     # Send SIGTERM and wait a moment to close
-    p.terminate()
-    time.sleep(1)
-    p.poll()
+    if p.returncode == None:
+        p.terminate()
+        time.sleep(1)
+        p.poll()
 
     # If the app hasn't exited, brute close with kill signal
     while p.returncode is None:
@@ -96,7 +123,26 @@ def run_process_then_stop(cmd):
         stdout = stdout.decode('utf8')
         stderr = stderr.decode('utf8')    
 
-    return (True, stdout, stderr)
+    return (success, stdout, stderr)
+
+def run_napkin_process(project_json_file):
+    """Run Napkin, reporting success
+
+    Parameters
+    ----------
+    project_json_file : str
+        Path to JSON file for project to open
+
+    Returns
+    -------
+    success : bool
+        Success
+    stdout : str
+        STDOUT from process
+    stderr : str
+        STDERR from process
+    """
+     return run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % project_json_file, NAPKIN_SUCCESS_EXIT_CODE, NAPKIN_SECONDS_WAIT_FOR_PROCESS, True)
 
 def open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full_path):
     """Open demos in Napkin
@@ -131,7 +177,7 @@ def open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full
         results[demo_name] = this_project
 
         project_json_file = os.path.join(projects_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr) = run_process_then_stop('./napkin -p %s --exit-on-failure' % project_json_file)
+        (success, stdout, stderr) = run_napkin_process(project_json_file)
         this_project['openWithNapkin'] = {}
         this_project['openWithNapkin']['success'] = success
         this_project['openWithNapkin']['stdout'] = stdout

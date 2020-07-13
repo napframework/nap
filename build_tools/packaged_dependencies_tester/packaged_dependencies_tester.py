@@ -18,7 +18,7 @@ import time
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 3
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -34,6 +34,12 @@ PROJECT_FILENAME = 'project.json'
 
 # JSON report filename
 REPORT_FILENAME = 'report.json'
+
+# Exit code that Napkin will 
+NAPKIN_SUCCESS_EXIT_CODE = 180
+
+# Seconds to wait for a Napkin load project and exit with expected exit code
+NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
 
 # Build directory names
 LINUX_BUILD_DIR = 'build_dir'
@@ -331,7 +337,7 @@ def is_debian():
 
     return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
 
-def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False):
+def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
 
@@ -345,6 +351,13 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         single apps.
     testing_napkin : bool
         Whether testing Napkin
+    expect_early_closure : bool
+        Whether process having closed before we kill it is OK
+    success_exit_code : int
+        Process exit code representing success
+    wait_for_seconds : int
+        Seconds to wait before determining run success
+
 
     Returns
     -------
@@ -367,30 +380,49 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
-    time.sleep(WAIT_SECONDS_FOR_PROCESS_HEALTH)
+    waited_time = 0
+    while waited_time < wait_for_seconds and p.returncode is None:
+        time.sleep(0.5)
+        waited_time += 0.5
+        p.poll()
 
     if sys.platform.startswith('linux'):
-        unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
+        if p.returncode is None:
+            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
+        else:
+            unexpected_libraries = []
+
+    # Track success
+    success = True
 
     # Check and make sure the app's still running
     p.poll()
-    if p.returncode != None:
-        print("  Error: Process already done?")
-        (stdout, stderr) = p.communicate()
-        if type(stdout) == bytes:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-            
-        if sys.platform == 'darwin':
-            unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
-        elif sys.platform == 'win32':
-            unexpected_libraries = []            
-        return (False, stdout, stderr, unexpected_libraries)
+    if p.returncode == None:
+        # Process isn't done, if we were running for Napkin that's a failure
+        if expect_early_closure:
+            success = False
+    else:
+        if expect_early_closure:
+            # Process done, if the success code matches we've had a successful Napkin run
+            success = p.returncode == success_exit_code
+        else:
+            print("  Error: Process already done?")
+            (stdout, stderr) = p.communicate()
+            if type(stdout) == bytes:
+                stdout = stdout.decode('utf8')
+                stderr = stderr.decode('utf8')
+                
+            if sys.platform == 'darwin':
+                unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+            elif sys.platform == 'win32':
+                unexpected_libraries = []            
+            return (False, stdout, stderr, unexpected_libraries)
 
-    # Send SIGTERM and wait a moment to close
-    p.terminate()
-    time.sleep(1)
-    p.poll()
+    if p.returncode == None:
+        # Send SIGTERM and wait a moment to close
+        p.terminate()
+        time.sleep(1)
+        p.poll()
 
     # If the app hasn't exited, brute close with kill signal
     while p.returncode is None:
@@ -413,7 +445,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     elif sys.platform == 'win32':
         unexpected_libraries = []
 
-    return (True, stdout, stderr, unexpected_libraries)
+    return (success, stdout, stderr, unexpected_libraries)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testing_napkin):
     """Check whether the specified NAP process is using unexpected libraries on Linux
@@ -1200,7 +1232,10 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', nap_framework_full_path, True)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
+                                                                       nap_framework_full_path, 
+                                                                       True)
+
     napkin_results['runFromFrameworkRelease']['success'] = success
     napkin_results['runFromFrameworkRelease']['stdout'] = stdout
     napkin_results['runFromFrameworkRelease']['stderr'] = stderr
@@ -1239,7 +1274,13 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
 
         # Run
         demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure' % demo_project_json, nap_framework_full_path, True)
+        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                           nap_framework_full_path, 
+                                                                           True,
+                                                                           True,
+                                                                           NAPKIN_SUCCESS_EXIT_CODE,
+                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+
         this_demo['openWithNapkinBuildOutput'] = {}
         this_demo['openWithNapkinBuildOutput']['success'] = success
         this_demo['openWithNapkinBuildOutput']['stdout'] = stdout
@@ -1278,7 +1319,13 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure' % template_project_json, nap_framework_full_path, True)
+        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
+                                                                           nap_framework_full_path, 
+                                                                           True,
+                                                                           True,
+                                                                           NAPKIN_SUCCESS_EXIT_CODE,
+                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+
         template_results['openWithNapkinBuildOutput'] = {}
         template_results['openWithNapkinBuildOutput']['success'] = success
         template_results['openWithNapkinBuildOutput']['stdout'] = stdout
@@ -1329,7 +1376,9 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged project
     print("- Run Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', os.path.abspath(os.pardir), True)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
+                                                                       os.path.abspath(os.pardir), 
+                                                                       True)
 
     napkin_results['runFromPackagedOutput'] = {}
     napkin_results['runFromPackagedOutput']['success'] = success
@@ -1367,7 +1416,12 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     # Run demo from packaged project
     print("- Open project with Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure' % demo_project_json, os.path.abspath(os.pardir), True)
+    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                       os.path.abspath(os.pardir),
+                                                                       True,
+                                                                       True,
+                                                                       NAPKIN_SUCCESS_EXIT_CODE,
+                                                                       NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
     results['openWithNapkinPackagedApp'] = {}
     results['openWithNapkinPackagedApp']['success'] = success
