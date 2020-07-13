@@ -74,10 +74,12 @@ int main(int argc, char* argv[])
 		QCommandLineOption opProject({"p", "project"}, "Load specified project file upon startup", "project", "");
 		parser.addOption(opProject);
 		// Options to assist with automated testing
-		QCommandLineOption opExitFailure("exit-on-failure", "Exit on on failure loading project", "", "");
-		parser.addOption(opExitFailure);
 		QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
 		parser.addOption(opNoOpenRecent);
+		QCommandLineOption opExitFailure("exit-on-failure", "Exit on failure loading project (for testing)", "", "");
+		parser.addOption(opExitFailure);
+		QCommandLineOption opExitSuccess("exit-on-success", "Exit on success loading project (for testing)", "", "");
+		parser.addOption(opExitSuccess);
 
 		parser.process(app);
 
@@ -94,6 +96,8 @@ int main(int argc, char* argv[])
 
 		if (parser.isSet(opExitFailure))
 			ctx.setExitOnLoadFailure(true);
+		if (parser.isSet(opExitSuccess))
+			ctx.setExitOnLoadSuccess(true);
 	}
 
 	// Create main window and run

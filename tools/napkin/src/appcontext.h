@@ -222,6 +222,11 @@ namespace napkin
 		 */
 		void setExitOnLoadFailure(bool b);
 
+		/**
+		 * Set to exit upon success loading any project
+		 */
+		void setExitOnLoadSuccess(bool b);
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -379,6 +384,7 @@ namespace napkin
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 		QString mCurrentFilename;								// The currently opened file
 		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
+		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
 		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
 	};
 };

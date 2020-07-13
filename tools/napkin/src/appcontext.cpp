@@ -172,6 +172,11 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	coreInitialized();
 
+    if (mExitOnLoadSuccess) {
+		nap::Logger::info("Loaded successfully, exiting as requested");
+        exit(EXIT_ON_SUCCESS_EXIT_CODE);
+    }
+
 	addRecentlyOpenedProject(projectFilename);
 
 	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDefaultDataFile());
@@ -503,4 +508,9 @@ void AppContext::setOpenRecentProjectOnStartup(bool b)
 void AppContext::setExitOnLoadFailure(bool b)
 {
 	mExitOnLoadFailure = b;
+}
+
+void AppContext::setExitOnLoadSuccess(bool b)
+{
+	mExitOnLoadSuccess = b;
 }
