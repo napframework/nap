@@ -170,24 +170,28 @@ namespace nap
 	/**
 	 * Returns the size of a swapchain image based on the current surface
 	 */
-	static VkExtent2D getSwapImageSize(glm::ivec2 windowSize, const VkSurfaceCapabilitiesKHR& capabilities)
+	bool getSwapImageSize(glm::ivec2 bufferSize, VkPhysicalDevice device, VkSurfaceKHR surface, VkExtent2D& outExtent, nap::utility::ErrorState& error)
 	{
-		VkExtent2D actualExtent;
-		if (capabilities.currentExtent.width != UINT32_MAX)
+		VkSurfaceCapabilitiesKHR capabilities;
+		if(!getSurfaceProperties(device, surface, capabilities, error))
 		{
-			actualExtent = capabilities.currentExtent;
+			outExtent = {0,0};
+			return false;
 		}
-		else
+
+
+		outExtent = capabilities.currentExtent;
+		if (capabilities.currentExtent.width == UINT32_MAX)
 		{
-			actualExtent = {
-				static_cast<uint32>(windowSize.x),
-				static_cast<uint32>(windowSize.y)
+			outExtent = {
+				static_cast<uint32>(bufferSize.x),
+				static_cast<uint32>(bufferSize.y)
 			};
 		}
 
-		actualExtent.width  = math::clamp<uint32>(actualExtent.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
-		actualExtent.height = math::clamp<uint32>(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-		return actualExtent;
+		outExtent.width  = math::clamp<uint32>(outExtent.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
+		outExtent.height = math::clamp<uint32>(outExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		return true;
 	}
 
 
@@ -287,11 +291,8 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 windowSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, uint32 graphicsQueue, uint32 presentationQueue, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 bufferSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, uint32 graphicsQueue, uint32 presentationQueue, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
-		// Size of the images
-		outSwapChainExtent = getSwapImageSize(windowSize, surfaceCapabilities);
-
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
 		if (!getImageUsage(surfaceCapabilities, usage_flags, errorState))
@@ -308,6 +309,11 @@ namespace nap
 		// Sharing mode, exclusive when presentation and graphics queue match, otherwise shared
 		uint32 queue_family_indices[] = {graphicsQueue, presentationQueue};
 		VkSharingMode sharing_mode = graphicsQueue == presentationQueue ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+
+		// Size of swapchain images, queried just before creation to avoid potential race condition.
+		// This is a known Vulkan limitiation, that otherwise results in an image extent warning during resize
+		if(!getSwapImageSize(bufferSize, physicalDevice, surface, outSwapChainExtent, errorState))
+			return false;
 
 		// Populate swapchain creation info
 		VkSwapchainCreateInfoKHR swap_info = {};
