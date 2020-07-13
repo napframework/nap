@@ -1718,12 +1718,12 @@ def log_single_project_summary(dict_in, log_packaging_result=True, log_napkin_re
         print("- Package: %s" % dict_entry_to_success(dict_in, 'package'))
     success = dict_entry_to_success(dict_in, 'runFromBuildOutput')
     print("- Run from build output: %s" % success)
-    if success == 'PASS':
+    if success == 'PASS' and not sys.platform == 'win32':
         print("- Run from build output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromBuildOutput'))
     if log_packaging_result:
         success = dict_entry_to_success(dict_in, 'runFromPackagedOutput')
         print("- Run from packaged output: %s" % success)
-        if success == 'PASS':
+        if success == 'PASS' and not sys.platform == 'win32':
             print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(dict_in, 'runFromPackagedOutput'))
     if log_napkin_result:
         print("- Open with Napkin (from framework release): %s" % dict_entry_to_success(dict_in, 'openWithNapkinBuildOutput'))
@@ -1777,11 +1777,11 @@ def log_summary(demo_results, template_results, napkin_results, misc_results):
     print("Napkin")
     success = dict_entry_to_success(napkin_results, 'runFromFrameworkRelease')
     print("- Run from framework release without project: %s" % success)
-    if success == 'PASS':
+    if success == 'PASS' and not sys.platform == 'win32':
         print("- Run from framework release, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromFrameworkRelease'))
     success = dict_entry_to_success(napkin_results, 'runFromPackagedOutput')
     print("- Run from packaged output without project: %s" % success)
-    if success == 'PASS':
+    if success == 'PASS' and not sys.platform == 'win32':
         print("- Run from packaged output, libs. check: %s" % dict_entry_to_libs_success(napkin_results, 'runFromPackagedOutput'))
     if 'packaged' in napkin_results and napkin_results['packaged']['success']:
         print("  (was packaged with demo '%s')" % napkin_results['demoPackagedWith'])
