@@ -322,12 +322,12 @@ macro(package_project_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
-                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/build_cli.bat
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/build.bat
                 DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
-                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/build_cli
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/build
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()

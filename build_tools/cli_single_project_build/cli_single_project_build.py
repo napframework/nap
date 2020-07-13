@@ -7,10 +7,9 @@ from sys import platform
 import sys
 import shutil
 
-LINUX_BUILD_DIR = 'build'
+LINUX_BUILD_DIR = 'build_dir'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
-FRAMEWORK_RELEASE_BUILD_DIR = 'build'
 THIRDPARTY = 'thirdparty'
 
 ERROR_CANT_LOCATE_NAP = 1
