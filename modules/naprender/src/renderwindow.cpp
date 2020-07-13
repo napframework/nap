@@ -820,11 +820,10 @@ namespace nap
 		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
 			return VK_NULL_HANDLE;
 
-		// When the window size has changed, we need to recreate the swapchain.
-		// Note that vkAcquireNextImageKHR and vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR, which is used to signal that the framebuffer (size or format) no longer matches
-		// the swapchain. This can be used to recreate the swapchain. However, in practice we've found that recreating the swap chain at that point results in obscure errors about
-		// resources still being used / device lost error messages. Since our main loop is single threaded, and Window events are processed before update/render, we just deal with resizes here,
-		// before we start rendering to the window. It is not possible for the window size to change *during* rendering (because, single threaded), so this keeps it simple.
+		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
+		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is ouf of date or when
+		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
+		// therefore we need to handle both situations explicitly.
 		if (mRecreateSwapchain)
 		{
 			utility::ErrorState errorState;
@@ -836,11 +835,18 @@ namespace nap
 			return VK_NULL_HANDLE;
 		}
 
-		// According to the spec, vkAcquireNextImageKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
-		// In our case this should only happen due to window size changes, which is handled explicitly above. So, we don't attempt to handle it here.
+		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
+		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
-		assert(result == VK_SUCCESS);
+		if(result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+		    mRecreateSwapchain = true;
+		    return VK_NULL_HANDLE;
+        }
+
+		// We expect to have a working image here, otherwise something is seriously wrong.
+		assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
 
 		// Reset command buffer for current frame
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
@@ -915,14 +921,14 @@ namespace nap
 		switch(vkQueuePresentKHR(mPresentQueue, &present_info))
 		{
 		case VK_SUCCESS:
-			return;
+            break;
 		case VK_ERROR_OUT_OF_DATE_KHR:
 		case VK_SUBOPTIMAL_KHR:
 			mRecreateSwapchain = true;
-			return;
+			break;
 		default:
 			assert(false);
-			return;
+			break;
 		}
 	}
 
