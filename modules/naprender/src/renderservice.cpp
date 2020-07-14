@@ -1221,6 +1221,8 @@ namespace nap
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice;
 		allocatorInfo.device = mDevice;
+        allocatorInfo.vulkanApiVersion = mAPIVersion;
+        allocatorInfo.instance = mInstance;
 
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
