@@ -88,6 +88,7 @@ namespace nap
 		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 
+		// Setup our Python environment
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif

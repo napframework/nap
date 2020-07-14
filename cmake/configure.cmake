@@ -72,7 +72,6 @@ macro(export_fbx_in_place SRCDIR)
                        )
 endmacro()
 
-
 # Copy directory to project bin output
 # SRCDIR: The source directory
 # DSTDIR: The destination directory without project bin output
