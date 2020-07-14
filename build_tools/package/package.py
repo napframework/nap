@@ -37,7 +37,7 @@ ERROR_BAD_INPUT = 5
 ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN = 6
 ERROR_SOURCE_ARCHIVE_EXISTING = 7
 
-def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
+def call(cwd, cmd, capture_output=False):
     """Execute command in provided working directory"""
 
     # print('dir: %s' % cwd)
@@ -50,8 +50,8 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     if type(out) is bytes:
         out = out.decode('ascii', 'ignore')
         err = err.decode('ascii', 'ignore')
-    if err:
-        raise Exception(err)
+    if proc.returncode != 0:
+        raise Exception("Bailing for non zero returncode: %s", proc.returncode)
     return out, err
 
 def package(zip_release, 
