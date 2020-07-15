@@ -506,7 +506,7 @@ namespace nap
 	{
 		// Load path mapping (relative to the project.json file)
 		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
-		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
+		projectInfo.mPathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
 			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
@@ -520,11 +520,8 @@ namespace nap
 		}
 
 		// Template/variable replacement
-		if (!projectInfo.patchPaths(pathMapping->mModulePaths))
+		if (!projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths))
 			return false;
-
-		// Store loaded path mapping first
-		projectInfo.mPathMapping = std::move(pathMapping);
 
 		return true;
 	}
