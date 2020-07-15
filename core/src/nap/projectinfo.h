@@ -8,7 +8,7 @@ namespace nap
 {
 	class ModuleManager;
 
-	class PathMapping : public rtti::Object
+	class NAPAPI PathMapping : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
@@ -19,52 +19,64 @@ namespace nap
 		/**
 		 * @return The absolute file path this PathMapping was loaded from
 		 */
-		std::string getFilename() const { return mFilename; }
+		std::string getFilename() const
+		{
+			return mFilename;
+		}
 
 	private:
 		std::string mFilename;
 	};
 
-	class ProjectInfo : public rtti::Object
+	class NAPAPI ServicesInfo : public rtti::Object
+	{
+	RTTI_ENABLE(rtti::Object)
+		friend class nap::Core;
+	public:
+		std::vector<nap::ServiceConfiguration*> mServiceConfigurations;
+
+	private:
+		std::string mFilename;
+	};
+
+
+	class NAPAPI ProjectInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 		friend class nap::Core;
+
 	public:
-		std::string mTitle;						// Title of the project
-		std::string mVersion;					// Version of this project
-		std::string mDefaultData;				// Relative path of the default data (json) file
-		std::string mPathMappingFile;			// Points to a file with a path mapping
-		std::vector<std::string> mRequiredModules;	// Names of modules this project depends on
-		std::vector<nap::ServiceConfiguration*> mServiceConfigurations; // Any service configs in this project
+		std::string mTitle;												// Title of the project
+		std::string mVersion;											// Version of this project
+		std::string mDefaultData;										// Relative path of the default data (json) file
+		std::string mPathMappingFile;									// Points to a file with a path mapping
+		std::string mServicesInfoFile = {};								// Points to a file with service configurations
+		std::vector<std::string> mRequiredModules;						// Names of modules this project depends on
 
 		/**
 		 * @return True if this process is running in an editor
 		 */
-		bool isEditorMode() const { return mEditorMode; }
+		bool isEditorMode() const;
 
 		/**
 		 * WARNING: Only to be used from the editor.
 		 */
-		void setEditorMode() { mEditorMode = true; }
+		void setEditorMode(bool b);
 
 		/**
 		 * @return The absolute file path this ProjectInfo was loaded from
 		 */
-		std::string getFilename() const { return mFilename; }
+		std::string getFilename() const;
 
 		/**
 		 * Set the filename of this projectinfo, only to be called while loading.
 		 */
-		void setFilename(const std::string& filename) { mFilename = filename; }
+		void setFilename(const std::string& filename);
 
 		/**
 		 * @return Absolute path of the project directory
 		 */
-		std::string getProjectDir() const {
-			assert(!mFilename.empty());
-			auto f = nap::utility::getAbsolutePath(mFilename);
-			return nap::utility::getFileDir(f);
-		}
+		std::string getProjectDir() const;
 
 		/**
 		 * @return Absolute path to the root of NAP Framework
@@ -79,9 +91,7 @@ namespace nap
 		/**
 		 * @return Absolute path of the default data file
 		 */
-		std::string getDefaultDataFile() const {if (mDefaultData.empty())
-				return {};
-			return utility::joinPath({getProjectDir(), mDefaultData});}
+		std::string getDefaultDataFile() const;
 
 		/**
 		 * @return Absolute path of this project's data directory
@@ -93,24 +103,35 @@ namespace nap
 		 */
 		const PathMapping& getPathMapping() const;
 
+		bool patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
+
+		bool patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
+
 	private:
-		std::string mFilename;					// The filename from which this data was loaded
+		std::unordered_map<std::string, std::string> getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const;
+
+		std::string mFilename;					   // The filename from which this data was loaded
 		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
+		std::unique_ptr<ServicesInfo> mServicesInfo;
 		bool mEditorMode = false;
 	};
 
-	class ModuleInfo : public rtti::Object
+	class NAPAPI ModuleInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 		friend class nap::ModuleManager;
+
 	public:
-		std::vector<std::string> mRequiredModules; 	// The modules this module depends on
+		std::vector<std::string> mRequiredModules; // The modules this module depends on
 		std::vector<std::string> mLibSearchPaths;
 
 		/**
 		 * @return The absolute file path this ModuleInfo was loaded from
 		 */
-		std::string getFilename() const { return mFilename; }
+		std::string getFilename() const
+		{
+			return mFilename;
+		}
 
 		/**
 		 * @return The ProjectInfo instance this ModuleInfo 'belongs' to.
@@ -118,7 +139,9 @@ namespace nap
 		const ProjectInfo& getProjectInfo() const;
 
 	private:
-		std::string mFilename;						// The filename from which this data was loaded
-		const ProjectInfo* mProjectInfo;			// The project this module 'belongs' to during the session
+		std::string mFilename;			 // The filename from which this data was loaded
+		const ProjectInfo* mProjectInfo; // The project this module 'belongs' to during the session
 	};
+
+
 } // namespace nap

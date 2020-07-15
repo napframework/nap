@@ -103,6 +103,10 @@ namespace nap
 		if (!mModuleManager->loadModules(*mProjectInfo, error))
 			return false;
 
+		// Now load the actual service configurations
+		if (!loadServicesInfo(error))
+			return false;
+
 		// Create the various services based on their dependencies
 		if (!initializeServices(*mProjectInfo, error))
 			return false;
@@ -228,9 +232,12 @@ namespace nap
 
 	bool nap::Core::initializeServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
 	{
+		if (projectInfo.mServicesInfo == nullptr)
+			return true; // No services info, ignore
+
 		// Convert service configurations to map
 		ServiceConfigMap configuration_by_type;
-		for (auto& config : projectInfo.mServiceConfigurations)
+		for (auto& config : projectInfo.mServicesInfo->mServiceConfigurations)
 			configuration_by_type[config->getServiceType()] = config;
 
 		// Gather all service configuration types
@@ -428,13 +435,15 @@ namespace nap
 #endif
 	}
 
-	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err)
+	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err, std::string projectFilename)
 	{
-		// Load project info
-		std::string projectFilename;
-		if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
-					   "Failed to find %s", PROJECT_INFO_FILENAME))
-			return false;
+		// Ensure filename
+		if (projectFilename.empty())
+		{
+			if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
+						   "Failed to find %s", PROJECT_INFO_FILENAME))
+				return false;
+		}
 
 		// Load ProjectInfo from json
 		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
@@ -455,6 +464,10 @@ namespace nap
 		// Load path mapping
 		loadPathMapping(*mProjectInfo, err);
 
+		// Ensure templates/variables are replaced with their intended values
+		if (!mProjectInfo->patchPath(mProjectInfo->mServicesInfoFile))
+			return false;
+
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
 					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
@@ -463,6 +476,28 @@ namespace nap
 		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
+
+		return true;
+	}
+
+	bool nap::Core::loadServicesInfo(nap::utility::ErrorState& err)
+	{
+		auto filename = mProjectInfo->mServicesInfoFile;
+		if (filename.empty())
+			return true; // No service configurations linked, no sweat.
+
+		mProjectInfo->mServicesInfo = nap::rtti::readJSONFileObjectT<nap::ServicesInfo>(
+			mProjectInfo->mServicesInfoFile,
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+			getResourceManager()->getFactory(),
+			err);
+
+		if (!err.check(mProjectInfo->mServicesInfo != nullptr,
+					   "Failed to load services info %s", filename.c_str()))
+			return false;
+
+		mProjectInfo->mServicesInfo->mFilename = filename;
 
 		return true;
 	}
@@ -484,23 +519,12 @@ namespace nap
 			return false;
 		}
 
+		// Template/variable replacement
+		if (!projectInfo.patchPaths(pathMapping->mModulePaths))
+			return false;
+
 		// Store loaded path mapping first
 		projectInfo.mPathMapping = std::move(pathMapping);
-
-		std::unordered_map<std::string, std::string> reps = {
-			{"ROOT", projectInfo.getNAPRootDir()},
-			{"BUILD_CONFIG", sBuildConf},
-			{"BUILD_TYPE", sBuildType},
-			{"PROJECT_DIR", projectInfo.getProjectDir()},
-		};
-
-		// As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
-		// try and populate it
-		if (!projectInfo.isEditorMode())
-			reps["EXE_DIR"] = utility::getExecutableDir();
-
-		// Do string/template replacement
-		projectInfo.mPathMapping->mModulePaths = utility::namedFormat(projectInfo.mPathMapping->mModulePaths, reps);
 
 		return true;
 	}

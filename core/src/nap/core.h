@@ -218,6 +218,8 @@ namespace nap
  		 * @return true on sucess.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
+		bool loadProjectInfo(nap::utility::ErrorState& error, std::string projectFilename = {});
+
 
 	private:
 		/**
@@ -256,10 +258,7 @@ namespace nap
 		 */
 		void setupPythonEnvironment();
 
-		/**
-		 * @return The current project info, load it if it isn't set.
-		 */
-		bool loadProjectInfo(nap::utility::ErrorState& error);
+		bool loadServicesInfo(nap::utility::ErrorState& error);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

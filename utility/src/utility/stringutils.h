@@ -153,9 +153,17 @@ namespace nap
 		template <typename... Args>
 		static std::string stringFormat(const std::string& format, Args... args);
 
-		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
+		/**
+		 * Replace all occurrences of the provided replacement, wrapped in curly braces in a another string.
+		 * @param subject The string to search for the {templates}
+		 * @param rep A map of template names (without curly braces) and replacement strings
+		 * @return
+		 */
+		void replaceTemplateVariable(std::string& subject, const std::unordered_map<std::string, std::string>& rep);
 
-		std::vector<std::string> namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
+
+		void replaceTemplateVariables(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
+
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.
 		 * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"
