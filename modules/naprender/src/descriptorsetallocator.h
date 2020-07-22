@@ -45,17 +45,15 @@ namespace nap
 		struct DescriptorPool
 		{
 			using DescriptorSetList = std::vector<VkDescriptorSet>;
-
-			VkDescriptorPool	mPool = VK_NULL_HANDLE;		///< The managed descriptor pool
-			DescriptorSetList	mAllocatedDescriptorSets;	///< The sets that have been allocated from this pool
-			int					mMaxNumSets = 0;			///< Maximum number of sets that can be allocated from the pool
+			VkDescriptorPool	mPool = VK_NULL_HANDLE;					///< The managed descriptor pool
+			DescriptorSetList	mAllocatedDescriptorSets;				///< The sets that have been allocated from this pool
+			int					mMaxNumSets = 0;						///< Maximum number of sets that can be allocated from the pool
 		};
 
 		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
 		VkDevice					mDevice;
 		DescriptorPoolMap			mDescriptorPools;
 	};
-
 } // nap
 
 

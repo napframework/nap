@@ -23,15 +23,13 @@ namespace nap
 {
 	PlaneMesh::PlaneMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{ }
+
 
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
 		if (!setup(errorState))
 			return false;
-
-		// Initialize mesh
 		return mMeshInstance->init(errorState);
 	}
 

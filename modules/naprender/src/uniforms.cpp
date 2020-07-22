@@ -1,6 +1,5 @@
 #include "uniforms.h"
 
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)
 	RTTI_PROPERTY("Name", &nap::Uniform::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -21,7 +20,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)
+	//RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)		virtual int getCount() const override { return mValues.size(); }fom
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformFloat)
@@ -82,6 +81,7 @@ namespace nap
 		mUniforms.push_back(&uniform);
 	}
 
+
 	Uniform* UniformStruct::findUniform(const std::string& name)
 	{
 		auto pos = std::find_if(mUniforms.begin(), mUniforms.end(), [name](auto& uniform)
@@ -91,15 +91,14 @@ namespace nap
 
 		if (pos == mUniforms.end())
 			return nullptr;
-
 		return (*pos).get();
 	}
+
 
 	void UniformStructArray::insertStruct(int index, UniformStruct& uniformStruct)
 	{
 		if (mStructs.size() <= index)
 			mStructs.resize(index + 1);
-		
 		mStructs[index] = &uniformStruct;
 	}
 

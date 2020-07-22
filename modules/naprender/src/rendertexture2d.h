@@ -6,23 +6,26 @@
 
 namespace nap
 {
+	// Forward Declares
 	class Core;
 
-	enum class ERenderTargetFormat
-	{
-		RGBA8,			///< RGBA8 4 components, 8 bytes per component
-		R8				///< R8	1 components, 8 bytes per component
-	};
-
 	/**
-	 * GPU texture resource that it is initially empty
-	 * This texture can be declared as a resource together with
-	 * the format to use, width and height.
+	 * Empty 2D GPU texture that can be declared as a resource. 
+	 * It is often used to store the result of a render pass, for example by nap::RenderTarget.
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
+		/**
+		 * All supported render texture 2D formats.
+		 */
+		enum class EFormat
+		{
+			RGBA8,			///< 4 component(s), 1 byte per component
+			R8				///< 1 component(s), 1 byte per component
+		};
+
 		RenderTexture2D(Core& renderService);
 
 		/**
@@ -33,8 +36,8 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		int					mWidth		= 0;								///< Property: 'Width' width of the texture in texels
-		int					mHeight		= 0;								///< Property: 'Height' of the texture, in texels
-		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' colorspace of the texture
-		ERenderTargetFormat	mFormat		= ERenderTargetFormat::RGBA8;		///< Property: 'Format' texture format
+		int					mHeight		= 0;								///< Property: 'Height' of the texture in texels
+		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
+		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
 	};
 }

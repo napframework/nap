@@ -12,8 +12,6 @@ namespace nap
 
 	/**
 	 * Represents the coupling between a mesh and a material that can be rendered to screen.
-	 * Use the vertex array object handle to bind your mesh before rendering.
-	 * The vertex array object handle is given by the render service on construction.
 	 * Call RenderService.createRenderableMesh() from your own renderable component to create a renderable mesh on initialization.
 	 * Renderable meshes are hashable, equality is based on the contained mesh and material.
 	 */

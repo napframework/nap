@@ -361,7 +361,6 @@ namespace nap
 	{
 		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, errorState))
 			return false;
-
 		update(initialData, descriptor);
 		return true;
 	}
@@ -509,7 +508,7 @@ namespace nap
 	{
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
  		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
-	{
+		{
  			bitmap.initFromDescriptor(mDescriptor);
  			memcpy(bitmap.getData(), data, sizeInBytes);
  		};

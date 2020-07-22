@@ -174,6 +174,20 @@ namespace nap
 	}
 
 
+	nap::MeshInstance& Mesh::getMeshInstance()
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
+
+	const nap::MeshInstance& nap::Mesh::getMeshInstance() const
+	{
+		assert(mMeshInstance != nullptr);
+		return *mMeshInstance;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Mesh
 	//////////////////////////////////////////////////////////////////////////
@@ -204,17 +218,23 @@ namespace nap
 	}
 
 
-	nap::MeshInstance& Mesh::getMeshInstance()
+	void MeshShape::reserveIndices(size_t numIndices)
 	{
-		assert(mMeshInstance != nullptr);
-		return *mMeshInstance;
+		mIndices.reserve(numIndices);
 	}
 
 
-	const nap::MeshInstance& nap::Mesh::getMeshInstance() const
+	void MeshShape::setIndices(uint32* indices, int numIndices)
 	{
-		assert(mMeshInstance != nullptr);
-		return *mMeshInstance;
+		mIndices.resize(numIndices);
+		std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32));
 	}
 
+
+	void MeshShape::addIndices(uint32* indices, int numIndices)
+	{
+		int cur_num_indices = mIndices.size();
+		mIndices.resize(cur_num_indices + numIndices);
+		std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32));
+	}
 }

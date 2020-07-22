@@ -9,17 +9,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// UniformContainer
-	//////////////////////////////////////////////////////////////////////////
-
 	UniformContainer::UniformContainer()
-	{
-	}
+	{ }
+
 
 	UniformContainer::~UniformContainer()
-	{
-	}
+	{ }
 
 	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
 	{
@@ -30,12 +25,14 @@ namespace nap
 		return nullptr;
 	}
 
+
 	UniformStructInstance& UniformContainer::getUniform(const std::string& name)
 	{
 		UniformStructInstance* instance = findUniform(name);
 		assert(instance != nullptr);
 		return *instance;
 	}
+
 
 	UniformStructInstance& UniformContainer::createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
@@ -45,17 +42,18 @@ namespace nap
 		return *result;
 	}
 
+
 	void UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
 	{
 		mSamplerInstances.emplace_back(std::move(instance));
 	}
+
 
 	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
 	{
 		for (auto& sampler : mSamplerInstances)
 			if (sampler->getDeclaration().mName == name)
 				return sampler.get();
-
 		return nullptr;
 	}
 }

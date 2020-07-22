@@ -1,7 +1,5 @@
 #pragma once
 
-// External Includes
-
 // Local Includes
 #include "uniforms.h"
 #include "samplers.h"
@@ -9,9 +7,8 @@
 
 namespace nap
 {
+	// Forward Declares
 	class UniformStructInstance;
-
-	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Manages uniform values and declarations. A uniform value is always tied to a declaration.
@@ -28,26 +25,31 @@ namespace nap
 		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
 
         UniformContainer();
-		UniformContainer(const UniformContainer&) = delete;
-
 		virtual ~UniformContainer();
-        
+
+		UniformContainer(const UniformContainer&) = delete;
 		UniformContainer& operator=(const UniformContainer&) = delete;
 
 		/**
-		* @return a uniform texture object that can be used to set a texture or value.
-		* If the uniform is not found, returns nullptr.
-		*/
+		 * @return a uniform texture object that can be used to set a texture or value.
+		 * If the uniform is not found, returns nullptr.
+		 */
 		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
-		* @return a uniform object that can be used to set a texture or value.
-		* If the uniform is not found it will assert.
-		*/
+		 * @return a uniform object that can be used to set a texture or value.
+		 * If the uniform is not found it will assert.
+		 */
 		UniformStructInstance& getUniform(const std::string& name);
 
-		const SamplerInstanceList& getSamplers() const { return mSamplerInstances; }
+		/**
+		 * @return all the uniforms samplers
+		 */
+		const SamplerInstanceList& getSamplers() const								{ return mSamplerInstances; }
 
+		/**
+		 * @return the sampler with the given name, nullptr if not found.
+		 */
 		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
