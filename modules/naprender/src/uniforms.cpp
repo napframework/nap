@@ -20,35 +20,27 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)		virtual int getCount() const override { return mValues.size(); }fom
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformFloat)
 	RTTI_PROPERTY("Value", &nap::UniformFloat::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformFloat::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec2)
 	RTTI_PROPERTY("Value", &nap::UniformVec2::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec2::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec3)
 	RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec3::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec4)
 	RTTI_PROPERTY("Value", &nap::UniformVec4::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec4::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformMat4)
 	RTTI_PROPERTY("Value", &nap::UniformMat4::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformMat4::setValue)
 RTTI_END_CLASS
-
-//////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS(nap::UniformIntArray)
 	RTTI_PROPERTY("Values", &nap::UniformIntArray::mValues, nap::rtti::EPropertyMetaData::Required)
@@ -101,5 +93,4 @@ namespace nap
 			mStructs.resize(index + 1);
 		mStructs[index] = &uniformStruct;
 	}
-
-} // End Namespace NAP
+}

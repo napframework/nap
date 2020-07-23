@@ -1,13 +1,88 @@
 #include "uniforminstance.h"
 #include "uniforms.h"
 
+RTTI_DEFINE_BASE(nap::UniformInstance)
+RTTI_DEFINE_BASE(nap::UniformLeafInstance)
+RTTI_DEFINE_BASE(nap::UniformValueInstance)
+RTTI_DEFINE_BASE(nap::UniformValueArrayInstance)
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformStructDeclaration&, const nap::UniformCreatedCallback&)
+	RTTI_FUNCTION("findUniform", (nap::UniformInstance* (nap::UniformStructInstance::*)(const std::string&)) &nap::UniformStructInstance::findUniform)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformStructArrayDeclaration&)
+	RTTI_FUNCTION("findElement", (nap::UniformStructInstance* (nap::UniformStructArrayInstance::*)(int)) &nap::UniformStructArrayInstance::findElement)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformIntInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformFloatInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformFloatInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec2Instance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec2Instance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec3Instance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec3Instance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4Instance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec4Instance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4Instance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformMat4Instance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformIntArrayInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformFloatArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformFloatArrayInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec2ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec2ArrayInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec3ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec3ArrayInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformVec4ArrayInstance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformMat4ArrayInstance::setValue)
+RTTI_END_CLASS
+
+
 namespace nap
 {
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
 	static std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
 	{
 		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
-
 		if (value != nullptr)
 		{
 			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
@@ -271,6 +346,12 @@ namespace nap
 	}
 
 
+	nap::UniformStructInstance* UniformStructArrayInstance::findElement(int index)
+	{
+		return index >= mElements.size() ? nullptr : mElements[index].get();
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// UniformStructArrayInstance
 	//////////////////////////////////////////////////////////////////////////
@@ -279,5 +360,4 @@ namespace nap
 	{
 		mElements.emplace_back(std::move(element));
 	}
-
 }

@@ -65,7 +65,7 @@ namespace nap
 		/**
 		 * @return all uniform instances contained by this struct.
 		 */
-		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const		{ return mUniforms; }
+		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const	{ return mUniforms; }
 
 		/**
 		 * Tries to find a uniform with the given name.
@@ -93,7 +93,7 @@ namespace nap
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override				{ return mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override		{ return mDeclaration; }
 
 	private:
 		friend class Material;
@@ -147,11 +147,12 @@ namespace nap
 		/**
 		 * @return the uniform struct at the given index.
 		 */
-		UniformStructInstance& getElement(int index)
-		{
-			assert(index < mElements.size());
-			return *mElements[index];
-		}
+		UniformStructInstance& getElement(int index)									{ assert(index < mElements.size()); return *mElements[index]; }
+
+		/**
+		 * @return the uniform struct at the given index, nullptr if not found
+		 */
+		UniformStructInstance* findElement(int index);
 
 		/**
 		 * @return the uniform struct at the given index
@@ -161,7 +162,7 @@ namespace nap
 		/**
 		 * @return declaration used to create this instance. 
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override { return mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override				{ return mDeclaration; }
 
 	private:
 		const UniformStructArrayDeclaration&					mDeclaration;
@@ -208,12 +209,12 @@ namespace nap
 
 		// Constructor
 		UniformValueInstance(const UniformValueDeclaration& declaration) :
-			mDeclaration(&declaration)												{ }
+			mDeclaration(&declaration)											{ }
 
 		/**
 		 * @return the uniform value declaration.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override			{ return *mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override		{ return *mDeclaration; }
 
 	protected:
 		const UniformValueDeclaration*	mDeclaration = nullptr;
@@ -230,19 +231,19 @@ namespace nap
 
 	public:
 		TypedUniformValueInstance(const UniformValueDeclaration& declaration) :
-			UniformValueInstance(declaration)										{ }
+			UniformValueInstance(declaration)				{ }
 
 		/**
 		 * Updates the uniform value, data is not pushed immediately. 
 		 * @param value new uniform value
 		 */
-		void setValue(T value)									{ mValue = value; }
+		void setValue(T value)								{ mValue = value; }
 		
 		/**
 		 * Update instance from resource, data is not pushed immediately. 
 		 * @param resource the resource to copy the value from
 		 */
-		void set(const TypedUniformValue<T>& resource)			{ mValue = resource.mValue; 	}
+		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; 	}
 
 		/**
 		 * Pushes the data to the 'Shader'.
@@ -268,12 +269,12 @@ namespace nap
 
 	public:
 		UniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			mDeclaration(&declaration)													{ }
+			mDeclaration(&declaration)	{ }
 
 		/**
 		 * @return uniform declaration.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override				{ return *mDeclaration; }
+		virtual const UniformDeclaration& getDeclaration() const override	{ return *mDeclaration; }
 
 		/**
 		 * Required override, sets up default values.
@@ -297,44 +298,45 @@ namespace nap
 
 	public:
 		TypedUniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			UniformValueArrayInstance(declaration)										{ }
+			UniformValueArrayInstance(declaration)				{ }
 
 		/**
 		 * Updates the uniform value from a resource, data is not pushed immediately. 
 		 * @param resource resource to copy data from.
 		 */
-		void set(const TypedUniformValueArray<T>& resource)								{ mValues = resource.mValues; }
+		void set(const TypedUniformValueArray<T>& resource)		{ mValues = resource.mValues; }
 
 		/**
 		 * Updates the uniform value, data is not pushed immediately.
+		 * Note that the length of the given values must be =< than length declared in shader.
 		 * @param values new list of values
 		 */
-		void setValues(const std::vector<T> values)
-		{
-			assert(values.size() <= mDeclaration->mNumElements);
-			mValues = values;
-		}
+		void setValues(const std::vector<T>& values)			{ assert(values.size() <= mDeclaration->mNumElements); mValues = values; }
 
 		/**
-		 * Populate defaults
+		 * Updates a single uniform value in the array, data is not pushed immediately.
+		 * Note that the given index must be =< than length declared in shader. 
+		 * @param value the value to set
+		 * @param index the index in the array
 		 */
-		virtual void setDefault() override												{ mValues.resize(mDeclaration->mNumElements, T()); }
+		void setValue(T value, int index)						{ assert(index < mValues.size()); mValues[index] = value; }
+
+		/**
+		 * Resize based on shader declaration.
+		 */
+		virtual void setDefault() override						{ mValues.resize(mDeclaration->mNumElements, T()); }
 
 		/**
 		 * Array subscript operator, returns a specific value in the array as a reference, 
 		 * making the following possible: `mUniformArray[0] = 12`;
 		 * @return a specific value in the array as a reference. 
 		 */
-		T& operator[](size_t index)
-		{
-			assert(index < mValues.size());
-			return mValues[index];
-		}
+		T& operator[](size_t index)								{ assert(index < mValues.size()); return mValues[index]; }
 
 		/**
 		 * @return entire array as a reference
 		 */
-		std::vector<T>& getValues() { return mValues; }
+		std::vector<T>& getValues()								{ return mValues; }
 
 		/**
 		 * Pushes the data to the 'Shader'

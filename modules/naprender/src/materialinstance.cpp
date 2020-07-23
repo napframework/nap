@@ -21,7 +21,7 @@ RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform",			(nap::Uniform* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
+	RTTI_FUNCTION("getOrCreateUniform",			(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
 RTTI_END_CLASS
 
 namespace nap
