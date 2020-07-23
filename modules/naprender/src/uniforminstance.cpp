@@ -1,5 +1,4 @@
 #include "uniforminstance.h"
-#include "uniforms.h"
 
 RTTI_DEFINE_BASE(nap::UniformInstance)
 RTTI_DEFINE_BASE(nap::UniformLeafInstance)

@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "uniforms.h"
+#include "uniform.h"
 
 // External Includes
 #include <rtti/objectptr.h>

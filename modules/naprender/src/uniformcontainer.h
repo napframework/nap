@@ -1,8 +1,8 @@
 #pragma once
 
 // Local Includes
-#include "uniforms.h"
-#include "samplers.h"
+#include "sampler.h"
+#include "uniform.h"
 #include "imagefromfile.h"
 
 namespace nap

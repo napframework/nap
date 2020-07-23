@@ -1,6 +1,6 @@
-#include "uniforms.h"
+#include "uniform.h"
 #include "imagefromfile.h"
-#include "samplers.h"
+#include "sampler.h"
 #include "renderservice.h"
 
 

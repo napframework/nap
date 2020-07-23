@@ -10,6 +10,7 @@
 
 namespace nap
 {
+	// Forward Declares
 	class Texture2D;
 	class SamplerInstance;
 	class RenderService;
@@ -21,8 +22,8 @@ namespace nap
 	 */
 	enum class EFilterMode : int
 	{
-		Nearest = 0,				///< Nearest
-		Linear						///< Linear
+		Nearest = 0,				///< Nearest sampling
+		Linear						///< Linear sampling
 	};
 
 	/**
@@ -36,15 +37,22 @@ namespace nap
 		ClampToBorder				///< ClampToBorder
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Sampler
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Sampler resource base class.
+	 * Applies filtering and transformations to compute the final color that is retrieved from a texture.
+	 */
 	class NAPAPI Sampler : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
 		Sampler() = default;
 
-		std::string		mName;
-
+		std::string		mName;															///< Property: 'Name' sampler shader name
 		EFilterMode		mMinFilter				= EFilterMode::Linear;					///< Property: 'MinFilter' minimizing filter
 		EFilterMode		mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
 		EFilterMode		mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
@@ -54,9 +62,12 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerArray
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Represents an array of 'texture' uniforms.
-	 * Derived classes should return the correct amount of elements that are in the array.
+	 * List of samplers.
  	 */
 	class NAPAPI SamplerArray : public Sampler
 	{
@@ -65,7 +76,6 @@ namespace nap
 	public:
 		/**
 		 * Retrieve the number of elements in this array
-		 *
 		 * @return The number of elements in this array
 		 */
 		virtual int getNumElements() const = 0;
