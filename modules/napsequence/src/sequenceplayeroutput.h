@@ -7,11 +7,12 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// forward declars
 	class SequenceService;
 
 	/**
-	 * SequencePlayerOutput is the base class for inputs for the sequenceplayer
-	 * Inputs can be used by SequencePlayerAdapters to link tracks to objects.
+	 * SequencePlayerOutput is the base class for outputs for the sequenceplayer
+	 * Outputs can be used by SequencePlayerAdapters to link tracks to objects.
 	 * F.E SequencePlayerCurveOutput can link a parameter to a curve track
 	 */
 	class NAPAPI SequencePlayerOutput : public Resource

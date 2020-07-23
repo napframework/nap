@@ -34,6 +34,9 @@ namespace nap
 		 */
 		SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
+		/**
+		 * Deconstructor
+		 */
         virtual ~SequenceTrackView(){};
         
 		/**
