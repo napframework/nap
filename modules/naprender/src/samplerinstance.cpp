@@ -71,6 +71,17 @@ namespace nap
 	}
 
 
+	static float getAnisotropicSamples(const Sampler* sampler, const nap::RenderService& renderer)
+	{
+		// If there is no sampler or setting is derived from system default, use the global setting
+		if (sampler == nullptr || sampler->mMaxAnisotropy == EAnisotropicSamples::Default)
+			return renderer.getAnisotropicSamples();
+
+		// Otherwise check if it is supported, if so override, otherwise set it to 1.0
+		return renderer.anisotropicFilteringSupported() ? static_cast<float>(sampler->mMaxAnisotropy) : 1.0f;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// SamplerInstance
 	//////////////////////////////////////////////////////////////////////////
@@ -102,8 +113,8 @@ namespace nap
 		samplerInfo.addressModeU = mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeHorizontal);
 		samplerInfo.addressModeV = mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeVertical);
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 16;
+		samplerInfo.anisotropyEnable = mRenderService->anisotropicFilteringSupported() ? VK_TRUE : VK_FALSE;
+		samplerInfo.maxAnisotropy = getAnisotropicSamples(mSampler, *mRenderService);
 		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_FALSE;

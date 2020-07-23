@@ -52,6 +52,7 @@ namespace nap
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
 	};
 
@@ -424,6 +425,19 @@ namespace nap
 		bool sampleShadingSupported() const;
 
 		/**
+		 * Returns if anisotropic filtering is supported
+		 * @return if anisotropic filtering is supported
+		 */
+		bool anisotropicFilteringSupported() const;
+
+		/**
+		 * Returns the (system default) number of anisotropic filter samples. 
+		 * The output is always 1 when anisotropic filtering is not supported.
+		 * @return system default number of max anisotropic filter samples.
+		 */
+		uint32 getAnisotropicSamples() const										{ return mAnisotropicSamples; }
+
+		/**
 		 * Returns the selected and currently in use depth format.
 		 * @return the currently selected and in use depth format.
 		 */
@@ -687,6 +701,8 @@ namespace nap
 
 		bool									mEnableHighDPIMode = true;
 		bool									mSampleShadingSupported = false;
+		bool									mAnisotropicFilteringSupported = false;
+		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;												
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;

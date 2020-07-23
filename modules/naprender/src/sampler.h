@@ -7,6 +7,7 @@
 #include <rtti/objectptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -18,7 +19,7 @@ namespace nap
 	/**
 	 *	Supported sampler filter modes.
 	 */
-	enum class EFilterMode : int
+	enum class EFilterMode : uint32
 	{
 		Nearest = 0,				///< Nearest sampling
 		Linear						///< Linear sampling
@@ -27,12 +28,24 @@ namespace nap
 	/**
 	 *	Supported sampler wrap modes
 	 */
-	enum class EAddressMode : int
+	enum class EAddressMode : uint32
 	{
 		Repeat = 0,					///< Repeat
 		MirroredRepeat,				///< MirroredRepeat 
 		ClampToEdge,				///< ClampToEdge
 		ClampToBorder				///< ClampToBorder
+	};
+
+
+	/**
+	 * Supported number of anisotropic sample overrides
+	 */
+	enum class EAnisotropicSamples : uint32
+	{
+		Default		= 0,			///< Pick system default, as defined by the render service configuration
+		Four		= 4,			///< Four samples
+		Eight		= 8,			///< Eight samples
+		Sixteen		= 16			///< Sixteen samples
 	};
 
 
@@ -49,13 +62,14 @@ namespace nap
 	public:
 		Sampler() = default;
 
-		std::string		mName;															///< Property: 'Name' sampler shader name
-		EFilterMode		mMinFilter				= EFilterMode::Linear;					///< Property: 'MinFilter' minimizing filter
-		EFilterMode		mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
-		EFilterMode		mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
-		EAddressMode	mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
-		EAddressMode	mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
-		int				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
+		std::string			mName;															///< Property: 'Name' sampler shader name
+		EFilterMode			mMinFilter				= EFilterMode::Linear;					///< Property: 'MinFilter' minimizing filter
+		EFilterMode			mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
+		EFilterMode			mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
+		EAddressMode		mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
+		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
+		EAnisotropicSamples	mMaxAnisotropy			= EAnisotropicSamples::Default;			///< Property: 'AnisotropicSamples' max number of anisotropic filter samples
+		uint32				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
 	};
 
 

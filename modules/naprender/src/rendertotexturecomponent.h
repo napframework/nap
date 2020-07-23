@@ -30,13 +30,6 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderToTextureComponent, RenderToTextureComponentInstance)
 	public:
-
-		/**
-		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		 * @param components the components this object depends on
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;					///< Property: 'OutputTexture' the target of the render step
 		MaterialInstanceResource		mMaterialInstanceResource;					///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		RGBColor8						mClearColor = { 255, 255, 255 };			///< Property: 'ClearColor' the color that is used to clear the render target
@@ -58,8 +51,6 @@ namespace nap
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
 		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource);
-
-		virtual ~RenderToTextureComponentInstance();
 
 		/**
 		 * Initialize RenderToTextureComponentInstance based on the RenderToTextureComponent resource

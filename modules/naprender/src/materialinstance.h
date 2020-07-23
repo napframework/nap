@@ -24,11 +24,11 @@ namespace nap
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" that you're overriding
-		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" that you're overriding
-		ResourcePtr<Material>						mMaterial;										///< Property: "Material" that you're overriding uniforms from
-		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
-		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs that you're overriding
+		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
+		ResourcePtr<Material>						mMaterial;										///< Property: "Material" source material
+		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
+		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
 	};
 
 	/**
