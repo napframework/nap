@@ -1,14 +1,17 @@
 #pragma once
 
-// External Includes
-#include <rendercomponent.h>
-#include <nap/resourceptr.h>
-#include <rendertexture2d.h>
-#include <rendertarget.h>
-#include <planemesh.h>
-#include <materialinstance.h>
+// Local Includes
+#include "rendercomponent.h"
+#include "rendertexture2d.h"
+#include "planemesh.h"
+#include "rendertarget.h"
+#include "materialinstance.h"
 #include "renderablemesh.h"
-#include "entity.h"
+#include "color.h"
+
+// External Includes
+#include <nap/resourceptr.h>
+#include <entity.h>
 
 namespace nap
 {

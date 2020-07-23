@@ -1,21 +1,15 @@
 #pragma once
 
 // Local Includes
-#include "sampler.h"
-#include "uniform.h"
-#include "imagefromfile.h"
+#include "samplerinstance.h"
+#include "uniforminstance.h"
 
 namespace nap
 {
-	// Forward Declares
-	class UniformStructInstance;
-
 	/**
-	 * Manages uniform values and declarations. A uniform value is always tied to a declaration.
-	 * Multiple uniform values can be associated with the same declaration.
-	 * The uniform declaration is the actual interface to a uniform slot on a shader. 
-	 * The uniform value is the actual value uploaded to that slot.
-	 * Both the Material and MaterialInstance are a uniform container.
+	 * Manages uniform struct and sampler instances. Every struct and sampler is tied to a shader declaration.
+	 * The declaration acts as the interface to a uniform struct or sampler on a shader. 
+	 * Both the nap::Material and nap::MaterialInstance are a uniform container.
 	 */
 	class NAPAPI UniformContainer
 	{
@@ -24,30 +18,34 @@ namespace nap
 		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
 		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
 
-        UniformContainer();
-		virtual ~UniformContainer();
+        UniformContainer() = default;
+		virtual ~UniformContainer() = default;
 
 		UniformContainer(const UniformContainer&) = delete;
 		UniformContainer& operator=(const UniformContainer&) = delete;
 
 		/**
-		 * @return a uniform texture object that can be used to set a texture or value.
-		 * If the uniform is not found, returns nullptr.
+		 * Tries to find a uniform struct instance with the given name.
+		 * @param name name of the uniform struct (ubo) as declared in the shader.
+		 * @return a uniform struct instance (ubo), nullptr if not present.
 		 */
 		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
-		 * @return a uniform object that can be used to set a texture or value.
-		 * If the uniform is not found it will assert.
+		 * Returns a uniform struct instance with the given name, the struct has to exist.
+		 * @param name name of the uniform struct as declared in the shader.
+		 * @return uniform struct instance with the given name, asserts if not present.
 		 */
 		UniformStructInstance& getUniform(const std::string& name);
 
 		/**
-		 * @return all the uniforms samplers
+		 * @return all the uniforms sampler instances.
 		 */
 		const SamplerInstanceList& getSamplers() const								{ return mSamplerInstances; }
 
 		/**
+		 * Tries to find a sampler instance with the given name.
+		 * @param name the name of the sampler as declared in the shader.
 		 * @return the sampler with the given name, nullptr if not found.
 		 */
 		SamplerInstance* findSampler(const std::string& name) const;
@@ -60,4 +58,4 @@ namespace nap
 		std::vector<std::unique_ptr<UniformStructInstance>> mRootStructs;
 		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
-} // nap
+}

@@ -2,14 +2,13 @@
 #include "materialinstance.h"
 #include "mesh.h"
 #include "material.h"
+#include "renderservice.h"
+#include "descriptorsetcache.h"
+#include "vk_mem_alloc.h"
 
 // External includes
 #include <nap/logger.h>
-#include "rtti/rttiutilities.h"
-#include "renderservice.h"
-#include "uniforminstance.h"
-#include "descriptorsetcache.h"
-#include "vk_mem_alloc.h"
+#include <rtti/rttiutilities.h>
 
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
@@ -21,7 +20,8 @@ RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform",			(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
+	RTTI_FUNCTION("getOrCreateUniform",	(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
+	RTTI_FUNCTION("getOrCreateSampler",	(nap::SamplerInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateSampler);
 RTTI_END_CLASS
 
 namespace nap

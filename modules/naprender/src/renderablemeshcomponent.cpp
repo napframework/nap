@@ -4,7 +4,6 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
-#include "uniforminstance.h"
 #include "indexbuffer.h"
 #include "renderglobals.h"
 

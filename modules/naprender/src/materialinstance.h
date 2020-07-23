@@ -98,36 +98,53 @@ namespace nap
 		EDepthMode getDepthMode() const;
 
 		/**
-		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
-		 * to this instance. In order to change a uniform so that it's value is shared among MaterialInstances, use
-		 * getMaterial().getUniforms().getUniform(). This function will assert if the name of the uniform does not 
-		 * match the type that you are trying to create.
+		 * Gets or creates a uniform struct (ubo) for this material instance. 
+		 * This means that the uniform returned is only applicable to this instance. 
+		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform(). 
 		 * 
-		 * regular uniform get example:
-		 * nap::Uniform* mesh_color = material.getOrCreateUniform<nap::UniformVec3>("meshColor");
-		 *
-		 * uniform array get example:
-		 * nap::Uniform* textures = material.getOrCreateUniform<nap::UniformTextureArray>("textures");
-		 *
-		 * uniform member from struct example:
-		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("light.intensity");
-		 *
-		 * uniform member from struct array example:
-		 * nap::Uniform* intensity = material.getOrCreateUniform<nap::UniformFloat>("lights[0].intensity");
-		 *
-		 * @param name: the name of the uniform as it is in the shader.
-		 * @return reference to the uniform that was found or created.
+		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
+		 * @return uniform that was found or created, nullptr if not available.
 		 */
 		UniformStructInstance* getOrCreateUniform(const std::string& name);
 
+		/**
+		 * Gets or creates a nap::SamplerInstance of type T for this material instance. 
+		 * This means that the sampler returned is only applicable to this instance. 
+		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler(). 
+		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
+		 *
+		 * ~~~~~{.cpp}
+		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
+		 * ~~~~~
+		 * 
+		 * @param name: the name of the sampler declared in the shader.
+		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 */
 		template<class T>
 		T* getOrCreateSampler(const std::string& name);
+
+		/**
+		 * Gets or creates a nap::SamplerInstance for this material instance.
+		 * This means that the sampler returned is only applicable to this instance.
+		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
+		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
+		 * 
+		 * @param name: the name of the sampler declared in the shader.
+		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 */
+		SamplerInstance* getOrCreateSampler(const std::string& name)			{ return getOrCreateSamplerInternal(name); }
 
 		/**
 		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets 
 		 * before the Vulkan draw call is issued.
-		 * @return Descriptor for use in vkCmdBindDescriptorSets.
+		 *
+		 * ~~~~~{.cpp}
+		 *	VkDescriptorSet descriptor_set = mat_instance.update();
+		 *	vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		 * ~~~~~
+		 *
+		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
 		VkDescriptorSet update();
 

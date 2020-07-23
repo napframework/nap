@@ -1,27 +1,23 @@
+// Local Includes
 #include "uniformcontainer.h"
-#include "uniforminstance.h"
+#include "texture2d.h"
+
+// External Includes
 #include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS(nap::UniformContainer)
 	RTTI_FUNCTION("findUniform", (nap::UniformStructInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findUniform)
+	RTTI_FUNCTION("findSampler", (nap::SamplerInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findSampler)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	UniformContainer::UniformContainer()
-	{ }
-
-
-	UniformContainer::~UniformContainer()
-	{ }
-
 	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
 	{
 		for (auto& instance : mRootStructs)
 			if (instance->getDeclaration().mName == name)
 				return instance.get();
-
 		return nullptr;
 	}
 

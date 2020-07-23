@@ -48,31 +48,37 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformIntArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformIntArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformFloatArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformFloatArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformFloatArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec2ArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformVec2ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformVec2ArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec3ArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformVec3ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformVec3ArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4ArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformVec4ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformVec4ArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4ArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformMat4ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformMat4ArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 

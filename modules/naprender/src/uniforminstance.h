@@ -327,11 +327,9 @@ namespace nap
 		virtual void setDefault() override						{ mValues.resize(mDeclaration->mNumElements, T()); }
 
 		/**
-		 * Array subscript operator, returns a specific value in the array as a reference, 
-		 * making the following possible: `mUniformArray[0] = 12`;
-		 * @return a specific value in the array as a reference. 
+		 * @return total number of elements in array
 		 */
-		T& operator[](size_t index)								{ assert(index < mValues.size()); return mValues[index]; }
+		int getNumElements() const								{ return static_cast<int>(mValues.size()); }
 
 		/**
 		 * @return entire array as a reference
@@ -343,6 +341,14 @@ namespace nap
 		 * @param uniformBuffer the buffer to copy the array into.
 		 */
 		virtual void push(uint8_t* uniformBuffer) const override;
+
+		/**
+		 * Array subscript operator, returns a specific value in the array as a reference,
+		 * making the following possible: `mUniformArray[0] = 12`;
+		 * @return a specific value in the array as a reference.
+		 */
+		T& operator[](size_t index) { assert(index < mValues.size()); return mValues[index]; }
+
 
 	private:
 		std::vector<T> mValues;

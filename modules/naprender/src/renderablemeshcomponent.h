@@ -4,7 +4,6 @@
 #include "rendercomponent.h"
 #include "renderablemesh.h"
 #include "materialinstance.h"
-#include "uniforminstance.h"
 
 // External Includes
 #include <nap/resourceptr.h>
