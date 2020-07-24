@@ -196,7 +196,6 @@ namespace nap
 			VmaAllocationInfo allocation = descriptorSet.mBuffers[ubo_index].mAllocationInfo;
 			
 			void* mapped_memory = allocation.pMappedData;
-
 			for (auto& uniform : ubo.mUniforms)
 				uniform->push((uint8_t*)mapped_memory);
 		}

@@ -80,7 +80,7 @@ namespace nap
 	/**
 	 * Creates a Vulkan buffer
 	 */
-	bool NAPAPI createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, BufferData& outBuffer, utility::ErrorState& error);
+	bool NAPAPI createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocationFlags, BufferData& outBuffer, utility::ErrorState& error);
 
 	/**
 	 * Destroys a Vulkan buffer

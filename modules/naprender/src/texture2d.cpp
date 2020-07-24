@@ -323,7 +323,7 @@ namespace nap
 				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 			// Create staging buffer
-			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, staging_buffer, errorState))
+			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
 			{
 				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
 				return false;
@@ -493,6 +493,7 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		// Map memory and copy contents, note for this to work on OSX the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required!
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
@@ -521,6 +522,7 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
 		BufferData& buffer = mStagingBuffers[frameIndex];
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
