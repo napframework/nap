@@ -1068,7 +1068,7 @@ namespace nap
 		mYTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mYTexture->mWidth = yWidth;
 		mYTexture->mHeight = yHeight;
-		mYTexture->mFormat = ERenderTargetFormat::R8;
+		mYTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mYTexture->mUsage = ETextureUsage::DynamicWrite;
 		mYTexture->mColorSpace = EColorSpace::Linear;
 		if (!mYTexture->init(errorState))
@@ -1077,7 +1077,7 @@ namespace nap
 		mUTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mUTexture->mWidth = uvWidth;
 		mUTexture->mHeight = uvHeight;
-		mUTexture->mFormat = ERenderTargetFormat::R8;
+		mUTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mUTexture->mUsage = ETextureUsage::DynamicWrite;
 		mUTexture->mColorSpace = EColorSpace::Linear;
 		if (!mUTexture->init(errorState))
@@ -1086,7 +1086,7 @@ namespace nap
 		mVTexture = std::make_unique<RenderTexture2D>(mService.getCore());
 		mVTexture->mWidth = uvWidth;
 		mVTexture->mHeight = uvHeight;
-		mVTexture->mFormat = ERenderTargetFormat::R8;
+		mVTexture->mFormat = RenderTexture2D::EFormat::R8;
 		mVTexture->mUsage = ETextureUsage::DynamicWrite;
 		mVTexture->mColorSpace = EColorSpace::Linear;
 		if (!mVTexture->init(errorState))
