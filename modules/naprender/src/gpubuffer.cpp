@@ -86,7 +86,7 @@ namespace nap
 		}
 
 		// Create staging buffer
-		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, mStagingBuffer, error))
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, mStagingBuffer, error))
 		{
 			error.fail("Unable to create staging buffer");
 			return false;
@@ -97,7 +97,7 @@ namespace nap
 			return false;
 
 		// Now create the GPU buffer to transfer data to, create buffer information
-		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, mRenderBuffers[0], error))
+		if (!createBuffer(allocator, mSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], error))
 		{
 			error.fail("Unable to create render buffer");
 			return false;
@@ -134,7 +134,7 @@ namespace nap
 			}
 
 			// Create buffer new buffer
-			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer_data, error))
+			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, error))
 			{
 				error.fail("Render buffer error");
 				return false;

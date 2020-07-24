@@ -31,7 +31,7 @@ namespace nap
 		/**
 		 * Creates and inits opengl shader.
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* @return all vertex shader attributes

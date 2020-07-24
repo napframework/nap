@@ -323,7 +323,7 @@ namespace nap
 				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 			// Create staging buffer
-			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, staging_buffer, errorState))
+			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
 			{
 				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
 				return false;
