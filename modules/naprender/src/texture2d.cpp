@@ -498,6 +498,7 @@ namespace nap
 		assert(result == VK_SUCCESS);
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
+		vmaFlushAllocation(vulkan_allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
 		mRenderService->requestTextureUpload(*this);
@@ -528,6 +529,7 @@ namespace nap
 
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
+		vmaFlushAllocation(vulkan_allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

@@ -35,8 +35,9 @@ namespace nap
 
 		// Allocation creation info
 		VmaAllocationCreateInfo alloc_info = {};
-		alloc_info.flags = 0;
+		alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 		alloc_info.usage = memoryUsage;
+		alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 		// Create image using allocator and allocation instructions
 		VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
@@ -89,6 +90,7 @@ namespace nap
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
 		allocInfo.flags = 0;
+        allocInfo.requiredFlags = memoryUsage == VMA_MEMORY_USAGE_CPU_TO_GPU ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
 
 		// Create buffer
 		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);
@@ -113,6 +115,7 @@ namespace nap
 
 		memcpy(mapped_memory, data, (size_t)size);
 		vmaUnmapMemory(allocator, buffer.mAllocation);
+        vmaFlushAllocation(allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 		return true;
 	}
 

@@ -17,6 +17,7 @@ namespace nap
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
 		allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		allocInfo.requiredFlags =  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
 	}
 

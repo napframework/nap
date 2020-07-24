@@ -189,6 +189,7 @@ namespace nap
 
 	void MaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
 	{
+        /*
 		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
 		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
 		{
@@ -200,6 +201,25 @@ namespace nap
 			for (auto& uniform : ubo.mUniforms)
 				uniform->push((uint8_t*)mapped_memory);
 		}
+         */
+        
+            // Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
+            VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+            for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
+            {
+                // Fetch ubo to update uniforms for
+                UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
+
+                // Get the associated buffer to update
+                const DescriptorSetBuffer& buffer = descriptorSet.mBuffers[ubo_index];
+
+                // Map memory, update and unmap
+                void* mapped_memory = nullptr;
+                vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
+                for (auto& uniform : ubo.mUniforms) { uniform->push((uint8_t*)mapped_memory); }
+                vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
+                vmaFlushAllocation(vulkan_allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
+            }
 	}
 
 
