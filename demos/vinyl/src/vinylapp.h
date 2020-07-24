@@ -16,6 +16,7 @@
 #include <color.h>
 #include <imguiservice.h>
 #include <renderservice.h>
+#include <imagefromfile.h>
 
 namespace nap
 {

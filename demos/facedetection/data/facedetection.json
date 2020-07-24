@@ -705,7 +705,7 @@
             "Title": "Window 1",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,
