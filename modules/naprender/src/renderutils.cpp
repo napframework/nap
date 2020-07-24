@@ -35,7 +35,7 @@ namespace nap
 
 		// Allocation creation info
 		VmaAllocationCreateInfo alloc_info = {};
-		alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+		alloc_info.flags = 0;
 		alloc_info.usage = memoryUsage;
 		alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
