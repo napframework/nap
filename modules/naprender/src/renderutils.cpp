@@ -115,7 +115,6 @@ namespace nap
 
 		memcpy(mapped_memory, data, (size_t)size);
 		vmaUnmapMemory(allocator, buffer.mAllocation);
-        vmaFlushAllocation(allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 		return true;
 	}
 

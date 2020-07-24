@@ -493,12 +493,12 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		// Map memory and copy contents, note for this to work on OSX the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required!
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
-		vmaFlushAllocation(vulkan_allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
 		mRenderService->requestTextureUpload(*this);
@@ -522,6 +522,7 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
 		BufferData& buffer = mStagingBuffers[frameIndex];
 		void* mapped_memory;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
@@ -529,7 +530,6 @@ namespace nap
 
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
-		vmaFlushAllocation(vulkan_allocator, buffer.mAllocation, buffer.mAllocationInfo.offset, buffer.mAllocationInfo.size);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }
