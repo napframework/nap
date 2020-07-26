@@ -274,14 +274,21 @@ namespace nap
 			"%s, Unsupported texture format", mID.c_str()))
 			return false;
 
+		// Ensure our GPU image can be used as a transfer destination during uploads
+		VkFormatProperties format_properties;
+		mRenderService->getFormatProperties(mFormat, format_properties);
+		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+		{
+			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+			return false;
+		}
+		
 		// If mip mapping is enabled, ensure it is supported
 		if (generateMipMaps)
 		{
-			VkFormatProperties format_properties;
-			mRenderService->getFormatProperties(mFormat, format_properties);		
 			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			{
-				errorState.fail("%s: image format does not support support linear blitting, consider disabling mipmap generation", mID.c_str());
+				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
 				return false;
 			}
 			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
