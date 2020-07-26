@@ -435,7 +435,7 @@ namespace nap
 			int queue_node_index = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
-				if (queue_properties[i].queueCount > 0 && queue_properties[i].queueFlags & required_flags)
+				if (queue_properties[i].queueCount > 0 && (queue_properties[i].queueFlags & required_flags))
 				{
 					queue_node_index = i;
 					break;
@@ -525,7 +525,7 @@ namespace nap
 
 		// Create queue information structure used by device based on the previously fetched queue information from the physical device
 		// We create one command processing queue for graphics
-		VkDeviceQueueCreateInfo queue_create_info;
+		VkDeviceQueueCreateInfo queue_create_info = { };
 		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queue_create_info.queueFamilyIndex = queueFamilyIndex;
 		queue_create_info.queueCount = 1;
@@ -539,7 +539,7 @@ namespace nap
 		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
 
 		// Device creation information	
-		VkDeviceCreateInfo create_info;
+		VkDeviceCreateInfo create_info = { };
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		create_info.queueCreateInfoCount = 1;
 		create_info.pQueueCreateInfos = &queue_create_info;

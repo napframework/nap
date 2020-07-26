@@ -494,7 +494,7 @@ namespace nap
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
-		void* mapped_memory;
+		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
@@ -523,7 +523,7 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		BufferData& buffer = mStagingBuffers[frameIndex];
-		void* mapped_memory;
+		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 

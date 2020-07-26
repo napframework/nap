@@ -23,8 +23,8 @@ namespace nap
 	 */
 	struct DescriptorSetBuffer
 	{
-		VkBuffer			mBuffer;
-		VmaAllocation		mAllocation;
+		VkBuffer			mBuffer = VK_NULL_HANDLE;
+		VmaAllocation		mAllocation = VK_NULL_HANDLE;
 		VmaAllocationInfo	mAllocationInfo;
 	};
 
