@@ -4,7 +4,6 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
-#include "uniforminstance.h"
 
 // External Includes
 #include <font.h>
@@ -27,6 +26,18 @@ namespace nap
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
+	 *
+	 * The model view and projection matrices are automatically updated when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
+	 * The model matrix uniform 'uniform::modelMatrix' is required.
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform nap
+	 * {
+	 *		mat4 projectionMatrix;		///< Optional
+	 *		mat4 viewMatrix;			///< Optional
+	 *		mat4 modelMatrix;			///< Required
+	 *	} mvp;							///< Required
+	 * ~~~~~
 	 */
 	class NAPAPI RenderableTextComponent : public RenderableComponent
 	{
@@ -51,6 +62,18 @@ namespace nap
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line. 
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
+	 *
+	 * The model view and projection matrices are automatically updated when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
+	 * The model matrix uniform 'uniform::modelMatrix' is required.
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform nap
+	 * {
+	 *		mat4 projectionMatrix;		///< Optional
+	 *		mat4 viewMatrix;			///< Optional
+	 *		mat4 modelMatrix;			///< Required
+	 *	} mvp;
+	 * ~~~~~
 	 */
 	class NAPAPI RenderableTextComponentInstance : public RenderableComponentInstance
 	{

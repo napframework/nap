@@ -9,8 +9,8 @@
 namespace nap
 {
 	/**
-	* All available shader uniform types
-	*/
+	 * All available shader uniform types
+	 */
 	enum class EUniformValueType : uint8_t
 	{
 		Unknown = 0,		///< unknown or invalid shader uniform
@@ -25,85 +25,101 @@ namespace nap
 		Mat4 = 9			///< 4x4 float matrix
 	};
 
+
+	/**
+	 * Uniform shader declaration base class.
+	 */
 	class UniformDeclaration
 	{
 		RTTI_ENABLE()
-
 	public:
 		UniformDeclaration(const std::string& name, int offset, int size);
 		virtual ~UniformDeclaration() {}
 
-		std::string		mName;
-		int				mOffset;
-		int				mSize;
+		std::string		mName;												///< Name of the declaration
+		int				mOffset;											///< Memory offset
+		int				mSize;												///< Total size (in bytes) of declaration
 	};
 
+
+	/**
+	 * Uniform value shader declaration (float, int etc.)
+	 */
 	class UniformValueDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
 
 	public:
 		UniformValueDeclaration(const std::string& name, int offset, int size, EUniformValueType type);
-
-		EUniformValueType	mType;
+		EUniformValueType	mType;											///< Uniform type
 	};
 
+
+	/**
+	 * Uniform struct shader declaration.
+	 */
 	class NAPAPI UniformStructDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
-
 	public:
 		UniformStructDeclaration(const std::string& name, int offset, int size);
-
 		virtual ~UniformStructDeclaration() override;
-
-		UniformStructDeclaration(const UniformStructDeclaration&) = delete;
-		UniformStructDeclaration& operator=(const UniformStructDeclaration&) = delete;
 
 		UniformStructDeclaration(UniformStructDeclaration&& inRHS);
 		UniformStructDeclaration& operator=(UniformStructDeclaration&& inRHS);
+		UniformStructDeclaration(const UniformStructDeclaration&) = delete;
+		UniformStructDeclaration& operator=(const UniformStructDeclaration&) = delete;
 
+		/**
+		 * @return a uniform shader declaration with the given name.
+		 * @param name name of the declaration to find
+		 * @return found declaration, nullptr if not found.
+		 */
 		const UniformDeclaration* findMember(const std::string& name) const;
-
-		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;
+		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;				///< All shader declarations associated with struct
 	};
 
+
+	/**
+	 * List of uniform struct shader declarations.
+	 */
 	class UniformStructArrayDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
-
 	public:
 		UniformStructArrayDeclaration(const std::string& name, int offset, int size);
 
-		std::vector<std::unique_ptr<UniformStructDeclaration>> mElements;
+		std::vector<std::unique_ptr<UniformStructDeclaration>> mElements;		///< All struct declarations.
 	};
 
+
+	/**
+	 * List of uniform value shader declarations.
+	 */
 	class UniformValueArrayDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
-
 	public:
 		UniformValueArrayDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
 
-		EUniformValueType	mElementType;
-		int					mNumElements;
-		int					mStride;
+		EUniformValueType	mElementType;										///< Uniform type
+		int					mNumElements;										///< Total number of elements in list
+		int					mStride;											///< Stride of element in array
 	};
+
 
 	class UniformBufferObjectDeclaration : public UniformStructDeclaration
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
-
 	public:
 		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size);
 
-		UniformBufferObjectDeclaration(const UniformBufferObjectDeclaration&) = delete;
-		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
-		
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);
+		UniformBufferObjectDeclaration(const UniformBufferObjectDeclaration&) = delete;
+		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
 
-		int														mBinding;
-		VkShaderStageFlagBits									mStage;
+		int														mBinding;	///< Shader binding identifier
+		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment etc.
 	};
 }

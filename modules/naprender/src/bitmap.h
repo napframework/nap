@@ -459,7 +459,6 @@ namespace nap
 	{
 		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-//		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
 		switch (mSurfaceDescriptor.getChannels())

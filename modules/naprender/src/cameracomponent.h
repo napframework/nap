@@ -41,7 +41,7 @@ namespace nap
 
 		/**
 		 * Maps a pixel coordinate to a world space coordinate using the camera project and view matrix
-		 * The z component is generally acquired by sampling the window depth buffer
+		 * The z component is generally acquired by sampling the window depth buffer.
 		 * When screenPos.z has a value of 0 the result is relative to this camera, ie: 
 		 * the return value is the location of this camera in the world.
 		 * @param screenPos window coordinates, where 0,0 is the lower left corner

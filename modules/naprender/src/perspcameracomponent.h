@@ -1,28 +1,30 @@
 #pragma once
 
+// Local Includes
 #include "cameracomponent.h"
 
 namespace nap
 {
+	// Forward Declares
 	class PerspCameraComponentInstance;
 	class TransformComponentInstance;
 	class TransformComponent;
 
 	/**
-	 * Properties of the perspective camera, used in both the camera resource and instance.
+	 * Perspective camera properties.
 	 */
 	struct NAPAPI PerpCameraProperties
 	{
-		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView"
-		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane"
-		float mFarClippingPlane		= 1000.0f;				///< Property: "FarClippingPlane"
-
+		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView" perspective camera field of view
+		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane" camera near clipping plane
+		float mFarClippingPlane		= 1000.0f;				///< Property: "FarClippingPlane" camera far clipping plane
 		glm::ivec2 mGridDimensions	= glm::ivec2(1, 1);		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
 		glm::ivec2 mGridLocation	= glm::ivec2(0, 0);		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
 	};
 	
+
 	/**
-	 * Resource class for the perspective camera. Holds static data as read from file.
+	 * Perspective camera component resource. Holds static data as read from file.
 	 */
 	class NAPAPI PerspCameraComponent : public Component
 	{
@@ -35,12 +37,13 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 	public:
-		PerpCameraProperties mProperties;	///< Property: 'Properties' the camera settings
+		PerpCameraProperties mProperties;	///< Property: 'Properties' the perspective camera settings
 	};
 
 
 	/**
-	 * Implementation of the perspective camera. The view matrix is calculated using the transform attached to the entity. 
+	 * Implementation of the perspective camera. 
+	 * The view matrix is calculated using the transform attached to the entity. 
 	 */
 	class NAPAPI PerspCameraComponentInstance : public CameraComponentInstance
 	{
@@ -51,12 +54,14 @@ namespace nap
 
 		/**
 		 * Checks whether a transform component is available.
+		 * @param errorState contains the error if the camera can't be initialized properly.
+		 * @return if the camera initialized properly.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * This implementation extracts the size in pixels of the render target to make sure that the orthographic
-		 * camera acts in pixel coordinates.
+		 * Extracts the size in pixels of the render target. 
+		 * The dimensions are used to calculate the correct projection matrix.
 		 * @param size The size of the render target in pixel coordinates.
 		 */
 		virtual void setRenderTargetSize(const glm::ivec2& size) override;

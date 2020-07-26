@@ -224,6 +224,7 @@ namespace nap
 		}
 	}
 
+
 	// Use this function to split the projection into a grid of same-sized rectangles.
 	void PerspCameraComponentInstance::setGridDimensions(int numRows, int numColumns)
 	{

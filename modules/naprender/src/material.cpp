@@ -2,14 +2,13 @@
 #include "material.h"
 #include "mesh.h"
 #include "renderglobals.h"
+#include "renderservice.h"
+#include "vk_mem_alloc.h"
 
 // External includes
 #include <nap/logger.h>
-#include "rtti/rttiutilities.h"
-#include "renderservice.h"
-#include "uniforminstance.h"
-#include "vk_mem_alloc.h"
-#include "nap/core.h"
+#include <rtti/rttiutilities.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_ENUM(nap::EBlendMode)
 	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),

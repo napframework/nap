@@ -12,7 +12,7 @@ namespace nap
 	class Core;
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2D texture that can be tied to a material.
 	 * The glyph is converted to a bitmap on initialization and uploaded to the GPU.
 	 * The bitmap is deleted after storage on the GPU.
@@ -104,7 +104,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2DTexture and has no mipmaps.
 	 * Use this glyph representation when the text does not scale.
 	 */
@@ -130,7 +130,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2DTexture but has mipmaps.
 	 * Use this glyph when the text is not rendered in the native font resolution (ie: scaled).
 	 */

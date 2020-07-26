@@ -101,7 +101,7 @@ namespace nap
 			Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 
 			// Center
-			text_comp.setLocation(mRenderWindow->getSize() / glm::ivec2(2, 2));
+			text_comp.setLocation(mRenderWindow->getBufferSize() / glm::ivec2(2, 2));
 
 			// Draw
 			text_comp.draw(*mRenderWindow);
@@ -152,7 +152,6 @@ namespace nap
 				mRenderWindow->toggleFullscreen();
 			}
 		}
-
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

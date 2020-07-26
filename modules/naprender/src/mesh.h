@@ -45,9 +45,13 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// MeshShape
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
-	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
+	 * Contains a list of indices that describe which particular part of the nap::MeshInstance should be drawn.
+	 * Every nap::MeshInstance contains at least one shape.
 	 */
 	class MeshShape
 	{
@@ -55,22 +59,19 @@ namespace nap
 		/**
 		 * @return The number of indices in this shape
 		 */
-		int getNumIndices() const { return mIndices.size(); }
+		int getNumIndices() const										{ return mIndices.size(); }
 
 		/**
 		* Clears the list of indices.
 		* Call either before init() or call update() to reflect the changes in the GPU buffer.
 		*/
-		void clearIndices() { mIndices.clear(); }
+		void clearIndices()												{ mIndices.clear(); }
 
 		/**
 		* Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		* @param numIndices Amount of indices to reserve.
 		*/
-		void reserveIndices(size_t numIndices)
-		{
-			mIndices.reserve(numIndices);
-		}
+		void reserveIndices(size_t numIndices);
 
 		/**
 		* Adds a list of indices to the index CPU buffer.
@@ -78,47 +79,42 @@ namespace nap
 		* @param indices: array of indices to add.
 		* @param numIndices: size of the array.
 		*/
-		void setIndices(uint32* indices, int numIndices)
-		{
-			mIndices.resize(numIndices);
-			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32));
-		}
+		void setIndices(uint32* indices, int numIndices);
 
 		/**
 		 * @return The index list for this shape
 		 */
-		const std::vector<uint32>& getIndices() const { return mIndices; }
+		const std::vector<uint32>& getIndices() const					{ return mIndices; }
 
 		/**
 		 * @return The index list for this shape
 		 */
-		std::vector<uint32>& getIndices() { return mIndices; }
+		std::vector<uint32>& getIndices()								{ return mIndices; }
 
 		/**
-		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
-		* the current indices with a new set of indices.
-		* Call either before init() or call update() to reflect the changes in the GPU buffer.
-		* @param indices List of indices to update.
-		* @param numIndices Number of indices in the list.
-		*/
-		void addIndices(uint32* indices, int numIndices)
-		{
-			int cur_num_indices = mIndices.size();
-			mIndices.resize(cur_num_indices + numIndices);
-			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32));
-		}
+		 * Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		 * the current indices with a new set of indices.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param indices List of indices to update.
+		 * @param numIndices Number of indices in the list.
+		 */
+		void addIndices(uint32* indices, int numIndices);
 
 		/**
-		* Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-		* Call either before init() or call update() to reflect the changes in the GPU buffer.
-		* @param index Index to add.
-		*/
-		void addIndex(int index) { mIndices.push_back(index); }
+		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
+	 	 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param index Index to add.
+		 */
+		void addIndex(int index)										{ mIndices.emplace_back(index); }
 
 	public:
 		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// MeshProperties
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
@@ -147,12 +143,17 @@ namespace nap
 	using RTTIMeshProperties = MeshProperties<rtti::ObjectPtr<BaseVertexAttribute>>;
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// MeshInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Represents a runtime version of a mesh. MeshInstance holds CPU data and can convert this data to 
-	 * an GPUMesh. 
+	 * Runtime version of a mesh. MeshInstance holds CPU data and can convert this data into a GPUMesh. 
+	 * 
 	 * A MeshInstance can be created in two ways:
 	 *		1) Manually allocate a MeshInstance object, add attributes to it, and call the regular init() on it. 
 	 *		   This is useful for creation of procedural meshes.
+	 *
 	 *      2) Initialize a MeshInstance object through the init() function that takes an RTTIMeshProperties struct.
 	 *         This is intended for situations where the MeshInstance is created from an RTTI based object (either 
 	 *         rtti-json or rtti-binary).
@@ -270,7 +271,7 @@ namespace nap
 		/**
 		 * @return set the cull mode of this mesh (front, back etc.)
 		 */
-		void setCullMode(ECullMode mode)									{ mProperties.mCullMode = mode; }
+		void setCullMode(ECullMode mode)										{ mProperties.mCullMode = mode; }
 
 		/**
 		 * @return the cull mode of this mesh (front, back etc.)
@@ -340,9 +341,13 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// IMesh
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Base class for each mesh resource. 
-	 * Every derived mesh should provide the system with a MeshInstance.
+	 * Mesh resource interface. Derive from this class to implement your own serializable mesh resource.
+	 * Every IMesh should be able to construct and return a nap::MeshInstance().
 	 * The instance is rendered and can be updated / modified at runtime.
 	 */
 	class IMesh : public Resource
@@ -360,6 +365,10 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Mesh
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Serializable Mesh. This mesh can be used to either load from json or binary format.
@@ -506,5 +515,4 @@ namespace nap
 		assert(attribute != nullptr);
 		return *attribute;
 	}
-
-} // nap
+}
