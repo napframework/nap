@@ -12,8 +12,8 @@ namespace nap
 	class MeshShape;
 
 	/**
-	 * Contains the data associated with a triangle
-	 * The data is extracted from a VertexAttribute using the Triangle interface or can be constructed manually
+	 * Data associated with a single triangle.
+	 * The data is extracted from a VertexAttribute using the Triangle interface or can be constructed manually.
 	 */
 	template<class T>
 	class TriangleData
@@ -78,7 +78,7 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle associated with a specific MeshShape inside a MeshInstance
+	 * Contains the indices of a triangle associated with a specific nap::MeshShape inside a nap::MeshInstance
 	 */
 	class ShapeTriangle
 	{
@@ -173,8 +173,8 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle associated with a MeshInstance
-	 * The indices are always bound to a specific shape
+	 * Contains the indices of a triangle associated with a MeshInstance.
+	 * The indices are always bound to a specific shape.
 	 */
 	class Triangle : public ShapeTriangle
 	{

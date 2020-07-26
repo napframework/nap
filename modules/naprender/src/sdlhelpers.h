@@ -65,7 +65,7 @@ namespace nap
 		void NAPAPI setWindowSize(SDL_Window* window, const glm::ivec2& size);
 
 		/**
-		 * Returns the actual size in pixels of a window, which can be different from the represented window size
+		 * Returns the actual size in pixels of a window, which can be different from the represented window size.
 		 * This is the case with High DPI screens on OSX
 		 * @return the actual size in pixels of a window
 		 */
@@ -112,21 +112,21 @@ namespace nap
 		void NAPAPI showCursor();
 
 		/**
-		 * Initializes SDL video system
+		 * Initializes SDL video system.
 		 * Call this before creating any windows or render contexts!
 		 * @return if the system initialized correctly or not
 		 */
 		bool initVideo();
 
 		/**
-	 	 * Controls if the window has any borders
+	 	 * Controls if the window has any borders.
 		 * @param window the window to set
 		 * @param hasBorders if the window should have borders
 		 */
 		void setWindowBordered(SDL_Window* window, bool hasBorders);
 
 		/**
-		 * Sets the window title
+		 * Sets the window title.
 		 * @param window the window to set the title for
 		 * @param name the new window name
 		 */

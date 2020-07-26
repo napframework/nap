@@ -8,7 +8,7 @@
 namespace nap
 {
 	/**
-	 * Interface for all render targets, including nap::RenderWindow and nap::RenderTarget
+	 * Interface for all render targets, including nap::RenderWindow and nap::RenderTarget.
 	 */
 	class NAPAPI IRenderTarget
 	{

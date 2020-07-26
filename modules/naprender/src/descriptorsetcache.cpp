@@ -7,22 +7,6 @@
 
 namespace nap
 {
-	bool createBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VkBuffer& buffer, VmaAllocation& bufferAllocation, VmaAllocationInfo& bufferAllocationInfo)
-	{
-		VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.size = size;
-		bufferInfo.usage = bufferUsage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocInfo = {};
-		allocInfo.usage = memoryUsage;
-		allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-		return vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &bufferAllocation, &bufferAllocationInfo) == VK_SUCCESS;
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-
 	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
 		mRenderService(&renderService),
 		mDescriptorSetAllocator(&descriptorSetAllocator),
@@ -41,7 +25,7 @@ namespace nap
 		// Now free all buffers for the allocated sets
 		for (DescriptorSet& descriptor_set : mFreeList)
 		{
-			for (DescriptorSetBuffer& buffer : descriptor_set.mBuffers)
+			for (BufferData& buffer : descriptor_set.mBuffers)
 				vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
 		}
 	}
@@ -79,9 +63,9 @@ namespace nap
 			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
 			const UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
 
-			DescriptorSetBuffer buffer;
+			BufferData buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer.mBuffer, buffer.mAllocation, buffer.mAllocationInfo);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -106,6 +90,7 @@ namespace nap
 		used_list.emplace_back(std::move(descriptor_set));
 		return used_list.back();
 	}
+
 
 	void DescriptorSetCache::release(int frameIndex)
 	{

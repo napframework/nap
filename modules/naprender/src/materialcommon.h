@@ -18,11 +18,13 @@ namespace nap
 		Additive				///< Additive, (One, One) blend
 	};
 
+
 	enum class ECullWindingOrder : int
 	{
 		Clockwise,
 		CounterClockwise
 	};
+
 
 	/**
 	 * Determines how the z-buffer is used for reading and writing.
@@ -36,6 +38,7 @@ namespace nap
 		WriteOnly,				///< Only write depth
 		NoReadWrite				///< Neither read or write depth
 	};
+
 
 	class UniformBufferObject
 	{

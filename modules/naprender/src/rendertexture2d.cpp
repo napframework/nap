@@ -2,9 +2,9 @@
 #include "nap/core.h"
 #include "renderservice.h"
 
-RTTI_BEGIN_ENUM(nap::ERenderTargetFormat)
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::RGBA8,		"RGBA8"),
-	RTTI_ENUM_VALUE(nap::ERenderTargetFormat::R8,			"R8")
+RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA8,	"RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
@@ -31,24 +31,29 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mColorSpace = mColorSpace;
 
-		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static ? Texture2D::EClearMode::DontClear :
+		// Figure out if the texture needs to be filled
+		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static ? 
+			Texture2D::EClearMode::DontClear :
 			Texture2D::EClearMode::FillWithZero;
 
+		// Initialize based on selected format
 		switch (mFormat)
 		{
-		case ERenderTargetFormat::RGBA8:
-		{
-			settings.mChannels = ESurfaceChannels::RGBA;
-			return Texture2D::init(settings, false, clear_mode, errorState);
-		}
-		case ERenderTargetFormat::R8:
-		{
-			settings.mChannels = ESurfaceChannels::R;
-			return Texture2D::init(settings, false, clear_mode, errorState);
-		}
-		default:
-			errorState.fail("Unsupported format");
-			return false;
+			case RenderTexture2D::EFormat::RGBA8:
+			{
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R8:
+			{
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			default:
+			{
+				errorState.fail("Unsupported format");
+				return false;
+			}
 		}
 	}
 }

@@ -4,13 +4,13 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
-#include "uniforminstance.h"
 #include "indexbuffer.h"
 #include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 #include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
@@ -26,6 +26,17 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	static UniformMat4Instance* getOrCreateMatrixUniform(UniformStructInstance& mvpStruct, const char* uniformName, const std::string& resourceName, nap::utility::ErrorState& error)
+	{
+		UniformMat4Instance* rptr = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
+		if (rptr == nullptr)
+		{
+			error.fail("%s: Unable to extract uniform with name: %s, from struct: %s",
+				resourceName.c_str(), uniformName, mvpStruct.getDeclaration().mName.c_str());
+		}
+		return rptr;
+	}
+
 
 	void RenderableMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
@@ -42,13 +53,13 @@ namespace nap
 
 	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Initialize material
+		// Initialize material based on resource
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
-		// If it is set, we create a renderable-mesh from it
+		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh.
+		// If it is set we create a renderable mesh
 		if (resource->mMesh != nullptr)
 		{
 			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
@@ -56,6 +67,7 @@ namespace nap
 				return false;
 		}
 
+		// Ensure there is a transform component
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
  			return false;
@@ -63,6 +75,15 @@ namespace nap
 		// Copy cliprect. Any modifications are done per instance
 		mClipRect = resource->mClipRect;
 
+		// Since the material can't be changed at run-time, cache the matrices to set on draw
+		// If the struct is found, we expect the matrices with those names to be there
+		UniformStructInstance* mvp_struct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (mvp_struct != nullptr)
+		{
+			mModelMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+		}
 		return true;
 	}
 
@@ -97,31 +118,18 @@ namespace nap
 			return;
 		}
 
-		// Fetch mvp uniform and update individual matrices
-		MaterialInstance& mat_instance = getMaterialInstance();
-		UniformStructInstance* mvp_uniform = mat_instance.getOrCreateUniform(uniform::mvpStruct);
-		if (mvp_uniform != nullptr)
-		{
-			// Set projection uniform in shader
-			UniformMat4Instance* projection_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
-			if (projection_uniform != nullptr)
-				projection_uniform->setValue(projectionMatrix);
+		// Set mvp matrices if present in material
+		if(mProjectMatUniform != nullptr)
+			mProjectMatUniform->setValue(projectionMatrix);
+		
+		if(mViewMatUniform != nullptr)
+			mViewMatUniform->setValue(viewMatrix);
 
-			// Set view uniform in shader
-			UniformMat4Instance* view_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
-			if (view_uniform != nullptr)
-				view_uniform->setValue(viewMatrix);
-
-			// Set model matrix uniform in shader
-			UniformMat4Instance* model_uniform = mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
-			if (model_uniform != nullptr)
-			{
-				const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
-				model_uniform->setValue(model_matrix);
-			}
-		}
+		if(mModelMatUniform != nullptr)
+			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
 
 		// Acquire new / unique descriptor set before rendering
+		MaterialInstance& mat_instance = getMaterialInstance();
 		VkDescriptorSet descriptor_set = mat_instance.update();
 
 		// Fetch and bind pipeline

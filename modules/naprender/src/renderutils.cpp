@@ -37,6 +37,7 @@ namespace nap
 		VmaAllocationCreateInfo alloc_info = {};
 		alloc_info.flags = 0;
 		alloc_info.usage = memoryUsage;
+		alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 		// Create image using allocator and allocation instructions
 		VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
@@ -77,7 +78,7 @@ namespace nap
 	}
 
 
-	bool createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, BufferData& outBuffer, utility::ErrorState& error)
+	bool createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocationFlags, BufferData& outBuffer, utility::ErrorState& error)
 	{
 		// Create buffer information 
 		VkBufferCreateInfo bufferInfo = {};
@@ -89,7 +90,8 @@ namespace nap
 		// Create allocation information
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
-		allocInfo.flags = 0;
+		allocInfo.flags = allocationFlags;
+        allocInfo.requiredFlags = memoryUsage == VMA_MEMORY_USAGE_CPU_TO_GPU ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : 0;
 
 		// Create buffer
 		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);

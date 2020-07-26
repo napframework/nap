@@ -43,6 +43,7 @@ namespace nap
 	{
 	}
 
+
 	// Returns number of components each texel has in this format
 	int SurfaceDescriptor::getNumChannels() const
 	{
@@ -50,15 +51,15 @@ namespace nap
 		{
 		case ESurfaceChannels::R:
 			return 1;
-
 		case ESurfaceChannels::RGBA:
 		case ESurfaceChannels::BGRA:
 			return 4;
+		default:
+			assert(false);
+			return 0;
 		}
-
-		assert(false);
-		return 0;
 	}
+
 
 	// Returns What the size in bytes is of a component type
 	int SurfaceDescriptor::getChannelSize() const
@@ -71,24 +72,40 @@ namespace nap
 			return 2;
 		case ESurfaceDataType::FLOAT:
 			return 4;
+		default:
+			assert(false);
+			return 0;
 		}
-
-		assert(false);
-		return 0;
 	}
+
 
 	int SurfaceDescriptor::getPitch() const
 	{
 		return mWidth * getBytesPerPixel();
 	}
 
+
 	int SurfaceDescriptor::getBytesPerPixel() const
 	{
 		return getChannelSize() * getNumChannels();
 	}
 
+
 	uint64_t SurfaceDescriptor::getSizeInBytes() const
 	{
 		return getPitch() * mHeight;
 	}
+
+
+	bool SurfaceDescriptor::operator!=(const SurfaceDescriptor& other) const
+	{
+		return !(*this == other);
+	}
+
+
+	bool SurfaceDescriptor::operator==(const SurfaceDescriptor& other) const
+	{
+		return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels;
+	}
+
 }

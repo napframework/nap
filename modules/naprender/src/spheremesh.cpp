@@ -24,31 +24,26 @@ namespace nap
 {
 	SphereMesh::SphereMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{}
+
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
-		std::vector<glm::vec3> vertices;
-		std::vector<glm::vec3> normals;
-		std::vector<glm::vec3> texcoords;
-		std::vector<glm::vec4> colors;
-		std::vector<uint32> indices;
+		// Get total amount of vertices
+		uint32 vertex_count = mRings * mSectors;
+
+		std::vector<glm::vec3> vertices(vertex_count);
+		std::vector<glm::vec3> normals(vertex_count);
+		std::vector<glm::vec3> texcoords(vertex_count);
+		std::vector<glm::vec4> colors(vertex_count);
+		std::vector<uint32> indices(vertex_count);
 
 		float const R = 1. / (float)(mRings - 1);
 		float const S = 1. / (float)(mSectors - 1);
 		int r, s;
-
-		// Get total amount of vertices
-		uint32 vertex_count = mRings * mSectors;
-
-		vertices.resize(vertex_count);
-		normals.resize(vertex_count);
-		texcoords.resize(vertex_count);
-		colors.resize(vertex_count);
 
 		std::vector<glm::vec3>::iterator v = vertices.begin();
 		std::vector<glm::vec3> ::iterator n = normals.begin();
