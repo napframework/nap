@@ -17,13 +17,13 @@ namespace nap
 	};
 
 	/**
-	 *	Supported surface channels
+	 *	Supported number of surface channels
 	 */
 	enum class ESurfaceChannels : int
 	{
 		R			= 0,	///< R red component
 		RGBA		= 1,	///< RGBA red, green, blue and alpha component
-		BGRA		= 2	///< BGRA blue, green, red and alpha component
+		BGRA		= 2		///< BGRA blue, green, red and alpha component
 	};
 
 	/**
@@ -34,7 +34,6 @@ namespace nap
 		Linear,				///< Linear color space
 		sRGB				///< Non-linear, sRGB color space
 	};
-
 
 	/**
 	 * Used to describe the data of all 2D surfaces, including 2DTextures and Bitmaps.
@@ -49,20 +48,63 @@ namespace nap
 		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels);
 		SurfaceDescriptor(uint32_t width, uint32_t height, ESurfaceDataType dataType, ESurfaceChannels channels, EColorSpace colorSpace);
 
-		int getWidth() const						{ return mWidth; }
-		int getHeight() const						{ return mHeight; }
-		int getPitch() const;
-		int getNumChannels() const;
-		int getChannelSize() const;
-		int getBytesPerPixel() const;
-		uint64_t getSizeInBytes() const;
-		ESurfaceDataType getDataType() const		{ return mDataType; }
-		ESurfaceChannels getChannels() const		{ return mChannels; }
-		EColorSpace getColorSpace() const			{ return mColorSpace; }
+		/**
+		 * @return width of the surface in pixels or texels.
+		 */
+		int getWidth() const											{ return mWidth; }
 
+		/**
+		 * @return height of the surface in pixels or texels.
+		 */
+		int getHeight() const											{ return mHeight; }
+		
+		/**
+		 * @return The size in bytes of 1 row of pixels
+		 */
+		int getPitch() const;
+		
+		/**
+		 * @return number of color channels
+		 */
+		int getNumChannels() const;
+
+		/**
+		 * @return Size in bytes of a single channel: 1 for 8 bit, 2 for short and 4 for float.
+		 */
+		int getChannelSize() const;
+		
+		/**
+		 * @return Total number of bytes for a single pixel
+		 */
+		int getBytesPerPixel() const;
+
+		/**
+		 * @return total size in bytes for the entire surface
+		 */
+		uint64_t getSizeInBytes() const;
+
+		/**
+		 * @return Type of surface: Byte, Short, Float etc.
+		 */
+		ESurfaceDataType getDataType() const							{ return mDataType; }
+
+		/**
+		 * @return total number of channels, 3 for RGB, 4 for RGBA etc.
+		 */
+		ESurfaceChannels getChannels() const							{ return mChannels; }
+
+		/**
+		 * @return surface color space, defaults to Linear.
+		 */
+		EColorSpace getColorSpace() const								{ return mColorSpace; }
+
+		/**
+		 * @return if the surface is initialized and valid.
+		 */
 		bool isValid() const { return mWidth != 0 && mHeight != 0; }
-		bool operator==(const SurfaceDescriptor& other) const { return mWidth == other.mWidth && mHeight == other.mHeight && mDataType == other.mDataType && mChannels == other.mChannels; }
-		bool operator!=(const SurfaceDescriptor& other) const { return !(*this == other); }
+
+		bool operator==(const SurfaceDescriptor& other) const;
+		bool operator!=(const SurfaceDescriptor& other) const;
 
 	public:
 		uint32_t			mWidth = 0;									///< Property: 'Width' specifies the width of the texture
@@ -84,7 +126,6 @@ namespace std
 		}
 	};
 
-
 	template <>
 	struct hash<nap::ESurfaceDataType>
 	{
@@ -102,5 +143,4 @@ namespace std
 			return hash<int>()(static_cast<int>(v));
 		}
 	};
-
 }

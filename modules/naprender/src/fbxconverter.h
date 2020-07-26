@@ -25,8 +25,7 @@ namespace nap
 	};
 
 	/**
-	 * Convert (split) a FBX into multiple parts. Currently only converts the meshes.
-	 *
+	 * Converts (splits) an .fbx file into multiple .mesh parts. Currently only converts the meshes.
 	 * @param fbxPath The FBX file to convert
 	 * @param outputDirectory Absolute or relative directory that the converted files should be placed in
 	 * @param convertOptions Options for the convert

@@ -314,7 +314,7 @@
             "Title": "Window 1",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,

@@ -42,6 +42,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AnisotropicSamples",	&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -537,6 +538,7 @@ namespace nap
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
 		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
+		device_features.samplerAnisotropy = physicalDeviceFeatures.samplerAnisotropy;
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info;
@@ -1193,6 +1195,9 @@ namespace nap
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
 		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
 		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+		mAnisotropicFilteringSupported = mPhysicalDeviceFeatures.samplerAnisotropy > 0;
+		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
+		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
 
 		// Create unique set of extensions out of required and additional requested ones
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
@@ -1680,6 +1685,12 @@ namespace nap
 	bool RenderService::sampleShadingSupported() const
 	{
 		return mSampleShadingSupported;
+	}
+
+
+	bool RenderService::anisotropicFilteringSupported() const
+	{
+		return mAnisotropicFilteringSupported;
 	}
 
 

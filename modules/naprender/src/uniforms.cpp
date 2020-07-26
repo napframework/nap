@@ -1,5 +1,4 @@
-#include "uniforms.h"
-
+#include "uniform.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)
 	RTTI_PROPERTY("Name", &nap::Uniform::mName, nap::rtti::EPropertyMetaData::Default)
@@ -21,35 +20,27 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformFloat)
 	RTTI_PROPERTY("Value", &nap::UniformFloat::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformFloat::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec2)
 	RTTI_PROPERTY("Value", &nap::UniformVec2::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec2::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec3)
 	RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec3::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec4)
 	RTTI_PROPERTY("Value", &nap::UniformVec4::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformVec4::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformMat4)
 	RTTI_PROPERTY("Value", &nap::UniformMat4::mValue, nap::rtti::EPropertyMetaData::Required)
-	//RTTI_FUNCTION("setValue", &nap::UniformMat4::setValue)
 RTTI_END_CLASS
-
-//////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS(nap::UniformIntArray)
 	RTTI_PROPERTY("Values", &nap::UniformIntArray::mValues, nap::rtti::EPropertyMetaData::Required)
@@ -82,6 +73,7 @@ namespace nap
 		mUniforms.push_back(&uniform);
 	}
 
+
 	Uniform* UniformStruct::findUniform(const std::string& name)
 	{
 		auto pos = std::find_if(mUniforms.begin(), mUniforms.end(), [name](auto& uniform)
@@ -91,16 +83,14 @@ namespace nap
 
 		if (pos == mUniforms.end())
 			return nullptr;
-
 		return (*pos).get();
 	}
+
 
 	void UniformStructArray::insertStruct(int index, UniformStruct& uniformStruct)
 	{
 		if (mStructs.size() <= index)
 			mStructs.resize(index + 1);
-		
 		mStructs[index] = &uniformStruct;
 	}
-
-} // End Namespace NAP
+}

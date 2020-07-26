@@ -12,7 +12,7 @@ namespace nap
 	class RenderableComponentInstance;
 
 	/**
-	 * Resource part of the render-able component.
+	 * Resource part of the render-able component. 
 	 * Represents an object that can be rendered to screen or any other type of render target.
 	 * This is the base class for all render-able types.
 	 * Override the draw call to implement custom draw behavior.

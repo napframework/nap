@@ -659,7 +659,4 @@ namespace nap
 
 		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
 	}
-
-
-
 }

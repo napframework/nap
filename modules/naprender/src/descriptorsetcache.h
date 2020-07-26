@@ -2,6 +2,7 @@
 
 // Internal includes
 #include "vk_mem_alloc.h"
+#include "renderutils.h"
 
 // External Includes
 #include <vector>
@@ -19,23 +20,13 @@ namespace nap
 	class DescriptorSetAllocator;
 
 	/** 
-	 * Wrapper around VkBuffer that holds allocation information.
-	 */
-	struct DescriptorSetBuffer
-	{
-		VkBuffer			mBuffer;
-		VmaAllocation		mAllocation;
-		VmaAllocationInfo	mAllocationInfo;
-	};
-
-	/** 
 	 * Wrapper around VkDescriptorSet that also contains the allocated buffers for a DescriptorSet.
 	 */
 	struct DescriptorSet
 	{
 		VkDescriptorSetLayout				mLayout;
 		VkDescriptorSet						mSet;
-		std::vector<DescriptorSetBuffer>	mBuffers;
+		std::vector<BufferData>	mBuffers;
 	};
 
 	/** 

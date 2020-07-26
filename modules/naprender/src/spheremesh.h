@@ -8,7 +8,7 @@ namespace nap
 	class Core;
 
 	/**
-	 * Predefined sphere mesh
+	 * Predefined 3D spherical mesh.
 	 */
 	class NAPAPI SphereMesh : public IMesh
 	{
@@ -18,17 +18,19 @@ namespace nap
 		SphereMesh(Core& core);
 
 		/**
- 		 * Load the mesh
+ 		 * Creates the mesh.
+		 * @param errorState contains the error if the mesh can't be created.
+		 * @return if the mesh was created successfully. 
  		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the mesh instance that can be rendered to screen
+		 * @return the mesh instance that can be rendered
 		 */
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
 		
 		/**
-		 * @return the mesh instance that can be rendered to screen
+		 * @return the mesh instance that can be rendered
 		 */
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 

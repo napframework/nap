@@ -486,7 +486,7 @@
             "Title": "Window 1",
             "Width": 512,
             "Height": 512,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
@@ -505,7 +505,7 @@
             "Title": "Window 2",
             "Width": 512,
             "Height": 512,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
@@ -524,7 +524,7 @@
             "Title": "Window 3",
             "Width": 512,
             "Height": 512,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,

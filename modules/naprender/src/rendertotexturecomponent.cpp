@@ -37,24 +37,11 @@ namespace nap
 	static const glm::mat4x4 sIdentityMatrix = glm::mat4x4();
 
 
-	void RenderToTextureComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-
-	}
-
-
 	RenderToTextureComponentInstance::RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mPlane(*entity.getCore()),
 		mTarget(*entity.getCore())
-	{
-	}
-
-
-	RenderToTextureComponentInstance::~RenderToTextureComponentInstance()
-	{
-
-	}
+	{ }
 
 
 	bool RenderToTextureComponentInstance::init(utility::ErrorState& errorState)

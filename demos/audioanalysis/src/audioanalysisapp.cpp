@@ -59,7 +59,7 @@ namespace nap
         levelMeter->setFilterGain(mAnalysisGain);
         
         // Resize the vector containing the results of the analysis
-        mPlotvalues.resize(2048, 0);
+        mPlotvalues.resize(512, 0);
 		return true;
 	}
 	

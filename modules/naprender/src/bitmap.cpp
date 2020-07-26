@@ -137,13 +137,13 @@ namespace nap
 {
 	Bitmap::~Bitmap()			{ }
 
+
 	bool Bitmap::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(getWidth() > 0 && getHeight() > 0, "Invalid size specified for bitmap"))
 			return false;
 
 		updatePixelFormat();
-
 		mData.resize(getSizeInBytes());
 
 		return true;
@@ -226,25 +226,20 @@ namespace nap
 		int width = FreeImage_GetWidth(fi_bitmap);
 		int height = FreeImage_GetHeight(fi_bitmap);
 
+		// copy image data
 		mSurfaceDescriptor = SurfaceDescriptor(width, height, data_type, channels);
-
 		updatePixelFormat();
-
 		mData.resize(getSizeInBytes());
-
 		copyImageData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap), channels, mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), getWidth(), getHeight());
-
 		FreeImage_Unload(fi_bitmap);
-
 		return true;
 	}
+
 
 	void Bitmap::initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor)
 	{
 		mSurfaceDescriptor = surfaceDescriptor;
-
 		updatePixelFormat();
-
 		uint64_t size = getSizeInBytes();
 		mData.resize(size);
 	}

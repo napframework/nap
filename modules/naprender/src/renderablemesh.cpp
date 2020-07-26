@@ -30,7 +30,6 @@ namespace nap
 		mVertexBuffers = rhs.mVertexBuffers;
 		mVertexBufferOffsets = rhs.mVertexBufferOffsets;
 		mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-
 		mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
 	}
 
@@ -44,7 +43,6 @@ namespace nap
 			mVertexBuffers = rhs.mVertexBuffers;
 			mVertexBufferOffsets = rhs.mVertexBufferOffsets;
 			mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-
 			mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
 		}
 
