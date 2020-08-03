@@ -3,6 +3,7 @@ Rendering {#rendering}
 
 *	[Introduction](@ref render_intro)
 *	[Key Features](@ref key_features)
+*	[Configuration](@ref render_config)
 *	[Example](@ref render_example)
 *	[Meshes](@ref meshes)
 	*	[Creating Meshes](@ref creating_meshes)
@@ -56,6 +57,10 @@ Key Features {#key_features}
 - Rendering the same content to multiple windows is supported natively.
 
 - All render functionality is fully compatible with the real-time editing system. Textures, meshes or shaders can be modified and reloaded instantly without having to restart the application.
+
+Configuration {#render_config}
+=======================
+All global render settings are configurable using using the [nap::RenderServiceConfiguration](@ref nap::RenderServiceConfiguration). The render engine creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required. Make sure to set the required major and minor vulkan version accordingly. The application will not start if the device does not support the selected (and therefore required) version of Vulkan. 
 
 Example {#render_example}
 =======================
@@ -944,6 +949,7 @@ A sampler [parameters](@ref nap::Sampler) controls how a texture is sampled. The
 - `MipMapMode`: Controls how texels are blended between mip-maps.
 - `AddressModeVertical`: How the UV mapping is interpreted vertically.
 - `AddressModeHorizontal`: How the UV mapping is interpreted horizontally.
+- `AnisotropicSamples`: Max number of anisotropic filter samples.
 - `MaxLodLevel`: Max number of lods to use.
 
 A LOD level of 0 prevents the texture from mipmapping, ie: the renderer only chooses the highest (native) texture resolution. This setting has no influence when mip mapping is turned off. You can change the parameters of every 2D texture (image, render texture etc.) in JSON:
@@ -961,6 +967,7 @@ A LOD level of 0 prevents the texture from mipmapping, ie: the renderer only cho
             "MipMapMode": "Linear",
             "AddressModeVertical": "ClampToEdge",
             "AddressModeHorizontal": "ClampToEdge",
+            "AnisotropicSamples": "Default",
             "MaxLodLevel": 1000,
             "Texture": "WorldTexture"
         }
