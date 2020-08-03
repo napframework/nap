@@ -58,16 +58,19 @@ namespace nap
 
 	/**
 	 * Main interface for 2D and 3D rendering operations.
+	 *
 	 * This service initializes the Vulkan back-end and provides an interface to render objects to a specific target (screen or back-buffer).
 	 * The service is shut down automatically on exit, and destroys all left over resources.
 	 * When rendering geometry the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
+	 * The service creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required.
+	 * Make sure to set the required major and minor vulkan version accordingly.
+	 * The application will not start if the device does not support the selected (and therefore required) version of Vulkan.
+	 * 
 	 * On initialization the service will try to pick a device based on the preferred GPU type.
 	 * If no compatible GPU is found the system will fail to initialize.
-	 * The Vulkan instance and GPU need to support the version of Vulkan requested by the nap::RenderServiceConfiguration,
-	 * the required number of extensions (configurable) and queue family capabilities of the GPU itself.
-	 * The queue family needs to support both Graphics and Transfer commands.
+	 *
 	 * Most dedicated and integrated GPUs are supported.
 	*/
 	class NAPAPI RenderService : public Service
