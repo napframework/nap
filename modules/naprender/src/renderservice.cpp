@@ -173,7 +173,11 @@ namespace nap
 	 */
 	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
 	{
-		const static std::vector<std::string> layers = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		const static std::vector<std::string> layers = 
+		{ 
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
+			VK_KHR_MAINTENANCE1_EXTENSION_NAME
+		};
 		return layers;
 	}
 
