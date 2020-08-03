@@ -516,9 +516,7 @@ while (!tri_iterator.isDone())
 Mesh Usage {#mesh_usage}
 -----------------------
 
-The [mesh data usage flag](@ref nap::EMeshDataUsage) determines how the mesh data is used at runtime. A `Static` mesh is uploaded from the CPU to the GPU exactly once. This allows the system to remove unused buffers after the upload is complete. If there is the need to update a mesh more frequently, even once after upload, it is required the usage is set to `DynamicWrite`.
-
-Note that static meshes are often placed in a different cache on the GPU, not accessible by the CPU, which allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
+The [mesh data usage flag](@ref nap::EMeshDataUsage) determines how the mesh data is used at runtime. A `Static` mesh is uploaded from the CPU to the GPU exactly once. This allows the system to remove unused buffers after the upload is complete. If there is the need to update a mesh more frequently, even once after upload, it is required the usage is set to `DynamicWrite`. Note that static meshes are often placed in a different cache on the GPU, not accessible by the CPU, which allows for faster drawing times. `DynamicWrite` meshes are uploaded into shared CPU / GPU memory and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
 
 Text {#text}
 =======================
@@ -618,7 +616,7 @@ Meshes that are loaded from file contain a fixed set of vertex attributes:
 -	Multiple UV channels (optional)
 -	Multiple Color channels (optional)
 
-The names of the default vertex attributes can be retreived using a set of global variables.
+The names of the default vertex attributes can be retreived using a set of [global variables](@ref renderglobals.h).
 
 ~~~~~~~~~~~~~~~{.cpp}
 nap::vertexid::position
@@ -628,7 +626,7 @@ nap::vertexid::uv
 //etc...
 ~~~~~~~~~~~~~~~
 
-Every material creates a default mapping if no mapping is provided. The UV and Color attributes are included up to four channels. Default shader input names can be retrieved using a set of global variables, similar to vertex attributes:
+Every material creates a default mapping if no mapping is provided. The UV and Color attributes are included up to four channels. Default shader input names can be retrieved using a set of [global variables](@ref renderglobals.h), similar to vertex attributes:
 
 ~~~~~~~~~~~~~~~{.cpp}
 nap::vertexid::shader::position

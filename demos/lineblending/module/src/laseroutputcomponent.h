@@ -92,7 +92,7 @@ namespace nap
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& lineXform);
 
 		// Xform associated with the line
-		ComponentInstancePtr<TransformComponent> mLineTransform = initComponentInstancePtr(this, &LaserOutputComponent::mLineTransform);
+		ComponentInstancePtr<TransformComponent> mLineTransform = { this, &LaserOutputComponent::mLineTransform };
 
 		// Lines will be uploaded to this laser DAC
 		EtherDreamDac* mDac = nullptr;

@@ -3,7 +3,6 @@
 // External Includes
 #include <string>
 #include <glm/glm.hpp>
-
 #include <utility/dllexport.h>
 
 namespace nap

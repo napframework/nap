@@ -19,20 +19,21 @@ After creation your new project is located in the `projects` folder.
 Specifying Modules {#specifying_modules}
 =======================
 
-Within your newly created project you will find the project definition file `project.json`, which looks like this:
+Within your newly created project you will find the project definition file `project.json`, which looks something like this:
 
 ```
 {
     "title": "NewProject",
     "version": "1.0",
     "modules": [
+        "mod_napimgui",
         "mod_napapp",
         "mod_napaudio"
     ]
 }
 ```
 
-All projects created via `create_project` will automatically be setup to use modules `mod_napapp` and `mod_napaudio`.  The simple project that we create in the steps below makes use of the module `mod_napaudio` for audio playback.  When you find a need to use some of the other NAP modules in your project these should be added to the `modules` element in your `project.json`.  After changing `project.json` you need to regenerate the project (via CMake) by executing the `regenerate` shortcut in the project folder.
+All projects created via `create_project` will automatically be setup to use modules `mod_napapp`, `mod_napaudio` and `mod_napimgui`.  The simple project that we create in the steps below makes use of the module `mod_napaudio` for audio playback.  When you find a need to use some of the other NAP modules in your project these should be added to the `modules` element in your `project.json`.  After changing `project.json` you need to regenerate the project (via CMake) by executing the `regenerate` shortcut in the project folder.
 
 You can build and run the project using Visual Studio on Windows (in directory `msvc64`), Xcode on macOS (in `xcode`) or make on Linux (in `build`).
 
@@ -254,10 +255,8 @@ void NewProjectApp::render()
         // Render GUI elements
         mGuiService->draw();
 
-        // Stop render pass
+        // Stop render pass and end recording
         mRenderWindow->endRendering();
-
-        // End recording
         mRenderService->endRecording();
     }
 

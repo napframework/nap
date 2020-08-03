@@ -278,8 +278,8 @@ public:
 	LineBlendComponentInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)			{}
 
-		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentOne);
-		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentTwo);
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };
 }
 ~~~~~~~~~~~~~~~
 
@@ -428,7 +428,7 @@ class NAPAPI CameraControllerInstance : public ComponentInstance
 public:
 	CameraControllerInstance(EntityInstance& entity, Component& resource);
 	...
-	EntityInstancePtr mLookAtTarget = initEntityInstancePtr(this, &CameraController::mLookAtTarget);	// The resolved runtime lookat target
+	EntityInstancePtr mLookAtTarget = { this, &CameraController::mLookAtTarget };	// The resolved runtime lookat target
 }
 ~~~~~~~~~~~~~~~
 

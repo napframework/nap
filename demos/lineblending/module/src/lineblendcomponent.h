@@ -96,8 +96,8 @@ namespace nap
 		// Current blend value
 		float mCurrentBlendValue = 0.0f;
 
-		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentOne);
-		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = initComponentInstancePtr(this, &LineBlendComponent::mSelectionComponentTwo);
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };
 
 		std::map<float, int>			mDistancesLineOne;			// Distance values associated with line 1
 		std::map<float, int>			mDistancesLineTwo;			// Distance values associated with line 2

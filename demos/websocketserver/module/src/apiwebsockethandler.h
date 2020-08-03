@@ -65,10 +65,10 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Resolved pointer to the api component instance
-		ComponentInstancePtr<APIComponent> mAPIComponent = initComponentInstancePtr(this, &APIWebSocketHandlerComponent::mAPIComponent);
+		ComponentInstancePtr<APIComponent> mAPIComponent = { this, &APIWebSocketHandlerComponent::mAPIComponent };
 
 		// Resolved pointer to the 2d text component instance
-		ComponentInstancePtr<Renderable2DTextComponent> mTextComponent = initComponentInstancePtr(this, &APIWebSocketHandlerComponent::mTextComponent);
+		ComponentInstancePtr<Renderable2DTextComponent> mTextComponent = { this, &APIWebSocketHandlerComponent::mTextComponent };
 
 	private:
 		/**

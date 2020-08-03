@@ -68,7 +68,7 @@ namespace nap
 		NoiseProperties mProperties;
 
 	private:
-		ComponentInstancePtr<LineBlendComponent> mBlendComponent = initComponentInstancePtr(this, &LineNoiseComponent::mBlendComponent);		// Component that holds the line we want to modulate
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent	= { this, &LineNoiseComponent::mBlendComponent };		// Component that holds the line we want to modulate
 
 		float mCurrentTime = 0.0f;									// Current update time associated with this component
 
