@@ -63,9 +63,9 @@ namespace nap
 	 * When rendering geometry the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
-	 * On initialization the service will pick a device based on the preferred GPU type.
+	 * On initialization the service will try to pick a device based on the preferred GPU type.
 	 * If no compatible GPU is found the system will fail to initialize.
-	 * The system needs to at least support the version of Vulkan currently linked to by the module,
+	 * The Vulkan instance and GPU need to support the version of Vulkan requested by the nap::RenderServiceConfiguration,
 	 * the required number of extensions (configurable) and queue family capabilities of the GPU itself.
 	 * The queue family needs to support both Graphics and Transfer commands.
 	 * Most dedicated and integrated GPUs are supported.
