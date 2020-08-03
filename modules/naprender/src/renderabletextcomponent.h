@@ -181,6 +181,16 @@ namespace nap
 		 */
 		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const = 0;
 
+		/**
+		 * @return the material instance used to render the text
+		 */
+		const MaterialInstance& getMaterialInstance() const				{ return mMaterialInstance; }
+
+		/**
+		 * @return the material instance used to render the text
+		 */
+		MaterialInstance& getMaterialInstance()							{ return mMaterialInstance; }
+
 	protected:
 		/**
 		 * Draws the text into to active render target using the provided matrices.

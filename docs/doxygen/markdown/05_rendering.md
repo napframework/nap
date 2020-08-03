@@ -6,12 +6,18 @@ Rendering {#rendering}
 *	[Example](@ref render_example)
 *	[Meshes](@ref meshes)
 	*	[Creating Meshes](@ref creating_meshes)
+		* [Mesh From File](@ref mesh_from_file)
+		* [Predefined Shapes](@ref predefined_shapes)
+		* [Mesh Resource](@ref mesh_resource)
+		* [Custom Mesh C++](@ref custom_mesh)
 	*	[Mesh Format](@ref mesh_format)
+	*	[Mesh Usage](@ref mesh_usage)
 *	[Text](@ref text)
 *	[Materials and Shaders](@ref materials)
-	*	[Mapping Attributes](@ref mapping_attrs)
-	*	[Default Attributes](@ref default_attrs)
+	*	[Vertex Attributes](@ref vertex_attrs)
+	*	[Default Vertex Attributes](@ref default_attrs)
 	*	[Uniforms](@ref uniforms)
+	*	[Samplers](@ref samplers)
 	*	[Color Blending](@ref blending)
 	*	[Depth](@ref depth)
 	*	[Rendering Meshes](@ref renderwithmaterials)
@@ -21,7 +27,7 @@ Rendering {#rendering}
 		*	[Images](@ref images)
 		*	[Image From File](@ref image_from_file)
 	* 	[Reading Textures From The GPU](@ref reading_textures)
-	*	[Parameters](@ref texture_parameters)
+	*	[Texture Sampling](@ref texture_sampling)
 *	[Windows](@ref multi_screen)
 *	[Offscreen Rendering](@ref offscreen_rendering)
 *	[Cameras](@ref cameras)
@@ -31,15 +37,13 @@ Introduction {#render_intro}
 
 The NAP renderer is designed to be open and flexible. All render related functionality is exposed as a set of building blocks instead of a fixed function pipeline. You can use these blocks to set up your own rendering pipeline. Meshes, textures, materials, shaders, rendertargets, cameras and windows form the basis of these tools. They can be authored using JSON and are exported using your favourite content creation program (Photoshop, Maya etc.)
 
-NAP uses the OpenGL 3.3+ <a href="https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview" target="_blank">programmable rendering pipeline</a> to draw objects. This means NAP uses shaders to manipulate and render items. Using shaders improves overall performance and offers a more flexible method of working compared to the old fixed function render pipeline. The result is a more data driven approach to rendering, similar to what you see in popular game engines such as Unreal4 or Unity, except: NAP doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicitly have to tell the renderer:
+NAP uses <a href="https://www.khronos.org/vulkan/" target="_blank">Vulkan</a> to render objects but, contrary to popular game engines such as Unity or Unreal, doesn't lock down the rendering process. An object that can be rendered isn't rendered by default: you explicitly have to tell the renderer:
 
 - That you want to render an object
 - How you want to render an object
 - Where to render it to, ie: it's destination
 
-The destination is always a render target and NAP currently offers two: directly to screen or an off-screen target. This process sounds difficult but offers a lot of flexibility. Often you want to render a set of objects to a texture before rendering the textures to screen. Or you might want to render only a sub-set of objects to screen one and another set of objects to screen two. 
-
-Traditionally this is a problem, most renderers tie a drawable object to one render context. This context is always associated with one screen. This makes sharing objects between multiple screens pretty much impossible. NAP solves this issues by allowing any object to be drawn to any screen, even sharing the same object between two or multiple screens. This is one of NAPs biggest strengths and offers a lot of flexibility in deciding how you want to draw things. You, as a user, don't have to worry about the possibility of rendering one or multiple objects to a particular screen, you know you can.
+The destination is always a render target and NAP currently offers two: directly to a [window](@ref nap::RenderWindow) or an [off-screen target](@ref nap::RenderTarget). Often you want to render a set of objects to a texture before rendering the textures to screen. Or you might want to render only a sub-set of objects to screen one and another set of objects to screen two. This is one of NAPs biggest strengths and offers a lot of flexibility in deciding how you want to draw things.
 
 Key Features {#key_features}
 =======================
@@ -70,68 +74,66 @@ To follow this example it's good to read the high level [system](@ref system) do
 
 Some parts might look familiar, others are new. The most important new parts are the material, render and rotate component. The rotate component rotates the sphere along the y axis, the render component ties a renderable [mesh](@ref nap::IMesh) to a material. Every material points to a shader. The material is applied to the mesh before being rendered to (in this case) the screen. You will notice that the actual application will contain almost no code, most of the functionality is defined by the various objects and components. The only thing we have to do is tell the renderer to render the sphere using a particular camera.
 
-But let's begin by defining some of the resources in JSON:
+But let's begin by defining some of the resources in JSON. Alternatively you can use [Napkin](@ref napkin), our JSON editor:
 
 ```
-{		
-	"Type" : "nap::RenderWindow",
-	"mID" : "Window0",
-	"Width" : 512,
-	"Height" : 512,
-	"Title" : "Window 1"
-},
-
 {
-	"Type" : "nap::ImageFromFile ",	
-	"mID" : "WorldTexture",
-	"ImagePath" : "world_texture.png"
+	"Type": "nap::RenderWindow",
+    "mID": "Window0",
+    "Borderless": false,
+    "Resizable": true,
+    "Visible": true,
+    "Title": "Window 1",
+    "Width": 1280,
+    "Height": 720
 },
-
+{
+	"Type": "nap::ImageFromFile",
+	"mID": "WorldTexture",
+	"Usage": "Static",
+	"ImagePath": "world_texture.png",
+	"GenerateLods": true
+},
 {
 	"Type" : "nap::Shader",
 	"mID": "WorldShader",
 	"mVertShader": "shaders/world.vert",
 	"mFragShader": "shaders/world.frag"
 },
-
 {
-	"Type" : "nap::SphereMesh",
-	"mID": "WorldMesh"
+	"Type": "nap::SphereMesh",
+    "mID": "WorldMesh",
+    "Radius": 1.0,
+    "Rings": 50.0,
+    "Sectors": 50.0
 },
 ```
 
-These resources are rather straight-forward. We tell NAP we want a render window, image, shader and mesh. The image points to the world texture. This is the texture we want to apply to the sphere. Behind the scenes NAP loads the image from disk and uploads the pixel data to the GPU. This image is now a texture that can be used by shaders as a uniform texture input. In this particular case we want the world shader to use that texture. The world shader exposes a uniform with the name 'inWorldTexture'. But how do we bind the world texture to the shader? As you can see in the example above: the world texture is not referenced anywhere. For that purpose we use a material. Let's add one:
+These resources are rather straight-forward. We tell NAP we want a [render window](@ref nap::RenderWindow), [image](@ref nap::ImageFromFile), [shader](@ref nap::Shader) and [mesh](@ref nap::SphereMesh). The image points to the world texture. This is the texture we want to apply to the sphere. Behind the scenes NAP loads the image from disk and uploads the pixel data to the GPU. This image is now a texture that can be used by shaders as a sampler texture input. In this particular case we want the world shader to use that texture. The world shader exposes a sampler with the name 'inWorldTexture'. But how do we bind the world texture to the shader? As you can see in the example above: the world texture is not referenced anywhere. For that purpose we use a material. Let's add one:
 
 ```
 {
-	"Type" : "nap::Material",
-	"mID": "WorldMaterial",
-	"Shader": "WorldShader",
-	"VertexAttributeBindings" : 
-	[
-		{
-			"MeshAttributeID": "Position",
-			"ShaderAttributeID": "in_Position"
-		},
-		{
-			"MeshAttributeID": "UV0",
-			"ShaderAttributeID": "in_UV0"
-		}
-	],
-	"Uniforms" : 
-	[
-		{
-			"Type" : "nap::UniformTexture2D",
-			"Name" : "inWorldTexture",
-			"Texture" : "WorldTexture"
-		}
-	]			
+    "Type": "nap::Material",
+    "mID": "WorldMaterial",
+    "Uniforms": [],
+    "Samplers": 
+    [
+        {
+            "Type": "nap::Sampler2D",
+            "mID": "world_input_tex_uniform",
+            "Name": "inWorldTexture",
+            "Texture": "WorldTexture"
+        }
+    ],
+    "Shader": "WorldShader",
+    "BlendMode": "Opaque",
+    "DepthMode": "InheritFromBlendMode"
 },
 ```
 
-A material serves a very important function. It allows you to apply the same shader to different objects. Often you only need a limited set of shaders to represent a large set of objects. The same shader can be used to render objects that share the same physical properties, such as a window and a wine glass. Creating separate shaders for each individual object is inefficient. In the example above we create a world material that links to a world shader. NAP creates both the shader and material for you. The only thing left to do is link the 'WorldTexture' to the right shader input exposed by the material. 
+A [material](@ref nap::Material) serves a very important function. It allows you to apply the same shader to different objects. Often you only need a limited set of shaders to represent a large set of objects. The same shader can be used to render objects that share the same physical properties, such as a window and a wine glass. Creating separate shaders for each individual object is inefficient. In the example above we create a world material that links to a world shader. NAP creates both the shader and material for you. The only thing left to do is link the 'WorldTexture' to the right shader input exposed by the material. 
 
-Every material carries a set of 'Uniforms'. Material 'Uniforms' allow you to bind values (in this case a texture) to specific inputs of a shader. This material binds 'WorldTexture' to 'inWorldTexture'. When you apply this material to a mesh (in this case the sphere) the renderer binds the texture to the right input of the shader with, as a result, a sphere that looks like planet earth. NAP validates that the shader exposes a texture input called 'inWorldTexture' and the 'WorldTexture' is loaded and valid. Initialization fails when the world texture can't be loaded or the shader doesn't have an input called 'inWorldTexture'. In both cases an error message is generated.
+Every material carries a set of 'Uniforms' and 'Samplers'. Material 'Uniforms' allow you to bind values to specific inputs of a shader. Samplers allow you to bind textures to specific inputs of a shader. This material binds 'WorldTexture' to 'inWorldTexture'. When you apply this material to a mesh (in this case the sphere) the renderer binds the texture to the right input of the shader with, as a result, a sphere that looks like planet earth. NAP validates that the shader exposes a texture input called 'inWorldTexture' and the 'WorldTexture' is loaded and valid. Initialization fails when the world texture can't be loaded or the shader doesn't have an input called 'inWorldTexture'. In both cases an error message is generated.
 
 You now have a material that you can apply to your sphere. But we don't have a scene that represents the objects in space. Without that structure the renderer doesn't know where to place the sphere and what material to apply to the sphere. We therefore create a simple scene structure that holds both the camera and sphere to render:
 
@@ -161,6 +163,7 @@ And define our 'World':
 	[
 		{
 			"Type" : "nap::RenderableMeshComponent",
+			"mID": "Renderable Mesh Component",
 			"Mesh" : "WorldMesh",
 			"MaterialInstance" : 
 			{
@@ -169,10 +172,12 @@ And define our 'World':
 			}
 		},
 		{
-			"Type" : "nap::TransformComponent"
+			"Type" : "nap::TransformComponent",
+			"mID": "Transform Component"
 		},
 		{
 			"Type" : "nap::RotateComponent",
+			"mID": "Rotate Component",
 			"Properties": 
 			{
 				"Axis": 
@@ -189,7 +194,7 @@ And define our 'World':
 },
 ```
 
-Before we add the camera it's good to take a closer look at the nap::RenderableMeshComponent. As mentioned before, this component binds both a mesh and material together. When doing so it performs a very important task: it makes sure that the mesh can be rendered to any screen. This component also pushes all the material properties to the GPU before rendering the mesh. The transform component positions the 'World' at the origin of the scene and the rotate component rotates the 'World' around the y axis once every 10 seconds. Last thing to do is add a Camera, we place it five units back from the origin of the scene to ensure the world is visible:
+Before we add the camera it's good to take a closer look at the [renderable mesh component](@ref nap::RenderableMeshComponent). As mentioned before, this component binds both a mesh and material together. When doing so it performs a very important task: it makes sure that the mesh can be rendered to a render target. This component also pushes all the material properties to the GPU before rendering the mesh. The [transform component](@ref nap::TransformComponent) positions the 'World' at the origin of the scene and the [rotate component](@ref nap::RotateComponent) rotates the 'World' around the y axis once every 10 seconds. Last thing to do is add a [camera](@ref nap::PerspCameraComponent), we place it five units back from the origin of the scene to ensure the world is visible:
 
 ```
 {
@@ -255,28 +260,35 @@ And in the render call of your application you explicitly tell the renderer to r
 // Called when the window is going to render
 void ExampleApp::render()
 {
-	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindow.get() });
-	
-	// Activate current window for drawing
-	mRenderWindow->makeActive();
-	
-	// Clear back-buffer
-	mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
-	
-	// Find the world and add as an object to render
-	std::vector<nap::RenderableComponentInstance*> components_to_render;
-	nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-	components_to_render.emplace_back(&renderable_world);
-	
-	// Find the camera
-	nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+	// Signal the beginning of a new frame, allowing it to be recorded.
+	mRenderService->beginFrame();
 
-	// Render the world with the right camera directly to screen
-	mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
-	
-	// Swap screen buffers
-	mRenderWindow->swap();
+	// Begin recording the render commands for the main render window
+	if (mRenderService->beginRecording(*mRenderWindow))
+	{
+		// Begin the render pass
+		mRenderWindow->beginRendering();
+
+		// Find the world and add as an object to render
+		std::vector<nap::RenderableComponentInstance*> components_to_render;
+		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		components_to_render.emplace_back(&renderable_world);
+
+		// Find the perspective camera
+		nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
+
+		// Render the world with the right camera directly to screen
+		mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
+		
+		// End the render pass
+		mRenderWindow->endRendering();
+
+		// End recording
+		mRenderService->endRecording();
+	}
+
+	// Signal the end of the frame
+	mRenderService->endFrame();
 }
 ~~~~~~~~~~~~~~~
 
@@ -290,9 +302,13 @@ Meshes {#meshes}
 Creating Meshes {#creating_meshes}
 -----------------------
 
-At the heart of it all is the [IMesh](@ref nap::IMesh). This is the resource the [RenderableMeshComponent](@ref nap::RenderableMeshComponent) (and other components) link to. The `IMesh` is responsible for only one thing: to supply a [MeshInstance](@ref nap::MeshInstance). The meshinstance contains the actual data that is rendered or manipulated. A mesh instance can be created in various ways:
+The underlying resource of all mesh types is the [IMesh](@ref nap::IMesh). The `IMesh` does only one thing: provide the renderer with a [mesh instance](@ref nap::MeshInstance). The mesh instance contains the actual data that is drawn. The following resources create a mesh instance:
 
-- The [MeshFromFile](@ref nap::MeshFromFile) loads a mesh from an external file. NAP only supports the FBX file format and automatically converts any .fbx file in to a .mesh file using the FBX converter tool. The result is a heavily compressed binary file. Here is an example:
+###Mesh From File {#mesh_from_file}###
+
+The [MeshFromFile](@ref nap::MeshFromFile) loads a mesh from an external file. NAP only supports the FBX file format and automatically converts any .fbx file in to a .mesh file using the FBX converter tool. The result is a heavily compressed binary file. The FBX converter runs automatically after compilation and only converts .fbx files when new. Alternatively you can run the tool from the command line. Type --help for instructions. If an .fbx file contains multiple meshes each mesh is stored into an individual .mesh file.
+
+Here is an example:
 
 ```
 {
@@ -302,7 +318,9 @@ At the heart of it all is the [IMesh](@ref nap::IMesh). This is the resource the
 }
 ```
 
-- A few simple shapes (such as a [plane](@ref nap::PlaneMesh) or [sphere](@ref nap::SphereMesh)) can be created directly using configurable parameters:
+###Predefined Shapes {#predefined_shapes}###
+
+A few simple shapes (such as a [plane](@ref nap::PlaneMesh), [sphere](@ref nap::SphereMesh) or [box](@ref nap::BoxMesh)) can be created directly using configurable parameters:
 
 ```
 {
@@ -315,10 +333,22 @@ At the heart of it all is the [IMesh](@ref nap::IMesh). This is the resource the
 {
 	"Type" : "nap::PlaneMesh",
 	"mID": "PlaneMesh",
-	"Rows" : 256,
-	"Columns" : 256
+	"Rows" : 128,
+	"Columns" : 128
+},
+{
+	"Type" : "nap::BoxMesh".
+	"mID" : "BoxMesh",
+    "Size": 
+    {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+    }
 }
 ```
+
+###Mesh Resource {#mesh_resource}###
 
 - The [Mesh](@ref nap::Mesh) resource can be used to explicitly define the contents of a mesh in a JSON file. Below you see an example of a mesh in the shape of a plane. This mesh contains four vertices. The plane has a position and UV attribute. The triangles are formed as a TriangleStrip:
 
@@ -368,56 +398,66 @@ At the heart of it all is the [IMesh](@ref nap::IMesh). This is the resource the
 
 ```
 
-- Instead of using predefined resources you can also create meshes at runtime. To do so, derive from `IMesh` and create your own custom mesh in code. This is extremely useful when building procedural meshes. In the following example we derive from `IMesh` and create our own mesh instance. For the mesh to behave and render correctly we add a set of attributes. In this case 'Position', 'uv', 'id' and color. The mesh contains no actual (initial) vertex data. The mesh is constructed (over time) by the application.
+###Custom Mesh C++ {#custom_mesh}###
+
+You can create your own custom or procedural mesh in code. Both the 'dynamicgeo' and 'heightmap' demo show you how to do this. In the following example we define a new mesh. On initialization the instance is created. For the mesh to behave and render correctly we add a set of attributes. In this case 'Position', 'uv', 'id' and 'color'. The mesh contains no actual (initial) vertex data. The vertex data grows / shrinks over time based on the number of active particles in the scene. For a more complete example refer to the 'dynamicgeo' demo.
 
 ~~~~~~~~~~~~~~~{.cpp}
 class ParticleMesh : public IMesh
 {
 public:
+
+	/**
+	 * Construct the mesh using the render service
+	 */
+	ParticleMesh(Core& core) : mRenderService(core.getService<RenderService>()) { }
+
+
+	/**
+	 * Create and initialize the mesh
+	 */
 	bool init(utility::ErrorState& errorState)
 	{
+		// Create the mesh instance
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+
 		// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
-		mMesh.setNumVertices(0);
+		mMeshInstance->setNumVertices(0);
+		mMeshInstance->setUsage(EMeshDataUsage::DynamicWrite);
+		mMeshInstance->setDrawMode(EDrawMode::Triangles);
+		mMeshInstance->setCullMode(ECullMode::None);
 
-		// Reserve 1000 vertices
-		mMesh.reserveVertices(1000);
+		// Allocate room for 1000 vertices
+		mMeshInstance->reserveVertices(1000);
 
-		// Add position attribute
-		... position_attribute = mMesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		
-		// Add uv attribute
-		... uv_attribute = mMesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-
-		// Add color attribute
-		... color_attribute = mMesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-
-		// Add unique identifier attribute
-		... id_attribute = mMesh.getOrCreateAttribute<float>("pid");
+		// Add mesh attributes
+		mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		mMeshInstance->getOrCreateAttribute<float>("pid");
 			
-		// Create the shape
-		MeshShape& shape = mMesh.createShape();
+		// Create the shape that connects the vertices
+		MeshShape& shape = mMeshInstance->createShape();
 
-		// Reserve CPU memory for all the particle geometry.
-		// We want to draw the mesh as a set of triangles, 2 triangles per particle
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		// Reserve CPU memory for the particle geometry indices.
 		shape.reserveIndices(1000);
 
-		// Initialize our instance
-		return mMesh.init(errorState);
+		// Initialize the instance
+		return mMeshInstance->init(errorState);
 	}
 
 	/**
 	 * @return MeshInstance as created during init().
 	 */
-	virtual MeshInstance& getMeshInstance()	override 					{ return mMesh; }
+	virtual MeshInstance& getMeshInstance()	override 					{ return *mMeshInstance; }
 
 	/**
 	 * @return MeshInstance as created during init().
 	 */
-	virtual const MeshInstance& getMeshInstance() const	override 		{ return mMesh; }
+	virtual const MeshInstance& getMeshInstance() const	override 		{ return *mMeshInstance; }
 
 private:
-	MeshInstance mMesh;
+	std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
 };
 ~~~~~~~~~~~~~~~
 
@@ -433,17 +473,17 @@ This letter contains a list of 24 points. However, the mesh is split up into two
 Every mesh instance contains a list of points (vertices). Each vertex can have multipe attributes such as a normal, a UV coordinate and a color. In this example the mesh holds a list of exactly 24 vertices. To add each individual line to the mesh we create a [shape](@ref nap::MeshShape). The shape tells the system two things:
 
 - How the vertices are connected using a list of indices. In this case vertices 0-12 define the outer shape, vertices 13-23 define the inner shape.
-- How the system interprets the indices, ie: how are the points connected? For this example we use `LINE_LOOP`. A single list of connected lines that loops back to the beginning of the shape.
+- How the GPU interprets the indices, ie: how are the points connected? For this example we tell the GPU to connect the vertices as a single line using `LineStrip`
 
 Within a single mesh you can define multiple shapes that share the same set of vertices (points). It is allowed to share vertices between shapes and it is allowed to define a single mesh with different types of shapes. Take a sphere for example. The vertices can be used to define both the sphere as a triangle mesh and the normals of that sphere as a set of individual lines. The normals are rendered as lines (instead of triangles) but share (part of) the underlying vertex structure. This sphere therefore contains two shapes, one triangle shape (to draw the sphere) and one line shape (to draw the normals).
 
-All common OpenGL shapes are supported: `POINTS`, `LINES`, `LINE_STRIP`, `LINE_LOOP`, `TRIANGLES`, `TRIANGLE_STRIP` and `TRIANGLE_FAN`.
+All common shapes are supported: `Points`, `Lines`, `LineStrip`, `Triangles`, `TriangleStrip` and `TriangleFan`.
 
 As a user you can work on individual vertices or on the vertices associated with a specific shape. Often its necessary to walk over all the shapes that constitute a mesh. On a higher level NAP provides utility functions (such as computeNormals and reverseWindingOrder) to operate on a mesh as a whole. But for custom work NAP provides a very convenient and efficient [iterator](@ref nap::TriangleIterator) that is capable of looping over all the triangles within multiple shapes. This ensures that as a user you don’t need to know about the internal connectivity of the various shapes. Consider this example:
 
 ~~~~~~~~~~~~~~~{.cpp}
 // fetch uv attribute
-Vec3VertexAttribute* uv_nattr = mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+Vec3VertexAttribute* uv_nattr = mesh.findAttribute<glm::vec3>(vertexid::getUVName(0));
 
 // fetch uv center attribute 
 Vec3VertexAttribute* uv_cattr = mesh.findAttribute<glm::vec3>("uvcenter");
@@ -473,6 +513,13 @@ while (!tri_iterator.isDone())
 }
 ~~~~~~~~~~~~~~~
 
+Mesh Usage {#mesh_usage}
+-----------------------
+
+The [mesh data usage flag](@ref nap::EMeshDataUsage) determines how the mesh data is used at runtime. A `Static` mesh is uploaded from the CPU to the GPU exactly once. This allows the system to remove unused buffers after the upload is complete. If there is the need to update a mesh more frequently, even once after upload, it is required the usage is set to `DynamicWrite`.
+
+Note that static meshes are often placed in a different cache on the GPU, not accessible by the CPU, which allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
+
 Text {#text}
 =======================
 
@@ -491,22 +538,24 @@ The HelloWorld demo shows you how to set this up.
 Materials and Shaders {#materials}
 =======================
 
-A shader is a piece of code that is executed on the GPU. You can use shaders to perform many tasks including rendering a mesh to screen or in to a different buffer. The material tells the shader how to execute that piece of code. A material therefore:
+A [shader](@ref nap::Shader) is a piece of code that is executed on the GPU. You can use shaders to perform many tasks including rendering a mesh to screen or in to a different buffer. The material tells the shader how to execute that piece of code. A material therefore:
 
 - Defines the mapping between the mesh vertex attributes and the shader vertex attributes
-- Stores and updates the uniform shader values
-- Stores and updates global render settings such as the blend and depth mode
+- Stores and updates the uniform shader inputs
+- Stores and updates the sampler shader inputs
+- Controls render settings such as the blend and depth mode
 
 This schematic shows how to bind a shader to a mesh and render it to screen using the [RenderableMeshComponent](@ref nap::RenderableMeshComponent)
 
 ![](@ref content/shader_material_binding.png)
 
-Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a [MaterialInstance](@ref nap::MaterialInstance) object. A material instance is used to override  uniform values and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform values but override specific settings for a specific object. Imagine you have twenty buttons on your screen that all look the same, but when you move your mouse over a button you want it to light up. You can do this by making a single material that is configured to show a normal button and change the unifom 'color' for the button you are hovering over. Changing the color uniform is done by altering the material instance attribute 'color'.
+Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a [MaterialInstance](@ref nap::MaterialInstance) object. A material instance is used to override uniform and sampler inputs and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform inputs but override specific settings for a specific object. 
 
-Mapping Attributes {#mapping_attrs}
+Imagine you have twenty buttons on your screen that all look the same, but when you move your mouse over a button you want it to light up. You can do this by making a single material that is configured to show a normal button and change the unifom 'color' for the button you are hovering over. Changing the color uniform is done by altering the material instance attribute 'color'.
+
+Vertex Attributes {#vertex_attrs}
 -----------------------
-Meshes can contain any number of vertex attributes. How those attributes correspond to vertex attributes in the shader is defined in the material. It is simply a mapping from a mesh attribute ID ('position') to a shader attribute ID ('in_Position'). 
-Consider this simple vertex shader:
+Meshes can contain any number of vertex attributes. How those attributes correspond to vertex attributes in the shader is defined in the material. It is simply a mapping from a mesh attribute ID ('Position') to a shader attribute ID ('in_Position'). Consider this simple .vert shader:
 
 ~~~~~~~~~~~~~~~{.c}
 uniform mat4 projectionMatrix;	//< camera projection matrix
@@ -514,8 +563,8 @@ uniform mat4 viewMatrix;		//< camera view matrix (world space location)
 uniform mat4 modelMatrix;		//< vertex model to world matrix
 
 in vec3	in_Position;			//< in vertex position object space
-in vec4	in_Color;				//< in vertex color
-in vec3	in_UV;					//< in vertex uv channel 0
+in vec4	in_Color0;				//< in vertex color
+in vec3	in_UV0;					//< in vertex uv channel 0
 
 out vec4 pass_Color;			//< pass color to fragment shader
 out vec3 pass_Uvs;				//< pass uv to fragment shader
@@ -531,51 +580,7 @@ void main(void)
 }
 ~~~~~~~~~~~~~~~
 
-This (vertex) shader doesn't do a lot. It transforms the vertex position and passes the vertex color and UV coordinates to the fragment shader. The vertex attributes are called 'in_Position', 'in_Color' and 'in_UV'. To match these settings we create a mesh in JSON that contains the following vertex attributes: 'Position', 'UV0' and "Color0": 
-```
-{
-	"Type" : "nap::Mesh",
-	"mID" : "MyMesh",
-	"Properties" : 
-	{
-		"NumVertices" : 4,
-		"Shapes" : 
-		[
-			{
-				"DrawMode" : "TriangleStrip"
-			}
-		],
-		"Attributes" : 
-		[
-			{
-				"Type" : "nap::Vec3VertexAttribute",
-				"AttributeID" : "Position",
-				"Data" : [
-					// data here
-				]
-			},
-			{
-				"Type" : "nap::Vec3VertexAttribute",
-				"AttributeID" : "UV0",
-				"Data" : [
-					// data here
-				]
-			},
-			{
-				"Type" : "nap::Vec4VertexAttribute",
-				"AttributeID" : "Color0",
-				"Data" : [
-					// data here
-				]
-			}
-
-		],
-		// indices here..
-	}
-}
-```
-
-The last thing we do is bind the mesh vertex attributes to the shader using a material. To do that we provide the material with a table that binds the two together:
+This (vertex) shader doesn't do a lot. It transforms the vertex position and passes the vertex color and UV coordinates to the fragment shader. The vertex attributes are called 'in_Position', 'in_Color0' and 'in_UV0'. Next we bind the mesh vertex attributes to the shader vertex inputs using a material. To do that we provide the material with a table that binds the two together:
 
 ```
 {
@@ -586,15 +591,15 @@ The last thing we do is bind the mesh vertex attributes to the shader using a ma
 	[
 		{
 			"MeshAttributeID": "Position",				//< Mesh position vertex attribute
-			"ShaderAttributeID": "in_Position"			//< Binds to the shader 'in_Position' input
+			"ShaderAttributeID": "in_Position"			//< Shader position input
 		},
 		{
 			"MeshAttributeID": "UV0",					//< Mesh uv vertex attribute
-			"ShaderAttributeID": "in_UV"				//< Binds the the shader 'in_UV' input
+			"ShaderAttributeID": "in_UV0"				//< Shader uv input
 		},
 		{
 			"MeshAttributeID": "Color0",				//< Mesh color vertex attribute
-			"ShaderAttributeID": "in_Color"				//< Binds to the shader 'in_Color' input 
+			"ShaderAttributeID": "in_Color0"			//< Shader color input
 		}
 	]		
 }
@@ -602,10 +607,10 @@ The last thing we do is bind the mesh vertex attributes to the shader using a ma
 
 The shader is always leading when it comes to mapping vertex attributes. This means that all the exposed shader vertex attributes need to be present in the material and on the mesh. It is also required that they are of the same internal type. To make things a bit more manageable and convenient: a mesh can contain more attributes than exposed by a shader. The mapping (as demonstrated above) can also contain more entries than exposed by a shader. This makes it easier to create common mappings and iterate on your shader. It would be inconvenient if the application yields an error when you comment out attributes in your shader. Even worse, if certain code in the shader is optimized out while working on it, certain inputs might not exist anymore. In these cases you don't want the initialization of your material to fail.
 
-Default Attributes {#default_attrs}
+Default Vertex Attributes {#default_attrs}
 -----------------------
 
-Meshes that are loaded using the mesh from file resource have a fixed set of (partly optional) vertex attributes:
+Meshes that are loaded from file contain a fixed set of vertex attributes:
 -	Position (required)
 -	Normal (optional)
 -	Tangent (auto generated when not available)
@@ -613,22 +618,27 @@ Meshes that are loaded using the mesh from file resource have a fixed set of (pa
 -	Multiple UV channels (optional)
 -	Multiple Color channels (optional)
 
-The names of these default attributes can be retreived using a set of global commands. The color and UV functions require an index:
+The names of the default vertex attributes can be retreived using a set of global variables.
 
 ~~~~~~~~~~~~~~~{.cpp}
-VertexAttributeIDs::getPositionName()
-VertexAttributeIDs::getNormalName()
-VertexAttributeIDs::getColorName(0)
+nap::vertexid::position
+nap::vertexid::normal
+nap::vertexid::color
+nap::vertexid::uv
 //etc...
 ~~~~~~~~~~~~~~~
 
-Every material creates a default mapping using the above mentioned attributes when no mapping is provided. The UV and Color attributes are included up to four channels. The default naming on the shader side can be found using a similar construct:
+Every material creates a default mapping if no mapping is provided. The UV and Color attributes are included up to four channels. Default shader input names can be retrieved using a set of global variables, similar to vertex attributes:
 
 ~~~~~~~~~~~~~~~{.cpp}
-opengl::Shader::VertexAttributeIDs 
+nap::vertexid::shader::position
+nap::vertexid::shader::normal
+nap::vertexid::shader::color
+nap::vertexid::shader::uv
+//etc...
 ~~~~~~~~~~~~~~~
 
-The following table shows the default mesh to shader attribute bindings:
+The following table shows the default mesh to shader vertex bindings:
 
 Mesh 			| Shader 			|
 :-------------: | :-------------:	|
@@ -648,48 +658,145 @@ Color2 			| in_Color2			|
 Uniforms {#uniforms}
 -----------------------
 
-Uniforms are shader input parameters that can be set through the material interface. Every material stores a value for each uniform in the shader. It is allowed to have more uniforms in the material than the shader. This is similar to vertex attributes with one major exception: not every uniform in the shader needs to be present in the material. If there is no matching uniform, a default uniform will be created internally. That uniform can also be accessed by client code and changed at runtime. Consider the following example:
+Uniforms are shader input 'values' that can be set using the material interface. Every material stores a value for each uniform in the shader. It is allowed to have more uniforms in the material than the shader. This is similar to vertex attributes with one major exception: not every uniform in the shader needs to be present in the material. If there is no matching uniform, a default uniform will be created internally. Every uniform can be accessed by client code and changed at runtime through the material instance interface. Consider the following `font.frag` shader example:
+
+```
+#version 450 core
+
+in vec3 passUVs;
+uniform sampler2D glyph;
+
+uniform UBO
+{
+	uniform vec3 textColor;				//< Text color input
+} ubo;
+
+// output
+out vec4 out_Color;
+
+void main() 
+{
+	// Get alpha from glyph 
+	float alpha = texture(glyph, passUVs.xy).r;
+
+	// Use alpha together with text color as fragment output
+    out_Color = vec4(ubo.textColor, alpha);
+}
+```
+
+And corresponding JSON:
 
 ```
 {
-	"Type" : "nap::Material",
-	"mID": "ParticleMaterial",
-	"Shader": "ParticleShader",
-	"BlendMode": "AlphaBlend",
-	"Uniforms" : 
-	[
-		{
-			"Type" : "nap::UniformTexture2D",
-			"Name" : "particleTexture",
-			"Texture" : "Particle"
-		},
-		{
-			"Type" : "nap::UniformVec4",
-			"Name" : "particleColor",
-			"Value" : 
-			{
-				“x” : 1.0,
-				“y” : 0.0,
-				“z” : 0.0,
-				“w” : 1.0
-			}
-		}
-	]
+    "Type": "nap::Material",
+    "mID": "FontMaterial",
+    "Uniforms": [
+        {
+            "Type": "nap::UniformStruct",
+            "mID": "nap::UniformStruct",
+            "Name": "UBO",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "UniformVec3",
+                    "Name": "textColor",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
+            ]
+        }
+    ],
+    "Samplers": [],
+    "Shader": "FontShader",
+    "VertexAttributeBindings": [],
+    "BlendMode": "AlphaBlend",
+    "DepthMode": "InheritFromBlendMode"
 }
 ```
-The material mentioned above binds two uniforms: a texture to “particleTexture” and a color to “particleColor”. Initialization of the material will fail when you try to bind a resource or object to the wrong type of parameter. Every uniform that is created (or present) in the instance of a material takes precedence over the value in the material. It's easy to create (and access) a uniform parameter at runtime:
+
+This material binds the color 'white' to the `textColor` uniform input of the shader. This means that all the text rendered with this material will be 'white' unless overridden. The `textColor` uniform value is part of the `UBO` uniform struct. Every uniform value must be a member of a uniform struct and can't be declared independent from a struct inside a shader. Uniform values can be directly overridden in JSON (using a [nap::MaterialInstanceResource](@ref nap::MaterialInstanceResource)) or overridden at run-time using code:
 
 ~~~~~~~~~~~~~~~{.cpp}
-nap::UniformVec3&  color = mMaterial->getOrCreateUniform<nap::UniformVec3>("color");
-color.setValue({1.0,0.0,0.0});
+// Get 'UBO' struct that holds 'textColor'
+nap::UniformStructInstance* ubo = text_comp.getMaterialInstance().getOrCreateUniform("UBO");
+
+// Get text color, creates override if it doesn't exist
+nap::UniformVec3Instance* text_color = ubo->getOrCreateUniform<UniformVec3Instance>("textColor");
+
+// Override text color
+text_color->setValue({1.0f, 0.0f, 0.0f});
 ~~~~~~~~~~~~~~~
 
-The snippet above creates a new uniform 'color' (if it didn't exist already) and changes the value of that parameter to red. This immediately overrides the material's default 'color' value.
+The snippet above overrides the default text color from white to red at run-time. 
+
+Note that uniform value (and sampler) names must be unique accross all shader stages. This means that for this example the `UBO.textColor` uniform can't be declared in both the '.frag' and '.vert' part of the shader. Doing this will lead to unexpected results. Initialization of the material will fail when you try to bind a value to the wrong type of input.
+
+Samplers {#samplers}
+-----------------------
+
+A sampler binds a texture to a shader input. They are declared independent from uniforms in the shader and don't have to be part of a uniform struct. Consider the following .frag example:
+
+```
+#version 450 core
+
+// vertex shader input  
+in vec4 passColor;						//< frag color
+
+// unfiorm sampler inputs 
+uniform sampler2D inTexture;			//< Input Texture
+
+// output
+out vec4 out_Color;
+
+void main() 
+{
+	// Extract output color from texture
+	vec3 out_color =  texture(inTexture, passUVs.xy).rgb * passColor.rgb;
+
+	// Set fragment color
+	out_Color =  vec4(out_color, 1.0);
+}
+```
+
+And the following JSON:
+
+```
+{
+	"Type": "nap::Material",
+	"mID": "WorldMaterial",
+	"Uniforms": [],
+	"Samplers": [
+	    {
+	        "Type": "nap::Sampler2D",
+	        "mID": "world_input_tex_uniform",
+	        "Name": "inWorldTexture"
+	    }
+	],
+	"Shader": "WorldShader",
+	"VertexAttributeBindings": [],
+	"BlendMode": "Opaque",
+	"DepthMode": "InheritFromBlendMode"
+}
+```
+
+This material binds the `WorldTexture` resource to the `inTexture` sampler of the shader. All objects rendered with this material will use this texture as input unless overridden. Samplers can be directly overridden in JSON (using a [nap::MaterialInstanceResource](@ref nap::MaterialInstanceResource)) or overridden at run-time using code:
+
+~~~~~~~~~~~~~~~{.cpp}
+	// Get or create sampler override
+	nap::MaterialInstance& material = render_comp.getMaterialInstance();
+	Sampler2DInstance* sampler = material.getOrCreateSampler<Sampler2DInstance>("inTexture");
+
+	// Update texture
+	sampler->setTexture(newTexture);
+~~~~~~~~~~~~~~~
 
 Color Blending {#blending}
 -----------------------
 
-Materials also update the global GPU state, specifically the [blend](@ref nap::EBlendMode) and [depth](@ref nap::EDepthMode) state of a material before rendering an object to a target. The blend state specifies how a color that is rendered using a shader is combined into the target buffer. Three modes are available:
+Materials also control the [blend](@ref nap::EBlendMode) and [depth](@ref nap::EDepthMode) state of a material before rendering an object to a target. The blend state specifies how a color that is rendered using a shader is combined into the target buffer. Three modes are available:
 
 - Opaque: The shader overwrites the target value
 - AlphaBlend: The alpha value is used to blend between the current and target value
@@ -747,28 +854,21 @@ You can also use a more low-level interface to upload data directly into your te
 
 ###GPU Textures {#gpu_textures}###
 
-The [RenderTexture](@ref nap::RenderTexture2D) can be used to declare a texture on the GPU in JSON. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in JSON. The following example creates a depth and color texture on the GPU and attaches them both to a render target:
+The [RenderTexture](@ref nap::RenderTexture2D) can be used to declare a texture on the GPU in JSON. Every GPU texture can be attached to a [render target](@ref nap::RenderTarget). The render target is used by the render service to draw a set of objects directly into the attached texture. This type of texture exposes a set of attributes that can be changed / authored in JSON. The following example creates a color texture on the GPU and attaches it to a render target:
 
 ```
 {
 	"Type" : "nap::RenderTexture2D",
 	"mID" : "ColorTexture",
-	"Width" : 640,
-	"Height" : 480,
+	"Usage": "Static",
+	"Width" : 1920,
+	"Height" : 1080,
 	"Format" : "RGBA8"
-},
-{
-	"Type": "nap::RenderTexture2D",
-    "mID": "DepthTexture",
-    "Width": 640,
-    "Height": 480,
-    "Format": "Depth"
 },
 {
 	"Type": "nap::RenderTarget",
     "mID": "RenderTarget",
     "mColorTexture": "ColorTexture",
-    "mDepthTexture": "DepthTexture",
     "mClearColor": 
     {
     	"x": 1.0,
@@ -778,6 +878,8 @@ The [RenderTexture](@ref nap::RenderTexture2D) can be used to declare a texture 
 	}
 },
 ```
+
+Note that the `Usage` of the texture is set to `Static`. This is important because we never read or write from or to the texture using the CPU. Only the GPU uses the texture as a target for the render operation. 
 
 ###Images {#images}###
 
@@ -806,9 +908,11 @@ void App::update()
 
 ```
 {
-	"Type" : "nap::Image",
+	"Type" : "nap::ImageFromFile",
 	"mID" : "background",
-	"ImagePath" : "background.jpg"
+	"ImagePath" : "background.jpg",
+	"Usage": "Static",
+	"GenerateLods": true
 }
 ```
 
@@ -817,181 +921,162 @@ Reading Textures From The GPU {#reading_textures}
 
 Textures contain the output of a GPU rendering step when they are assigned to a render target. You can read back the result from a texture on the GPU to the CPU using the 2D texture or image interface. The following functions allow you to transfer the rendered texture back from the GPU to the CPU:
 
-- nap::Texture2D::getData(Bitmap& bitmap);
-- nap::Texture2D::startGetData() / nap::Texture2D::endGetData(Bitmap& bitmap);
-- nap::Image::getData();
-- nap::Image::startGetData() / nap::Image::endGetData();
+- nap::Texture2D::asyncGetData(Bitmap& bitmap);
+- nap::Image::asyncGetData();
 
-You can see that the 2D texture interface requires you to pass in external storage in the form of a bitmap. The image interface will transfer the image back into its internal bitmap. The getData functions will block until the GPU is fully done rendering the texture. Note that this is very costly: the GPU needs to complete everything in its queue before it can start the copy operation. The copy itself (from the GPU to the CPU) is another costly operation. It is therefore recommended to use the startGetData and endGetData function calls for high performance scenarios. The startGetData call will queue the copy operation on the GPU. Once the copy can be executed by the GPU it will first transfer the data to an internal buffer. When endGetData is called, it will block and copy the contents from the internal buffer to the destination bitmap. If the GPU isn't ready yet it will stall. It is therefore recommended to issue the startGetData call as quickly as possible and wait for endGetData until the very last moment: preferably the next frame.
+You can see that the 2D texture interface requires you to pass in external storage in the form of a bitmap. The image interface will transfer the image back into its internal bitmap. The asyncGetData() function will not stall the CPU and queues the copy operation on the GPU. After the copy is executed by the GPU the data is automatically transferred.
 
-Another thing that will affect performance is the [ETextureUsage](@ref opengl::ETextureUsage) flag. This flag allows you to specify how the texture is going to be used:
-
-- Static: The texture never, or rarely changes and is never read back to CPU memory.
-- DynamicRead: The texture is frequently read back from GPU to CPU memory.
-- DynamicWrite: The texture is frequently updated from CPU to CPU memory.
-
-This flag allows the video card driver to choose the most optimal memory on the GPU for your use case scenario. For instance: when DynamicWrite is set the texture will (most likely) be placed into WriteCombined memory.
-
-Texture Parameters {#texture_parameters}
+Texture Usage {#texture_usage}
 -----------------------
 
-Texture [parameters](@ref nap::TextureParameters) are used to specify how a texture is sampled and how mip-mapping levels can be controlled. These are the parameters that can be specified:
-- Filter mode: Controls how blending between texels is managed when the texture is either minified or magnified. You can specify filter modes for minification and magnification.
-- Wrap mode: Controls how the UV mapping is interpreted. It can repeat, mirror or clamp the UV mapping. Wrap mode can be specified for both the horizontal and vertical directions.
-- Max LOD level: Controls the max mipmap level.
+The texture `Usage` flag allows you to specify how the texture is going to be used.
 
-Default parameters:
-- The default filter mode when a texture is scaled down (minified) is: LinearMipmapLinear
-- The default filter mode when a texture is scaled up (magnified) is: Linear
-- The default vertical wrap mode is: ClampToEdge
-- The default horizontal wrap mode is: ClampToEdge
-- The default max LOD level is: 20
+- Static: The texture does not change after initial upload.
+- DynamicRead: Texture is frequently read from GPU to CPU.
+- DynamicWrite: Texture is frequently updated from CPU to GPU.
+
+It's important to choose the right setting based on your needs. It is for example not allowed to update `Static` or `DynamicRead` textures after the initial upload from the CPU because the staging buffer is deleted after upload. Doing so will result in render artifacts (depending on the driver) or potentially a system crash. On the other hand: `DynamicWrite` allocates additional resources on the GPU and should therefore only be used if you are going to write to the texture more than once from the CPU. Note that it is perfectly safe to set the usage to `Static` when frequently writing to it on the GPU only, for example when using it as a render target.
+
+Texture Sampling {#texture_sampling}
+-----------------------
+
+A sampler [parameters](@ref nap::Sampler) controls how a texture is sampled. These are the parameters that can be specified:
+- `MinFilter`: Controls how the texels are blended when the texture is minified.
+- `MaxFilter`: Controls how the texels are blended when the texture is magnified.
+- `MipMapMode`: Controls how texels are blended between mip-maps.
+- `AddressModeVertical`: How the UV mapping is interpreted vertically.
+- `AddressModeHorizontal`: How the UV mapping is interpreted horizontally.
+- `MaxLodLevel`: Max number of lods to use.
 
 A LOD level of 0 prevents the texture from mipmapping, ie: the renderer only chooses the highest (native) texture resolution. This setting has no influence when mip mapping is turned off. You can change the parameters of every 2D texture (image, render texture etc.) in JSON:
 
 ```
 {
- 	"Type": "nap::RenderTexture2D",
-    "mID": "VideoColorTexture",
-    "Parameters": 
-    {
-    	"MinFilter": "Linear",
-    	"MaxFilter": "Linear",
-    	"WrapVertical": "ClampToEdge",
-    	"WrapHorizontal": "ClampToEdge",
-        "MaxLodLevel": 10
-    },
-    "Usage": "DynamicRead",
-    "Width": 1920,
-    "Height": 1080,
-	"Format": "RGB8"
+    "Samplers": 
+    [
+        {
+            "Type": "nap::Sampler2D",
+            "mID": "tex_input_uniform",
+            "Name": "inTexture",
+            "MinFilter": "Linear",
+            "MaxFilter": "Linear",
+            "MipMapMode": "Linear",
+            "AddressModeVertical": "ClampToEdge",
+            "AddressModeHorizontal": "ClampToEdge",
+            "MaxLodLevel": 1000,
+            "Texture": "WorldTexture"
+        }
+    ]
 }
 ```
 
 Windows {#multi_screen}
 =======================
 
-In most render engines resources are locked to a specific render context. This makes it (almost) impossible to render the same set of objects to multiple screens. With NAP you can render the same object to screen A and B without having to worry about the associated render context. As mentioned in the introduction: this is one of the biggest advantages of the render engine that ships with NAP. The system manages every context and resource for you. 
-
-Every application that uses the render module spawns at least one window. This is the primary window. The primary window is imporant when rendering [off screen surfaces](@ref offscreen_rendering). Even if you don't specify a window in JSON the system creates one for you. By default this window is hidden. When you declare only one window in JSON that window becomes the primary window and is made visible. When you declare multiple windows the first window the system encounters becomes the primary window and is made visible. When working with multiple windows you can't assume that the first window declared in JSON becomes the primary window! You can however always [ask](@ref nap::RenderService.getPrimaryWindow) the render service what the primary window is.
-
-You can add as many windows to your application as you want. Take a look at the multi window demo for a working example. That demo spawns three windows and renders the same set of objects (in different configurations) to every one of them. In your application you have to activate the window you want to render to before issuing any render commands. This is demonstrated in the example below:
+You can add as many windows to your application as you want. Take a look at the multi window demo for a working example. That demo spawns three windows and renders the same set of objects (in different configurations) to every one of them. In your application you have to activate the window you want to render to before issuing any draw commands. This is demonstrated in the example below:
 
 ~~~~~~~~~~~~~~~{.cpp}
 void MultiWindowApp::render()
 {
-	// Clear opengl context related resources that are not necessary any more
-	mRenderService->destroyGLContextResources({ mRenderWindowOne.get(), mRenderWindowTwo.get() });
+	// Signal the beginning of a new frame, allowing it to be recorded.
+	mRenderService->beginFrame();
 
-	// Render Window One : Sphere
+	// Render to window one
+	if(mRenderService->beginRecording(*mRenderWindowOne))
 	{
-		// Activate current window for drawing
-		mRenderWindowOne->makeActive();
+		// Begin the render pass
+		mRenderWindowOne->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindowOne->getBackbuffer());
+		...
 
-		// Find the world and add as an object to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		components_to_render.emplace_back(&renderable_world);
+		// Draw gui to window one
+		mGuiService->draw();
 
-		// Find the camera
-		nap::PerspCameraComponentInstance& camera = mPerspectiveCameraOne->getComponent<nap::PerspCameraComponentInstance>();
-
-		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
-
-		// Swap buffers window one
-		mRenderWindowOne->swap();
+		// End rendering and recording
+		mRenderWindowOne->endRendering();
+		mRenderService->endRecording();
 	}
 
-	// Render Window Two : Texture
+	// Render to window two
+	if(mRenderService->beginRecording(*mRenderWindowTwo))
 	{
-		// Make window 2 active
-		mRenderWindowTwo->makeActive();
+		// Begin render pass
+		mRenderWindowTwo->beginRendering();
 
-		// Clear backbuffer
-		mRenderService->clearRenderTarget(mRenderWindowTwo->getBackbuffer());
+		...
 
-		// Find the plane entity and add as an object to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_plane = mPlaneOneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		components_to_render.emplace_back(&renderable_plane);
+		// Draw gui to window two
+		mGuiService->draw();
 
-		// Find the camera
-		nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
-
-		// Render the plane with the orthographic to window two
-		mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
-
-		// Swap buffers window two
-		mRenderWindowTwo->swap();
+		// End rendering and recording
+		mRenderWindowTwo->endRendering();
+		mRenderService->endRecording();
 	}
 
-	....
+	// End frame
+	mRenderService->endFrame();
 }
 ~~~~~~~~~~~~~~~
-
-In the example above we render two objects (a sphere and a plane) to a different window. Before rendering anything we tell the system to remove all obsolete OpenGL resources. After that we activate the first window and render a sphere using a perspective camera. This pattern repeats itself for the second window but with a different camera and object. The last thing we do before activating a new window is swap the buffers of the window we just rendered in to. This replaces the pixels of the window with the just rendered result.
 
 Offscreen Rendering {#offscreen_rendering}
 =======================
 
 Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. To see how this works take a look at the video modulation demo. In this demo a video is applied to a plane and rendered to a texture. This texture is used as an input for two materials. 
 
-Every render target is a resource that links to two textures: a color and depth texture. The result of the render step is stored in both. The color texture contains the color information. The depth texture holds information about the distance of an object to the camera based on the clipping planes of the camera. You can declare a render target in JSON just like any other resource:
+Every render target requires a link to a color texture. The result of the render step is stored in the texture. You can declare a render target in JSON just like any other resource:
 
 ```
 {
     "Type": "nap::RenderTexture2D",
     "mID": "VideoColorTexture",
-    "Usage": "DynamicRead",
-    "Width": 1920,
-    "Height": 1080,
-	"Format": "RGB8"
-},
-{
-	"Type": "nap::RenderTexture2D",
-	"mID": "VideoDepthTexture",
     "Usage": "Static",
     "Width": 1920,
     "Height": 1080,
-    "Format": "Depth"
+	"Format": "RGBA8"
 },
 {
 	"Type": "nap::RenderTarget",
     "mID": "VideoRenderTarget",
-    "mColorTexture": "VideoColorTexture",
-    "mDepthTexture": "VideoDepthTexture",
-    "mClearColor": 
+    "SampleShading": true,
+    "Samples": "Four",
+    "ClearColor": 
     {
         "x": 1.0,
         "y": 0.0,
         "z": 0.0,
     	"w": 1.0
-    }
+    },
+   	"ColorTexture": "VideoColorTexture"
 }
 ```
 
-In this example we create two textures and a render target. The render target links to both textures. The only thing left to do is locate the target in your application and give it to the render service together with a selection of components to render. Off-screen surfaces are always rendered with the context associated with the primary window! Make sure to activate the primary window before issuing your off screen render commands. Other than that rendering to a render target works exactly the same as rendering to a window:
+In this example we create a color texture and a render target. The render target links to the color texture. The only thing left to do is locate the target in your application and give it to the render service together with a selection of components to render. All headless (non window) render operations need to be executed within a beginHeadlessRecording() and endHeadlessRecording() block:
 
 ~~~~~~~~~~~~~~~{.cpp}
-// Activate the primary render context
-mRenderService->getPrimaryWindow().makeCurrent();
 
-// Clear buffers of video render target
-mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
-			
-// Get objects to render
-std::vector<RenderableComponentInstance*> render_objects;
-render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
+void VideoModulationApp::render()
+{
+	// Signal the beginning of a new frame, allowing it to be recorded.
+	mRenderService->beginFrame();
 
-// Render
-mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
+	// Start recording into the headless recording buffer.
+	if (mRenderService->beginHeadlessRecording())
+	{
+		// Render the video into the video target
+		mVideoRenderTarget->beginRendering();
+		...
+		mVideoRenderTarget->endRendering();
+
+		// Tell the render service we are done rendering into render-targets.
+		mRenderService->endHeadlessRecording(); 
+	}
+
+	// Done rendering this frame
+	mRenderService->endFrame();
+}
 ~~~~~~~~~~~~~~~
 
-Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used  apply a 'post process' render step.
+Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used to apply a 'post process' render step. The video modulation demo uses this component to convert the video output into a greyscale texture.
 
 Cameras {#cameras}
 =======================
@@ -1026,8 +1111,3 @@ With an orthographic camera the scene is rendered using a flat projection matrix
 ```
 
 Two things define a camera: its location in the world and type. The world space location of a camera is used to compose the view matrix. The camera projection method is used to compose the projection matrix. Both are extracted by the renderer and forwarded to the shader. Every camera therefore needs access to a transform component that is a sibling of the parent entity. For a working example take a look at the multi window demo. This demo renders a set of objects to different windows using a mix of cameras.
-
-
-
-
-
