@@ -26,18 +26,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static UniformMat4Instance* getOrCreateMatrixUniform(UniformStructInstance& mvpStruct, const char* uniformName, const std::string& resourceName, nap::utility::ErrorState& error)
-	{
-		UniformMat4Instance* rptr = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
-		if (rptr == nullptr)
-		{
-			error.fail("%s: Unable to extract uniform with name: %s, from struct: %s",
-				resourceName.c_str(), uniformName, mvpStruct.getDeclaration().mName.c_str());
-		}
-		return rptr;
-	}
-
-
 	void RenderableMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.push_back(RTTI_OF(TransformComponent));

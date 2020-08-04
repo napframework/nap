@@ -8,7 +8,7 @@
 
 namespace nap
 {
-	class NAPAPI SamplerDeclaration
+	class NAPAPI SamplerDeclaration final
 	{
 		RTTI_ENABLE()
 

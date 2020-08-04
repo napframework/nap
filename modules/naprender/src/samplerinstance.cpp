@@ -87,9 +87,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	SamplerInstance::SamplerInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler* sampler, const SamplerChangedCallback& samplerChangedCallback) :
-		mSampler(sampler),
-		mDeclaration(&declaration),
 		mRenderService(&renderService),
+        mSampler(sampler),
+        mDeclaration(&declaration),
 		mSamplerChangedCallback(samplerChangedCallback)
 	{ }
 

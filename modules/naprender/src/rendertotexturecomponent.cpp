@@ -39,8 +39,8 @@ namespace nap
 
 	RenderToTextureComponentInstance::RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
-		mPlane(*entity.getCore()),
-		mTarget(*entity.getCore())
+		mTarget(*entity.getCore()),
+        mPlane(*entity.getCore())
 	{ }
 
 

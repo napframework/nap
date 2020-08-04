@@ -32,8 +32,8 @@ namespace nap
 {
 	RenderableTextComponentInstance::RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
-		mPlane(*entity.getCore()),
-		mRenderService(entity.getCore()->getService<RenderService>())
+		mRenderService(entity.getCore()->getService<RenderService>()),
+        mPlane(*entity.getCore())
 	{
 	}
 
