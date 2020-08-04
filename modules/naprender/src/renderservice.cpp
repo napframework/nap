@@ -382,7 +382,7 @@ namespace nap
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
 		vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
-		if (!errorState.check(physical_device_count != 0, "No physical devices found"))
+		if (!errorState.check(physical_device_count != 0, "No physical device (GPU) found"))
 			return false;
 
 		// Now get the devices
