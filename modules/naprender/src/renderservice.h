@@ -65,11 +65,21 @@ namespace nap
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
 	 * The service creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required.
-	 * Make sure to set the required major and minor vulkan version accordingly.
+	 * Make sure to set the required major and minor Vulkan version accordingly using the RenderServiceConfiguration.
 	 * The application will not start if the device does not support the selected (and therefore required) version of Vulkan.
-	 * 
-	 * On initialization the service will try to pick a device based on the preferred GPU type.
-	 * If no compatible GPU is found the system will fail to initialize.
+	 *
+	 * The following Vulkan device extensions are always required: VK_KHR_SWAPCHAIN_EXTENSION and VK_KHR_MAINTENANCE1_EXTENSION.
+	 * Additional extension requirements can be specified using the RenderServiceConfiguration.
+	 *
+	 * The system will try to load the requested validation layers in debug mode only.
+	 * Use the RenderServiceConfiguration to specify which layers the Vulkan loader should attempt to load.
+	 * A warning is issued when the validation layer can't be located or loaded. Validation layers are disabled in release mode.
+	 *
+	 * For more information on setting up validation layers refer to:
+	 * https://vulkan.lunarg.com/doc/view/1.2.131.2/windows/layer_configuration.html
+	 *
+	 * On initialization the service will try to choose a physical device based on the preferred GPU type.
+	 * If no compatible GPU is found (even a not-preferred one) the system will fail to initialize.
 	 *
 	 * Most dedicated and integrated GPUs are supported.
 	*/

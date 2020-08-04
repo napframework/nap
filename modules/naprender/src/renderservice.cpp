@@ -175,7 +175,7 @@ namespace nap
 	{
 		const static std::vector<std::string> layers = 
 		{ 
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_KHR_MAINTENANCE1_EXTENSION_NAME
 		};
 		return layers;
@@ -413,13 +413,7 @@ namespace nap
 			if (properties.apiVersion < minAPIVersion)
 			{
 				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
-
-				// As far as I can tell all physical devices on Apple only support 1.0.X versions of Vulkan through MoltenVK.
-				// But the vulkan instance supports higher versions and is created based on the min required vulkan version.
-				// This is confusing, until I have a clear answer I will leave this here.
-#ifndef __APPLE__
 				continue;
-#endif // !__APPLE__
 			}
 
 			// Find the number queues this device supports
