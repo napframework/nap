@@ -250,17 +250,17 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
-		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
-		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
-		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
-		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
-		bool					mVisible		= true;								///< Property: 'Visible' if the render window is visible on screen
-		EPresentationMode		mMode			= EPresentationMode::Mailbox;		///< Property: 'Mode' the image presentation mode to use
-		std::string				mTitle			= "";								///< Property: 'Title' window title
-		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
-		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
-		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
+		bool					mSampleShading	= true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		int						mWidth			= 512;										///< Property: 'Width' of the window in pixels
+		int						mHeight			= 512;										///< Property: 'Height' of the window in pixels
+		bool					mBorderless		= false;									///< Property: 'Borderless' if the window has any borders
+		bool					mResizable		= true;										///< Property: 'Resizable' if the window is resizable
+		bool					mVisible		= true;										///< Property: 'Visible' if the render window is visible on screen
+		EPresentationMode		mMode			= EPresentationMode::Immediate;				///< Property: 'Mode' the image presentation mode to use
+		std::string				mTitle			= "";										///< Property: 'Title' window title
+		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
+		int						mAddedSwapImages = 1;										///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:
 		RenderService*					mRenderService	= nullptr;

@@ -683,6 +683,7 @@ namespace nap
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
 			return false;
+		nap::Logger::info("%s: Created %d swap chain images", mID.c_str(), mSwapChainImageCount);
 
 		// Create frame / GPU synchronization objects
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))

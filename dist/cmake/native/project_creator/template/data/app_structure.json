@@ -7,7 +7,9 @@
               "Width": 1280,
               "Height": 720,
               "Title": "@PROJECT_NAME_PASCALCASE@",
-              "Sync": "false"
+              "Mode": "Immediate",
+              "SampleShading": true,
+              "Samples": "Four"
         },
         {
               "Type" : "nap::Scene",

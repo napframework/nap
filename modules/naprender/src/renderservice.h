@@ -51,7 +51,7 @@ namespace nap
 		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
-		bool						mPrintAvailableExtensions = true;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
 	};
