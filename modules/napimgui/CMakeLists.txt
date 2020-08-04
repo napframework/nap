@@ -38,6 +38,7 @@ if(APPLE)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
