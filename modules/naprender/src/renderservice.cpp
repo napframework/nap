@@ -1380,6 +1380,7 @@ namespace nap
 
 		VkCommandBufferBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 		// Begin recording commands
 		VkResult result = vkBeginCommandBuffer(commandBuffer, &begin_info);
@@ -1504,6 +1505,7 @@ namespace nap
 	void RenderService::endFrame()
 	{
 		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
+		assert(vkGetFenceStatus(mDevice, mFramesInFlight[mCurrentFrameIndex].mFence) == VK_SUCCESS);
 		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		// Push any texture downloads on the command buffer
@@ -1525,6 +1527,7 @@ namespace nap
 
 		VkCommandBufferBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &begin_info);
 		assert(result == VK_SUCCESS);
 

@@ -394,6 +394,7 @@ namespace nap
 	{
 		assert(mCurrentStagingBufferIndex != -1);
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		assert(buffer.mAllocation != VK_NULL_HANDLE);
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 		
 		VkAccessFlags srcMask = 0;
