@@ -124,8 +124,6 @@ add_subdirectory(test/audiotest)
 add_subdirectory(test/solarsystem)
 
 # app targets
-add_subdirectory(apps/kalvertoren)
-add_subdirectory(apps/kalvertoren/module)
 add_subdirectory(apps/example)
 add_subdirectory(apps/atmos)
 add_subdirectory(apps/atmos/module)
