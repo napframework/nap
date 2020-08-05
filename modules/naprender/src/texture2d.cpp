@@ -494,7 +494,7 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Map memory and copy contents, note for this to work on OSX the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required!
-		void* mapped_memory;
+		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
@@ -524,7 +524,7 @@ namespace nap
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
 		BufferData& buffer = mStagingBuffers[frameIndex];
-		void* mapped_memory;
+		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 

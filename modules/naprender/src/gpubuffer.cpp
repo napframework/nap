@@ -159,7 +159,7 @@ namespace nap
 		assert(mRenderBuffers.size() == 1);
 		
 		// Copy staging buffer to GPU
-		VkBufferCopy copyRegion{};
+		VkBufferCopy copyRegion = {};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffer.mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
 
