@@ -125,10 +125,6 @@ add_subdirectory(test/solarsystem)
 
 # app targets
 add_subdirectory(apps/example)
-add_subdirectory(apps/atmos)
-add_subdirectory(apps/atmos/module)
-add_subdirectory(apps/flexblock)
-add_subdirectory(apps/flexblock/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
