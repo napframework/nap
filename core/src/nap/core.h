@@ -240,6 +240,14 @@ namespace nap
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
+		 * Load the service configuration file
+		 * @param deserialize_result contains the result after reading the config file
+		 * @param errorState contains the error if deserialization fails
+		 * @return if service configuration reading succeeded or not
+		 */
+		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
+
+		/**
 		* Occurs when a file has been successfully loaded by the resource manager
 		* Forwards the call to all interested services.
 		* This can only be called when the services have been initialized
@@ -258,7 +266,7 @@ namespace nap
 		 */
 		void setupPythonEnvironment();
 
-		bool loadServicesInfo(nap::utility::ErrorState& error);
+		bool loadServicesInfo(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

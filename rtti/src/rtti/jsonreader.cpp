@@ -5,33 +5,13 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
-#include <fstream>
 #include <utility/fileutils.h>
 
 namespace nap
 {
 	namespace rtti
 	{
-		struct ReadState
-		{
-			ReadState(EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result) :
-				mPropertyValidationMode(propertyValidationMode),
-				mPointerPropertyMode(pointerPropertyMode),
-				mFactory(factory),
-				mResult(result)
-			{
-			}
-
-			EPropertyValidationMode			mPropertyValidationMode;
-			EPointerPropertyMode			mPointerPropertyMode;
-			Path							mCurrentRTTIPath;
-			Factory&						mFactory;
-			DeserializeResult&				mResult;
-			std::unordered_set<std::string>	mObjectIDs;
-		};
-
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
 		{
@@ -69,8 +49,6 @@ namespace nap
 
 
 		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
-
-		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
 
 		/**
 		 * Helper function to read a basic JSON type to a C++ type
@@ -449,7 +427,8 @@ namespace nap
 			return true;
 		}
 
-		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject,
+										  ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
 			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");

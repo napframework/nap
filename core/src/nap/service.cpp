@@ -36,4 +36,9 @@ namespace nap
 	{
 		return rtti::TypeInfo::get(*this).get_name().data();
 	}
+
+	ServiceConfiguration::~ServiceConfiguration()
+	{
+		nap::Logger::info("Kakkerdekak");
+	}
 }

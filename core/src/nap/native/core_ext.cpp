@@ -4,6 +4,7 @@
 #include <packaginginfo.h>
 
 // External Includes
+#include <rtti/jsonreader.h>
 #include <utility/fileutils.h>
 
 namespace nap
@@ -63,4 +64,20 @@ namespace nap
 		return false;
 	}
 
+	bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
+	{
+		std::string config_file_path;
+		if (findProjectFilePath(SERVICE_CONFIG_FILENAME, config_file_path))
+		{
+			if (rtti::readJSONFile(config_file_path,
+								   rtti::EPropertyValidationMode::DisallowMissingProperties,
+								   rtti::EPointerPropertyMode::NoRawPointers,
+								   mResourceManager->getFactory(),
+								   deserializeResult,
+								   errorState))
+				return true;
+		}
+
+		return false;
+	}
 }

@@ -232,13 +232,8 @@ namespace nap
 
 	bool nap::Core::initializeServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
 	{
-		if (projectInfo.mServicesInfo == nullptr)
+		if (projectInfo.mServiceConfigs.empty())
 			return true; // No services info, ignore
-
-		// Convert service configurations to map
-		ServiceConfigMap configuration_by_type;
-		for (auto& config : projectInfo.mServicesInfo->mServiceConfigurations)
-			configuration_by_type[config->getServiceType()] = config;
 
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
@@ -259,9 +254,9 @@ namespace nap
 			auto service_configuration(service_configuration_type.create<ServiceConfiguration>());
 			rtti::TypeInfo serviceType = service_configuration->getServiceType();
 
-			auto pos = configuration_by_type.find(serviceType);
-			if (pos == configuration_by_type.end())
-				configuration_by_type.insert(std::make_pair(serviceType, service_configuration));
+			auto pos = mProjectInfo->mServiceConfigs.find(serviceType);
+			if (pos == mProjectInfo->mServiceConfigs.end())
+				mProjectInfo->mServiceConfigs.insert(std::make_pair(serviceType, service_configuration));
 		}
 
 		// First create and add all the services (unsorted)
@@ -273,9 +268,9 @@ namespace nap
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
 			ServiceConfiguration* configuration = nullptr;
-			auto pos = configuration_by_type.find(module->mService);
-			if (pos != configuration_by_type.end())
-				configuration = pos->second;
+			auto pos = mProjectInfo->mServiceConfigs.find(module->mService);
+			if (pos != mProjectInfo->mServiceConfigs.end())
+				configuration = pos->second.get();
 
 			// Create the service
 			if (!addService(module->mService, configuration, services, errorState))
@@ -482,22 +477,53 @@ namespace nap
 
 	bool nap::Core::loadServicesInfo(nap::utility::ErrorState& err)
 	{
-		auto filename = mProjectInfo->mServicesInfoFile;
-		if (filename.empty())
-			return true; // No service configurations linked, no sweat.
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		rtti::DeserializeResult deserialize_result;
+		bool hasServiceConfig = true; // hasServiceConfiguration()
+		if (hasServiceConfig)
+		{
+			if (loadServiceConfiguration(deserialize_result, err))
+			{
+				for (auto& object : deserialize_result.mReadObjects)
+				{
+					if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+						return false;
 
-		mProjectInfo->mServicesInfo = nap::rtti::readJSONFileObjectT<nap::ServicesInfo>(
-			mProjectInfo->mServicesInfoFile,
-			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
-			getResourceManager()->getFactory(),
-			err);
+					std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+					mProjectInfo->mServiceConfigs[config->getServiceType()] = std::move(config);
+				}
+			}
+			else {
+				err.fail("Failed to load config.json");
+				return false;
+			}
+		}
 
-		if (!err.check(mProjectInfo->mServicesInfo != nullptr,
-					   "Failed to load services info %s", filename.c_str()))
-			return false;
+		// Gather all service configuration types
+		std::vector<rtti::TypeInfo> service_configuration_types;
+		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
 
-		mProjectInfo->mServicesInfo->mFilename = filename;
+		// For any ServiceConfigurations which weren't present in the config file, construct a default version of it,
+		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
+		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
+		{
+			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
+				continue;
+
+			assert(service_configuration_type.is_valid());
+			assert(service_configuration_type.can_create_instance());
+
+			// Construct the service configuration
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+
+			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
+			// object will be destroyed
+			const auto& pos = mProjectInfo->mServiceConfigs.find(serviceType);
+			if (pos == mProjectInfo->mServiceConfigs.end())
+				mProjectInfo->mServiceConfigs.insert(std::make_pair(serviceType, std::move(service_configuration)));
+		}
 
 		return true;
 	}

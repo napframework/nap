@@ -9,10 +9,6 @@ RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("ModulePaths", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ServicesInfo)
-		RTTI_PROPERTY("ServiceConfigurations", &nap::ServicesInfo::mServiceConfigurations, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("Title", &nap::ProjectInfo::mTitle, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Version", &nap::ProjectInfo::mVersion, nap::rtti::EPropertyMetaData::Required)
@@ -21,7 +17,6 @@ RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("ServiceConfig", &nap::ProjectInfo::mServicesInfoFile, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequiredModules", &nap::ProjectInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
-
 
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
 	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)

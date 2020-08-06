@@ -24,6 +24,26 @@ namespace nap
 	{
 		class Factory;
 
+		struct ReadState
+		{
+			ReadState(EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result) :
+				mPropertyValidationMode(propertyValidationMode),
+				mPointerPropertyMode(pointerPropertyMode),
+				mFactory(factory),
+				mResult(result)
+			{
+			}
+
+			EPropertyValidationMode			mPropertyValidationMode;
+			EPointerPropertyMode			mPointerPropertyMode;
+			Path							mCurrentRTTIPath;
+			Factory&						mFactory;
+			DeserializeResult&				mResult;
+			std::unordered_set<std::string>	mObjectIDs;
+		};
+
+		rtti::Object* NAPAPI readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
+
 		/**
 		 * Deserialize a set of objects and their data from the specified JSON string
 		 *
