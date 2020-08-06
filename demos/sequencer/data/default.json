@@ -50,13 +50,27 @@
         },
         {
             "Type": "nap::RenderWindow",
-            "mID": "Window",
+            "mID": "TimelineWindow",
             "Width": 1280,
             "Height": 720,
             "Borderless": false,
             "Resizable": true,
             "Title": "Timeline",
-            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "ParameterWindow",
+            "Width": 512,
+            "Height": 512,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Parameters",
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,

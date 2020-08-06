@@ -83,7 +83,8 @@ namespace nap
 		InputService*			mInputService = nullptr;				///< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;					///< Manages GUI related update / draw calls
 		ParameterService*		mParameterService = nullptr;			///< Manages all the parameters
-		ObjectPtr<RenderWindow> mRenderWindow;							///< Pointer to the render window	
+		ObjectPtr<RenderWindow> mParameterWindow = nullptr;				///< Pointer to the parameter render window	
+		ObjectPtr<RenderWindow> mTimelineWindow = nullptr;				///< Pointer to the timeline render window
 		ObjectPtr<Scene>		mScene = nullptr;						///< Pointer to the main scene
 		
 		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			///< Displays the parameters

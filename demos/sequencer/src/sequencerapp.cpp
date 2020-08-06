@@ -32,9 +32,14 @@ namespace nap
         if (!mResourceManager->loadFile(mFilename, error))
             return false;
 
-		// Get the render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
-		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
+		// Get the timeline window
+		mTimelineWindow = mResourceManager->findObject<nap::RenderWindow>("TimelineWindow");
+		if (!error.check(mTimelineWindow != nullptr, "unable to find TimelineWindow"))
+			return false;
+
+		// Get the parameter window
+		mParameterWindow = mResourceManager->findObject<nap::RenderWindow>("ParameterWindow");
+		if (!error.check(mParameterWindow != nullptr, "unable to find ParameterWindow"))
 			return false;
 
 		// Get the scene that contains our entities and components
@@ -124,11 +129,12 @@ namespace nap
 	 */
 	void SequencerApp::update(double deltaTime)
 	{
-		// Use a default input router to forward input events (recursively) to all input components in the default scene
+		// Forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
-		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+		mInputService->processWindowEvents(*mParameterWindow, input_router,	{ &mScene->getRootEntity()});
 
 		// Show parameters
+		mGuiService->selectWindow(mParameterWindow);
 		mParameterGUI->show(mParameterGroup.get(), true);
 
 		// Show general application information
@@ -139,6 +145,7 @@ namespace nap
 		ImGui::End();
 
 		// Show sequence editor GUI
+		mGuiService->selectWindow(mTimelineWindow);
 		mSequenceEditorGUI->show();
 	}
 
@@ -152,17 +159,33 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Begin recording the render commands for the main render window
-		if (mRenderService->beginRecording(*mRenderWindow))
+		// Draw GUI parameter window
+		if (mRenderService->beginRecording(*mParameterWindow))
 		{
 			// Begin the render pass
-			mRenderWindow->beginRendering();
+			mParameterWindow->beginRendering();
 
 			// Draw GUI to screen
 			mGuiService->draw();
 
 			// End the render pass
-			mRenderWindow->endRendering();
+			mParameterWindow->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Draw GUI timeline window
+		if (mRenderService->beginRecording(*mTimelineWindow))
+		{
+			// Begin the render pass
+			mTimelineWindow->beginRendering();
+
+			// Draw GUI to screen
+			mGuiService->draw();
+
+			// End the render pass
+			mTimelineWindow->endRendering();
 
 			// End recording
 			mRenderService->endRecording();
@@ -190,7 +213,7 @@ namespace nap
 
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
-				mRenderWindow->toggleFullscreen();
+				mTimelineWindow->toggleFullscreen();
 		}
 
 		// Forward to input service

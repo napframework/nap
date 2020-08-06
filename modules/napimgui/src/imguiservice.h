@@ -61,22 +61,53 @@ namespace nap
 		IMGuiService(ServiceConfiguration* configuration);
 
 		/**
-		 * Draws the all the GUI elements to screen
-		 * You need to call this just before swapping buffers for the primary window
+		 * Draws the GUI elements for the currently active window to screen.
+		 * ~~~~~{.cpp}
+		 *	// Draw gui window 1
+		 *	mRenderService->beginFrame();
+		 *	if (mRenderService->beginRecording(*mRenderWindowOne))
+		 *	{
+		 *		mRenderWindowOne->beginRendering();
+		 *		mGuiService->draw();
+		 *		mRenderWindowOne->endRendering();
+		 *		mRenderService->endRecording();
+		 *	}
+		 * 
+		 *	// Draw gui window 2
+		 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
+		 *	{
+		 *		mRenderWindowTwo->beginRendering();
+		 *		mGuiService->draw();
+		 *		mRenderWindowTwo->endRendering();
+		 *		mRenderService->endRecording();
+		 *	}
+		 *	mRenderService->endFrame();
+		 * ~~~~~
 		 */
 		void draw();
 
 		/**
-		 * Explicitly set the window that is used for drawing the GUI elements
-		 * When no window is specified the system uses the primary window to draw GUI elements
-		 * Only set the window on init() of your application.
-		 * @param window the window to use for drawing the GUI elements
+		 * Select the window all subsequent ImGUI calls apply to.
+		 * Explicit selection is only necessary when there is more than 1 window.
+		 * Only call selectWindow() on application update, not when rendering the GUI to screen.
+		 *
+		 * ~~~~~{.cpp}
+		 *	mGuiService->selectWindow(mRenderWindowOne);
+		 *	ImGui::Begin("GUI Window One");
+		 *	...
+		 *	ImGui::End();
+		 *
+		 *	mGuiService->selectWindow(mRenderWindowTwo);
+		 *	ImGui::Begin("GUI Window Two");
+		 *	...
+		 *	ImGui::End();
+		 * ~~~~~
+		 * @param window the window to select
 		 */
 		void selectWindow(nap::ResourcePtr<RenderWindow> window);
 
 		/**
-		 * Handles input for gui related tasks, called from the Gui App Event Handler
-		 * This is separate from other input related event handling
+		 * Handles input for gui related tasks, called from the Gui App Event Handler.
 		 */
 		void processInputEvent(InputEvent& event);
 
