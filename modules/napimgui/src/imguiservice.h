@@ -107,19 +107,26 @@ namespace nap
 		void selectWindow(nap::ResourcePtr<RenderWindow> window);
 
 		/**
-		 * Handles input for gui related tasks, called from the Gui App Event Handler.
+		 * Returns the ImGUI context associated with the given window.
+		 * @return ImGUI context for the given window, asserts if it doesn't exist.
 		 */
-		void processInputEvent(InputEvent& event);
+		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
+
+		/**
+		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
+		 * @return context that belongs to the event, nullptr if the event is not related to a window.
+		 */
+		ImGuiContext* processInputEvent(InputEvent& event);
 
 		/**
 		 * @return if the gui is capturing keyboard events
 		 */
-		bool isCapturingKeyboard();
+		bool isCapturingKeyboard(ImGuiContext* context);
 
 		/**
 		 * @return if the gui is capturing mouse events
 		 */
-		bool isCapturingMouse();
+		bool isCapturingMouse(ImGuiContext* context);
 
 		/**
 		 * @return Vulkan texture handle, can be used to display a texture in ImGUI

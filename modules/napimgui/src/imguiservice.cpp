@@ -356,11 +356,20 @@ namespace nap
 	}
 
 
-	void IMGuiService::processInputEvent(InputEvent& event)
+	ImGuiContext* IMGuiService::getContext(nap::ResourcePtr<RenderWindow> window)
+	{
+		// Select ImGUI context
+		const auto it = mContexts.find(window.get());
+		assert(it != mContexts.end());
+		return it->second->mContext;
+	}
+
+
+	ImGuiContext* IMGuiService::processInputEvent(InputEvent& event)
 	{
 		// Check if it's a window input event
 		if (!event.get_type().is_derived_from(RTTI_OF(nap::WindowInputEvent)))
-			return;
+			return nullptr;
 
 		// Find window associated with event
 		WindowInputEvent& input_event = static_cast<WindowInputEvent&>(event);
@@ -408,20 +417,23 @@ namespace nap
 			assert(press_event.mButton != EMouseButton::UNKNOWN);
 			context->second->mMousePressed[static_cast<int>(press_event.mButton)] = true;
 		}
+		return context->second->mContext;
 	}
 
 
-	bool IMGuiService::isCapturingKeyboard()
+	bool IMGuiService::isCapturingKeyboard(ImGuiContext* context)
 	{
 		// Get the interface
+		ImGui::SetCurrentContext(context);
 		ImGuiIO& io = ImGui::GetIO();
 		return io.WantCaptureKeyboard;
 	}
 
 
-	bool IMGuiService::isCapturingMouse()
+	bool IMGuiService::isCapturingMouse(ImGuiContext* context)
 	{
 		// Get the interface
+		ImGui::SetCurrentContext(context);
 		ImGuiIO& io = ImGui::GetIO();
 		return io.WantCaptureMouse;
 	}

@@ -38,8 +38,8 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				mGuiService->processInputEvent(*input_event);
-				if (!mGuiService->isCapturingMouse())
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
@@ -52,8 +52,8 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				mGuiService->processInputEvent(*input_event);
-				if (!mGuiService->isCapturingKeyboard())
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
