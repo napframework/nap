@@ -25,7 +25,6 @@ find_path(VULKANSDK_INCLUDE_DIRS
 			NAMES vulkan/vulkan.h
 			HINTS ${VULKANSDK_DIR}/include
 			)
-message(${VULKANSDK_INCLUDE_DIRS})
 
 # vulkan library directory
 set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/lib)
