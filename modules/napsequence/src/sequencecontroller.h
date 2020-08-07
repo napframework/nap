@@ -30,6 +30,9 @@ namespace nap
 		 */
 		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
         
+		/**
+		 * Deconstructor
+		 */
         virtual ~SequenceController(){};
 
 		/**

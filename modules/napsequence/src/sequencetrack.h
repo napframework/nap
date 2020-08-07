@@ -11,12 +11,15 @@
 namespace nap
 {
 	/**
-	* Holds a collection of track segments
-	*/
+	 * Holds a collection of track segments
+	 */
 	class NAPAPI SequenceTrack : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		/**
+		 * Deconstructor
+		 */
         virtual ~SequenceTrack(){};
         
 		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id

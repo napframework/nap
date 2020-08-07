@@ -9,7 +9,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequencePlayerOutput;
 	class SequencePlayerAdapter;

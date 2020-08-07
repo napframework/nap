@@ -12,37 +12,36 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEventReceiver;
-	class SequencePlayerParameterSetterBase;
 
 	/**
-	 * Main interface for processing sequence events and updating sequenceoutputs
-	 * F.E. 
+	 * Main interface for processing sequence outputs
 	 */
 	class NAPAPI SequenceService : public Service
 	{
-		friend class SequenceEventReceiver;
-		friend class SequencePlayerParameterSetterBase;
 		friend class SequencePlayerOutput;
 
 		RTTI_ENABLE(Service)
 	public:
-		// Default Constructor
+		/**
+		 * Constructor
+		 */
 		SequenceService(ServiceConfiguration* configuration);
 
-		// Default Destructor
+		/**
+		 * Deconstructor
+		 */
 		virtual ~SequenceService();
 
 		/**
-		 * Registers object create for specific output types
-		 * Each output type must register its own factory method so its constructor gets initialized with a reference to the sequenceservice
+		 * registers object creator method that can be passed on to the rtti factory
+		 * @param objectCreator unique pointer to method
 		 */
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService*));
 	protected:
 		/**
-		 * Registers all objects that need a specific way of construction
+		 * registers all objects that need a specific way of construction
 		 * @param factory the factory to register the object creators with
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
@@ -55,7 +54,7 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * updates any outputs from main thread
+		 * updates any outputs
 		 * @param deltaTime deltaTime
 		 */
 		virtual void update(double deltaTime) override;
@@ -67,12 +66,12 @@ namespace nap
 		void registerOutput(SequencePlayerOutput& output);
 
 		/**
-		 * removes an input
+		 * removes an output
 		 * @param input reference to input
 		 */
 		void removeOutput(SequencePlayerOutput& output);
 
-		//
+		// vector holding raw pointers to outputs
 		std::vector<SequencePlayerOutput*> mOutputs;
 	};
 }
