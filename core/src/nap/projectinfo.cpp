@@ -14,7 +14,7 @@ RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("Version", &nap::ProjectInfo::mVersion, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Data", &nap::ProjectInfo::mDefaultData, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathMapping", &nap::ProjectInfo::mPathMappingFile, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ServiceConfig", &nap::ProjectInfo::mServicesInfoFile, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ServiceConfig", &nap::ProjectInfo::mServiceConfigFilename, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequiredModules", &nap::ProjectInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -136,6 +136,11 @@ namespace nap
 		values.insert(additionalValues.begin(), additionalValues.end());
 
 		return values;
+	}
+
+	bool ProjectInfo::hasServiceConfigFile() const
+	{
+		return !mServiceConfigFilename.empty();
 	}
 
 	const ProjectInfo& ModuleInfo::getProjectInfo() const

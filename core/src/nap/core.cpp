@@ -104,8 +104,9 @@ namespace nap
 			return false;
 
 		// Now load the actual service configurations
-		if (!loadServicesInfo(error))
-			return false;
+		if (mProjectInfo->hasServiceConfigFile())
+			if (!loadServiceConfigs(error))
+				return false;
 
 		// Create the various services based on their dependencies
 		if (!initializeServices(*mProjectInfo, error))
@@ -460,7 +461,7 @@ namespace nap
 		loadPathMapping(*mProjectInfo, err);
 
 		// Ensure templates/variables are replaced with their intended values
-		if (!mProjectInfo->patchPath(mProjectInfo->mServicesInfoFile))
+		if (!mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename))
 			return false;
 
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
@@ -475,29 +476,25 @@ namespace nap
 		return true;
 	}
 
-	bool nap::Core::loadServicesInfo(nap::utility::ErrorState& err)
+	bool nap::Core::loadServiceConfigs(nap::utility::ErrorState& err)
 	{
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
 		rtti::DeserializeResult deserialize_result;
-		bool hasServiceConfig = true; // hasServiceConfiguration()
-		if (hasServiceConfig)
+		if (loadServiceConfiguration(deserialize_result, err))
 		{
-			if (loadServiceConfiguration(deserialize_result, err))
+			for (auto& object : deserialize_result.mReadObjects)
 			{
-				for (auto& object : deserialize_result.mReadObjects)
-				{
-					if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
-						return false;
+				if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
+					return false;
 
-					std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-					mProjectInfo->mServiceConfigs[config->getServiceType()] = std::move(config);
-				}
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+				mProjectInfo->mServiceConfigs[config->getServiceType()] = std::move(config);
 			}
-			else {
-				err.fail("Failed to load config.json");
-				return false;
-			}
+		}
+		else {
+			err.fail("Failed to load config.json");
+			return false;
 		}
 
 		// Gather all service configuration types

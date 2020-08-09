@@ -38,7 +38,7 @@ namespace nap
 		std::string mVersion;											// Version of this project
 		std::string mDefaultData;										// Relative path of the default data (json) file
 		std::string mPathMappingFile;									// Points to a file with a path mapping
-		std::string mServicesInfoFile = {};								// Points to a file with service configurations
+		std::string mServiceConfigFilename = {};								// Points to a file with service configurations
 		std::vector<std::string> mRequiredModules;						// Names of modules this project depends on
 
 		// Not automatically deserialized
@@ -89,6 +89,8 @@ namespace nap
 		 */
 		std::string dataDirectory() const;
 
+
+		bool hasServiceConfigFile() const;
 		/**
 		 * @return The path mapping for this project
 		 */

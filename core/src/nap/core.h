@@ -266,7 +266,7 @@ namespace nap
 		 */
 		void setupPythonEnvironment();
 
-		bool loadServicesInfo(nap::utility::ErrorState& err);
+		bool loadServiceConfigs(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
