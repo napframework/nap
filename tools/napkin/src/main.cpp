@@ -1,5 +1,6 @@
 #include <QFontDatabase>
 #include <QCommandLineParser>
+#include <QSplashScreen>
 
 #include <utility/fileutils.h>
 
@@ -37,6 +38,7 @@ void initializeSettings()
 	}
 }
 
+
 /**
  * Initialize the application and spawn its window
  */
@@ -46,7 +48,7 @@ int main(int argc, char* argv[])
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
 
     // Construct the app context singleton
-    AppContext::create();
+    auto& ctx = AppContext::create();
 
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("napframework");
@@ -57,29 +59,52 @@ int main(int argc, char* argv[])
 
 	QApplication app(argc, argv);
 
-	// handle commandline
-	QCommandLineParser parser;
-	auto opHelp = parser.addHelpOption();
-	auto opVer = parser.addVersionOption();
+	// Show splash screen
+	QPixmap splashpic(QRC_ICONS_NAPKIN_SPLASH);
+	QSplashScreen splash(splashpic);
+	splash.show();
+	app.processEvents();
 
-	QCommandLineOption opProject({"p", "project"}, "Load specified project directory upon startup", "project", "");
-	parser.addOption(opProject);
+	{
+		// handle commandline
+		QCommandLineParser parser;
+		auto opHelp = parser.addHelpOption();
+		auto opVer	= parser.addVersionOption();
 
-	parser.process(app);
+		QCommandLineOption opProject({"p", "project"}, "Load specified project file upon startup", "project", "");
+		parser.addOption(opProject);
+		// Options to assist with automated testing
+		QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
+		parser.addOption(opNoOpenRecent);
+		QCommandLineOption opExitFailure("exit-on-failure", "Exit on failure loading project (for testing)", "", "");
+		parser.addOption(opExitFailure);
+		QCommandLineOption opExitSuccess("exit-on-success", "Exit on success loading project (for testing)", "", "");
+		parser.addOption(opExitSuccess);
 
-	if (parser.isSet(opHelp))
-		return 0;
+		parser.process(app);
 
-	if (parser.isSet(opVer))
-		return 0;
+		if (parser.isSet(opHelp))
+			return 0;
 
-	if (parser.isSet(opProject))
-		AppContext::get().addRecentlyOpenedProject(parser.value(opProject));
+		if (parser.isSet(opVer))
+			return 0;
+
+		if (parser.isSet(opProject))
+			ctx.addRecentlyOpenedProject(parser.value(opProject));
+		else if (parser.isSet(opNoOpenRecent))
+			ctx.setOpenRecentProjectOnStartup(false);
+
+		if (parser.isSet(opExitFailure))
+			ctx.setExitOnLoadFailure(true);
+		if (parser.isSet(opExitSuccess))
+			ctx.setExitOnLoadSuccess(true);
+	}
 
 	// Create main window and run
 	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
 	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
 	w->show();
+	splash.finish(w.get());
 	int re = app.exec();
 	QFontDatabase::removeAllApplicationFonts();
 

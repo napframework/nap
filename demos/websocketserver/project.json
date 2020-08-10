@@ -9,7 +9,7 @@
         "mod_napimgui", 
         "mod_napcameracontrol"
     ], 
-    "Data": "", 
+    "Data": "data/websocketserver.json", 
     "ServiceConfig": "", 
-    "PathMapping": "./cache/path_mapping.json"
+    "PathMapping": "cache/path_mapping.json"
 }

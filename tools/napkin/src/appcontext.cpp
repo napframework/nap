@@ -6,11 +6,11 @@
 // qt
 #include <QSettings>
 #include <QTimer>
+#include <QProcess>
 
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <nap/logger.h>
 
 // local
 #include <naputils.h>
@@ -23,7 +23,6 @@ using namespace nap::utility;
 using namespace napkin;
 
 std::unique_ptr<AppContext> appContextInstance = nullptr;
-
 
 
 AppContext::AppContext()
@@ -45,10 +44,11 @@ AppContext& AppContext::get()
 }
 
 
-void AppContext::create()
+AppContext& AppContext::create()
 {
 	assert(appContextInstance == nullptr);
     appContextInstance = std::make_unique<AppContext>();
+    return *appContextInstance;
 }
 
 
@@ -60,6 +60,8 @@ void AppContext::destroy()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
+	blockingProgressChanged(0, "Loading: " + filename);
+
 	mCurrentFilename = filename;
 
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
@@ -70,27 +72,47 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	if (!QFile::exists(filename))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!QFileInfo(filename).isFile())
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
+
+	blockingProgressChanged(1);
 
 	return loadDocumentFromString(buffer, filename);
 }
 
 nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	// TODO: See if we can run this on a thread so the progress dialog may update live.
+
+	blockingProgressChanged(0, "Loading: " + projectFilename);
+
+	// Workaround for issues while unloading the current project: just start a new instance.
+	if (getProject())
+	{
+		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
+		getQApplication()->exit(0);
+		return nullptr;
+	}
+
 	mCore = std::make_unique<nap::Core>();
 
 	ErrorState err;
@@ -101,33 +123,59 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 		mCore->getResourceManager()->getFactory(),
 		err);
+	projectInfo->setFilename(projectFilename.toStdString());
+	projectInfo->setEditorMode();
 
 	if (err.hasErrors())
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Failed to load project info %s: %s",
 						   projectFilename.toStdString().c_str(), err.toString().c_str());
+
+		if (mExitOnLoadFailure)
+			exit(1);
+
 		return nullptr;
 	}
 
-	projectInfo->mFilename = projectFilename.toStdString();
-	projectInfo->mPathMapping = std::move(loadPathMapping(*projectInfo, err));
-	if (projectInfo->mPathMapping == nullptr)
+	projectInfo->getFilename() = projectFilename.toStdString();
+	if (!mCore->loadPathMapping(*projectInfo, err))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error("Failed to load path mapping %s: %s",
 						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
+
+		if (mExitOnLoadFailure)
+			exit(1);
+
 		return nullptr;
 	}
 
 	nap::Logger::info("Loading project '%s' ver. %s (%s)",
 					  projectInfo->mTitle.c_str(),
 					  projectInfo->mVersion.c_str(),
-					  projectInfo->getDirectory().c_str());
+					  projectInfo->getProjectDir().c_str());
 
 	if (!mCore->initializeEngine(err, std::move(projectInfo)))
 	{
+		blockingProgressChanged(1);
+
 		nap::Logger::error(err.toString());
+
+		if (mExitOnLoadFailure)
+			exit(1);
+
 		return nullptr;
 	}
+
+	coreInitialized();
+
+    if (mExitOnLoadSuccess) {
+		nap::Logger::info("Loaded successfully, exiting as requested");
+        exit(EXIT_ON_SUCCESS_EXIT_CODE);
+    }
 
 	addRecentlyOpenedProject(projectFilename);
 
@@ -135,42 +183,17 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
-		nap::Logger::error("No data file specified");
-
-	return mCore->getProjectInfo();
-}
-
-std::unique_ptr<nap::PathMapping> AppContext::loadPathMapping(nap::ProjectInfo& projectInfo,
-															  nap::utility::ErrorState& err)
-{
-	// Load path mapping (relative to the project.json file)
-	auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
-	auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
-		pathMappingFilename,
-		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
-		mCore->getResourceManager()->getFactory(),
-		err);
-
-
-	if (err.hasErrors())
 	{
-		nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
-		return nullptr;
+		blockingProgressChanged(1);
+
+		nap::Logger::error("No data file specified");
+		if (mExitOnLoadFailure)
+			exit(1);
 	}
 
-	auto projToRootPath = nap::utility::getExecutableDir() + '/' + pathMapping->mNapkinExeToRoot;
+	blockingProgressChanged(1);
 
-	// Do string/template replacement
-	std::unordered_map<std::string, std::string> reps = {
-		{"ROOT", projToRootPath},
-		{"BUILD_TYPE", sBuildType},
-	};
-
-	for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
-		pathMapping->mModulePaths[i] = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
-
-	return pathMapping;
+	return mCore->getProjectInfo();
 }
 
 nap::ProjectInfo* AppContext::getProject() const
@@ -339,7 +362,7 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	if (!getProject())
+	if (!getProject() && mOpenRecentProjectAtStartup)
 	{
 		QTimer::singleShot(100, [this]()
 		{
@@ -475,4 +498,19 @@ void napkin::AppContext::closeDocument()
 	QString prev_doc_name = mDocument->getCurrentFilename();
 	documentClosing(prev_doc_name);
 	mDocument.reset(nullptr);
+}
+
+void AppContext::setOpenRecentProjectOnStartup(bool b)
+{
+	mOpenRecentProjectAtStartup = b;
+}
+
+void AppContext::setExitOnLoadFailure(bool b)
+{
+	mExitOnLoadFailure = b;
+}
+
+void AppContext::setExitOnLoadSuccess(bool b)
+{
+	mExitOnLoadSuccess = b;
 }

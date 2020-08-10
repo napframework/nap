@@ -3,8 +3,8 @@
 #include "utility/fileutils.h"
 
 RTTI_BEGIN_CLASS(nap::PathMapping)
-	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ProjectExeToRoot", &nap::PathMapping::mProjectExeToRoot, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NapkinExeToRoot", &nap::PathMapping::mNapkinExeToRoot, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ModulePaths", &nap::PathMapping::mModulePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -15,32 +15,40 @@ RTTI_BEGIN_CLASS(nap::ProjectInfo)
 	RTTI_PROPERTY("Version", &nap::ProjectInfo::mVersion, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Data", &nap::ProjectInfo::mDefaultData, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PathMapping", &nap::ProjectInfo::mPathMappingFile, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RequiredModules", &nap::ProjectInfo::mModuleNames, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RequiredModules", &nap::ProjectInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
-	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mDependencies, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WindowsDllSearchPaths", &nap::ModuleInfo::mLibSearchPaths, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	std::string ProjectInfo::getDirectory() const
+
+//  Somehow, msvc cannot find this implementation when separating the declaration
+//	std::string ProjectInfo::getProjectDir() const
+//	{
+//		assert(!mFilename.empty());
+//		auto f = nap::utility::getAbsolutePath(mFilename);
+//		return nap::utility::getFileDir(f);
+//	}
+
+	std::string ProjectInfo::getNAPRootDir() const
 	{
-		assert(!mFilename.empty());
-		auto f = nap::utility::getAbsolutePath(mFilename);
-		return nap::utility::getFileDir(f);
+		return utility::joinPath({nap::utility::getExecutableDir(),
+								  mEditorMode ? mPathMapping->mNapkinExeToRoot : mPathMapping->mProjectExeToRoot});
 	}
 
 	std::vector<std::string> ProjectInfo::getModuleDirectories() const
 	{
 		std::vector<std::string> dirs;
-		auto projectDir = getDirectory();
+		auto projectDir = getProjectDir();
 
 		if (mPathMapping->mModulePaths.empty())
 		{
-			nap::Logger::error("No module paths specified in path mapping: %s",
-							   mPathMapping->mFilename.c_str());
+			nap::Logger::error("No module paths specified in path mapping: %s", mPathMapping->getFilename().c_str());
 			return {};
 		}
 
@@ -50,25 +58,39 @@ namespace nap
 			if (utility::isAbsolutePath(p))
 				dirs.emplace_back(p);
 			else
-				dirs.emplace_back(utility::stringFormat("%s/%s", projectDir.c_str(), p.c_str()));
+				dirs.emplace_back(utility::joinPath({projectDir, p}));
 		}
 
 		return dirs;
 	}
 
-	std::string ProjectInfo::getDefaultDataFile() const
-	{
-		if (mDefaultData.empty())
-			return {};
-		return getDirectory() + "/" + mDefaultData;
-	}
-
+//  Somehow, msvc cannot find this implementation when separating the declaration
+//	std::string ProjectInfo::getDefaultDataFile() const
+//	{
+//		if (mDefaultData.empty())
+//			return {};
+//		return utility::joinPath({getProjectDir(), mDefaultData});
+//	}
 
 	std::string ProjectInfo::dataDirectory() const
 	{
 		auto dataFile = getDefaultDataFile();
 		if (dataFile.empty())
-			return getDirectory() + "/data";
-		return getDirectory() + "/" + utility::getFileDir(mDefaultData);
+			return utility::joinPath({getProjectDir(), "data"});
+		return utility::joinPath({getProjectDir(), utility::getFileDir(mDefaultData)});
+	}
+
+	const PathMapping& ProjectInfo::getPathMapping() const
+	{
+		// Expected to exist when created
+		assert(mPathMapping);
+		return *mPathMapping;
+	}
+
+	const ProjectInfo& ModuleInfo::getProjectInfo() const
+	{
+		// Expected to exist when created
+		assert(mProjectInfo);
+		return *mProjectInfo;
 	}
 }

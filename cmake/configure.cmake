@@ -16,8 +16,10 @@ if(MSVC OR APPLE)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-
     endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
+    add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+    add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
 else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
@@ -40,9 +42,10 @@ else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-endif()
 
-add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+    add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+    add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+endif()
 
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
 # SRCDIR: The directory to work in
@@ -69,7 +72,6 @@ macro(export_fbx_in_place SRCDIR)
                        )
 endmacro()
 
-
 # Copy directory to project bin output
 # SRCDIR: The source directory
 # DSTDIR: The destination directory without project bin output
@@ -91,9 +93,20 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
+# Copy files to project target file dir
+# ARGN: Files to copy
+macro(copy_files_to_target_file_dir)
+    foreach(F ${ARGN})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           )
+    endforeach()
+endmacro()
+
 # Copy Windows SD2 and GLEW DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
-    # Copy over some crap window dlls
+    # Copy over some window DLLs
     set(FILES_TO_COPY
         ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
         ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll

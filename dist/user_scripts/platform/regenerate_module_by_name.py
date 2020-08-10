@@ -18,7 +18,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build'
+    BUILD_DIR = 'build_dir'
 
 def update_module(module_name, build_type):
     # If module name is prefixed with mod_ remove it

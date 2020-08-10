@@ -40,4 +40,6 @@ namespace napkin
 
 	static const std::string NAP_URI_PREFIX	 = "nap";
 
+    // Testing success exit code. Avoids some common Unix error codes
+	static const int EXIT_ON_SUCCESS_EXIT_CODE = 180;
 }

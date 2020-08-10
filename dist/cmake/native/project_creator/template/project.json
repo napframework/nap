@@ -6,7 +6,7 @@
     "RequiredModules": [
         @MODULE_LIST_SUB_JSON@
     ], 
-    "Data": "", 
+    "Data": "data/app_structure.json", 
     "ServiceConfig": "", 
-    "PathMapping": "./cache/path_mapping.json"
+    "PathMapping": "cache/path_mapping.json"
 }

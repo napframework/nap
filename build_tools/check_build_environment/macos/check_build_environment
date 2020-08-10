@@ -7,8 +7,8 @@ import sys
 import termios
 import tty
 
-REQUIRED_MACOS_VERSION = '10.14'
-REQUIRED_MACOS_VERSION_TITLE = 'Mojave'
+REQUIRED_MACOS_VERSION = '10.15'
+REQUIRED_MACOS_VERSION_TITLE = 'Catalina'
 REQUIRED_QT_VERSION = '5.11.3'
 
 def getch():

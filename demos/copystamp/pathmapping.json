@@ -1,9 +1,0 @@
-{
-    "ProjectExeToRoot": "../..",
-    "NapkinExeToRoot": "../..",
-    "ModulePaths": [
-        "{ROOT}/lib/{BUILD_TYPE}"
-    ],
-    "Type": "nap::PathMapping",
-    "mID": "UnixSourceMapping"
-}

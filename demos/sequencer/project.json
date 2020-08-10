@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Sequencer",
+    "Version": "0.3.0",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napparametergui",
+        "mod_napsequence",
+        "mod_napsequencegui"
+    ],
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json",
+    "Data": "data/default.json"
+}

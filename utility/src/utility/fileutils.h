@@ -22,6 +22,11 @@ namespace nap
 		*/
 		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute=true);
 
+		/**
+		 * Check if the given path is absolute
+		 * @param path The path to check
+		 * @return True if the path is absolute, false otherwise
+		 */
 		bool isAbsolutePath(const std::string& path);
 
 		/**
@@ -164,5 +169,28 @@ namespace nap
 		 * @return True if the read succeeded, false otherwise
 		 */
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err);
+
+		/**
+		 * Find a file in one of the given directories.
+		 * @param basefilename The base filename to look for
+		 * @param dirs The directories to search in
+		 * @return The absolute path to the found file or an empty string if none was found
+		 */
+		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs);
+
+		/**
+		 * Join parts path parts using the correct path separator for the current platform
+		 */
+		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep = "/");
+
+		/**
+		 * @return The current platform's file path separator
+		 */
+		std::string pathSep();
+
+		/**
+		 * @return A file path with the correct path separator for the current platform
+		 */
+		std::string forceSeparator(const std::string& path);
 	}
 }

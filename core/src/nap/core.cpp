@@ -6,7 +6,9 @@
 #include "objectgraph.h"
 #include "projectinfomanager.h"
 #include "rtti/jsonreader.h"
+#include <rtti/jsonwriter.h>
 #include "python.h"
+#include "packaginginfo.h"
 
 // External Includes
 #include <iostream>
@@ -86,6 +88,7 @@ namespace nap
 		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 
+		// Setup our Python environment
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif
@@ -256,7 +259,7 @@ namespace nap
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
-		for (auto& module : mModuleManager->mModules)
+		for (const auto& module : mModuleManager->mModules)
 		{
 			if (module->mService == rtti::TypeInfo::empty())
 				continue;
@@ -390,14 +393,14 @@ namespace nap
 #if _WIN32
 		if (packagedBuild)
 		{
+			// TODO Explore locating Python instead in third party to reduce duplication on disk
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
-			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../..";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "python-embed-amd64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #elif ANDROID
@@ -407,21 +410,19 @@ namespace nap
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+			const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
-				setenv("PYTHONHOME", exeDir.c_str(), 1);
+				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
 			else {
 				// Set PYTHONHOME to thirdparty location within packaged NAP release
-				const std::string napRoot = exeDir + "/../../../../";
-				const std::string pythonHome = napRoot + "/thirdparty/python/";
+				const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
 			}
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../../";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, "install"});
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
@@ -432,7 +433,7 @@ namespace nap
 		// Load project info
 		std::string projectFilename;
 		if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
-						 "Failed to find %s", PROJECT_INFO_FILENAME))
+					   "Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
 		// Load ProjectInfo from json
@@ -452,7 +453,7 @@ namespace nap
 		mProjectInfo->mFilename = projectFilename;
 
 		// Load path mapping
-		mProjectInfo->mPathMapping = std::move(loadPathMapping(*mProjectInfo, err));
+		loadPathMapping(*mProjectInfo, err);
 
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
@@ -461,17 +462,15 @@ namespace nap
 
 		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
-						  mProjectInfo->mVersion.c_str(),
-						  mProjectInfo->getDirectory().c_str());
+						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 
 		return true;
 	}
 
-	std::unique_ptr<nap::PathMapping> Core::loadPathMapping(nap::ProjectInfo& projectInfo,
-																  nap::utility::ErrorState& err)
+	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
 	{
 		// Load path mapping (relative to the project.json file)
-		auto pathMappingFilename = projectInfo.getDirectory() + '/' + projectInfo.mPathMappingFile;
+		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
 		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
@@ -479,33 +478,70 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
-
 		if (err.hasErrors())
 		{
 			nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
-			return nullptr;
+			return false;
 		}
 
-		auto exepath = nap::utility::getExecutableDir();
-		auto rootpath = exepath + '/' + pathMapping->mProjectExeToRoot;
-		// Do string/template replacement
+		// Store loaded path mapping first
+		projectInfo.mPathMapping = std::move(pathMapping);
+
 		std::unordered_map<std::string, std::string> reps = {
-			{"ROOT", rootpath},
+			{"ROOT", projectInfo.getNAPRootDir()},
+			{"BUILD_CONFIG", sBuildConf},
 			{"BUILD_TYPE", sBuildType},
+			{"PROJECT_DIR", projectInfo.getProjectDir()},
 		};
 
-		for (int i = 0, len = pathMapping->mModulePaths.size(); i < len; i++)
-		{
-			auto newPath = nap::utility::namedFormat(pathMapping->mModulePaths[i], reps);
-			pathMapping->mModulePaths[i] = newPath;
-		}
+		// As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
+		// try and populate it
+		if (!projectInfo.isEditorMode())
+			reps["EXE_DIR"] = utility::getExecutableDir();
 
-		return pathMapping;
+		// Do string/template replacement
+		projectInfo.mPathMapping->mModulePaths = utility::namedFormat(projectInfo.mPathMapping->mModulePaths, reps);
+
+		return true;
 	}
 
 	nap::ProjectInfo* nap::Core::getProjectInfo()
 	{
 		return mProjectInfo.get();
 	}
+
+    bool Core::writeConfigFile(utility::ErrorState& errorState)
+    {
+	    // Write all available service configurations to a vector
+        std::vector<rtti::Object*> objects;
+        for (auto& service : mServices)
+        {
+            auto configuration = service->getConfiguration<rtti::Object>();
+            if (configuration != nullptr)
+            {
+                // The serializer needs all objects to have a mID set
+                if (configuration->mID.empty())
+                    configuration->mID = configuration->get_type().get_name().to_string();
+                objects.emplace_back(configuration);
+            }
+        }
+
+        // Serialize the configurations to json
+        rtti::JSONWriter writer;
+        if (!serializeObjects(objects, writer, errorState))
+            return false;
+        std::string json = writer.GetJSON();
+
+        // Save the config file besides the binary, the first location that NAP searches
+        const std::string exeDir = utility::getExecutableDir();
+        const std::string configFilePath = utility::getExecutableDir() + "/" + SERVICE_CONFIG_FILENAME;
+
+        std::ofstream configFile;
+        configFile.open(configFilePath);
+        configFile << json << std::endl;
+        configFile.close();
+
+        return true;
+    }
 
 }

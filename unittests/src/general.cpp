@@ -106,6 +106,9 @@ TEST_CASE("Template Replacement", "[stringutils]")
 
 TEST_CASE("DateTime Utilities", "[datetime]")
 {
+    // TODO In July 2020 this test is broken for machines running on a timezone which have DST
+    //      at the used datetime, at least when running outside DST (seen on Linux)
+
 	auto currenttime = nap::getCurrentTime();
 	auto flc1_launch_str = "2006-03-24 22:30:01.123";
 	auto flc1_launch = nap::createTimestamp(2006, 03, 24, 22, 30, 01, 123);

@@ -25,7 +25,8 @@ constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
-constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
 
 namespace nap
 {
@@ -209,6 +210,22 @@ namespace nap
 		 */
 		nap::ProjectInfo* getProjectInfo();
 
+        /**
+         * Load path mapping file and replace any template vars with their respective values
+         * @param projectInfo The current project info
+         * @param editorMode True if this is invoked from Napkin, false otherwise
+         * @param err The resulting errors if there were any
+         * @return The path mapping that was loaded or nullptr if loading failed
+         */
+		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
+
+		/**
+ 		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
+ 		 * @param errorState Serialization errors will be logged to errorState.
+ 		 * @return true on sucess.
+		 */
+		bool writeConfigFile(utility::ErrorState& errorState);
+
 	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
@@ -250,8 +267,6 @@ namespace nap
 		 * @return The current project info, load it if it isn't set.
 		 */
 		bool loadProjectInfo(nap::utility::ErrorState& error);
-
-		std::unique_ptr<PathMapping> loadPathMapping(ProjectInfo& projectInfo, utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

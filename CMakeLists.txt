@@ -169,6 +169,15 @@ add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
+add_subdirectory(demos/sequencer)
+
+# Temporary dummy demos testing module thirdparty requirements in Napkin for modules 
+# not included in other demos
+add_subdirectory(demos/napkintestmodnapartnet)
+add_subdirectory(demos/napkintestmodnapdatabase)
+add_subdirectory(demos/napkintestmodnapserial)
+add_subdirectory(demos/napkintestmodnapsoem)
+add_subdirectory(demos/napkintestmodnapyoctopuce)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -209,6 +218,8 @@ add_subdirectory(modules/napapiwebsocket)
 add_subdirectory(modules/napopencv)
 add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
+add_subdirectory(modules/napsequence)
+add_subdirectory(modules/napsequencegui)
 
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)

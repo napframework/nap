@@ -16,19 +16,19 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
-if(MSVC)
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/Release/napkin)
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/Debug/napkin)
+if(MSVC OR APPLE)
+    if(NOT DEFINED NAP_PACKAGED_BUILD)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+    else()
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+    endif()
 else()
     if(NOT DEFINED NAP_PACKAGED_BUILD)
-        if(APPLE)
-            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/Release/napkin)
-            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/Debug/napkin)
-        else()
-            set(NAPKIN_OUTPUT_PATH ${NAP_ROOT}/bin/${CMAKE_BUILD_TYPE}/napkin)
-            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${NAPKIN_OUTPUT_PATH})
-            file(MAKE_DIRECTORY ${NAPKIN_OUTPUT_PATH})
-        endif()
+        set(NAPKIN_OUTPUT_PATH ${NAP_ROOT}/bin/${BUILD_CONF}/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${NAPKIN_OUTPUT_PATH})
+        file(MAKE_DIRECTORY ${NAPKIN_OUTPUT_PATH})
     endif()
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
@@ -109,7 +109,7 @@ if(MSVC)
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
                                    -E copy
-                                   ${NAPKIN_COPY_SRC}/$<CONFIG>/${MODULE_NAME}.dll
+                                   $<TARGET_FILE:${MODULE_NAME}>
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
     endforeach()
@@ -126,45 +126,52 @@ if(MSVC)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:naprtti> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
 
     # NAP core 
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPKIN_COPY_SRC}/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:napcore> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
 
     # Copy freeimage DLL to build directory
-    find_package(freeimage REQUIRED)
-    copy_freeimage_dll()
+    if(NOT TARGET FreeImage)
+        find_package(freeimage REQUIRED)
+    endif()
+    copy_files_to_target_file_dir($<TARGET_FILE:FreeImage>)
 
     # Copy over Windows graphics DLLs to build directory
-    copy_base_windows_graphics_dlls()
+    set(FILES_TO_COPY
+        ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
+        ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
+        )
+    copy_files_to_target_file_dir(${FILES_TO_COPY})
 
-    # Copy over Assimp to build directory
-    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
+    # Copy over Assimp
+    copy_files_to_target_file_dir(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
 
     # RTTR
     find_rttr()
-    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
+    copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    copy_windows_python_dlls_to_bin()
-
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    copy_files_to_target_file_dir(${PYTHON_DLLS})
 
     # Transitional thirdparty DLL copying until source and framework release 
     # structures are aligned (and we can use a shared module_extra.cmake) ##
 
     # mod_napvideo
-    copy_windows_ffmpeg_dlls()
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
+    copy_files_to_target_file_dir(${FFMPEGDLLS})
 
     # mod_napfont
-    if(NOT DEFINED FREETYPE_INCLUDE_DIRS)
+    if(NOT TARGET freetype)
         find_package(freetype REQUIRED)
     endif()
-    copy_freetype_dll()
+    copy_files_to_target_file_dir($<TARGET_FILE:freetype>)
 
     # mod_napaudio
     if(NOT DEFINED LIBSNDFILE_LIB_DIR)
@@ -181,7 +188,7 @@ if(MSVC)
         ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
         ${LIBMPG123_LIB_DIR}/libmpg123.dll
         )
-    copy_files_to_bin(${FILES_TO_COPY})
+    copy_files_to_target_file_dir(${FILES_TO_COPY})
 
     ########################################################################
 
@@ -200,7 +207,7 @@ if(MSVC)
     # On Windows, for now, dump our whole napkin directory from packaging_bin
     # into the release as it contains the required DLLs (as we loaded them in 
     # there for running Napkin against source from its own directory)
-    install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release/napkin
+    install(DIRECTORY ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-Release/napkin
             DESTINATION tools/)
 else()
     # Deploy Napkin binary into release on *nix
@@ -264,30 +271,6 @@ if(APPLE)
                                                   ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                   "@rpath"
                                                   )
-
-#   ######### TODO review the need for an equivalent of these in Napkin relocation ############
-
-#   set(PATH_TO_NAP_ROOT "@executable_path/../../../..")
-
-#   # Add core libs path to RPATH
-#   add_custom_command(TARGET ${PROJECT_NAME}
-#                      POST_BUILD
-#                      COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-#                              -add_rpath ${PATH_TO_NAP_ROOT}/lib/Release
-#                              ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-#                      )
-
-#   # Add module paths to RPATH
-#   foreach(MODULE_NAME ${NAPKIN_DEPENDENT_NAP_MODULES})
-#       add_custom_command(TARGET ${PROJECT_NAME}
-#                          POST_BUILD
-#                          COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-#                                  -add_rpath ${PATH_TO_NAP_ROOT}/modules/${MODULE_NAME}/lib/Release
-#                                  ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-#                          )
-#   endforeach()
-
-#   ###########################################################################################
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")

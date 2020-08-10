@@ -113,6 +113,13 @@ namespace napkin
 		void onLog(nap::LogMessage msg);
 
 		/**
+		 *
+		 * @param fraction
+		 * @param message
+		 */
+		void onBlockingProgress(float fraction, const QString& message);
+
+		/**
 		 * Show a logmessage in the error dialog
 		 * @param msg The message to be displayed
 		 */
@@ -154,5 +161,6 @@ namespace napkin
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
+		std::unique_ptr<QProgressDialog> mProgressDialog = nullptr;
 	};
 };

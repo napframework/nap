@@ -3,6 +3,6 @@
     "mID": "UnixPackagedAppMapping",
     "ModulePaths": 
     [
-        "{EXE_DIR}/lib"
+        "{PROJECT_DIR}/lib"
     ]
 }

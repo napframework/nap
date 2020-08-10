@@ -1,9 +1,3 @@
-cmake_minimum_required(VERSION 3.15.4)
-include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
-
-get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
-project(${project_name_from_dir})
-
 # Enforce GCC on Linux for now
 if(UNIX AND NOT APPLE)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -132,8 +126,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
 endif()
 
-# Copy data to bin post-build
-copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+# Run FBX converter post-build
 export_fbx(${CMAKE_SOURCE_DIR}/data/)
 
 # Copy path mapping
@@ -154,6 +147,10 @@ if(NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+else()
+    if(NAP_PACKAGED_APP_BUILD)
+        copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+    endif()
 endif()
 
 # Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin

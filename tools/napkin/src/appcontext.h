@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QObject>
+#include <QProgressDialog>
 #include <QUndoCommand>
 #include <QMainWindow>
 
@@ -49,7 +50,7 @@ namespace napkin
 		 * Construct the singleton
 		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
 		 */
-		static void create();
+		static AppContext& create();
 
 		/**
 		 * Destruct the singleton
@@ -99,8 +100,6 @@ namespace napkin
 		 * @return A pointer to the loaded project info or nullptr when loading failed
 		 */
 		nap::ProjectInfo* loadProject(const QString& projectFilename);
-
-		std::unique_ptr<nap::PathMapping> loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
@@ -212,6 +211,21 @@ namespace napkin
 		 * @param uri The URI to handle, can be a string like 'file://something' for example
 		 */
 		void handleURI(const QString& uri);
+
+		/**
+		 * Disable opening of project from recently opened file list on startup
+		 */
+		void setOpenRecentProjectOnStartup(bool b);
+
+		/**
+		 * Set to exit upon failure loading any project
+		 */
+		void setExitOnLoadFailure(bool b);
+
+		/**
+		 * Set to exit upon success loading any project
+		 */
+		void setExitOnLoadSuccess(bool b);
 
 	Q_SIGNALS:
 		/**
@@ -336,6 +350,14 @@ namespace napkin
 		 */
 		void logMessage(nap::LogMessage msg);
 
+		/**
+		 * Emits when an application-wide blocking operation started, progresses or finishes
+		 * @param fraction How far we are along the process.
+		 * 		           A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * @param message A short message describing what's happening.
+		 */
+		void blockingProgressChanged(float fraction, const QString& message = {});
+
 	private:
 
 		/**
@@ -361,5 +383,8 @@ namespace napkin
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 		QString mCurrentFilename;								// The currently opened file
+		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
+		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
+		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
 	};
 };

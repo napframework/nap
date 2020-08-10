@@ -41,8 +41,8 @@ namespace nap
 			return false;
 	
 		// Populate into info struct and return
-		if (!result.mModuleNames.empty())
-			result.mModuleNames.clear();
+		if (!result.mRequiredModules.empty())
+			result.mRequiredModules.clear();
 		
 		for (std::size_t index = 0; index < modules->value.Size(); ++index)
 		{
@@ -50,7 +50,7 @@ namespace nap
 			if (!errorState.check(json_element.IsString(), "Entries in 'RequiredModules' array in project info field must be a strings"))
 				return false;
 			
-			result.mModuleNames.push_back(json_element.GetString());
+			result.mRequiredModules.push_back(json_element.GetString());
 		}
 		
 		result.mTitle = document["Title"].GetString();

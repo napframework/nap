@@ -29,7 +29,15 @@ APPLY_PERMISSIONS_BATCHFILE = 'apply_executable_permissions.cmd'
 DEFAULT_ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
 ANDROID_PLATFORM = 'android-19'
     
-def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
+ERROR_PACKAGE_EXISTS = 1
+ERROR_INVALID_VERSION = 2
+ERROR_MISSING_ANDROID_NDK = 3
+ERROR_COULD_NOT_REMOVE_DIRECTORY = 4
+ERROR_BAD_INPUT = 5
+ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN = 6
+ERROR_SOURCE_ARCHIVE_EXISTING = 7
+
+def call(cwd, cmd, capture_output=False):
     """Execute command in provided working directory"""
 
     # print('dir: %s' % cwd)
@@ -42,8 +50,8 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     if type(out) is bytes:
         out = out.decode('ascii', 'ignore')
         err = err.decode('ascii', 'ignore')
-    if err:
-        raise Exception(err)
+    if proc.returncode != 0:
+        raise Exception("Bailing for non zero returncode: %s", proc.returncode)
     return out, err
 
 def package(zip_release, 
@@ -95,7 +103,6 @@ def package(zip_release,
     if not archive_source_only:
         print("Packaging...")
 
-    # Remove old packaging path if it exists
         # Remove old packaging path if it exists
         if os.path.exists(PACKAGING_DIR):
             remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
@@ -175,7 +182,8 @@ def remove_directory_exit_on_failure(path, use):
     try:
         shutil.rmtree(path)
     except OSError as e:
-        raise Exception("Could not remove directory '%s' (%s): %s" % (path, use, e))
+        print("Error: Could not remove directory '%s' (%s): %s" % (path, use, e))
+        sys.exit(ERROR_COULD_NOT_REMOVE_DIRECTORY)
 
 def clean_the_build(cross_compile_target, android_abis):
     """Clean the build"""
@@ -229,7 +237,8 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             else:
                 remove_directory_exit_on_failure(package_path, 'overwriting existing package')
         else:
-            raise Exception("Existing package found: %s" % os.path.abspath(package_path))
+            print("Error: Existing package found: %s" % os.path.abspath(package_path))
+            sys.exit(ERROR_PACKAGE_EXISTS)
 
 
 def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
@@ -359,12 +368,14 @@ def package_for_android(package_basename, timestamp, git_revision, build_label, 
     elif 'ANDROID_NDK_ROOT' in os.environ:
         ndk_root = os.environ['ANDROID_NDK_ROOT']
     else:
-        raise Exception("Couldn't find Android NDK. Set with --android-ndk-root or in environment variable ANDROID_NDK_ROOT")
+        print("Error: Couldn't find Android NDK. Set with --android-ndk-root or in environment variable ANDROID_NDK_ROOT")
+        sys.exit(ERROR_MISSING_ANDROID_NDK)
 
     # Verify NDK looks crudely sane
     toolchain_file = os.path.join(ndk_root, 'build', 'cmake', 'android.toolchain.cmake')
     if not os.path.exists(toolchain_file):
-        raise Exception("Android NDK path '%s' does not appear to be valid (couldn't find build/cmake/android.toolchain.cmake')" % ndk_root)
+        print("Error: Android NDK path '%s' does not appear to be valid (couldn't find build/cmake/android.toolchain.cmake')" % ndk_root)
+        sys.exit(ERROR_MISSING_ANDROID_NDK)
 
     # Iterate ABIs
     for abi in android_abis:
@@ -555,7 +566,8 @@ def build_package_basename(timestamp, label, cross_compile_target):
     (version_unparsed, _) = call(WORKING_DIR, [get_cmake_path(), '-P', 'cmake/version.cmake'], True)
     chunks = version_unparsed.split(':')
     if len(chunks) < 2:
-        raise Exception("Error passing invalid output from version.cmake: %s" % version_unparsed)
+        print("Error passing invalid output from version.cmake: %s" % version_unparsed)
+        sys.exit(ERROR_INVALID_VERSION)
     version = chunks[1].strip()
 
     # Create filename, including timestamp or not as requested
@@ -575,7 +587,8 @@ def verify_clean_git_repo():
     (out, err) = call('.', ['git', 'status', '--porcelain'], True)
     clean = out.strip() == '' and err.strip() == ''
     if not clean:
-        raise Exception("Git repo needs to be clean to create a source archive")
+        print("Error: Git repo needs to be clean to create a source archive")
+        sys.exit(ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN)
 
 def check_existing_source_archive(source_archive_basename, zip_source_archive, overwrite=False):
     """Verify we're not going to overwrite an existing source archive"""
@@ -586,7 +599,8 @@ def check_existing_source_archive(source_archive_basename, zip_source_archive, o
         if overwrite:
             shutil.rmtree(staging_dir)
         else:
-            raise Exception("Source archive staging dir %s already exists" % staging_dir)
+            print("Source archive staging dir %s already exists" % staging_dir)
+            sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
 
     # Check cwd staging dir name
     if os.path.exists(source_archive_basename):
@@ -594,9 +608,10 @@ def check_existing_source_archive(source_archive_basename, zip_source_archive, o
             shutil.rmtree(source_archive_basename)
         else:
             if zip_source_archive:
-                raise Exception("Source staging dir %s already exists" % source_archive_basename)
+                print("Source staging dir %s already exists" % source_archive_basename)
             else:
-                raise Exception("Source archive output dir %s already exists" % source_archive_basename)
+                print("Source archive output dir %s already exists" % source_archive_basename)
+            sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
 
     # Check final zipped filename
     output_path = os.path.join(os.path.pardir, source_archive_basename)
@@ -609,7 +624,8 @@ def check_existing_source_archive(source_archive_basename, zip_source_archive, o
             if overwrite:
                 shutil.rmtree(output_path)
             else:
-                raise Exception("Source archive output %s already exists" % output_path)
+                print("Source archive output %s already exists" % output_path)
+                sys.exit(ERROR_SOURCE_ARCHIVE_EXISTING)
 
 def strip_client_apps_for_source_archive(staging_dir):
     # Remove apps
@@ -792,17 +808,20 @@ if __name__ == '__main__':
 
     # Make sure we're not trying to package all Naivi apps and just a single one
     if args.include_apps and not args.include_single_naivi_app is None:
-        raise Exception("Can't include a single Naivi app and include all Naivi apps..")
+        print("Error: Can't include a single Naivi app and include all Naivi apps..")
+        sys.exit(ERROR_BAD_INPUT)
 
     # If we're packaging a single Naivi app make sure it exists
     if args.include_single_naivi_app:
         path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_naivi_app)
         if not os.path.exists(path):
-            raise Exception("Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
+            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
+            sys.exit(ERROR_BAD_INPUT)
 
     # It doesn't make sense to zip a source archive that we're not creating
     if args.source_archive_zipped and not args.archive_source:
-        raise Exception("Error: Can't zip a source archive that you're not creating")
+        print("Error: Can't zip a source archive that you're not creating")
+        sys.exit(ERROR_BAD_INPUT)
 
     if args.source_archive_only and (args.no_zip 
                                      or args.include_docs 
@@ -817,7 +836,8 @@ if __name__ == '__main__':
                                      or args.include_debug_symbols
                                      or args.build_projects
                                      ):
-        raise Exception("Error: You have specified options that don't make sense if only creating a source archive")
+        print("Error: You have specified options that don't make sense if only creating a source archive")
+        sys.exit(ERROR_BAD_INPUT)
 
     # Package our build
     package(not args.no_zip,

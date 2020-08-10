@@ -59,6 +59,12 @@ macro(package_nap)
             install(FILES ${NAP_ROOT}/build_tools/check_build_environment/win64/check_build_environment_continued.py DESTINATION tools/platform)
         endif()
 
+        # Package single project CLI build script
+        install(FILES ${NAP_ROOT}/build_tools/cli_single_project_build/cli_single_project_build.py DESTINATION tools/platform)
+
+        # Package project/module upgrade script
+        install(FILES ${NAP_ROOT}/build_tools/project_and_module_updater/project_and_module_updater.py DESTINATION tools/platform)
+
         # Create empty projects and usermodules directories
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
@@ -118,6 +124,11 @@ macro(package_python)
         # Install main framework
         install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/
                 DESTINATION thirdparty/python/
+                CONFIGURATIONS Release)
+
+        # Install framework for Napkin
+        install(FILES ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python36.zip
+                DESTINATION tools/napkin/
                 CONFIGURATIONS Release)
 
         # Install license
@@ -311,10 +322,12 @@ macro(package_project_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/build.bat
                 DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/build
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()
@@ -357,11 +370,15 @@ macro(package_project_into_release DEST_DIR)
 
     # Package any projectmodule CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
-        set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
-        configure_file(${NAP_ROOT}/dist/cmake/native/module_creator/template/CMakeLists.txt 
-                       ${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt 
-                       @ONLY
-                       )
+        # Generate fresh module CMake
+        install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} 
+                                              -DMODULE_CMAKE_OUTPATH=${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt
+                                              -DPROJECT_MODULE=1
+                                              -DCMAKE_ONLY=1
+                                              -DMODULE_NAME_PASCALCASE=Unused
+                                              -P ${NAP_ROOT}/dist/cmake/native/module_creator/module_creator.cmake
+                                     )")
+        # Package module extra
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
             install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
         endif()
