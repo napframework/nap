@@ -69,17 +69,17 @@ namespace nap
 		if (!loadProjectInfo(error))
 			return false;
 
-		return doInitializeEngine(error);
+		return postInitializeEngine(error);
 	}
 
 	bool nap::Core::initializeEngine(nap::utility::ErrorState& error, std::unique_ptr<nap::ProjectInfo> projectInfo)
 	{
 		mProjectInfo = std::move(projectInfo);
 
-		return doInitializeEngine(error);
+		return postInitializeEngine(error);
 	}
 
-	bool nap::Core::doInitializeEngine(utility::ErrorState& error)
+	bool nap::Core::postInitializeEngine(utility::ErrorState& error)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as

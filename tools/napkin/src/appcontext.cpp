@@ -135,7 +135,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
-		nap::Logger::warn("No data file specified");
+		nap::Logger::error("No data file specified");
 
 	return mCore->getProjectInfo();
 }
