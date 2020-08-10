@@ -64,4 +64,9 @@ namespace nap
 
         return true;
     }
+
+    void Core::setupPlatformSpecificEnvironment()
+    {
+        // Unused, for now
+    }
 }

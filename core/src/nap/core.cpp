@@ -90,6 +90,9 @@ namespace nap
 		// Create the module manager
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 
+		// Apply any platform specific environment setup
+		setupPlatformSpecificEnvironment();
+
 		// Load modules
 		if (!mModuleManager->loadModules(projectInfo.mModules, error))
 			return false;

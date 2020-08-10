@@ -254,6 +254,12 @@ namespace nap
 		 * or alongside our binary for a packaged project
 		 */
 		void setupPythonEnvironment();
+
+		/**
+		 * TODO A vaguely named method, currently only used on macOS to apply an environment
+		 * variable for Vulkan, that is happy to receive a better name and documentation.
+		 */
+		void setupPlatformSpecificEnvironment();
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
