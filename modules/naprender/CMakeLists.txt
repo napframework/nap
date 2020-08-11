@@ -123,7 +123,7 @@ elseif(UNIX)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/freetype/lib)
-    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/vulkansdk/Lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/vulkansdk/lib)
 endif()
 package_module()
 
