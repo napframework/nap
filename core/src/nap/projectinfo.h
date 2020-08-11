@@ -28,6 +28,7 @@ namespace nap
 		std::string mFilename;
 	};
 
+
 	class NAPAPI ProjectInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
@@ -49,9 +50,6 @@ namespace nap
 		std::string mPathMappingFile;									// Points to a file with a path mapping
 		std::string mServiceConfigFilename = {};						// Points to a file with service configurations
 		std::vector<std::string> mRequiredModules;						// Names of modules this project depends on
-
-		// Not automatically deserialized
-		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
 
 		/**
 		 * @return True if this process is running in an editor
@@ -107,6 +105,7 @@ namespace nap
 	private:
 		std::unordered_map<std::string, std::string> getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const;
 
+		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
 		std::string mFilename;								// The filename from which this data was loaded
 		std::unique_ptr<PathMapping> mPathMapping;			// The actual path mapping coming from mPathMappingFile
 		EContext mContext = EContext::Application;			// By default projects are loaded from application context

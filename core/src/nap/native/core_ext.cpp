@@ -64,6 +64,7 @@ namespace nap
 		return false;
 	}
 
+
 	bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
 	{
 		std::string config_file_path;

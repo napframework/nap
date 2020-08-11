@@ -271,6 +271,11 @@ namespace nap
 		 */
 		bool loadProjectInfo(std::string projectFilename, nap::utility::ErrorState& error);
 
+		/**
+		 * Loads the service configuration resources from file. The file must exist.
+		 * @param err contains the error if loading fails.
+		 * @return if loading succeeded. 
+		 */
 		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
