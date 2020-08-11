@@ -70,7 +70,8 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		 * Loads all modules in to the core environment and creates all the associated services
+		 * Loads all modules in to the core environment and creates all the associated services.
+		 * ProjectInfo will be loaded automatically
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
 		 */
@@ -79,12 +80,18 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param projectInfo indicates if the engine is being run for a non-project use, eg. running Napkin
+		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error, std::unique_ptr<ProjectInfo> projectInfo);
 
-		bool doInitializeEngine(utility::ErrorState& error);
+		/**
+		 * Load modules, initialize and create all required services.
+		 * ProjectInfo must have been loaded before invoking this.
+		 * @param error contains the error code when initialization fails
+		 * @return true if initialization was successful, false otherwise.
+		 */
+		bool postInitializeEngine(utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services

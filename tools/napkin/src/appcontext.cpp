@@ -168,7 +168,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 		nap::Logger::error(err.toString());
 
-		if (mExitOnLoadFailure) 
+		if (mExitOnLoadFailure)
 			exit(1);
 
 		return nullptr;
@@ -190,8 +190,8 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	{
 		blockingProgressChanged(1);
 
-		nap::Logger::warn("No data file specified");
-		if (mExitOnLoadFailure) 
+		nap::Logger::error("No data file specified");
+		if (mExitOnLoadFailure)
 			exit(1);
 	}
 
