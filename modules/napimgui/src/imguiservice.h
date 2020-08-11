@@ -164,8 +164,8 @@ namespace nap
 		bool isCapturingMouse(ImGuiContext* context);
 
 		/**
-		 * Returns a Vulkan texture handle that can be used to display a Vulkan texture inside ImGUI.
-		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function instead.
+		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
+		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.		 
 		 * Internally the handles are cached, it is therefore fine to call this function every frame. 
 		 * Keep in mind that a handle (descriptor set) is created for every unique texture.
 		 *
