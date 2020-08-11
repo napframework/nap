@@ -18,7 +18,7 @@ import time
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -51,8 +51,7 @@ MSVC_BUILD_DIR = 'msvc64'
 # TODO Handle other architectures.. eventually
 LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
                                    '/lib/x86_64-linux-gnu', 
-                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu'
-                                  ]
+                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
@@ -169,6 +168,7 @@ LINUX_EXTRA_DEBIAN = [
     'libcairo-gobject',
     'libcodec2',
     'libdatrie',
+    'libdav1d',
     'libfontconfig',
     'libfribidi',
     r'libgdk_pixbuf-[0-9]+\.[0-9]+',
@@ -324,7 +324,6 @@ def is_windows():
     """
 
     return sys.platform.startswith('win')
-
 
 def is_debian():
     """Is this Debian Linux
