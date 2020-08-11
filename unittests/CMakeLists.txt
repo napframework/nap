@@ -19,7 +19,6 @@ add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 set(UNITTEST_LIBS
     napcore
     napkin_lib
-	mod_emography
     nrender
     )
 

@@ -19,7 +19,7 @@ namespace nap
 	class SequenceService;
 
 	/**
-	 * SequencePlayerEventOutput is used to link an SequenceEventReceiver to a SequenceEventTrack
+	 * SequencePlayerEventOutput dispatches an event on the timeline
 	 */
 	class NAPAPI SequencePlayerEventOutput : public SequencePlayerOutput
 	{

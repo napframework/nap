@@ -23,6 +23,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
         
+		/**
+		 * Deconstructor
+		 */
         virtual ~SequenceTrackSegment(){};
 	public:
 		double mStartTime = 0.0; ///< Property: 'Start time' start time of segment in track

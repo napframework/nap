@@ -46,6 +46,11 @@ namespace nap
 		 */
 		virtual void insertSegment(const std::string& trackID, double time) override;
 
+		/**
+		* insert event segment of type T
+		* @param trackID the track id
+		* @param time the time
+		*/
 		template<typename T>
 		void insertEventSegment(const std::string& trackID, double time);
 

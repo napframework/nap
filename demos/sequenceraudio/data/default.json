@@ -1,0 +1,140 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "AudioEntity",
+            "Components": [
+                {
+                    "Type": "nap::SequencePlayerAudioOutputComponent",
+                    "mID": "AudioOutputComponent",
+                    "Output": "Audio Output"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "ParameterGroup",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Float1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Vec3",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterVec2",
+                    "mID": "Vec2",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Int",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 100
+                }
+            ],
+            "Groups": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Width": 1280,
+            "Height": 720,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Timeline",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "AudioEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::SequenceEditor",
+            "mID": "SequenceEditor",
+            "Sequence Player": "SequencePlayer"
+        },
+        {
+            "Type": "nap::SequenceEditorGUI",
+            "mID": "SequenceEditorGUI",
+            "Sequence Editor": "SequenceEditor"
+        },
+        {
+            "Type": "nap::SequencePlayer",
+            "mID": "SequencePlayer",
+            "Default Show": "Default Show.json",
+            "Outputs": [
+                {
+                    "Type": "nap::SequencePlayerEventOutput",
+                    "mID": "SequencePlayerEventOutput"
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Float Output",
+                    "Parameter": "Float1",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Vec3 Output",
+                    "Parameter": "Vec3",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Vec2 Output",
+                    "Parameter": "Vec2",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Int Output",
+                    "Parameter": "Int",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerAudioOutput",
+                    "mID": "Audio Output"
+                }
+            ],
+            "Frequency": 1000.0
+        }
+    ]
+}
