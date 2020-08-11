@@ -116,7 +116,7 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	// Initialize engine
 	ErrorState err;
 	mCore = std::make_unique<nap::Core>();
-	if (!mCore->initializeEngine(projectFilename.toStdString(), true, err))
+	if (!mCore->initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());

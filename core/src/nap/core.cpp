@@ -73,11 +73,11 @@ namespace nap
 			return false;
 
 		// Initialize engine
-		return initializeEngine(project_file_path, false, error);
+		return initializeEngine(project_file_path, ProjectInfo::EContext::Application, error);
 	}
 
 
-	bool Core::initializeEngine(const std::string& projectInfofile, bool editorMode, utility::ErrorState& error)
+	bool Core::initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error)
 	{
 		// Load project information
 		assert(mProjectInfo == nullptr);
@@ -85,7 +85,7 @@ namespace nap
 			return false;
 
 		// Set if paths are resolved for editor or application
-		mProjectInfo->setEditorMode(editorMode);
+		mProjectInfo->mContext = context;
 
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -464,7 +464,7 @@ namespace nap
 			return false;
 
 		// Notify project info is loaded
-		nap::Logger::info("Loading project '%s' ver. %s (%s)",
+		nap::Logger::info("Loading project '%s' ver. %s (%s)", 
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 		return true;

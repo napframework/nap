@@ -81,7 +81,7 @@ namespace nap
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(const std::string& projectInfofile, bool editorMode, utility::ErrorState& error);
+		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services
