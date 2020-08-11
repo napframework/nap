@@ -9,7 +9,7 @@ import json
 from multiprocessing import cpu_count
 import os
 import re
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, check_output
 import shutil
 import signal
 import sys
@@ -17,7 +17,7 @@ import time
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 3
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -34,7 +34,9 @@ REPORT_FILENAME = 'report.json'
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
 # to these paths helps us identify libraries being source from strange locations, hand installed libs.
 # TODO Handle other architectures.. eventually
-LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', '/lib/x86_64-linux-gnu']
+LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
+                                   '/lib/x86_64-linux-gnu', 
+                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
@@ -132,6 +134,78 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxshmfence',
     'libXxf86vm',
     'libz'
+]
+
+# Testing on Debian is an efficiency necessity in the COVID19 moment
+LINUX_EXTRA_DEBIAN = [
+    'libaom',
+    'libasound_module_pcm_a52',
+    'libasound_module_rate_lavrate',
+    'libavcodec',
+    'libavresample',
+    'libavutil',
+    'libblkid',
+    'libbrotlicommon',
+    'libbrotlidec',
+    'libcairo',
+    'libcairo-gobject',
+    'libcodec2',
+    'libdatrie',
+    'libdav1d',
+    'libfontconfig',
+    'libfribidi',
+    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
+    r'libgio-[0-9]+\.[0-9]+',
+    'libglib-2.0',
+    r'libgmodule-[0-9]+\.[0-9]+',
+    r'libgobject-[0-9]+\.[0-9]+',
+    'libgomp',
+    'libgraphite2',
+    'libgsm',
+    'libharfbuzz',
+    'libicudata',
+    'libicuuc',
+    'libmount',
+    'libmfx',
+    'libmp3lame',
+    'libnuma',
+    'libopenjp2',
+    'libopus',
+    r'libpango-[0-9]+\.[0-9]+',
+    r'libpangocairo-[0-9]+\.[0-9]+',
+    r'libpangoft2-[0-9]+\.[0-9]+',
+    'libpcre',
+    'libpcre2-8',
+    'libpixman-1',
+    'libpng16',
+    'librsvg-2',
+    'libselinux',
+    'libshine',
+    'libsnappy',
+    'libsoxr',
+    'libspeex',
+    'libswresample',
+    'libthai',
+    'libtheoradec',
+    'libtheoraenc',
+    'libtwolame',
+    'libuuid',
+    'libva-drm',
+    'libva-x11',
+    'libva',
+    'libvdpau',
+    'libvpx',
+    'libwavpack',
+    'libwebp',
+    'libwebpmux',
+    'libx264',
+    'libx265',
+    'libxcb-render',
+    'libxcb-shm',
+    'libxml2',
+    'libXrender',
+    'libxvidcore',
+    'libzvbi'
 ]
 
 # Extra Linux system libs we accept being used, for Napkin only
@@ -233,6 +307,17 @@ def is_windows():
     """
 
     return sys.platform.startswith('win')
+
+def is_debian():
+    """Is this Debian Linux
+
+    Returns
+    -------
+    bool
+        Success
+    """
+
+    return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
 
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, wait_time_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
@@ -507,6 +592,8 @@ def linux_system_library_accepted(short_lib_name, testing_napkin):
 
     # Build list of accepted library names
     all_accepted_libs = LINUX_BASE_ACCEPTED_SYSTEM_LIBS
+    if is_debian():
+        all_accepted_libs.extend(LINUX_EXTRA_DEBIAN)
     if testing_napkin:
         all_accepted_libs.extend(LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS)
     

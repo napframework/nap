@@ -36,6 +36,7 @@ copy_module_json_to_bin()
 if(APPLE)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 endif()
 package_module()
