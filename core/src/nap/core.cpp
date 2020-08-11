@@ -51,7 +51,6 @@ namespace nap
 		mTicks.fill(0);
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mModuleManager = std::make_unique<ModuleManager>(*this);
-
 		mExtension = std::move(coreExtension);
 	}
 
@@ -67,19 +66,12 @@ namespace nap
 
 	bool Core::initializeEngine(utility::ErrorState& error)
 	{
-
 		if (!loadProjectInfo(error))
 			return false;
 
 		return doInitializeEngine(error);
 	}
 
-	bool nap::Core::initializeEngine(nap::utility::ErrorState& error, std::unique_ptr<nap::ProjectInfo> projectInfo)
-	{
-		mProjectInfo = std::move(projectInfo);
-
-		return doInitializeEngine(error);
-	}
 
 	bool nap::Core::doInitializeEngine(utility::ErrorState& error)
 	{
@@ -109,7 +101,7 @@ namespace nap
 				return false;
 
 		// Create the various services based on their dependencies
-		if (!initializeServices(*mProjectInfo, error))
+		if (!createServices(*mProjectInfo, error))
 			return false;
 
 		return true;
@@ -231,11 +223,9 @@ namespace nap
 		}
 	}
 
-	bool nap::Core::initializeServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
-	{
-		if (projectInfo.mServiceConfigs.empty())
-			return true; // No services info, ignore
 
+	bool nap::Core::createServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
+	{
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
 		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
@@ -307,6 +297,7 @@ namespace nap
 		}
 		return true;
 	}
+
 
 	// Returns service that matches @type
 	Service* Core::getService(const rtti::TypeInfo& type)
@@ -431,13 +422,14 @@ namespace nap
 #endif
 	}
 
+
 	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err, std::string projectFilename)
 	{
 		// Ensure filename
 		if (projectFilename.empty())
 		{
-			if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
-						   "Failed to find %s", PROJECT_INFO_FILENAME))
+			if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),  
+					"Failed to find %s", PROJECT_INFO_FILENAME))
 				return false;
 		}
 
@@ -449,32 +441,31 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
-		if (!err.check(mProjectInfo != nullptr,
-					  "Failed to load project info %s",
-					  projectFilename.c_str()))
+		// Ensure project info is loaded correctly.
+		if (!err.check(mProjectInfo != nullptr,  
+			"Failed to load project info %s", projectFilename.c_str()))
 			return false;
 
-		// Store originating filename so we can reference it later
+		// Store originating filename so we can reference it later and load path mapping
 		mProjectInfo->mFilename = projectFilename;
-
-		// Load path mapping
 		loadPathMapping(*mProjectInfo, err);
 
 		// Ensure templates/variables are replaced with their intended values
 		if (!mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename))
 			return false;
 
-		if (!err.check(mProjectInfo->mPathMapping != nullptr,
-					   "Failed to load path mapping %s: %s",
+		if (!err.check(mProjectInfo->mPathMapping != nullptr, 
+					   "Failed to load path mapping %s: %s", 
 					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
 			return false;
 
+		// Notify project info is loaded
 		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
-
 		return true;
 	}
+
 
 	bool nap::Core::loadServiceConfigs(nap::utility::ErrorState& err)
 	{
@@ -521,9 +512,9 @@ namespace nap
 			if (pos == mProjectInfo->mServiceConfigs.end())
 				mProjectInfo->mServiceConfigs.insert(std::make_pair(serviceType, std::move(service_configuration)));
 		}
-
 		return true;
 	}
+
 
 	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
 	{
@@ -549,10 +540,12 @@ namespace nap
 		return true;
 	}
 
+
 	nap::ProjectInfo* nap::Core::getProjectInfo()
 	{
 		return mProjectInfo.get();
 	}
+
 
     bool Core::writeConfigFile(utility::ErrorState& errorState)
     {

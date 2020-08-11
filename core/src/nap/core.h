@@ -75,15 +75,7 @@ namespace nap
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error);
-
-		/**
-		 * Loads all modules in to the core environment and creates all the associated services
-		 * @param error contains the error code when initialization fails
-		 * @param projectInfo indicates if the engine is being run for a non-project use, eg. running Napkin
-		 * @return if initialization succeeded
-		 */
-		bool initializeEngine(utility::ErrorState& error, std::unique_ptr<ProjectInfo> projectInfo);
-
+		
 		bool doInitializeEngine(utility::ErrorState& error);
 
 		/**
@@ -223,11 +215,13 @@ namespace nap
 
 	private:
 		/**
-		* Helper function that creates all the services that are found in the various modules
-		* Note that a module does not need to define a service, only if it has been defined
-		* this call will try to create it.
-		*/
-		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
+		 * Helper function that creates all the services that are found in the various modules
+		 * Note that a module does not need to define a service, only if it has been defined
+		 * this call will try to create it.
+		 * @param error contains the error if the services could not be added
+		 * @return if the services are created successfully
+		 */
+		bool createServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
 
 		/**
 		* Adds a new service of type @type to @outServices
