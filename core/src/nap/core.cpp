@@ -81,11 +81,8 @@ namespace nap
 	{
 		// Load project information
 		assert(mProjectInfo == nullptr);
-		if (!loadProjectInfo(projectInfofile, error))
+		if (!loadProjectInfo(projectInfofile, context, error))
 			return false;
-
-		// Set if paths are resolved for editor or application
-		mProjectInfo->mContext = context;
 
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -436,7 +433,7 @@ namespace nap
 	}
 
 
-	bool nap::Core::loadProjectInfo(std::string projectFilename, nap::utility::ErrorState& err)
+	bool nap::Core::loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& err)
 	{
 		// Load ProjectInfo from json
 		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
@@ -450,6 +447,9 @@ namespace nap
 		if (!err.check(mProjectInfo != nullptr,  
 			"Failed to load project info %s", projectFilename.c_str()))
 			return false;
+
+		// Set if paths are resolved for editor or application
+		mProjectInfo->mContext = context;
 
 		// Store originating filename so we can reference it later and load path mapping
 		mProjectInfo->mFilename = projectFilename;

@@ -78,6 +78,7 @@ namespace nap
 
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services.
+         * @param context whether initializing for project or Napkin
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
 		 */
@@ -267,9 +268,10 @@ namespace nap
 		 * Explicitly load a project from file.
 		 * Call this before initializeEngine() if custom project setup is required.
 		 * @param projectFilename absolute path to the project file on disk.
+         * @param context whether initializing for project or Napkin
 		 * @param error contains the error if the file could not be loaded.
 		 */
-		bool loadProjectInfo(std::string projectFilename, nap::utility::ErrorState& error);
+	    bool loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& error);
 
 		/**
 		 * Loads the service configuration resources from file. The file must exist.
