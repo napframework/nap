@@ -113,23 +113,18 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
+	// Initialize engine
 	ErrorState err;
-
 	mCore = std::make_unique<nap::Core>();
-
-	if (!mCore->loadProjectInfo(err, projectFilename.toStdString()))
+	if (!mCore->initializeEngine(projectFilename.toStdString(), true, err))
 	{
 		blockingProgressChanged(1);
-		nap::Logger::error("Failed to load project info %s: %s",
-						   projectFilename.toStdString().c_str(), err.toString().c_str());
-
+		nap::Logger::error(err.toString());
 		if (mExitOnLoadFailure)
 			exit(1);
 		return nullptr;
 
 	}
-
-	mCore->getProjectInfo()->setEditorMode(true);
 
 //	if (err.hasErrors())
 //	{
@@ -161,18 +156,6 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 //					  projectInfo->mTitle.c_str(),
 //					  projectInfo->mVersion.c_str(),
 //					  projectInfo->getProjectDir().c_str());
-
-	if (!mCore->doInitializeEngine(err))
-	{
-		blockingProgressChanged(1);
-
-		nap::Logger::error(err.toString());
-
-		if (mExitOnLoadFailure) 
-			exit(1);
-
-		return nullptr;
-	}
 
 	coreInitialized();
 

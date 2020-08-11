@@ -70,13 +70,18 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		 * Loads all modules in to the core environment and creates all the associated services
+		 * Loads all modules in to the core environment and creates all the associated services.
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error);
-		
-		bool doInitializeEngine(utility::ErrorState& error);
+
+		/**
+		 * Loads all modules in to the core environment and creates all the associated services.
+		 * @param error contains the error code when initialization fails
+		 * @return if initialization succeeded
+		 */
+		bool initializeEngine(const std::string& projectInfofile, bool editorMode, utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services
@@ -210,8 +215,6 @@ namespace nap
  		 * @return true on sucess.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
-		bool loadProjectInfo(nap::utility::ErrorState& error, std::string projectFilename = {});
-
 
 	private:
 		/**
@@ -260,7 +263,15 @@ namespace nap
 		 */
 		void setupPythonEnvironment();
 
-		bool loadServiceConfigs(nap::utility::ErrorState& err);
+		/**
+		 * Explicitly load a project from file.
+		 * Call this before initializeEngine() if custom project setup is required.
+		 * @param projectFilename absolute path to the project file on disk.
+		 * @param error contains the error if the file could not be loaded.
+		 */
+		bool loadProjectInfo(std::string projectFilename, nap::utility::ErrorState& error);
+
+		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

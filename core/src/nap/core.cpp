@@ -66,15 +66,27 @@ namespace nap
 
 	bool Core::initializeEngine(utility::ErrorState& error)
 	{
-		if (!loadProjectInfo(error))
+		// Resolve project file path
+		std::string project_file_path;
+		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, project_file_path),
+			"Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
-		return doInitializeEngine(error);
+		// Initialize engine
+		return initializeEngine(project_file_path, false, error);
 	}
 
 
-	bool nap::Core::doInitializeEngine(utility::ErrorState& error)
+	bool Core::initializeEngine(const std::string& projectInfofile, bool editorMode, utility::ErrorState& error)
 	{
+		// Load project information
+		assert(mProjectInfo == nullptr);
+		if (!loadProjectInfo(projectInfofile, error))
+			return false;
+
+		// Set if paths are resolved for editor or application
+		mProjectInfo->setEditorMode(editorMode);
+
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from macOS Finder and probably other things too.
@@ -86,6 +98,7 @@ namespace nap
 #endif
 
 		// Change directory to data folder
+		assert(mProjectInfo != nullptr);
 		std::string dataDir = mProjectInfo->dataDirectory();
 		if (!error.check(utility::fileExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
 			return false;
@@ -97,13 +110,12 @@ namespace nap
 
 		// Now load the actual service configurations
 		if (mProjectInfo->hasServiceConfigFile())
-			if (!loadServiceConfigs(error))
+			if (!loadServiceConfigurations(error))
 				return false;
 
 		// Create the various services based on their dependencies
 		if (!createServices(*mProjectInfo, error))
 			return false;
-
 		return true;
 	}
 
@@ -423,16 +435,8 @@ namespace nap
 	}
 
 
-	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err, std::string projectFilename)
+	bool nap::Core::loadProjectInfo(std::string projectFilename, nap::utility::ErrorState& err)
 	{
-		// Ensure filename
-		if (projectFilename.empty())
-		{
-			if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),  
-					"Failed to find %s", PROJECT_INFO_FILENAME))
-				return false;
-		}
-
 		// Load ProjectInfo from json
 		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
 			projectFilename.c_str(),
@@ -467,7 +471,7 @@ namespace nap
 	}
 
 
-	bool nap::Core::loadServiceConfigs(nap::utility::ErrorState& err)
+	bool nap::Core::loadServiceConfigurations(nap::utility::ErrorState& err)
 	{
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
