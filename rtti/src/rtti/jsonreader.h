@@ -42,7 +42,7 @@ namespace nap
 			std::unordered_set<std::string>	mObjectIDs;
 		};
 
-		rtti::Object* NAPAPI readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
+		bool NAPAPI readObjectRecursive2(const rapidjson::Value& jsonObject, rtti::Object*& result, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
 
 		/**
 		 * Deserialize a set of objects and their data from the specified JSON string

@@ -50,6 +50,8 @@ namespace nap
 
 		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
 
+		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
+
 		/**
 		 * Helper function to read a basic JSON type to a C++ type
 		 */
@@ -427,7 +429,7 @@ namespace nap
 			return true;
 		}
 
-		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject,
+		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject,
 										  ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
@@ -465,6 +467,15 @@ namespace nap
 			return object;
 		}
 
+		bool NAPAPI readObjectRecursive2(const rapidjson::Value& jsonObject, Object*& result, bool isEmbeddedObject,
+										ReadState& readState, utility::ErrorState& errorState)
+		{
+			auto obj = readObjectRecursive(jsonObject, isEmbeddedObject, readState, errorState);
+			if (!obj)
+				return false;
+			result = obj;
+			return true;
+		}
 
 		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
