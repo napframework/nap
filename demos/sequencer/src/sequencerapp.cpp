@@ -137,6 +137,7 @@ namespace nap
 		mGuiService->selectWindow(mParameterWindow);
 		
 		// Show all parameters
+		ImGui::Begin("Parameters");
 		mParameterGUI->show(mParameterGroup.get(), false);
 
 		// Display some extra info
