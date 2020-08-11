@@ -53,7 +53,7 @@ namespace nap
 	 * Contains a list of indices that describe which particular part of the nap::MeshInstance should be drawn.
 	 * Every nap::MeshInstance contains at least one shape.
 	 */
-	class MeshShape
+	class NAPAPI MeshShape
 	{
 	public:
 		/**
