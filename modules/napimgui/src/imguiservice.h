@@ -43,12 +43,47 @@ namespace nap
 
 	/**
 	 * This service manages the global ImGui state.
-	 * Use selectWindow() to select the window to draw the GUI on to.
-	 * By default the GUI is drawn to the primary window, as defined by the renderer.
-	 * Make sure to call draw() inside your application to render the gui to the right window. 
-	 * When doing so make sure the window that you selected is active, otherwise the GUI will not appear.
-	 * When there is no actively selected window call draw() after making the primary window active.
-	 * The service automatically creates a new GUI frame before calling update.
+	 * Call draw() inside a window render pass to draw the GUI to screen.
+	 * Call selectWindow() to select the window subsequent ImGUI calls apply to.
+	 * Explicit window selection is only necessary when there is more than 1 window.
+	 * 
+	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
+	 * The service automatically creates a new GUI frame before application update.
+	 *
+	 * MyApp::update(double deltaTime):
+	 * ~~~~~{.cpp}
+	 *	mGuiService->selectWindow(mRenderWindowOne);
+	 *	ImGui::Begin("GUI Window One");
+	 *	...
+	 *	ImGui::End();
+	 *
+	 *	mGuiService->selectWindow(mRenderWindowTwo);
+	 *	ImGui::Begin("GUI Window Two");
+	 *	...
+	 *	ImGui::End();
+	 * ~~~~~
+	 *
+	 * MyApp::render()
+	 * ~~~~~{.cpp}
+	 *	mRenderService->beginFrame();
+	 *	if (mRenderService->beginRecording(*mRenderWindowOne))
+	 *	{
+	 *		mRenderWindowOne->beginRendering();
+	 *		mGuiService->draw();
+	 *		mRenderWindowOne->endRendering();
+	 *		mRenderService->endRecording();
+	 *	}
+	 *
+	 *	// Draw gui window 2
+	 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
+	 *	{
+	 *		mRenderWindowTwo->beginRendering();
+	 *		mGuiService->draw();
+	 *		mRenderWindowTwo->endRendering();
+	 *		mRenderService->endRecording();
+	 *	}
+	 *	mRenderService->endFrame();
+	 * ~~~~~
 	 */
 	class NAPAPI IMGuiService : public Service
 	{
@@ -119,17 +154,27 @@ namespace nap
 		ImGuiContext* processInputEvent(InputEvent& event);
 
 		/**
-		 * @return if the gui is capturing keyboard events
+		 * @return if the GUI is capturing keyboard events
 		 */
 		bool isCapturingKeyboard(ImGuiContext* context);
 
 		/**
-		 * @return if the gui is capturing mouse events
+		 * @return if the GUI is capturing mouse events
 		 */
 		bool isCapturingMouse(ImGuiContext* context);
 
 		/**
-		 * @return Vulkan texture handle, can be used to display a texture in ImGUI
+		 * Returns a Vulkan texture handle that can be used to display a Vulkan texture inside ImGUI.
+		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function instead.
+		 * Internally the handles are cached, it is therefore fine to call this function every frame. 
+		 * Keep in mind that a handle (descriptor set) is created for every unique texture.
+		 *
+		 * ~~~~~{.cpp}
+		 * ImGui::Begin("Texture");
+		 * ImGui::Image(mGuiService.getTextureHandle(texture), ...);
+		 * ImGui::End();
+		 * ~~~~~
+		 * @return Vulkan texture handle, used to display a texture in ImGUI
 		 */
 		ImTextureID getTextureHandle(nap::Texture2D& texture);
 
