@@ -30,8 +30,9 @@ namespace nap
 		 * The SDL controller, when constructed, will try to open a connection
 		 * On destruction the controller will close it's connection (if opened)
 		 */
-		struct NAPAPI SDLController
+		class NAPAPI SDLController final
 		{
+		public:
 			SDLController(int deviceID);
 			~SDLController()					{ close(); }
 
@@ -40,9 +41,7 @@ namespace nap
 			void*	mController = nullptr;		///< Pointer to the controller or joystick
 			bool	mIsJoystick = false;		///< If the controller is a joystick or actual controller
 
-			/**
-			 * Closes the connection
-			 */
+		private:
 			void close();
 		};
 

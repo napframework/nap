@@ -65,6 +65,26 @@ namespace nap
 		 */
 		const std::string getTypeName() const;
 
+		/**
+		 * Copy is not allowed
+		 */
+		Service(Service&) = delete;
+
+		/**
+		 * Copy assignment is not allowed
+		 */
+		Service& operator=(const Service&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		Service(Service&&) = delete;
+
+		/**
+		 * Move assignment is not allowed
+		 */
+		Service& operator=(Service&&) = delete;
+
 	protected:
 		/**
 		 * Override this function to register specific object creators for classes associated with this module
