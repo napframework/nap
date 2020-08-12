@@ -2075,12 +2075,13 @@ def create_fake_projects_for_modules_without_demos(nap_framework_full_path, test
         created_project_path = os.path.join('projects', project_name.lower())
         dest_project_path = os.path.join(testing_projects_dir, project_name.lower())
 
-        # Bail if it's already been created
-        if os.path.exists(dest_project_path):
-            warning = "Project %s seems to already exists and will be replaced" % project_name
-            print(warning)
-            warnings.append(warning)
-            shutil.rmtree(dest_project_path)
+        # Remove if it already exists
+        for path in (created_project_path, dest_project_path):
+            if os.path.exists(path):
+                warning = "Project %s seems to already exists and will be replaced" % path
+                print(warning)
+                warnings.append(warning)
+                shutil.rmtree(path)
 
         # Generate the project
         cmd = '%s -ng %s' % (os.path.join('.', 'tools', 'create_project'), project_name)
@@ -2088,6 +2089,20 @@ def create_fake_projects_for_modules_without_demos(nap_framework_full_path, test
         template_creation_success = returncode == 0
 
         if template_creation_success:
+            # Patch project.json
+            project_info_path = os.path.join(created_project_path, PROJECT_FILENAME)
+            project_info = None
+            if os.path.exists(project_info_path):
+                with open(project_info_path, 'r') as f:
+                    project_info = json.load(f)
+            if not project_info is None:
+                if 'mod_napaudio' in project_info['RequiredModules']:
+                    project_info['RequiredModules'].remove('mod_napaudio')
+                project_info['RequiredModules'].append(module)
+
+                with open(project_info_path, 'w') as f:
+                    f.write(json.dumps(project_info, indent=4))
+
             # Move the project alongside the other demos so they get automatically tested
             shutil.move(created_project_path, testing_projects_dir)
         else:
