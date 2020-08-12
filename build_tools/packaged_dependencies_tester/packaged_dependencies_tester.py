@@ -1938,7 +1938,6 @@ def rename_qt_dir(warnings):
 
     return qt_top_level_path
 
-def patch_audio_service_configuration(project_dir, config_output_dir, project_name, nap_framework_full_path):
 def patch_audio_service_configuration(project_dir, output_dir, project_name, nap_framework_full_path):
     """Patches audio service configuration to have zero input channels on any project
     using mod_napaudio
