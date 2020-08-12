@@ -806,7 +806,7 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
 
     # Build command and run            
     folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
-    patch_audio_service_configuration(os.getcwd(), folder, project_name, nap_framework_full_path)
+    patch_audio_service_configuration(os.getcwd(), os.getcwd(), project_name, nap_framework_full_path)
     cmd = os.path.join(folder, project_name)
     (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
@@ -1046,6 +1046,8 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
         post_files = os.listdir('.')
         output_path = get_packaged_project_output_path(napkin_package_demo, pre_files, post_files)
         home_output = os.path.join(root_output_dir, '%s-%s-no_napkin' % (napkin_package_demo, timestamp))
+        nap_framework_full_path = os.path.join(os.getcwd(), os.pardir, os.pardir)
+        patch_audio_service_configuration('.', output_path, napkin_package_demo, nap_framework_full_path)
         print("  Done. Moving to %s." % home_output)
         os.rename(output_path, home_output)
     else:
@@ -1937,6 +1939,7 @@ def rename_qt_dir(warnings):
     return qt_top_level_path
 
 def patch_audio_service_configuration(project_dir, config_output_dir, project_name, nap_framework_full_path):
+def patch_audio_service_configuration(project_dir, output_dir, project_name, nap_framework_full_path):
     """Patches audio service configuration to have zero input channels on any project
     using mod_napaudio
 
@@ -1944,19 +1947,21 @@ def patch_audio_service_configuration(project_dir, config_output_dir, project_na
     ----------
     project_dir: str
         Path to project to patch
-    config_output_dir: str
-        Directory for patched config.json
+    output_dir: str
+        Directory for patched project.json and config.json
     project_name : str
         Name of project
     nap_framework_full_path : str
         Absolute path to NAP framework
     """
+
     modules = get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir)
     if not 'mod_napaudio' in modules:
         return
 
+    # Create or patch the config.json
     config_filename = 'config.json'
-    config_path = os.path.join(config_output_dir, config_filename)
+    config_path = os.path.join(output_dir, config_filename)
     loaded_config = False
     if os.path.exists(config_path):
         with open(config_path, 'r') as f:
@@ -1983,6 +1988,20 @@ def patch_audio_service_configuration(project_dir, config_output_dir, project_na
 
     with open(config_path, 'w') as f:
         f.write(json.dumps(config, indent=4))
+
+    # Update the project.json
+    # TODO Cater for ProjectInfos that already have a ServiceConfig entry
+    #      set, potentially with another filename
+    project_info_path = os.path.join(output_dir, PROJECT_FILENAME)
+    project_info = None
+    if os.path.exists(project_info_path):
+        with open(project_info_path, 'r') as f:
+            project_info = json.load(f)
+
+    if not project_info is None:
+        project_info['ServiceConfig'] = config_filename
+        with open(project_info_path, 'w') as f:
+            f.write(json.dumps(project_info, indent=4))
 
 def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
     """Main entry point to the testing
