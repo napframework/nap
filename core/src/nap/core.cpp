@@ -105,14 +105,18 @@ namespace nap
 		if (!mModuleManager->loadModules(*mProjectInfo, error))
 			return false;
 
-		// If there is a config file, read the service configurations from it.
-		// Note that having a config file is optional, but if there *is* one, it should be valid
-		if(mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
-			return false;
+		// Service configurations are not necessary in editor mode
+		if (!mProjectInfo->isEditorMode())
+		{
+			// If there is a config file, read the service configurations from it.
+			// Note that having a config file is optional, but if there *is* one, it should be valid
+			if(!mProjectInfo->isEditorMode() && mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+				return false;
 
-		// Create the various services based on their dependencies
-		if (!createServices(*mProjectInfo, error))
-			return false;
+			// Create the various services based on their dependencies
+			if (!createServices(*mProjectInfo, error))
+				return false;
+		}
 		return true;
 	}
 
@@ -487,11 +491,12 @@ namespace nap
 
 				// Create configuration and try to add.
 				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+                auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
 				auto ret = mProjectInfo->mServiceConfigs.emplace(std::make_pair(config->getServiceType(), std::move(config)));
 
 				// Duplicates are not allowed
 				if(!err.check(ret.second, "Duplicate service configuration found with id: %s, type: %s",
-					config->mID.c_str(), config->getServiceType().get_name().to_string().c_str()))
+					configptr->mID.c_str(), configptr->getServiceType().get_name().to_string().c_str()))
 					return false;
 			}
 		}
