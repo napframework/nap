@@ -48,7 +48,7 @@ namespace nap
 		for (auto& parentPath : sPossibleProjectParents)
 		{
 			std::string testDataPath = utility::joinPath({napRoot, parentPath, projectName});
-			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
+			nap::Logger::debug("Looking for %s in '%s'...", filename.c_str(), testDataPath.c_str());
 			if (!utility::dirExists(testDataPath))
 				continue;
 
