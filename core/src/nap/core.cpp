@@ -107,7 +107,7 @@ namespace nap
 
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
-		if(mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+		if(!mProjectInfo->isEditorMode() && mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
 			return false;
 		
 		// Always create services! 
