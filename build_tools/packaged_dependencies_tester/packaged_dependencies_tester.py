@@ -29,6 +29,9 @@ PROJECT_BUILD_TYPE = 'Release'
 # Directory to iterate for testing
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
 
+# Directory containing modules, to verify they all get dependency tested
+MODULES_DIR = 'modules'
+
 # Main project structure filename
 PROJECT_FILENAME = 'project.json'
 
@@ -2002,7 +2005,81 @@ def patch_audio_service_configuration(project_dir, output_dir, project_name, nap
         with open(project_info_path, 'w') as f:
             f.write(json.dumps(project_info, indent=4))
 
-def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
+def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_dir):
+    test_projects_dir = os.path.join(nap_framework_full_path, testing_projects_dir)
+    dirs = os.listdir(test_projects_dir)
+    modules = []
+    for project_name in dirs:
+        project_dir = os.path.join(test_projects_dir, project_name)
+        modules.extend(get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir))
+    unique_used_modules = list(set(modules))
+    return unique_used_modules
+
+def get_modules_in_release(nap_framework_full_path):
+    modules_dir = os.path.join(nap_framework_full_path, MODULES_DIR)
+    modules_in_release = os.listdir(modules_dir)
+    modules_in_release.sort()
+    return modules_in_release
+
+def create_fake_projects_for_modules_without_demos(nap_framework_full_path, testing_projects_dir, warnings):
+    """Creates fake projects for modules which aren't tested in any of the demos.
+    At least provides some basic dependency testing.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'
+    warnings : list of str
+        Any warnings generated throughout the testing
+    """
+
+    prev_wd = os.getcwd()
+
+    # Fetch all the (non project) modules included in the release
+    modules_in_release = get_modules_in_release(nap_framework_full_path)
+
+    # Get the modules already in use in demos
+    unique_used_modules = get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_dir)
+
+    # Determine the untested modules
+    difference = list(set(modules_in_release) - set(unique_used_modules))
+    difference.sort()
+    print("Creating fake projects for modules without demos: %s" % ', '.join(difference))
+
+    os.chdir(nap_framework_full_path)
+
+    for module in difference:
+        # Build a project name
+        processed_name = module.replace('_', '').title()
+        project_name = 'FakeDemo%s' % processed_name
+        created_project_path = os.path.join('projects', project_name.lower())
+        dest_project_path = os.path.join(testing_projects_dir, project_name.lower())
+
+        # Bail if it's already been created
+        if os.path.exists(dest_project_path):
+            warning = "Project %s seems to already exists and will be replaced" % project_name
+            print(warning)
+            warnings.append(warning)
+            shutil.rmtree(dest_project_path)
+
+        # Generate the project
+        cmd = '%s -ng %s' % (os.path.join('.', 'tools', 'create_project'), project_name)
+        (returncode, stdout, stderr) = call_capturing_output(cmd)
+        template_creation_success = returncode == 0
+
+        if template_creation_success:
+            # Move the project alongside the other demos so they get automatically tested
+            shutil.move(created_project_path, testing_projects_dir)
+        else:
+            warning = "Failed to create fake demo for module %s" % module
+            print("Warning: %s" % warning)
+            warnings.append(warning)
+
+    os.chdir(prev_wd)
+
+def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt, create_fake_projects):
     """Main entry point to the testing
 
     Parameters
@@ -2019,6 +2096,8 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         Whether to rename the NAP framework directory when testing packaged projects
     rename_qt : bool
         Whether to attempt to rename any Qt library pointed to via environment variable QT_DIR when testing packaged projects
+    create_fake_projects : bool
+        Whether to create fake projects for modules that aren't represented in any demos
 
     Returns
     -------
@@ -2037,6 +2116,7 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     duration_start_time = time.time()
     warnings = []
+    phase = 0
 
     # Check to see if our framework path looks valid
     if not os.path.exists(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json')):
@@ -2069,10 +2149,15 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
             print("Warning: %s" % warning)
             warnings.append(warning)
 
+    # Make any needed fake dependencies projects
+    if create_fake_projects:
+        print("============ Phase #%s - Dummy project creation ============" % phase)
+        create_fake_projects_for_modules_without_demos(nap_framework_full_path, testing_projects_dir, warnings)
+
     os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
 
     # Configure, build and package all demos
-    phase = 1
+    phase += 1
     print("============ Phase #%s - Building and packaging demos ============" % phase)
     demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
 
@@ -2256,6 +2341,8 @@ if __name__ == '__main__':
                         help="Don't create a JSON report to %s" % REPORT_FILENAME)
     parser.add_argument('-fl', '--force-log-reporting', action='store_true',
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
+    parser.add_argument('-nf', '--no-fake-projects', action='store_true',
+                        help="Don't create fake projects for modules that aren't represented in any demos")
     if not is_windows():
         parser.add_argument('-nrf', '--no-rename-framework', action='store_true',
                             help="Don't rename the NAP framework while testing packaged projects")
@@ -2273,5 +2360,11 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.testing_projects_dir, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH, 
+                               args.testing_projects_dir,
+                               not args.no_json_report, 
+                               args.force_log_reporting,
+                               not args.no_rename_framework,
+                               not args.no_rename_qt,
+                               not args.no_fake_projects)
     sys.exit(not success)
