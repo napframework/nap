@@ -78,20 +78,13 @@ namespace nap
 		bool initializeEngine(utility::ErrorState& error);
 
 		/**
-		 * Loads all modules in to the core environment and creates all the associated services
+		 * Loads all modules in to the core environment and creates all the associated services.
+         * @param context whether initializing for project or Napkin
 		 * @param error contains the error code when initialization fails
 		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, std::unique_ptr<ProjectInfo> projectInfo);
-
-		/**
-		 * Load modules, initialize and create all required services.
-		 * ProjectInfo must have been loaded before invoking this.
-		 * @param error contains the error code when initialization fails
-		 * @return true if initialization was successful, false otherwise.
-		 */
-		bool postInitializeEngine(utility::ErrorState& error);
+		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services
@@ -225,16 +218,16 @@ namespace nap
  		 * @return true on sucess.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
-		bool loadProjectInfo(nap::utility::ErrorState& error, std::string projectFilename = {});
-
 
 	private:
 		/**
-		* Helper function that creates all the services that are found in the various modules
-		* Note that a module does not need to define a service, only if it has been defined
-		* this call will try to create it.
-		*/
-		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
+		 * Helper function that creates all the services that are found in the various modules
+		 * Note that a module does not need to define a service, only if it has been defined
+		 * this call will try to create it.
+		 * @param error contains the error if the services could not be added
+		 * @return if the services are created successfully
+		 */
+		bool createServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
 
 		/**
 		* Adds a new service of type @type to @outServices
@@ -273,7 +266,21 @@ namespace nap
 		 */
 		void setupPythonEnvironment();
 
-		bool loadServiceConfigs(nap::utility::ErrorState& err);
+		/**
+		 * Explicitly load a project from file.
+		 * Call this before initializeEngine() if custom project setup is required.
+		 * @param projectFilename absolute path to the project file on disk.
+         * @param context whether initializing for project or Napkin
+		 * @param error contains the error if the file could not be loaded.
+		 */
+	    bool loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& error);
+
+		/**
+		 * Loads the service configuration resources from file. The file must exist.
+		 * @param err contains the error if loading fails.
+		 * @return if loading succeeded.
+		 */
+		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

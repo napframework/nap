@@ -25,14 +25,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
 	std::string ProjectInfo::getNAPRootDir() const
 	{
 		auto exeDir = nap::utility::getExecutableDir();
 		auto napKinExeToRoot = mPathMapping->mNapkinExeToRoot;
 		auto projectToRoot = mPathMapping->mProjectExeToRoot;
-		return utility::joinPath({exeDir, mEditorMode ? napKinExeToRoot : projectToRoot});
+		return utility::joinPath({exeDir, mContext == EContext::Editor ? napKinExeToRoot : projectToRoot});
 	}
+
 
 	std::vector<std::string> ProjectInfo::getModuleDirectories() const
 	{
@@ -47,25 +47,16 @@ namespace nap
 
 		// make all paths absolute
 		for (const auto& p : mPathMapping->mModulePaths)
-		{
-			if (utility::isAbsolutePath(p))
-				dirs.emplace_back(p);
-			else
-				dirs.emplace_back(utility::joinPath({projectDir, p}));
-		}
-
+			dirs.emplace_back(utility::isAbsolutePath(p) ? p : utility::joinPath({ projectDir, p }));
 		return dirs;
 	}
 
+
 	bool ProjectInfo::isEditorMode() const
 	{
-		return mEditorMode;
+		return mContext == EContext::Editor;
 	}
 
-	void ProjectInfo::setEditorMode(bool b)
-	{
-		mEditorMode = b;
-	}
 
 	std::string ProjectInfo::getFilename() const
 	{
@@ -77,12 +68,14 @@ namespace nap
 		mFilename = filename;
 	}
 
+
 	std::string ProjectInfo::getProjectDir() const
 	{
 		assert(!mFilename.empty());
 		auto f = nap::utility::getAbsolutePath(mFilename);
 		return nap::utility::getFileDir(f);
 	}
+
 
 	std::string ProjectInfo::getDefaultDataFile() const
 	{
@@ -99,6 +92,7 @@ namespace nap
 		return utility::joinPath({getProjectDir(), utility::getFileDir(mDefaultData)});
 	}
 
+
 	const PathMapping& ProjectInfo::getPathMapping() const
 	{
 		// Expected to exist when created
@@ -106,17 +100,20 @@ namespace nap
 		return *mPathMapping;
 	}
 
+
 	bool ProjectInfo::patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
 		utility::replaceTemplateVariable(path, getTemplateValues(additionalValues));
 		return true;
 	}
 
+
 	bool ProjectInfo::patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
 		utility::replaceTemplateVariables(paths, getTemplateValues(additionalValues));
 		return true;
 	}
+
 
 	std::unordered_map<std::string, std::string> ProjectInfo::getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
@@ -134,14 +131,15 @@ namespace nap
 
 		// TODO: For our own safety: verify unique value insertion
 		values.insert(additionalValues.begin(), additionalValues.end());
-
 		return values;
 	}
+
 
 	bool ProjectInfo::hasServiceConfigFile() const
 	{
 		return !mServiceConfigFilename.empty();
 	}
+
 
 	const ProjectInfo& ModuleInfo::getProjectInfo() const
 	{

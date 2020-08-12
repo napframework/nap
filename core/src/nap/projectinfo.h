@@ -28,31 +28,33 @@ namespace nap
 		std::string mFilename;
 	};
 
+
 	class NAPAPI ProjectInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 		friend class nap::Core;
 
 	public:
+		/**
+		 * Controls how paths to modules and other dependencies are resolved.
+		 */
+		enum class EContext : uint8
+		{
+			Application = 0,		///< Resolved against running application
+			Editor		= 1			///< Resolved against editor
+		};
+
 		std::string mTitle;												// Title of the project
 		std::string mVersion;											// Version of this project
 		std::string mDefaultData;										// Relative path of the default data (json) file
 		std::string mPathMappingFile;									// Points to a file with a path mapping
-		std::string mServiceConfigFilename = {};								// Points to a file with service configurations
+		std::string mServiceConfigFilename = {};						// Points to a file with service configurations
 		std::vector<std::string> mRequiredModules;						// Names of modules this project depends on
-
-		// Not automatically deserialized
-		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
 
 		/**
 		 * @return True if this process is running in an editor
 		 */
 		bool isEditorMode() const;
-
-		/**
-		 * WARNING: Only to be used from the editor.
-		 */
-		void setEditorMode(bool b);
 
 		/**
 		 * @return The absolute file path this ProjectInfo was loaded from
@@ -103,10 +105,12 @@ namespace nap
 	private:
 		std::unordered_map<std::string, std::string> getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const;
 
-		std::string mFilename;					   // The filename from which this data was loaded
-		std::unique_ptr<PathMapping> mPathMapping; // The actual path mapping coming from mPathMappingFile
-		bool mEditorMode = false;
+		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
+		std::string mFilename;								// The filename from which this data was loaded
+		std::unique_ptr<PathMapping> mPathMapping;			// The actual path mapping coming from mPathMappingFile
+		EContext mContext = EContext::Application;			// By default projects are loaded from application context
 	};
+
 
 	class NAPAPI ModuleInfo : public rtti::Object
 	{
