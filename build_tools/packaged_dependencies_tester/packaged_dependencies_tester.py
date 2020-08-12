@@ -2006,6 +2006,16 @@ def patch_audio_service_configuration(project_dir, output_dir, project_name, nap
             f.write(json.dumps(project_info, indent=4))
 
 def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_dir):
+    """Fetch a list of all modules in use within the demos in the release.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'
+    """
+
     test_projects_dir = os.path.join(nap_framework_full_path, testing_projects_dir)
     dirs = os.listdir(test_projects_dir)
     modules = []
@@ -2016,6 +2026,14 @@ def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_d
     return unique_used_modules
 
 def get_modules_in_release(nap_framework_full_path):
+    """Fetch a list of (non project) modules included in a release.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    """
+
     modules_dir = os.path.join(nap_framework_full_path, MODULES_DIR)
     modules_in_release = os.listdir(modules_dir)
     modules_in_release.sort()
