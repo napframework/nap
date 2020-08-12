@@ -23,8 +23,8 @@ namespace nap
 
 		/**
 		 * init evaluates the data hold in curves and checks if its valid for this type
-		 *
 		 * @param errorState contains information about eventual failure of evaluation
+		 * @return bool indicating successfull initialization
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -40,7 +40,7 @@ namespace nap
 
 		/**
 		 * Gets the value of the evaluated point of the curve, translated in to the type
-		 * @param pos must be a value between 0-1 ( 0 meaning start of curve, 1 meaning end )
+		 * @param pos must be a value between 0-1 ( 0 meaning start of curve, 1 meaning end ) pos is not clamped
 		 */
 		const T getValue(float pos) const;
 

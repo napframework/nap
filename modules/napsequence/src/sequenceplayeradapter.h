@@ -9,15 +9,13 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequencePlayerOutput;
 	class SequencePlayerAdapter;
 	class SequencePlayer;
 
 	// shortcut to factory function
-	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(SequenceTrack&,
-																						SequencePlayerOutput&, const SequencePlayer&);
+	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&);
 
 	/**
 	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
