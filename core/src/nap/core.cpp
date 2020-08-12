@@ -457,7 +457,8 @@ namespace nap
 
 		// Store originating filename so we can reference it later and load path mapping
 		mProjectInfo->mFilename = projectFilename;
-		loadPathMapping(*mProjectInfo, err);
+		if(!loadPathMapping(*mProjectInfo, err))
+			return false;
 
 		// Ensure templates/variables are replaced with their intended values
 		if (!mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename))
