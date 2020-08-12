@@ -162,9 +162,6 @@ namespace nap
 
 	int AudioPlaybackApp::shutdown()
 	{
-	    utility::ErrorState errorState;
-	    if (!getCore().writeConfigFile(errorState))
-	        Logger::warn("Failed to write configuration file: %s", errorState.toString().c_str());
 		return 0;
 	}
 }
