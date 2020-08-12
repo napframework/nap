@@ -89,9 +89,12 @@ int main(int argc, char* argv[])
 		if (parser.isSet(opVer))
 			return 0;
 
-		if (parser.isSet(opProject))
-			ctx.addRecentlyOpenedProject(parser.value(opProject));
-		else if (parser.isSet(opNoOpenRecent))
+		if (parser.isSet(opProject)) 
+        {
+            std::string projectPath = parser.value(opProject).toStdString();
+		    projectPath = nap::utility::getAbsolutePath(projectPath);
+			ctx.addRecentlyOpenedProject(QString::fromStdString(projectPath));
+        } else if (parser.isSet(opNoOpenRecent))
 			ctx.setOpenRecentProjectOnStartup(false);
 
 		if (parser.isSet(opExitFailure))
