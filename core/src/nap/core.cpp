@@ -105,18 +105,18 @@ namespace nap
 		if (!mModuleManager->loadModules(*mProjectInfo, error))
 			return false;
 
-		// Service configurations are not necessary in editor mode
-		if (!mProjectInfo->isEditorMode())
-		{
-			// If there is a config file, read the service configurations from it.
-			// Note that having a config file is optional, but if there *is* one, it should be valid
-			if(!mProjectInfo->isEditorMode() && mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
-				return false;
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		if(mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+			return false;
+		
+		// Always create services! 
+		// Failure to create all the required services will result in certain objects unable to be created!
+		// Creation is therefore required, in every context. Initialization happens later. 
+		// After creation we're able to access all special object creation functions.
+		if (!createServices(*mProjectInfo, error))
+			return false;
 
-			// Create the various services based on their dependencies
-			if (!createServices(*mProjectInfo, error))
-				return false;
-		}
 		return true;
 	}
 
