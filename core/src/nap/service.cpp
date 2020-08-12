@@ -39,6 +39,5 @@ namespace nap
 
 	ServiceConfiguration::~ServiceConfiguration()
 	{
-		nap::Logger::info("Kakkerdekak");
 	}
 }
