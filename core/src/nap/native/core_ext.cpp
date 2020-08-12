@@ -4,6 +4,7 @@
 #include <packaginginfo.h>
 
 // External Includes
+#include <rtti/jsonreader.h>
 #include <utility/fileutils.h>
 
 namespace nap
@@ -47,7 +48,7 @@ namespace nap
 		for (auto& parentPath : sPossibleProjectParents)
 		{
 			std::string testDataPath = utility::joinPath({napRoot, parentPath, projectName});
-			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
+			nap::Logger::debug("Looking for %s in '%s'...", filename.c_str(), testDataPath.c_str());
 			if (!utility::dirExists(testDataPath))
 				continue;
 
@@ -63,4 +64,21 @@ namespace nap
 		return false;
 	}
 
+
+	bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
+	{
+		std::string config_file_path;
+		if (findProjectFilePath(SERVICE_CONFIG_FILENAME, config_file_path))
+		{
+			if (rtti::readJSONFile(config_file_path,
+								   rtti::EPropertyValidationMode::DisallowMissingProperties,
+								   rtti::EPointerPropertyMode::NoRawPointers,
+								   mResourceManager->getFactory(),
+								   deserializeResult,
+								   errorState))
+				return true;
+		}
+
+		return false;
+	}
 }

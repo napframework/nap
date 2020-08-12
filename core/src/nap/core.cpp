@@ -51,7 +51,6 @@ namespace nap
 		mTicks.fill(0);
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mModuleManager = std::make_unique<ModuleManager>(*this);
-
 		mExtension = std::move(coreExtension);
 	}
 
@@ -67,22 +66,24 @@ namespace nap
 
 	bool Core::initializeEngine(utility::ErrorState& error)
 	{
-
-		if (!loadProjectInfo(error))
+		// Resolve project file path
+		std::string project_file_path;
+		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, project_file_path),
+			"Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
-		return postInitializeEngine(error);
+		// Initialize engine
+		return initializeEngine(project_file_path, ProjectInfo::EContext::Application, error);
 	}
 
-	bool nap::Core::initializeEngine(nap::utility::ErrorState& error, std::unique_ptr<nap::ProjectInfo> projectInfo)
-	{
-		mProjectInfo = std::move(projectInfo);
 
-		return postInitializeEngine(error);
-	}
-
-	bool nap::Core::postInitializeEngine(utility::ErrorState& error)
+	bool Core::initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error)
 	{
+		// Load project information
+		assert(mProjectInfo == nullptr);
+		if (!loadProjectInfo(projectInfofile, context, error))
+			return false;
+
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from macOS Finder and probably other things too.
@@ -94,6 +95,7 @@ namespace nap
 #endif
 
 		// Change directory to data folder
+		assert(mProjectInfo != nullptr);
 		std::string dataDir = mProjectInfo->dataDirectory();
 		if (!error.check(utility::fileExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
 			return false;
@@ -103,8 +105,16 @@ namespace nap
 		if (!mModuleManager->loadModules(*mProjectInfo, error))
 			return false;
 
-		// Create the various services based on their dependencies
-		if (!initializeServices(*mProjectInfo, error))
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		if(!mProjectInfo->isEditorMode() && mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+			return false;
+		
+		// Always create services! 
+		// Failure to create all the required services will result in certain objects unable to be created!
+		// Creation is therefore required, in every context. Initialization happens later. 
+		// After creation we're able to access all special object creation functions.
+		if (!createServices(*mProjectInfo, error))
 			return false;
 
 		return true;
@@ -226,13 +236,9 @@ namespace nap
 		}
 	}
 
-	bool nap::Core::initializeServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
-	{
-		// Convert service configurations to map
-		ServiceConfigMap configuration_by_type;
-		for (auto& config : projectInfo.mServiceConfigurations)
-			configuration_by_type[config->getServiceType()] = config;
 
+	bool nap::Core::createServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
+	{
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
 		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
@@ -247,14 +253,15 @@ namespace nap
 			assert(service_configuration_type.is_valid());
 			assert(service_configuration_type.can_create_instance());
 
-			// Construct the service configuration
-			// TODO: Free this allocation
-			auto service_configuration(service_configuration_type.create<ServiceConfiguration>());
+			// Construct the service configuration, store in unique ptr
+			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
 			rtti::TypeInfo serviceType = service_configuration->getServiceType();
 
-			auto pos = configuration_by_type.find(serviceType);
-			if (pos == configuration_by_type.end())
-				configuration_by_type.insert(std::make_pair(serviceType, service_configuration));
+			// Check if the service associated with the configuration isn't already part of the map, if so add as default
+			// Config is automatically destructed otherwise.
+			auto pos = mProjectInfo->mServiceConfigs.find(serviceType);
+			if (pos == mProjectInfo->mServiceConfigs.end())
+				mProjectInfo->mServiceConfigs.emplace(std::make_pair(serviceType, std::move(service_configuration)));
 		}
 
 		// First create and add all the services (unsorted)
@@ -266,9 +273,9 @@ namespace nap
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
 			ServiceConfiguration* configuration = nullptr;
-			auto pos = configuration_by_type.find(module->mService);
-			if (pos != configuration_by_type.end())
-				configuration = pos->second;
+			auto pos = mProjectInfo->mServiceConfigs.find(module->mService);
+			if (pos != mProjectInfo->mServiceConfigs.end())
+				configuration = pos->second.get();
 
 			// Create the service
 			if (!addService(module->mService, configuration, services, errorState))
@@ -304,6 +311,7 @@ namespace nap
 		}
 		return true;
 	}
+
 
 	// Returns service that matches @type
 	Service* Core::getService(const rtti::TypeInfo& type)
@@ -428,14 +436,9 @@ namespace nap
 #endif
 	}
 
-	bool nap::Core::loadProjectInfo(nap::utility::ErrorState& err)
-	{
-		// Load project info
-		std::string projectFilename;
-		if (!err.check(findProjectFilePath(PROJECT_INFO_FILENAME, projectFilename),
-					   "Failed to find %s", PROJECT_INFO_FILENAME))
-			return false;
 
+	bool nap::Core::loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& err)
+	{
 		// Load ProjectInfo from json
 		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
 			projectFilename.c_str(),
@@ -444,34 +447,74 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
+		// Ensure project info is loaded correctly.
 		if (!err.check(mProjectInfo != nullptr,
-					  "Failed to load project info %s",
-					  projectFilename.c_str()))
+			"Failed to load project info %s", projectFilename.c_str()))
 			return false;
 
-		// Store originating filename so we can reference it later
-		mProjectInfo->mFilename = projectFilename;
+		// Set if paths are resolved for editor or application
+		mProjectInfo->mContext = context;
 
-		// Load path mapping
-		loadPathMapping(*mProjectInfo, err);
+		// Store originating filename so we can reference it later and load path mapping
+		mProjectInfo->mFilename = projectFilename;
+		if(!loadPathMapping(*mProjectInfo, err))
+			return false;
+
+		// Ensure templates/variables are replaced with their intended values
+		if (!mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename))
+			return false;
 
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
 					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
 			return false;
 
+		// Notify project info is loaded
 		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
-
 		return true;
 	}
+
+
+	bool nap::Core::loadServiceConfigurations(nap::utility::ErrorState& err)
+	{
+		assert(mProjectInfo->mServiceConfigs.empty());
+		rtti::DeserializeResult deserialize_result;
+		if (loadServiceConfiguration(deserialize_result, err))
+		{
+			for (auto& object : deserialize_result.mReadObjects)
+			{
+				// Check if it's indeed a service configuration object
+				if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(),
+					"Config.json should only contain ServiceConfigurations"))
+					return false;
+
+				// Create configuration and try to add.
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+                auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
+				auto ret = mProjectInfo->mServiceConfigs.emplace(std::make_pair(config->getServiceType(), std::move(config)));
+
+				// Duplicates are not allowed
+				if(!err.check(ret.second, "Duplicate service configuration found with id: %s, type: %s",
+					configptr->mID.c_str(), configptr->getServiceType().get_name().to_string().c_str()))
+					return false;
+			}
+		}
+		else
+		{
+			err.fail("Failed to load config.json");
+			return false;
+		}
+		return true;
+	}
+
 
 	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
 	{
 		// Load path mapping (relative to the project.json file)
 		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
-		auto pathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
+		projectInfo.mPathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
 			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
@@ -484,31 +527,19 @@ namespace nap
 			return false;
 		}
 
-		// Store loaded path mapping first
-		projectInfo.mPathMapping = std::move(pathMapping);
-
-		std::unordered_map<std::string, std::string> reps = {
-			{"ROOT", projectInfo.getNAPRootDir()},
-			{"BUILD_CONFIG", sBuildConf},
-			{"BUILD_TYPE", sBuildType},
-			{"PROJECT_DIR", projectInfo.getProjectDir()},
-		};
-
-		// As EXE_DIR is the project execurable directory the editor won't be aware of this and shouldn't
-		// try and populate it
-		if (!projectInfo.isEditorMode())
-			reps["EXE_DIR"] = utility::getExecutableDir();
-
-		// Do string/template replacement
-		projectInfo.mPathMapping->mModulePaths = utility::namedFormat(projectInfo.mPathMapping->mModulePaths, reps);
+		// Template/variable replacement
+		if (!projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths))
+			return false;
 
 		return true;
 	}
+
 
 	nap::ProjectInfo* nap::Core::getProjectInfo()
 	{
 		return mProjectInfo.get();
 	}
+
 
     bool Core::writeConfigFile(utility::ErrorState& errorState)
     {
