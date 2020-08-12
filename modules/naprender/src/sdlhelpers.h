@@ -39,7 +39,7 @@ namespace nap
 		 bool NAPAPI getFullscreen(SDL_Window* window);
 
 		/**
-		 * Returns the size of an OpenGL window
+		 * Returns the size of an SDL window
 		 * @param window the window to retrieve the size for
 		 * @return the window size
 		 */
@@ -58,7 +58,7 @@ namespace nap
 		glm::ivec2 NAPAPI getScreenSize(int screenIndex);
 
 		/**
-		 * resizes an OpenGL window
+		 * resizes an SDL window
 		 * @param window the window to resize
 		 * @param size the new window size
 		 */
@@ -72,7 +72,7 @@ namespace nap
 		glm::ivec2 NAPAPI getDrawableWindowSize(SDL_Window* window);
 
 		/**
-		 * returns the OpenGL window position as pixel coordinates
+		 * returns the window position as pixel coordinates
 		 * @param window the window to get the position for
 		 * @return the window position in pixels
 		 */
@@ -96,8 +96,8 @@ namespace nap
 		std::string NAPAPI getSDLError();
 
 		/**
-		 * @return the id associated with a specific opengl window
-		 * @param window the opengl window to get the id for
+		 * @return the id associated with a specific SDL window
+		 * @param window the SDL window to get the id for
 		 */
 		uint32_t NAPAPI getWindowId(SDL_Window* window);
 

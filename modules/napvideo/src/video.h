@@ -20,11 +20,6 @@ struct AVFrame;
 struct SwrContext;
 struct AVDictionary;
 
-namespace opengl
-{
-	class Texture2D;
-}
-
 namespace nap
 {
 	class RenderTexture2D;

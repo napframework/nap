@@ -13,9 +13,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-glm::vec3 mColor{0.0f,0.0f,0.0f};
-int mWhite(0);
-bool mShow = true;
+static bool mShow = true;
  
 namespace nap 
 {
@@ -45,7 +43,6 @@ namespace nap
 		
  		mScene						= mResourceManager->findObject<Scene>("Scene");
 		mPigEntity					= mScene->findEntity("PigEntity");
-		// 		mRotatingPlaneEntity		= mScene->findEntity("RotatingPlaneEntity");
  		mPlaneEntity				= mScene->findEntity("PlaneEntity");
  		mWorldEntity				= mScene->findEntity("WorldEntity");
  		mCameraEntityLeft			= mScene->findEntity("CameraEntityLeft");
@@ -53,46 +50,18 @@ namespace nap
  		mSplitCameraEntity			= mScene->findEntity("SplitCameraEntity");
  		mDefaultInputRouter			= mScene->findEntity("DefaultInputRouterEntity");
 
-		
-		/*
-		// Set render states
-		nap::RenderState render_state;
-		render_state.mEnableMultiSampling = true;
-		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::EPolygonMode::Fill;
-		mRenderService->setRenderState(render_state);
-		*/
-
 		return true;
 	}
 	
 	
 	// Called when the window is updating
 	void RenderTestApp::update(double deltaTime)
-	{/*
-		static double timer = 0.0;
-		timer += deltaTime;
-		if (timer >= 2.5)
-		{
-			if (mPigEntity == nullptr)
-			{
-				rtti::ObjectPtr<Entity> entity = mResourceManager->findObject<Entity>("PigEntity");
-				utility::ErrorState error_state;
-				mPigEntity = mScene->spawn(*entity, error_state);
-			}
-			else
-			{
-				mScene->destroy(mPigEntity);
-			}
-			timer = 0.0;
-		}*/
-
+	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
 			// Update input for first window
 			std::vector<nap::EntityInstance*> entities;
 			entities.push_back(mCameraEntityLeft.get());
-			
 			Window* window = mRenderWindows[0].get();
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
@@ -101,37 +70,9 @@ namespace nap
 			// Update input for second window
 			std::vector<nap::EntityInstance*> entities;
 			entities.push_back(mCameraEntityRight.get());
-			
 			Window* window = mRenderWindows[1].get();
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
-		
-		// Retrieve source (resource) mesh data
-// 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
-// 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
-// 		assert(rtti_mesh != nullptr);
-// 		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(vertexid::position);
-// 		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
-// 		
-// 		// Retrieve destination (instance) mesh data
-// 		MeshInstance& mesh_instance = mesh.getMeshInstance();
-// 		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(vertexid::position);
-// 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
-// 		
-// 		// Sine wave over our quad
-// 		for (int index = 0; index != src_positions.size() - 1; ++index)
-// 		{
-// 			float s = sin(mRenderService->getCore().getElapsedTime() + (float)index * 0.2f);
-// 			dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
-// 		}
-// 		
-// 		dst_positions.back() = *dst_positions.begin();
-// 		
-// 		utility::ErrorState errorState;
-// 		if (!mesh_instance.update(errorState))
-// 		{
-// 			Logger::fatal(errorState.toString());
-// 		}
 
 		// 1. Show demo window in viewport 1.
  		{
@@ -231,40 +172,19 @@ namespace nap
 				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 				render_window->beginRendering();
 
-// 				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
-// 
-// 				transform_component.setTranslate(glm::vec3(1.0f, 0.0f, 0.0f));
-// 				transform_component.update(identity);
-// 				mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
-
 				// Render output texture to plane
 				std::vector<RenderableComponentInstance*> components_to_render;
 				components_to_render.push_back(&mPlaneEntity->getComponent<RenderableMeshComponentInstance>());
 				components_to_render.push_back(&mPigEntity->getComponent<RenderableMeshComponentInstance>());
-				//components_to_render.push_back(&mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>());
-
-				//MaterialInstance& plane_material = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-				//plane_material.getOrCreateSampler<Sampler2DInstance>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
-				//plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
-				//plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
-				//plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
-				//plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-// 				nap::MaterialInstance& rotating_plane_material = mRotatingPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-// 				rotating_plane_material.getOrCreateUniform<UniformTexture2D>("testTexture").setTexture(mTextureRenderTarget->getColorTexture());
-// 				rotating_plane_material.getOrCreateUniform<UniformTexture2D>("pigTexture").setTexture(mTextureRenderTarget->getColorTexture());
-// 				rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
-// 				rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 				mRenderService->renderObjects(*render_window, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
-// 				// Render sphere using split camera with custom projection matrix
+				// Render sphere using split camera with custom projection matrix
  				mSplitCameraEntity->getComponent<PerspCameraComponentInstance>().setGridLocation(0, 0);
  				components_to_render.clear();
  				components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
  				mRenderService->renderObjects(*render_window, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 				
 				getCore().getService<IMGuiService>()->draw();
-
 				render_window->endRendering();
 				mRenderService->endRecording();
 			}

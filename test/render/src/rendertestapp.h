@@ -13,6 +13,8 @@
 #include <app.h>
 #include <scene.h>
 #include <renderservice.h>
+#include <color.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -69,7 +71,7 @@ namespace nap
 		
 		// Nap Services
 		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;	//< Manages all the loaded resources
+		ResourceManager* mResourceManager = nullptr;				//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input

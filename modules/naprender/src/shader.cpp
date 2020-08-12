@@ -511,27 +511,23 @@ bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStag
 			return false;
 
 		bool is_array = !sampler_type.array.empty();
-		int num_elements = 1;
-		if (is_array)
-			num_elements = sampler_type.array[0];
+		int num_elements = is_array ? sampler_type.array[0] : 1;
 
 		nap::SamplerDeclaration::EType type;
-		if (sampler_type.image.dim == spv::Dim1D)
+		switch(sampler_type.image.dim)
 		{
-			type = nap::SamplerDeclaration::EType::Type_1D;
-		}
-		else if (sampler_type.image.dim == spv::Dim2D)
-		{
-			type = nap::SamplerDeclaration::EType::Type_2D;
-		}
-		else if (sampler_type.image.dim == spv::Dim3D)
-		{
-			type = nap::SamplerDeclaration::EType::Type_3D;
-		}
-		else
-		{
-			errorState.fail("Unsupported sampler type encountered");
-			return false;
+			case spv::Dim1D:
+				type = nap::SamplerDeclaration::EType::Type_1D;
+				break;
+			case spv::Dim2D:
+				type = nap::SamplerDeclaration::EType::Type_2D;
+				break;
+			case spv::Dim3D:
+				type = nap::SamplerDeclaration::EType::Type_3D;
+				break;
+			default:
+				errorState.fail("Unsupported sampler type encountered");
+				return false;
 		}
 
 		uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
@@ -607,7 +603,6 @@ namespace nap
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
 		{
 			spirv_cross::SPIRType input_type = vertex_shader_compiler.get_type(stage_input.type_id);
-
 			VkFormat format = getFormatFromType(input_type);
 			if (!errorState.check(format != VK_FORMAT_UNDEFINED, "Encountered unsupported vertex attribute type"))
 				return false;

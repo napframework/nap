@@ -18,7 +18,9 @@ namespace nap
 
 	/**
 	 * Resource that loads and compiles a shader from disk using the provided vertex and fragment shader paths.
-	 * A material and material instance link to a shader. The shader is compiled on initialization.
+	 * A nap::Material links to a shader. The shader is compiled on initialization. 
+	 * All uniforms, samplers and attributes are extracted. 
+	 * Use a nap::Material or nap::MaterialInstance to set / override uniforms and samplers.
 	 */
 	class NAPAPI Shader : public Resource
 	{
@@ -29,12 +31,14 @@ namespace nap
 		~Shader() override;
 
 		/**
-		 * Creates and inits opengl shader.
+		 * Compiles the shader.
+		 * @param errorState contains the error if compilation fails.
+		 * @return if compilation succeeded. 
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* @return all vertex shader attributes
+		* @return all vertex shader attribute declarations.
 		*/
 		const VertexAttributeDeclarations& getAttributes() const						{ return mShaderAttributes; }
 
@@ -61,7 +65,7 @@ namespace nap
 		/**
 		* @return Vulkan descriptorSetLayout.
 		*/
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		VkDescriptorSetLayout getDescriptorSetLayout() const							{ return mDescriptorSetLayout; }
 
 		std::string mVertPath;							///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string	mFragPath;							///< Property: 'mFragShader' path to the fragment shader on disk

@@ -58,12 +58,12 @@ namespace nap
 		int getOffsetTop() const { return mBearing.y; }
 
 		/**
-		 * @return the 2D opengl Texture
+		 * @return the 2D Texture
 		 */
 		const Texture2D& getTexture() const { return *mTexture; }
 
 		/**
-		 * @return the 2D opengl Texture
+		 * @return the 2D Texture
 		 */
 		Texture2D& getTexture() { return *mTexture; }
 
@@ -85,7 +85,7 @@ namespace nap
 
 	protected:
 		/**
-		 * Initializes the OpenGL 2DTexture after construction of this glyph.	
+		 * Initializes the 2DTexture after construction of this glyph.	
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
@@ -117,7 +117,7 @@ namespace nap
 
 	protected:
 		/**
-		 * Initializes the OpenGL 2DTexture after construction of this glyph.
+		 * Initializes the 2DTexture after construction of this glyph.
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
@@ -143,7 +143,7 @@ namespace nap
 
 	protected:
 		/**
-		 * Initializes the OpenGL 2DTexture after construction of this glyph.
+		 * Initializes the 2DTexture after construction of this glyph.
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
