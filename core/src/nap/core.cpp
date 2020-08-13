@@ -68,7 +68,7 @@ namespace nap
 	{
 		// Resolve project file path
 		std::string project_file_path;
-		if (!error.check(findProjectFilePath(PROJECT_INFO_FILENAME, project_file_path),
+		if (!error.check(findProjectInfoFile(project_file_path),
 			"Failed to find %s", PROJECT_INFO_FILENAME))
 			return false;
 
@@ -107,7 +107,7 @@ namespace nap
 
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
-		if(!mProjectInfo->isEditorMode() && mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+		if(mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
 			return false;
 		
 		// Always create services! 

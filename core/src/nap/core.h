@@ -190,6 +190,13 @@ namespace nap
 		bool hasExtension() const;
 
 		/**
+		 * Locates the project info (project.json) file.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectInfoFile(std::string& foundFilePath) const;
+
+		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
 		 * folders to find the file.
 		 * @param filename File to search for.
