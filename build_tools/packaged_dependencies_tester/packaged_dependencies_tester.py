@@ -356,7 +356,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     expect_early_closure : bool
         Whether process having closed before we kill it is OK
     success_exit_code : int
-        Process exit code representing success
+        Process exit code representing success when expecting early closure
     wait_for_seconds : int
         Seconds to wait before determining run success
 
@@ -369,6 +369,10 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         STDOUT from process
     stderr : str
         STDERR from process
+    unexpected_libraries : list of str
+        List of unexpected libraries in use (Unix only)
+    returncode : int
+        Process exit code
     """
 
     # Launch the app
@@ -418,7 +422,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
                 unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
             elif sys.platform == 'win32':
                 unexpected_libraries = []            
-            return (False, stdout, stderr, unexpected_libraries)
+            return (False, stdout, stderr, unexpected_libraries, p.returncode)
 
     if p.returncode == None:
         # Send SIGTERM and wait a moment to close
@@ -447,7 +451,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     elif sys.platform == 'win32':
         unexpected_libraries = []
 
-    return (success, stdout, stderr, unexpected_libraries)
+    return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testing_napkin):
     """Check whether the specified NAP process is using unexpected libraries on Linux
@@ -797,6 +801,10 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
         STDOUT from process
     stderr : str
         STDERR from process
+    unexpected_libraries : list of str
+        List of unexpected libraries in use (Unix only)
+    returncode : int
+        Process exit code
     """
     
     print("- Run from build output...")
@@ -811,7 +819,7 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
     folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
     patch_audio_service_configuration(os.getcwd(), os.getcwd(), project_name, nap_framework_full_path)
     cmd = os.path.join(folder, project_name)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
         print("  Done.")
     else:
@@ -819,8 +827,9 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))
+        print("  Exit code: %s" % return_code) 
 
-    return (success, stdout, stderr, unexpected_libs)
+    return (success, stdout, stderr, unexpected_libs, return_code)
 
 def run_packaged_project(results, root_output_dir, timestamp, project_name, has_napkin=True):
     """Run packaged project from output directory
@@ -845,7 +854,7 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     print("- Run from package...")
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./%s' % project_name, containing_dir)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./%s' % project_name, containing_dir)
     if success:
         print("  Done.")
     else:
@@ -853,12 +862,15 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))
+        print("  Exit code: %s" % return_code)
 
     results['runFromPackagedOutput'] = {}
     results['runFromPackagedOutput']['success'] = success
     results['runFromPackagedOutput']['stdout'] = stdout
     results['runFromPackagedOutput']['stderr'] = stderr
     results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        results['runFromPackagedOutput']['exitCode'] = return_code
 
 def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """Configure, build and package all demos
@@ -1156,12 +1168,14 @@ def run_build_directory_demos(demo_results):
             continue
 
         # Run
-        (success, stdout, stderr, unexpected_libs) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)))
+        (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)))
         this_demo['runFromBuildOutput'] = {}
         this_demo['runFromBuildOutput']['success'] = success
         this_demo['runFromBuildOutput']['stdout'] = stdout
         this_demo['runFromBuildOutput']['stderr'] = stderr
         this_demo['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+        if not success:
+            this_demo['runFromBuildOutput']['exitCode'] = return_code
 
         print("----------------------------")
 
@@ -1183,12 +1197,14 @@ def run_other_build_type_demo(results, build_type):
     os.chdir(os.path.join(demos_root_dir, demo_name))
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)), build_type)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)), build_type)
     results['runFromBuildOutput'] = {}
     results['runFromBuildOutput']['success'] = success
     results['runFromBuildOutput']['stdout'] = stdout
     results['runFromBuildOutput']['stderr'] = stderr
     results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        results['runFromBuildOutput']['exitCode'] = return_code
 
     print("----------------------------")
 
@@ -1211,12 +1227,14 @@ def run_build_directory_template_project(template_results, nap_framework_full_pa
     os.chdir(TEMPLATE_APP_NAME.lower())
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_cwd_project(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
     template_results['runFromBuildOutput'] = {}
     template_results['runFromBuildOutput']['success'] = success
     template_results['runFromBuildOutput']['stdout'] = stdout
     template_results['runFromBuildOutput']['stderr'] = stderr
     template_results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        template_results['runFromBuildOutput']['exitCode'] = return_code
 
     os.chdir(projects_dir)
 
@@ -1236,14 +1254,16 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
-                                                                       nap_framework_full_path, 
-                                                                       True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
+                                                                                    nap_framework_full_path, 
+                                                                                    True)
 
     napkin_results['runFromFrameworkRelease']['success'] = success
     napkin_results['runFromFrameworkRelease']['stdout'] = stdout
     napkin_results['runFromFrameworkRelease']['stderr'] = stderr
     napkin_results['runFromFrameworkRelease']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        napkin_results['runFromFrameworkRelease']['exitCode'] = return_code
 
     if success:
         print("  Done.")
@@ -1252,6 +1272,7 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
     os.chdir(prev_wd)
 
@@ -1278,12 +1299,12 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
 
         # Run
         demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
-                                                                           nap_framework_full_path, 
-                                                                           True,
-                                                                           True,
-                                                                           NAPKIN_SUCCESS_EXIT_CODE,
-                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                                        nap_framework_full_path, 
+                                                                                        True,
+                                                                                        True,
+                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         this_demo['openWithNapkinBuildOutput'] = {}
         this_demo['openWithNapkinBuildOutput']['success'] = success
@@ -1298,6 +1319,7 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
             print("  STDOUT: %s" % stdout)
             print("  STDERR: %s" % stderr)
             print("  Unexpected libraries: %s" % repr(unexpected_libs))
+            print("  Exit code: %s" % return_code)
 
         print("----------------------------")
 
@@ -1323,12 +1345,12 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
-                                                                           nap_framework_full_path, 
-                                                                           True,
-                                                                           True,
-                                                                           NAPKIN_SUCCESS_EXIT_CODE,
-                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
+                                                                                        nap_framework_full_path, 
+                                                                                        True,
+                                                                                        True,
+                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         template_results['openWithNapkinBuildOutput'] = {}
         template_results['openWithNapkinBuildOutput']['success'] = success
@@ -1343,6 +1365,7 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
             print("  STDOUT: %s" % stdout)
             print("  STDERR: %s" % stderr)
             print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+            print("  Exit code: %s" % return_code)
     else:
         print("  Skipping due to build failure")
 
@@ -1380,15 +1403,17 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged project
     print("- Run Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
-                                                                       os.path.abspath(os.pardir), 
-                                                                       True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
+                                                                                    os.path.abspath(os.pardir), 
+                                                                                    True)
 
     napkin_results['runFromPackagedOutput'] = {}
     napkin_results['runFromPackagedOutput']['success'] = success
     napkin_results['runFromPackagedOutput']['stdout'] = stdout
     napkin_results['runFromPackagedOutput']['stderr'] = stderr
     napkin_results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        napkin_results['runFromPackagedOutput']['exitCode'] = return_code
 
     if success:
         print("  Done.")
@@ -1397,6 +1422,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
 def open_project_in_napkin_from_packaged_app(results, project_name, root_output_dir, timestamp):
     """Open project from Napkin in packaged app
@@ -1420,12 +1446,12 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     # Run demo from packaged project
     print("- Open project with Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
-                                                                       os.path.abspath(os.pardir),
-                                                                       True,
-                                                                       True,
-                                                                       NAPKIN_SUCCESS_EXIT_CODE,
-                                                                       NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                                    os.path.abspath(os.pardir),
+                                                                                    True,
+                                                                                    True,
+                                                                                    NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                    NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
     results['openWithNapkinPackagedApp'] = {}
     results['openWithNapkinPackagedApp']['success'] = success
@@ -1440,6 +1466,7 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
     print("----------------------------")
 
