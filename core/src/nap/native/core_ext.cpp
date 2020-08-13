@@ -65,10 +65,10 @@ namespace nap
 	}
 
 
-	bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
+	bool Core::loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
 	{
 		std::string config_file_path;
-		if (findProjectFilePath(SERVICE_CONFIG_FILENAME, config_file_path))
+		if (findProjectFilePath(filename, config_file_path))
 		{
 			if (rtti::readJSONFile(config_file_path,
 								   rtti::EPropertyValidationMode::DisallowMissingProperties,

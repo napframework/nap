@@ -19,8 +19,8 @@
 #include "coreextension.h"
 #include "projectinfo.h"
 
-// Name of the file that contains all the settings for the NAP services.
-constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
+// Default name to use when writing the file that contains all the settings for the NAP services.
+constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
@@ -241,11 +241,12 @@ namespace nap
 
 		/**
 		 * Load the service configuration file
+		 * @param filename The name of the file to read
 		 * @param deserialize_result contains the result after reading the config file
 		 * @param errorState contains the error if deserialization fails
 		 * @return if service configuration reading succeeded or not
 		 */
-		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
+		bool loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager

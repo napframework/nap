@@ -481,7 +481,7 @@ namespace nap
 	{
 		assert(mProjectInfo->mServiceConfigs.empty());
 		rtti::DeserializeResult deserialize_result;
-		if (loadServiceConfiguration(deserialize_result, err))
+		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
 		{
 			for (auto& object : deserialize_result.mReadObjects)
 			{
@@ -565,7 +565,7 @@ namespace nap
 
         // Save the config file besides the binary, the first location that NAP searches
         const std::string exeDir = utility::getExecutableDir();
-        const std::string configFilePath = utility::getExecutableDir() + "/" + SERVICE_CONFIG_FILENAME;
+        const std::string configFilePath = utility::getExecutableDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
 
         std::ofstream configFile;
         configFile.open(configFilePath);
