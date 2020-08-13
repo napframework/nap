@@ -12,10 +12,10 @@ namespace nap
 	static const std::string sPossibleProjectParents[] =
 			{
 					"projects",     // User projects against packaged NAP
-					"examples",     // Example projects
 					"demos",        // Demo projects
 					"apps",         // Applications in NAP source
-					"test"          // Old test projects in NAP source
+					"test",         // Old test projects in NAP source
+					"examples"      // Example projects
 			};
 
 
