@@ -1559,6 +1559,7 @@ namespace nap
 						// we finish the seek operation and resume normal play
 						finishSeeking(*mSeekState, true);
 					}
+					seek_frame.free();
 				}
 				break;
 
@@ -1600,8 +1601,10 @@ namespace nap
 						{
 							// If we've found a matching frame, finish the seek operation and resume normal play
 							finishSeeking(*mSeekState, true);
+							seek_frame.free();
 							break;
 						}
+						seek_frame.free();
 					}
 					break;
 				}
