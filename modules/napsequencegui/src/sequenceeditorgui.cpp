@@ -12,6 +12,8 @@
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,8 +52,8 @@ namespace nap
 			return false;
 		}
 
-		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID);
-		
+		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+
 		return true;
 	}
 
@@ -67,8 +69,8 @@ namespace nap
 	}
 
 
-	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id)
-		: mEditor(editor), mID(id)
+	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
+		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
 
@@ -107,11 +109,21 @@ namespace nap
 		// set content width of next window
 		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
 
+		// set window flags
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+		if( mDrawFullWindow )
+			window_flags = window_flags | ImGuiWindowFlags_NoResize;
+
+		if( mDrawFullWindow )
+		{
+			ImGui::SetNextWindowPos({0,0});
+			ImGui::SetNextWindowSize({ static_cast<float>(mRenderWindow->getSize().x), static_cast<float>(mRenderWindow->getSize().y) });
+		}
 		// begin window
 		if (ImGui::Begin(
 			mID.c_str(), // id
 			(bool*)0, // open
-			ImGuiWindowFlags_HorizontalScrollbar )) // window flags
+			window_flags)) // window flags
 		{
 			//
 			ImVec2 windowSize = ImGui::GetWindowSize();

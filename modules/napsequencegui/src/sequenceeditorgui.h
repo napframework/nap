@@ -7,10 +7,11 @@
 #include "sequenceeditorguiactions.h"
 
 // external includes
+#include <imgui/imgui.h>
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
+#include <renderwindow.h>
 #include <rtti/objectptr.h>
-#include <imgui/imgui.h>
 
 namespace nap
 {
@@ -45,10 +46,12 @@ namespace nap
 		void show();
 	public:
 		// properties
+		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
+		bool mDrawFullWindow = false; ///< Property: 'Draw Full Window' if true, gui will span entire window size
 	protected:
 		// instantiated view
-		std::unique_ptr<SequenceEditorGUIView> mView = nullptr; 
+		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
 	};
 
 	/**
@@ -64,7 +67,7 @@ namespace nap
 		 * @param editor reference to editor
 		 * @param id id of the GUI resource, used to push ID by IMGUI
 		 */
-		SequenceEditorGUIView(SequenceEditor& editor, std::string id);
+		SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
 		 * shows the editor interface
@@ -134,5 +137,10 @@ namespace nap
 
 		// map of all track views
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
+
+		//
+		bool mDrawFullWindow = false;
+
+		RenderWindow* mRenderWindow = nullptr;
 	};
 }
