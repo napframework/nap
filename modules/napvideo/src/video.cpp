@@ -162,6 +162,7 @@ namespace nap
 
 
 	// Debug function to write a frame to jpeg
+	/*
 	void sWriteJPEG(AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
 	{
 		// Set up jpeg codec context
@@ -185,8 +186,8 @@ namespace nap
 		if (avcodec_open2(jpeg_codec_context, jpeg_codec, nullptr) < 0)
 			return;
 
-		jpeg_codec_context->mb_lmin = jpeg_codec_context->lmin = jpeg_codec_context->qmin * FF_QP2LAMBDA;
-		jpeg_codec_context->mb_lmax = jpeg_codec_context->lmax = jpeg_codec_context->qmax * FF_QP2LAMBDA;
+		jpeg_codec_context->mb_lmin = jpeg_codec_context->mb_lmin = jpeg_codec_context->qmin * FF_QP2LAMBDA;
+		jpeg_codec_context->mb_lmax = jpeg_codec_context->mb_lmax = jpeg_codec_context->qmax * FF_QP2LAMBDA;
 		jpeg_codec_context->flags = CODEC_FLAG_QSCALE;
 		jpeg_codec_context->global_quality = jpeg_codec_context->qmin * FF_QP2LAMBDA;
 
@@ -223,6 +224,7 @@ namespace nap
 
 		avcodec_close(jpeg_codec_context);
 	}
+	*/
 
 	//////////////////////////////////////////////////////////////////////////
 
