@@ -231,7 +231,7 @@ namespace nap
 	// Helper to free packet when it goes out of scope
 	struct PacketWrapper
 	{
-		~PacketWrapper() { av_free_packet(mPacket); }
+		~PacketWrapper()  { av_packet_free(&mPacket); }
 		AVPacket* mPacket = av_packet_alloc();
 	};
 
@@ -530,10 +530,20 @@ namespace nap
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
 		while (!mPacketQueue.empty())
 		{
+			// Get packet in front and de-allocate our side
 			AVPacket* packet = mPacketQueue.front();
 			mPacketQueue.pop();
 			mVideo->deallocatePacket(packet->size);
-			av_free_packet(packet);
+
+			// Skip end of file packet, we want to re-use that
+			if (packet == mEndOfFilePacket.get())
+				continue;
+			if (packet == mSeekStartPacket.get())
+				continue;
+			if (packet == mSeekEndPacket.get())
+				continue;
+
+			av_packet_free(&packet);
 		}
 	}
 
@@ -595,15 +605,15 @@ namespace nap
 	
 	bool AVState::addPacket(AVPacket& packet, const bool& exitIOThreadSignalled)
 	{
+		// Allocate packet our side
 		assert(matchesStream(packet));
-
 		if (!mVideo->allocatePacket(packet.size))
 			return false;
 
+		// Add to packet queue
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-		mPacketQueue.push(&packet);
+		mPacketQueue.emplace(&packet);
 		mPacketAvailableCondition.notify_all();
-
 		return true;
 	}
 
@@ -860,9 +870,9 @@ namespace nap
 			result = avcodec_send_packet(mCodecContext, packet);
 			assert(result != AVERROR(EAGAIN));
 
-			// If the packet is the EOF packet, we shouldn't deref (delete) it (it will be destroyed when the AVState is destroyed)
+			// If the packet is the EOF packet, we shouldn't delte it, it will be destroyed when the AVState is destroyed.
 			if (packet != mEndOfFilePacket.get())
-				av_packet_unref(packet);
+				av_packet_free(&packet);
 		}
 
 		assert(false);
@@ -1261,16 +1271,22 @@ namespace nap
 		if (mVideoState.matchesStream(*packet.mPacket))
 		{
 			packet_result = EProducePacketResult::GotVideoPacket;
-			if ((targetState == nullptr || targetState == &mVideoState) && mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-				packet.mPacket = nullptr;
+			if (targetState == nullptr || targetState == &mVideoState)
+			{
+				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+					packet.mPacket = nullptr;
+			}
 		}
 		else if (mAudioState.matchesStream(*packet.mPacket))
 		{
 			// Note that audio packets are always consumed to make sure that the stream progresses as it should, 
 			// but they are only added when the client want to push the packets on the queue
 			packet_result = EProducePacketResult::GotAudioPacket;
-			if ((targetState == nullptr || targetState == &mAudioState) && mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-				packet.mPacket = nullptr;
+			if (targetState == nullptr || targetState == &mAudioState)
+			{
+				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+					packet.mPacket = nullptr;
+			}
 		}
 
 		return packet_result;
