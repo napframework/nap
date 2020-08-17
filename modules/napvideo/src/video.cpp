@@ -989,25 +989,26 @@ namespace nap
 	}
 
 
-	bool Video::sInitAVState(AVState& destState, int streamIndex, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState)
+	bool Video::sInitAVState(AVState& destState, const AVStream& stream, AVDictionary*& options, utility::ErrorState& errorState)
 	{
 		// Find the decoder for the video stream
-		AVCodec* codec = avcodec_find_decoder(sourceCodecContext.codec_id);
+		AVCodec* codec = avcodec_find_decoder(stream.codecpar->codec_id);
 		if (!errorState.check(codec != nullptr, "Unable to find codec for video stream"))
 			return false;
 
-		// Copy context
+		// Allocate a codec context for the decoder
 		AVCodecContext* codec_context = avcodec_alloc_context3(codec);
-		int error = avcodec_copy_context(codec_context, &sourceCodecContext);
-		if (!errorState.check(error == 0, "Unable to copy codec context: %s", sErrorToString(error).c_str()))
+		stream.codecpar->codec_id;
+		if (!errorState.check(avcodec_parameters_to_context(codec_context, stream.codecpar) >= 0,
+			"Failed to copy codec parameters to decoder context"))
 			return false;
 
-		error = avcodec_open2(codec_context, codec, &options);
+		// Initialize the decoders
+		int error = avcodec_open2(codec_context, codec, &options);
 		if (!errorState.check(error == 0, "Unable to open codec: %s", sErrorToString(error).c_str()))
 			return false;
 
-		destState.init(streamIndex, codec, codec_context);
-
+		destState.init(stream.index, codec, codec_context);
 		return true;
 	}
 
@@ -1029,27 +1030,25 @@ namespace nap
 		// Enable this to dump information about file onto standard error
 		//av_dump_format(mFormatContext, 0, mPath.c_str(), 0);
 
-		// Find the index and codec context of the video stream. The codec is stored in a local 
-		// as it needs to be copied later
-		AVCodecContext* source_video_codec_context = nullptr;
-		AVCodecContext* source_audio_codec_context = nullptr;
-		int video_stream = -1;
-		int audio_stream = -1;
+		// Find the index and codec context of the video and audio stream.
+		AVStream* video_stream = nullptr;
+		AVStream* audio_stream = nullptr;
 		for (int i = 0; i < mFormatContext->nb_streams; ++i)
 		{
-			if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+			AVStream* cur_stream = mFormatContext->streams[i];
+			switch (cur_stream->codec->codec_type)
 			{
-				source_video_codec_context = mFormatContext->streams[i]->codec;
-				video_stream = i;
-			}
-			else if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-			{
-				source_audio_codec_context = mFormatContext->streams[i]->codec;
-				audio_stream = i;
+			case AVMEDIA_TYPE_VIDEO:
+				video_stream = cur_stream;
+				break;
+			case AVMEDIA_TYPE_AUDIO:
+				audio_stream = cur_stream;
+				break;
 			}
 		}
 
-		if (!errorState.check(source_video_codec_context != nullptr, "No video stream found"))
+		// Ensure there's a video stream
+		if (!errorState.check(video_stream != nullptr, "No video stream found"))
 			return false;
 
 		// This option causes the codec context to spawn threads internally for decoding, speeding up the decoding process
@@ -1060,12 +1059,13 @@ namespace nap
 		// when we decode frames. Otherwise, the decoder will reuse buffers, which will then overwrite data already in our queue.
 		av_dict_set(&options, "refcounted_frames", "1", 0);
 
-		if (!sInitAVState(mVideoState, video_stream, *source_video_codec_context, options, errorState))
+		// Initialize video stream
+		if (!sInitAVState(mVideoState, *video_stream, options, errorState))
 			return false;
 
-		if (source_audio_codec_context != nullptr)
-			if (!sInitAVState(mAudioState, audio_stream, *source_audio_codec_context, options, errorState))
-				return false;
+		// Initialize audio stream if available
+		if (audio_stream != nullptr && !sInitAVState(mAudioState, *audio_stream, options, errorState))
+			return false;
 
 		AVCodecContext& video_codec_context = mVideoState.getCodecContext();
 		mWidth = video_codec_context.width;
