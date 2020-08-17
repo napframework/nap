@@ -287,32 +287,6 @@
                     "Index": 0
                 },
                 {
-                    "Type": "nap::audio::VideoAudioComponent",
-                    "mID": "audioComponent",
-                    "Video": "StreakVideo",
-                    "ChannelCount": 2
-                },
-                {
-                    "Type": "nap::audio::OutputComponent",
-                    "mID": "nap::audio::OutputComponent",
-                    "Input": "audioComponent",
-                    "Routing": [
-                        0,
-                        1
-                    ]
-                },
-                {
-                    "Type": "nap::audio::LevelMeterComponent",
-                    "mID": "nap::audio::LevelMeterComponent",
-                    "Input": "audioComponent",
-                    "AnalysisWindowSize": 10.0,
-                    "MeterType": "RMS",
-                    "FilterInput": false,
-                    "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0,
-                    "Channel": 0
-                },
-                {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
                     "Mesh": "VideoMesh",
