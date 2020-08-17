@@ -1125,14 +1125,10 @@ namespace nap
 		// YUV420p to RGB conversion uses an 'offset' value of (-0.0625, -0.5, -0.5) in the shader. 
 		// This means that initializing the YUV planes to zero does not actually result in black output.
 		// To fix this, we initialize the YUV planes to the negative of the offset
-		std::vector<uint8_t> y_default_data;
-		y_default_data.resize(yWidth * yHeight);
-		std::memset(y_default_data.data(), 16, y_default_data.size());
+		std::vector<uint8_t> y_default_data(yWidth * yHeight, 16);
 
 		// Initialize UV planes
-		std::vector<uint8_t> uv_default_data;
-		uv_default_data.resize(uvWidth * uvHeight);
-		std::memset(uv_default_data.data(), 127, uv_default_data.size());
+		std::vector<uint8_t> uv_default_data(uvWidth * uvHeight, 127);
 
 		mYTexture->update(y_default_data.data(), mYTexture->getWidth(), mYTexture->getHeight(), mYTexture->getWidth(), ESurfaceChannels::R);
 		mUTexture->update(uv_default_data.data(), mUTexture->getWidth(), mUTexture->getHeight(), mUTexture->getWidth(), ESurfaceChannels::R);
