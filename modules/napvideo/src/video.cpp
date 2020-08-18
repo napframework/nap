@@ -160,9 +160,8 @@ namespace nap
 		return std::string(error_buf);
 	}
 
-
-	// Debug function to write a frame to jpeg
 	/*
+	// Debug function to write a frame to jpeg
 	void sWriteJPEG(AVCodecContext* videoCodecContext, AVFrame* videoFrame, int frameIndex, double framePTSSecs)
 	{
 		// Set up jpeg codec context
