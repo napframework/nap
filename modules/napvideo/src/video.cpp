@@ -1279,8 +1279,8 @@ namespace nap
 			if (targetState == nullptr || targetState == &mVideoState)
 			{
 				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-				packet.mPacket = nullptr;
-		}
+					packet.mPacket = nullptr;
+			}
 		}
 		else if (mAudioState.matchesStream(*packet.mPacket))
 		{
@@ -1290,8 +1290,8 @@ namespace nap
 			if (targetState == nullptr || targetState == &mAudioState)
 			{
 				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-				packet.mPacket = nullptr;
-		}
+					packet.mPacket = nullptr;
+			}
 		}
 
 		return packet_result;
