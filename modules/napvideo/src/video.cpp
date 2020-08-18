@@ -231,7 +231,7 @@ namespace nap
 	// Helper to free packet when it goes out of scope
 	struct PacketWrapper
 	{
-		~PacketWrapper()  { av_packet_free(&mPacket); }
+		~PacketWrapper() { av_packet_free(&mPacket); }
 		AVPacket* mPacket = av_packet_alloc();
 	};
 
@@ -385,6 +385,7 @@ namespace nap
 		{
 			av_frame_unref(mFrame);
 			av_frame_free(&mFrame);
+			mFrame = nullptr;
 		}
 	}
 
@@ -398,6 +399,7 @@ namespace nap
 
 	AVState::~AVState()
 	{
+		assert(mFrameQueue.empty());
 		close();
 	}
 
@@ -441,6 +443,8 @@ namespace nap
 		if (mCodec != nullptr)
 		{
 			mCodec = nullptr;
+			avcodec_send_packet(mCodecContext, nullptr);
+			avcodec_flush_buffers(mCodecContext);
 			avcodec_free_context(&mCodecContext);
 			mCodecContext = nullptr;
 		}
@@ -729,7 +733,10 @@ namespace nap
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mActiveFrameQueue->size() < 16 || mExitDecodeThreadSignalled; });
 				if (mExitDecodeThreadSignalled)
+				{
+					new_frame.free();
 					break;
+				}
 
 				mActiveFrameQueue->push(new_frame);
 				mFrameDataAvailableCondition.notify_all();
@@ -1065,7 +1072,7 @@ namespace nap
 
 		// Initialize audio stream if available
 		if (audio_stream != nullptr && !sInitAVState(mAudioState, *audio_stream, options, errorState))
-			return false;
+				return false;
 
 		AVCodecContext& video_codec_context = mVideoState.getCodecContext();
 		mWidth = video_codec_context.width;
@@ -1180,6 +1187,8 @@ namespace nap
 
 		clearPacketQueue();
 		clearFrameQueue();
+
+		mCurrentAudioFrame.free();
 	}
 
 
@@ -1270,8 +1279,8 @@ namespace nap
 			if (targetState == nullptr || targetState == &mVideoState)
 			{
 				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-					packet.mPacket = nullptr;
-			}
+				packet.mPacket = nullptr;
+		}
 		}
 		else if (mAudioState.matchesStream(*packet.mPacket))
 		{
@@ -1281,8 +1290,8 @@ namespace nap
 			if (targetState == nullptr || targetState == &mAudioState)
 			{
 				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
-					packet.mPacket = nullptr;
-			}
+				packet.mPacket = nullptr;
+		}
 		}
 
 		return packet_result;

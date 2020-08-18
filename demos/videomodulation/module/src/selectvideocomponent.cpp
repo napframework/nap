@@ -46,11 +46,9 @@ namespace nap
 			return false;
 
 		// Get the audio component
-		/*
 		mAudioComponent = getEntityInstance()->findComponent<audio::VideoAudioComponentInstance>();
 		if (!errorState.check(mAudioComponent != nullptr, "%s: missing VideoAudioComponent", mID.c_str()))
 			return false;
-		*/
 
 		// Select one
 		selectVideo(resource->mIndex);
@@ -79,7 +77,7 @@ namespace nap
 		mCurrentIndex = math::clamp<int>(index, 0, mVideos.size() - 1);
 		mCurrentVideo = mVideos[mCurrentIndex];
 		mCurrentVideo->mLoop = true;
-		//mAudioComponent->setVideo(*mCurrentVideo);
+		mAudioComponent->setVideo(*mCurrentVideo);
 		mCurrentVideo->play();
 	}
 
