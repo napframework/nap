@@ -194,6 +194,12 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
+
+			if (press_event->mKey == nap::EKeyCode::KEY_0)
+			{
+				SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
+				video_selector.selectVideo(0);
+			}
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
