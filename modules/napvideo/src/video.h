@@ -10,6 +10,7 @@
 #include <rtti/factory.h>
 #include <utility/autoresetevent.h>
 #include <nap/signalslot.h>
+#include <rendertexture2d.h>
 
 struct AVPacket;
 struct AVCodec;
@@ -19,15 +20,10 @@ struct AVFormatContext;
 struct AVFrame;
 struct SwrContext;
 struct AVDictionary;
-
-namespace opengl
-{
-	class Texture2D;
-}
+struct AVStream;
 
 namespace nap
 {
-	class RenderTexture2D;
 	class VideoService;
 	class Video;
 
@@ -531,7 +527,7 @@ namespace nap
 		/**
 		 * Constructs AVState object and initializes codec and stream.
 		 */
-		static bool sInitAVState(AVState& destState, int streamIndex, const AVCodecContext& sourceCodecContext, AVDictionary*& options, utility::ErrorState& errorState);
+		static bool sInitAVState(AVState& destState, const AVStream& stream, AVDictionary*& options, utility::ErrorState& errorState);
 
 		/**
 		 * Thread reads packets from the stream and pushes them onto the packet queue.
