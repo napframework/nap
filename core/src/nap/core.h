@@ -19,8 +19,8 @@
 #include "coreextension.h"
 #include "projectinfo.h"
 
-// Name of the file that contains all the settings for the NAP services.
-constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
+// Default name to use when writing the file that contains all the settings for the NAP services.
+constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
@@ -78,20 +78,13 @@ namespace nap
 		bool initializeEngine(utility::ErrorState& error);
 
 		/**
-		 * Loads all modules in to the core environment and creates all the associated services
+		 * Loads all modules in to the core environment and creates all the associated services.
+         * @param context whether initializing for project or Napkin
 		 * @param error contains the error code when initialization fails
 		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, std::unique_ptr<ProjectInfo> projectInfo);
-
-		/**
-		 * Load modules, initialize and create all required services.
-		 * ProjectInfo must have been loaded before invoking this.
-		 * @param error contains the error code when initialization fails
-		 * @return true if initialization was successful, false otherwise.
-		 */
-		bool postInitializeEngine(utility::ErrorState& error);
+		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
 
 		/**
 		 * Initializes all registered services
@@ -197,6 +190,13 @@ namespace nap
 		bool hasExtension() const;
 
 		/**
+		 * Locates the project info (project.json) file.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectInfoFile(std::string& foundFilePath) const;
+
+		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
 		 * folders to find the file.
 		 * @param filename File to search for.
@@ -228,11 +228,13 @@ namespace nap
 
 	private:
 		/**
-		* Helper function that creates all the services that are found in the various modules
-		* Note that a module does not need to define a service, only if it has been defined
-		* this call will try to create it.
-		*/
-		bool initializeServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
+		 * Helper function that creates all the services that are found in the various modules
+		 * Note that a module does not need to define a service, only if it has been defined
+		 * this call will try to create it.
+		 * @param error contains the error if the services could not be added
+		 * @return if the services are created successfully
+		 */
+		bool createServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
 
 		/**
 		* Adds a new service of type @type to @outServices
@@ -243,6 +245,15 @@ namespace nap
 		* @return if the service was added successfully
 		*/
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
+
+		/**
+		 * Load the service configuration file
+		 * @param filename The name of the file to read
+		 * @param deserialize_result contains the result after reading the config file
+		 * @param errorState contains the error if deserialization fails
+		 * @return if service configuration reading succeeded or not
+		 */
+		bool loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -264,9 +275,20 @@ namespace nap
 		void setupPythonEnvironment();
 
 		/**
-		 * @return The current project info, load it if it isn't set.
+		 * Explicitly load a project from file.
+		 * Call this before initializeEngine() if custom project setup is required.
+		 * @param projectFilename absolute path to the project file on disk.
+         * @param context whether initializing for project or Napkin
+		 * @param error contains the error if the file could not be loaded.
 		 */
-		bool loadProjectInfo(nap::utility::ErrorState& error);
+	    bool loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& error);
+
+		/**
+		 * Loads the service configuration resources from file. The file must exist.
+		 * @param err contains the error if loading fails.
+		 * @return if loading succeeded.
+		 */
+		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

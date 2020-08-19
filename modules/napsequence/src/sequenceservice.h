@@ -12,41 +12,41 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEventReceiver;
-	class SequencePlayerParameterSetterBase;
 
 	/**
-	 * Main interface for processing sequence events and setting the parameters on the main thread
-	 * All SequenceEventReceivers and ParameterSetters are registered and de-registered with this service on initialization and destruction
-	 * This service consumes all received sequence events and forwards them to all registered SequenceEventReceivers
-	 * Also, the service sets all parameter values that are tied to a sequenceplayer and its tracks when the user wants parameters to be set on main thread
+	 * Main interface for processing sequence outputs
 	 */
 	class NAPAPI SequenceService : public Service
 	{
-		friend class SequenceEventReceiver;
-		friend class SequencePlayerParameterSetterBase;
 		friend class SequencePlayerOutput;
 
 		RTTI_ENABLE(Service)
 	public:
-		// Default Constructor
+		/**
+		 * Constructor
+		 */
 		SequenceService(ServiceConfiguration* configuration);
 
-		// Default Destructor
+		/**
+		 * Deconstructor
+		 */
 		virtual ~SequenceService();
 
+		/**
+		 * registers object creator method that can be passed on to the rtti factory
+		 * @param objectCreator unique pointer to method
+		 */
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceService*));
 	protected:
 		/**
-		 * Registers all objects that need a specific way of construction
+		 * registers all objects that need a specific way of construction
 		 * @param factory the factory to register the object creators with
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
-		 * init
 		 * initializes service
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
@@ -54,8 +54,7 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * update
-		 * updates any ParameterSetters and SequenceEventReceivers from main thread
+		 * updates any outputs
 		 * @param deltaTime deltaTime
 		 */
 		virtual void update(double deltaTime) override;
@@ -67,12 +66,12 @@ namespace nap
 		void registerOutput(SequencePlayerOutput& output);
 
 		/**
-		 * removes an input
+		 * removes an output
 		 * @param input reference to input
 		 */
 		void removeOutput(SequencePlayerOutput& output);
 
-		//
+		// vector holding raw pointers to outputs
 		std::vector<SequencePlayerOutput*> mOutputs;
 	};
 }

@@ -20,7 +20,7 @@ namespace nap
 	/**
 	 * The sequence player is responsible for loading / playing and saving a sequence
 	 * The player dispatches a thread which reads the sequence. Actions for each track of the sequence are handle by SequencePlayerAdapters
-	 * A Sequence can only be edited by a derived class from SequenceController
+	 * A Sequence can only be edited by a derived class from SequenceController and SequenceEditor
 	 * Sequence Player owns all Sequence objects 
 	 */
 	class NAPAPI SequencePlayer : public Device
@@ -37,8 +37,7 @@ namespace nap
 
 		/**
 		 * Evaluates the data of the player. It loads the linked default sequence. 
-		 * Upon failure of loading show, it creates a new default ( empty ) sequence
-		 *
+		 * Upon failure of loading show, it can create a new default ( empty ) sequence
 		 * @param errorState contains information about eventual failure 
 		 * @return true if data valid
 		 */

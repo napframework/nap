@@ -82,6 +82,7 @@ TEST_CASE("String utilities", "[stringutils]")
 
 }
 
+/*
 TEST_CASE("Template Replacement", "[stringutils]")
 {
 	{
@@ -103,6 +104,7 @@ TEST_CASE("Template Replacement", "[stringutils]")
 		REQUIRE(result == "/the/road/to/success/{SOMETHING}/road");
 	}
 }
+*/
 
 TEST_CASE("DateTime Utilities", "[datetime]")
 {

@@ -2,8 +2,10 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <packaginginfo.h>
+#include <nap/projectinfomanager.h>
 
 // External Includes
+#include <rtti/jsonreader.h>
 #include <utility/fileutils.h>
 
 namespace nap
@@ -11,30 +13,34 @@ namespace nap
 	static const std::string sPossibleProjectParents[] =
 			{
 					"projects",     // User projects against packaged NAP
-					"examples",     // Example projects
 					"demos",        // Demo projects
 					"apps",         // Applications in NAP source
-					"test"          // Old test projects in NAP source
+					"test",         // Old test projects in NAP source
+					"examples"      // Example projects
 			};
 
 
-	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+	bool Core::findProjectInfoFile(std::string& foundFilePath) const
 	{
+		// Locate the project.json file without using the path mapping system as it hasn't been initialized yet.
+
 		const std::string exeDir = utility::getExecutableDir();
 
-		// Check for the file in its normal location, beside the binary
-		const std::string alongsideBinaryPath = utility::joinPath({utility::getExecutableDir(), filename});
-		nap::Logger::debug("Looking for '%s'...", alongsideBinaryPath.c_str());
+		// Check for its Packaged App location, beside the binary
+		const std::string alongsideBinaryPath = utility::joinPath({exeDir, PROJECT_INFO_FILENAME});
+		nap::Logger::debug("Looking for %s in '%s'...", PROJECT_INFO_FILENAME, exeDir.c_str());
 		if (utility::fileExists(alongsideBinaryPath))
 		{
 			foundFilePath = alongsideBinaryPath;
 			return true;
 		}
-		// When working against NAP Source or Packaged Release find our file in the tree structure in the project source.
-		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
-		// so that we avoid module DLL copying hell.
 
-        // TODO This should use the path mapping
+		// When working against NAP Source or Framework Release find our file in the tree structure in the project source.
+		// This complexity results from having different build directory structures for Source and Framework Release 
+		// contexts (.. which itself originally resulted from wanting to keep all the binaries in the same root folder on 
+		// Windows to avoid module DLL copying hell). The intention is to in future bring the directory structures more
+		// in line with each other, which will greatly simplify this search.
+
 #ifdef NAP_PACKAGED_BUILD
 		const std::string relNapRoot = utility::joinPath({exeDir, "..", "..", "..", ".."});
 #else
@@ -46,16 +52,16 @@ namespace nap
 		// Iterate possible project locations
 		for (auto& parentPath : sPossibleProjectParents)
 		{
-			std::string testDataPath = utility::joinPath({napRoot, parentPath, projectName});
-			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
-			if (!utility::dirExists(testDataPath))
+			std::string testPath = utility::joinPath({napRoot, parentPath, projectName});
+			nap::Logger::debug("Looking for %s in '%s'...", PROJECT_INFO_FILENAME, testPath.c_str());
+			if (!utility::dirExists(testPath))
 				continue;
 
 			// We found our project folder, now let's verify we have a our file in there
-			testDataPath = utility::joinPath({testDataPath, filename});
-			if (utility::fileExists(testDataPath))
+			testPath = utility::joinPath({testPath, PROJECT_INFO_FILENAME});
+			if (utility::fileExists(testPath))
 			{
-				foundFilePath = testDataPath;
+				foundFilePath = testPath;
 				nap::Logger::debug("Found '%s'...", foundFilePath.c_str());
 				return true;
 			}
@@ -63,4 +69,38 @@ namespace nap
 		return false;
 	}
 
+
+	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+	{
+		const std::string projectDir = mProjectInfo->getProjectDir();
+		std::string testPath = utility::joinPath({projectDir, filename});
+		nap::Logger::debug("Looking for %s in '%s'...", filename.c_str(), projectDir.c_str());
+		if (utility::fileExists(testPath))
+		{
+			foundFilePath = testPath;
+			nap::Logger::debug("Found '%s'...", foundFilePath.c_str());
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+
+
+	bool Core::loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
+	{
+		std::string config_file_path;
+		if (findProjectFilePath(filename, config_file_path))
+		{
+			if (rtti::readJSONFile(config_file_path,
+								   rtti::EPropertyValidationMode::DisallowMissingProperties,
+								   rtti::EPointerPropertyMode::NoRawPointers,
+								   mResourceManager->getFactory(),
+								   deserializeResult,
+								   errorState))
+				return true;
+		}
+
+		return false;
+	}
 }

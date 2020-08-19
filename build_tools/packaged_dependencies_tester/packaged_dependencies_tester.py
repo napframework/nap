@@ -18,7 +18,7 @@ import time
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -28,6 +28,9 @@ PROJECT_BUILD_TYPE = 'Release'
 
 # Directory to iterate for testing
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
+
+# Directory containing modules, to verify they all get dependency tested
+MODULES_DIR = 'modules'
 
 # Main project structure filename
 PROJECT_FILENAME = 'project.json'
@@ -51,8 +54,7 @@ MSVC_BUILD_DIR = 'msvc64'
 # TODO Handle other architectures.. eventually
 LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
                                    '/lib/x86_64-linux-gnu', 
-                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu'
-                                  ]
+                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
@@ -169,6 +171,7 @@ LINUX_EXTRA_DEBIAN = [
     'libcairo-gobject',
     'libcodec2',
     'libdatrie',
+    'libdav1d',
     'libfontconfig',
     'libfribidi',
     r'libgdk_pixbuf-[0-9]+\.[0-9]+',
@@ -325,7 +328,6 @@ def is_windows():
 
     return sys.platform.startswith('win')
 
-
 def is_debian():
     """Is this Debian Linux
 
@@ -354,7 +356,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     expect_early_closure : bool
         Whether process having closed before we kill it is OK
     success_exit_code : int
-        Process exit code representing success
+        Process exit code representing success when expecting early closure
     wait_for_seconds : int
         Seconds to wait before determining run success
 
@@ -367,6 +369,10 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         STDOUT from process
     stderr : str
         STDERR from process
+    unexpected_libraries : list of str
+        List of unexpected libraries in use (Unix only)
+    returncode : int
+        Process exit code
     """
 
     # Launch the app
@@ -416,7 +422,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
                 unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
             elif sys.platform == 'win32':
                 unexpected_libraries = []            
-            return (False, stdout, stderr, unexpected_libraries)
+            return (False, stdout, stderr, unexpected_libraries, p.returncode)
 
     if p.returncode == None:
         # Send SIGTERM and wait a moment to close
@@ -445,7 +451,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     elif sys.platform == 'win32':
         unexpected_libraries = []
 
-    return (success, stdout, stderr, unexpected_libraries)
+    return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testing_napkin):
     """Check whether the specified NAP process is using unexpected libraries on Linux
@@ -795,6 +801,10 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
         STDOUT from process
     stderr : str
         STDERR from process
+    unexpected_libraries : list of str
+        List of unexpected libraries in use (Unix only)
+    returncode : int
+        Process exit code
     """
     
     print("- Run from build output...")
@@ -807,9 +817,9 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
 
     # Build command and run            
     folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
-    patch_audio_service_configuration(os.getcwd(), folder, project_name, nap_framework_full_path)
+    patch_audio_service_configuration(os.getcwd(), os.getcwd(), project_name, nap_framework_full_path)
     cmd = os.path.join(folder, project_name)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop(cmd, nap_framework_full_path)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop(cmd, nap_framework_full_path)
     if success:
         print("  Done.")
     else:
@@ -817,8 +827,9 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))
+        print("  Exit code: %s" % return_code) 
 
-    return (success, stdout, stderr, unexpected_libs)
+    return (success, stdout, stderr, unexpected_libs, return_code)
 
 def run_packaged_project(results, root_output_dir, timestamp, project_name, has_napkin=True):
     """Run packaged project from output directory
@@ -843,7 +854,7 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     print("- Run from package...")
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./%s' % project_name, containing_dir)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./%s' % project_name, containing_dir)
     if success:
         print("  Done.")
     else:
@@ -851,12 +862,15 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))
+        print("  Exit code: %s" % return_code)
 
     results['runFromPackagedOutput'] = {}
     results['runFromPackagedOutput']['success'] = success
     results['runFromPackagedOutput']['stdout'] = stdout
     results['runFromPackagedOutput']['stderr'] = stderr
     results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        results['runFromPackagedOutput']['exitCode'] = return_code
 
 def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """Configure, build and package all demos
@@ -1047,6 +1061,8 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
         post_files = os.listdir('.')
         output_path = get_packaged_project_output_path(napkin_package_demo, pre_files, post_files)
         home_output = os.path.join(root_output_dir, '%s-%s-no_napkin' % (napkin_package_demo, timestamp))
+        nap_framework_full_path = os.path.join(os.getcwd(), os.pardir, os.pardir)
+        patch_audio_service_configuration('.', output_path, napkin_package_demo, nap_framework_full_path)
         print("  Done. Moving to %s." % home_output)
         os.rename(output_path, home_output)
     else:
@@ -1152,12 +1168,14 @@ def run_build_directory_demos(demo_results):
             continue
 
         # Run
-        (success, stdout, stderr, unexpected_libs) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)))
+        (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)))
         this_demo['runFromBuildOutput'] = {}
         this_demo['runFromBuildOutput']['success'] = success
         this_demo['runFromBuildOutput']['stdout'] = stdout
         this_demo['runFromBuildOutput']['stderr'] = stderr
         this_demo['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+        if not success:
+            this_demo['runFromBuildOutput']['exitCode'] = return_code
 
         print("----------------------------")
 
@@ -1179,12 +1197,14 @@ def run_other_build_type_demo(results, build_type):
     os.chdir(os.path.join(demos_root_dir, demo_name))
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)), build_type)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(demo_name, os.path.abspath(os.path.join(demos_root_dir, os.pardir)), build_type)
     results['runFromBuildOutput'] = {}
     results['runFromBuildOutput']['success'] = success
     results['runFromBuildOutput']['stdout'] = stdout
     results['runFromBuildOutput']['stderr'] = stderr
     results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        results['runFromBuildOutput']['exitCode'] = return_code
 
     print("----------------------------")
 
@@ -1207,12 +1227,14 @@ def run_build_directory_template_project(template_results, nap_framework_full_pa
     os.chdir(TEMPLATE_APP_NAME.lower())
 
     # Run
-    (success, stdout, stderr, unexpected_libs) = run_cwd_project(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_project(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
     template_results['runFromBuildOutput'] = {}
     template_results['runFromBuildOutput']['success'] = success
     template_results['runFromBuildOutput']['stdout'] = stdout
     template_results['runFromBuildOutput']['stderr'] = stderr
     template_results['runFromBuildOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        template_results['runFromBuildOutput']['exitCode'] = return_code
 
     os.chdir(projects_dir)
 
@@ -1232,14 +1254,16 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
-                                                                       nap_framework_full_path, 
-                                                                       True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
+                                                                                    nap_framework_full_path, 
+                                                                                    True)
 
     napkin_results['runFromFrameworkRelease']['success'] = success
     napkin_results['runFromFrameworkRelease']['stdout'] = stdout
     napkin_results['runFromFrameworkRelease']['stderr'] = stderr
     napkin_results['runFromFrameworkRelease']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        napkin_results['runFromFrameworkRelease']['exitCode'] = return_code
 
     if success:
         print("  Done.")
@@ -1248,6 +1272,7 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
     os.chdir(prev_wd)
 
@@ -1274,12 +1299,12 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
 
         # Run
         demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
-                                                                           nap_framework_full_path, 
-                                                                           True,
-                                                                           True,
-                                                                           NAPKIN_SUCCESS_EXIT_CODE,
-                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                                        nap_framework_full_path, 
+                                                                                        True,
+                                                                                        True,
+                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         this_demo['openWithNapkinBuildOutput'] = {}
         this_demo['openWithNapkinBuildOutput']['success'] = success
@@ -1294,6 +1319,7 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
             print("  STDOUT: %s" % stdout)
             print("  STDERR: %s" % stderr)
             print("  Unexpected libraries: %s" % repr(unexpected_libs))
+            print("  Exit code: %s" % return_code)
 
         print("----------------------------")
 
@@ -1319,12 +1345,12 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
-                                                                           nap_framework_full_path, 
-                                                                           True,
-                                                                           True,
-                                                                           NAPKIN_SUCCESS_EXIT_CODE,
-                                                                           NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
+                                                                                        nap_framework_full_path, 
+                                                                                        True,
+                                                                                        True,
+                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         template_results['openWithNapkinBuildOutput'] = {}
         template_results['openWithNapkinBuildOutput']['success'] = success
@@ -1339,6 +1365,7 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
             print("  STDOUT: %s" % stdout)
             print("  STDERR: %s" % stderr)
             print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+            print("  Exit code: %s" % return_code)
     else:
         print("  Skipping due to build failure")
 
@@ -1376,15 +1403,17 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged project
     print("- Run Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
-                                                                       os.path.abspath(os.pardir), 
-                                                                       True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
+                                                                                    os.path.abspath(os.pardir), 
+                                                                                    True)
 
     napkin_results['runFromPackagedOutput'] = {}
     napkin_results['runFromPackagedOutput']['success'] = success
     napkin_results['runFromPackagedOutput']['stdout'] = stdout
     napkin_results['runFromPackagedOutput']['stderr'] = stderr
     napkin_results['runFromPackagedOutput']['unexpectedLibraries'] = unexpected_libs
+    if not success:
+        napkin_results['runFromPackagedOutput']['exitCode'] = return_code
 
     if success:
         print("  Done.")
@@ -1393,6 +1422,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
 def open_project_in_napkin_from_packaged_app(results, project_name, root_output_dir, timestamp):
     """Open project from Napkin in packaged app
@@ -1416,12 +1446,12 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     # Run demo from packaged project
     print("- Open project with Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
-                                                                       os.path.abspath(os.pardir),
-                                                                       True,
-                                                                       True,
-                                                                       NAPKIN_SUCCESS_EXIT_CODE,
-                                                                       NAPKIN_SECONDS_WAIT_FOR_PROCESS)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+                                                                                    os.path.abspath(os.pardir),
+                                                                                    True,
+                                                                                    True,
+                                                                                    NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                    NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
     results['openWithNapkinPackagedApp'] = {}
     results['openWithNapkinPackagedApp']['success'] = success
@@ -1436,6 +1466,7 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
         print("  STDOUT: %s" % stdout)
         print("  STDERR: %s" % stderr)
         print("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        print("  Exit code: %s" % return_code)
 
     print("----------------------------")
 
@@ -1937,7 +1968,7 @@ def rename_qt_dir(warnings):
 
     return qt_top_level_path
 
-def patch_audio_service_configuration(project_dir, config_output_dir, project_name, nap_framework_full_path):
+def patch_audio_service_configuration(project_dir, output_dir, project_name, nap_framework_full_path):
     """Patches audio service configuration to have zero input channels on any project
     using mod_napaudio
 
@@ -1945,19 +1976,21 @@ def patch_audio_service_configuration(project_dir, config_output_dir, project_na
     ----------
     project_dir: str
         Path to project to patch
-    config_output_dir: str
-        Directory for patched config.json
+    output_dir: str
+        Directory for patched project.json and config.json
     project_name : str
         Name of project
     nap_framework_full_path : str
         Absolute path to NAP framework
     """
+
     modules = get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir)
     if not 'mod_napaudio' in modules:
         return
 
+    # Create or patch the config.json
     config_filename = 'config.json'
-    config_path = os.path.join(config_output_dir, config_filename)
+    config_path = os.path.join(output_dir, config_filename)
     loaded_config = False
     if os.path.exists(config_path):
         with open(config_path, 'r') as f:
@@ -1985,7 +2018,128 @@ def patch_audio_service_configuration(project_dir, config_output_dir, project_na
     with open(config_path, 'w') as f:
         f.write(json.dumps(config, indent=4))
 
-def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt):
+    # Update the project.json
+    # TODO Cater for ProjectInfos that already have a ServiceConfig entry
+    #      set, potentially with another filename
+    project_info_path = os.path.join(output_dir, PROJECT_FILENAME)
+    project_info = None
+    if os.path.exists(project_info_path):
+        with open(project_info_path, 'r') as f:
+            project_info = json.load(f)
+
+    if not project_info is None:
+        project_info['ServiceConfig'] = config_filename
+        with open(project_info_path, 'w') as f:
+            f.write(json.dumps(project_info, indent=4))
+
+def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_dir):
+    """Fetch a list of all modules in use within the demos in the release.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'
+    """
+
+    test_projects_dir = os.path.join(nap_framework_full_path, testing_projects_dir)
+    dirs = os.listdir(test_projects_dir)
+    modules = []
+    for project_name in dirs:
+        project_dir = os.path.join(test_projects_dir, project_name)
+        modules.extend(get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir))
+    unique_used_modules = list(set(modules))
+    return unique_used_modules
+
+def get_modules_in_release(nap_framework_full_path):
+    """Fetch a list of (non project) modules included in a release.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    """
+
+    modules_dir = os.path.join(nap_framework_full_path, MODULES_DIR)
+    modules_in_release = os.listdir(modules_dir)
+    modules_in_release.sort()
+    return modules_in_release
+
+def create_fake_projects_for_modules_without_demos(nap_framework_full_path, testing_projects_dir, warnings):
+    """Creates fake projects for modules which aren't tested in any of the demos.
+    At least provides some basic dependency testing.
+
+    Parameters
+    ----------
+    nap_framework_full_path : str
+        Absolute path to NAP framework
+    testing_projects_dir : str
+        Directory to iterate for testing, by default 'demos'
+    warnings : list of str
+        Any warnings generated throughout the testing
+    """
+
+    prev_wd = os.getcwd()
+
+    # Fetch all the (non project) modules included in the release
+    modules_in_release = get_modules_in_release(nap_framework_full_path)
+
+    # Get the modules already in use in demos
+    unique_used_modules = get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_dir)
+
+    # Determine the untested modules
+    difference = list(set(modules_in_release) - set(unique_used_modules))
+    difference.sort()
+    print("Creating fake projects for modules without demos: %s" % ', '.join(difference))
+
+    os.chdir(nap_framework_full_path)
+
+    for module in difference:
+        # Build a project name
+        processed_name = module.replace('_', '').title()
+        project_name = 'FakeDemo%s' % processed_name
+        created_project_path = os.path.join('projects', project_name.lower())
+        dest_project_path = os.path.join(testing_projects_dir, project_name.lower())
+
+        # Remove if it already exists
+        for path in (created_project_path, dest_project_path):
+            if os.path.exists(path):
+                warning = "Project %s seems to already exists and will be replaced" % path
+                print(warning)
+                warnings.append(warning)
+                shutil.rmtree(path)
+
+        # Generate the project
+        cmd = '%s -ng %s' % (os.path.join('.', 'tools', 'create_project'), project_name)
+        (returncode, stdout, stderr) = call_capturing_output(cmd)
+        template_creation_success = returncode == 0
+
+        if template_creation_success:
+            # Patch project.json
+            project_info_path = os.path.join(created_project_path, PROJECT_FILENAME)
+            project_info = None
+            if os.path.exists(project_info_path):
+                with open(project_info_path, 'r') as f:
+                    project_info = json.load(f)
+            if not project_info is None:
+                if 'mod_napaudio' in project_info['RequiredModules']:
+                    project_info['RequiredModules'].remove('mod_napaudio')
+                project_info['RequiredModules'].append(module)
+
+                with open(project_info_path, 'w') as f:
+                    f.write(json.dumps(project_info, indent=4))
+
+            # Move the project alongside the other demos so they get automatically tested
+            shutil.move(created_project_path, testing_projects_dir)
+        else:
+            warning = "Failed to create fake demo for module %s" % module
+            print("Warning: %s" % warning)
+            warnings.append(warning)
+
+    os.chdir(prev_wd)
+
+def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt, create_fake_projects):
     """Main entry point to the testing
 
     Parameters
@@ -2002,6 +2156,8 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         Whether to rename the NAP framework directory when testing packaged projects
     rename_qt : bool
         Whether to attempt to rename any Qt library pointed to via environment variable QT_DIR when testing packaged projects
+    create_fake_projects : bool
+        Whether to create fake projects for modules that aren't represented in any demos
 
     Returns
     -------
@@ -2020,6 +2176,7 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     duration_start_time = time.time()
     warnings = []
+    phase = 0
 
     # Check to see if our framework path looks valid
     if not os.path.exists(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json')):
@@ -2052,10 +2209,15 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
             print("Warning: %s" % warning)
             warnings.append(warning)
 
+    # Make any needed fake dependencies projects
+    if create_fake_projects:
+        print("============ Phase #%s - Dummy project creation ============" % phase)
+        create_fake_projects_for_modules_without_demos(nap_framework_full_path, testing_projects_dir, warnings)
+
     os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
 
     # Configure, build and package all demos
-    phase = 1
+    phase += 1
     print("============ Phase #%s - Building and packaging demos ============" % phase)
     demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
 
@@ -2239,6 +2401,8 @@ if __name__ == '__main__':
                         help="Don't create a JSON report to %s" % REPORT_FILENAME)
     parser.add_argument('-fl', '--force-log-reporting', action='store_true',
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
+    parser.add_argument('-nf', '--no-fake-projects', action='store_true',
+                        help="Don't create fake projects for modules that aren't represented in any demos")
     if not is_windows():
         parser.add_argument('-nrf', '--no-rename-framework', action='store_true',
                             help="Don't rename the NAP framework while testing packaged projects")
@@ -2256,5 +2420,11 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, args.testing_projects_dir, not args.no_json_report, args.force_log_reporting, not args.no_rename_framework, not args.no_rename_qt)
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH, 
+                               args.testing_projects_dir,
+                               not args.no_json_report, 
+                               args.force_log_reporting,
+                               not args.no_rename_framework,
+                               not args.no_rename_qt,
+                               not args.no_fake_projects)
     sys.exit(not success)

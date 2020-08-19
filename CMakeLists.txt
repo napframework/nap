@@ -125,22 +125,7 @@ add_subdirectory(test/audiotest)
 add_subdirectory(test/solarsystem)
 
 # app targets
-add_subdirectory(apps/kalvertoren)
-add_subdirectory(apps/kalvertoren/module)
-add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/example)
-add_subdirectory(apps/atmos)
-add_subdirectory(apps/atmos/module)
-add_subdirectory(apps/random)
-add_subdirectory(apps/random/module)
-add_subdirectory(apps/aura)
-add_subdirectory(apps/aura/module)
-add_subdirectory(apps/emography)
-add_subdirectory(apps/emography/module)
-add_subdirectory(apps/flexblock)
-add_subdirectory(apps/flexblock/module)
-add_subdirectory(apps/anima)
-add_subdirectory(apps/anima/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -170,14 +155,6 @@ add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
-
-# Temporary dummy demos testing module thirdparty requirements in Napkin for modules 
-# not included in other demos
-add_subdirectory(demos/napkintestmodnapartnet)
-add_subdirectory(demos/napkintestmodnapdatabase)
-add_subdirectory(demos/napkintestmodnapserial)
-add_subdirectory(demos/napkintestmodnapsoem)
-add_subdirectory(demos/napkintestmodnapyoctopuce)
 
 # Unit tests
 add_subdirectory(unittests)

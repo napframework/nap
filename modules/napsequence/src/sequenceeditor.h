@@ -15,7 +15,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceController;
 
@@ -94,8 +93,8 @@ namespace nap
 		 */
 		void performEditAction(std::function<void()> action);
 
-		// make sure we don't perform two edit actions at the same time ( only possible when performing an edit action inside another action )
-		// edit action are performed on player thread but block main thread
+		// make sure we don't perform two edit actions at the same time ( only possible when performing an edit action inside another edit action )
+		// edit actions are performed on player thread but block main thread
 		bool mPerformingEditAction = false;
 	};
 }

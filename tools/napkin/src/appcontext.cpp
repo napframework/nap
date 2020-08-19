@@ -113,62 +113,49 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
-	mCore = std::make_unique<nap::Core>();
-
+	// Initialize engine
 	ErrorState err;
-
-	auto projectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
-		projectFilename.toStdString(),
-		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
-		mCore->getResourceManager()->getFactory(),
-		err);
-	projectInfo->setFilename(projectFilename.toStdString());
-	projectInfo->setEditorMode();
-
-	if (err.hasErrors())
+	mCore = std::make_unique<nap::Core>();
+	if (!mCore->initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		blockingProgressChanged(1);
-
-		nap::Logger::error("Failed to load project info %s: %s",
-						   projectFilename.toStdString().c_str(), err.toString().c_str());
-
-		if (mExitOnLoadFailure)
-			exit(1);
-
-		return nullptr;
-	}
-
-	projectInfo->getFilename() = projectFilename.toStdString();
-	if (!mCore->loadPathMapping(*projectInfo, err))
-	{
-		blockingProgressChanged(1);
-
-		nap::Logger::error("Failed to load path mapping %s: %s",
-						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
-
-		if (mExitOnLoadFailure)
-			exit(1);
-
-		return nullptr;
-	}
-
-	nap::Logger::info("Loading project '%s' ver. %s (%s)",
-					  projectInfo->mTitle.c_str(),
-					  projectInfo->mVersion.c_str(),
-					  projectInfo->getProjectDir().c_str());
-
-	if (!mCore->initializeEngine(err, std::move(projectInfo)))
-	{
-		blockingProgressChanged(1);
-
 		nap::Logger::error(err.toString());
-
 		if (mExitOnLoadFailure)
 			exit(1);
-
 		return nullptr;
+
 	}
+
+//	if (err.hasErrors())
+//	{
+//		blockingProgressChanged(1);
+//		nap::Logger::error("Failed to load project info %s: %s",
+//						   projectFilename.toStdString().c_str(), err.toString().c_str());
+//
+//		if (mExitOnLoadFailure)
+//			exit(1);
+//
+//		return nullptr;
+//	}
+//
+//	projectInfo->getFilename() = projectFilename.toStdString();
+//	if (!mCore->loadPathMapping(*projectInfo, err))
+//	{
+//		blockingProgressChanged(1);
+//
+//		nap::Logger::error("Failed to load path mapping %s: %s",
+//						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
+//
+//		if (mExitOnLoadFailure)
+//			exit(1);
+//
+//		return nullptr;
+//	}
+
+//	nap::Logger::info("Loading project '%s' ver. %s (%s)",
+//					  projectInfo->mTitle.c_str(),
+//					  projectInfo->mVersion.c_str(),
+//					  projectInfo->getProjectDir().c_str());
 
 	coreInitialized();
 

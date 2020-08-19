@@ -62,11 +62,7 @@ namespace nap
 		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
 
 		// Patch template variables
-		const std::unordered_map<std::string, std::string> varmap = {
-			{"ROOT", project.getNAPRootDir()},
-			{"MODULE_DIR", modinfo->getDirectory()},
-		};
-		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, varmap);
+		project.patchPaths(modinfo->mLibSearchPaths, {{"MODULE_DIR", utility::getFileDir(moduleFile)}});
 
 		// Load module dependencies first
 		for (const auto& modName : modinfo->mRequiredModules)
@@ -153,8 +149,8 @@ namespace nap
 		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
 			return false;
 
-        // Substitute module name in given directories
-		moduleDirs = utility::namedFormat(moduleDirs, {{"MODULE_NAME", moduleName}});
+		// Substitute module name in given directories
+		utility::replaceTemplateVariables(moduleDirs, {{"MODULE_NAME", moduleName}});
 
 		// Find module json in given directories
 		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());

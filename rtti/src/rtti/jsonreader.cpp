@@ -5,33 +5,13 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
-#include <fstream>
 #include <utility/fileutils.h>
 
 namespace nap
 {
 	namespace rtti
 	{
-		struct ReadState
-		{
-			ReadState(EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result) :
-				mPropertyValidationMode(propertyValidationMode),
-				mPointerPropertyMode(pointerPropertyMode),
-				mFactory(factory),
-				mResult(result)
-			{
-			}
-
-			EPropertyValidationMode			mPropertyValidationMode;
-			EPointerPropertyMode			mPointerPropertyMode;
-			Path							mCurrentRTTIPath;
-			Factory&						mFactory;
-			DeserializeResult&				mResult;
-			std::unordered_set<std::string>	mObjectIDs;
-		};
-
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
 		{
@@ -449,7 +429,8 @@ namespace nap
 			return true;
 		}
 
-		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject,
+										  ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
 			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");
@@ -486,6 +467,15 @@ namespace nap
 			return object;
 		}
 
+		bool NAPAPI readObjectRecursive2(const rapidjson::Value& jsonObject, Object*& result, bool isEmbeddedObject,
+										ReadState& readState, utility::ErrorState& errorState)
+		{
+			auto obj = readObjectRecursive(jsonObject, isEmbeddedObject, readState, errorState);
+			if (!obj)
+				return false;
+			result = obj;
+			return true;
+		}
 
 		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
