@@ -179,18 +179,17 @@ namespace nap
 			return s;
 		}
 
-		void replaceTemplateVariable(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
+		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
 			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
 			for (const auto& e : rep)
 				replaceAllInstances(subject, '{' + e.first + '}', e.second);
 		}
 
-		void replaceTemplateVariables(std::vector<std::string>& subjects,
-						 const std::unordered_map<std::string, std::string>& rep)
+		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
 		{
 			for (auto& s : subjects)
-				replaceTemplateVariable(s, rep);
+				namedFormat(s, rep);
 		}
 
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {

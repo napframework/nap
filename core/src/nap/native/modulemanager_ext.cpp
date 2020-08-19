@@ -150,7 +150,7 @@ namespace nap
 			return false;
 
 		// Substitute module name in given directories
-		utility::replaceTemplateVariables(moduleDirs, {{"MODULE_NAME", moduleName}});
+		utility::namedFormat(moduleDirs, {{"MODULE_NAME", moduleName}});
 
 		// Find module json in given directories
 		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());

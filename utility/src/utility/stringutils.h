@@ -168,7 +168,7 @@ namespace nap
 		 * @param rep The keys and values used in the replacement operation.
 		 * @return The resulting string after replacement
 		 */
-		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
+		void namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
 
 		/**
 		 * Replace all occurrences of the provided keys with their associated values in the given subject strings.
@@ -185,7 +185,8 @@ namespace nap
 		 * @param rep The keys and values used in the replacement operation.
 		 * @return The resulting strings after replacement
 		 */
-		std::vector<std::string> namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
+		void namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
+
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.
 		 * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"

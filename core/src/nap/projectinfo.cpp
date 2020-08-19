@@ -110,7 +110,7 @@ namespace nap
 
 	bool ProjectInfo::patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
-		utility::replaceTemplateVariables(paths, getTemplateValues(additionalValues));
+		utility::namedFormat(paths, getTemplateValues(additionalValues));
 		return true;
 	}
 
