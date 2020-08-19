@@ -179,14 +179,14 @@ namespace nap
 			return s;
 		}
 
-		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
+		void namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
 			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
 			for (const auto& e : rep)
 				replaceAllInstances(subject, '{' + e.first + '}', e.second);
 		}
 
-		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
+		void namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
 		{
 			for (auto& s : subjects)
 				namedFormat(s, rep);
