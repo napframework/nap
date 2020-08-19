@@ -451,16 +451,6 @@ void AppContext::handleURI(const QString& uri)
 
 nap::Core* AppContext::getCore()
 {
-//	if (!mCore)
-//	{
-//		ErrorState err;
-//		if (!mCore->initializeEngine(err, getExecutableDir(), true))
-//		{
-//			nap::Logger::fatal("Failed to initialize engine");
-//			return nullptr;
-//		}
-//		coreInitialized();
-//	}
 	return mCore.get();
 }
 

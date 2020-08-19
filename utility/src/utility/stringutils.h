@@ -153,8 +153,38 @@ namespace nap
 		template <typename... Args>
 		static std::string stringFormat(const std::string& format, Args... args);
 
+		/**
+		 * Replace all occurrences of the provided keys with their associated values in the given subject string.
+		 * The keys in the subject string are to be wrapped in curly braces.
+		 * Example:
+		 * 		subject:
+		 * 			My {animal}'s name is {name}, it's a good {animal}.
+		 * 		replacement:
+		 * 			{{"animal", "snake"}, {"name", "Donald"}}
+		 * 		result:
+		 * 			My snake's name is Donald, it's a good snake.
+		 *
+		 * @param subject The string to search and replace keys in.
+		 * @param rep The keys and values used in the replacement operation.
+		 * @return The resulting string after replacement
+		 */
 		std::string namedFormat(const std::string& subject, const std::unordered_map<std::string, std::string>& rep);
 
+		/**
+		 * Replace all occurrences of the provided keys with their associated values in the given subject strings.
+		 * The keys in the subject string are to be wrapped in curly braces.
+		 * Example:
+		 * 		subject:
+		 * 			My {animal}'s name is {name}, it's a good {animal}.
+		 * 		replacement:
+		 * 			{{"animal", "snake"}, {"name", "Donald"}}
+		 * 		result:
+		 * 			My snake's name is Donald, it's a good snake.
+		 *
+		 * @param subject The string to search and replace keys in.
+		 * @param rep The keys and values used in the replacement operation.
+		 * @return The resulting strings after replacement
+		 */
 		std::vector<std::string> namedFormat(const std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.

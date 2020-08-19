@@ -87,6 +87,16 @@ namespace nap
 		return *mPathMapping;
 	}
 
+	std::string ModuleInfo::getFilename() const
+	{
+		return mFilename;
+	}
+
+	std::string ModuleInfo::getDirectory() const
+	{
+		return utility::getFileDir(getFilename());
+	}
+
 	const ProjectInfo& ModuleInfo::getProjectInfo() const
 	{
 		// Expected to exist when created

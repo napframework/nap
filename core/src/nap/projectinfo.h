@@ -110,7 +110,12 @@ namespace nap
 		/**
 		 * @return The absolute file path this ModuleInfo was loaded from
 		 */
-		std::string getFilename() const { return mFilename; }
+		std::string getFilename() const;
+
+		/**
+		 * @return The absolute path to the directory that contains this ModuleInfo file
+		 */
+		std::string getDirectory() const;
 
 		/**
 		 * @return The ProjectInfo instance this ModuleInfo 'belongs' to.

@@ -54,17 +54,19 @@ namespace nap
 					   moduleJson.c_str()))
 			return false;
 
-
 		// Store useful references so we can backtrack if necessary
 		modinfo->mFilename = moduleFile;
 		modinfo->mProjectInfo = &project;
 
-        // Add project directory default search path for modules, used by Windows packaged apps
+		// Add project directory default search path for modules, used by Windows packaged apps
 		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
 
 		// Patch template variables
-        // TODO Add support for other template variables, especially MODULE_DIR
-		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, {{"ROOT", project.getNAPRootDir()}});
+		const std::unordered_map<std::string, std::string> varmap = {
+			{"ROOT", project.getNAPRootDir()},
+			{"MODULE_DIR", modinfo->getDirectory()},
+		};
+		modinfo->mLibSearchPaths = utility::namedFormat(modinfo->mLibSearchPaths, varmap);
 
 		// Load module dependencies first
 		for (const auto& modName : modinfo->mRequiredModules)

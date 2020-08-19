@@ -1,16 +1,10 @@
 #include "resourcefactory.h"
 
-//#include <FreeImage.h>
-
 #include <nap/logger.h>
 #include <entity.h>
 #include <scene.h>
 
 #include "napkin-resources.h"
-
-//extern "C" {
-//	#include <libavformat/avformat.h>
-//}
 
 using namespace nap;
 using namespace nap::rtti;
