@@ -72,7 +72,7 @@ namespace nap
 			{
 				rtti::ObjectPtr<Entity> entity = mResourceManager->findObject<Entity>("PigEntity");
 				utility::ErrorState error_state;
-				mPigEntity = mScene->spawn(*entity, { }, error_state);
+				mPigEntity = mScene->spawn(*entity, error_state);
 			}
 			else
 			{

@@ -67,6 +67,15 @@ namespace nap
 		 * Spawns an entity hierarchy.
 		 * The Entity (hierarchy) can be destroyed by calling destroy with the value returned from this function.
 		 * @param entity entity resource to spawn.
+		 * @param errorState contains error information if the returned object is nullptr.
+		 * @return The EntityInstance that was spawned on success, nullptr otherwise. 
+		 */		
+		SpawnedEntityInstance spawn(const Entity& entity, utility::ErrorState& errorState);
+
+		/**
+		 * Spawns an entity hierarchy.
+		 * The Entity (hierarchy) can be destroyed by calling destroy with the value returned from this function.
+		 * @param entity entity resource to spawn.
 		 * @param instanceProperties instance properties to apply to the entity's properties
 		 * @param errorState contains error information if the returned object is nullptr.
 		 * @return The EntityInstance that was spawned on success, nullptr otherwise. 

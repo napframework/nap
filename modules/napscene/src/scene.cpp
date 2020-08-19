@@ -784,6 +784,12 @@ namespace nap
 	}
 
 
+	SpawnedEntityInstance Scene::spawn(const Entity& entity, utility::ErrorState& errorState)
+	{
+	    return spawn(entity, { }, errorState);
+	}
+
+
 	SpawnedEntityInstance Scene::spawn(const Entity& entity, const std::vector<ComponentInstanceProperties>& instanceProperties, utility::ErrorState& errorState)
 	{
 		std::vector<rtti::Object*> all_objects;
