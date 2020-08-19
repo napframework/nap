@@ -86,3 +86,4 @@ dist/cmake/qt_checker/proj_temp
 *.swp
 **/cache/path_mapping.json
 /venv/
+report.json
