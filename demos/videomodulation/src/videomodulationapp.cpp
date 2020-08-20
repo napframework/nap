@@ -9,12 +9,11 @@
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <mathutils.h>
-#include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
 #include <rendertotexturecomponent.h>
 #include <imguiutils.h>
-#include "uniforminstance.h"
+#include <uniforminstance.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -53,13 +52,17 @@ namespace nap
 		// Find the window we want to render the output to
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 
+		// Find the video player
+		mVideoPlayer = mResourceManager->findObject<VideoPlayer>("VideoPlayer");
+		mCurrentVideo = mVideoPlayer->getIndex();
+
 		// Get current video and mesh index for gui later on
 		SelectVideoMeshComponentInstance& mesh_selector = mDisplacementEntity->getComponent<SelectVideoMeshComponentInstance>();
 		mCurrentMesh = mesh_selector.getIndex();
-
-		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-		mCurrentVideo = video_selector.getIndex();
-
+		
+		// Start video playback
+		mVideoPlayer->play();
+		
 		return true;
 	}
 	
@@ -197,8 +200,13 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_0)
 			{
-				SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-				video_selector.selectVideo(0);
+				utility::ErrorState error;
+				if (!mVideoPlayer->selectVideo(0, error))
+				{
+					nap::Logger::error(error.toString());
+					return;
+				}
+				mVideoPlayer->play();
 			}
 		}
 
@@ -226,10 +234,13 @@ namespace nap
 			{
 				mesh_selector.selectMesh(mCurrentMesh);
 			}
-			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-			if (ImGui::SliderInt("Video", &mCurrentVideo, 0, video_selector.getCount() - 1))
+			if (ImGui::SliderInt("Video", &mCurrentVideo, 0, mVideoPlayer->getCount() - 1))
 			{
-				video_selector.selectVideo(mCurrentVideo);
+				utility::ErrorState sel_err;
+				if (!mVideoPlayer->selectVideo(mCurrentVideo, sel_err))
+					nap::Logger::error(sel_err.toString());
+				else
+					mVideoPlayer->play();
 			}
 		}
 		if (ImGui::CollapsingHeader("Displacement"))
@@ -245,12 +256,10 @@ namespace nap
 		
 		if (ImGui::CollapsingHeader("Playback"))
 		{
-			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-			Video* current_video = video_selector.getCurrentVideo();
-			float currentTime = current_video->getCurrentTime();
-			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
-				current_video->seek(currentTime);
-			ImGui::Text("Total time: %fs", current_video->getDuration());
+			float current_time = mVideoPlayer->getCurrentTime();
+			if (ImGui::SliderFloat("Current Time", &current_time, 0.0f, mVideoPlayer->getDuration(), "%.3fs", 1.0f))
+				mVideoPlayer->seek(current_time);
+			ImGui::Text("Total time: %fs", mVideoPlayer->getDuration());
 		}
 		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
 		{
@@ -278,8 +287,7 @@ namespace nap
 		float window_heigh = static_cast<float>(mRenderWindow->getHeightPixels());
 
 		// Calculate ratio
-		SelectVideoComponentInstance& vsel = mVideoEntity->getComponent<SelectVideoComponentInstance>();	
-		float video_ratio = static_cast<float>(vsel.getCurrentVideo()->getWidth()) / static_cast<float>(vsel.getCurrentVideo()->getHeight());
+		float video_ratio = static_cast<float>(mVideoPlayer->getWidth()) / static_cast<float>(mVideoPlayer->getHeight());
 		float window_ratio = window_width / window_heigh;
 
 		glm::vec3 plane_size = { window_width, window_heigh, 1.0 };

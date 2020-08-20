@@ -24,7 +24,7 @@ namespace nap {
             /**
              * Constructor takes the video object and the number of requested output channels.
              */
-            VideoNode(NodeManager& nodeManager, Video& video, int channelCount);
+            VideoNode(NodeManager& nodeManager, int channelCount);
 
             // Inherited from Node
             int getChannelCount() const { return mOutputs.size(); }

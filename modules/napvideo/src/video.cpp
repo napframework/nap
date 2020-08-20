@@ -133,13 +133,6 @@ extern "C"
 	#include "libswresample/swresample.h"
 }
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
-	RTTI_CONSTRUCTOR(nap::VideoService&)
-	RTTI_PROPERTY_FILELINK("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Video)
-	RTTI_PROPERTY("Loop",	        &nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",	        &nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
 #define VIDEO_DEBUG 0
 #if VIDEO_DEBUG
 	#define VIDEO_DEBUG_LOG(...) nap::Logger::info(__VA_ARGS__)
@@ -970,21 +963,15 @@ namespace nap
 
 	static int sMaxPacketQueueSizeInBytes = 16 * 1024 * 1024;
 
-	Video::Video(VideoService& service) : 
-		mService(service),
-		mAudioState(*this),
-		mVideoState(*this)
-	{
-	}
+	Video::Video(const std::string& path) : 
+		mAudioState(*this), 
+		mVideoState(*this),
+		mPath(path) { }
 
 
 	Video::~Video()
 	{
         mDestructedSignal(*this);
-        
-		if (mFormatContext != nullptr)
-			mService.removeVideoPlayer(*this);
-		
 		stop(true);
 		
 		mAudioState.close();
@@ -1021,14 +1008,17 @@ namespace nap
 
 	bool Video::init(nap::utility::ErrorState& errorState)
 	{
+		// Allocate audio /  video context
 		mFormatContext = avformat_alloc_context();
 		if (!errorState.check(mFormatContext != nullptr, "Error allocating context"))
 			return false;
 
+		// Open file
 		int error = avformat_open_input(&mFormatContext, mPath.c_str(), nullptr, nullptr);
 		if (!errorState.check(error >= 0, "Error opening file '%s': %s\n", mPath.c_str(), sErrorToString(error).c_str()))
 			return false;
 
+		// Gather stream info
 		error = avformat_find_stream_info(mFormatContext, nullptr);
 		if (!errorState.check(error >= 0, "Error finding stream: %s", sErrorToString(error).c_str()))
 			return false;
@@ -1077,68 +1067,7 @@ namespace nap
 		mWidth = video_codec_context.width;
 		mHeight = video_codec_context.height;
 		mDuration = static_cast<double>((double)mFormatContext->duration / AV_TIME_BASE);
-
-		float yWidth	= video_codec_context.width;
-		float yHeight	= video_codec_context.height;
-		float uvWidth	= video_codec_context.width * 0.5f;
-		float uvHeight	= video_codec_context.height * 0.5f;
-
-		mYTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-		mYTexture->mWidth = yWidth;
-		mYTexture->mHeight = yHeight;
-		mYTexture->mFormat = RenderTexture2D::EFormat::R8;
-		mYTexture->mUsage = ETextureUsage::DynamicWrite;
-		mYTexture->mColorSpace = EColorSpace::Linear;
-		if (!mYTexture->init(errorState))
-			return false;
-
-		mUTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-		mUTexture->mWidth = uvWidth;
-		mUTexture->mHeight = uvHeight;
-		mUTexture->mFormat = RenderTexture2D::EFormat::R8;
-		mUTexture->mUsage = ETextureUsage::DynamicWrite;
-		mUTexture->mColorSpace = EColorSpace::Linear;
-		if (!mUTexture->init(errorState))
-			return false;
-
-		mVTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-		mVTexture->mWidth = uvWidth;
-		mVTexture->mHeight = uvHeight;
-		mVTexture->mFormat = RenderTexture2D::EFormat::R8;
-		mVTexture->mUsage = ETextureUsage::DynamicWrite;
-		mVTexture->mColorSpace = EColorSpace::Linear;
-		if (!mVTexture->init(errorState))
-			return false;
-
-		clearTextures();
-
-		// Register with service
-		mService.registerVideoPlayer(*this);
-
 		return true;
-	}
-
-
-	void Video::clearTextures()
-	{
-		AVCodecContext& video_codec_context = mVideoState.getCodecContext();
-
-		float yWidth = video_codec_context.width;
-		float yHeight = video_codec_context.height;
-		float uvWidth = video_codec_context.width * 0.5f;
-		float uvHeight = video_codec_context.height * 0.5f;
-
-		// YUV420p to RGB conversion uses an 'offset' value of (-0.0625, -0.5, -0.5) in the shader. 
-		// This means that initializing the YUV planes to zero does not actually result in black output.
-		// To fix this, we initialize the YUV planes to the negative of the offset
-		std::vector<uint8_t> y_default_data(yWidth * yHeight, 16);
-
-		// Initialize UV planes
-		std::vector<uint8_t> uv_default_data(uvWidth * uvHeight, 127);
-
-		mYTexture->update(y_default_data.data(), mYTexture->getWidth(), mYTexture->getHeight(), mYTexture->getWidth(), ESurfaceChannels::R);
-		mUTexture->update(uv_default_data.data(), mUTexture->getWidth(), mUTexture->getHeight(), mUTexture->getWidth(), ESurfaceChannels::R);
-		mVTexture->update(uv_default_data.data(), mVTexture->getWidth(), mVTexture->getHeight(), mVTexture->getWidth(), ESurfaceChannels::R);
 	}
 
 
@@ -1152,16 +1081,14 @@ namespace nap
 		mSystemClockSecs = sClockMax;
 		mAudioClockSecs = sClockMax;
 		mAudioDecodeClockSecs = sClockMax;
-		clearTextures();
-
 		seek(startTimeSecs);
 
 		// It is important that the IOThread is started before the decode thread. The reason is that in startIOThread, we are
 		// initializing synchronization primitives that are used in both IO thread and decode thread 
 		startIOThread();
 
+		// Start packet to frame decode threads
 		mVideoState.startDecodeThread(std::bind(&Video::onClearVideoFrameQueue, this));
-		
 		if (isAudioEnabled())
 			mAudioState.startDecodeThread(std::bind(&Video::onClearAudioFrameQueue, this));
 	}
@@ -1178,15 +1105,12 @@ namespace nap
 		exitIOThread(blocking);
 
 		mVideoState.exitDecodeThread(blocking);
-
 		if (isAudioEnabled())
 			mAudioState.exitDecodeThread(blocking);		
 
 		mPlaying = false;
-
 		clearPacketQueue();
 		clearFrameQueue();
-
 		mCurrentAudioFrame.free();
 	}
 
@@ -1789,14 +1713,17 @@ namespace nap
 	}
 
 
-	bool Video::update(double deltaTime, utility::ErrorState& errorState)
+	Frame Video::update(double deltaTime)
 	{
-		if (!mPlaying)
-			return true;
+		// Create empty (invalid) frame
+		Frame cur_frame;
+
+		// Bail if we're not in play mode
+		if (!mPlaying) { return cur_frame; }
 
 		// If the frame time spikes, make sure we re-sync to the first frame again, otherwise it may be possible that
 		// the main thread is trying to catch up, but it never really can catch up
- 		if (deltaTime > 1.0)
+		if (deltaTime > 1.0)
  			mSystemClockSecs = sClockMax;
 
 		// Update system clock if it has been initialized
@@ -1806,47 +1733,37 @@ namespace nap
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
 		// the FIFO queue has expired, we pop it. If there is no frame or the frame has not expired,
 		// we return, effectively keeping the same contents in the existing textures.
-		Frame cur_frame;
+
+		// This can be enabled to block waiting until data is available
+		// mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+			
+		// If there's nothing to process, return
+		if (mVideoState.isFinished())
 		{
-			// This can be enabled to block waiting until data is available
-			// mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
-
-			if (mVideoState.isFinished())
-			{
-				stop(true);
-				return errorState.check(mErrorMessage.empty(), mErrorMessage.c_str());
-			}
-
-			// Initialize the system clock to the first frame we see (if it has not been initialized yet)
-			if (mSystemClockSecs == sClockMax)
-			{
-				Frame frame = mVideoState.peekFrame();
-				if (frame.isValid())
-					mSystemClockSecs = frame.mPTSSecs;
-			}
-
-			// If the video we're playing has an audio stream, we use the audio clock to present frames.
-			// This makes sure that audio/video remain in sync. If there is no audio stream, we use the system clock.
-			double display_clock = isAudioEnabled() ? mAudioClockSecs : mSystemClockSecs;
-
-			// Try to get next frame to display (based on display clock)			
-			cur_frame = mVideoState.tryPopFrame(display_clock);
-
-			if (!cur_frame.isValid() || display_clock == sClockMax)
-			{
-				cur_frame.free();
-				return true;
-			}
+			stop(true);
+			return cur_frame;
 		}
 
-		// Copy data into texture
-		mYTexture->update(cur_frame.mFrame->data[0], mYTexture->getWidth(), mYTexture->getHeight(), cur_frame.mFrame->linesize[0], ESurfaceChannels::R);
-		mUTexture->update(cur_frame.mFrame->data[1], mUTexture->getWidth(), mUTexture->getHeight(), cur_frame.mFrame->linesize[1], ESurfaceChannels::R);
-		mVTexture->update(cur_frame.mFrame->data[2], mVTexture->getWidth(), mVTexture->getHeight(), cur_frame.mFrame->linesize[2], ESurfaceChannels::R);
+		// Initialize the system clock to the first frame we see (if it has not been initialized yet)
+		if (mSystemClockSecs == sClockMax)
+		{
+			Frame frame = mVideoState.peekFrame();
+			if (frame.isValid())
+				mSystemClockSecs = frame.mPTSSecs;
+		}
 
-		// Destroy frame that was allocated in the decode thread, after it has been processed
-		cur_frame.free();
+		// If the video we're playing has an audio stream, we use the audio clock to present frames.
+		// This makes sure that audio/video remain in sync. If there is no audio stream, we use the system clock.
+		double display_clock = isAudioEnabled() ? mAudioClockSecs : mSystemClockSecs;
+		
+		// Try to get next frame to display (based on display clock)			
+		cur_frame = mVideoState.tryPopFrame(display_clock);
 
-		return true;
+		// If popped frame is maxxed out, invalidate content
+		if (display_clock == sClockMax)
+			cur_frame.free();
+		
+		// Return popped frame, make sure to FREE after use!!
+		return cur_frame;
 	}
 }

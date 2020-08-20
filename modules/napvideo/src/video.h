@@ -23,8 +23,6 @@ struct AVStream;
 
 namespace nap
 {
-	class RenderTexture2D;
-	class VideoService;
 	class Video;
 
 	/**
@@ -106,23 +104,25 @@ namespace nap
 		int			mSampleFormat;			///< One of the value of the AVSampleFormat enum, as defined in samplefmt.h
 	};
 
+
 	/**
 	 * Frame as pushed in the frame queue.
 	 */
-	struct Frame
+	struct NAPAPI Frame
 	{
 		bool isValid() const { return mFrame != nullptr; }
 		void free();
 
-		AVFrame*	mFrame = nullptr;	///< Frame as decoded by the decode thread
-		double		mPTSSecs;			///< When the frame needs to be displayed (absolute clock time)
-		int			mFirstPacketDTS;	///< First dts that was used to create this frame
+		AVFrame*	mFrame = nullptr;		///< Frame as decoded by the decode thread
+		double		mPTSSecs = 0.0;			///< When the frame needs to be displayed (absolute clock time)
+		int			mFirstPacketDTS = 0;	///< First dts that was used to create this frame
 	};
+
 
 	/**
 	 * Full state for either audio or video. Responsible for pulling packets from the packet queue and decoding them into frames.
 	 */
-	class AVState final
+	class NAPAPI AVState final
 	{
 	public:
 		using OnClearFrameQueueFunction = std::function<void()>;
@@ -373,21 +373,19 @@ namespace nap
 
 
 	/**
-	 * Video playback.
+	 * Video that can be played back.
 	 * Internally contains textures that have the contents for each frame. After calling update(), the texture is filled with
 	 * the latest frame. update() is not blocking, internally the textures will only be updated when needed. The textures that
 	 * are output are in the YUV format. Conversion to RGB can be done in a shader.
 	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
 	 */
-	class NAPAPI Video final : public Resource
+	class NAPAPI Video final
 	{
-		RTTI_ENABLE(Resource)
-
 	public:
 		/**
 		 *	Constructor
 		 */
-		Video(VideoService& service);
+		Video(const std::string& path);
 
 		/**
 		 * destructor
@@ -395,11 +393,31 @@ namespace nap
 		virtual ~Video();
 
 		/**
+		 * Copy is not allowed
+		 */
+		Video(Video&) = delete;
+
+		/**
+		 * Copy assignment is not allowed
+		 */
+		Video& operator=(const Video&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		Video(Video&&) = delete;
+
+		/**
+		 * Move assignment is not allowed
+		 */
+		Video& operator=(Video&&) = delete;
+
+		/**
 		 * Initializes the video. Finds decoder, sets up everything necessary to start playback.
 		 * @param errorState Contains detailed information about errors if this function return false.
 		 * @return True on success, false otherwise. 
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState);
 
 		/**
 		 * Updates the internal textures if a new frame has been decoded.
@@ -407,7 +425,7 @@ namespace nap
 		 * @param errorState Contains detailed information about errors if this function return false.
 		 * @return True on success, false otherwise.
 		 */
-		bool update(double deltaTime, utility::ErrorState& errorState);
+		Frame update(double deltaTime);
 
 		/**
 		 * Starts playback of the video at the offset given by startTimeSecs.
@@ -420,7 +438,7 @@ namespace nap
 		 *
 		 * @return True if the video is currently playing, false if not
 		 */
-		bool isPlaying() const { return mPlaying; }
+		bool isPlaying() const					{ return mPlaying; }
 
 		/**
 		 * Stops playback of the video.
@@ -441,25 +459,7 @@ namespace nap
 		/**
 		 * @return The duration of the video in seconds.
 		 */
-		double getDuration() const { return mDuration; }
-
-		/**
-		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
-		 */
-		RenderTexture2D& getYTexture()			{ return *mYTexture; }
-
-		/**
-		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
-		 */
-		RenderTexture2D& getUTexture()			{ return *mUTexture; }
-
-		/**
-		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
-		 */
-		RenderTexture2D& getVTexture()			{ return *mVTexture; }
+		double getDuration() const				{ return mDuration; }
 
 		/**
 		 * @return Width of the video, in pixels.
@@ -472,6 +472,11 @@ namespace nap
 		int getHeight() const					{ return mHeight; }
 
 		/**
+		 * @return path to the video file on disk
+		 */
+		const std::string& getPath() const		{ return mPath; }
+
+		/**
 		 * @return Whether this video has an audio stream.
 		 */
 		bool hasAudio() const					{ return mAudioState.isValid(); }
@@ -482,12 +487,12 @@ namespace nap
 		 *
 		 * Note that this can only be changed *before* play() is called!
 		 */
-		void setAudioEnabled(bool enabled) { assert(!isPlaying()); mAudioEnabled = enabled; }
+		void setAudioEnabled(bool enabled)		{ assert(!isPlaying()); mAudioEnabled = enabled; }
 
 		/**
 		 * Gets whether audio playback is enabled
 		 */
-		bool isAudioEnabled() const { return hasAudio() && mAudioEnabled; }
+		bool isAudioEnabled() const				{ return hasAudio() && mAudioEnabled; }
 
 		/**
 		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
@@ -498,7 +503,6 @@ namespace nap
 		 */
 		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
 
-		std::string mPath;				///< Path to the video to playback
 		bool		mLoop = false;		///< If the video needs to loop
 		float		mSpeed = 1.0f;		///< Video playback speed
         
@@ -612,20 +616,11 @@ namespace nap
 		 */
 		void deallocatePacket(uint64_t inPacketSize);
 
-		/**
-		 * Clear output textures to black
-		 */
-		void clearTextures();
-
 	private:
 		friend class AVState;
 
+		std::string				mPath;										
 		static const double		sClockMax;
-
-		std::unique_ptr<RenderTexture2D> mYTexture;
-		std::unique_ptr<RenderTexture2D> mUTexture;
-		std::unique_ptr<RenderTexture2D> mVTexture;
-
 		AVFormatContext*		mFormatContext = nullptr;
 		bool					mPlaying = false;							///< Set if playing. Should only be controlled from main thread
 		int						mWidth = 0;									///< Width of the video, in pixels
@@ -652,8 +647,6 @@ namespace nap
 		int64_t					mSeekTarget = -1;							///< Seek target as set by the user, in internal steram units (not secs)
 		double					mSeekTargetSecs = 0.0f;						///< Seek target as set by the user, in secs.
 
-		VideoService&			mService;									///< Video service that this object is registered with
-
 		SwrContext*				mAudioResampleContext = nullptr;			///< Context used for resampling to the target audio format
 		Frame					mCurrentAudioFrame;							///< Audio frame currently being decoded. A single audio frame can cross the boundaries of a single audio callback, so it is cached
 		std::vector<uint8_t>	mAudioResampleBuffer;						///< Current resampled audio buffer. Can cross the boundaries of a single audio callback, so it is cached.
@@ -664,7 +657,4 @@ namespace nap
 
 		IOThreadState			mIOThreadState = IOThreadState::Playing;	///< FSM state of the I/O thread
 	};
-
-	// Object creator used for constructing the the OSC receiver
-	using VideoObjectCreator = rtti::ObjectCreator<Video, VideoService>;
 }

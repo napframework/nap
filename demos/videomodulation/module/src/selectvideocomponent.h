@@ -1,12 +1,12 @@
 #pragma once
 
-// Local Includes
-#include "video.h"
-
+// External includes
 #include <component.h>
 #include <vector>
 #include <renderablemeshcomponent.h>
 #include <videoaudiocomponent.h>
+#include <videoplayer.h>
+#include <nap/resourceptr.h>
 
 
 namespace nap
@@ -30,8 +30,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<rtti::ObjectPtr<Video>> mVideoFiles;		///< Property: "Videos" link to videos
-		int mIndex = 0;									///< Property: "Index" current video index
+		nap::ResourcePtr<VideoPlayer> mVideoPlayer;		///< Property: "VideosPlayer" link to the video player
 	};
 
 
@@ -58,38 +57,16 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * update selectvideocomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
-		 * @return the current playing video, valid after initialization
-		 */
-		Video* getCurrentVideo()								{ return mCurrentVideo; }
-
-		/**
-		 * Selects a new video
-		 * @param index new video index, clamped to video range
-		 */
-		void selectVideo(int index);
-
-		/**
-		 * @return the number of selectable videos
-		 */
-		int getCount() const									{ return mVideos.size(); }
-
-		/**
-		* @return current mesh index
-		*/
-		int getIndex() const									{ return mCurrentIndex; }
-
 	private:
-		std::vector<Video*> mVideos;									//< All video files from loaded resource
-		int mCurrentIndex = 0;											//< Current video index
-		Video* mCurrentVideo = nullptr;									//< Current playing video
+		nap::VideoPlayer* mVideoPlayer = nullptr;						//< Video player
 		RenderableMeshComponentInstance* mVideoMesh = nullptr;			//< Video plane mesh
-        audio::VideoAudioComponentInstance* mAudioComponent = nullptr;  //< Audio component
+
+		/**
+		 * @param player the player that switched the video
+		 */
+		void videoChanged(VideoPlayer& player);
+
+		// Called when video selection changes
+		nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &SelectVideoComponentInstance::videoChanged };
 	};
 }

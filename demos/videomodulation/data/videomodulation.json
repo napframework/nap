@@ -22,6 +22,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -97,6 +98,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             },
                             {
@@ -109,6 +111,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -279,17 +282,12 @@
                 {
                     "Type": "nap::SelectVideoComponent",
                     "mID": "nap::SelectVideoComponent",
-                    "Videos": [
-                        "StreakVideo",
-                        "SnowVideo",
-                        "PeopleVideo"
-                    ],
-                    "Index": 0
+                    "VideoPlayer": "VideoPlayer"
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
                     "mID": "audioComponent",
-                    "Video": "StreakVideo",
+                    "VideoPlayer": "VideoPlayer",
                     "ChannelCount": 2
                 },
                 {
@@ -388,6 +386,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -422,6 +421,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoColorTexture"
                 }
             ],
@@ -504,6 +504,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoColorTexture"
                 }
             ],
@@ -646,7 +647,8 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -699,27 +701,6 @@
             "mFragShader": "shaders/videomodulation/video.frag"
         },
         {
-            "Type": "nap::Video",
-            "mID": "PeopleVideo",
-            "Path": "people.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
-            "Type": "nap::Video",
-            "mID": "SnowVideo",
-            "Path": "snow.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
-            "Type": "nap::Video",
-            "mID": "StreakVideo",
-            "Path": "streak.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
             "Type": "nap::VideoMeshFromFile",
             "mID": "CubeMesh",
             "Path": "cube.mesh"
@@ -738,6 +719,30 @@
             "Type": "nap::VideoMeshFromFile",
             "mID": "SphereMesh",
             "Path": "sphere.mesh"
+        },
+        {
+            "Type": "nap::VideoPlayer",
+            "mID": "VideoPlayer",
+            "Loop": true,
+            "VideoFiles": [
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "StreakVideo",
+                    "Path": "streak.mp4"
+                },
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "SnowVideo",
+                    "Path": "snow.mp4"
+                },
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "PeopleVideo",
+                    "Path": "people.mp4"
+                }
+            ],
+            "VideoIndex": 0,
+            "Speed": 1.0
         }
     ]
 }

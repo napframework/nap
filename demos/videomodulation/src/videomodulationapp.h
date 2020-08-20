@@ -17,7 +17,7 @@
 #include <imguiservice.h>
 #include <color.h>
 #include <smoothdamp.h>
-
+#include <videoplayer.h>
 
 namespace nap
 {
@@ -117,7 +117,8 @@ namespace nap
 
 		// video render target
 		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Render window
+		ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;					//< Video player
 
 		// Background colors
 		RGBColorFloat mBackgroundColorOne =	{ 0.066f, 0.078f, 0.149f };	//< Color of the valley

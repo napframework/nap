@@ -1,13 +1,11 @@
 #pragma once
 
-// Nap includes
+// Local Includes
+#include "videoplayer.h"
+#include "videoaudio.h"
+
+// External Includes
 #include <audio/utility/safeptr.h>
-
-// Video includes
-#include <video.h>
-#include <videoaudio.h>
-
-// Audio includes
 #include <audio/component/audiocomponentbase.h>
 
 namespace nap
@@ -31,8 +29,8 @@ namespace nap
             VideoAudioComponent() : AudioComponentBase() { }
             
             // Properties
-            rtti::ObjectPtr<Video> mVideo = nullptr;	///< Property: 'Video' The Video that has audio.
-            int mChannelCount = 2;						///< Property: 'ChannelCount' The number of channels of audio that will be requested from the Video object, defaults to 2.
+            rtti::ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;	///< Property: 'VideoPlayer' The video player
+            int mChannelCount = 2;									///< Property: 'ChannelCount' The number of channels of audio that will be requested from the Video object, defaults to 2.
         };
 
         
@@ -59,14 +57,18 @@ namespace nap
 			 * @return the output pin associated with the given channel.
 			 */
             OutputPin& getOutputForChannel(int channel) override	{ return mNode->getOutput(channel); }
-
-            /**
-			 * @param video the audio-video source.
-             */
-            void setVideo(Video& video);
             
         private:
             SafeOwner<VideoNode> mNode = nullptr;					///< The audio node that polls the Video object for audio output
+			VideoPlayer* mVideoPlayer = nullptr;					///< The video player device
+
+			/**
+			 * @param video the audio-video source.
+			 */
+			void updateVideo(VideoPlayer& video);
+
+			// Called when video selection changes
+			nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &VideoAudioComponentInstance::updateVideo };
         };
     }   
 }

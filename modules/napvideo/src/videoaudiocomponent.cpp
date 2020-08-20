@@ -1,15 +1,13 @@
 #include "videoaudiocomponent.h"
 
-// Nap includes
+// External Includes
 #include <entity.h>
-
-// Audio includes
 #include <audio/service/audioservice.h>
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::VideoAudioComponent)
-    RTTI_PROPERTY("Video", &nap::audio::VideoAudioComponent::mVideo, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("ChannelCount", &nap::audio::VideoAudioComponent::mChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("VideoPlayer",	&nap::audio::VideoAudioComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("ChannelCount",	&nap::audio::VideoAudioComponent::mChannelCount,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::VideoAudioComponentInstance)
@@ -24,19 +22,26 @@ namespace nap
     
         bool VideoAudioComponentInstance::init(utility::ErrorState& errorState)
         {
-            auto resource = getComponent<VideoAudioComponent>();
-            auto audioService = &getAudioService();
-            mNode = audioService->makeSafe<VideoNode>(audioService->getNodeManager(), *resource->mVideo, resource->mChannelCount);
+			// Create resources
+            audio::VideoAudioComponent* resource = getComponent<VideoAudioComponent>();
+            audio::AudioService& audioService = getAudioService();
+            mNode = audioService.makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount);
+
+			// Listen to video changes
+			mVideoPlayer = resource->mVideoPlayer.get();
+			mVideoPlayer->VideoChanged.connect(mVideoChangedSlot);
+
+			// Set video if available
+			updateVideo(*mVideoPlayer);
+
             return true;
         }
         
 
-        void VideoAudioComponentInstance::setVideo(Video& video)
+        void VideoAudioComponentInstance::updateVideo(VideoPlayer& player)
         {
-            mNode->setVideo(video);
+            mNode->setVideo(player.getVideo());
         }
-
-        
     }
     
 }
