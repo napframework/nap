@@ -383,7 +383,15 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     # Split command on Unix
     if sys.platform != 'win32':
         cmd = shlex.split(cmd)
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
+
+    # If running Napkin on Windows don't capture STDOUT when running from a packaged app after 
+    # issues seen 20/08/2020 with Napkin effectively locking up and returning an error code when 
+    # opening projects with either a service config or using the video module while piping STDOUT. 
+    # Hopefully temporary.
+    if testing_napkin and sys.platform == 'win32' and '..\\%s' % PROJECT_FILENAME in cmd:
+        p = Popen(cmd, stderr=PIPE, env=my_env)
+    else:
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
 
     # Wait for the app to initialise
     waited_time = 0
@@ -416,7 +424,8 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
             (stdout, stderr) = p.communicate()
             if type(stdout) == bytes:
                 stdout = stdout.decode('utf8')
-                stderr = stderr.decode('utf8')
+            if type(stderr) == bytes:
+                stderr = stderr.decode('utf8')    
                 
             if sys.platform == 'darwin':
                 unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
@@ -444,6 +453,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
+    if type(stderr) == bytes:
         stderr = stderr.decode('utf8')    
 
     if sys.platform == 'darwin':
