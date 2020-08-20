@@ -42,7 +42,6 @@ namespace nap {
 					for (auto channel = 0; channel < getChannelCount(); ++channel)
 						getOutputBuffer(*mOutputs[channel])[i] = *(samplePtr++);
 			}
-
         }
         
         

@@ -23,7 +23,12 @@ struct AVStream;
 
 namespace nap
 {
+	// Forward Declares
 	class Video;
+	namespace audio
+	{
+		class VideoNode;
+	}
 
 	/**
 	 * Description of an audio format for converting source data to a target format.
@@ -482,26 +487,9 @@ namespace nap
 		bool hasAudio() const					{ return mAudioState.isValid(); }
 
 		/**
-		 * Set whether audio playback is enabled for the video. If enabled, video will be synced to the audio clock.
-		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
-		 *
-		 * Note that this can only be changed *before* play() is called!
-		 */
-		void setAudioEnabled(bool enabled)		{ assert(!isPlaying()); mAudioEnabled = enabled; }
-
-		/**
-		 * Gets whether audio playback is enabled
+		 * Gets whether audio playback is enabled. 
 		 */
 		bool isAudioEnabled() const				{ return hasAudio() && mAudioEnabled; }
-
-		/**
-		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
-		 * stream into the target buffer.
-		 * @param dataBuffer The data buffer to fill.
-		 * @param sizeInBytes Length of the data buffer, in bytes.
-		 * @param targetAudioFormat The expected format of the audio data to put in dataBuffer.
-		 */
-		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
 
 		bool		mLoop = false;		///< If the video needs to loop
 		float		mSpeed = 1.0f;		///< Video playback speed
@@ -616,9 +604,26 @@ namespace nap
 		 */
 		void deallocatePacket(uint64_t inPacketSize);
 
-	private:
-		friend class AVState;
+		/**
+		 * Set whether audio playback is enabled for the video. If enabled, video will be synced to the audio clock.
+		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
+		 *
+		 * Note that this can only be changed *before* play() is called!
+		 */
+		void setAudioEnabled(bool enabled)									{ assert(!isPlaying()); mAudioEnabled = enabled; }
 
+		/**
+		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
+		 * stream into the target buffer.
+		 * @param dataBuffer The data buffer to fill.
+		 * @param sizeInBytes Length of the data buffer, in bytes.
+		 * @param targetAudioFormat The expected format of the audio data to put in dataBuffer.
+		 */
+		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
+
+	private:
+		friend class audio::VideoNode;
+		friend class AVState;
 		std::string				mPath;										
 		static const double		sClockMax;
 		AVFormatContext*		mFormatContext = nullptr;

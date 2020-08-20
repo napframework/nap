@@ -168,7 +168,6 @@ namespace nap
 		nap::uint mVideoIndex = 0;								///< Property: 'Index' Selected video index
 		bool mLoop = false;										///< Property: 'Loop' if the selected video loops
 		float mSpeed = 1.0f;									///< Property: 'Speed' video playback speed
-
 		nap::Signal<nap::VideoPlayer&> VideoChanged;			///< Called when the video selection changes
 
 	private:
