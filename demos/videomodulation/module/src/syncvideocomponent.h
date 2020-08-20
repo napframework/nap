@@ -11,17 +11,17 @@
 
 namespace nap
 {
-	class SelectVideoComponentInstance;
+	class SyncVideoComponentInstance;
 
 	/**
 	 * Selects a video based on an index
 	 * This is the resource that can be declared in JSON.
 	 * This resource holds a list of video files that the instance can switch between
 	 */
-	class NAPAPI SelectVideoComponent : public Component
+	class NAPAPI SyncVideoComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(SelectVideoComponent, SelectVideoComponentInstance)
+		DECLARE_COMPONENT(SyncVideoComponent, SyncVideoComponentInstance)
 	public:
 
 		/**
@@ -30,7 +30,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		nap::ResourcePtr<VideoPlayer> mVideoPlayer;		///< Property: "VideosPlayer" link to the video player
+		nap::ResourcePtr<VideoPlayer> mVideoPlayer;		///< Property: "VideoPlayer" link to the video player
 	};
 
 
@@ -40,14 +40,12 @@ namespace nap
 	 * needs a render-able mesh component with a video shader to automatically
 	 * update it's texture inputs. This happens every frame
 	 */
-	class NAPAPI SelectVideoComponentInstance : public ComponentInstance
+	class NAPAPI SyncVideoComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		SelectVideoComponentInstance(EntityInstance& entity, Component& resource) :
+		SyncVideoComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
-
-		virtual ~SelectVideoComponentInstance() override;
 
 		/**
 		 * Initialize selectvideocomponentInstance based on the selectvideocomponent resource
@@ -67,6 +65,6 @@ namespace nap
 		void videoChanged(VideoPlayer& player);
 
 		// Called when video selection changes
-		nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &SelectVideoComponentInstance::videoChanged };
+		nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &SyncVideoComponentInstance::videoChanged };
 	};
 }

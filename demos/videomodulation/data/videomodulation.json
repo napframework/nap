@@ -280,8 +280,8 @@
             "mID": "VideoEntity",
             "Components": [
                 {
-                    "Type": "nap::SelectVideoComponent",
-                    "mID": "nap::SelectVideoComponent",
+                    "Type": "nap::SyncVideoComponent",
+                    "mID": "nap::SyncVideoComponent",
                     "VideoPlayer": "VideoPlayer"
                 },
                 {
