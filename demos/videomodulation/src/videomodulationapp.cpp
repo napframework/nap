@@ -197,17 +197,6 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
-
-			if (press_event->mKey == nap::EKeyCode::KEY_0)
-			{
-				utility::ErrorState error;
-				if (!mVideoPlayer->selectVideo(0, error))
-				{
-					nap::Logger::error(error.toString());
-					return;
-				}
-				mVideoPlayer->play();
-			}
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
@@ -292,13 +281,9 @@ namespace nap
 
 		glm::vec3 plane_size = { window_width, window_heigh, 1.0 };
 		if (window_ratio < video_ratio)
-		{
 			plane_size.y = plane_size.x / video_ratio;
-		}
 		else
-		{
 			plane_size.x = plane_size.y * video_ratio;
-		}
 
 		// Calculate plane offset in pixel coordinates
 		glm::vec2 offset = { window_width / 2, window_heigh / 2 };

@@ -16,7 +16,11 @@ namespace nap
 	class VideoService;
 
 	/**
-	 * videoplayer
+	 * Video playback device. Decodes a video in a background thread and stores the result in a set of YUV textures.
+	 * The textures are filled with the latest frame data on update(), which is a non-blocking operation.
+	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
+	 * The nap::VideoService calls update() automatically each frame. Internally the textures are only updated when needed.
+	 * YUV to RGB Conversion can be done in a shader.
 	 */
 	class NAPAPI VideoPlayer : public Device
 	{
@@ -55,7 +59,11 @@ namespace nap
 		int getCount() const										{ return static_cast<int>(mVideos.size()); }
 
 		/**
-		 * Selects a new video for playback
+		 * Loads a new video to play. Returns false if loading of the video fails.
+		 * You manually have to call 'play()' to start video playback afterwards.
+		 * @param index index of the video to load.
+		 * @param error contains the error if changing the video fails.
+		 * @return if video selection succeeded or failed
 		 */
 		bool selectVideo(int index, utility::ErrorState& error);
 
@@ -66,13 +74,13 @@ namespace nap
 		void play(double startTime = 0.0);
 
 		/**
-		 * Stops playback of the current video without destroying the video context.
+		 * Stops playback of the current video.
 		 * @param blocking when set to true the thread calling this function will wait until playback is stopped.
 		 */
-		void stopPlayback(bool blocking)							{ getVideo().stop(blocking); }
+		void stopPlayback()											{ getVideo().stop(true); }
 
 		/**
-		 * Check if the currently loaded video is playing
+		 * Check if the currently loaded video is playing.
 		 * @return If the video is currently playing.
 		 */
 		bool isPlaying() const										{ return getVideo().isPlaying(); }
@@ -89,7 +97,8 @@ namespace nap
 		bool isLooping() const										{ return mLoop; }
 
 		/**
-		 * Changes the playback speed of the player
+		 * Changes the playback speed of the player.
+		 * @param speed new playback speed, 1.0f = default speed. 
 		 */
 		void setSpeed(float speed);
 
@@ -100,12 +109,12 @@ namespace nap
 
 		/**
 		 * Seeks within the video to the time provided. This can be called while playing.
-		 * @param seconds: the time offset in seconds in the videp.
+		 * @param seconds: the time offset in seconds in the video.
 		 */
 		void seek(double seconds)									{ getVideo().seek(seconds); }
 
 		/**
-		 * @return The current playback position, in seconds.
+		 * @return The current playback position in seconds.
 		 */
 		double getCurrentTime() const								{ return getVideo().getCurrentTime(); }
 
@@ -130,7 +139,7 @@ namespace nap
 		bool hasAudio() const										{ return getVideo().hasAudio(); }
 
 		/**
-		 * Starts the device
+		 * Starts the device.
 		 * @param errorState contains the error if the device can't be started
 		 * @return if the device started
 		 */
@@ -168,7 +177,7 @@ namespace nap
 		nap::uint mVideoIndex = 0;								///< Property: 'Index' Selected video index
 		bool mLoop = false;										///< Property: 'Loop' if the selected video loops
 		float mSpeed = 1.0f;									///< Property: 'Speed' video playback speed
-		nap::Signal<nap::VideoPlayer&> VideoChanged;			///< Called when the video selection changes
+		nap::Signal<nap::VideoPlayer&> VideoChanged;			///< Called when the video selection changes, after this call all new textures are available.
 
 	private:
 		/**
