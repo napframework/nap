@@ -225,6 +225,7 @@ LINUX_EXTRA_DEBIAN = [
     'libxml2',
     'libXrender',
     'libxvidcore',
+    'libzstd',
     'libzvbi'
 ]
 
