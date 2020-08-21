@@ -103,9 +103,55 @@ def update_module_cmake(directory, project_module):
         return
     with open(file_path) as f:
         contents = f.read()
-    if not 'nap_module.cmake' in contents:
+
+    if 'nap_module.cmake' in contents:
+        update_framework_release_module_cmake(directory, project_module, contents)
+    else:
+        update_source_release_module_cmake(directory, project_module, contents)
+
+def update_source_release_module_cmake(directory, project_module, contents):
+    # Detect if needs update
+    needs_update = False
+
+    # Check Unix library 'lib' prefix stripping for v0.4
+    if not 'PROPERTIES PREFIX ""' in contents:
+        needs_update = True
+    if not needs_update:
+        print("Module at %s doesn't need CMake update" % directory)
         return
 
+    print("Upgrading module CMake at %s" % directory)
+
+    # Removing lib prefix on library for Unix. Find a line below which to place it. 
+    # A little simplistic.
+    index = contents.find('set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)')
+    if index == -1:
+        index = contents.find('add_library(')
+
+    if index != -1:
+        # Find the end of the call on that line
+        close_call_index = contents.find(")", index)
+        if close_call_index == -1:
+            print("Failed to update module removing lib prefix, %s" % directory)
+            return
+        insert_index = contents.find("\n", close_call_index)
+        # Found line appears to be last line in file, with no following newline, append to end
+        if insert_index == -1:
+            insert_index = len(contents)
+    else:
+        # Couldn't find any suitable location (somehow?), append to end of file
+        insert_index = len(contents)
+
+    new_contents = """
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")"""
+    contents = contents[:insert_index] + new_contents + contents[insert_index:]
+
+    file_path = os.path.join(directory, 'CMakeLists.txt')
+    with open(file_path, 'w') as f:
+        f.write(contents)
+
+def update_framework_release_module_cmake(directory, project_module, contents):
     # Detect if needs update
     needs_update = False
     # Check for project definition relocation for v0.4
