@@ -1089,7 +1089,7 @@ namespace nap
 
 		// Start packet to frame decode threads
 		mVideoState.startDecodeThread(std::bind(&Video::onClearVideoFrameQueue, this));
-		if (isAudioEnabled())
+		if (audioEnabled())
 			mAudioState.startDecodeThread(std::bind(&Video::onClearAudioFrameQueue, this));
 	}
 
@@ -1105,7 +1105,7 @@ namespace nap
 		exitIOThread(blocking);
 
 		mVideoState.exitDecodeThread(blocking);
-		if (isAudioEnabled())
+		if (audioEnabled())
 			mAudioState.exitDecodeThread(blocking);		
 
 		mPlaying = false;
@@ -1129,7 +1129,7 @@ namespace nap
 		if (mIOThreadState != IOThreadState::Playing && mIOThreadState != IOThreadState::WaitingForEOF)
 			return mSeekTargetSecs;
 		else
-			return isAudioEnabled() ? mAudioClockSecs : mSystemClockSecs;
+			return audioEnabled() ? mAudioClockSecs : mSystemClockSecs;
 	}
 
 
@@ -1184,7 +1184,7 @@ namespace nap
 			// the decode thread know it reached the end of the stream. By doing it this way, we are sure that all frames
 			// in the queue are properly processed. The decode thread will flush the codec at that point in time.
 			mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
-			if (isAudioEnabled())
+			if (audioEnabled())
 				mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
 
 			return EProducePacketResult::EndOfFile;
@@ -1234,7 +1234,7 @@ namespace nap
 
 		// Inform the decode thread that it should switch back to the regular frame queue
 		mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
-		if (isAudioEnabled())
+		if (audioEnabled())
 			mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
 
 		// Reset audio clock to something that won't drop all frames after we've finished seeking.
@@ -1296,10 +1296,10 @@ namespace nap
 			// Once we enter playing state, we need to reset the events used to wait for EOF,
 			// to ensure that subsequent waits won't immediately fall through
 			mVideoState.resetEndOfFileProcessed();
-			if (isAudioEnabled())
+			if (audioEnabled())
 				mAudioState.resetEndOfFileProcessed();
 
-			if (isAudioEnabled())
+			if (audioEnabled())
 				mAudioState.resetWaitForFrameQueueEmpty();
 		}
 		else if (mIOThreadState == IOThreadState::SeekRequest)
@@ -1307,11 +1307,11 @@ namespace nap
 			// Once we enter the seek request state, we need to cancel any outstanding waits for EOF/frame queue,
 			// to ensure that we don't wait for the consuming thread to have consumed all frames before we start the seek operation
 			mVideoState.cancelWaitForEndOfFileProcessed();
-			if (isAudioEnabled())
+			if (audioEnabled())
 				mAudioState.cancelWaitForEndOfFileProcessed();
 
 			mVideoState.cancelWaitForFrameQueueEmpty();
-			if (isAudioEnabled())
+			if (audioEnabled())
 				mAudioState.cancelWaitForFrameQueueEmpty();
 		}
 	}
@@ -1338,10 +1338,10 @@ namespace nap
 							// We first wait for the audio frame queue to be fully consumed and then transition to WaitingForEOF, where we wait for the video
 							// to be consumed as well. The reason that this is separated into the WaitingForEOF state is to make sure that the audio thread
 							// does not overwrite the audio clock as we reset it.
-							if (mVideoState.waitForEndOfFileProcessed() && (!isAudioEnabled() || mAudioState.waitForEndOfFileProcessed()))
+							if (mVideoState.waitForEndOfFileProcessed() && (!audioEnabled() || mAudioState.waitForEndOfFileProcessed()))
 							{
 								bool audioWaitCompleted = true;
-								if (isAudioEnabled())
+								if (audioEnabled())
 									audioWaitCompleted = mAudioState.waitForFrameQueueEmpty(mExitIOThreadSignalled);
 
 								if (audioWaitCompleted)
@@ -1355,7 +1355,7 @@ namespace nap
 							// We have reached end of the packet stream and we're not looping. Inform the decode 
 							// threads that it does not need to expect any more packets.
 							mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
-							if (isAudioEnabled())
+							if (audioEnabled())
 								mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
 
 							return;
@@ -1393,13 +1393,13 @@ namespace nap
 					// Note that it's important that we wait for the audio state first, because the video thread may rely on the audio clock being updated in order to progress.
 					// For example, when the video frame queue is full, waiting for the seek start to be processed on the video state will block indefinitely,
 					// because the audio clock won't progress, due to no packets being added to the audio state, because we're waiting for video here.
-					if (isAudioEnabled())
+					if (audioEnabled())
 						mAudioState.addSeekStartPacket(mExitIOThreadSignalled);
 					
 					mVideoState.addSeekStartPacket(mExitIOThreadSignalled);
 
 					// Wait until the seek start is processed so that we are sure that there is not more state pending in the decode thread
-					if (isAudioEnabled())
+					if (audioEnabled())
 						mAudioState.waitSeekStartPacketProcessed();
 					
 					mVideoState.waitSeekStartPacketProcessed();					
@@ -1407,7 +1407,7 @@ namespace nap
 					VIDEO_DEBUG_LOG("ioThread seek to %d", mSeekKeyframeTarget);
 
 					// Use audio state to seek if there is an audio stream, otherwise seek by video (see documentation at top of file for information)
-					mSeekState = isAudioEnabled() ? &mAudioState : &mVideoState;
+					mSeekState = audioEnabled() ? &mAudioState : &mVideoState;
 					
 					// We can only determine the seek target in stream units once we know the AVState we'll use to seek
 					bool initialSeek = mSeekTarget == -1;
@@ -1658,7 +1658,7 @@ namespace nap
 	bool Video::OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat)
 	{
 		// If we've finished playback (or never started), don't try to fill the buffers
-		if (!mPlaying || !isAudioEnabled())
+		if (!mPlaying || !audioEnabled())
 			return false;
 
 		// Here we are going to fill the audio buffer. The audio buffer has a certain fixed size,
@@ -1754,7 +1754,7 @@ namespace nap
 
 		// If the video we're playing has an audio stream, we use the audio clock to present frames.
 		// This makes sure that audio/video remain in sync. If there is no audio stream, we use the system clock.
-		double display_clock = isAudioEnabled() ? mAudioClockSecs : mSystemClockSecs;
+		double display_clock = audioEnabled() ? mAudioClockSecs : mSystemClockSecs;
 		
 		// Try to get next frame to display (based on display clock)			
 		cur_frame = mVideoState.tryPopFrame(display_clock);

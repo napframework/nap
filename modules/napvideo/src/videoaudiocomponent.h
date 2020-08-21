@@ -29,8 +29,9 @@ namespace nap
             VideoAudioComponent() : AudioComponentBase() { }
             
             // Properties
-            rtti::ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;	///< Property: 'VideoPlayer' The video player
+            rtti::ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;	///< Property: 'VideoPlayer' The video player to output sound from.
             int mChannelCount = 2;									///< Property: 'ChannelCount' The number of channels of audio that will be requested from the Video object, defaults to 2.
+			bool mProcessAudio = true;								///< Property: 'ProcessAudio' If the audio stream is decoded when available 
         };
 
         
@@ -63,12 +64,13 @@ namespace nap
 			VideoPlayer* mVideoPlayer = nullptr;					///< The video player device
 
 			/**
+			 * Called when the video changes.
 			 * @param video the audio-video source.
 			 */
-			void updateVideo(VideoPlayer& video);
+			void selectVideo(VideoPlayer& video);
 
 			// Called when video selection changes
-			nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &VideoAudioComponentInstance::updateVideo };
+			nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &VideoAudioComponentInstance::selectVideo };
         };
     }   
 }

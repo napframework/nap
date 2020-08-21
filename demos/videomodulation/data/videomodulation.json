@@ -288,7 +288,8 @@
                     "Type": "nap::audio::VideoAudioComponent",
                     "mID": "audioComponent",
                     "VideoPlayer": "VideoPlayer",
-                    "ChannelCount": 2
+                    "ChannelCount": 2,
+                    "ProcessAudio": true
                 },
                 {
                     "Type": "nap::audio::OutputComponent",

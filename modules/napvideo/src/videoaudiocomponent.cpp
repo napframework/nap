@@ -8,6 +8,7 @@
 RTTI_BEGIN_CLASS(nap::audio::VideoAudioComponent)
     RTTI_PROPERTY("VideoPlayer",	&nap::audio::VideoAudioComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("ChannelCount",	&nap::audio::VideoAudioComponent::mChannelCount,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ProcessAudio",	&nap::audio::VideoAudioComponent::mProcessAudio,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::VideoAudioComponentInstance)
@@ -25,20 +26,17 @@ namespace nap
 			// Create resources
             audio::VideoAudioComponent* resource = getComponent<VideoAudioComponent>();
             audio::AudioService& audioService = getAudioService();
-            mNode = audioService.makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount);
+            mNode = audioService.makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount, resource->mProcessAudio);
 
 			// Listen to video changes
 			mVideoPlayer = resource->mVideoPlayer.get();
 			mVideoPlayer->VideoChanged.connect(mVideoChangedSlot);
-
-			// Set video if available
-			updateVideo(*mVideoPlayer);
-
+			selectVideo(*mVideoPlayer);
             return true;
         }
         
 
-        void VideoAudioComponentInstance::updateVideo(VideoPlayer& player)
+        void VideoAudioComponentInstance::selectVideo(VideoPlayer& player)
         {
             mNode->setVideo(player.getVideo());
         }

@@ -16,11 +16,31 @@ namespace nap
 	class VideoService;
 
 	/**
-	 * Video playback device. Decodes a video in a background thread and stores the result in a set of YUV textures.
+	 * Video playback device. 
+	 *
+	 * Decodes a video, from a list of videos, in a background thread and stores the result in a set of YUV textures.
 	 * The textures are filled with the latest frame data on update(), which is a non-blocking operation.
+	 * The nap::VideoService calls update() automatically each frame. 
+	 *
 	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
-	 * The nap::VideoService calls update() automatically each frame. Internally the textures are only updated when needed.
-	 * YUV to RGB Conversion can be done in a shader.
+	 * Internally the textures are only updated when needed. YUV to RGB Conversion can be done in a shader.
+	 *
+	 * Videos are cached internally. This means that all videos in the playlist are created on start(), including the associated video format and video codec contexts.
+	 * This ensures that a video can be started and stopped fast, without having to re-open a video when switching.
+	 * The IO and decode threads are spawned on play() and stopped on stopPlayback().
+	 *
+	 * Do not call start() and stop() at runtime, unless you want to completely restart the device and free all memory, 
+	 * start() and stop() are called automatically by the engine at the appropiate time.
+	 * Use play() and stopPlayback() instead to start and stop playback of the currently selected video.
+	 * You always have to call play() after selecting a different video.
+	 *
+	 * ~~~~~{.cpp}
+	 *	utility::ErrorState error;
+	 *	if (!mVideoPlayer->selectVideo(new_selection, error))
+	 *		nap::Logger::error(error.toString());
+	 *	else
+	 *		mVideoPlayer->play();
+	 * ~~~~~
 	 */
 	class NAPAPI VideoPlayer : public Device
 	{
@@ -28,10 +48,8 @@ namespace nap
 		friend class VideoService;
 	public:
 
-		/**
-		 * Constructor
-		 */
-		 VideoPlayer(VideoService& service);
+		// Constructor
+		VideoPlayer(VideoService& service);
 
 		/**
 		 * @return currently selected video file.
@@ -61,6 +79,15 @@ namespace nap
 		/**
 		 * Loads a new video to play. Returns false if loading of the video fails.
 		 * You manually have to call 'play()' to start video playback afterwards.
+		 *
+		 * ~~~~~{.cpp}
+		 *	utility::ErrorState error;
+		 *	if (!mVideoPlayer->selectVideo(new_selection, error))
+		 *		nap::Logger::error(error.toString());
+		 *	else
+		 *		mVideoPlayer->play();
+		 * ~~~~~
+		 *
 		 * @param index index of the video to load.
 		 * @param error contains the error if changing the video fails.
 		 * @return if video selection succeeded or failed
@@ -156,20 +183,26 @@ namespace nap
 		bool hasSelection() const								{ return mCurrentVideo != nullptr; }
 
 		/**
-		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
+		 * Returns the decoded video Y texture.
+		 * The texture is not initialized to zero, but to the 'black' equivalent in YUV space. 
+		 * The size of the Y texture is width * height.
+		 * @return The video Y texture.
 		 */
 		RenderTexture2D& getYTexture();
 
 		/**
-		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
+		 * Returns the decoded video U texture.
+		 * The texture is not initialized to zero, but to the 'black' equivalent in YUV space.
+		 * The size of the U texture is HALF the width * height.
+		 * @return The video Y texture.
 		 */
 		RenderTexture2D& getUTexture();
 
 		/**
-		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
+		 * Returns the decoded video V texture.
+		 * The texture is not initialized to zero, but to the 'black' equivalent in YUV space.
+		 * The size of the V texture is HALF the width * height.
+		 * @return The video V texture.
 		 */
 		RenderTexture2D& getVTexture();
 

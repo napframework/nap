@@ -7,7 +7,10 @@ namespace nap {
     
     namespace audio {
         
-        VideoNode::VideoNode(NodeManager& nodeManager, int channelCount) : Node(nodeManager), mAudioFormat(channelCount, AudioFormat::ESampleFormat::FLT, int(nodeManager.getSampleRate()))
+        VideoNode::VideoNode(NodeManager& nodeManager, int channelCount, bool decodeAudio) : 
+			Node(nodeManager), 
+			mAudioFormat(channelCount, AudioFormat::ESampleFormat::FLT, int(nodeManager.getSampleRate())),
+			mDecodeAudio(decodeAudio)
         {
             // Initialize the output pins
             for (auto channel = 0; channel < channelCount; ++channel)
@@ -21,7 +24,7 @@ namespace nap {
         void VideoNode::process()
         {
             std::lock_guard<std::mutex> lock(mVideoMutex);
-            if (mVideo == nullptr || !mVideo->isAudioEnabled() || !mVideo->isPlaying())
+            if (mVideo == nullptr || !mVideo->audioEnabled() || !mVideo->isPlaying())
             {
                 // If the video has no audio channels we fill the output pins with zeros
                 for (auto channel = 0; channel < getChannelCount(); ++channel)
@@ -50,18 +53,16 @@ namespace nap {
             std::lock_guard<std::mutex> lock(mVideoMutex);
             // unregister from the old video's destruct signal
 			if (mVideo != nullptr)
-			{
 				mVideo->mDestructedSignal.disconnect(mVideoDestructedSlot);
-				mVideo->setAudioEnabled(false);
-			}
             
+			// Update video reference
             mVideo = &video;
             
-            // connect to the new video's destruct signal
+            // connect to the new video's destruct signal and enable / disable audio decoding.
 			if (mVideo != nullptr)
 			{
 				mVideo->mDestructedSignal.connect(mVideoDestructedSlot);
-				mVideo->setAudioEnabled(true);
+				mVideo->decodeAudioStream(mDecodeAudio);
 			}
         }
         
