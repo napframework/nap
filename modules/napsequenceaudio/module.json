@@ -1,6 +1,8 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
         "mod_napaudio",
-		"mod_napsequence"
+        "mod_napsequence"
     ]
 }
