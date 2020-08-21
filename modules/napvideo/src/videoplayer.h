@@ -34,6 +34,10 @@ namespace nap
 	 * instead of a set of textures per video. A valid set of textures is always available after a successful call to selectVideo()
 	 * Listen to the VideoChanged signal to get notified about a video change.
 	 *
+	 * Every video must contain a video stream, the audio stream is optional. 
+	 * Use a nap::VideoAudioComponent to decode and play back the audio of a video.
+	 * Without a nap::VideoAudioComponent no audio is decoded and therefore played back.
+	 *
 	 * Do not call start() and stop() at runtime, unless you want to completely restart the device and free all memory, 
 	 * start() and stop() are called automatically by the engine at the appropiate time.
 	 * Use play() and stopPlayback() instead to start and stop playback of the currently selected video.
