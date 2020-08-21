@@ -203,8 +203,11 @@ def convert_project(project_dir):
 def update_project_cmake(directory):
     # Ensure it's a Framework Release context by verifying CMakeLists.txt contains nap_project.cmake
     file_path = os.path.join(directory, 'CMakeLists.txt')
-    with open(file_path) as f:
-        contents = f.read()
+    try:
+        with open(file_path) as f:
+            contents = f.read()
+    except FileNotFoundError:
+        return
     if not 'nap_project.cmake' in contents:
         return
 
