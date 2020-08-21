@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "video.h"
+#include "videoplayer.h"
 
 // Nap Includes
 #include <nap/service.h>
@@ -14,7 +14,7 @@ namespace nap
 	 */
 	class NAPAPI VideoService : public Service
 	{
-		friend class Video;
+		friend class VideoPlayer;
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
@@ -49,14 +49,14 @@ namespace nap
 		/**
 		* Registers a video player with the service
 		*/
-		void registerVideoPlayer(Video& receiver);
+		void registerVideoPlayer(VideoPlayer& receiver);
 
 		/**
 		* Removes a video player from the service
 		*/
-		void removeVideoPlayer(Video& receiver);
+		void removeVideoPlayer(VideoPlayer& receiver);
 
 	private:
-		std::vector<Video*> mVideoPlayers;			///< All registered video players
+		std::vector<VideoPlayer*> mVideoPlayers;			///< All registered video players
 	};
 }

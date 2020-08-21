@@ -23,9 +23,12 @@ struct AVStream;
 
 namespace nap
 {
-	class RenderTexture2D;
-	class VideoService;
+	// Forward Declares
 	class Video;
+	namespace audio
+	{
+		class VideoNode;
+	}
 
 	/**
 	 * Description of an audio format for converting source data to a target format.
@@ -65,6 +68,9 @@ namespace nap
 			Stereo_Downmix
 		};
 
+		/**
+		 * Video sample format
+		 */
 		enum class ESampleFormat 
 		{
 			U8,         ///< unsigned 8 bits
@@ -106,23 +112,26 @@ namespace nap
 		int			mSampleFormat;			///< One of the value of the AVSampleFormat enum, as defined in samplefmt.h
 	};
 
+
 	/**
 	 * Frame as pushed in the frame queue.
 	 */
-	struct Frame
+	struct NAPAPI Frame
 	{
 		bool isValid() const { return mFrame != nullptr; }
 		void free();
 
-		AVFrame*	mFrame = nullptr;	///< Frame as decoded by the decode thread
-		double		mPTSSecs;			///< When the frame needs to be displayed (absolute clock time)
-		int			mFirstPacketDTS;	///< First dts that was used to create this frame
+		AVFrame*	mFrame = nullptr;		///< Frame as decoded by the decode thread
+		double		mPTSSecs = 0.0;			///< When the frame needs to be displayed (absolute clock time)
+		int			mFirstPacketDTS = 0;	///< First dts that was used to create this frame
 	};
 
+
 	/**
-	 * Full state for either audio or video. Responsible for pulling packets from the packet queue and decoding them into frames.
+	 * Full state for either audio or video. 
+	 * Responsible for pulling packets from the packet queue and decoding them into frames.
 	 */
-	class AVState final
+	class NAPAPI AVState final
 	{
 	public:
 		using OnClearFrameQueueFunction = std::function<void()>;
@@ -325,7 +334,6 @@ namespace nap
 		void decodeThread();
 		EDecodeFrameResult decodeFrame(AVFrame& frame, int& frameFirstPacketDTS);
 		AVPacket* popPacket();
-
 		void clearFrameQueue(std::queue<Frame>& frameQueue, bool emitCallback);
 
 	private:
@@ -373,63 +381,88 @@ namespace nap
 
 
 	/**
-	 * Video playback.
-	 * Internally contains textures that have the contents for each frame. After calling update(), the texture is filled with
-	 * the latest frame. update() is not blocking, internally the textures will only be updated when needed. The textures that
-	 * are output are in the YUV format. Conversion to RGB can be done in a shader.
-	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
+	 * Decodes a video using FFMPEG in the background.
+	 * It is NOT recommended to manually (at run-time) create a nap::Video. Use the nap::VideoPlayer instead.
+	 * The nap::VideoPlayer consumes frames, produced by a video, when they are ready to be presented.
+	 * This object does not contain any textures, only FFMPEG related content.
+	 *
+	 * Call init() after construction and start() / stop() afterwards. 
+	 * On initialization the video file is opened, streams are extracted and the video / audio state is initialized.
+	 * A video stream is required, the audio stream is optional. Use a nap::VideoAudioComponent to decode and output the audio stream.
+	 * On start() the IO and decode threads are spawned. On stop() the IO and decode threads are stopped.
+	 * The av and codec contexts are freed on destruction. 
+	 * Keeping the format and codec contexts in memory ensures the loaded video can be started and stopped fast.
 	 */
-	class NAPAPI Video final : public Resource
+	class NAPAPI Video final
 	{
-		RTTI_ENABLE(Resource)
-
 	public:
 		/**
-		 *	Constructor
+		 * @param path the video file on disk
 		 */
-		Video(VideoService& service);
+		Video(const std::string& path);
+
+		// Destructor
+		virtual ~Video();
 
 		/**
-		 * destructor
+		 * Copy is not allowed
 		 */
-		virtual ~Video();
+		Video(Video&) = delete;
+
+		/**
+		 * Copy assignment is not allowed
+		 */
+		Video& operator=(const Video&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		Video(Video&&) = delete;
+
+		/**
+		 * Move assignment is not allowed
+		 */
+		Video& operator=(Video&&) = delete;
 
 		/**
 		 * Initializes the video. Finds decoder, sets up everything necessary to start playback.
 		 * @param errorState Contains detailed information about errors if this function return false.
 		 * @return True on success, false otherwise. 
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Updates the internal textures if a new frame has been decoded.
+		 * Returns a newly decoded frame if available, an invalid frame otherwise.
+		 * Always call .free() after processing frame content! This is a non-blocking call.
 		 * @param deltaTime time in seconds in between calls.
-		 * @param errorState Contains detailed information about errors if this function return false.
-		 * @return True on success, false otherwise.
+		 * @return a newly decoded frame if available, an invalid frame otherwise.
 		 */
-		bool update(double deltaTime, utility::ErrorState& errorState);
+		Frame update(double deltaTime);
 
 		/**
-		 * Starts playback of the video at the offset given by startTimeSecs.
-		 * @param startTimeSecs The offset in seconds to start the video at.
+		 * Starts playback of the video at the given time in seconds.
+		 * This will spawn the video IO and decode threads in the background.
+		 * Video is stopped before being started.
+		 * @param time the offset in seconds to start the video at.
 		 */
-		void play(double startTimeSecs = 0.0);
+		void play(double time = 0.0);
 
 		/**
 		 * Check whether the video is currently playing
-		 *
 		 * @return True if the video is currently playing, false if not
 		 */
-		bool isPlaying() const { return mPlaying; }
+		bool isPlaying() const					{ return mPlaying; }
 
 		/**
 		 * Stops playback of the video.
+		 * The video IO and decode threads are stopped.
+		 * @param blocking if the calling thread waits for the IO and decode thread to stop.
 		 */
 		void stop(bool blocking);
 
 		/**
-		 * Seeks within the video to the time provided. This can be called while playing.
-		 * @param seconds: the time offset in seconds in the videp.
+		 * Seeks within the video to the time provided. This can be called during playback.
+		 * @param seconds: video offset in seconds.
 		 */
 		void seek(double seconds);
 
@@ -441,25 +474,7 @@ namespace nap
 		/**
 		 * @return The duration of the video in seconds.
 		 */
-		double getDuration() const { return mDuration; }
-
-		/**
-		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
-		 */
-		RenderTexture2D& getYTexture()			{ return *mYTexture; }
-
-		/**
-		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
-		 */
-		RenderTexture2D& getUTexture()			{ return *mUTexture; }
-
-		/**
-		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
-		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
-		 */
-		RenderTexture2D& getVTexture()			{ return *mVTexture; }
+		double getDuration() const				{ return mDuration; }
 
 		/**
 		 * @return Width of the video, in pixels.
@@ -472,39 +487,32 @@ namespace nap
 		int getHeight() const					{ return mHeight; }
 
 		/**
+		 * @return path to the video file on disk
+		 */
+		const std::string& getPath() const		{ return mPath; }
+
+		/**
 		 * @return Whether this video has an audio stream.
 		 */
 		bool hasAudio() const					{ return mAudioState.isValid(); }
 
 		/**
-		 * Set whether audio playback is enabled for the video. If enabled, video will be synced to the audio clock.
-		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
-		 *
-		 * Note that this can only be changed *before* play() is called!
+		 * Returns if audio decoding and playback is enabled.
+		 * This is the case when there is an audio stream available and audio decoding is explicitly enabled.
+		 * @return whether audio decoding and playback is enabled. 
 		 */
-		void setAudioEnabled(bool enabled) { assert(!isPlaying()); mAudioEnabled = enabled; }
+		bool audioEnabled() const				{ return hasAudio() && mDecodeAudio; }
 
-		/**
-		 * Gets whether audio playback is enabled
-		 */
-		bool isAudioEnabled() const { return hasAudio() && mAudioEnabled; }
-
-		/**
-		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
-		 * stream into the target buffer.
-		 * @param dataBuffer The data buffer to fill.
-		 * @param sizeInBytes Length of the data buffer, in bytes.
-		 * @param targetAudioFormat The expected format of the audio data to put in dataBuffer.
-		 */
-		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
-
-		std::string mPath;				///< Path to the video to playback
-		bool		mLoop = false;		///< If the video needs to loop
-		float		mSpeed = 1.0f;		///< Video playback speed
+		bool		mLoop = false;				///< If the video needs to loop
+		float		mSpeed = 1.0f;				///< Video playback speed
         
         nap::Signal<Video&> mDestructedSignal; ///< This signal will be emitted before the Video resource is destructed
 
 	private:
+
+		friend class audio::VideoNode;
+		friend class AVState;
+
 		enum class EProducePacketResult : uint8_t
 		{
 			GotAudioPacket		= 1,													///< Received an audio packet
@@ -613,19 +621,27 @@ namespace nap
 		void deallocatePacket(uint64_t inPacketSize);
 
 		/**
-		 * Clear output textures to black
+		 * Set whether audio decoding and playback is enabled for the video. If enabled, video will be synced to the audio clock.
+		 * Enabling this requires that somebody calls OnAudioCallback() to advance the audio clock; this is not handled internally.
+		 *
+		 * Note that this can only be changed *before* play() is called!
+		 * @param enabled if audio decoding and playback is enabled.
 		 */
-		void clearTextures();
+		void decodeAudioStream(bool enabled)			{ assert(!isPlaying()); mDecodeAudio = enabled; }
+
+		/**
+		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio
+		 * stream into the target buffer.
+		 * @param dataBuffer The data buffer to fill.
+		 * @param sizeInBytes Length of the data buffer, in bytes.
+		 * @param targetAudioFormat The expected format of the audio data to put in dataBuffer.
+		 * @return true if copy succeeded, false otherwise.
+		 */
+		bool OnAudioCallback(uint8_t* dataBuffer, int sizeInBytes, const AudioFormat& targetAudioFormat);
 
 	private:
-		friend class AVState;
-
+		std::string				mPath;										
 		static const double		sClockMax;
-
-		std::unique_ptr<RenderTexture2D> mYTexture;
-		std::unique_ptr<RenderTexture2D> mUTexture;
-		std::unique_ptr<RenderTexture2D> mVTexture;
-
 		AVFormatContext*		mFormatContext = nullptr;
 		bool					mPlaying = false;							///< Set if playing. Should only be controlled from main thread
 		int						mWidth = 0;									///< Width of the video, in pixels
@@ -652,19 +668,13 @@ namespace nap
 		int64_t					mSeekTarget = -1;							///< Seek target as set by the user, in internal steram units (not secs)
 		double					mSeekTargetSecs = 0.0f;						///< Seek target as set by the user, in secs.
 
-		VideoService&			mService;									///< Video service that this object is registered with
-
 		SwrContext*				mAudioResampleContext = nullptr;			///< Context used for resampling to the target audio format
 		Frame					mCurrentAudioFrame;							///< Audio frame currently being decoded. A single audio frame can cross the boundaries of a single audio callback, so it is cached
 		std::vector<uint8_t>	mAudioResampleBuffer;						///< Current resampled audio buffer. Can cross the boundaries of a single audio callback, so it is cached.
 		uint8_t*				mCurrentAudioBuffer = nullptr;				///< Pointer to either the buffer in the current audio frame itself, or the resampled audio buffer.
 		uint64_t				mAudioFrameReadOffset = 0;					///< Offset (cursor) into the current audio buffer that is decoded
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
-		bool					mAudioEnabled = false;						///< Whether audio is enabled or not
-
+		bool					mDecodeAudio = false;						///< Whether audio is enabled or not
 		IOThreadState			mIOThreadState = IOThreadState::Playing;	///< FSM state of the I/O thread
 	};
-
-	// Object creator used for constructing the the OSC receiver
-	using VideoObjectCreator = rtti::ObjectCreator<Video, VideoService>;
 }

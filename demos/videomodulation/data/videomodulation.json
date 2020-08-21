@@ -22,6 +22,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -97,6 +98,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             },
                             {
@@ -109,6 +111,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -277,20 +280,16 @@
             "mID": "VideoEntity",
             "Components": [
                 {
-                    "Type": "nap::SelectVideoComponent",
-                    "mID": "nap::SelectVideoComponent",
-                    "Videos": [
-                        "StreakVideo",
-                        "SnowVideo",
-                        "PeopleVideo"
-                    ],
-                    "Index": 0
+                    "Type": "nap::SyncVideoComponent",
+                    "mID": "nap::SyncVideoComponent",
+                    "VideoPlayer": "VideoPlayer"
                 },
                 {
                     "Type": "nap::audio::VideoAudioComponent",
                     "mID": "audioComponent",
-                    "Video": "StreakVideo",
-                    "ChannelCount": 2
+                    "VideoPlayer": "VideoPlayer",
+                    "ChannelCount": 2,
+                    "ProcessAudio": true
                 },
                 {
                     "Type": "nap::audio::OutputComponent",
@@ -300,17 +299,6 @@
                         0,
                         1
                     ]
-                },
-                {
-                    "Type": "nap::audio::LevelMeterComponent",
-                    "mID": "nap::audio::LevelMeterComponent",
-                    "Input": "audioComponent",
-                    "AnalysisWindowSize": 10.0,
-                    "MeterType": "RMS",
-                    "FilterInput": false,
-                    "CenterFrequency": 10000.0,
-                    "BandWidth": 10000.0,
-                    "Channel": 0
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -388,6 +376,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "VideoColorTexture"
                             }
                         ],
@@ -422,6 +411,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoColorTexture"
                 }
             ],
@@ -504,6 +494,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoColorTexture"
                 }
             ],
@@ -646,7 +637,8 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -699,27 +691,6 @@
             "mFragShader": "shaders/videomodulation/video.frag"
         },
         {
-            "Type": "nap::Video",
-            "mID": "PeopleVideo",
-            "Path": "people.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
-            "Type": "nap::Video",
-            "mID": "SnowVideo",
-            "Path": "snow.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
-            "Type": "nap::Video",
-            "mID": "StreakVideo",
-            "Path": "streak.mp4",
-            "Loop": false,
-            "Speed": 1.0
-        },
-        {
             "Type": "nap::VideoMeshFromFile",
             "mID": "CubeMesh",
             "Path": "cube.mesh"
@@ -738,6 +709,30 @@
             "Type": "nap::VideoMeshFromFile",
             "mID": "SphereMesh",
             "Path": "sphere.mesh"
+        },
+        {
+            "Type": "nap::VideoPlayer",
+            "mID": "VideoPlayer",
+            "Loop": true,
+            "VideoFiles": [
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "StreakVideo",
+                    "Path": "streak.mp4"
+                },
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "SnowVideo",
+                    "Path": "snow.mp4"
+                },
+                {
+                    "Type": "nap::VideoFile",
+                    "mID": "PeopleVideo",
+                    "Path": "people.mp4"
+                }
+            ],
+            "VideoIndex": 0,
+            "Speed": 1.0
         }
     ]
 }
