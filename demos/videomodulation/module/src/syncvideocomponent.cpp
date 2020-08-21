@@ -24,7 +24,6 @@ namespace nap
 	void SyncVideoComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
-		components.emplace_back(RTTI_OF(nap::audio::VideoAudioComponent));
 	}
 
 
@@ -42,7 +41,7 @@ namespace nap
 		// Listen to video selection changes
 		mVideoPlayer->VideoChanged.connect(mVideoChangedSlot);
 
-		// Update textures
+		// Update textures on initialization
 		videoChanged(*mVideoPlayer);
 		return true;
 	}

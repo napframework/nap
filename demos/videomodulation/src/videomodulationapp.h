@@ -32,9 +32,10 @@ namespace nap
 	* Use the left mouse + mouse button to tumble the camera, right mouse button to zoom
 	*
 	* This application uses it's own module: mod_videomodulation. 
-	* That module exposes 1 resource (VideoMeshFromFile) and 2 components (SelectVideoComponent / SelectVideoMeshComponent).
+	* That module exposes 1 resource (VideoMeshFromFile) and 2 components (SyncVideoComponent / SelectVideoMeshComponent).
 	* The video mesh from file loads an fbx ans adds 2 attributes that are necessary for displacement. 
-	* Both components are used to change the current selection (video / mesh). 
+	* The SyncVideoComponent binds the decoded YUV video textures to the video material, the SelectVideoMeshComponent
+	* changes the mesh to display. 
 	* 
 	* Video playback is handled using FFMpeg. All videos are loaded and validated on startup.
 	* The video select component links to all the videos and triggers one for playback, ie: manages current playback state

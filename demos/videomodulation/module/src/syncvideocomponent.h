@@ -14,9 +14,8 @@ namespace nap
 	class SyncVideoComponentInstance;
 
 	/**
-	 * Selects a video based on an index
-	 * This is the resource that can be declared in JSON.
-	 * This resource holds a list of video files that the instance can switch between
+	 * Resource part of the SyncVideoComponent.
+	 * Binds the YUV (video) textures to the video material.
 	 */
 	class NAPAPI SyncVideoComponent : public Component
 	{
@@ -35,10 +34,9 @@ namespace nap
 
 
 	/**
-	 * Instance (runtime version) of the video selector
-	 * Makes sure there is at least 1 available video and
-	 * needs a render-able mesh component with a video shader to automatically
-	 * update it's texture inputs. This happens every frame
+	 * Instance (runtime version) of the SyncVideoComponent.
+	 * Binds the YUV (video) textures to the video material.
+	 * This happens on initialization and every time a new video is selected.
 	 */
 	class NAPAPI SyncVideoComponentInstance : public ComponentInstance
 	{
@@ -48,10 +46,9 @@ namespace nap
 			ComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize selectvideocomponentInstance based on the selectvideocomponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the selectvideocomponentInstance is initialized successfully
+		 * Initialize SyncVideoComponentInstance based on the SyncVideoComponentInstance resource
+		 * @param errorState contains the error if initialization fails
+		 * @return if the SyncVideoComponentInstance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -60,7 +57,8 @@ namespace nap
 		RenderableMeshComponentInstance* mVideoMesh = nullptr;			//< Video plane mesh
 
 		/**
-		 * @param player the player that switched the video
+		 * Called every time a new video is selected
+		 * @param player the video player that switched the video.
 		 */
 		void videoChanged(VideoPlayer& player);
 
