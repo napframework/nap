@@ -74,7 +74,7 @@ namespace nap
 		mCurrentVideo->mSpeed = mSpeed;
 
 		// Check if textures need to be generated, this is the case when there are none,
-		// or when the dimensions have changed
+		// or when the dimensions have 
 		if (!mTexturesCreated || vid_x != mYTexture->getWidth() || vid_y != mYTexture->getHeight())
 		{
 			mYTexture = std::make_unique<RenderTexture2D>(mService.getCore());
