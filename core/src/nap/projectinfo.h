@@ -8,27 +8,35 @@ namespace nap
 {
 	class ModuleManager;
 
+	/**
+	 * Allows ProjectInfo to find the executable, editor and modules.
+	 */
 	class NAPAPI PathMapping : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 	public:
-		std::string mProjectExeToRoot;
-		std::string mNapkinExeToRoot;
-		std::vector<std::string> mModulePaths;
-
 		/**
 		 * @return The absolute file path this PathMapping was loaded from
 		 */
-		std::string getFilename() const
-		{
-			return mFilename;
-		}
+		const std::string& getFilename() const		{ return mFilename; }
+
+		std::string mProjectExeToRoot;				///< Relative path from project to executable
+		std::string mNapkinExeToRoot;				///< Relative path from napkin to executable
+		std::vector<std::string> mModulePaths;		///< Relative paths to the module directories
 
 	private:
-		std::string mFilename;
+		std::string mFilename;						
 	};
 
 
+	/**
+	 * Contains project related information, including project title, version number,
+	 * the names of the modules the project depends on and what data file to load. 
+	 * The data file contains the actual app content. The project file describes the project.
+	 *
+	 * The link to a service configuration file is optional, but when specified it is loaded and applied by Core on startup.
+	 * The link to the path mapping file is required, otherwise the system won't be able to resolve all the paths.
+	 */
 	class NAPAPI ProjectInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
@@ -44,12 +52,12 @@ namespace nap
 			Editor		= 1			///< Resolved against editor
 		};
 
-		std::string mTitle;												// Title of the project
-		std::string mVersion;											// Version of this project
-		std::string mDefaultData;										// Relative path of the default data (json) file
-		std::string mPathMappingFile;									// Points to a file with a path mapping
-		std::string mServiceConfigFilename = {};						// Points to a file with service configurations
-		std::vector<std::string> mRequiredModules;						// Names of modules this project depends on
+		std::string mTitle;												///< Property: 'Title' project title
+		std::string mVersion;											///< Property: 'Version' project version
+		std::string mDefaultData;										///< Property: 'Data' relative path to the application content (json) file
+		std::string mPathMappingFile;									///< Property: 'PathMapping' relative path to the path mapping file
+		std::string mServiceConfigFilename = {};						///< Property: 'ServiceConfig' optional relative path to service configuration file.
+		std::vector<std::string> mRequiredModules;						///< Property: 'RequiredModules' names of modules this project depends on
 
 		/**
 		 * @return True if this process is running in an editor
@@ -62,7 +70,7 @@ namespace nap
 		std::string getFilename() const;
 
 		/**
-		 * Set the filename of this projectinfo, only to be called while loading.
+		 * Set the filename of this ProjectInfo, only to be called while loading.
 		 */
 		void setFilename(const std::string& filename);
 
@@ -91,35 +99,65 @@ namespace nap
 		 */
 		std::string dataDirectory() const;
 
-
-		bool hasServiceConfigFile() const;
 		/**
-		 * @return The path mapping for this project
+		 * @return if a service configuration file is specified.
+		 */
+		bool hasServiceConfigFile() const;
+
+		/**
+		 * @return The path mapping for this project.
 		 */
 		const PathMapping& getPathMapping() const;
 
-		bool patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
+		/**
+		 * Replace all occurrences of specific project variables such as 'ROOT', 'BUILD_CONFIG' etc. with the actual resolved values. 
+		 * For example: 
+		 * 
+		 * ROOT -> path to nap root directory
+		 * BUILD_CONFIG -> Clang-Debug-x86_64
+		 * BUILD_TYPE -> Release
+		 * PROJECT_DIR -> path to project directory
+		 *
+		 * @param path full path that contains the project variables to replace
+		 * @param additionalValues additional variables to resolve
+		 * @return if the path is patched
+		 */
+		void patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
 
-		bool patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
+		/**
+		 * Replace all occurrences of specific project variables such as 'ROOT', 'BUILD_CONFIG' etc. with the actual resolved values.
+		 * For example:
+		 *
+		 * ROOT -> path to nap root directory
+		 * BUILD_CONFIG -> Clang-Debug-x86_64
+		 * BUILD_TYPE -> Release
+		 * PROJECT_DIR -> path to project directory
+		 *
+		 * @param path full path that contains the project variables to replace
+		 * @param additionalValues additional variables to resolve
+		 * @return if the path is patched
+		 */
+		void patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
 
 	private:
 		std::unordered_map<std::string, std::string> getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const;
-
 		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
-		std::string mFilename;								// The filename from which this data was loaded
-		std::unique_ptr<PathMapping> mPathMapping;			// The actual path mapping coming from mPathMappingFile
-		EContext mContext = EContext::Application;			// By default projects are loaded from application context
+		std::string mFilename;								///< The filename from which this data was loaded
+		std::unique_ptr<PathMapping> mPathMapping;			///< The actual path mapping coming from mPathMappingFile
+		EContext mContext = EContext::Application;			///< By default projects are loaded from application context
 	};
 
 
+	/**
+	 * Contains module specific information, including the names of the modules this module depends on.
+	 */
 	class NAPAPI ModuleInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
 		friend class nap::ModuleManager;
-
 	public:
-		std::vector<std::string> mRequiredModules; // The modules this module depends on
-		std::vector<std::string> mLibSearchPaths;
+		std::vector<std::string> mRequiredModules;		///< Property: 'RequiredModules' names of modules this module depends on
+		std::vector<std::string> mLibSearchPaths;		///< Property: 'WindowsDllSearchPaths' additional windows dll search paths
 
 		/**
 		 * @return The absolute file path this ModuleInfo was loaded from
@@ -137,9 +175,7 @@ namespace nap
 		const ProjectInfo& getProjectInfo() const;
 
 	private:
-		std::string mFilename;			 // The filename from which this data was loaded
-		const ProjectInfo* mProjectInfo; // The project this module 'belongs' to during the session
+		std::string mFilename;				///< The filename from which this data was loaded
+		const ProjectInfo* mProjectInfo;	///< The project this module 'belongs' to during the session
 	};
-
-
 } // namespace nap

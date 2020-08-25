@@ -101,17 +101,15 @@ namespace nap
 	}
 
 
-	bool ProjectInfo::patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues) const
+	void ProjectInfo::patchPath(std::string& path, const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
 		utility::namedFormat(path, getTemplateValues(additionalValues));
-		return true;
 	}
 
 
-	bool ProjectInfo::patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues) const
+	void ProjectInfo::patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
 		utility::namedFormat(paths, getTemplateValues(additionalValues));
-		return true;
 	}
 
 
@@ -146,10 +144,12 @@ namespace nap
 		return mFilename;
 	}
 
+
 	std::string ModuleInfo::getDirectory() const
 	{
 		return utility::getFileDir(getFilename());
 	}
+
 
 	const ProjectInfo& ModuleInfo::getProjectInfo() const
 	{

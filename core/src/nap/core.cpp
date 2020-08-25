@@ -461,9 +461,7 @@ namespace nap
 			return false;
 
 		// Ensure templates/variables are replaced with their intended values
-		if (!mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename))
-			return false;
-
+		mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename);
 		if (!err.check(mProjectInfo->mPathMapping != nullptr,
 					   "Failed to load path mapping %s: %s",
 					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
@@ -528,9 +526,7 @@ namespace nap
 		}
 
 		// Template/variable replacement
-		if (!projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths))
-			return false;
-
+		projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths);
 		return true;
 	}
 
