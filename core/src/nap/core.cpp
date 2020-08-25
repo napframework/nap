@@ -5,14 +5,14 @@
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
 #include "projectinfomanager.h"
-#include "rtti/jsonreader.h"
-#include <rtti/jsonwriter.h>
-#include "python.h"
 #include "packaginginfo.h"
 
 // External Includes
 #include <iostream>
 #include <utility/fileutils.h>
+#include <rtti/jsonreader.h>
+#include <rtti/jsonwriter.h>
+#include <python.h>
 
 // Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
 #if defined(__APPLE__) || defined(__unix__)
