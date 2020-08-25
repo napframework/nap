@@ -128,6 +128,12 @@ namespace nap
 			values["EXE_DIR"] = utility::getExecutableDir();
 
 		// TODO: For our own safety: verify unique value insertion
+		for (const auto& add_value : additionalValues)
+		{
+			auto inserted = values.emplace(add_value);
+			if (!inserted.second)
+				nap::Logger::warn("%s: Duplicate template value: %s", add_value.first.c_str(), add_value.second.c_str());
+		}
 		values.insert(additionalValues.begin(), additionalValues.end());
 		return values;
 	}
