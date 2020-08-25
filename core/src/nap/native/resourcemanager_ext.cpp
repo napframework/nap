@@ -13,7 +13,7 @@ namespace nap
     bool ResourceManager::loadFileAndDeserialize(const std::string& filename, DeserializeResult& readResult, utility::ErrorState& errorState)
     {
         // Read objects from disk
-        return readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, getFactory(), readResult, errorState);
+        return deserializeJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, getFactory(), readResult, errorState);
     }
 
 

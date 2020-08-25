@@ -440,10 +440,9 @@ namespace nap
 	bool nap::Core::loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& err)
 	{
 		// Load ProjectInfo from json
-		mProjectInfo = nap::rtti::readJSONFileObjectT<nap::ProjectInfo>(
+		mProjectInfo = nap::rtti::getObjectFromJSONFile<nap::ProjectInfo>(
 			projectFilename.c_str(),
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 			getResourceManager()->getFactory(),
 			err);
 
@@ -512,10 +511,9 @@ namespace nap
 	{
 		// Load path mapping (relative to the project.json file)
 		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
-		projectInfo.mPathMapping = nap::rtti::readJSONFileObjectT<nap::PathMapping>(
+		projectInfo.mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(
 			pathMappingFilename,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			nap::rtti::EPointerPropertyMode::OnlyRawPointers,
 			getResourceManager()->getFactory(),
 			err);
 

@@ -41,10 +41,9 @@ namespace nap
 			return false;
 
 		// Load module json
-		auto modinfo = rtti::readJSONFileObjectT<nap::ModuleInfo>(
+		auto modinfo = rtti::getObjectFromJSONFile<nap::ModuleInfo>(
 			moduleJson,
 			rtti::EPropertyValidationMode::AllowMissingProperties,
-			rtti::EPointerPropertyMode::OnlyRawPointers,
 			mCore.getResourceManager()->getFactory(),
 			err);
 

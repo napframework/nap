@@ -147,7 +147,7 @@ namespace nap
 			std::unique_ptr<rtti::DeserializeResult> deserialize_result = std::make_unique<rtti::DeserializeResult>();
 
 			// Load the parameters from the preset
-			if (!rtti::readJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, *deserialize_result, error))
+			if (!rtti::deserializeJSONFile(preset_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, *deserialize_result, error))
 				return false;
 
 			// Resolve links

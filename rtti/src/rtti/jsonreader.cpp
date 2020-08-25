@@ -467,20 +467,11 @@ namespace nap
 			return object;
 		}
 
-		bool NAPAPI readObjectRecursive2(const rapidjson::Value& jsonObject, Object*& result, bool isEmbeddedObject,
-										ReadState& readState, utility::ErrorState& errorState)
-		{
-			auto obj = readObjectRecursive(jsonObject, isEmbeddedObject, readState, errorState);
-			if (!obj)
-				return false;
-			result = obj;
-			return true;
-		}
 
 		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			rapidjson::Document document;
-			if (!readJSONDocumentString(json, document, errorState))
+			if (!JSONDocumentFromString(json, document, errorState))
 				return false;
 
 			// Read objects
@@ -512,7 +503,7 @@ namespace nap
 			return true;
 		}
 
-		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
@@ -521,45 +512,37 @@ namespace nap
 			return deserializeJSON(buffer, propertyValidationMode, pointerPropertyMode, factory, result, errorState);
 		}
 
-		std::unique_ptr<rtti::Object> readJSONFileObject(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, utility::ErrorState& errorState)
+
+		std::unique_ptr<rtti::Object> getObjectFromJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
 				return {nullptr};
 
 			rapidjson::Document document;
-			if (!readJSONDocumentString(buffer, document, errorState))
+			if (!JSONDocumentFromString(buffer, document, errorState))
 				return {nullptr};
-
 
 			if (!errorState.check(document.IsObject(), "Document must be an Object"))
 				return {nullptr};
 
 			DeserializeResult result;
-			ReadState readState(propertyValidationMode, pointerPropertyMode, factory, result);
+			ReadState readState(propertyValidationMode, rtti::EPointerPropertyMode::OnlyRawPointers, factory, result);
 			if (!readObjectRecursive(document, false, readState, errorState))
 				return {nullptr};
 
 			return std::move(result.mReadObjects[0]);
 		}
 
-		bool readJSONDocumentFile(const std::string& path, rapidjson::Document& document, nap::utility::ErrorState& errorState)
-		{
-			std::string json;
-			if (!utility::readFileToString(path, json, errorState))
-				return false;
 
-			return readJSONDocumentString(json, document, errorState);
-		}
-
-		bool readJSONDocumentString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState)
+		bool JSONDocumentFromString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState)
 		{
 			rapidjson::ParseResult parse_result = document.Parse(json.c_str());
 			if (!parse_result)
 			{
 				errorState.fail("Error parsing json: %s (line: %d)",
-								rapidjson::GetParseError_En(parse_result.Code()),
-								utility::getLine(json, parse_result.Offset()));
+					rapidjson::GetParseError_En(parse_result.Code()),
+					utility::getLine(json, parse_result.Offset()));
 				return false;
 			}
 			return true;

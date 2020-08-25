@@ -92,7 +92,7 @@ namespace nap
 		std::string config_file_path;
 		if (findProjectFilePath(filename, config_file_path))
 		{
-			if (rtti::readJSONFile(config_file_path,
+			if (rtti::deserializeJSONFile(config_file_path,
 								   rtti::EPropertyValidationMode::DisallowMissingProperties,
 								   rtti::EPointerPropertyMode::NoRawPointers,
 								   mResourceManager->getFactory(),

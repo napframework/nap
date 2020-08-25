@@ -156,7 +156,7 @@ namespace nap
 
 		// 
 		rtti::Factory factory;
-		if (!rtti::readJSONFile(
+		if (!rtti::deserializeJSONFile(
 			show_path,
 			rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::NoRawPointers,
