@@ -1,8 +1,6 @@
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
 
 #include "utils/catch.hpp"
-
-#include <material.h>
 #include <audio/utility/safeptr.h>
 #include <utility/fileutils.h>
 
