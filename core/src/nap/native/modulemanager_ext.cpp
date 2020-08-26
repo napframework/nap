@@ -10,28 +10,47 @@
 
 namespace nap
 {
-
-	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
+	/**
+	 * Given a ProjectInfo descriptor and a module name, retrieve the filename of the module and its json descriptor
+	 * @param projectInfo The current project info descriptor we're using for this session
+	 * @param moduleName The name of the module to find
+	 * @param moduleFile The absolute path to resulting module
+	 * @param moduleJson The absolute path to the resulting module json descriptor
+	 * @return True if the operation was successful, false otherwise
+	 */
+	static bool findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
+		std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err)
 	{
-		for (const std::string& moduleName : projectInfo.mRequiredModules)
-			if (!loadModule_(projectInfo, moduleName, err))
-				return false;
+		// Require module directories to be provided
+		auto moduleDirs = projectInfo.getModuleDirectories();
+		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
+			return false;
+
+		// Substitute module name in given directories
+		utility::namedFormat(moduleDirs, { { "MODULE_NAME", moduleName } });
+
+		// Find module json in given directories
+		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
+		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
+		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+			expectedJsonFile.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
+			return false;
+
+		// Find module library in given directories
+		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
+		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
+		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+			expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
+			return false;
 
 		return true;
 	}
 
-	std::vector<nap::Module*> ModuleManager::getModules() const
-	{
-		std::vector<nap::Module*> mods;
-		for (const auto& m : mModules)
-			mods.emplace_back(m.get());
-		return mods;
-	}
 
-	bool ModuleManager::loadModule_(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
+	bool ModuleManager::sourceModule(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
 	{
 		// Only load module once
-		if (getLoadedModule(moduleName))
+		if (findModule(moduleName) != nullptr)
 			return true;
 
 		// Attempt to find the module files first
@@ -67,10 +86,10 @@ namespace nap
 		for (const auto& modName : modinfo->mRequiredModules)
 		{
 			// Skip already loaded modules
-			if (getLoadedModule(modName))
+			if (findModule(modName))
 				continue;
 
-			if (!loadModule_(project, modName, err))
+			if (!sourceModule(project, modName, err))
 				return false;
 		}
 
@@ -128,44 +147,6 @@ namespace nap
 		module->mService = service;
 		nap::Logger::debug("Module loaded: %s", module->mDescriptor->mID);
 		mModules.emplace_back(std::move(module));
-
 		return true;
 	}
-
-	const Module* ModuleManager::getLoadedModule(const std::string& moduleName)
-	{
-		for (const auto& mod : mModules)
-			if (mod->mName == moduleName)
-				return mod.get();
-		return nullptr;
-	}
-
-	bool ModuleManager::findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
-										std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err)
-	{
-		// Require module directories to be provided
-		auto moduleDirs = projectInfo.getModuleDirectories();
-		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
-			return false;
-
-		// Substitute module name in given directories
-		utility::namedFormat(moduleDirs, {{"MODULE_NAME", moduleName}});
-
-		// Find module json in given directories
-		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
-		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
-		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
-					   expectedJsonFile.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
-			return false;
-
-		// Find module library in given directories
-		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
-		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
-		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
-					   expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
-			return false;
-
-		return true;
-	}
-
 }

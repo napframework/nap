@@ -1,40 +1,80 @@
 #pragma once
 
-// STD includes
+// Local Includes
+#include "projectinfo.h"
+
+// External Includes
+#include <utility/module.h>
+#include <utility/errorstate.h>
+#include <rtti/typeinfo.h>
 #include <string>
 #include <vector>
-
-// Core includes
-#include "utility/module.h"
-#include "utility/errorstate.h"
-#include "rtti/typeinfo.h"
-#include "projectinfo.h"
+#include <assert.h>
 
 namespace nap
 {
 	// Forward Declares
 	class Core;
+	class ModuleManager;
 
 	/**
-	 * Holds on to the dll/sharedobject pointer and any metadata associated with a module
+	 * Contains all data associated with a module, including handle and description.
+	 * Created and managed by the nap::ModuleManager.
 	 */
-	class Module
+	class NAPAPI Module final
 	{
+		friend class ModuleManager;
 	public:
-		std::string						mName;									// The canonical name of the module
-		ModuleDescriptor*				mDescriptor;							// The descriptor that belongs to the module
-		std::unique_ptr<ModuleInfo>		mInfo;									// Data that was loaded from the module json
-		void*							mHandle;								// Handle to native module
-		rtti::TypeInfo					mService = rtti::TypeInfo::empty();		// Service associated with the module
+		Module() = default;
+
+		// Copy is not allowed
+		Module(Module&) = delete;
+
+		// Copy assignment is not allowed
+		Module& operator=(const Module&) = delete;
+
+		// Move is not allowed
+		Module(Module&&) = delete;
+
+		// Move assignment is not allowed
+		Module& operator=(Module&&) = delete;
+
+		/**
+		 * @return module name
+		 */
+		const std::string& getName() const					{ return mName; }
+
+		/**
+		 * @return module descriptor
+		 */
+		const ModuleDescriptor& getDescriptor()	const		{ assert(mDescriptor != nullptr); return *mDescriptor; }
+
+		/**
+		 * @return module information
+		 */
+		const ModuleInfo& getInformation() const			{ assert(mInfo != nullptr); return *mInfo; }
+
+		/**
+		 * Returns type of service associated with this module, 
+		 * @return type of service associated with this module, empty if module has no service.
+		 */
+		const rtti::TypeInfo getServiceType() const			{ return mService; }
+
+	private:
+		std::string						mName;									///< The canonical name of the module
+		ModuleDescriptor*				mDescriptor = nullptr;					///< The descriptor that belongs to the module
+		std::unique_ptr<ModuleInfo>		mInfo = nullptr;						///< Data that was loaded from the module json
+		void*							mHandle = nullptr;						///< Handle to native module
+		rtti::TypeInfo					mService = rtti::TypeInfo::empty();		///< Service associated with the module
 	};
 
+
 	/**
-	 * Responsible for dynamically loading additional nap modules
+	 * Responsible for dynamically loading NAP modules.
 	 */
 	class NAPAPI ModuleManager final
 	{
 		friend class Core;
-
 	public:
 		// Constructor
 		ModuleManager(Core& core);
@@ -42,8 +82,20 @@ namespace nap
 		// Destructor
 		~ModuleManager();
 
+		// Copy is not allowed
+		ModuleManager(ModuleManager&) = delete;
+
+		// Copy assignment is not allowed
+		ModuleManager& operator=(const ModuleManager&) = delete;
+
+		// Move is not allowed
+		ModuleManager(ModuleManager&&) = delete;
+		
+		// Move assignment is not allowed
+		ModuleManager& operator=(ModuleManager&&) = delete;
+
 		/**
-		 * Load all modules specified in the project info
+		 * Load all modules that are required by the project
 		 * @param projectInfo The descriptor providing the module dependencies
 		 * @param error Any errors will be stored here
 		 * @return True on success, false otherwise
@@ -55,30 +107,25 @@ namespace nap
 		 */
 		std::vector<nap::Module*> getModules() const;
 
+		/**
+		 * Find a loaded module by its name as defined in its descriptor file
+		 * @param moduleName The name of the module to find
+		 * @return The object providing access to the Module, nullptr if not found.
+		 */
+		const Module* findModule(const std::string& moduleName);
+
 	private:
-		bool loadModule_(const ProjectInfo& projectinfo, const std::string& moduleFile, utility::ErrorState& err);
-
-
 		/**
-		 * Retrieve a loaded module by its name as defined in its descriptor file
-		 * @param moduleName The name of the module to find
-		 * @return The object providing access to the Module
+		 * Loads a module into the current context.
+		 * Needs the be implemented in an extension, platform specific.
+		 * @param projectinfo project information resource
+		 * @param moduleName name of the module to load
+		 * @param err contains the error if loading operation fails
+		 * @return if module loaded
 		 */
-		const Module* getLoadedModule(const std::string& moduleName);
+		bool sourceModule(const ProjectInfo& projectinfo, const std::string& moduleName, utility::ErrorState& err);
 
-		/**
-		 * Given a ProjectInfo descriptor and a module name, retrieve the filename of the module and its json descriptor
-		 * @param projectInfo The current project info descriptor we're using for this session
-		 * @param moduleName The name of the module to find
-		 * @param moduleFile The absolute path to resulting module
-		 * @param moduleJson The absolute path to the resulting module json descriptor
-		 * @return True if the operation was successful, false otherwise
-		 */
-		bool findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
-							 std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err);
-
-		std::vector<std::shared_ptr<Module>> 	mModules;	// The loaded modules
-		Core& 								 	mCore;		// Core
-
+		std::vector<std::unique_ptr<Module>> 			mModules;	// The loaded modules
+		Core& 								 			mCore;		// Core
 	};
 }

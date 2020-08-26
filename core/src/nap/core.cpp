@@ -257,14 +257,14 @@ namespace nap
 		for (const auto& module : mModuleManager->mModules)
 		{
 			// No service associated with module
-			if (module->mService == rtti::TypeInfo::empty())
+			if (module->getServiceType() == rtti::TypeInfo::empty())
 				continue;
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
-			ServiceConfiguration* configuration = mProjectInfo->findServiceConfig(module->mService);
+			ServiceConfiguration* configuration = mProjectInfo->findServiceConfig(module->getServiceType());
 
 			// Create the service
-			if (!addService(module->mService, configuration, services, errorState))
+			if (!addService(module->getServiceType(), configuration, services, errorState))
 				return false;
 		}
 
@@ -550,7 +550,6 @@ namespace nap
         configFile.open(configFilePath);
         configFile << json << std::endl;
         configFile.close();
-
         return true;
     }
 

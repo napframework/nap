@@ -20,6 +20,35 @@ namespace nap
 		initModules();
 	}
 
+
+	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
+	{
+		for (const std::string& moduleName : projectInfo.mRequiredModules)
+			if (!sourceModule(projectInfo, moduleName, err))
+				return false;
+		return true;
+	}
+
+
+	std::vector<nap::Module*> ModuleManager::getModules() const
+	{
+		std::vector<nap::Module*> mods;
+		mods.reserve(mModules.size());
+		for (const auto& m : mModules)
+			mods.emplace_back(m.get());
+		return mods;
+	}
+
+
+	const Module* ModuleManager::findModule(const std::string& moduleName)
+	{
+		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
+			return it->mName == moduleName;
+		});
+		return found_it == mModules.end() ? nullptr : (*found_it).get();
+	}
+
+
 	ModuleManager::~ModuleManager()
 	{
 		/*  Commented out for now because unloading modules can cause crashes in RTTR; during shutdown it will try
@@ -32,6 +61,4 @@ namespace nap
 			UnloadModule(module.mHandle);
 		*/
 	}
-	
-
 }
