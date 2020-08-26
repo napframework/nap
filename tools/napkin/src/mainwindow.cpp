@@ -259,7 +259,7 @@ void MainWindow::showError(nap::LogMessage msg)
 bool MainWindow::confirmSaveCurrentFile()
 {
 	if (!getContext().getDocument())
-		return false;
+		return true;
 
 	if (!getContext().getDocument()->isDirty())
 		return true;
