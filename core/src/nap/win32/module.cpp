@@ -19,6 +19,7 @@ namespace nap
 		return r;
 	}
 
+
 	std::string getLastErrorStr()
 	{
 		// Get the error code
@@ -35,6 +36,7 @@ namespace nap
 
 		return utility::rTrim(message);
 	}
+
 
 	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
 	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
@@ -62,6 +64,7 @@ namespace nap
 		return dllDirCookies;
 	}
 
+
 	// Remove dll search paths added by addDLLSearchPaths
 	void removeDLLSearchPaths(const std::vector<DLL_DIRECTORY_COOKIE>& paths)
 	{
@@ -72,11 +75,13 @@ namespace nap
 		}
 	}
 
+
 	void initModules()
 	{
 		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
 		SetErrorMode(SEM_FAILCRITICALERRORS);
 	}
+
 
 	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{

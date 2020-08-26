@@ -191,12 +191,16 @@ namespace nap
 	{
 	public:
 		/**
-		 * Sets the current log level.
-		 * Messages with a level lower than the current level will not be displayed.
+		 * Sets the current log level for all handlers.
+		 * @param lvl new log level, messages lower than the selected log level won't be displayed.
 		 */
 		static void setLevel(const LogLevel& lvl)			{ instance().setCurrentLevel(lvl); }
 
-		void setCurrentLevel(const LogLevel& level) { mLevel = &level; }
+		/**
+		 * Sets the current log level for all handlers.
+		 * @param lvl new log level, messages lower than the selected log level won't be displayed.
+		 */
+		void setCurrentLevel(const LogLevel& level);
 
 		/**
 		 * @return instance of the actual logger

@@ -44,8 +44,11 @@ void initializeSettings()
  */
 int main(int argc, char* argv[])
 {
-	// Start logging to file
+	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
+
+	// Only log debug messages and higher
+	nap::Logger::setLevel(nap::Logger::debugLevel());
 
     // Construct the app context singleton
     auto& ctx = AppContext::create();
@@ -53,7 +56,7 @@ int main(int argc, char* argv[])
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("napframework");
 	QApplication::setApplicationName("Napkin");
-	QApplication::setApplicationVersion("0.1");
+	QApplication::setApplicationVersion("0.4");
 
 	initializeSettings();
 
