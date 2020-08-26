@@ -7,5 +7,15 @@
         "mod_napinput", 
         "mod_napcolor"
     ], 
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": 
+    [
+        "{ROOT}/../thirdparty/assimp/msvc64/install/bin",
+        "{ROOT}/thirdparty/assimp/bin",
+        "{ROOT}/../thirdparty/FreeImage/msvc/Dist/x64",
+        "{ROOT}/thirdparty/FreeImage/bin",
+        "{ROOT}/../thirdparty/glew/msvc/bin/Release/x64",
+        "{ROOT}/thirdparty/glew/bin",
+        "{ROOT}/../thirdparty/SDL2/msvc/lib/x64",
+        "{ROOT}/thirdparty/SDL2/lib"
+    ]
 }

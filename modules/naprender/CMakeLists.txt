@@ -33,6 +33,11 @@ target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 
+# Add GLEW macOS RPATH for Source context
+if(APPLE)
+    add_macos_glew_rpath()
+endif()
+
 # Package into platform release
 if(APPLE)
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/glew/lib)

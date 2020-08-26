@@ -38,64 +38,42 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 
-# create library from app for unittests
+# Create library from app for unittests
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 
-# The NAP modules Napkin needs to link against
-# TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
-set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont)
+# The NAP modules Napkin needs
+set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_nappython)
 
-# This is the superset of modules that we want to have available to Napkin to run against; just a handy
-# way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES} mod_napinput mod_napcolor)
+# Add module lib dependencies
+add_dependencies(${PROJECT_NAME} ${NAP_MODULES_DEPENDENCIES})
 
-add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
-
+# Set libraries
 set(LIBS
     napcore
-    mod_napmath
     napqt
-    ${NAP_MODULES_LINK_DEPENDENCIES}
+    ${NAP_MODULES_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
     )
 
-if(MSVC)
-    list(APPEND UNITTEST_LIBS
-         ${FREEIMAGE_LIBRARIES}
-         ${FFMPEG_LIBRARIES}
-         )
-elseif(APPLE)
-    list(APPEND UNITTEST_LIBS
-         ${FREEIMAGE_LIBRARIES}
-         ${FFMPEG_LIBRARIES}
-         )
-
-elseif(UNIX)
-    list(APPEND UNITTEST_LIBS
-         freeimage
-         ffmpeg
-         )
-endif()
 
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
-
 target_link_libraries(${NAPKIN_LIB} ${LIBS})
-target_include_directories(${NAPKIN_LIB} PUBLIC src ${FREEIMAGE_INCLUDE_DIRS})
-
+target_include_directories(${NAPKIN_LIB} PUBLIC src)
 nap_qt_post(${PROJECT_NAME})
 
-# Add the runtime paths for RTTR & GLEW on macOS
+# Add the runtime paths for RTTR
 if(APPLE)
     add_macos_rttr_rpath()
-    add_macos_glew_rpath()
 endif()
 
+# Copy resources
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
+# MSVC copy steps
 if(MSVC)
     if(DEFINED NAP_PACKAGED_BUILD)
         set(NAPKIN_COPY_SRC ${NAP_ROOT}/packaging_bin)
@@ -104,7 +82,7 @@ if(MSVC)
     endif()
 
     # Deploy dependent modules on Win64
-    foreach(MODULE_NAME ${NAP_MODULES_USAGE_DEPENDENCIES})
+    foreach(MODULE_NAME ${NAP_MODULES_DEPENDENCIES})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
@@ -136,22 +114,6 @@ if(MSVC)
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:napcore> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
 
-    # Copy freeimage DLL to build directory
-    if(NOT TARGET FreeImage)
-        find_package(freeimage REQUIRED)
-    endif()
-    copy_files_to_target_file_dir($<TARGET_FILE:FreeImage>)
-
-    # Copy over Windows graphics DLLs to build directory
-    set(FILES_TO_COPY
-        ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
-        ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
-        )
-    copy_files_to_target_file_dir(${FILES_TO_COPY})
-
-    # Copy over Assimp
-    copy_files_to_target_file_dir(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
-
     # RTTR
     find_rttr()
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
@@ -159,36 +121,6 @@ if(MSVC)
     # Python
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
     copy_files_to_target_file_dir(${PYTHON_DLLS})
-
-    # Transitional thirdparty DLL copying until source and framework release 
-    # structures are aligned (and we can use a shared module_extra.cmake) ##
-
-    # mod_napvideo
-    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
-    copy_files_to_target_file_dir(${FFMPEGDLLS})
-
-    # mod_napfont
-    if(NOT TARGET freetype)
-        find_package(freetype REQUIRED)
-    endif()
-    copy_files_to_target_file_dir($<TARGET_FILE:freetype>)
-
-    # mod_napaudio
-    if(NOT DEFINED LIBSNDFILE_LIB_DIR)
-        find_package(libsndfile REQUIRED)
-    endif()
-    if(NOT DEFINED PORTAUDIO_LIB_DIR)
-        find_package(portaudio REQUIRED)
-    endif()
-    if(NOT DEFINED LIBMPG123_LIB_DIR)
-        find_package(libmpg123 REQUIRED)
-    endif()
-    set(FILES_TO_COPY
-        ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
-        ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
-        ${LIBMPG123_LIB_DIR}/libmpg123.dll
-        )
-    copy_files_to_target_file_dir(${FILES_TO_COPY})
 
     ########################################################################
 
@@ -235,23 +167,12 @@ set(PATH_TO_THIRDPARTY "../../thirdparty")
 if(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
-    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
+    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND EXTRA_RPATH lib)
-
-    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/portaudio/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/libsndfile/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/freetype/lib)
 
     foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
-                                                                                "${NAP_MODULES_USAGE_DEPENDENCIES}" 
+                                                                                "${NAP_MODULES_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                                                 "../.."
                                                                                 "${EXTRA_RPATH}")
@@ -274,16 +195,10 @@ if(APPLE)
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-        set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/assimp/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FreeImage/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/FFmpeg/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/mpg123/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/SDL2/lib)
-        list(APPEND EXTRA_RPATH ${PATH_TO_THIRDPARTY}/glew/lib)
+        set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
         list(APPEND EXTRA_RPATH lib)
 
-        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
 
         # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
         # remotely (from thirdparty)

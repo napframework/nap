@@ -1,0 +1,17 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "SequencerAudio",
+    "Version": "0.3.0",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napparametergui",
+        "mod_napsequence",
+        "mod_napsequencegui",
+        "mod_napsequenceaudio",
+        "mod_napaudio"
+    ],
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json",
+    "Data": ""
+}

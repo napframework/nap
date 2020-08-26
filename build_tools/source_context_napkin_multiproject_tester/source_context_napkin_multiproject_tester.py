@@ -375,7 +375,7 @@ if __name__ == '__main__':
     parser.add_argument('--build-type', type=str,
                         default=DEFAULT_BUILD_TYPE,
                         action='store', nargs='?',
-                        help="Directory to test on, relative to framework root (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
+                        help="Directory to test on, relative to framework root (default %s)" % DEFAULT_BUILD_TYPE)
     parser.add_argument('--json-report', action='store_true',
                         help="Create a JSON report to %s" % REPORT_FILENAME)
     parser.add_argument('--force-log-reporting', action='store_true',
