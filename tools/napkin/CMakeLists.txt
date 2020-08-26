@@ -38,25 +38,20 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 
-# create library from app for unittests
+# Create library from app for unittests
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 
-# The NAP modules Napkin needs to link against
-# TODO this needs updating/verifying; can any of these move into NAP_MODULES_USAGE_DEPENDENCIES below? 
-set(NAP_MODULES_LINK_DEPENDENCIES mod_napscene mod_napmath mod_nappython)
+# The NAP modules Napkin needs
+set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_nappython)
 
-# This is the superset of modules that we want to have available to Napkin to run against; just a handy
-# way to ensure they've built
-set(NAP_MODULES_USAGE_DEPENDENCIES ${NAP_MODULES_LINK_DEPENDENCIES})
+# Add module lib dependencies
+add_dependencies(${PROJECT_NAME} ${NAP_MODULES_DEPENDENCIES})
 
-# add module lib dependencies
-add_dependencies(${PROJECT_NAME} ${NAP_MODULES_USAGE_DEPENDENCIES})
-
-# set libraries
+# Set libraries
 set(LIBS
     napcore
     napqt
-    ${NAP_MODULES_LINK_DEPENDENCIES}
+    ${NAP_MODULES_DEPENDENCIES}
     Qt5::Widgets Qt5::Core Qt5::Gui
     )
 
@@ -71,14 +66,14 @@ if(APPLE)
     add_macos_rttr_rpath()
 endif()
 
-# copy resources
+# Copy resources
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
                    COMMENT "Copy Resources")
 
-# msvc copy steps
+# MSVC copy steps
 if(MSVC)
     if(DEFINED NAP_PACKAGED_BUILD)
         set(NAPKIN_COPY_SRC ${NAP_ROOT}/packaging_bin)
@@ -87,7 +82,7 @@ if(MSVC)
     endif()
 
     # Deploy dependent modules on Win64
-    foreach(MODULE_NAME ${NAP_MODULES_USAGE_DEPENDENCIES})
+    foreach(MODULE_NAME ${NAP_MODULES_DEPENDENCIES})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} 
@@ -177,7 +172,7 @@ if(APPLE)
 
     foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
-                                                                                "${NAP_MODULES_USAGE_DEPENDENCIES}" 
+                                                                                "${NAP_MODULES_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                                                 "../.."
                                                                                 "${EXTRA_RPATH}")
@@ -203,7 +198,7 @@ elseif(UNIX)
         set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
         list(APPEND EXTRA_RPATH lib)
 
-        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_USAGE_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
 
         # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
         # remotely (from thirdparty)
