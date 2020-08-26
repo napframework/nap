@@ -44,13 +44,8 @@ namespace nap
 	}
 
 
-	Core::Core(std::unique_ptr<CoreExtension> coreExtension)
+	Core::Core(std::unique_ptr<CoreExtension> coreExtension) : Core()
 	{
-		// Initialize default and move interface
-		mTimer.reset();
-		mTicks.fill(0);
-		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mModuleManager = std::make_unique<ModuleManager>(*this);
 		mExtension = std::move(coreExtension);
 	}
 
@@ -171,7 +166,6 @@ namespace nap
 		mTicks[mTickIdx] = deltaTime;			// save new value so it can be subtracted later */
 		if (++mTickIdx == mTicks.size())		// inc buffer index
 			mTickIdx = 0;
-
 		mFramerate = static_cast<double>(mTicks.size()) / mTicksum;
 	}
 
@@ -198,27 +192,21 @@ namespace nap
 
 		// Perform update call before we check for file changes
 		for (auto& service : mServices)
-		{
 			service->preUpdate(delta_time);
-		}
 
 		// Check for file changes
 		mResourceManager->checkForFileChanges();
 
 		// Update rest of the services
 		for (auto& service : mServices)
-		{
 			service->update(delta_time);
-		}
 
 		// Call update function
 		updateFunction(delta_time);
 
 		// Update rest of the services
 		for (auto& service : mServices)
-		{
 			service->postUpdate(delta_time);
-		}
 
 		return delta_time;
 	}
@@ -247,6 +235,7 @@ namespace nap
 		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
 		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
 		{
+			// Skip base class, not associated with any service.
 			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
 				continue;
 
@@ -254,28 +243,25 @@ namespace nap
 			assert(service_configuration_type.can_create_instance());
 
 			// Construct the service configuration, store in unique ptr
-			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
-			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+			std::unique_ptr<ServiceConfiguration> service_config(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo service_type = service_config->getServiceType();
 
 			// Check if the service associated with the configuration isn't already part of the map, if so add as default
 			// Config is automatically destructed otherwise.
-			auto pos = mProjectInfo->mServiceConfigs.find(serviceType);
-			if (pos == mProjectInfo->mServiceConfigs.end())
-				mProjectInfo->mServiceConfigs.emplace(std::make_pair(serviceType, std::move(service_configuration)));
+			if (mProjectInfo->findServiceConfig(service_type) == nullptr)
+				mProjectInfo->addServiceConfig(service_type, std::move(service_config));
 		}
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
 		for (const auto& module : mModuleManager->mModules)
 		{
+			// No service associated with module
 			if (module->mService == rtti::TypeInfo::empty())
 				continue;
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
-			ServiceConfiguration* configuration = nullptr;
-			auto pos = mProjectInfo->mServiceConfigs.find(module->mService);
-			if (pos != mProjectInfo->mServiceConfigs.end())
-				configuration = pos->second.get();
+			ServiceConfiguration* configuration = mProjectInfo->findServiceConfig(module->mService);
 
 			// Create the service
 			if (!addService(module->mService, configuration, services, errorState))
@@ -476,7 +462,6 @@ namespace nap
 
 	bool nap::Core::loadServiceConfigurations(nap::utility::ErrorState& err)
 	{
-		assert(mProjectInfo->mServiceConfigs.empty());
 		rtti::DeserializeResult deserialize_result;
 		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
 		{
@@ -490,10 +475,10 @@ namespace nap
 				// Create configuration and try to add.
 				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
                 auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
-				auto ret = mProjectInfo->mServiceConfigs.emplace(std::make_pair(config->getServiceType(), std::move(config)));
+				bool added = mProjectInfo->addServiceConfig(config->getServiceType(), std::move(config));
 
 				// Duplicates are not allowed
-				if(!err.check(ret.second, "Duplicate service configuration found with id: %s, type: %s",
+				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
 					configptr->mID.c_str(), configptr->getServiceType().get_name().to_string().c_str()))
 					return false;
 			}

@@ -139,9 +139,23 @@ namespace nap
 	}
 
 
+	bool ProjectInfo::addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	{
+		auto rval = mServiceConfigs.emplace(std::make_pair(serviceType, std::move(serviceConfig)));
+		return rval.second;
+	}
+
+
 	bool ProjectInfo::hasServiceConfigFile() const
 	{
 		return !mServiceConfigFilename.empty();
+	}
+
+
+	nap::ServiceConfiguration* ProjectInfo::findServiceConfig(rtti::TypeInfo type) const
+	{
+		auto it = mServiceConfigs.find(type);
+		return it == mServiceConfigs.end() ? nullptr : it->second.get();
 	}
 
 

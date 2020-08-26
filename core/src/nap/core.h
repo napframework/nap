@@ -290,9 +290,6 @@ namespace nap
 		 */
 		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
-		// Typedef for a list of services
-		using ServiceList = std::vector<std::unique_ptr<Service>>;
-
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
 
@@ -303,7 +300,7 @@ namespace nap
 		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 
 		// Sorted service nodes, set after init
-		ServiceList mServices;
+		std::vector<std::unique_ptr<Service>> mServices;
 
 		// Timer
 		HighResolutionTimer mTimer;

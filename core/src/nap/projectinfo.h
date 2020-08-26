@@ -100,9 +100,19 @@ namespace nap
 		std::string dataDirectory() const;
 
 		/**
+		 * Returns if a service configuration file has been provided.
+		 * Service configuration resources deserialized from the configuration file override service defaults.
+		 * This means that if no config file is provided, services are initialized using their default configuration resource.
 		 * @return if a service configuration file is specified.
 		 */
 		bool hasServiceConfigFile() const;
+
+		/**
+		 * Finds the configuration of a specific service.
+		 * @param serviceType service to find configuration for.
+		 * @return service configuration of specific type if present, nullptr otherwise
+		 */
+		nap::ServiceConfiguration* findServiceConfig(rtti::TypeInfo serviceType) const;
 
 		/**
 		 * @return The path mapping for this project.
@@ -145,6 +155,15 @@ namespace nap
 		std::string mFilename;								///< The filename from which this data was loaded
 		std::unique_ptr<PathMapping> mPathMapping;			///< The actual path mapping coming from mPathMappingFile
 		EContext mContext = EContext::Application;			///< By default projects are loaded from application context
+
+		/**
+		 * Add a new service configuration to this project if not present already. 
+		 * Ownership is transferred. 
+		 * @param serviceType the type of service this config belongs to
+		 * @param serviceConfig the service configuration to add.
+		 * @return true when added, false if already present.
+		 */
+		bool addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
 	};
 
 
@@ -178,4 +197,5 @@ namespace nap
 		std::string mFilename;				///< The filename from which this data was loaded
 		const ProjectInfo* mProjectInfo;	///< The project this module 'belongs' to during the session
 	};
+
 } // namespace nap
