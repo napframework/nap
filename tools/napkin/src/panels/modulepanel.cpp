@@ -6,7 +6,7 @@ using namespace napkin;
 ModuleItem::ModuleItem(const nap::Module& module)
 		: QStandardItem(), mModule(module)
 {
-	std::string name(module.mDescriptor->mID);
+	std::string name(module.getDescriptor().mID);
 	setText(QString::fromStdString(name));
 }
 
