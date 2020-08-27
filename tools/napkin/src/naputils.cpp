@@ -27,24 +27,22 @@ std::vector<rttr::type> napkin::getDerivedTypes(const rttr::type& type)
 	std::vector<rttr::type> derivedTypes;
 	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
 	{
-		if (derived.get_base_classes().empty())
-			continue;
-
-		bool foundBase = false;
-		const auto& baseClasses = derived.get_base_classes();
-		for (auto it = baseClasses.rbegin(); it != baseClasses.rend(); ++it)
+		bool found_base = false;
+		for (const nap::rtti::TypeInfo& base : type.get_base_classes())
 		{
-			rttr::type base = *it;
 			if (base == type)
-				foundBase = true;
-			break;
+			{
+				found_base = true;
+				break;
+			}
 		}
 
-		if (foundBase)
+		if (found_base)
 			derivedTypes.emplace_back(derived);
 	}
 	return derivedTypes;
 }
+
 
 void napkin::dumpTypes(rttr::type type, const std::string& indent)
 {
@@ -57,6 +55,7 @@ void napkin::dumpTypes(rttr::type type, const std::string& indent)
 	for (const auto& derived : getDerivedTypes(type))
 		dumpTypes(derived, indent + "    ");
 }
+
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
 {
