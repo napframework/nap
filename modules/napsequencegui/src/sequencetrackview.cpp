@@ -236,6 +236,9 @@ namespace nap
 			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
 			for (;i < steps; i++)
 			{
+				if(i==0) // ignore first timestamp since it will hide window left border
+					continue;
+
 				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
 				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
 				{

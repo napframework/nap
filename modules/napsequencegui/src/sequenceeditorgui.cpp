@@ -12,6 +12,8 @@
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,8 +52,8 @@ namespace nap
 			return false;
 		}
 
-		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID);
-		
+		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+
 		return true;
 	}
 
@@ -67,8 +69,8 @@ namespace nap
 	}
 
 
-	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id)
-		: mEditor(editor), mID(id)
+	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
+		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
 
@@ -107,11 +109,21 @@ namespace nap
 		// set content width of next window
 		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
 
+		// set window flags
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+		if( mDrawFullWindow )
+			window_flags = window_flags | ImGuiWindowFlags_NoResize;
+
+		if( mDrawFullWindow )
+		{
+			ImGui::SetNextWindowPos({0,0});
+			ImGui::SetNextWindowSize({ static_cast<float>(mRenderWindow->getSize().x), static_cast<float>(mRenderWindow->getSize().y) });
+		}
 		// begin window
 		if (ImGui::Begin(
 			mID.c_str(), // id
 			(bool*)0, // open
-			ImGuiWindowFlags_HorizontalScrollbar)) // window flags
+			window_flags)) // window flags
 		{
 			//
 			ImVec2 windowSize = ImGui::GetWindowSize();
@@ -252,9 +264,10 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
-			
-			// store position of next window ( player controller ), we need it later to draw the timelineplayer position 
+
+			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
+
 			drawPlayerController(sequence_player);
 
 			// move a little bit more up to align tracks nicely with timelinecontroller
@@ -262,12 +275,12 @@ namespace nap
 
 			// draw tracks
 			drawTracks(sequence_player, sequence);
-				
-			// on top of everything, draw time line player position
-			drawTimelinePlayerPosition(sequence, sequence_player);
 
 			// draw end of sequence line
 			drawEndOfSequence(sequence, sequence_player);
+
+			//
+			drawTimelinePlayerPosition(sequence, sequence_player);
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
@@ -563,32 +576,18 @@ namespace nap
 		const Sequence& sequence,
 		SequencePlayer& player)
 	{
-		std::ostringstream string_stream;
-		string_stream << mID << "timelineplayerposition";
-		std::string id_string = string_stream.str();
-
-		// store cursorpos
-		ImVec2 cursor_pos = ImGui::GetCursorPos();
-
-		ImGui::SetCursorPos(
+		ImVec2 pos =
 		{
-			mState.mTimelineControllerPos.x
+			mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
 				+ mState.mInspectorWidth + 5
 				+ mState.mTimelineWidth * (float)(player.getPlayerTime() / player.getDuration()) - 1,
-			mState.mTimelineControllerPos.y + 15.0f
-		});
+				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 15.0f - mState.mScroll.y
+		};
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, guicolors::red);
-		if (ImGui::BeginChild(id_string.c_str(), // id
-			{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f }, // size
-			false, // no border
-			ImGuiWindowFlags_NoMove)) // window flags
-		{ }
-		ImGui::EndChild();
-		ImGui::PopStyleColor();
-
-		// pop cursorpos
-		ImGui::SetCursorPos(cursor_pos);
+		auto* overlay_drawlist = ImGui::GetOverlayDrawList();
+		overlay_drawlist->AddLine({ pos.x, pos.y },
+								  { pos.x, pos.y + sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f },
+								  guicolors::red, 2.0f);
 	}
 
 
