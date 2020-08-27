@@ -47,7 +47,7 @@ namespace nap
 	 * Call update inside your app loop to update all available services. When exiting the application
 	 * invoke shutdown. This will close all operating services in the reverse order of their dependency tree
 	 */
-	class NAPAPI Core
+	class NAPAPI Core final
 	{
 		RTTI_ENABLE()
 	public:
@@ -206,7 +206,7 @@ namespace nap
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 
 		/**
-		 * @return The currently loaded ProjectInfo
+		 * @return The currently loaded ProjectInfo, available after initialization.
 		 */
 		nap::ProjectInfo* getProjectInfo();
 
@@ -247,6 +247,13 @@ namespace nap
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
+		 * Loads the service configuration resources from file. The file must exist.
+		 * @param err contains the error if loading fails.
+		 * @return if loading succeeded.
+		 */
+		bool loadServiceConfigurations(nap::utility::ErrorState& err);
+
+		/**
 		 * Load the service configuration file
 		 * @param filename The name of the file to read
 		 * @param deserialize_result contains the result after reading the config file
@@ -284,11 +291,20 @@ namespace nap
 	    bool loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& error);
 
 		/**
-		 * Loads the service configuration resources from file. The file must exist.
-		 * @param err contains the error if loading fails.
-		 * @return if loading succeeded.
+		 * Finds the configuration of a specific service.
+		 * @param serviceType service to find configuration for.
+		 * @return service configuration of specific type if present, nullptr otherwise
 		 */
-		bool loadServiceConfigurations(nap::utility::ErrorState& err);
+		nap::ServiceConfiguration* findServiceConfig(rtti::TypeInfo serviceType) const;
+
+		/**
+		 * Add a new service configuration to this project if not present already.
+		 * Ownership is transferred.
+		 * @param serviceType the type of service this config belongs to
+		 * @param serviceConfig the service configuration to add.
+		 * @return true when added, false if already present.
+		 */
+		bool addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
 
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
@@ -301,6 +317,12 @@ namespace nap
 
 		// Sorted service nodes, set after init
 		std::vector<std::unique_ptr<Service>> mServices;
+
+		// All service configurations
+		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
+
+		// Interface associated with this instance of core.
+		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
 		// Timer
 		HighResolutionTimer mTimer;
@@ -315,9 +337,6 @@ namespace nap
 		std::array<double, 20> mTicks;
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
-
-		// Interface associated with this instance of core.
-		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};

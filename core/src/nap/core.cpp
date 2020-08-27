@@ -19,8 +19,6 @@
 	#include <stdlib.h>
 #endif
 
-using namespace std;
-
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
 	RTTI_FUNCTION("getResourceManager", &nap::Core::getResourceManager)
@@ -54,8 +52,22 @@ namespace nap
 	{
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
-		// Erase it
-		mResourceManager.reset();
+		mResourceManager.reset(nullptr);
+
+		// After that remove all services
+		mServices.clear();
+
+		// Delete all service configurations
+		mServiceConfigs.clear();
+
+		// Delete all module references
+		mModuleManager.reset(nullptr);
+
+		// Delete project information
+		mProjectInfo.reset(nullptr);
+
+		// Delete extensions
+		mExtension.reset(nullptr);
 	}
 
 
@@ -102,13 +114,15 @@ namespace nap
 
 		// If there is a config file, read the service configurations from it.
 		// Note that having a config file is optional, but if there *is* one, it should be valid
-		if(mProjectInfo->hasServiceConfigFile() && !loadServiceConfigurations(error))
+		if(!loadServiceConfigurations(error))
 			return false;
 		
 		// Always create services! 
 		// Failure to create all the required services will result in certain objects unable to be created!
 		// Creation is therefore required, in every context. Initialization happens later. 
 		// After creation we're able to access all special object creation functions.
+		// A default service configuration resource is created for all services that require one and
+		// isn't already created during *loadServiceConfigurations()*
 		if (!createServices(*mProjectInfo, error))
 			return false;
 
@@ -248,8 +262,8 @@ namespace nap
 
 			// Check if the service associated with the configuration isn't already part of the map, if so add as default
 			// Config is automatically destructed otherwise.
-			if (mProjectInfo->findServiceConfig(service_type) == nullptr)
-				mProjectInfo->addServiceConfig(service_type, std::move(service_config));
+			if (findServiceConfig(service_type) == nullptr)
+				addServiceConfig(service_type, std::move(service_config));
 		}
 
 		// First create and add all the services (unsorted)
@@ -261,7 +275,7 @@ namespace nap
 				continue;
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
-			ServiceConfiguration* configuration = mProjectInfo->findServiceConfig(module->getServiceType());
+			ServiceConfiguration* configuration = findServiceConfig(module->getServiceType());
 
 			// Create the service
 			if (!addService(module->getServiceType(), configuration, services, errorState))
@@ -423,6 +437,20 @@ namespace nap
 	}
 
 
+	nap::ServiceConfiguration* Core::findServiceConfig(rtti::TypeInfo type) const
+	{
+		auto it = mServiceConfigs.find(type);
+		return it == mServiceConfigs.end() ? nullptr : it->second.get();
+	}
+
+
+	bool Core::addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	{
+		auto rval = mServiceConfigs.emplace(std::make_pair(serviceType, std::move(serviceConfig)));
+		return rval.second;
+	}
+
+
 	bool nap::Core::loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& err)
 	{
 		// Load ProjectInfo from json
@@ -462,6 +490,11 @@ namespace nap
 
 	bool nap::Core::loadServiceConfigurations(nap::utility::ErrorState& err)
 	{
+		// No service configuration specified
+		if (!mProjectInfo->hasServiceConfigFile())
+			return true;
+
+		// Extract all user defined service configurations
 		rtti::DeserializeResult deserialize_result;
 		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
 		{
@@ -475,7 +508,7 @@ namespace nap
 				// Create configuration and try to add.
 				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
                 auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
-				bool added = mProjectInfo->addServiceConfig(config->getServiceType(), std::move(config));
+				bool added = addServiceConfig(config->getServiceType(), std::move(config));
 
 				// Duplicates are not allowed
 				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",

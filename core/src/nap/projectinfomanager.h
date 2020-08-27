@@ -9,7 +9,7 @@
 #include "utility/errorstate.h"
 #include "projectinfo.h"
 
-#define PROJECT_INFO_FILENAME "project.json"
+constexpr char PROJECT_INFO_FILENAME[] = "project.json";
 
 namespace nap
 {
