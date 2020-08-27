@@ -27,9 +27,8 @@ namespace nap
 		 *	@return The Service type associated with this configuration.
 		 */
 		virtual rtti::TypeInfo getServiceType() = 0;
-
-		~ServiceConfiguration();
 	};
+
 
 	/**
 	 * A Service is a process within core that cooperates with certain components in the system, this is the base
