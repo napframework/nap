@@ -17,15 +17,8 @@ endif()
 add_include_to_interface_target(mod_napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 
 if(WIN32)
-    # If deploying for Napkin into a normal build (ie. not packaging a project) deploy to
-    # the napkin directory
-    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT DEFINED PROJECT_PACKAGE_BIN_DIR)
-        set(DLLCOPY_PATH_SUFFIX "../napkin/")
-    else()
-        set(DLLCOPY_PATH_SUFFIX "")
-    endif()
-
     # Add post-build step to set copy mpg123 to bin on Win64
+    set(DLLCOPY_PATH_SUFFIX "")
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 

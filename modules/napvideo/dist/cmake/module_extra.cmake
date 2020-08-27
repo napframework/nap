@@ -6,14 +6,7 @@ if(WIN32)
 	get_filename_component(FFMPEG_LIB_DIR ${FFMPEG_LIBAVCODEC} DIRECTORY)
     file(GLOB FFMPEG_DLLS ${FFMPEG_LIB_DIR}/../bin/*.dll)
 
-    # If deploying for Napkin into a normal build (ie. not packaging a project) deploy to
-    # the napkin directory
-    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT DEFINED PROJECT_PACKAGE_BIN_DIR)
-        set(DLLCOPY_PATH_SUFFIX "../napkin/")
-    else()
-        set(DLLCOPY_PATH_SUFFIX "")
-    endif()
-
+    set(DLLCOPY_PATH_SUFFIX "")
     foreach (SINGLE_DLL ${FFMPEG_DLLS})
 	    add_custom_command(
 		    TARGET ${PROJECT_NAME}

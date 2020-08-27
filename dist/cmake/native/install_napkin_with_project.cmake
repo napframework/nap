@@ -5,7 +5,8 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath mod_naprender mod_napvideo mod_napaudio mod_napfont mod_napinput)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath)
+
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
