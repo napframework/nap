@@ -21,6 +21,7 @@
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
 constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
+constexpr char PROJECT_INFO_FILENAME[] = "project.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x

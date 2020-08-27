@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
-#include "projectinfomanager.h"
 #include "packaginginfo.h"
 #include "python.h"
 

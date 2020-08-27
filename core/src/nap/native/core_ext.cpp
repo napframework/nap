@@ -2,7 +2,6 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <packaginginfo.h>
-#include <nap/projectinfomanager.h>
 
 // External Includes
 #include <rtti/jsonreader.h>
