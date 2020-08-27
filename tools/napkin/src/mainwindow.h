@@ -12,7 +12,6 @@
 #include "themeselectionmenu.h"
 
 #include "panels/apprunnerpanel.h"
-#include "panels/hierarchypanel.h"
 #include "panels/historypanel.h"
 #include "panels/inspectorpanel.h"
 #include "panels/logpanel.h"
@@ -113,9 +112,9 @@ namespace napkin
 		void onLog(nap::LogMessage msg);
 
 		/**
-		 *
-		 * @param fraction
-		 * @param message
+		 * Called when an application-wide blocking operation started, progresses or finishes
+		 * @param fraction progress fraction
+		 * @param message message to display
 		 */
 		void onBlockingProgress(float fraction, const QString& message);
 
@@ -146,7 +145,6 @@ namespace napkin
 		bool mFirstShowEvent = true;
 
 		ResourcePanel mResourcePanel;
-		HierarchyPanel mHierarchyPanel;
 //		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;

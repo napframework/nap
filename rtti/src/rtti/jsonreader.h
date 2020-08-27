@@ -2,15 +2,13 @@
 
 // Local Includes
 #include "rtti.h"
-#include "rtti/path.h"
+#include "path.h"
 #include "deserializeresult.h"
 #include "epropertyvalidationmode.h"
 
 // External Includes
-#include "utility/dllexport.h"
+#include <utility/dllexport.h>
 #include <rapidjson/pointer.h>
-
-// STL includes
 #include <string>
 
 namespace nap
@@ -27,7 +25,7 @@ namespace nap
 		/**
 		 * RTTI conversion state, populated during json document traversal.
 		 */
-		struct ReadState
+		struct NAPAPI ReadState
 		{
 			ReadState(EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result) :
 				mPropertyValidationMode(propertyValidationMode),
