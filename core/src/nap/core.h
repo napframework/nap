@@ -155,12 +155,12 @@ namespace nap
 		* The resource manager holds all the entities and components currently loaded by Core
 		* @return the resource manager
 		*/
-		ResourceManager* getResourceManager() { return mResourceManager.get(); }
+		ResourceManager* getResourceManager()							{ return mResourceManager.get(); }
 
 		/**
 		 * @return the ModuleManager for this core
 		 */
-		const ModuleManager& getModuleManager() const { return *mModuleManager; }
+		const ModuleManager& getModuleManager() const					{ return *mModuleManager; }
 
 		/**
 		 * @return number of elapsed time in milliseconds after invoking start
@@ -219,13 +219,6 @@ namespace nap
 		bool hasExtension() const;
 
 		/**
-		 * Locates the project info (project.json) file.
-		 * @param foundFilePath The full file path of where the file was found.
-		 * @return true if the file was found, otherwise false.
-		 */
-		bool findProjectInfoFile(std::string& foundFilePath) const;
-
-		/**
 		 * Searches for a file next to the binary, and in case of non-packaged builds, searches through the project
 		 * folders to find the file.
 		 * @param filename File to search for.
@@ -235,9 +228,10 @@ namespace nap
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 
 		/**
-		 * @return The currently loaded ProjectInfo, available after initialization.
+		 * Returns loaded project information, only available after initialization. Asserts otherwise.
+		 * @return The loaded project information, available after initialization.
 		 */
-		nap::ProjectInfo* getProjectInfo();
+		const nap::ProjectInfo& getProjectInfo() const;
 
         /**
          * Load path mapping file and replace any template vars with their respective values
@@ -256,6 +250,13 @@ namespace nap
 		bool writeConfigFile(utility::ErrorState& errorState);
 
 	private:
+		/**
+		 * Locates the project info (project.json) file.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectInfoFile(std::string& foundFilePath) const;
+
 		/**
 		 * Helper function that creates all the services that are found in the various modules
 		 * Note that a module does not need to define a service, only if it has been defined

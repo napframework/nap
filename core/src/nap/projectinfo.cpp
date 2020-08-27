@@ -77,7 +77,7 @@ namespace nap
 	}
 
 
-	std::string ProjectInfo::getDefaultDataFile() const
+	std::string ProjectInfo::getDataFile() const
 	{
 		if (mDefaultData.empty()) return {};
 		return utility::joinPath({getProjectDir(), mDefaultData});
@@ -86,7 +86,7 @@ namespace nap
 
 	std::string ProjectInfo::dataDirectory() const
 	{
-		auto dataFile = getDefaultDataFile();
+		auto dataFile = getDataFile();
 		if (dataFile.empty())
 			return utility::joinPath({getProjectDir(), "data"});
 		return utility::joinPath({getProjectDir(), utility::getFileDir(mDefaultData)});

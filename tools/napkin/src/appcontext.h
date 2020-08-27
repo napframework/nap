@@ -99,13 +99,12 @@ namespace napkin
 		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
 		 * @return A pointer to the loaded project info or nullptr when loading failed
 		 */
-		nap::ProjectInfo* loadProject(const QString& projectFilename);
+		const nap::ProjectInfo* loadProject(const QString& projectFilename);
 
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
 		 */
-		nap::ProjectInfo* getProject() const;
-
+		const nap::ProjectInfo* getProject() const;
 
 		/**
 		 * Reload the current document from disk

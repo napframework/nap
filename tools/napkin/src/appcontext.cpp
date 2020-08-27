@@ -99,13 +99,12 @@ Document* AppContext::loadDocument(const QString& filename)
 	return loadDocumentFromString(buffer, filename);
 }
 
-nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
+const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
 	// TODO: See if we can run this on a thread so the progress dialog may update live.
-
 	blockingProgressChanged(0, "Loading: " + projectFilename);
 
-	// Workaround for issues while unloading the current project: just start a new instance.
+	// If there's a new project, start a new napkin instance.
 	if (getProject())
 	{
 		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
@@ -126,69 +125,35 @@ nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	}
 
-//	if (err.hasErrors())
-//	{
-//		blockingProgressChanged(1);
-//		nap::Logger::error("Failed to load project info %s: %s",
-//						   projectFilename.toStdString().c_str(), err.toString().c_str());
-//
-//		if (mExitOnLoadFailure)
-//			exit(1);
-//
-//		return nullptr;
-//	}
-//
-//	projectInfo->getFilename() = projectFilename.toStdString();
-//	if (!mCore->loadPathMapping(*projectInfo, err))
-//	{
-//		blockingProgressChanged(1);
-//
-//		nap::Logger::error("Failed to load path mapping %s: %s",
-//						   projectInfo->mPathMappingFile.c_str(), err.toString().c_str());
-//
-//		if (mExitOnLoadFailure)
-//			exit(1);
-//
-//		return nullptr;
-//	}
-
-//	nap::Logger::info("Loading project '%s' ver. %s (%s)",
-//					  projectInfo->mTitle.c_str(),
-//					  projectInfo->mVersion.c_str(),
-//					  projectInfo->getProjectDir().c_str());
-
+	// Signal initialization
 	coreInitialized();
 
-    if (mExitOnLoadSuccess) {
+	// Exit after successful load if requested
+    if (mExitOnLoadSuccess) 
+	{
 		nap::Logger::info("Loaded successfully, exiting as requested");
         exit(EXIT_ON_SUCCESS_EXIT_CODE);
     }
 
 	addRecentlyOpenedProject(projectFilename);
-
-	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDefaultDataFile());
+	auto dataFilename = QString::fromStdString(mCore->getProjectInfo().getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
 	{
 		blockingProgressChanged(1);
-
 		nap::Logger::error("No data file specified");
 		if (mExitOnLoadFailure)
 			exit(1);
 	}
 
 	blockingProgressChanged(1);
-
-	return mCore->getProjectInfo();
+	return &(mCore->getProjectInfo());
 }
 
-nap::ProjectInfo* AppContext::getProject() const
+const nap::ProjectInfo* AppContext::getProject() const
 {
-	if (!mCore)
-		return nullptr;
-
-	return mCore->getProjectInfo();
+	return mCore != nullptr ? &(mCore->getProjectInfo()) : nullptr;
 }
 
 void AppContext::reloadDocument()

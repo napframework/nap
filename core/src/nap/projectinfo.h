@@ -90,9 +90,10 @@ namespace nap
 		std::vector<std::string> getModuleDirectories() const;
 
 		/**
-		 * @return Absolute path of the default data file
+		 * Returns the absolute path to the application data file, which contains application content.
+		 * @return Absolute path to the application data file
 		 */
-		std::string getDefaultDataFile() const;
+		std::string getDataFile() const;
 
 		/**
 		 * @return Absolute path of this project's data directory

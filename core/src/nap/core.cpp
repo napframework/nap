@@ -545,12 +545,6 @@ namespace nap
 	}
 
 
-	nap::ProjectInfo* nap::Core::getProjectInfo()
-	{
-		return mProjectInfo.get();
-	}
-
-
     bool Core::writeConfigFile(utility::ErrorState& errorState)
     {
 	    // Write all available service configurations to a vector
@@ -584,4 +578,10 @@ namespace nap
         return true;
     }
 
+
+	const nap::ProjectInfo& Core::getProjectInfo() const
+	{
+		assert(mProjectInfo != nullptr); 
+		return *mProjectInfo;
+	}
 }
