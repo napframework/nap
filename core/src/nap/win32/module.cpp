@@ -99,11 +99,10 @@ namespace nap
 		}
 
 		// Load our module
-		void* result;
-		result = LoadLibraryExA(modulefile.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		void* result = LoadLibraryExA(modulefile.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 		// If we failed to load the module, get the error string
-		if (!result)
+		if (result == nullptr)
 			errorString = getLastErrorStr();
 
 		// Remove temporarily added search paths
