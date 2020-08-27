@@ -45,6 +45,34 @@ namespace nap
 	 * Service A is initialized before B. After initialization all module specific resources and their
 	 * contexts are available for object creation using the ResourceManager.
 	 *
+	 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file. 
+	 * The nap::ProjectInfo file contains information such as the project name, version and which modules are 
+	 * required for the project to run. It also contains a link to a data file, which contains the actual application content and
+	 * an optional link to a service configuration file, which contains service configuration information.
+	 *
+	 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+	 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+	 *
+	 * It is therefore required that core is able to load a valid project.json file, that contains a 'nap::ProjectInfo' resource.
+	 * example of a project.json file:
+	 *
+	 * ~~~~~
+	 *	{
+	 *		"Type": "nap::ProjectInfo",
+	 *		"mID": "ProjectInfo",
+	 *		"Title": "MyProject",
+	 *		"Version": "1.0.0",
+	 *		"RequiredModules": 
+	 *		[
+	 *			"mod_napapp",
+	 *			"mod_napimgui"
+	 *		],
+	 *		"Data": "data/myapp.json",
+	 *		"ServiceConfig": "",
+	 *		"PathMapping": "cache/path_mapping.json"
+	 *	}
+	 * ~~~~~
+	 * 
 	 * Call update inside your app loop to update all available services. When exiting the application
 	 * invoke shutdown. This will close all operating services in the reverse order of their dependency tree
 	 */
