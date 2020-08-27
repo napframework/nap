@@ -100,7 +100,6 @@ namespace nap
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif
-
 		// Change directory to data folder
 		assert(mProjectInfo != nullptr);
 		std::string dataDir = mProjectInfo->dataDirectory();
