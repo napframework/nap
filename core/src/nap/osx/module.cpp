@@ -12,11 +12,9 @@ namespace nap
 
  	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{
-		void* result;
-		result = dlopen(modulePath.c_str(), RTLD_LAZY);
-
 		// If we failed to load the module, get the error string
-		if (!result)
+		void* result = dlopen(modulePath.c_str(), RTLD_LAZY);
+		if (result == nullptr)
 			errorString = dlerror();
 		
 		return result;
