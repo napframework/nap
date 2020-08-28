@@ -104,7 +104,7 @@ namespace napkin
 		/**
 		 * @return The currently loaded project or a nullptr when no project is loaded
 		 */
-		const nap::ProjectInfo* getProject() const;
+		const nap::ProjectInfo* getProjectInfo() const;
 
 		/**
 		 * Reload the current document from disk
@@ -160,7 +160,7 @@ namespace napkin
 		QStringList getRecentlyOpenedProjects() const;
 
 		/**
-		 * @return The current document
+		 * @return The current document, creates it if it doesn't exist
 		 */
 		Document* getDocument();
 
@@ -168,6 +168,11 @@ namespace napkin
 		 * @return The current document or nullptr if there is no document
 		 */
 		const Document* getDocument() const;
+
+		/**
+		 * @return if there is a document currently loaded
+		 */
+		bool hasDocument() const;
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.

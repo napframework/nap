@@ -129,15 +129,18 @@ void MainWindow::onDocumentChanged()
 
 void MainWindow::updateWindowTitle()
 {
-	auto& ctx = getContext();
-
-	auto project = ctx.getProject();
-	if (!project)
+	// If there is not project information, set to default
+	const nap::ProjectInfo* project_info = getContext().getProjectInfo();
+	if (project_info == nullptr)
+	{
 		setWindowTitle(QApplication::applicationName());
+		return;
+	}
 
+	// Otherwise display current project
 	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
-	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project->mTitle),
-											   changed, QString::fromStdString(project->mVersion),
+	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project_info->mTitle),
+											   changed, QString::fromStdString(project_info->mVersion),
 											   QApplication::applicationName()));
 }
 
@@ -256,7 +259,7 @@ void MainWindow::showError(nap::LogMessage msg)
 
 bool MainWindow::confirmSaveCurrentFile()
 {
-	if (!getContext().getDocument())
+	if (!getContext().hasDocument())
 		return true;
 
 	if (!getContext().getDocument()->isDirty())

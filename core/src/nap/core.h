@@ -125,6 +125,12 @@ namespace nap
 		bool initializeServices(utility::ErrorState& errorState);
 
 		/**
+		 * Returns if a call to initializeEngine() succeeded.
+		 * @return true if the engine successfully initialized, false otherwise. 
+		 */
+		bool isInitialized() const;
+
+		/**
 		* Shuts down all registered services in the right order
 		* Only call this when initializeServices has been called
 		*/
@@ -228,10 +234,10 @@ namespace nap
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 
 		/**
-		 * Returns loaded project information, only available after initialization. Asserts otherwise.
-		 * @return The loaded project information, available after initialization.
+		 * Returns loaded project information, only available after initialization, nullptr otherwise.
+		 * @return The loaded project information, available after initialization, nullptr otherwise
 		 */
-		const nap::ProjectInfo& getProjectInfo() const;
+		const nap::ProjectInfo* getProjectInfo() const;
 
         /**
          * Load path mapping file and replace any template vars with their respective values
@@ -367,6 +373,9 @@ namespace nap
 		std::array<double, 20> mTicks;
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
+
+		// If the engine is initialized
+		bool mInitialized = false;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};

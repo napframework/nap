@@ -86,7 +86,7 @@ namespace nap
 	bool Core::initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error)
 	{
 		// Load project information
-		assert(mProjectInfo == nullptr);
+		assert(!mInitialized && mProjectInfo == nullptr);
 		if (!loadProjectInfo(projectInfofile, context, error))
 			return false;
 
@@ -124,6 +124,7 @@ namespace nap
 		if (!createServices(*mProjectInfo, error))
 			return false;
 
+		mInitialized = true;
 		return true;
 	}
 
@@ -579,9 +580,15 @@ namespace nap
     }
 
 
-	const nap::ProjectInfo& Core::getProjectInfo() const
+	const nap::ProjectInfo* Core::getProjectInfo() const
 	{
-		assert(mProjectInfo != nullptr); 
-		return *mProjectInfo;
+		return mProjectInfo.get();
 	}
+
+
+	bool Core::isInitialized() const
+	{
+		return mInitialized;
+	}
+
 }

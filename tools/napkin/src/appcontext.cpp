@@ -105,7 +105,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	blockingProgressChanged(0, "Loading: " + projectFilename);
 
 	// If there's a new project, start a new napkin instance.
-	if (getProject())
+	if (getProjectInfo())
 	{
 		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
 		getQApplication()->exit(0);
@@ -125,6 +125,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	}
 
+
 	// Signal initialization
 	coreInitialized();
 
@@ -136,7 +137,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
     }
 
 	addRecentlyOpenedProject(projectFilename);
-	auto dataFilename = QString::fromStdString(mCore->getProjectInfo().getDataFile());
+	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
@@ -148,12 +149,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	blockingProgressChanged(1);
-	return &(mCore->getProjectInfo());
+	return mCore->getProjectInfo();
 }
 
-const nap::ProjectInfo* AppContext::getProject() const
+const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore != nullptr ? &(mCore->getProjectInfo()) : nullptr;
+	return mCore != nullptr ? mCore->getProjectInfo() : nullptr;
 }
 
 void AppContext::reloadDocument()
@@ -163,14 +164,22 @@ void AppContext::reloadDocument()
 
 Document* AppContext::newDocument()
 {
-	// Create new document
+	// Close current document if available
 	closeDocument();
-	auto core = getCore();
+
+	// No instance of core provided
+	nap::Core* core = getCore();
 	if (!core)
 	{
 		nap::Logger::warn("Core not loaded, cannot create document");
 		return nullptr;
 	}
+
+	// Core provided but not initialized
+	if (!core->isInitialized())
+		return nullptr;
+
+	// Create document
 	mDocument = std::make_unique<Document>(*core);
 	connectDocumentSignals();
 
@@ -192,7 +201,6 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 	}
 
 	auto& factory = core->getResourceManager()->getFactory();
-
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
@@ -207,7 +215,6 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-
 	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
@@ -314,7 +321,7 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	if (!getProject() && mOpenRecentProjectAtStartup)
+	if (!getProjectInfo() && mOpenRecentProjectAtStartup)
 	{
 		QTimer::singleShot(100, [this]()
 		{
@@ -409,9 +416,7 @@ nap::Core* AppContext::getCore()
 Document* AppContext::getDocument()
 {
 	if (mDocument == nullptr)
-	{
 		newDocument();
-	}
 	return mDocument.get();
 }
 
@@ -429,6 +434,12 @@ void AppContext::onUndoIndexChanged()
 bool napkin::AppContext::isAvailable()
 {
 	return appContextInstance != nullptr;
+}
+
+
+bool napkin::AppContext::hasDocument() const
+{
+	return mDocument != nullptr;
 }
 
 

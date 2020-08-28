@@ -127,7 +127,8 @@ namespace nap
 			auto obj = getObjectFromJSONFile(path, propertyValidationMode, factory, errorState);
 			if (obj == nullptr)
 			{
-				errorState.fail("Failed to read Object");
+				errorState.fail("Failed to extract object of type: %s", 
+					RTTI_OF(T).get_name().to_string().c_str());
 				return{};
 			}
 			auto t = rtti_cast<T>(obj);
@@ -140,5 +141,4 @@ namespace nap
 		}
 
 	} //< End Namespace nap
-
 }
