@@ -16,6 +16,8 @@ TEST_CASE("Commands", "napkin-commands")
 
 	SigCapture sigDocChanged(&ctx, &AppContext::documentChanged);
 	int sigDocCount = 0;
+	
+	/*
 	REQUIRE(sigDocChanged.count() == sigDocCount);
 
 	auto loadeddoc = ctx.loadDocument("unit_tests_data/objects.json");
@@ -25,6 +27,7 @@ TEST_CASE("Commands", "napkin-commands")
 		auto object = loadeddoc->getObject("material");
 
 	}
+	*/
 
 	auto doc = ctx.newDocument();
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);

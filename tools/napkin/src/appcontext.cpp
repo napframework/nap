@@ -176,12 +176,12 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
 	nap::Core& core = getCore();
+	
+	// If core isn't initialized, de-serialization will most likely fail because of unknown types
 	if (!core.isInitialized())
-	{
-		nap::Logger::warn("Core not loaded, cannot load document");
-		return nullptr;
-	}
+		nap::Logger::warn("Core not initialized");
 
+	// Deserialize data file
 	auto& factory = core.getResourceManager()->getFactory();
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
@@ -189,6 +189,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 		return nullptr;
 	}
 
+	// Resolve links
 	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::error("Failed to resolve links: %s", err.toString().c_str());

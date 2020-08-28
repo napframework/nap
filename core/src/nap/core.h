@@ -100,7 +100,17 @@ namespace nap
 
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services.
-		 * ProjectInfo will be loaded automatically
+		 *
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
+		 * required for the project to run. It also contains an optional link to a service configuration file, 
+		 * which holds service configuration information.
+		 *
+		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+		 *
+		 * It is therefore required that core is able to find and load a valid project.json file that contains a 'nap::ProjectInfo' resource.
+		 *
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
 		 */
@@ -108,6 +118,17 @@ namespace nap
 
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services.
+		 *
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
+		 * required for the project to run. It also contains an optional link to a service configuration file,
+		 * which holds service configuration information.
+		 *
+		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+		 *
+		 * It is therefore required that core is able to find and load the provided project.json file that contains a 'nap::ProjectInfo' resource.
+		 *
          * @param context whether initializing for project or Napkin
 		 * @param error contains the error code when initialization fails
 		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
@@ -116,7 +137,7 @@ namespace nap
 		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
 
 		/**
-		 * Initializes all registered services
+		 * Initializes all registered services, call this after initializeEngine().
 		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
 		 * Service A is initialized before service B etc.
 		 * @param errorState contains the error message when initialization fails
@@ -158,8 +179,8 @@ namespace nap
 		double update(std::function<void(double)>& updateFunction);
 
 		/**
-		* The resource manager holds all the entities and components currently loaded by Core
-		* @return the resource manager
+		* The resource manager holds all the entities and components currently loaded by Core.
+		* @return the resource manager.
 		*/
 		ResourceManager* getResourceManager()							{ return mResourceManager.get(); }
 
