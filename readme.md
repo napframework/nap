@@ -91,9 +91,7 @@ More options for packaging can be queried by adding the flag `--help` when runni
 ## Package for Android
 
 At the moment Android is not supported because of recent changes to the build system.
-You can attempt to package NAP for Android but it will most likely fail.
-
-To package NAP for Android you need to have installed:
+You can attempt to package NAP for Android but it will most likely fail. To package NAP for Android you need to have installed:
 
 - The Android NDK 
 - [Ninja](https://github.com/ninja-build/ninja/releases)
