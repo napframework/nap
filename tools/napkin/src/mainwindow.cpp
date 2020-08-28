@@ -86,15 +86,11 @@ void MainWindow::addMenu()
 		addAction(newFileAction);
 		filemenu->addAction(newFileAction);
 
-		auto openFileAction = new OpenFileAction();
+		auto openFileAction = new OpenProjectAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
 
 		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
-
-		auto reloadFileAction = new ReloadFileAction();
-		addAction(reloadFileAction);
-		filemenu->addAction(reloadFileAction);
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -103,6 +99,10 @@ void MainWindow::addMenu()
 		auto saveFileAsAction = new SaveFileAsAction();
 		addAction(saveFileAction);
 		filemenu->addAction(saveFileAsAction);
+
+		auto reloadFileAction = new ReloadFileAction();
+		addAction(reloadFileAction);
+		filemenu->addAction(reloadFileAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 

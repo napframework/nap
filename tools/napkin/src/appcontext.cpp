@@ -168,7 +168,7 @@ Document* AppContext::newDocument()
 
 	// No instance of core provided
 	nap::Core* core = getCore();
-	if (!core || !core->isInitialized())
+	if (core == nullptr)
 	{
 		nap::Logger::warn("Core not loaded, cannot create document");
 		return nullptr;

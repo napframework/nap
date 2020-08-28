@@ -21,7 +21,8 @@ NewFileAction::NewFileAction()
 
 void NewFileAction::perform()
 {
-	if (AppContext::get().getDocument()->isDirty()) {
+	if (AppContext::get().hasDocument() && AppContext::get().getDocument()->isDirty()) 
+	{
 		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
 											"Save before creating new document",
 											"The current document has unsaved changes.\n"
@@ -42,13 +43,13 @@ void NewFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenFileAction::OpenFileAction()
+OpenProjectAction::OpenProjectAction()
 {
-	setText("Open...");
+	setText("Open Project...");
 	setShortcut(QKeySequence::Open);
 }
 
-void OpenFileAction::perform()
+void OpenProjectAction::perform()
 {
 	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
     auto topLevelWidgets = QApplication::topLevelWidgets();
@@ -103,7 +104,7 @@ void SaveFileAsAction::perform()
 	auto& ctx = AppContext::get();
 	auto prevFilename = ctx.getDocument()->getCurrentFilename();
 	if (prevFilename.isNull())
-		prevFilename = ctx.getLastOpenedProjectFilename();
+		prevFilename = "untitled.json";
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);
