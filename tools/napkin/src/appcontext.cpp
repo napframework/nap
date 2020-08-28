@@ -105,7 +105,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	blockingProgressChanged(0, "Loading: " + projectFilename);
 
 	// If there's a new project, start a new napkin instance.
-	if (getProjectInfo())
+	if (getProjectInfo() != nullptr)
 	{
 		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
 		getQApplication()->exit(0);
@@ -122,7 +122,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		if (mExitOnLoadFailure)
 			exit(1);
 		return nullptr;
-
 	}
 
 
@@ -169,15 +168,11 @@ Document* AppContext::newDocument()
 
 	// No instance of core provided
 	nap::Core* core = getCore();
-	if (!core)
+	if (!core || !core->isInitialized())
 	{
 		nap::Logger::warn("Core not loaded, cannot create document");
 		return nullptr;
 	}
-
-	// Core provided but not initialized
-	if (!core->isInitialized())
-		return nullptr;
 
 	// Create document
 	mDocument = std::make_unique<Document>(*core);
