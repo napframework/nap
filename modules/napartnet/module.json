@@ -1,6 +1,13 @@
 {
-    "dependencies": [
-        "mod_napmath",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napmath", 
         "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/libartnet/msvc/install/bin/Release",
+        "{ROOT}/../thirdparty/libartnet/msvc/install/bin/Debug",
+        "{ROOT}/thirdparty/libartnet/bin"
     ]
 }

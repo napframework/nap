@@ -7,9 +7,7 @@
 #include <QDialogButtonBox>
 
 #include <component.h>
-#include <nap/logger.h>
 #include <entity.h>
-#include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
 #include <cctype>
@@ -24,8 +22,47 @@ using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
-napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
+std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
+	// Cycle over all derived types. This includes all derived types,
+	// including classes that are more than 1 level up. We're only 
+	// interested in immediate derived types, so check if the first
+	// available base type is the type we're interested in and add
+	std::vector<rttr::type> derivedTypes;
+	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+	{
+		// Check if the first available base class (immediate base level)
+		// is directly derived from the type we're searching for.
+		assert(!derived.get_base_classes().empty());
+		rttr::type base = *derived.get_base_classes().begin();
+		if (base == type)
+			derivedTypes.emplace_back(derived);
+	}
+	return derivedTypes;
+}
+
+
+void napkin::dumpTypes(rttr::type type, const std::string& indent)
+{
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
+	nap::Logger::info("type: " + indent + type.get_name().data() + " (" + ss.str() + ")");
+	for (const auto& derived : getImmediateDerivedTypes(type))
+		dumpTypes(derived, indent + "    ");
+}
+
+
+napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
+{
+
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
 	setText(type.get_name().data());
 	setEditable(false);
 	//    setForeground(getSoftForeground());
@@ -46,7 +83,8 @@ napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 
 void napkin::RTTITypeItem::refresh()
 {
-	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+
+	for (const auto& derived : getImmediateDerivedTypes(mType))
 	{
 		appendRow(new RTTITypeItem(derived));
 	}
@@ -155,8 +193,12 @@ std::vector<rttr::type> napkin::getComponentTypes()
 
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
 	std::vector<rttr::type> ret;
+	nap::Core& core = AppContext::get().getCore();
+	if (!core.isInitialized());
+		return ret;
+
+	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
 	auto rootType = RTTI_OF(nap::rtti::Object);

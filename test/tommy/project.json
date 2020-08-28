@@ -1,9 +1,14 @@
 {
-    "title": "Tommy",
-    "version": "0.1.0",
-    "modules": [
-        "mod_napapp",
-        "mod_napsandbox",
-        "mod_napimgui" 
-    ]
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "Tommy", 
+    "Version": "0.1.0", 
+    "RequiredModules": [
+        "mod_napapp", 
+        "mod_napsandbox", 
+        "mod_napimgui"
+    ], 
+    "Data": "data/tommy.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

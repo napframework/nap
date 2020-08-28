@@ -10,10 +10,10 @@ namespace napkin
 	class ModuleItem : public QStandardItem
 	{
 	public:
-		ModuleItem(const nap::ModuleManager::Module& module);
+		ModuleItem(const nap::Module& module);
 
 	private:
-		const nap::ModuleManager::Module& mModule;
+		const nap::Module& mModule;
 	};
 
 	class ModuleModel : public QStandardItemModel

@@ -80,6 +80,25 @@ namespace nap
 			return true;
 		}
 
+		bool isAbsolutePath(const std::string& path)
+		{
+			if (path.empty())
+				return false;
+#ifdef _WIN32
+			TCHAR _path[MAX_PATH_SIZE];
+			TCHAR** filenameComponent = nullptr;
+#ifdef _MSC_VER
+			const char* p = path.c_str();
+			GetFullPathName(_T(p), MAX_PATH_SIZE, _path, filenameComponent);
+#else
+			GetFullPathName((LPCSTR)path.c_str(), MAX_PATH_SIZE, _path, filenameComponent);
+#endif
+			return !std::string((char*)_path).empty();
+#else
+			return path.at(0) == '/';
+#endif
+		}
+
 		std::string getAbsolutePath(const std::string& relPath)
 		{
 #ifdef _WIN32
@@ -331,7 +350,8 @@ namespace nap
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
-			if (!err.check(in.good(), "Unable to open file: %s (\"%s\")", strerror(errno), filename.c_str()))
+			if (!err.check(in.good(), "Unable to open file: %s (\"%s\")", strerror(errno),
+						   utility::getAbsolutePath(filename).c_str()))
 				return false;
 
 			// Create buffer of appropriate size
@@ -344,6 +364,39 @@ namespace nap
 			in.read(&outBuffer[0], len);
 
 			return true;
+		}
+
+		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
+        {
+			for (const auto& dir : dirs)
+			{
+				auto filepath = joinPath({dir.c_str(), basefilename.c_str()});
+				if (utility::fileExists(filepath))
+					return filepath;
+			}
+			return {};
+		}
+
+		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep)
+		{
+			return joinString(parts, sep);
+		}
+
+		std::string pathSep() {
+#if defined(_WIN32)
+			return "\\";
+#else
+			return "/";
+#endif
+		}
+
+		std::string forceSeparator(const std::string& path)
+		{
+#if defined(_WIN32)
+			return replaceAllInstances(path, "/", pathSep());
+#else
+			return replaceAllInstances(path, "\\", pathSep());
+#endif
 		}
 
 	}

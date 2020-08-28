@@ -1,10 +1,15 @@
 {
-    "title": "Skeleton",
-    "version": "0.3.0",
-    "modules": [
-        "mod_napapp",
-        "mod_napsvg",
-        "mod_napvideo",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "Skeleton", 
+    "Version": "0.3.0", 
+    "RequiredModules": [
+        "mod_napapp", 
+        "mod_napsvg", 
+        "mod_napvideo", 
         "mod_napimgui"
-    ]
+    ], 
+    "Data": "", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

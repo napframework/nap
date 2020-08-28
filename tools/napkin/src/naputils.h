@@ -12,13 +12,11 @@
 
 namespace napkin
 {
-
 	/**
-	 * An item displaying an RTTI Type
-	 */
+	* An item that displays an RTTI Type
+	*/
 	class RTTITypeItem : public QStandardItem
 	{
-
 	public:
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
 
@@ -26,12 +24,13 @@ namespace napkin
 		void refresh();
 
 	private:
-		const nap::rtti::TypeInfo& type;
+		const nap::rtti::TypeInfo& mType;
 	};
 
+
 	/**
-	 * Flat list of objects
-	 */
+	* Flat list of objects
+	*/
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
@@ -39,6 +38,19 @@ namespace napkin
 	};
 
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
+
+	/**
+	 * @param type the class we want to find immediate derived types for
+	 * @return all immediate derived types of the given class
+	 */
+	std::vector<rttr::type> getImmediateDerivedTypes(const rttr::type& type);
+
+	/**
+	 * Recurse all loaded subclasses of the specified type and write to stdout.
+	 * @param type type to recurse and print
+	 * @param indent additional information to print
+	 */
+	void dumpTypes(rttr::type type, const std::string& indent = "");
 
 	/**
 	 * Filter the provided list of objects

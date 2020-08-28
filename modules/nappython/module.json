@@ -1,5 +1,11 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
         "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/python/msvc/python-embed-amd64",
+        "{ROOT}/thirdparty/python"
     ]
 }

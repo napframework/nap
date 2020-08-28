@@ -22,6 +22,7 @@ macro(package_nap)
                 DESTINATION cmake
                 )
         file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/cross_context_macros.cmake)
         install(FILES ${CROSSP_FILES}
                 DESTINATION cmake/
                 )   
@@ -37,6 +38,9 @@ macro(package_nap)
         # Package platform tools
         file(GLOB PLATFORM_TOOL_SCRIPTS "${NAP_ROOT}/dist/user_scripts/platform/*py")
         install(PROGRAMS ${PLATFORM_TOOL_SCRIPTS} DESTINATION tools/platform)
+
+        # Path mappings
+        package_path_mappings()
 
         # Package project directory package & regenerate shortcuts
         package_project_dir_shortcuts("tools/platform/project_dir_shortcuts")
@@ -55,6 +59,12 @@ macro(package_nap)
             install(FILES ${NAP_ROOT}/build_tools/check_build_environment/win64/check_build_environment_continued.py DESTINATION tools/platform)
         endif()
 
+        # Package single project CLI build script
+        install(FILES ${NAP_ROOT}/build_tools/cli_single_project_build/cli_single_project_build.py DESTINATION tools/platform)
+
+        # Package project/module upgrade script
+        install(FILES ${NAP_ROOT}/build_tools/project_and_module_updater/project_and_module_updater.py DESTINATION tools/platform)
+
         # Create empty projects and usermodules directories
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
         install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
@@ -63,9 +73,6 @@ macro(package_nap)
         if (NAP_ENABLE_PYTHON)
             package_python()
         endif ()
-
-        # Package Qt into release
-        package_qt()
 
         # Package documentation
         if(INCLUDE_DOCS)
@@ -94,6 +101,7 @@ macro(package_nap)
                 DESTINATION cmake/
                 )
         file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
+        list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/cross_context_macros.cmake)
         install(FILES ${CROSSP_FILES}
                 DESTINATION cmake
                 )   
@@ -116,6 +124,11 @@ macro(package_python)
         # Install main framework
         install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/
                 DESTINATION thirdparty/python/
+                CONFIGURATIONS Release)
+
+        # Install framework for Napkin
+        install(FILES ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python36.zip
+                DESTINATION tools/napkin/
                 CONFIGURATIONS Release)
 
         # Install license
@@ -192,7 +205,7 @@ macro(package_qt)
         endforeach()
 
         # Install plugins
-        install(FILES  ${QT_DIR}/plugins/platforms/qwindowsd.dll
+        install(FILES ${QT_DIR}/plugins/platforms/qwindowsd.dll
                 DESTINATION thirdparty/Qt/plugins/Debug/platforms/
                 CONFIGURATIONS Release)
 
@@ -225,7 +238,7 @@ macro(package_qt)
             macos_replace_qt_framework_links("${QT_FRAMEWORKS}" Qt${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
         endforeach()
 
-        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../../../thirdparty/Qt/lib")
+        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../thirdparty/Qt/lib")
 
         # Install plugins
         install(FILES ${QT_DIR}/plugins/platforms/libqcocoa.dylib
@@ -271,6 +284,13 @@ macro(package_qt)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                     )            
         endforeach()
+
+        # Allow Qt platform plugin to find Qt frameworks in thirdparty
+        install(CODE "execute_process(COMMAND patchelf
+                                              --set-rpath
+                                              \$ORIGIN/../../../thirdparty/Qt/lib
+                                              ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
+                                      ERROR_QUIET)")   
     endif()
 endmacro()
 
@@ -302,10 +322,12 @@ macro(package_project_dir_shortcuts DESTINATION)
     if(WIN32)
         install(PROGRAMS ${NAP_ROOT}/dist/win64/project_dir_shortcuts/package.bat
                          ${NAP_ROOT}/dist/win64/project_dir_shortcuts/regenerate.bat
+                         ${NAP_ROOT}/dist/win64/project_dir_shortcuts/build.bat
                 DESTINATION ${DESTINATION})
     else()
         install(PROGRAMS ${NAP_ROOT}/dist/unix/project_dir_shortcuts/package
                          ${NAP_ROOT}/dist/unix/project_dir_shortcuts/regenerate
+                         ${NAP_ROOT}/dist/unix/project_dir_shortcuts/build
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()
@@ -348,11 +370,15 @@ macro(package_project_into_release DEST_DIR)
 
     # Package any projectmodule CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
-        set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
-        configure_file(${NAP_ROOT}/dist/cmake/native/module_creator/template/CMakeLists.txt 
-                       ${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt 
-                       @ONLY
-                       )
+        # Generate fresh module CMake
+        install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} 
+                                              -DMODULE_CMAKE_OUTPATH=${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt
+                                              -DPROJECT_MODULE=1
+                                              -DCMAKE_ONLY=1
+                                              -DMODULE_NAME_PASCALCASE=Unused
+                                              -P ${NAP_ROOT}/dist/cmake/native/module_creator/module_creator.cmake
+                                     )")
+        # Package module extra
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
             install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
         endif()
@@ -391,14 +417,12 @@ macro(package_module)
 
     # Package module.json
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/)
-    if (WIN32)
+    if (WIN32 OR APPLE)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME ${PROJECT_NAME}.json)
-    elseif(APPLE)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME lib${PROJECT_NAME}.json)
     elseif(ANDROID)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/ RENAME lib${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/ RENAME ${PROJECT_NAME}.json)
     else()
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME lib${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME ${PROJECT_NAME}.json)
     endif()
    
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 
@@ -516,7 +540,7 @@ macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFI
                       unset(ENV{PYTHONPATH})
 
                       # Change link to dylib
-                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/packaging/macos_rpath_stripper/strip_rpaths.py
+                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/build_tools/macos_rpath_stripper/strip_rpaths.py
                                               ${FILEPATH}
                                               ${PATH_PREFIX}
                                       )
@@ -635,7 +659,7 @@ endmacro()
 # CONFIG: The build configuration
 # PATH_TO_ADD: The path to check/add
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
-    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/lib${MODULE_NAME}.dylib)
+    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/modules/${MODULE_NAME}/lib/${CONFIG}/${MODULE_NAME}.dylib)
     ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 
@@ -673,6 +697,11 @@ function(nap_source_project_packaging_and_shared_postprocessing INCLUDE_WITH_REL
         add_macos_glew_rpath()
     endif()
 
+    # Provide path mapping
+    if(NOT NAP_PACKAGED_BUILD)
+        deploy_single_path_mapping(${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
     # Run FBX converter
     if(${RUN_FBX_CONVERTER} AND NOT NAP_PACKAGED_BUILD)
         export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
@@ -701,3 +730,15 @@ function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
         endif()
     endif()
 endfunction() 
+
+# Package path mappings, for appropriate platform
+function(package_path_mappings)
+    if(WIN32)
+        set(MAPPINGS_PREFIX win64)
+    else()
+        set(MAPPINGS_PREFIX unix)
+    endif()
+    install(DIRECTORY ${NAP_ROOT}/build_tools/path_mappings/${MAPPINGS_PREFIX}/ 
+            DESTINATION tools/platform/path_mappings 
+            PATTERN "source.json" EXCLUDE)
+endfunction()

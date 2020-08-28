@@ -10,6 +10,8 @@ find_package(glm REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 target_include_directories(${PROJECT_NAME} PUBLIC src ${GLM_INCLUDE_DIRS})
 

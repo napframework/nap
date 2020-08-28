@@ -1,22 +1,22 @@
 #include "appcontext.h"
-#include "napkinglobals.h"
-#include "napkinlinkresolver.h"
+
 // std
 #include <fstream>
 
 // qt
 #include <QSettings>
-#include <QDir>
 #include <QTimer>
+#include <QProcess>
 
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <nap/logger.h>
 
 // local
 #include <naputils.h>
 #include <utility/fileutils.h>
+#include "napkinglobals.h"
+#include "napkinlinkresolver.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -44,10 +44,11 @@ AppContext& AppContext::get()
 }
 
 
-void AppContext::create()
+AppContext& AppContext::create()
 {
 	assert(appContextInstance == nullptr);
     appContextInstance = std::make_unique<AppContext>();
+    return *appContextInstance;
 }
 
 
@@ -59,22 +60,95 @@ void AppContext::destroy()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
+	blockingProgressChanged(0, "Loading: " + filename);
 	mCurrentFilename = filename;
-
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
-
-	addRecentlyOpenedFile(filename);
 
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
 	std::string buffer;
+
+	if (!QFile::exists(filename))
+	{
+		blockingProgressChanged(1);
+
+		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
+		return nullptr;
+	}
+
+	if (!QFileInfo(filename).isFile())
+	{
+		blockingProgressChanged(1);
+		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
+		return nullptr;
+	}
+
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
+		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
+	blockingProgressChanged(1);
 	return loadDocumentFromString(buffer, filename);
+}
+
+const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
+{
+	// TODO: See if we can run this on a thread so the progress dialog may update live.
+	blockingProgressChanged(0, "Loading: " + projectFilename);
+
+	// If there's a project already loaded in the current context, quit and restart.
+	// The editor can only load 1 project because it needs to load modules that can't be freed.
+	if (getProjectInfo() != nullptr)
+	{
+		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
+		getQApplication()->exit(0);
+		return nullptr;
+	}
+
+	// Initialize engine
+	ErrorState err;
+	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
+	{
+		blockingProgressChanged(1);
+		nap::Logger::error(err.toString());
+		if (mExitOnLoadFailure)
+			exit(1);
+		return nullptr;
+	}
+
+
+	// Signal initialization
+	coreInitialized();
+
+	// Exit after successful load if requested
+    if (mExitOnLoadSuccess) 
+	{
+		nap::Logger::info("Loaded successfully, exiting as requested");
+        exit(EXIT_ON_SUCCESS_EXIT_CODE);
+    }
+
+	addRecentlyOpenedProject(projectFilename);
+	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
+	if (!dataFilename.isEmpty())
+		loadDocument(dataFilename);
+	else
+	{
+		blockingProgressChanged(1);
+		nap::Logger::error("No data file specified");
+		if (mExitOnLoadFailure)
+			exit(1);
+	}
+
+	blockingProgressChanged(1);
+	return mCore.getProjectInfo();
+}
+
+const nap::ProjectInfo* AppContext::getProjectInfo() const
+{
+	return mCore.getProjectInfo();
 }
 
 void AppContext::reloadDocument()
@@ -84,9 +158,11 @@ void AppContext::reloadDocument()
 
 Document* AppContext::newDocument()
 {
-	// Create new document
+	// Close current document if available
 	closeDocument();
-	mDocument = std::make_unique<Document>(getCore());
+
+	// Create document
+	mDocument = std::make_unique<Document>(mCore);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -99,14 +175,21 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	auto& factory = getCore().getResourceManager()->getFactory();
+	nap::Core& core = getCore();
+	
+	// If core isn't initialized, de-serialization will most likely fail because of unknown types
+	if (!core.isInitialized())
+		nap::Logger::warn("Core not initialized");
 
+	// Deserialize data file
+	auto& factory = core.getResourceManager()->getFactory();
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
+	// Resolve links
 	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::error("Failed to resolve links: %s", err.toString().c_str());
@@ -115,7 +198,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
+	mDocument = std::make_unique<Document>(core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -151,8 +234,6 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 	nap::Logger::info("Written file: " + filename.toStdString());
 
-	addRecentlyOpenedFile(filename);
-
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
@@ -181,35 +262,35 @@ std::string AppContext::documentToString() const
 }
 
 
-void AppContext::openRecentDocument()
+void AppContext::openRecentProject()
 {
-	auto lastFilename = AppContext::get().getLastOpenedFilename();
+	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
 	if (lastFilename.isNull())
 		return;
-	AppContext::get().loadDocument(lastFilename);
+	AppContext::get().loadProject(lastFilename);
 }
 
-const QString AppContext::getLastOpenedFilename()
+const QString AppContext::getLastOpenedProjectFilename()
 {
-	auto recent = getRecentlyOpenedFiles();
+	auto recent = getRecentlyOpenedProjects();
 	if (recent.isEmpty())
 		return {};
 
 	return recent.last();
 }
 
-void AppContext::addRecentlyOpenedFile(const QString& filename)
+void AppContext::addRecentlyOpenedProject(const QString& filename)
 {
-	auto recentFiles = getRecentlyOpenedFiles();
-	recentFiles.removeAll(filename);
-	recentFiles << filename;
-	while (recentFiles.size() > MAX_RECENT_FILES)
-		recentFiles.removeFirst();
-	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentFiles);
+	auto recentProjects = getRecentlyOpenedProjects();
+	recentProjects.removeAll(filename);
+	recentProjects << filename;
+	while (recentProjects.size() > MAX_RECENT_FILES)
+		recentProjects.removeFirst();
+	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentProjects);
 
 }
 
-QStringList AppContext::getRecentlyOpenedFiles() const
+QStringList AppContext::getRecentlyOpenedProjects() const
 {
 	return QSettings().value(settingsKey::RECENTLY_OPENED, QStringList()).value<QStringList>();
 }
@@ -223,9 +304,13 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	QTimer::singleShot(100, [this]() {
-		openRecentDocument();
-	});
+	if (!getProjectInfo() && mOpenRecentProjectAtStartup)
+	{
+		QTimer::singleShot(100, [this]()
+		{
+			openRecentProject();
+		});
+	}
 }
 
 void AppContext::connectDocumentSignals(bool enable)
@@ -308,25 +393,13 @@ void AppContext::handleURI(const QString& uri)
 
 nap::Core& AppContext::getCore()
 {
-	if (!mCoreInitialized)
-	{
-		ErrorState err;
-		if (!mCore.initializeEngine(err, getExecutableDir(), true))
-		{
-			nap::Logger::fatal("Failed to initialize engine");
-		}
-		mCoreInitialized = true;
-		coreInitialized();
-	}
 	return mCore;
 }
 
 Document* AppContext::getDocument()
 {
 	if (mDocument == nullptr)
-	{
 		newDocument();
-	}
 	return mDocument.get();
 }
 
@@ -347,6 +420,12 @@ bool napkin::AppContext::isAvailable()
 }
 
 
+bool napkin::AppContext::hasDocument() const
+{
+	return mDocument != nullptr;
+}
+
+
 void napkin::AppContext::closeDocument()
 {
 	if (mDocument == nullptr)
@@ -357,3 +436,17 @@ void napkin::AppContext::closeDocument()
 	mDocument.reset(nullptr);
 }
 
+void AppContext::setOpenRecentProjectOnStartup(bool b)
+{
+	mOpenRecentProjectAtStartup = b;
+}
+
+void AppContext::setExitOnLoadFailure(bool b)
+{
+	mExitOnLoadFailure = b;
+}
+
+void AppContext::setExitOnLoadSuccess(bool b)
+{
+	mExitOnLoadSuccess = b;
+}

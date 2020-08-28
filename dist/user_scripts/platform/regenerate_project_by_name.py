@@ -18,7 +18,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build'
+    BUILD_DIR = 'build_dir'
 
 def cmake_reconfigure_project(project_name, build_type, show_solution):
     # Find the project

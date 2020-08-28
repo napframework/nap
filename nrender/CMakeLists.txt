@@ -54,7 +54,9 @@ find_package(assimp REQUIRED)
 # find other 3rd party packages
 find_package(OpenGL)
 find_package(glm REQUIRED)
-find_package(freeimage REQUIRED)
+if(NOT TARGET FreeImage)
+    find_package(freeimage REQUIRED)
+endif()
 
 # get all nrender sources and headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -62,6 +64,8 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # compile shared lib as target
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
@@ -103,7 +107,9 @@ endif()
 # Windows thirdparty DLL copying
 if(WIN32)
     # Copy freeimage DLL to build directory
-    find_package(freeimage REQUIRED)
+    if(NOT TARGET FreeImage)
+        find_package(freeimage REQUIRED)
+    endif()
     copy_freeimage_dll()
 
     # Copy over Windows graphics DLLs to build directory

@@ -1,9 +1,12 @@
 {
-    "dependencies": [
-        "mod_naprender",
-        "mod_napvideo",
-        "mod_napscene",
-        "mod_napaudio",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_naprender", 
+        "mod_napvideo", 
+        "mod_napscene", 
+        "mod_napaudio", 
         "mod_napmath"
-    ]
+    ], 
+    "WindowsDllSearchPaths": []
 }

@@ -44,15 +44,15 @@ def read_single_module_dependencies(module_json_path):
     # Read in the JSON
     with open(module_json_path) as json_file:
         json_dict = json.load(json_file)
-        if not 'dependencies' in json_dict:
-            print("Missing element 'dependencies' in %s" % MODULE_INFO_FILENAME)
+        if not 'RequiredModules' in json_dict:
+            print("Missing element 'RequiredModules' in %s" % module_json_path)
             return False
 
-        if not type(json_dict['dependencies']) is list:
-            print("Element 'dependencies' in %s is not an array" % MODULE_INFO_FILENAME)
+        if not type(json_dict['RequiredModules']) is list:
+            print("Element 'RequiredModules' in %s is not an array" % MODULE_INFO_FILENAME)
             return False
 
-        return json_dict['dependencies']
+        return json_dict['RequiredModules']
 
 def update_module_info_to_cmake(module_path, nap_root):
     # Check our module exists

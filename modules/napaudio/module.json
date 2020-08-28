@@ -1,6 +1,16 @@
 {
-    "dependencies": [
-        "mod_napmath",
-        "mod_napscene"        
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napmath", 
+        "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/mpg123/install/msvc",
+        "{ROOT}/thirdparty/mpg123/bin",
+        "{ROOT}/../thirdparty/portaudio/msvc64",
+        "{ROOT}/thirdparty/portaudio/bin",
+        "{ROOT}/../thirdparty/libsndfile/msvc64",
+        "{ROOT}/thirdparty/libsndfile/bin"
     ]
 }

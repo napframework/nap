@@ -19,6 +19,7 @@ endif()
 
 find_package(OpenGL)
 if(NOT TARGET glm)
+    set(GLM_FIND_QUIETLY TRUE)
     find_package(glm REQUIRED)
 endif()
 
@@ -69,27 +70,27 @@ if (WIN32)
 elseif (APPLE)
     find_path(
         NRENDER_LIBS_DIR
-        NAMES Release/libnrender.a
+        NAMES Release/nrender.a
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/libnrender.a)
-    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/libnrender.a)
+    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/nrender.a)
+    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/nrender.a)
 elseif (ANDROID)
     find_path(
         NRENDER_LIBS_DIR
-        NAMES Release/${ANDROID_ABI}/libnrender.a
+        NAMES Release/${ANDROID_ABI}/nrender.a
         HINTS ${NAP_ROOT}/lib/
     )
-    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/${ANDROID_ABI}/libnrender.a)
-    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/${ANDROID_ABI}/libnrender.a)
+    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/${ANDROID_ABI}/nrender.a)
+    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/${ANDROID_ABI}/nrender.a)
 elseif (UNIX)
     find_path(
         NRENDER_LIBS_DIR
-        NAMES Debug/libnrender.a
+        NAMES Debug/nrender.a
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/libnrender.a)
-    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/libnrender.a)
+    set(NRENDER_LIBS_RELEASE ${NRENDER_LIBS_DIR}/Release/nrender.a)
+    set(NRENDER_LIBS_DEBUG ${NRENDER_LIBS_DIR}/Debug/nrender.a)
 endif()
 
 if (NOT NRENDER_LIBS_DIR)

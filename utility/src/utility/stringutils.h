@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <locale>
 #include <memory>
+#include <unordered_map>
 
 namespace nap
 {
@@ -121,6 +122,20 @@ namespace nap
 		std::string trim(const std::string& string);
 
 		/**
+		 * Strips white space characters from the start(left) of a string
+		 * @param string the string to remove white space characters from
+		 * @return the string without white space characters
+		 */
+		std::string lTrim(const std::string& string);
+
+		/**
+		 * Strips white space characters from the end(right) of a string string
+		 * @param string the string to remove white space characters from
+		 * @return the string without white space characters
+		 */
+		std::string rTrim(const std::string& string);
+
+		/**
 		 * Converts T in to a string using an std stringstream.
 		 * @param thing the object to convert into a string
 		 * @return the object as a string
@@ -137,6 +152,40 @@ namespace nap
 		 */
 		template <typename... Args>
 		static std::string stringFormat(const std::string& format, Args... args);
+
+		/**
+		 * Replace all occurrences of the provided keys with their associated values in the given subject string.
+		 * The keys in the subject string are to be wrapped in curly braces.
+		 * Example:
+		 * 		subject:
+		 * 			My {animal}'s name is {name}, it's a good {animal}.
+		 * 		replacement:
+		 * 			{{"animal", "snake"}, {"name", "Donald"}}
+		 * 		result:
+		 * 			My snake's name is Donald, it's a good snake.
+		 *
+		 * @param subject The string to search and replace keys in.
+		 * @param rep The keys and values used in the replacement operation.
+		 * @return The resulting string after replacement
+		 */
+		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep);
+
+		/**
+		 * Replace all occurrences of the provided keys with their associated values in the given subject strings.
+		 * The keys in the subject string are to be wrapped in curly braces.
+		 * Example:
+		 * 		subject:
+		 * 			My {animal}'s name is {name}, it's a good {animal}.
+		 * 		replacement:
+		 * 			{{"animal", "snake"}, {"name", "Donald"}}
+		 * 		result:
+		 * 			My snake's name is Donald, it's a good snake.
+		 *
+		 * @param subject The string to search and replace keys in.
+		 * @param rep The keys and values used in the replacement operation.
+		 * @return The resulting strings after replacement
+		 */
+		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
 
 		/**
 		 * Given a templated type name, replace its template parameter with the provided template type.
@@ -162,6 +211,14 @@ namespace nap
 		 * @return A copy of the input string with all instances of the search term replaced
 		 */
 		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace);
+
+		/**
+		 * Based on a string and a character offset into this string, return the line number
+		 * @param buffer The string to search
+		 * @param offset Character offset into the provided buffer
+		 * @return The line number at which the character at offset appears
+		 */
+		int getLine(const std::string& buffer, size_t offset);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -190,7 +247,6 @@ namespace nap
 			snprintf(buf.get(), size, format.c_str(), args...);
 			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 		}
-
 
 		template <typename T>
 		std::string addresStr(T thing)

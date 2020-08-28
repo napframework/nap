@@ -9,28 +9,28 @@ if (WIN32)
 elseif (APPLE)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Release/libnapcore.dylib
+        NAMES Release/napcore.dylib
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/libnapcore.dylib)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/libnapcore.dylib)
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.dylib)
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.dylib)
 elseif (ANDROID)
     find_path(
         NAPCORE_LIBS_DIR
         NO_CMAKE_FIND_ROOT_PATH
-        NAMES Release/${ANDROID_ABI}/libnapcore.so
+        NAMES Release/${ANDROID_ABI}/napcore.so
         HINTS ${NAP_ROOT}/lib/
     )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/${ANDROID_ABI}/libnapcore.so)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/${ANDROID_ABI}/libnapcore.so)
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/${ANDROID_ABI}/napcore.so)
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/${ANDROID_ABI}/napcore.so)
 elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Debug/libnapcore.so
+        NAMES Debug/napcore.so
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/libnapcore.so)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/libnapcore.so)
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.so)
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.so)
 endif()
 
 # Setup as interface library
@@ -71,11 +71,11 @@ if(NOT WIN32 AND NOT ANDROID)
 
     # On Linux use lib directory for RPATH
     if(NOT APPLE)
-        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnapcore.so\")
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/napcore.so\")
                       execute_process(COMMAND patchelf
                                               --set-rpath 
                                               $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/libnapcore.so)
+                                              ${CMAKE_INSTALL_PREFIX}/lib/napcore.so)
                       ")
     endif()      
 endif()

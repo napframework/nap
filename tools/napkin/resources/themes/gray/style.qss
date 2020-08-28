@@ -123,6 +123,10 @@ QPushButton:!enabled {
     color: #888;
 }
 
+QTabBar {
+    qproperty-drawBase: 0;
+}
+
 QTabBar:tab {
     padding: 2px 6px 2px 6px;
     color: #DDD;

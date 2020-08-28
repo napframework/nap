@@ -1,8 +1,13 @@
 {
-    "title": "VideoPlayer",
-    "version": "0.1.0",
-    "modules": [
-        "mod_napapp",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "VideoPlayer", 
+    "Version": "0.1.0", 
+    "RequiredModules": [
+        "mod_napapp", 
         "mod_napvideo"
-    ]
+    ], 
+    "Data": "", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

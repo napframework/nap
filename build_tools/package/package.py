@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 import datetime
-import json
 import os
 from multiprocessing import cpu_count
 import shutil
@@ -38,7 +37,7 @@ ERROR_BAD_INPUT = 5
 ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN = 6
 ERROR_SOURCE_ARCHIVE_EXISTING = 7
 
-def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
+def call(cwd, cmd, capture_output=False):
     """Execute command in provided working directory"""
 
     # print('dir: %s' % cwd)
@@ -51,10 +50,9 @@ def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     if type(out) is bytes:
         out = out.decode('ascii', 'ignore')
         err = err.decode('ascii', 'ignore')
-    if exception_on_nonzero and proc.returncode != 0:
-        print("Bailing for non zero returncode")
-        raise Exception(proc.returncode)
-    return (out, err)
+    if proc.returncode != 0:
+        raise Exception("Bailing for non zero returncode: %s", proc.returncode)
+    return out, err
 
 def package(zip_release, 
             include_debug_symbols,
@@ -105,7 +103,6 @@ def package(zip_release,
     if not archive_source_only:
         print("Packaging...")
 
-    # Remove old packaging path if it exists
         # Remove old packaging path if it exists
         if os.path.exists(PACKAGING_DIR):
             remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
@@ -184,8 +181,8 @@ def package(zip_release,
 def remove_directory_exit_on_failure(path, use):
     try:
         shutil.rmtree(path)
-    except OSError:
-        print("Error: Could not remove directory '%s' (%s)" % (path, use))
+    except OSError as e:
+        print("Error: Could not remove directory '%s' (%s): %s" % (path, use, e))
         sys.exit(ERROR_COULD_NOT_REMOVE_DIRECTORY)
 
 def clean_the_build(cross_compile_target, android_abis):
@@ -240,7 +237,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             else:
                 remove_directory_exit_on_failure(package_path, 'overwriting existing package')
         else:
-            print("Error: %s already exists" % package_path)
+            print("Error: Existing package found: %s" % os.path.abspath(package_path))
             sys.exit(ERROR_PACKAGE_EXISTS)
 
 
@@ -452,7 +449,7 @@ def archive_framework_to_linux_tar_bz2(package_basename):
 
     full_out_path = os.path.abspath(package_filename_with_ext)
     print("Packaged to %s" % full_out_path)
-    return(full_out_path)
+    return full_out_path
 
 def create_linux_tar_bz2(source_directory):
     """Create a bzipped tarball for the provided directory on Linux"""
@@ -475,7 +472,7 @@ def archive_framework_to_macos_zip(package_basename):
 
     full_out_path = os.path.abspath(package_filename_with_ext)
     print("Packaged to %s" % full_out_path)
-    return(full_out_path)
+    return full_out_path
 
 def create_macos_zip(source_directory):
     """Create a zip for the provided directory on macOS"""
@@ -518,7 +515,7 @@ def create_win64_zip(source_directory):
     shutil.make_archive(source_directory, 'zip', ARCHIVING_DIR)
 
     # Cleanup
-    return (archive_filename_with_ext, archive_path)
+    return archive_filename_with_ext, archive_path
 
 def archive_to_timestamped_dir(package_basename):
     """Copy our packaged dir to a timestamped dir"""

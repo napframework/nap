@@ -12,28 +12,28 @@ if (WIN32)
 elseif (APPLE)
     find_path(
         NAPUTILITY_LIBS_DIR
-        NAMES Release/libnaputility.a
+        NAMES Release/naputility.a
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/libnaputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
+    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/naputility.a)
+    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/naputility.a)
 elseif (ANDROID)
     find_path(
         NAPUTILITY_LIBS_DIR
         NO_CMAKE_FIND_ROOT_PATH
-        NAMES Release/${ANDROID_ABI}/libnaputility.a
+        NAMES Release/${ANDROID_ABI}/naputility.a
         HINTS ${NAP_ROOT}/lib/
     )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/${ANDROID_ABI}/libnaputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaputility.a)
+    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/${ANDROID_ABI}/naputility.a)
+    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/${ANDROID_ABI}/naputility.a)
 elseif (UNIX)
     find_path(
         NAPUTILITY_LIBS_DIR
-        NAMES Debug/libnaputility.a
+        NAMES Debug/naputility.a
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/libnaputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/libnaputility.a)
+    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/naputility.a)
+    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/naputility.a)
 endif()
 
 if (NOT NAPUTILITY_LIBS_DIR)

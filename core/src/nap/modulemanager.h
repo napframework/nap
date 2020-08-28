@@ -1,135 +1,131 @@
 #pragma once
 
-// STD includes
+// Local Includes
+#include "projectinfo.h"
+
+// External Includes
+#include <utility/module.h>
+#include <utility/errorstate.h>
+#include <rtti/typeinfo.h>
 #include <string>
 #include <vector>
-
-// Core includes
-#include "utility/module.h"
-#include "utility/errorstate.h"
-#include "rtti/typeinfo.h"
+#include <assert.h>
 
 namespace nap
 {
 	// Forward Declares
 	class Core;
+	class ModuleManager;
 
 	/**
-	 * Responsible for dynamically loading additional nap modules
+	 * Contains all data associated with a module, including handle and description.
+	 * Created and managed by the nap::ModuleManager.
+	 */
+	class NAPAPI Module final
+	{
+		friend class ModuleManager;
+	public:
+		Module() = default;
+
+		// Copy is not allowed
+		Module(Module&) = delete;
+
+		// Copy assignment is not allowed
+		Module& operator=(const Module&) = delete;
+
+		// Move is not allowed
+		Module(Module&&) = delete;
+
+		// Move assignment is not allowed
+		Module& operator=(Module&&) = delete;
+
+		/**
+		 * @return module name
+		 */
+		const std::string& getName() const					{ return mName; }
+
+		/**
+		 * @return module descriptor
+		 */
+		const ModuleDescriptor& getDescriptor()	const		{ assert(mDescriptor != nullptr); return *mDescriptor; }
+
+		/**
+		 * @return module information
+		 */
+		const ModuleInfo& getInformation() const			{ assert(mInfo != nullptr); return *mInfo; }
+
+		/**
+		 * Returns type of service associated with this module, 
+		 * @return type of service associated with this module, empty if module has no service.
+		 */
+		const rtti::TypeInfo getServiceType() const			{ return mService; }
+
+	private:
+		std::string						mName;									///< The canonical name of the module
+		ModuleDescriptor*				mDescriptor = nullptr;					///< The descriptor that belongs to the module
+		std::unique_ptr<ModuleInfo>		mInfo = nullptr;						///< Data that was loaded from the module json
+		void*							mHandle = nullptr;						///< Handle to native module
+		rtti::TypeInfo					mService = rtti::TypeInfo::empty();		///< Service associated with the module
+	};
+
+
+	/**
+	 * Responsible for dynamically loading NAP modules.
 	 */
 	class NAPAPI ModuleManager final
 	{
 		friend class Core;
-
 	public:
-		/**
-		* Data for a loaded module
-		*/
-		struct Module
-		{
-			ModuleDescriptor*	mDescriptor;							// The descriptor that belongs to the module
-			void*				mHandle;								// Handle to native module
-			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
-		};
-
-
 		// Constructor
 		ModuleManager(Core& core);
 
 		// Destructor
 		~ModuleManager();
 
-		/**
-		 * Load all modules in the specified list.  Two modes of operationg are provided:
-		 * - If the module list is populated only modules in that list will be loaded and if any cannot be loaded
-		 *   initialization will fail
-		 * - If no module list is provided all encountered modules will be loaded
-		 * @param moduleNames The list of modules to load
-		 * @param error Contains the error when loading modules fails.
-		 * @return Whether we were successfully able load our requested modules
-		 */
-		bool loadModules(const std::vector<std::string>& moduleNames, utility::ErrorState& error);
+		// Copy is not allowed
+		ModuleManager(ModuleManager&) = delete;
 
-		const std::vector<Module>& getModules() const { return mModules; }
+		// Copy assignment is not allowed
+		ModuleManager& operator=(const ModuleManager&) = delete;
+
+		// Move is not allowed
+		ModuleManager(ModuleManager&&) = delete;
+		
+		// Move assignment is not allowed
+		ModuleManager& operator=(ModuleManager&&) = delete;
+
+		/**
+		 * Load all modules that are required by the project
+		 * @param projectInfo The descriptor providing the module dependencies
+		 * @param error Any errors will be stored here
+		 * @return True on success, false otherwise
+		 */
+		bool loadModules(const ProjectInfo& projectInfo, utility::ErrorState& error);
+
+		/**
+		 * @return All currently loaded modules
+		 */
+		std::vector<nap::Module*> getModules() const;
+
+		/**
+		 * Find a loaded module by its name as defined in its descriptor file
+		 * @param moduleName The name of the module to find
+		 * @return The object providing access to the Module, nullptr if not found.
+		 */
+		const Module* findModule(const std::string& moduleName);
 
 	private:
 		/**
-		 * Build directories to search in for specified modules
-		 * @param moduleNames The names of the modules in use in the project
-		 * @param outSearchDirectories The directories to search for the provided modules
-		 * @return whether we were successfully able to determine our configuration and build our search paths
+		 * Loads a module into the current context.
+		 * Needs the be implemented in an extension, platform specific.
+		 * @param projectinfo project information resource
+		 * @param moduleName name of the module to load
+		 * @param err contains the error if loading operation fails
+		 * @return if module loaded
 		 */
-		bool buildModuleSearchDirectories(const std::vector<std::string>& moduleNames, std::vector<std::string>& searchDirectories, utility::ErrorState& errorState);
+		bool sourceModule(const ProjectInfo& projectinfo, const std::string& moduleName, utility::ErrorState& err);
 
-
-		/**
-		 * Build directories to search in for specified modules for a non packaged project running against released NAP
-		 * @param moduleNames The names of the modules in use in the project
-		 * @param outSearchDirectories The directories to search for the provided modules
-		 */
-		void buildPackagedNapProjectModulePaths(const std::vector<std::string>& moduleNames, std::vector<std::string>& searchDirectories);
-
-		/**
-		 * Build directories to search in for all modules for non project context (eg. napkin) running against released NAP
-		 * @param outSearchDirectories The directories to search for the provided modules
-		 */
-		void buildPackagedNapNonProjectModulePaths(std::vector<std::string>& searchDirectories);
-
-		/**
-		 * Check whether the specified folder name contains a build configuration.
-		 *
-		 * A valid full build configuration string in a folder name will be of our format specified in CMake:
-		 * macOS: COMPILER_ID-ARCH-BUILD_TYPE, eg. Clang-x86_64-Debug
-		 * Linux: COMPILER_ID-BUILD_TYPE-ARCH, eg. GNU-Release-x86_64
-		 *
-		 * The folder name is checked for sufficient parts and a matching build type.
-		 *
-		 * @param folderName The folder name to parse
-		 * @return Whether the folder name appears to contain a build configuration
-		 */
-		bool folderNameContainsBuildConfiguration(const std::string& folderName);
-		
-		/**
-		 * Load a list of NAP module dependencies from the specified module JSON string
-		 * @param json The module.json file contents to deserialize
-		 * @param outDependencies The loaded list of dependencies
-		 * @param error The error message when loading fails
-		 * @return If loading failed or succeeded
-		 */
-		bool deserializeModuleDependenciesFromJson(const std::string& json, std::vector<std::string>& dependencies, utility::ErrorState& errorState);
-
-		/**
-		 * Load a list of NAP module dependencies from the specified module JSON file
-		 * @param jsonFile The module.json file to load from
-		 * @param outDependencies The loaded list of dependencies
-		 * @param error The error message when loading fails
-		 * @return If loading failed or succeeded
-		 */
-		bool loadModuleDependenciesFromJsonFile(const std::string& jsonFile, std::vector<std::string>& dependencies, utility::ErrorState& error);
-		
-		/**
-		 * For the specified top level NAP modules load a list of all NAP module dependencies
-		 * @param topLevelProjectModules The NAP modules that our project requires, to initiate our search from
-		 * @param outDependencies The loaded list of dependencies
-		 * @param error The error message when the process fails
-		 * @return If the process failed or succeeded
-		 */
-		bool fetchProjectModuleDependencies(const std::vector<std::string>& topLevelProjectModules, std::vector<std::string>& dependencies, utility::ErrorState& errorState);
-
-		/**
-		 * For the specified NAP modules load a list of their immediate NAP module dependencies that we haven't already found
-		 * @param searchModules The set of modules to load immediate dependencies for
-		 * @param previouslyFoundModules A list of NAP module dependencies which we have already found. If any of these modules are encountered they won't be appended to outDependencies.
-		 * @param outDependencies The loaded list of dependencies
-		 * @param error The error message when the process fails
-		 * @return If the process failed or succeeded
-		 */
-		bool fetchImmediateModuleDependencies(const std::vector<std::string>& searchModules, std::vector<std::string>& previouslyFoundModules, std::vector<std::string>& dependencies, utility::ErrorState& errorState);
-
-		
-		using ModuleList = std::vector<Module>;
-		ModuleList mModules;	// The loaded modules
-		Core& mCore;			// Core
-
+		std::vector<std::unique_ptr<Module>> 			mModules;	// The loaded modules
+		Core& 								 			mCore;		// Core
 	};
 }

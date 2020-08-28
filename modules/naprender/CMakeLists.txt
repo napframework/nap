@@ -19,6 +19,8 @@ module_json_to_cmake()
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
@@ -30,6 +32,11 @@ target_link_libraries(${PROJECT_NAME} nrender ${DEPENDENT_NAP_MODULES})
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
+
+# Add GLEW macOS RPATH for Source context
+if(APPLE)
+    add_macos_glew_rpath()
+endif()
 
 # Package into platform release
 if(APPLE)

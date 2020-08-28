@@ -57,7 +57,6 @@ macro(copy_freetype_dll)
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different 
                     $<TARGET_FILE:freetype> 
-                   "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
-
+                    "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
             )
 endmacro()

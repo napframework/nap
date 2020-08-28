@@ -17,12 +17,22 @@
 #include "service.h"
 #include "timer.h"
 #include "coreextension.h"
+#include "projectinfo.h"
 
-// Name of the file that contains all the settings for the NAP services.
-constexpr char SERVICE_CONFIG_FILENAME[] = "config.json";
+// Default name to use when writing the file that contains all the settings for the NAP services.
+constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
+constexpr char PROJECT_INFO_FILENAME[] = "project.json";
+
+// Build configuration eg. "Clang-Debug-x86_64"
+#define STRINGIZE(x) #x
+#define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
+constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
 
 namespace nap
 {
+	using ServiceConfigMap = std::unordered_map<rtti::TypeInfo, ServiceConfiguration*>;
+
 	/**
 	 * Core manages the object graph, modules and services
 	 * Core is required in every NAP application and should be the first object that is created and
@@ -35,10 +45,38 @@ namespace nap
 	 * Service A is initialized before B. After initialization all module specific resources and their
 	 * contexts are available for object creation using the ResourceManager.
 	 *
+	 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file. 
+	 * The nap::ProjectInfo file contains information such as the project name, version and which modules are 
+	 * required for the project to run. It also contains a link to a data file, which contains the actual application content and
+	 * an optional link to a service configuration file, which contains service configuration information.
+	 *
+	 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+	 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+	 *
+	 * It is therefore required that core is able to load a valid project.json file, that contains a 'nap::ProjectInfo' resource.
+	 * example of a project.json file:
+	 *
+	 * ~~~~~
+	 *	{
+	 *		"Type": "nap::ProjectInfo",
+	 *		"mID": "ProjectInfo",
+	 *		"Title": "MyProject",
+	 *		"Version": "1.0.0",
+	 *		"RequiredModules": 
+	 *		[
+	 *			"mod_napapp",
+	 *			"mod_napimgui"
+	 *		],
+	 *		"Data": "data/myapp.json",
+	 *		"ServiceConfig": "",
+	 *		"PathMapping": "cache/path_mapping.json"
+	 *	}
+	 * ~~~~~
+	 * 
 	 * Call update inside your app loop to update all available services. When exiting the application
 	 * invoke shutdown. This will close all operating services in the reverse order of their dependency tree
 	 */
-	class NAPAPI Core
+	class NAPAPI Core final
 	{
 		RTTI_ENABLE()
 	public:
@@ -61,22 +99,57 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		 * Loads all modules in to the core environment and creates all the associated services
+		 * Loads all modules in to the core environment and creates all the associated services.
+		 *
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
+		 * required for the project to run. It also contains an optional link to a service configuration file, 
+		 * which holds service configuration information.
+		 *
+		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+		 *
+		 * It is therefore required that core is able to find and load a valid project.json file that contains a 'nap::ProjectInfo' resource.
+		 *
 		 * @param error contains the error code when initialization fails
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @param runningInNonProjectContext indicates if the engine is being run for a non-project use, eg. running Napkin
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath={}, bool runningInNonProjectContext=false);
-		
+		bool initializeEngine(utility::ErrorState& error);
+
 		/**
-		 * Initializes all registered services
+		 * Loads all modules in to the core environment and creates all the associated services.
+		 *
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
+		 * required for the project to run. It also contains an optional link to a service configuration file,
+		 * which holds service configuration information.
+		 *
+		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
+		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
+		 *
+		 * It is therefore required that core is able to find and load the provided project.json file that contains a 'nap::ProjectInfo' resource.
+		 *
+         * @param context whether initializing for project or Napkin
+		 * @param error contains the error code when initialization fails
+		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
+		 * @return if initialization succeeded
+		 */
+		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
+
+		/**
+		 * Initializes all registered services, call this after initializeEngine().
 		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
 		 * Service A is initialized before service B etc.
 		 * @param errorState contains the error message when initialization fails
 		 * @return if initialization failed or succeeded
 		 */
 		bool initializeServices(utility::ErrorState& errorState);
+
+		/**
+		 * Returns if a call to initializeEngine() succeeded.
+		 * @return true if the engine successfully initialized, false otherwise. 
+		 */
+		bool isInitialized() const;
 
 		/**
 		* Shuts down all registered services in the right order
@@ -106,15 +179,15 @@ namespace nap
 		double update(std::function<void(double)>& updateFunction);
 
 		/**
-		* The resource manager holds all the entities and components currently loaded by Core
-		* @return the resource manager
+		* The resource manager holds all the entities and components currently loaded by Core.
+		* @return the resource manager.
 		*/
-		ResourceManager* getResourceManager() { return mResourceManager.get(); }
+		ResourceManager* getResourceManager()							{ return mResourceManager.get(); }
 
 		/**
 		 * @return the ModuleManager for this core
 		 */
-		const ModuleManager& getModuleManager() const { return *mModuleManager; }
+		const ModuleManager& getModuleManager() const					{ return *mModuleManager; }
 
 		/**
 		 * @return number of elapsed time in milliseconds after invoking start
@@ -182,21 +255,43 @@ namespace nap
 		bool findProjectFilePath(const std::string& filename, std::string& foundFilePath) const;
 
 		/**
+		 * Returns loaded project information, only available after initialization, nullptr otherwise.
+		 * @return The loaded project information, available after initialization, nullptr otherwise
+		 */
+		const nap::ProjectInfo* getProjectInfo() const;
+
+        /**
+         * Load path mapping file and replace any template vars with their respective values
+         * @param projectInfo The current project info
+         * @param editorMode True if this is invoked from Napkin, false otherwise
+         * @param err The resulting errors if there were any
+         * @return The path mapping that was loaded or nullptr if loading failed
+         */
+		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
+
+		/**
  		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
  		 * @param errorState Serialization errors will be logged to errorState.
  		 * @return true on sucess.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
-	
+
 	private:
 		/**
-		* Helper function that creates all the services that are found in the various modules
-		* Note that a module does not need to define a service, only if it has been defined
-		* this call will try to create it.
-		* @param error contains the error if the services could not be added
-		* @return if the services are created successfully
-		*/
-		bool createServices(utility::ErrorState& errorState);
+		 * Locates the project info (project.json) file.
+		 * @param foundFilePath The full file path of where the file was found.
+		 * @return true if the file was found, otherwise false.
+		 */
+		bool findProjectInfoFile(std::string& foundFilePath) const;
+
+		/**
+		 * Helper function that creates all the services that are found in the various modules
+		 * Note that a module does not need to define a service, only if it has been defined
+		 * this call will try to create it.
+		 * @param error contains the error if the services could not be added
+		 * @return if the services are created successfully
+		 */
+		bool createServices(const nap::ProjectInfo& projectInfo, utility::ErrorState& errorState);
 
 		/**
 		* Adds a new service of type @type to @outServices
@@ -209,18 +304,20 @@ namespace nap
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
-		 * If a service configuration file is provided which is used to initialize the various services
-		 * @return if a service configuration file is provided
+		 * Loads the service configuration resources from file. The file must exist.
+		 * @param err contains the error if loading fails.
+		 * @return if loading succeeded.
 		 */
-		bool hasServiceConfiguration();
+		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		/**
 		 * Load the service configuration file
+		 * @param filename The name of the file to read
 		 * @param deserialize_result contains the result after reading the config file
 		 * @param errorState contains the error if deserialization fails
 		 * @return if service configuration reading succeeded or not
 		 */
-		bool loadServiceConfiguration(rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
+		bool loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -234,32 +331,55 @@ namespace nap
 		 *	Calculates the framerate over time
 		 */
 		void calculateFramerate(double deltaTime);
-		
-		/**
-		 * Determine and set our working directory based on where our project data is
-		 * @param errorState if false is returned, contains error information
-		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
-		 * @return if the project data was successfully found and working path set
-		 */
-		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
-		
+
 		/**
 		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
 		 * or alongside our binary for a packaged project
 		 */
 		void setupPythonEnvironment();
-		
-		// Typedef for a list of services
-		using ServiceList = std::vector<std::unique_ptr<Service>>;
+
+		/**
+		 * Explicitly load a project from file.
+		 * Call this before initializeEngine() if custom project setup is required.
+		 * @param projectFilename absolute path to the project file on disk.
+         * @param context whether initializing for project or Napkin
+		 * @param error contains the error if the file could not be loaded.
+		 */
+	    bool loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& error);
+
+		/**
+		 * Finds the configuration of a specific service.
+		 * @param serviceType service to find configuration for.
+		 * @return service configuration of specific type if present, nullptr otherwise
+		 */
+		nap::ServiceConfiguration* findServiceConfig(rtti::TypeInfo serviceType) const;
+
+		/**
+		 * Add a new service configuration to this project if not present already.
+		 * Ownership is transferred.
+		 * @param serviceType the type of service this config belongs to
+		 * @param serviceConfig the service configuration to add.
+		 * @return true when added, false if already present.
+		 */
+		bool addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
 
 		// Manages all the loaded modules
-		std::unique_ptr<ModuleManager> mModuleManager;
+		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
 
 		// Manages all the objects in core
-		std::unique_ptr<ResourceManager> mResourceManager;
+		std::unique_ptr<ResourceManager> mResourceManager = nullptr;
+
+		// Holds on to the current project's configuration
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;
 
 		// Sorted service nodes, set after init
-		ServiceList mServices;
+		std::vector<std::unique_ptr<Service>> mServices;
+
+		// All service configurations
+		std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>> mServiceConfigs;
+
+		// Interface associated with this instance of core.
+		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
 		// Timer
 		HighResolutionTimer mTimer;
@@ -275,11 +395,10 @@ namespace nap
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
 
-		// Interface associated with this instance of core.
-		std::unique_ptr<CoreExtension> mExtension = nullptr;
+		// If the engine is initialized
+		bool mInitialized = false;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = {
-			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};
 }
 

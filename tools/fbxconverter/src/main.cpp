@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
 	CommandLine commandLine;
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
-
 	Logger::setLevel(Logger::debugLevel());
 
 	// Validate all files are fbx files and convert wildcard argument

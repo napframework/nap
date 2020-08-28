@@ -21,4 +21,4 @@ elseif(UNIX)
     install(FILES $<TARGET_FILE:yoctopuce> DESTINATION lib)
 endif()
 
-# TODO Install yoctopuce library with packaged app if we find one
+# TODO Install yoctopuce license with packaged app if we find one
