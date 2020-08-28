@@ -24,21 +24,27 @@ namespace napkin
 {
 
 	/**
-	 * The AppContext (currently a singleton) holds the 'globally' kept application state. All authored objects reside
-	 * here.
+	 * The AppContext (currently a singleton) holds the 'globally' kept application state. 
+	 * All authored objects reside here.
 	 * It has signals to notify the other application components of global state changes such as data file access and
 	 * provides the client with convenience methods that may change the application state.
 	 *
-	 * This class currently acts much like a model in MVC:
-	 * Operations on the data should happen through AppContext
+	 * This class currently acts much like a model in MVC: Operations on the data should happen through AppContext,
 	 * such that the rest of the application can react and update accordingly.
 	 *
+	 * The app context manages nap::Core, it is therefore required that the entire context needs to be destroyed if core needs to be re-initialized.
+	 * In other words: for every project that you want to load a new app context needs to be created and the old needs to be destroyed.
+	 * Unfortunately this is necessary because core sources dynamic libraries that at this point in time can't be freed properly on all systems.
+	 *
+	 * The context points to a document that is manipulated by the editor. 
+	 * If core fails to initialize, creation and manipulation of resources won't work. 
+	 * Core is initialized when a project is loaded.
+	 * 
 	 * TODO: Data manipulation methods and signals should really live in their own class.
 	 */
 	class AppContext : public QObject
 	{
 		Q_OBJECT
-
 	public:
 		/**
 		 * Singleton accessor
