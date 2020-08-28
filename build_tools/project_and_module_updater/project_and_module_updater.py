@@ -283,8 +283,8 @@ def update_project_cmake(directory):
     if call(cmd) != 0:
         print("CMake upgrade at %s failed" % directory)
 
-def convert_repository(root_directory):
-    print('Convert projectinfo and moduleinfo files in NAP repository: %s' % root_directory)
+def convert_all(root_directory):
+    print('Convert projectinfo and moduleinfo files in NAP directory: %s' % root_directory)
     project_dirs = [
         'apps',
         'demos',
@@ -318,15 +318,15 @@ def convert_module_wrapper(args):
     assert os.path.exists(directory), 'Directory does not exist at: %s' % directory
     convert_module(directory)
 
-def convert_repository_wrapper(args):
+def convert_all_wrapper(args):
     nap_root_dir = get_nap_root()
     verify_path = os.path.join(nap_root_dir, 'modules')
     assert os.path.exists(verify_path), 'NAP root dir not found at: %s' % nap_root_dir
-    convert_repository(nap_root_dir)
+    convert_all(nap_root_dir)
 
 def main():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(metavar='command', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_REPO')
+    subparsers = parser.add_subparsers(metavar='command', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_ALL')
 
     project_subparser = subparsers.add_parser('UPGRADE_PROJECT')
     project_subparser.add_argument('PROJECT_PATH', type=str, help='Path to project to upgrade')
@@ -336,8 +336,8 @@ def main():
     module_subparser.add_argument('MODULE_PATH', type=str, help='Path to module to upgrade')
     module_subparser.set_defaults(func=convert_module_wrapper)
 
-    repo_subparser = subparsers.add_parser('UPGRADE_REPO')
-    repo_subparser.set_defaults(func=convert_repository_wrapper)
+    all_subparser = subparsers.add_parser('UPGRADE_ALL')
+    all_subparser.set_defaults(func=convert_all_wrapper)
 
     args = parser.parse_args()
     if not hasattr(args, 'func'):
