@@ -22,11 +22,10 @@ ModuleModel::ModuleModel() : QStandardItemModel()
 void ModuleModel::onCoreInitialized()
 {
 	removeRows(0, rowCount());
-	auto core = AppContext::get().getCore();
-	if (!core)
-		return;
+	nap::Core& core = AppContext::get().getCore();
+	assert(core.isInitialized());
 
-	for (const auto& mod : core->getModuleManager().getModules())
+	for (const auto& mod : core.getModuleManager().getModules())
 		appendRow(new ModuleItem(*mod));
 }
 

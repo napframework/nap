@@ -194,11 +194,11 @@ std::vector<rttr::type> napkin::getComponentTypes()
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
 	std::vector<rttr::type> ret;
-	auto core = AppContext::get().getCore();
-	if (!core)
+	nap::Core& core = AppContext::get().getCore();
+	if (!core.isInitialized());
 		return ret;
 
-	nap::rtti::Factory& factory = core->getResourceManager()->getFactory();
+	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
 	auto rootType = RTTI_OF(nap::rtti::Object);

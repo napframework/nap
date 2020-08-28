@@ -61,9 +61,7 @@ void AppContext::destroy()
 Document* AppContext::loadDocument(const QString& filename)
 {
 	blockingProgressChanged(0, "Loading: " + filename);
-
 	mCurrentFilename = filename;
-
 	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	ErrorState err;
@@ -81,7 +79,6 @@ Document* AppContext::loadDocument(const QString& filename)
 	if (!QFileInfo(filename).isFile())
 	{
 		blockingProgressChanged(1);
-
 		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
@@ -89,13 +86,11 @@ Document* AppContext::loadDocument(const QString& filename)
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
 		blockingProgressChanged(1);
-
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
 	blockingProgressChanged(1);
-
 	return loadDocumentFromString(buffer, filename);
 }
 
@@ -104,7 +99,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	// TODO: See if we can run this on a thread so the progress dialog may update live.
 	blockingProgressChanged(0, "Loading: " + projectFilename);
 
-	// If there's a new project, start a new napkin instance.
+	// If there's a project already loaded in the current context, quit and restart.
+	// The editor can only load 1 project because it needs to load modules that can't be freed.
 	if (getProjectInfo() != nullptr)
 	{
 		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
@@ -114,8 +110,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	// Initialize engine
 	ErrorState err;
-	mCore = std::make_unique<nap::Core>();
-	if (!mCore->initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
+	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
@@ -136,7 +131,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
     }
 
 	addRecentlyOpenedProject(projectFilename);
-	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDataFile());
+	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
@@ -148,12 +143,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	blockingProgressChanged(1);
-	return mCore->getProjectInfo();
+	return mCore.getProjectInfo();
 }
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore != nullptr ? mCore->getProjectInfo() : nullptr;
+	return mCore.getProjectInfo();
 }
 
 void AppContext::reloadDocument()
@@ -166,16 +161,8 @@ Document* AppContext::newDocument()
 	// Close current document if available
 	closeDocument();
 
-	// No instance of core provided
-	nap::Core* core = getCore();
-	if (core == nullptr)
-	{
-		nap::Logger::warn("Core not loaded, cannot create document");
-		return nullptr;
-	}
-
 	// Create document
-	mDocument = std::make_unique<Document>(*core);
+	mDocument = std::make_unique<Document>(mCore);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -188,14 +175,14 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	auto core = getCore();
-	if (!core)
+	nap::Core& core = getCore();
+	if (!core.isInitialized())
 	{
 		nap::Logger::warn("Core not loaded, cannot load document");
 		return nullptr;
 	}
 
-	auto& factory = core->getResourceManager()->getFactory();
+	auto& factory = core.getResourceManager()->getFactory();
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
@@ -210,7 +197,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
+	mDocument = std::make_unique<Document>(core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -403,9 +390,9 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
-nap::Core* AppContext::getCore()
+nap::Core& AppContext::getCore()
 {
-	return mCore.get();
+	return mCore;
 }
 
 Document* AppContext::getDocument()

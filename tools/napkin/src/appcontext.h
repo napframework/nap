@@ -74,14 +74,14 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core* getCore();
+		nap::Core& getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Destroy existing data and reset the filename. newFileCreated will be when this happens.
+		 * Destroy existing document and create a new one.
 		 */
 		Document* newDocument();
 
@@ -382,7 +382,7 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
+		nap::Core mCore;										// The nap::Core
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
