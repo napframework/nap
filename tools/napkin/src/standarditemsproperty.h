@@ -37,9 +37,14 @@ namespace napkin
 		PropertyPathItem(const PropertyPath& path);
 
 		/**
+		 * Override from QStandardItem
+		 */
+		QVariant data(int role) const override;
+
+		/**
 		 * The path held by this item
 		 */
-		const PropertyPath& getPath() { return mPath; }
+		const PropertyPath& getPath() const { return mPath; }
 
 	protected:
 		PropertyPath mPath; // The path to the property

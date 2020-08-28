@@ -57,12 +57,24 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	return items;
 }
 
-
-
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path)
 	: QStandardItem(QString::fromStdString(path.getName())), mPath(path)
 {
 
+}
+
+QVariant napkin::PropertyPathItem::data(int role) const
+{
+	if (role == Qt::DisplayRole)
+	{
+		// If the parent is an array, display the index of this item
+		if (auto parentPath = dynamic_cast<PropertyPathItem*>(parent()))
+		{
+			if (parentPath->getPath().isArray())
+				return row();
+		}
+	}
+	return QStandardItem::data(role);
 }
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
