@@ -13,8 +13,11 @@
  */
 nap::SceneService::SceneSet getScenes()
 {
-	nap::Core& core = napkin::AppContext::get().getCore();
-	auto sceneService = core.getService<nap::SceneService>();
+	auto core = napkin::AppContext::get().getCore();
+	if (core == nullptr)
+		return {};
+
+	auto sceneService = core->getService<nap::SceneService>();
 	if (!sceneService)
 		return {};
 

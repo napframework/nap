@@ -110,7 +110,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	// Initialize engine
 	ErrorState err;
-	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
+	mCore = std::make_unique<nap::Core>();
+	if (!mCore->initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
@@ -131,7 +132,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
     }
 
 	addRecentlyOpenedProject(projectFilename);
-	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
+	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
@@ -143,12 +144,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	blockingProgressChanged(1);
-	return mCore.getProjectInfo();
+	return mCore->getProjectInfo();
 }
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore.getProjectInfo();
+	return mCore != nullptr ? mCore->getProjectInfo() : nullptr;
 }
 
 void AppContext::reloadDocument()
@@ -161,8 +162,16 @@ Document* AppContext::newDocument()
 	// Close current document if available
 	closeDocument();
 
+	// No instance of core provided
+	nap::Core* core = getCore();
+	if (core == nullptr)
+	{
+		nap::Logger::warn("Core not loaded, cannot create document");
+		return nullptr;
+	}
+
 	// Create document
-	mDocument = std::make_unique<Document>(mCore);
+	mDocument = std::make_unique<Document>(*core);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -175,21 +184,20 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	nap::Core& core = getCore();
-	
-	// If core isn't initialized, de-serialization will most likely fail because of unknown types
-	if (!core.isInitialized())
-		nap::Logger::warn("Core not initialized");
+	auto core = getCore();
+	if (core == nullptr)
+	{
+		nap::Logger::warn("Core not loaded, cannot load document");
+		return nullptr;
+	}
 
-	// Deserialize data file
-	auto& factory = core.getResourceManager()->getFactory();
+	auto& factory = core->getResourceManager()->getFactory();
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
 
-	// Resolve links
 	if (!NapkinLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::error("Failed to resolve links: %s", err.toString().c_str());
@@ -198,7 +206,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(core, filename, std::move(result.mReadObjects));
+	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -391,9 +399,9 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
-nap::Core& AppContext::getCore()
+nap::Core* AppContext::getCore()
 {
-	return mCore;
+	return mCore.get();
 }
 
 Document* AppContext::getDocument()
