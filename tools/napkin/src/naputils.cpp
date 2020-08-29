@@ -175,7 +175,7 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		names << QString::fromStdString(std::string(t.get_name().data()));
 
 	auto selectedName = nap::qt::FilterPopup::show(parent, names).toStdString();
-	return nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
+	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
 

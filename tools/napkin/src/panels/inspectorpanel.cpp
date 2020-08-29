@@ -173,7 +173,6 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
 
 			rttr::type chosenType = showTypeSelector(this, predicate);
-
 			if (!chosenType.is_valid())
 				return;
 
@@ -223,8 +222,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
 
 				rttr::type elementType = showTypeSelector(this, predicate);
-
-				if (!elementType.empty())
+				if (elementType.is_valid())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
 			});
 		}
