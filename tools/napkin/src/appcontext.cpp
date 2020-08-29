@@ -110,8 +110,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	// Initialize engine
 	ErrorState err;
-	mCore = std::make_unique<nap::Core>();
-	if (!mCore->initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
+	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
@@ -132,7 +131,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
     }
 
 	addRecentlyOpenedProject(projectFilename);
-	auto dataFilename = QString::fromStdString(mCore->getProjectInfo()->getDataFile());
+	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
@@ -144,12 +143,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	blockingProgressChanged(1);
-	return mCore->getProjectInfo();
+	return mCore.getProjectInfo();
 }
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore != nullptr ? mCore->getProjectInfo() : nullptr;
+	return mCore.getProjectInfo();
 }
 
 void AppContext::reloadDocument()
@@ -401,7 +400,7 @@ void AppContext::handleURI(const QString& uri)
 
 nap::Core* AppContext::getCore()
 {
-	return mCore.get();
+	return &mCore;
 }
 
 Document* AppContext::getDocument()
