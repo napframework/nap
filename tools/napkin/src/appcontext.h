@@ -45,6 +45,7 @@ namespace napkin
 	class AppContext : public QObject
 	{
 		Q_OBJECT
+
 	public:
 		/**
 		 * Singleton accessor
@@ -78,16 +79,17 @@ namespace napkin
 		~AppContext() override;
 
 		/**
+		 * Returns the instance of core managed by this context, nullptr if no project has been loaded.
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& getCore();
+		nap::Core* getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Destroy existing document and create a new one.
+		 * Destroy existing data and reset the filename. newFileCreated will be when this happens.
 		 */
 		Document* newDocument();
 
@@ -388,7 +390,7 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;										// The nap::Core
+		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
@@ -397,4 +399,5 @@ namespace napkin
 		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
 		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
 	};
+
 };
