@@ -390,7 +390,7 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore = nullptr;								// The nap::Core
+		nap::Core mCore;										// The nap::Core
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
