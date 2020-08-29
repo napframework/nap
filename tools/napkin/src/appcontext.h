@@ -79,10 +79,10 @@ namespace napkin
 		~AppContext() override;
 
 		/**
-		 * Returns the instance of core managed by this context, nullptr if no project has been loaded.
+		 * Returns the instance of core managed by this context.
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core* getCore();
+		nap::Core& getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations
@@ -390,7 +390,7 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		std::unique_ptr<nap::Core> mCore = nullptr;				// The nap::Core
+		nap::Core mCore = nullptr;								// The nap::Core
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
