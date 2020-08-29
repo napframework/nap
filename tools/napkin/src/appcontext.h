@@ -79,10 +79,10 @@ namespace napkin
 		~AppContext() override;
 
 		/**
-		 * Returns the instance of core managed by this context, nullptr if no project has been loaded.
+		 * Returns the instance of core managed by this context.
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core getCore();
+		nap::Core& getCore();
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// File operations

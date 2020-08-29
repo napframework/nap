@@ -146,8 +146,8 @@ namespace nap
 		bool initializeServices(utility::ErrorState& errorState);
 
 		/**
-		 * Returns if a call to initializeEngine() succeeded.
-		 * @return true if the engine successfully initialized, false otherwise. 
+		 * Returns if core is initialized.
+		 * @return true if the engine initialized successfully, false otherwise. 
 		 */
 		bool isInitialized() const;
 

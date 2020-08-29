@@ -162,15 +162,15 @@ Document* AppContext::newDocument()
 	closeDocument();
 
 	// No instance of core provided
-	nap::Core* core = getCore();
-	if (core == nullptr)
+	nap::Core& core = getCore();
+	if (!core.isInitialized())
 	{
-		nap::Logger::warn("Core not loaded, cannot create document");
+		nap::Logger::warn("Core not initialized, cannot create document");
 		return nullptr;
 	}
 
 	// Create document
-	mDocument = std::make_unique<Document>(*core);
+	mDocument = std::make_unique<Document>(core);
 	connectDocumentSignals();
 
 	// Notify listeners
@@ -183,14 +183,14 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
-	auto core = getCore();
-	if (core == nullptr)
+	nap::Core& core = getCore();
+	if (!core.isInitialized())
 	{
-		nap::Logger::warn("Core not loaded, cannot load document");
+		nap::Logger::warn("Core not initialized, cannot load document");
 		return nullptr;
 	}
 
-	auto& factory = core->getResourceManager()->getFactory();
+	auto& factory = core.getResourceManager()->getFactory();
 	if (!deserializeJSON(data, EPropertyValidationMode::AllowMissingProperties, EPointerPropertyMode::NoRawPointers, factory, result, err))
 	{
 		nap::Logger::error(err.toString());
@@ -205,7 +205,7 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 	// Create new document
 	closeDocument();
-	mDocument = std::make_unique<Document>(*core, filename, std::move(result.mReadObjects));
+	mDocument = std::make_unique<Document>(core, filename, std::move(result.mReadObjects));
 
 	// Notify listeners
 	connectDocumentSignals();
@@ -398,9 +398,9 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
-nap::Core* AppContext::getCore()
+nap::Core& AppContext::getCore()
 {
-	return &mCore;
+	return mCore;
 }
 
 Document* AppContext::getDocument()
