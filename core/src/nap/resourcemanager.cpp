@@ -165,7 +165,6 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
 		mFactory(std::make_unique<CoreFactory>(core)),
 		mCore(core)
 	{
@@ -576,4 +575,14 @@ namespace nap
 		return rtti::ObjectPtr<Object>(object);
 	}
 
+
+	bool ResourceManager::watchDirectory(const std::string& directory, utility::ErrorState& error)
+	{
+		if (!error.check(utility::dirExists(directory), "Directory does not exist: %s", directory.c_str()))
+			return false;
+
+		mDirectoryWatcher = std::make_unique<DirectoryWatcher>();
+		mDirectoryWatcher->init(directory);
+		return true;
+	}
 }

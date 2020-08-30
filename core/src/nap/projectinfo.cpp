@@ -84,7 +84,7 @@ namespace nap
 	}
 
 
-	std::string ProjectInfo::dataDirectory() const
+	std::string ProjectInfo::getDataDirectory() const
 	{
 		auto dataFile = getDataFile();
 		if (dataFile.empty())

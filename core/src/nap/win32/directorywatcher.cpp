@@ -1,5 +1,10 @@
+// Local includes
 #include "../directorywatcher.h"
 #include "assert.h"
+#include "../logger.h"
+
+// External includes
+#include <utility/fileutils.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
@@ -29,14 +34,13 @@ namespace nap
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher()
+	void DirectoryWatcher::init(const std::string& directory)
 	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-		char current_directory[MAX_PATH];
-		GetCurrentDirectory(MAX_PATH, current_directory);
 
 		// Open directory 
-		mPImpl->mDirectoryToMonitor = CreateFileA(current_directory, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+		assert(utility::dirExists(directory));
+		mPImpl->mDirectoryToMonitor = CreateFileA(directory.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 		assert(mPImpl->mDirectoryToMonitor != INVALID_HANDLE_VALUE);
 
 		// Create event
@@ -53,12 +57,15 @@ namespace nap
 
 
 	/**
-	* Cleanup
-	*/
+	 * Cleanup
+	 */
 	DirectoryWatcher::~DirectoryWatcher()
 	{
-		CloseHandle(mPImpl->mDirectoryToMonitor);
-		CloseHandle(mPImpl->mOverlappedEvent);
+		if (mPImpl != nullptr)
+		{
+			CloseHandle(mPImpl->mDirectoryToMonitor);
+			CloseHandle(mPImpl->mOverlappedEvent);
+		}
 	}
 
 
@@ -68,9 +75,9 @@ namespace nap
 	*/
 	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
 	{
-		bool did_update = false;
-
 		// Overlapped event is signaled when data is available. By passing 0 we never block but return immediately (so this is how we poll non-blocking)
+		assert(mPImpl != nullptr);
+		bool did_update = false;
 		DWORD result = WaitForSingleObject(mPImpl->mOverlappedEvent, 0);
 		if (result == WAIT_OBJECT_0)
 		{
