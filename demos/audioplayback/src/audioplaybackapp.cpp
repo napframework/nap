@@ -73,7 +73,7 @@ namespace nap
             if (ImGui::Button("Stop"))
                 playbackComponent->stop();
         }
-        ImGui::SliderFloat("Start position", &mStartPosition, 0, mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.), "%.3f", 2);
+        ImGui::SliderFloat("Start Position", &mStartPosition, 0, mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.), "%.3f", 2);
         ImGui::SliderFloat("Duration (0 is untill the end)", &mDuration, 0, 10000, "%.3f", 2);
         ImGui::SliderFloat("Fade In", &mFadeInTime, 0, 2000, "%.3f", 2);
         ImGui::SliderFloat("Fade Out", &mFadeOutTime, 0, 2000, "%.3f", 2);
@@ -158,9 +158,6 @@ namespace nap
 
 	int AudioPlaybackApp::shutdown()
 	{
-	    utility::ErrorState errorState;
-	    if (!getCore().writeConfigFile(errorState))
-	        Logger::warn("Failed to write configuration file: %s", errorState.toString().c_str());
 		return 0;
 	}
 }

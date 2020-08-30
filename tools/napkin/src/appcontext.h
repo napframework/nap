@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QObject>
+#include <QProgressDialog>
 #include <QUndoCommand>
 #include <QMainWindow>
 
@@ -17,20 +18,28 @@
 #include "thememanager.h"
 #include "document.h"
 #include "resourcefactory.h"
+#include "nap/projectinfo.h"
 
 namespace napkin
 {
 
 	/**
-	 * The AppContext (currently a singleton) holds the 'globally' kept application state. All authored objects reside
-	 * here.
+	 * The AppContext (currently a singleton) holds the 'globally' kept application state. 
+	 * All authored objects reside here.
 	 * It has signals to notify the other application components of global state changes such as data file access and
 	 * provides the client with convenience methods that may change the application state.
 	 *
-	 * This class currently acts much like a model in MVC:
-	 * Operations on the data should happen through AppContext
+	 * This class currently acts much like a model in MVC: Operations on the data should happen through AppContext,
 	 * such that the rest of the application can react and update accordingly.
 	 *
+	 * The app context manages nap::Core, it is therefore required that the entire context needs to be destroyed if core needs to be re-initialized.
+	 * In other words: for every project that you want to load a new app context needs to be created and the old needs to be destroyed.
+	 * Unfortunately this is necessary because core sources dynamic libraries that at this point in time can't be freed properly on all systems.
+	 *
+	 * The context points to a document that is manipulated by the editor. 
+	 * If core fails to initialize, creation and manipulation of resources won't work. 
+	 * Core is initialized when a project is loaded.
+	 * 
 	 * TODO: Data manipulation methods and signals should really live in their own class.
 	 */
 	class AppContext : public QObject
@@ -48,7 +57,7 @@ namespace napkin
 		 * Construct the singleton
 		 * In order to avoid order of destruction problems with ObjectPtrManager the app context has to be explicitly created and destructed.
 		 */
-		static void create();
+		static AppContext& create();
 
 		/**
 		 * Destruct the singleton
@@ -70,6 +79,7 @@ namespace napkin
 		~AppContext() override;
 
 		/**
+		 * Returns the instance of core managed by this context.
 		 * @return The single nap::Core instance held by this AppContext
 		 */
 		nap::Core& getCore();
@@ -91,6 +101,18 @@ namespace napkin
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
 		Document* loadDocument(const QString& filename);
+
+		/**
+		 * Load the specified project into the application context
+		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
+		 * @return A pointer to the loaded project info or nullptr when loading failed
+		 */
+		const nap::ProjectInfo* loadProject(const QString& projectFilename);
+
+		/**
+		 * @return The currently loaded project or a nullptr when no project is loaded
+		 */
+		const nap::ProjectInfo* getProjectInfo() const;
 
 		/**
 		 * Reload the current document from disk
@@ -128,21 +150,25 @@ namespace napkin
 		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
-		void openRecentDocument();
+		void openRecentProject();
 
 		/**
 		 * @return The path of the file that was opened last.
 		 */
-		const QString getLastOpenedFilename();
+		const QString getLastOpenedProjectFilename();
 
 		/**
 		 * Add a filename to the recently opened file list or bump an existing filename to the top
 		 */
-		void addRecentlyOpenedFile(const QString& filename);
-		QStringList getRecentlyOpenedFiles() const;
+		void addRecentlyOpenedProject(const QString& filename);
 
 		/**
-		 * @return The current document
+		 * @return The list of recently opened project files
+		 */
+		QStringList getRecentlyOpenedProjects() const;
+
+		/**
+		 * @return The current document, creates it if it doesn't exist
 		 */
 		Document* getDocument();
 
@@ -150,6 +176,11 @@ namespace napkin
 		 * @return The current document or nullptr if there is no document
 		 */
 		const Document* getDocument() const;
+
+		/**
+		 * @return if there is a document currently loaded
+		 */
+		bool hasDocument() const;
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
@@ -192,6 +223,21 @@ namespace napkin
 		 * @param uri The URI to handle, can be a string like 'file://something' for example
 		 */
 		void handleURI(const QString& uri);
+
+		/**
+		 * Disable opening of project from recently opened file list on startup
+		 */
+		void setOpenRecentProjectOnStartup(bool b);
+
+		/**
+		 * Set to exit upon failure loading any project
+		 */
+		void setExitOnLoadFailure(bool b);
+
+		/**
+		 * Set to exit upon success loading any project
+		 */
+		void setExitOnLoadSuccess(bool b);
 
 	Q_SIGNALS:
 		/**
@@ -316,6 +362,14 @@ namespace napkin
 		 */
 		void logMessage(nap::LogMessage msg);
 
+		/**
+		 * Emits when an application-wide blocking operation started, progresses or finishes
+		 * @param fraction How far we are along the process.
+		 * 		           A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * @param message A short message describing what's happening.
+		 */
+		void blockingProgressChanged(float fraction, const QString& message = {});
+
 	private:
 
 		/**
@@ -337,10 +391,13 @@ namespace napkin
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
 		nap::Core mCore;										// The nap::Core
-		bool mCoreInitialized = false;							// Keep track of core initialization state
 		ThemeManager mThemeManager;			 					// The theme manager
 		ResourceFactory mResourceFactory;						// Le resource factory
 		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 		QString mCurrentFilename;								// The currently opened file
+		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
+		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
+		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
 	};
+
 };

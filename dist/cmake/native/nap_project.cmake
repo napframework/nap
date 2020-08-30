@@ -1,9 +1,3 @@
-cmake_minimum_required(VERSION 3.15.4)
-include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
-
-get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
-project(${project_name_from_dir})
-
 # Enforce GCC on Linux for now
 if(UNIX AND NOT APPLE)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -23,6 +17,7 @@ include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
+include(${NAP_ROOT}/cmake/cross_context_macros.cmake)
 
 # Get our modules list from project.json
 project_json_to_cmake()
@@ -131,16 +126,18 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
 endif()
 
-# Copy data to bin post-build
-copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+# Run FBX converter post-build
 export_fbx(${CMAKE_SOURCE_DIR}/data/)
+
+# Copy path mapping
+deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
 
 # Package into packaged project on *nix
 if(NOT WIN32)
     # Set RPATH to search in ./lib
-    if (APPLE)
+    if(APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
-        # install available propery list files if present
+        # Install Information Propertly List file if present
         if(INFO_PLIST)
             install(FILES ${INFO_PLIST} DESTINATION .)
         endif()
@@ -150,9 +147,13 @@ if(NOT WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
     install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+else()
+    if(NAP_PACKAGED_APP_BUILD)
+        copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
+    endif()
 endif()
 
-# Package napkin if we're doing a build from againat released NAP or we're packaging a project with napkin
+# Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin
 if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
     include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
 endif()

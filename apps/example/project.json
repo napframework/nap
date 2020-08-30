@@ -1,10 +1,14 @@
 {
-    "title": "Example",
-    "version": "1.0.0",
-    "modules": 
-    [
-    	"mod_example",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "Example", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_example",
         "mod_napapp",
         "mod_napparametergui"
-    ]
+    ], 
+    "Data": "", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

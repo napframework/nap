@@ -60,11 +60,11 @@ namespace napkin
 	/**
 	 * Display a file open dialog and open the file if confirmed.
 	 */
-	class OpenFileAction : public Action
+	class OpenProjectAction : public Action
 	{
 
 	public:
-		OpenFileAction();
+		OpenProjectAction();
 
 	private:
 		/**

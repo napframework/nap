@@ -35,6 +35,7 @@ namespace nap
 		return mFormatter(msg);
 	}
 
+
 	Logger::Logger() : mLevel(&fineLevel())
 	{
 		initialize();
@@ -61,6 +62,14 @@ namespace nap
 			if (message.level() >= handler->getLogLevel())
 				handler->commit(message);
 		}
+	}
+
+
+	void Logger::setCurrentLevel(const LogLevel& level)
+	{
+		for (auto& handler : mHandlers)
+			handler->setLogLevel(level);
+		mLevel = &level;
 	}
 
 

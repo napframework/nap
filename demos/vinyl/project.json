@@ -1,8 +1,13 @@
 {
-    "title": "Vinyl",
-    "version": "1.0.0",
-    "modules": [
-        "mod_napapp",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "Vinyl", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_napapp", 
         "mod_napimgui"
-    ]
+    ], 
+    "Data": "data/vinyl.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

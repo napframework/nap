@@ -23,6 +23,8 @@ qt5_use_modules(${PROJECT_NAME} Gui Widgets OpenGL)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBS} ${OPENGL_LIBRARIES})
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

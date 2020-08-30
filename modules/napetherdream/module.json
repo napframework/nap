@@ -1,6 +1,13 @@
 {
-    "dependencies": [
-        "mod_napmath",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napmath", 
         "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/etherdream/msvc/bin/Release",
+        "{ROOT}/../thirdparty/etherdream/msvc/bin/Debug",
+        "{ROOT}/thirdparty/etherdream/bin"
     ]
 }

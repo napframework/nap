@@ -22,17 +22,18 @@ def update_project_info_to_cmake(project_path):
         os.remove(output_filename)
 
     # Read in the JSON
-    with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
+    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
+    with open(project_info_path) as json_file:
         json_dict = json.load(json_file)
-        if not 'modules' in json_dict:
-            print("Missing element 'modules' in %s" % PROJECT_INFO_FILENAME)
+        if not 'RequiredModules' in json_dict:
+            print("Missing element 'RequiredModules' in %s" % project_info_path)
             return False
 
-        if not type(json_dict['modules']) is list:
-            print("Element 'modules' in %s is not an array" % PROJECT_INFO_FILENAME)
+        if not type(json_dict['RequiredModules']) is list:
+            print("Element 'RequiredModules' in %s is not an array" % PROJECT_INFO_FILENAME)
             return False
 
-        nap_modules = ' '.join(json_dict['modules'])
+        nap_modules = ' '.join(json_dict['RequiredModules'])
 
     # Write out
     with open(output_filename, 'w') as out_file:

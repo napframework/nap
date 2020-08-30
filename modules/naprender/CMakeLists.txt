@@ -52,6 +52,8 @@ find_package(glslang REQUIRED)
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add includes
 set(INCLUDES
@@ -101,7 +103,6 @@ copy_module_json_to_bin()
 # Windows thirdparty DLL copying
 if(WIN32)
     # Copy freeimage DLL to build directory
-    find_package(freeimage REQUIRED)
     copy_freeimage_dll()
 
     # Copy over Windows graphics DLLs to build directory

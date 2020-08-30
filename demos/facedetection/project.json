@@ -1,9 +1,14 @@
 {
-    "title": "FaceDetection",
-    "version": "1.0.0",
-    "modules": [
-    	"mod_napapp",
-        "mod_napimgui",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "FaceDetection", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_napapp", 
+        "mod_napimgui", 
         "mod_facedetection"
-    ]
+    ], 
+    "Data": "data/facedetection.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

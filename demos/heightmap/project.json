@@ -1,10 +1,15 @@
 {
-    "title": "HeightMap",
-    "version": "1.0.0",
-    "modules": [
-        "mod_heightmap",
-        "mod_napapp",
-        "mod_napcameracontrol",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "HeightMap", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_heightmap", 
+        "mod_napapp", 
+        "mod_napcameracontrol", 
         "mod_napimgui"
-    ]
+    ], 
+    "Data": "data/heightmap.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

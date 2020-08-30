@@ -1,11 +1,13 @@
 {
-    "dependencies": [
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
         "mod_naprender",
         "mod_napaudio",
-        "mod_napmath",
         "mod_napvideo",
         "mod_napscene",
         "mod_napcameracontrol",
 		"mod_napparameter"
-    ]
+    ], 
+    "WindowsDllSearchPaths": []
 }

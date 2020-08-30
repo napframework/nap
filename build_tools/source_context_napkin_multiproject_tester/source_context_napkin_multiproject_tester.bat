@@ -1,0 +1,14 @@
+@echo OFF
+
+set NAP_ROOT=%~dp0\..\..
+set THIRDPARTY_DIR=%NAP_ROOT%\..\thirdparty
+if not exist %THIRDPARTY_DIR% (
+    echo Error: The third party repository ^('thirdparty'^) needs to be cloned alongside the main repository.
+    echo.
+    echo Once thirdparty is in place run check_build_environment.bat first.
+    exit /b
+)
+
+set PYTHONPATH=
+set PYTHONHOME=
+%THIRDPARTY_DIR%\python\msvc\python-embed-amd64\python %~dp0\source_context_napkin_multiproject_tester.py %*

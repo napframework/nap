@@ -83,3 +83,6 @@ apply_executable_permissions.cmd
 dist/cmake/qt_checker/proj_temp
 *.swp
 cmake-build-release
+**/cache/path_mapping.json
+/venv/
+report.json

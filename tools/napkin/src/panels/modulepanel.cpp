@@ -3,10 +3,10 @@
 
 using namespace napkin;
 
-ModuleItem::ModuleItem(const nap::ModuleManager::Module& module)
+ModuleItem::ModuleItem(const nap::Module& module)
 		: QStandardItem(), mModule(module)
 {
-	std::string name(module.mDescriptor->mID);
+	std::string name(module.getDescriptor().mID);
 	setText(QString::fromStdString(name));
 }
 
@@ -22,9 +22,10 @@ ModuleModel::ModuleModel() : QStandardItemModel()
 void ModuleModel::onCoreInitialized()
 {
 	removeRows(0, rowCount());
-	auto& core = AppContext::get().getCore();
+	nap::Core& core = AppContext::get().getCore();
+	assert(core.isInitialized());
 	for (const auto& mod : core.getModuleManager().getModules())
-		appendRow(new ModuleItem(mod));
+		appendRow(new ModuleItem(*mod));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

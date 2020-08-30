@@ -5,7 +5,33 @@ import os
 from subprocess import call
 import sys 
 
-from nap_shared import read_console_char
+from nap_shared import read_console_char, get_python_path
+
+def regenerate_project_by_dir(project_path, suppress_showing_solution, linux_build_type, pause_on_failure):
+    project_name = os.path.basename(project_path.strip('\\'))
+    nap_root = os.path.abspath(os.path.join(project_path, os.pardir, os.pardir))
+    script_path = os.path.join(nap_root, 'tools', 'platform', 'regenerate_project_by_name.py')
+
+    # Determine our Python interpreter location
+    python = get_python_path()
+
+    cmd = [python, script_path, project_name] 
+    # Add our build type for Linux
+    if linux_build_type != None:
+        cmd.append(linux_build_type)
+    # If we don't want to show the solution and we weren't not on Linux specify that
+    if suppress_showing_solution:
+        cmd.append('--no-show')
+    exit_code = call(cmd)
+
+    # Pause to display output in case we're running from Windows Explorer / macOS Finder
+    if exit_code != 0 and pause_on_failure:
+        print("Press key to close...")
+
+        # Read a char from console
+        read_console_char()
+
+    return exit_code
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='regenerate')
@@ -19,34 +45,18 @@ if __name__ == '__main__':
                             help="Don't pause afterwards on failed generation")
     args = parser.parse_args()
 
-    project_name = os.path.basename(args.PROJECT_PATH.strip('\\'))
-    nap_root = os.path.abspath(os.path.join(args.PROJECT_PATH, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'regenerate_project_by_name.py')
-
     # If we're on Windows or macOS and we're generating a solution for the first time show the generated solution
-    show_solution = sys.platform in ('win32', 'darwin') and not args.no_show
+    suppress_showing_solution = sys.platform in ('win32', 'darwin') and args.no_show
 
-    # Determine our Python interpreter location
-    if sys.platform == 'win32':
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-    else:
-        python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
-
-    cmd = [python, script_path, project_name] 
-    # Add our build type for Linux
+    linux_build_type = None
     if sys.platform.startswith('linux'):    
-        cmd.append(args.BUILD_TYPE)
-    # If we don't want to show the solution and we weren't not on Linux specify that
-    if not show_solution and not sys.platform.startswith('linux'):
-        cmd.append('--no-show')
-    exit_code = call(cmd)
+        linux_build_type = args.BUILD_TYPE
 
-    # Pause to display output in case we're running from Windows Explorer / macOS Finder
-    if exit_code != 0 and not sys.platform.startswith('linux') and not args.no_pause:
-        print("Press key to close...")
+    pause_on_failure = False
+    if not sys.platform.startswith('linux') and not args.no_pause:
+        pause_on_failure = True
 
-        # Read a char from console
-        read_console_char()
+    exit_code = regenerate_project_by_dir(args.PROJECT_PATH, suppress_showing_solution, linux_build_type, pause_on_failure)
 
     # Expose exit code
     sys.exit(exit_code)

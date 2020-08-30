@@ -24,31 +24,17 @@ namespace nap
     }
 
 
-    bool Core::hasServiceConfiguration()
-    {
-		// Get interface
-		const AndroidExtension& android_ext = getExtension<AndroidExtension>();
-
-        // TODO ANDROID This is fairly temporary, use the AssetManager file list to determine if the file exists
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_BUFFER);
-        bool has_config = asset != NULL;
-        if (asset != NULL)
-            AAsset_close(asset);
-        return has_config;
-    }
-
-
-    bool Core::loadServiceConfiguration(rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
+	bool Core::loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
     {
 		// Get interface
 		const AndroidExtension& android_ext = getExtension<AndroidExtension>();
 
         // Open the asset using Android's AssetManager
         // TODO ANDROID Cleanup, harden and code re-use
-        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), SERVICE_CONFIG_FILENAME, AASSET_MODE_BUFFER);
+        AAsset* asset = AAssetManager_open(android_ext.getAssetManager(), filename, AASSET_MODE_BUFFER);
         if (asset == NULL)
         {
-            errorState.fail("AssetManager couldn't load %s", SERVICE_CONFIG_FILENAME);
+            errorState.fail("AssetManager couldn't load %s", filename);
             return false;
         }
 
@@ -63,10 +49,5 @@ namespace nap
             return false;
 
         return true;
-    }
-
-    void Core::setupPlatformSpecificEnvironment()
-    {
-        // Unused, for now
     }
 }

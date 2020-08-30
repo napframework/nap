@@ -1,21 +1,3 @@
-cmake_minimum_required(VERSION 3.15.4)
-
-include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
-
-# Get our module name
-if (IMPORTING_PROJECT_MODULE)
-    set(MODULE_NAME "mod_${PROJECT_NAME}")    
-else()
-    get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-endif(IMPORTING_PROJECT_MODULE) 
-
-# Avoid re-creating target
-if(TARGET ${MODULE_NAME})
-    return()
-endif()
-
-project(${MODULE_NAME})
-
 # Enforce GCC on Linux for now
 if(UNIX AND NOT APPLE)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -108,6 +90,9 @@ else()
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${MODULE_FOLDER_NAME})    
 
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+
 # Add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
@@ -166,18 +151,14 @@ endif()
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
-    if(UNIX)
-        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/lib${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
-    else()
-        install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
-    endif()
+    install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
 
-    # On Linux set our user modules tp use their directory for RPATH when installing
+    # On Linux set our user modules to use their directory for RPATH when installing
     if(NOT APPLE)
-        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so\")
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
                       execute_process(COMMAND patchelf 
                                               --set-rpath 
                                               $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/lib${MODULE_NAME}.so)")
+                                              ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so)")
     endif()
 endif()

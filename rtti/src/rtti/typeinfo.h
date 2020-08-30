@@ -219,7 +219,7 @@ namespace nap
 		 */
 		inline rttr::method findMethodRecursive(const rtti::TypeInfo& type, const std::string& methodName)
 		{
-			for (rtti::TypeInfo base : type.get_base_classes())
+			for (const rtti::TypeInfo& base : type.get_base_classes())
 			{
 				rttr::method result = findMethodRecursive(base, methodName);
 				if (result.is_valid())

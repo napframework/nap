@@ -10,26 +10,30 @@ using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	connect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
 
 void MainWindow::unbindSignals()
 {
-	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	disconnect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	disconnect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
-	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
@@ -41,11 +45,10 @@ void MainWindow::showEvent(QShowEvent* event)
 	{
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
-		AppContext::get().restoreUI();
+		getContext().restoreUI();
 		rebuildRecentMenu();
 		mFirstShowEvent = false;
 	}
-	fixTabs();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -62,10 +65,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::addDocks()
 {
-//	addDock("Available Types", &mHierarchyPanel);
 //	addDock("History", &mHistoryPanel);
 //	addDock("Path Browser", &mPathBrowser);
-
 	addDock("Resources", &mResourcePanel);
 	addDock("Inspector", &mInspectorPanel);
 	addDock("Log", &mLogPanel);
@@ -85,15 +86,11 @@ void MainWindow::addMenu()
 		addAction(newFileAction);
 		filemenu->addAction(newFileAction);
 
-		auto openFileAction = new OpenFileAction();
+		auto openFileAction = new OpenProjectAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
 
-		mRecentFilesMenu = filemenu->addMenu("Open Recent");
-
-		auto reloadFileAction = new ReloadFileAction();
-		addAction(reloadFileAction);
-		filemenu->addAction(reloadFileAction);
+		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -102,6 +99,10 @@ void MainWindow::addMenu()
 		auto saveFileAsAction = new SaveFileAsAction();
 		addAction(saveFileAction);
 		filemenu->addAction(saveFileAsAction);
+
+		auto reloadFileAction = new ReloadFileAction();
+		addAction(reloadFileAction);
+		filemenu->addAction(reloadFileAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
@@ -128,16 +129,19 @@ void MainWindow::onDocumentChanged()
 
 void MainWindow::updateWindowTitle()
 {
-	QString filename = AppContext::get().getDocument()->getCurrentFilename();
-	if (filename.isEmpty()) {
-		filename = napkin::TXT_UNTITLED_DOCUMENT;
-	} else {
-		filename = QFileInfo(filename).filePath();
+	// If there is not project information, set to default
+	const nap::ProjectInfo* project_info = getContext().getProjectInfo();
+	if (project_info == nullptr)
+	{
+		setWindowTitle(QApplication::applicationName());
+		return;
 	}
 
-	QString changed = AppContext::get().getDocument()->isDirty() ? "*" : "";
-
-	setWindowTitle(QString("%1%2 - %3").arg(filename, changed, QApplication::applicationName()));
+	// Otherwise display current project
+	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
+	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project_info->mTitle),
+											   changed, QString::fromStdString(project_info->mVersion),
+											   QApplication::applicationName()));
 }
 
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
@@ -213,6 +217,40 @@ void MainWindow::onLog(nap::LogMessage msg)
 		showError(msg);
 }
 
+void MainWindow::onBlockingProgress(float fraction, const QString& message)
+{
+	const int scale = 100;
+	if (fraction >= 1)
+	{
+		// Done
+		if (mProgressDialog)
+			mProgressDialog.reset();
+	}
+	else
+	{
+		// In progress
+		if (!mProgressDialog)
+		{
+			mProgressDialog = std::make_unique<QProgressDialog>(message, "Cancel", 0, 0, this);
+            mProgressDialog->setWindowTitle("Working...");
+			mProgressDialog->setCancelButton(nullptr);
+		}
+
+		if (fraction > 0)
+		{
+			mProgressDialog->setRange(0, scale);
+			mProgressDialog->setValue((int) fraction * scale);
+		}
+		else
+		{
+			mProgressDialog->setRange(0, 0);
+			mProgressDialog->setValue(0);
+		}
+		mProgressDialog->show();
+	}
+	QApplication::processEvents();
+}
+
 void MainWindow::showError(nap::LogMessage msg)
 {
 	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
@@ -221,7 +259,10 @@ void MainWindow::showError(nap::LogMessage msg)
 
 bool MainWindow::confirmSaveCurrentFile()
 {
-	if (!AppContext::get().getDocument()->isDirty())
+	if (!getContext().hasDocument())
+		return true;
+
+	if (!getContext().getDocument()->isDirty())
 		return true;
 
 	auto result = QMessageBox::question(this, "Confirm save unsaved change",
@@ -240,35 +281,28 @@ bool MainWindow::confirmSaveCurrentFile()
 
 void MainWindow::rebuildRecentMenu()
 {
-	mRecentFilesMenu->clear();
+	mRecentProjectsMenu->clear();
 
-	auto recentFiles = AppContext::get().getRecentlyOpenedFiles();
+	auto recentFiles = getContext().getRecentlyOpenedProjects();
 	for (const auto& filename : recentFiles)
 	{
-		auto action = mRecentFilesMenu->addAction(filename);
+		auto action = mRecentProjectsMenu->addAction(filename);
 		connect(action, &QAction::triggered, [this, filename]()
 		{
 			if (confirmSaveCurrentFile())
-				AppContext::get().loadDocument(filename);
+				getContext().loadProject(filename);
 		});
 	}
 
-	mRecentFilesMenu->setEnabled(!mRecentFilesMenu->isEmpty());
+	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
 }
 
 
 void MainWindow::onDocked(QDockWidget *dockWidget)
 {
-	fixTabs();
 }
 
-
-void MainWindow::fixTabs()
+AppContext& MainWindow::getContext() const
 {
-	// Removes the rendering of white lines bottom of tabs
-	// see: https://stackoverflow.com/questions/42746408/how-to-get-rid-of-strange-white-line-under-qtabbar-while-customzing-tabified-qdo
-	QList<QTabBar*> tabBars = findChildren<QTabBar*>("", Qt::FindChildrenRecursively);
-	for (auto& bar : tabBars)
-		bar->setDrawBase(false);
+	return AppContext::get();
 }
-

@@ -22,7 +22,6 @@ if(APPLE)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-                src/nap/native/projectinfomanager_ext.cpp
                 src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(MSVC)
@@ -34,7 +33,6 @@ elseif(MSVC)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-                src/nap/native/projectinfomanager_ext.cpp
                 src/nap/native/resourcemanager_ext.cpp
                 )
 elseif(ANDROID)
@@ -69,13 +67,14 @@ elseif(UNIX)
                 src/nap/native/modulemanager_ext.cpp
                 src/nap/native/logger_ext.cpp
                 src/nap/native/core_ext.cpp
-                src/nap/native/projectinfomanager_ext.cpp
                 src/nap/native/resourcemanager_ext.cpp
                 )
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 if (MSVC)
     include(GenerateExportheader)

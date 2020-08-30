@@ -59,6 +59,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
         call_except_on_failure(WORKING_DIR, [cmake, 
                               '-H%s' % project_path, 
                               '-B%s' % build_dir_name, 
+                              '-DNAP_PACKAGED_APP_BUILD=1',
                               '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE, 
                               '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
@@ -85,7 +86,12 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
     elif platform == 'darwin':
         # Generate project
-        call_except_on_failure(WORKING_DIR, [cmake, '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Xcode', '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+        call_except_on_failure(WORKING_DIR, [cmake, 
+                               '-H%s' % project_path, 
+                               '-B%s' % build_dir_name, 
+                               '-G', 'Xcode',
+                               '-DNAP_PACKAGED_APP_BUILD=1',
+                               '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
         call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
@@ -105,6 +111,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-H%s' % project_path, 
                            '-B%s' % build_dir_name, 
                            '-G', 'Visual Studio 14 2015 Win64', 
+                           '-DNAP_PACKAGED_APP_BUILD=1',
                            '-DPYBIND11_PYTHON_VERSION=3.5', 
                            '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
@@ -246,16 +253,16 @@ def process_project_info(project_path):
             return (None, None)
 
     # Some simple validation on loaded JSON
-    if not 'version' in project_info:
-        print("Missing 'version' in %s" % PROJECT_INFO_FILE)
+    if not 'Version' in project_info:
+        print("Missing 'Version' in %s" % PROJECT_INFO_FILE)
         return (None, None)
-    if not 'title' in project_info:
-        print("Missing 'title' in %s" % PROJECT_INFO_FILE)
+    if not 'Title' in project_info:
+        print("Missing 'Title' in %s" % PROJECT_INFO_FILE)
         return (None, None)
 
     # Read our version
-    version = project_info['version']
-    full_project_name = project_info['title']
+    version = project_info['Version']
+    full_project_name = project_info['Title']
 
     # Return version for population into package name
     return (version, full_project_name)

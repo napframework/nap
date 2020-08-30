@@ -1,8 +1,11 @@
 {
-    "dependencies": [
-        "mod_napscene",
-        "mod_napmath",
-        "mod_napinput",
-		"mod_napparameter"
-    ]
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napscene", 
+        "mod_napmath", 
+        "mod_napinput", 
+        "mod_napparameter"
+    ], 
+    "WindowsDllSearchPaths": []
 }

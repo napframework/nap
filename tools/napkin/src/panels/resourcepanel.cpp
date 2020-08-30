@@ -126,7 +126,7 @@ napkin::ResourcePanel::ResourcePanel()
 			&ResourcePanel::onSelectionChanged);
 
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
-	//    connect(&AppContext::get(), &AppContext::dataChanged, this, &ResourcePanel::refresh);
+	// connect(&AppContext::get(), &AppContext::dataChanged, this, &ResourcePanel::refresh);
 	connect(&AppContext::get(), &AppContext::entityAdded, this, &ResourcePanel::onEntityAdded);
 	connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
@@ -253,7 +253,6 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 	if (obj.size() > 0)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
 }
-
 
 void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 {

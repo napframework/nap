@@ -69,6 +69,11 @@ namespace nap
 			 */
 			const std::string toString() const;
 
+			/**
+			 * @return True if there are any errors, false when everything is okay.
+			 */
+			bool hasErrors() const { return !mErrorList.empty(); }
+
 		private:
 			std::vector<std::string> mErrorList;
 		};

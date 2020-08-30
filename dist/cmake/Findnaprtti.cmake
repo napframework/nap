@@ -31,30 +31,30 @@ if (WIN32)
 elseif (APPLE)
     find_path(
         NAPRTTI_LIBS_DIR
-        NAMES Release/libnaprtti.dylib
+        NAMES Release/naprtti.dylib
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.dylib)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.dylib)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.dylib)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.dylib)
 elseif (ANDROID)
     find_path(
         NAPRTTI_LIBS_DIR
         NO_CMAKE_FIND_ROOT_PATH
-        NAMES Release/${ANDROID_ABI}/libnaprtti.so
+        NAMES Release/${ANDROID_ABI}/naprtti.so
         HINTS ${NAP_ROOT}/lib/
     )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/libnaprtti.so)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/libnaprtti.so)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/naprtti.so)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/naprtti.so)
 elseif (UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
-        NAMES Debug/libnaprtti.so
+        NAMES Debug/naprtti.so
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.so)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.so)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.so)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.so)
 endif()
 
 # Setup as interface library
@@ -95,7 +95,7 @@ if (WIN32)
     )
 
     # Copy Python DLLs post-build on Windows
-    win64_copy_python_dlls_postbuild()
+    win64_copy_python_dlls_postbuild(FALSE)
 endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux
@@ -113,11 +113,11 @@ if(NOT WIN32 AND NOT ANDROID)
 
     # On Linux use lib directory for RPATH   
     if(UNIX AND NOT APPLE)
-        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so\")
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/naprtti.so\")
                       execute_process(COMMAND patchelf 
                                               --set-rpath 
                                               $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/libnaprtti.so
+                                              ${CMAKE_INSTALL_PREFIX}/lib/naprtti.so
                                               )
                       ")
     endif()   

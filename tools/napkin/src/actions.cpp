@@ -5,6 +5,7 @@
 #include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
+#include "napkinutils.h"
 
 using namespace napkin;
 
@@ -20,7 +21,8 @@ NewFileAction::NewFileAction()
 
 void NewFileAction::perform()
 {
-	if (AppContext::get().getDocument()->isDirty()) {
+	if (AppContext::get().hasDocument() && AppContext::get().getDocument()->isDirty()) 
+	{
 		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
 											"Save before creating new document",
 											"The current document has unsaved changes.\n"
@@ -41,21 +43,22 @@ void NewFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenFileAction::OpenFileAction()
+OpenProjectAction::OpenProjectAction()
 {
-	setText("Open...");
+	setText("Open Project...");
 	setShortcut(QKeySequence::Open);
 }
 
-void OpenFileAction::perform()
+void OpenProjectAction::perform()
 {
-	auto lastFilename = AppContext::get().getLastOpenedFilename();
-	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
-													lastFilename, JSON_FILE_FILTER);
+	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
+    auto topLevelWidgets = QApplication::topLevelWidgets();
+
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_FILE_FILTER);
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadDocument(filename);
+	AppContext::get().loadProject(filename);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +104,7 @@ void SaveFileAsAction::perform()
 	auto& ctx = AppContext::get();
 	auto prevFilename = ctx.getDocument()->getCurrentFilename();
 	if (prevFilename.isNull())
-		prevFilename = ctx.getLastOpenedFilename();
+		prevFilename = "untitled.json";
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);

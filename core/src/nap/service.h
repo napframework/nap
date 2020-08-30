@@ -29,6 +29,7 @@ namespace nap
 		virtual rtti::TypeInfo getServiceType() = 0;
 	};
 
+
 	/**
 	 * A Service is a process within core that cooperates with certain components in the system, this is the base
 	 * class for all services. Often services are used to load a driver, set up a connection or manage global module
@@ -62,6 +63,26 @@ namespace nap
 		 *	@return the type name of the service
 		 */
 		const std::string getTypeName() const;
+
+		/**
+		 * Copy is not allowed
+		 */
+		Service(Service&) = delete;
+
+		/**
+		 * Copy assignment is not allowed
+		 */
+		Service& operator=(const Service&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		Service(Service&&) = delete;
+
+		/**
+		 * Move assignment is not allowed
+		 */
+		Service& operator=(Service&&) = delete;
 
 	protected:
 		/**
@@ -148,7 +169,7 @@ namespace nap
 		template<typename SERVICE_CONFIG>
 		SERVICE_CONFIG* getConfiguration()
 		{
-			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration);
 		}
 
 		/**
@@ -158,12 +179,12 @@ namespace nap
 		template<typename SERVICE_CONFIG>
 		const SERVICE_CONFIG* getConfiguration() const
 		{
-			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration);
 		}
 
 	private:
 		// this variable will be set by the core when the service is added
 		Core*									mCore = nullptr;
-		std::unique_ptr<ServiceConfiguration>	mConfiguration;
+		ServiceConfiguration*					mConfiguration;
 	};
 }

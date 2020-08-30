@@ -2,7 +2,7 @@ if(MSVC OR APPLE)
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
 
-        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
         # builds when working in packaging and non-packaging at the same time)
         if(DEFINED NAP_PACKAGED_BUILD)
             set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
@@ -16,8 +16,10 @@ if(MSVC OR APPLE)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-
     endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
+    add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+    add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
 else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
@@ -40,6 +42,9 @@ else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+
+    add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+    add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 endif()
 
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
@@ -88,9 +93,20 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
+# Copy files to project target file dir
+# ARGN: Files to copy
+macro(copy_files_to_target_file_dir)
+    foreach(F ${ARGN})
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           )
+    endforeach()
+endmacro()
+
 # Copy Windows SDL2 DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
-    # Copy over some crap window dlls
+    # Copy over some window DLLs
     set(FILES_TO_COPY
         ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
         )
@@ -277,9 +293,10 @@ macro(project_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/project_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
-                    RESULT_VARIABLE EXIT_CODE
-                    )
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/project_info_parse_to_cmake.py
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE EXIT_CODE
+            )
     if(NOT ${EXIT_CODE} EQUAL 0)
         message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
     endif()
@@ -404,9 +421,6 @@ endmacro()
 # Copy module.json for module to sit alongside module post-build
 macro(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
-    if(UNIX)
-        set(DEST_FILENAME lib${DEST_FILENAME})
-    endif()
 
     if(APPLE)
         # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
@@ -429,3 +443,32 @@ macro(copy_module_json_to_bin)
                            COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
     endif()
 endmacro()
+
+# Copy appropriate path mapping in cached location alongside binary
+# PROJECT_DIR: The project directory
+function(deploy_single_path_mapping PROJECT_DIR)
+    find_path_mapping(${NAP_ROOT}/build_tools/path_mappings ${PROJECT_DIR} source)
+    if(DEFINED PATH_MAPPING_FILE)
+        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
+    else()
+        message(FATAL_ERROR "Couldn't locate path mapping")
+    endif()
+
+    if(APPLE OR WIN32)
+        # Multi build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
+    else()
+        # Single build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>/cache/path_mapping.json)
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping to bin")
+
+    set(PROJ_DEST_CACHE_PATH ${PROJECT_DIR}/cache/path_mapping.json)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping to project directory")
+endfunction()

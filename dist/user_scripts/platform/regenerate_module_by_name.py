@@ -18,11 +18,11 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build'
+    BUILD_DIR = 'build_dir'
 
 def update_module(module_name, build_type):
     # If module name is prefixed with mod_ remove it
-    if(module_name.startswith('mod_')):
+    if module_name.startswith('mod_'):
         module_name = module_name[4:]
         
     # Find the module
@@ -47,7 +47,7 @@ def update_module(module_name, build_type):
         print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
         return 0
     else:
-        return(ERROR_CONFIGURE_FAILURE)
+        return ERROR_CONFIGURE_FAILURE
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

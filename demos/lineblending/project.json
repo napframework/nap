@@ -1,11 +1,16 @@
 {
-    "title": "LineBlending",
-    "version": "1.0.0",
-    "modules": [
-        "mod_lineblending",
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_napcameracontrol",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "LineBlending", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_lineblending", 
+        "mod_napapp", 
+        "mod_napimgui", 
+        "mod_napcameracontrol", 
         "mod_napparametergui"
-    ]
+    ], 
+    "Data": "data/lineblending.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

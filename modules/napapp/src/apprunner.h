@@ -147,6 +147,22 @@ namespace nap
 			return false;
 #endif
 
+		// TODO: Enable after merge and test properly
+		// Enables loading of data file from project info automatically before initialization
+		/* 
+		// Ensure data file exists
+		std::string data_file = mCore.getProjectInfo().getDataFile();
+		if (!error.check(utility::fileExists(data_file), "data file: %s does not exist", data_file.c_str()))
+			return false;
+
+		// Load file
+		if (!mCore.getResourceManager()->loadFile(data_file, error))
+		{
+			error.fail("failed to load data file: %s", data_file.c_str());
+			return false;
+		}
+		*/
+
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
 			return false;

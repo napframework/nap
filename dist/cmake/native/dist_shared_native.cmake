@@ -53,22 +53,20 @@ macro(set_output_directories)
     if (MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-            set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
             if (PROJECT_PACKAGE_BIN_DIR)
                 set(BIN_DIR ${CMAKE_SOURCE_DIR}/${PROJECT_PACKAGE_BIN_DIR}/)
             else()
-                set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/)
+                set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${OUTPUTCONFIG}/)
             endif()
             string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
             set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
         endforeach()
     else()
         # Single built type, for Linux
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
         if (PROJECT_PACKAGE_BIN_DIR)
             set(BIN_DIR ${CMAKE_SOURCE_DIR}/${PROJECT_PACKAGE_BIN_DIR}/)
         else()
-            set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/)
+            set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/)
         endif()
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     endif()
@@ -193,21 +191,33 @@ macro(find_python_in_thirdparty)
 endmacro()
 
 # Windows: Post-build copy Python DLLs into project bin output
-macro(win64_copy_python_dlls_postbuild)
+# FOR_NAPKIN: Whether copying for Napkin (changing output dir)
+macro(win64_copy_python_dlls_postbuild FOR_NAPKIN)
+    if(${FOR_NAPKIN})
+        set(PYDLL_PATH_SUFFIX "../napkin/")
+    else()
+        set(PYDLL_PATH_SUFFIX "")
+    endif()
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
     foreach(PYTHON_DLL ${PYTHON_DLLS})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYDLL_PATH_SUFFIX}
                            )
     endforeach()
 endmacro()
 
 # Windows: Post-build copy Python modules into project bin output
-macro(win64_copy_python_modules_postbuild)
+# FOR_NAPKIN_BUILD_OUTPUT: Whether copying for Napkin (changing output dir)
+macro(win64_copy_python_modules_postbuild FOR_NAPKIN_BUILD_OUTPUT)
+    if(${FOR_NAPKIN_BUILD_OUTPUT})
+        set(PYMOD_PATH_SUFFIX "../napkin/")
+    else()
+        set(PYMOD_PATH_SUFFIX "")
+    endif()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYMOD_PATH_SUFFIX}
                        )
 endmacro()
 
@@ -316,9 +326,6 @@ endfunction()
 # Copy calling module's module.json to sit alongside module post-build
 macro(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
-    if(UNIX)
-        set(DEST_FILENAME lib${DEST_FILENAME})
-    endif()
     
     if(APPLE)
         # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
@@ -413,3 +420,74 @@ macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
         endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})        
     endforeach(SEARCH_MODULE ${SEARCH_MODULES})
 endmacro()
+
+# Linux: At install time add an additional RPATH onto a file
+# FILEPATH: The file to update
+# EXTRA_RPATH: The new RPATH entry
+macro(linux_append_rpath_at_install_time FILEPATH EXTRA_RPATH)
+    install(CODE "if(EXISTS ${FILEPATH})
+                      execute_process(COMMAND sh -c \"patchelf --print-rpath ${FILEPATH}\"
+                                      OUTPUT_VARIABLE ORIG_RPATH)
+                      set(NEW_RPATH \"\")
+                      if(NOT \${ORIG_RPATH} STREQUAL \"\")
+                          string(STRIP \${ORIG_RPATH} NEW_RPATH)
+                          string(APPEND NEW_RPATH \":\")
+                      endif()
+                      string(APPEND NEW_RPATH \${EXTRA_RPATH})
+                      execute_process(COMMAND patchelf
+                                              --set-rpath
+                                              \"\${NEW_RPATH}\"
+                                              \${FILEPATH}
+                                      ERROR_QUIET)
+                  endif()
+                  ")
+endmacro()
+
+# Deploy appropriate path mapping to cache location alongside binary, and install
+# in packaged app
+# PROJECT_DIR: The project directory
+function(deploy_single_path_mapping PROJECT_DIR)
+    # Deploy to build output
+    find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} framework_release)
+    if(DEFINED PATH_MAPPING_FILE)
+        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
+    else()
+        message(FATAL_ERROR "Couldn't locate path mapping")
+    endif()
+
+    if(APPLE OR WIN32)
+        # Multi build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
+    else()
+        # Single build-type systems
+        set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>/cache/path_mapping.json)
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${DEST_CACHE_PATH}
+                       COMMENT "Deploying path mapping to bin")
+
+    set(PROJ_DEST_CACHE_PATH ${PROJECT_DIR}/cache/path_mapping.json)
+    if(NOT (WIN32 AND NAP_PACKAGED_APP_BUILD))
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                           COMMENT "Deploying path mapping to project directory")
+    endif()
+
+    # Install into packaged app
+    find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} packaged_app)
+    if(DEFINED PATH_MAPPING_FILE)
+        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
+    else()
+        message(FATAL_ERROR "Couldn't locate path mapping")
+    endif()
+    install(FILES ${PATH_MAPPING_FILE} DESTINATION cache RENAME path_mapping.json)
+    if(WIN32 AND NAP_PACKAGED_APP_BUILD)
+        set(PROJ_DEST_CACHE_PATH ${CMAKE_INSTALL_PREFIX}/cache/path_mapping.json)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
+                           COMMENT "Deploying Win64 path mapping to packaged app project directory")
+    endif()
+endfunction()
