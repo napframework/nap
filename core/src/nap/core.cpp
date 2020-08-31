@@ -284,7 +284,7 @@ namespace nap
 			// Check if the service associated with the configuration isn't already part of the map, if so add as default
 			// Config is automatically destructed otherwise.
 			if (findServiceConfig(service_type) == nullptr)
-				addServiceConfig(service_type, std::move(service_config));
+				addServiceConfig(std::move(service_config));
 		}
 
 		// First create and add all the services (unsorted)
@@ -465,10 +465,11 @@ namespace nap
 	}
 
 
-	bool Core::addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
 	{
-		auto rval = mServiceConfigs.emplace(std::make_pair(serviceType, std::move(serviceConfig)));
-		return rval.second;
+		rtti::TypeInfo service_type = serviceConfig->getServiceType();
+		auto return_v = mServiceConfigs.emplace(std::make_pair(service_type, std::move(serviceConfig)));
+		return return_v.second;
 	}
 
 
@@ -519,21 +520,24 @@ namespace nap
 		rtti::DeserializeResult deserialize_result;
 		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
 		{
-			for (auto& object : deserialize_result.mReadObjects)
+			for (std::unique_ptr<rtti::Object>& object : deserialize_result.mReadObjects)
 			{
 				// Check if it's indeed a service configuration object
-				if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(),
-					"Config.json should only contain ServiceConfigurations"))
+				rtti::TypeInfo object_type = object->get_type();
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+
+				if (!err.check(config != nullptr,
+					"Config.json should only contain ServiceConfigurations, found object of type: %s instead",
+							   object_type.get_name().to_string().c_str()))
 					return false;
 
-				// Create configuration and try to add.
-				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-                auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
-				bool added = addServiceConfig(config->getServiceType(), std::move(config));
+				// Get type before moving and store pointer for
+                nap::ServiceConfiguration* config_ptr = config.get();
+				bool added = addServiceConfig(std::move(config));
 
 				// Duplicates are not allowed
 				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
-					configptr->mID.c_str(), configptr->getServiceType().get_name().to_string().c_str()))
+							   config_ptr->mID.c_str(), config_ptr->getServiceType().get_name().to_string().c_str()))
 					return false;
 			}
 		}

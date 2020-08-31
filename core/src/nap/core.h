@@ -368,11 +368,10 @@ namespace nap
 		/**
 		 * Add a new service configuration to this project if not present already.
 		 * Ownership is transferred.
-		 * @param serviceType the type of service this config belongs to
 		 * @param serviceConfig the service configuration to add.
 		 * @return true when added, false if already present.
 		 */
-		bool addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
+		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
 
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
