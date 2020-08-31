@@ -5,7 +5,7 @@ endif()
 
 project(mod_naprender)
 
-# add all cpp files to SOURCES
+# Add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
 source_group("headers" FILES ${HEADERS})
@@ -14,7 +14,7 @@ source_group("sources" FILES ${SOURCES})
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-# find SDL2
+# Find SDL2
 if(WIN32)
     if(MSVC)
         set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
@@ -32,7 +32,7 @@ elseif(UNIX)
 endif()
 find_package(SDL2 REQUIRED)
 
-# find assimp
+# Find Assimp
 if(WIN32)
     set(assimp_DIR ${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3)
 elseif(APPLE)
@@ -42,20 +42,20 @@ elseif(UNIX)
 endif()
 find_package(assimp REQUIRED)
 
-# find other package dependencies
+# Find other package dependencies
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(vulkansdk REQUIRED)
 find_package(SPIRVCross REQUIRED)
 find_package(glslang REQUIRED)
 
-# compile shared lib as target
+# Compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
-# add includes
+# Add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
@@ -67,14 +67,14 @@ set(INCLUDES
     )
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES} src)
 
-# set compile definitions
+# Set compile definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 if(APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT=1)
 endif()
 
-# add libraries
+# Add libraries
 set(LIBRARIES
     ${VULKANSDK_LIBS}
     ${SDL2_LIBRARY}
@@ -92,7 +92,7 @@ elseif(UNIX)
          )
 endif()
 
-# link libraries
+# Link libraries
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
 target_link_libraries(${PROJECT_NAME} debug "${GLSLANG_LIBS_DEBUG}" optimized "${GLSLANG_LIBS_RELEASE}")
