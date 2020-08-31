@@ -232,7 +232,7 @@ namespace nap
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher = nullptr;	// File monitor, detects changes on files
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
-		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
+		std::unique_ptr<CoreFactory>		mFactory;						// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 
 		/**
