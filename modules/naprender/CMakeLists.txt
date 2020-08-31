@@ -188,7 +188,7 @@ elseif(UNIX)
             DESTINATION thirdparty/SDL2/lib)
 endif()
 
-#vulkansdk
+# Vulkan SDK
 install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vulkansdk)
 if (WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/include DESTINATION thirdparty/vulkansdk)
@@ -201,6 +201,7 @@ elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/lib DESTINATION thirdparty/vulkansdk)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/share DESTINATION thirdparty/vulkansdk)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/bin DESTINATION thirdparty/vulkansdk)
+    install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION modules/${PROJECT_NAME}/macos/)
 elseif(UNIX)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/include DESTINATION thirdparty/vulkansdk)
     install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/lib DESTINATION thirdparty/vulkansdk)

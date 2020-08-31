@@ -21,19 +21,19 @@ if(NOT TARGET FreeImage)
 endif()
 add_include_to_interface_target(mod_naprender ${FREEIMAGE_INCLUDE_DIRS})
 
-# add vulkan library
+# Add Vulkan library
 set(MODULE_NAME_EXTRA_LIBS vulkansdk)
 
 if(UNIX)
     # Package assimp into packaged project on *nix
     install(DIRECTORY ${THIRDPARTY_DIR}/assimp/lib/
-            DESTINATION "lib"
+            DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE)    
 
     # Package SDL2 into packaged project on *nix
     install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/lib/
-            DESTINATION "lib"
+            DESTINATION lib
             PATTERN "cmake" EXCLUDE
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE)    
@@ -53,6 +53,11 @@ if(UNIX)
             PATTERN "pkgconfig" EXCLUDE
             PATTERN "*.a" EXCLUDE
             PATTERN "libVkLayer*" EXCLUDE)
+endif()
+
+# Package MoltenVK ICD file for packaged app on macOS
+if(APPLE)
+    install(FILES ${NAP_ROOT}/modules/mod_naprender/macos/MoltenVK_icd.json DESTINATION lib)
 endif()
 
 # Install thirdparty licenses into lib
