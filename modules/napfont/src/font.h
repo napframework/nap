@@ -118,7 +118,7 @@ namespace nap
 		/**
 		 * Create the instance based on font properties and a service
 		 */
-		FontInstance(const FontService& service);
+		FontInstance(FontService& service);
 
 		/**
 		 *	Destructor
@@ -260,6 +260,7 @@ namespace nap
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
 		std::string mFont;												///< Font that is loaded
+		FontService* mService;											///< Font service
 		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
 	};
 

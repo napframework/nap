@@ -74,6 +74,8 @@ namespace nap
 		public:
 			Factory() = default;
 			Factory(const Factory&) = delete;
+			virtual ~Factory() = default;
+
 			Factory& operator=(const Factory&) = delete;
 
 			/**
@@ -95,6 +97,9 @@ namespace nap
 			 * registered, the RTTI system is queried if it can be created.
 			 */
 			bool canCreate(rtti::TypeInfo typeInfo) const;
+
+		protected:
+			virtual Object* createDefaultObject(rtti::TypeInfo typeInfo);
 
 		private:
 			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;

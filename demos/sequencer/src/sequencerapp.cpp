@@ -32,9 +32,14 @@ namespace nap
         if (!mResourceManager->loadFile(mFilename, error))
             return false;
 
-		// Get the render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
-		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
+		// Get the timeline window
+		mTimelineWindow = mResourceManager->findObject<nap::RenderWindow>("TimelineWindow");
+		if (!error.check(mTimelineWindow != nullptr, "unable to find TimelineWindow"))
+			return false;
+
+		// Get the parameter window
+		mParameterWindow = mResourceManager->findObject<nap::RenderWindow>("ParameterWindow");
+		if (!error.check(mParameterWindow != nullptr, "unable to find ParameterWindow"))
 			return false;
 
 		// Get the scene that contains our entities and components
@@ -124,9 +129,28 @@ namespace nap
 	 */
 	void SequencerApp::update(double deltaTime)
 	{
-		// Use a default input router to forward input events (recursively) to all input components in the default scene
+		// Forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
-		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+		mInputService->processWindowEvents(*mParameterWindow, input_router,	{ &mScene->getRootEntity()});
+
+		// Show parameters
+		mGuiService->selectWindow(mParameterWindow);
+		
+		// Show all parameters
+		ImGui::Begin("Parameters");
+		mParameterGUI->show(mParameterGroup.get(), false);
+
+		// Display some extra info
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"Play the sequence to animate the parameters");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+
+		// Show sequence editor GUI
+		mGuiService->selectWindow(mTimelineWindow);
+		mSequenceEditorGUI->show();
 	}
 
 
@@ -134,30 +158,45 @@ namespace nap
 	// Draws the gui to the main window.
 	void SequencerApp::render()
 	{
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+		// Draw GUI parameter window
+		if (mRenderService->beginRecording(*mParameterWindow))
+		{
+			// Begin the render pass
+			mParameterWindow->beginRendering();
 
-		// Show parameters
-		mParameterGUI->show(mParameterGroup.get(), true);
+			// Draw GUI to screen
+			mGuiService->draw();
 
-		// Draw general application information
-		ImGui::Begin("Information");
-		ImGui::SameLine();
-		getCore().getFramerate();
-		ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(guicolors::red), "%.3f ms/frame (%.1f FPS)", 1000.0f / getCore().getFramerate(), getCore().getFramerate());
-		ImGui::End();
+			// End the render pass
+			mParameterWindow->endRendering();
 
-		// Show sequence editor gui
-		mSequenceEditorGUI->show();
+			// End recording
+			mRenderService->endRecording();
+		}
 
-		// Draw GUI to screen
-		mGuiService->draw();
+		// Draw GUI timeline window
+		if (mRenderService->beginRecording(*mTimelineWindow))
+		{
+			// Begin the render pass
+			mTimelineWindow->beginRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Draw GUI to screen
+			mGuiService->draw();
+
+			// End the render pass
+			mTimelineWindow->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Signal the ending of the frame
+		mRenderService->endFrame();
     }
 
 
@@ -178,7 +217,7 @@ namespace nap
 
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
-				mRenderWindow->toggleFullscreen();
+				mTimelineWindow->toggleFullscreen();
 		}
 
 		// Forward to input service

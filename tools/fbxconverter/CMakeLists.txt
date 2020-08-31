@@ -18,12 +18,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
-target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
-# Add the runtime paths for RTTR & GLEW on macOS
+# Add the runtime paths for RTTR on macOS
 if(APPLE)
     add_macos_rttr_rpath()
-    add_macos_glew_rpath()
 endif()
 
 # ======================= UNIT TESTS
@@ -70,10 +69,10 @@ if(UNIX)
     # Extra RPATH building for Linux and macOS
     set(PATH_TO_NAP_ROOT "../..")
     set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)  
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/lib)
 endif()
 
 if (WIN32)   
@@ -81,7 +80,6 @@ if (WIN32)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
     install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
                   ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
-                  ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
                   ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
                   ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
                   ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll

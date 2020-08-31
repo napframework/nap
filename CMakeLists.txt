@@ -65,7 +65,7 @@ elseif(UNIX)
 endif()
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 endif()
 
 if(NOT ANDROID OR ANDROID_PYTHON)
@@ -110,7 +110,6 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
-add_subdirectory(nrender)
 add_subdirectory(qt)
 
 # tools targets
@@ -120,12 +119,10 @@ add_subdirectory(tools/napkin)
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
 add_subdirectory(test/render)
-add_subdirectory(test/tommy)
-add_subdirectory(test/audiotest)
-add_subdirectory(test/solarsystem)
 
-# app targets
+# app targets, add your own app targets here!
 add_subdirectory(apps/example)
+add_subdirectory(apps/example/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -197,9 +194,6 @@ add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
 add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
-
-# Leftover components can go here for now
-add_subdirectory(modules/napsandbox)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

@@ -25,7 +25,7 @@ namespace nap
         /**
          * Constructor takes maximum number of items that can be in the queue at a time.
          */
-        TaskQueue(unsigned int maxQueueItems = 20);
+        TaskQueue(std::uint32_t maxQueueItems = 20);
         /**
          * Add a task to the end of the queue.
          */
@@ -58,7 +58,7 @@ namespace nap
          * @param blocking true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible.
          * @param maxQueueItems the maximum number of items in the task queue
          */
-        WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
+        WorkerThread(bool blocking = true, std::uint32_t maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**
@@ -101,7 +101,7 @@ namespace nap
     class ThreadPool final
 	{
     public:
-        ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
+        ThreadPool(std::uint32_t numberOfThreads = 1, std::uint32_t maxQueueItems = 20);
         ~ThreadPool();
         
         /**

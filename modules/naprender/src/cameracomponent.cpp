@@ -3,6 +3,7 @@
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraComponentInstance)
 RTTI_END_CLASS
@@ -44,7 +45,7 @@ namespace nap
 			(2.0f * screenPos.x) / viewport.getWidth()  - 1.0f,
 			(2.0f * screenPos.y) / viewport.getHeight() - 1.0f, 
 			-1.0, 1.0);
-		
+
 		glm::vec4 ray_eye = glm::inverse(getProjectionMatrix()) * ray_clip;
 		ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0, 0.0);
 

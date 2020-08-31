@@ -101,6 +101,11 @@ namespace nap
 			bool success = true;
 			for (EntityObjectGraph::Node* node : sorted_nodes)
 			{
+				// Bail early if one of the components failed to initialize
+				// If not, dependent components might want to sample invalid data
+				if(!success)
+					break;
+
 				Component* component = rtti_cast<Component>(node->mItem.mObject);
 				if (component == nullptr)
 					continue;

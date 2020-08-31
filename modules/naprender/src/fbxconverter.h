@@ -7,7 +7,9 @@
 
 namespace nap
 {
+	class RenderService;
 	class MeshInstance;
+	
 	namespace utility
 	{
 		class ErrorState;
@@ -23,8 +25,7 @@ namespace nap
 	};
 
 	/**
-	 * Convert (split) a FBX into multiple parts. Currently only converts the meshes.
-	 *
+	 * Converts (splits) an .fbx file into multiple .mesh parts. Currently only converts the meshes.
 	 * @param fbxPath The FBX file to convert
 	 * @param outputDirectory Absolute or relative directory that the converted files should be placed in
 	 * @param convertOptions Options for the convert
@@ -42,5 +43,5 @@ namespace nap
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure
 	 */
-	NAPAPI std::unique_ptr<MeshInstance> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
+	NAPAPI std::unique_ptr<MeshInstance> loadMesh(RenderService& renderService, const std::string& meshPath, utility::ErrorState& errorState);
 }

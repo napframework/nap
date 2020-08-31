@@ -60,20 +60,29 @@ namespace nap
 	// Called when the window is going to render
 	void @PROJECT_NAME_PASCALCASE@App::render()
 	{
-		// Destroy old GL context related resources scheduled for destruction
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Prep main window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Render GUI elements
+			mGuiService->draw();
 
-		// Draw our gui
-		mGuiService->draw();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Proceed to next frame
+		mRenderService->endFrame();
 	}
 	
 
@@ -85,6 +94,18 @@ namespace nap
 	
 	void @PROJECT_NAME_PASCALCASE@App::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			// If we pressed escape, quit the loop
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit();
+
+			// f is pressed, toggle full-screen
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+				mRenderWindow->toggleFullscreen();
+		}
+		// Add event, so it can be forwarded on update
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -14,12 +14,15 @@ struct PointLight
 };
 
 // uniform inputs
-uniform vec3 		inCameraPosition;		//< Camera World Space Position
-uniform vec3 		inBlobPosition;			//< Blob position in uv space
-uniform float 		inTime;					//< Modulation time
-uniform float 		inVelocity;				//< Velocity used for modulating frequency
-uniform vec3 		inMousePosition;		//< Current mouse position in uv space
-uniform PointLight	inLight;				//< Light
+uniform UBOFrag
+{
+	uniform vec3 		inCameraPosition;		//< Camera World Space Position
+	uniform vec3 		inBlobPosition;			//< Blob position in uv space
+	uniform float 		inTime;					//< Modulation time
+	uniform float 		inVelocity;				//< Velocity used for modulating frequency
+	uniform vec3 		inMousePosition;		//< Current mouse position in uv space
+	uniform PointLight	inLight;				//< Light
+} ubofrag;
 
 // output
 out vec4 out_Color;
@@ -61,12 +64,12 @@ float fit(float value, float inMin, float inMax, float outMin, float outMax, boo
 float calculateDisplacement(vec2 uv)
 {
 	// Distance in uv space from click to frag
-	float uv_dist = distance(inBlobPosition.xy, uv);
-	float currentDistance = mix(minDistance, maxDistance, pow(inVelocity,0.75f));
+	float uv_dist = distance(ubofrag.inBlobPosition.xy, uv);
+	float currentDistance = mix(minDistance, maxDistance, pow(ubofrag.inVelocity,0.75f));
 
 	// Get mapped normalized value
 	float uv_dist_norm = fit(uv_dist, 0.0, currentDistance, 0.0, 1.0, false);
-	float distribution = mix(minDistribution, maxDistribution, inVelocity);
+	float distribution = mix(minDistribution, maxDistribution, ubofrag.inVelocity);
 	uv_dist_norm = pow(uv_dist_norm, distribution);
 
 	// Fit distribution based on distance
@@ -77,10 +80,10 @@ float calculateDisplacement(vec2 uv)
 	float weighted_dist = uv_dist * uv_dist_norm;
 
 	// Apply phase
-	weighted_dist += ((inTime * speed) * -1.0);
+	weighted_dist += ((ubofrag.inTime * speed) * -1.0);
 
 	// Apply freq
-	weighted_dist *= mix(minFrequency, maxFrequency, inVelocity);
+	weighted_dist *= mix(minFrequency, maxFrequency, ubofrag.inVelocity);
 	
 	// Get sin over distance
 	float displacement_v = (sin(weighted_dist) + 1.0) / 2.0;
@@ -101,15 +104,15 @@ float calculateDisplacement(vec2 uv)
 float calculateMouseCursor(vec2 uv)
 {
 	// Distance in uv space from click to frag
-	float uv_dist = distance(inMousePosition.xy, uv);
+	float uv_dist = distance(ubofrag.inMousePosition.xy, uv);
 
 	// Fit to get a nice little ball in uv space where the mouse is
-	float offset = 0.02 * fit(inVelocity, 0.0, 1.0, 1.0, 0.4, true);
+	float offset = 0.02 * fit(ubofrag.inVelocity, 0.0, 1.0, 1.0, 0.4, true);
 	float mouse_value = fit(uv_dist, offset, offset+0.002, 1.0, 0.0, true);
 
 	// Scale with distance to blob, when the blob is close to the mouse cursor
 	// the cursor disappears
-	float blob_dist = distance(inMousePosition.xy, inBlobPosition.xy);
+	float blob_dist = distance(ubofrag.inMousePosition.xy, ubofrag.inBlobPosition.xy);
 	mouse_value *= pow(fit(blob_dist, 0.025, 0.1, 0, 1, true),2);
 
 	return mouse_value;
@@ -127,24 +130,24 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(inLight.mPosition - ws_position);
+	vec3 surfaceToLight = normalize(ubofrag.inLight.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(inCameraPosition - ws_position);
+	vec3 surfaceToCamera = normalize(ubofrag.inCameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * inLight.mIntensity;
+	vec3 diffuse = diffuseCoefficient * color * ubofrag.inLight.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * inLight.mIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * specularColor * ubofrag.inLight.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;
@@ -201,6 +204,9 @@ void main()
 	// Apply lights and specular
 	vec3 lit_color = applyLight(color, normal, passPosition);
 
+	normal = normalize(normal);
+
 	// Set fragment color output
 	out_Color =  vec4(lit_color,1.0);
+	//out_Color =  vec4(normal.x,normal.y,normal.z,1.0);
 }

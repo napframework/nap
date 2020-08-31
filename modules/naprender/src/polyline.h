@@ -7,38 +7,50 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
-	 * Properties commonly associated with a PolyLine
+	 * Common polyline properties.
 	 */
 	struct PolyLineProperties
 	{
-		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	///< Property: 'Color' RGBA color of the line
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;			///< Property: 'Usage' If the line is created once or frequently updated.
+		glm::vec4		mColor = { 1.0f, 1.0f, 1.0f,1.0f };			///< Property: 'Color' RGBA color of the line
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// PolyLine
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Base class for all line specific mesh types
-	 * A PolyLine is the same as a mesh but limited to LINE_STRIP and LINE_LOOP drawing modes
-	 * It also has a fixed set of (initial) vertex attributes: Position, Color, Uv and Normals
+	 * Base class for all line specific mesh types.
+	 * A PolyLine is a mesh that is always drawn using: LINE_STRIP.
+	 * It also has a fixed set of (initial) vertex attributes: Position, Color0, UV0 and Normal.
 	 */
 	class NAPAPI PolyLine : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		PolyLine(nap::Core& core);
+
 		/**
-		 * Create the mesh instance and the necessary vertex attributes (P, Cd, N, Uv)
-		 * When implementing a derived PolyLine, make sure to call the base init first
-		 * @return if the mesh was and attributes were created successfully
+		 * Create the mesh instance and required vertex attributes (P, Cd, N, Uv)
+		 * When implementing a derived PolyLine, make sure to call this init first.
+		 * @param errorState contains the error if the line could not be created.
+		 * @return if the line is created successfully.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return The polygon line mesh
+		 * @return The polygon line mesh
 		 */
 		virtual MeshInstance& getMeshInstance() override						{ return *mMeshInstance; }
 
 		/**
-		 *	@return The polygon line mesh
+		 * @return The polygon line mesh
 		 */
 		virtual const MeshInstance&	getMeshInstance() const override 			{ return *mMeshInstance; }
 
@@ -127,20 +139,26 @@ namespace nap
 		/**
 		 * @return if the line is closed or not
 		 */
-		bool isClosed() const;
+		virtual bool isClosed() const = 0;
 
 		// Properties associated with a line
 		PolyLineProperties mLineProperties;
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
+		RenderService* mRenderService = nullptr;
 
-		// Creates the default vertex line attributes, useful for easy access
+		/**
+		 * Utility function, creates all the default line attributes: Position, Normal, UV0 and Color0.
+		 * @param instance the instance to add the attributes to.
+		 */
 		static void createVertexAttributes(MeshInstance& instance);
 	};
 
-	//////////////////////////////////////////////////////////////////////////
 
+	//////////////////////////////////////////////////////////////////////////
+	// Line
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Simple line from a to b. 
@@ -151,22 +169,30 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		// Properties
-		glm::vec3 mStart =	{ -0.5f, 0.0f, 0.0f };	///< Property: 'Start' location of the line
-		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	///< Property: 'End' location of the line
-		bool mClosed =		false;					///< Property: 'Closed' if the line is considered closed
-		int mVertexCount = 2;						///< Property: 'Vertices' number of line vertices, defaults to two
+		Line(nap::Core& core);
 
 		/**
 		 * Creates the line
 		 * @return if the line was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed or open based on the 'Closed' property.
+		 */
+		virtual bool isClosed() const override						{ return mClosed; }
+
+		glm::vec3 mStart	= { -0.5f, 0.0f, 0.0f };				///< Property: 'Start' location of the line
+		glm::vec3 mEnd		= { 0.5f, 0.0f, 0.0f };					///< Property: 'End' location of the line
+		bool mClosed		= false;								///< Property: 'Closed' if the line is considered closed
+		int mVertexCount	= 2;									///< Property: 'Vertices' number of line vertices, defaults to two
+
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
-
+	// Rectangle
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Simple rectangle as a polygon line.
@@ -178,15 +204,26 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		glm::vec2 mDimensions;						///< Property: 'Dimensions' vec2 that describes the width and height of the rectangle 
+		Rectangle(nap::Core& core);
 
 		/**
-		* Creates the rectangle
-		* @return if the rectangle was successfully created
-		*/
+		 * Creates the rectangle
+		 * @return if the rectangle was successfully created
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override						{ return true; }
+
+		glm::vec2 mDimensions = { 1.0f, 1.0f };						///< Property: 'Dimensions' describes the width and height of the rectangle 
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Circle
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Simple circle as a polygon line. 
@@ -196,16 +233,27 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;					///< Property: 'Radius' of the circle
-		int mSegments = 100;					///< Property: 'Segments' number of circle segments 
+		Circle(nap::Core& core);
 
 		/**
-		* Creates the rectangle
-		* @return if the rectangle was successfully created
-		*/
+		 * Creates the rectangle
+		 * @return if the rectangle was successfully created
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
+
+		float mRadius = 1.0f;									///< Property: 'Radius' circle radius
+		int mSegments = 100;									///< Property: 'Segments' number of vertices 
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Hexagon
+	//////////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Simple hexagon as a polygon line.
@@ -215,15 +263,25 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;						///< Property: 'Radius' of the hexagon
+		Hexagon(nap::Core& core);
+		float mRadius = 1.0f;									///< Property: 'Radius' hexagon radius
 
 		/**
 		 * Creates the hexagon
 		 * @return if the hexagon was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// TriangleLine
+	//////////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Simple equal sided triangle.
@@ -233,13 +291,19 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
-		float mRadius = 1.0f;							///< Property: 'Radius' of the triangle
+		TriangleLine(nap::Core& core);
+		float mRadius = 1.0f;									///< Property: 'Radius' triangle radius
 
 		/**
 		 * Creates the equal sided triangle
 		 * @return if the triangle mesh was created successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return closed
+		 */
+		virtual bool isClosed() const override					{ return true; }
 	};
 
 
@@ -253,11 +317,9 @@ namespace nap
 		return math::getValueAlongLine(attr.getData(), location, isClosed(), outValue);
 	}
 
-
 	template<typename T>
 	void nap::PolyLine::getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const
 	{
 		return math::getValueAlongLine(distanceMap, attr.getData(), location, outValue);
 	}
-
 }

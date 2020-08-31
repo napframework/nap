@@ -49,15 +49,24 @@ namespace nap
 		// Assign slot when new frame is captured
 		mCaptureComponent->frameReceived.connect(mCaptureSlot);
 
-		// Make sure blobCount uniform is present on source material
+		// Try to find general uniform buffer object in fragment shader
 		nap::MaterialInstance& mat_instance = mRenderComponent->getMaterialInstance();
-		UniformInt* blob_count = mat_instance.getMaterial()->findUniform<UniformInt>("blobCount");
-		if (!errorState.check(blob_count != nullptr, "%s: missing 'blobCount' uniform", mID.c_str()))
+		UniformStructInstance* ubo = mat_instance.getOrCreateUniform("UBO");
+		if (!errorState.check(ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", mID.c_str()))
 			return false;
 
-		// If present we can create our unique handle and store it for future use
-		mBlobCountUniform = &(mat_instance.getOrCreateUniform<UniformInt>("blobCount"));
+		// Locate blob count uniform, if present we can create our unique handle and store it for future use
+		mBlobCountUniform = ubo->getOrCreateUniform<UniformIntInstance>("blobCount");
+		if (!errorState.check(mBlobCountUniform != nullptr, "%s: missing 'blobCount' uniform", mID.c_str()))
+			return false;
 
+		// Locate blobs uniform struct array, we update individual blob elements on update
+		mBlobsUniform = ubo->getOrCreateUniform<UniformStructArrayInstance>("blobs");
+		if (!errorState.check(mBlobsUniform != nullptr, "%s: missing 'blobs' uniform", mID.c_str()))
+			return false;
+
+		// Add 1 matrix
+		mConversionFrame.addNew();
 		return true;
 	}
 
@@ -76,22 +85,18 @@ namespace nap
 		for (int i=0; i<blob_count; i++)
 		{
 			// Set blob center
-			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
-			assert(material.getMaterial()->findUniform(center_uniform_name) != nullptr);
-			
-			UniformVec2& center_uniform = material.getOrCreateUniform<UniformVec2>(center_uniform_name);
-			center_uniform.setValue(glm::vec2
+			UniformVec2Instance* center_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformVec2Instance>("mCenter");
+			assert(center_uniform != nullptr);
+			center_uniform->setValue(glm::vec2
 			(
 				blobs[i].getMin().x + (blobs[i].getWidth()  / 2.0),
 				blobs[i].getMin().y + (blobs[i].getHeight() / 2.0)
 			));
 
 			// Set blob size
-			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
-			assert(material.getMaterial()->findUniform(size_uniform_name) != nullptr);
-			
-			UniformFloat& size_uniform = material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(blobs[i].getHeight() / 2.0f);
+			UniformFloatInstance* size_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformFloatInstance>("mSize");
+			assert(size_uniform != nullptr);
+			size_uniform->setValue(blobs[i].getHeight() / 2.0f);
 		}
 	}
 
@@ -105,6 +110,9 @@ namespace nap
 
 		// Ensure channel count is the same
 		const CVFrame& cv_frame = *frame;
+
+		/*
+		TODO: Support getChannelCount()
 		int cv_channels = cv_frame[mMatrixIndex].channels();
 		int te_channels = mRenderTexture->getChannelCount();
 		if (!(cv_channels == te_channels))
@@ -113,6 +121,7 @@ namespace nap
 				cv_channels, te_channels);
 			return;
 		}
+		*/
 
 		// Ensure dimensions are the same
 		glm::vec2 tex_size = mRenderTexture->getSize();
@@ -126,7 +135,7 @@ namespace nap
 			return;
 		}
 		
-		// Update GPU texture
-		mRenderTexture->update(cv_frame[mMatrixIndex].getMat(cv::ACCESS_READ).data);
+		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_RGB2RGBA);
+		mRenderTexture->update(mConversionFrame[0].getMat(cv::ACCESS_READ).data, mRenderTexture->getDescriptor());
 	}
 }

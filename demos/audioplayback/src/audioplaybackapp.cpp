@@ -42,12 +42,6 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
         mBuffer = mResourceManager->findObject<audio::AudioBufferResource>("audioFile");
 
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		// Find the audio entity
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
         mAudioEntity = scene->findEntity("audioEntity");
@@ -58,7 +52,6 @@ namespace nap
         mFadeOutTime = playbackComponent->getFadeOutTime();
         mPitch = playbackComponent->getPitch();
         mPanning = playbackComponent->getStereoPanning();
-
 		return true;
 	}
 	
@@ -101,20 +94,29 @@ namespace nap
 	 */
 	void AudioPlaybackApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin the render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Draw our GUI to target
+			mGuiService->draw();
 
-		// Draw our gui
-		mGuiService->draw();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Stop recording operations for this window
+			mRenderService->endRecording();
+		}
+
+		// End frame capture
+		mRenderService->endFrame();
 	}
 	
 	
@@ -151,12 +153,6 @@ namespace nap
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void AudioPlaybackApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 

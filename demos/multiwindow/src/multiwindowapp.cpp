@@ -9,7 +9,9 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <imgui/imgui.h>
+#include <imguiutils.h>
+#include <uniforminstance.h>
+#include <sdlhelpers.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -36,7 +38,7 @@ namespace nap
 			return false;
 
 		// Get screen size
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		glm::ivec2 screen_size = SDL::getScreenSize(0);
 		
 		// Calculate x and y window offsets
 		int offset_x = (screen_size.x - (3 * 512)) / 2;
@@ -45,16 +47,20 @@ namespace nap
 		// Extract windows and set position
 		mRenderWindowOne = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mRenderWindowOne->setPosition({ offset_x, offset_y });
-		
+
 		mRenderWindowTwo = mResourceManager->findObject<nap::RenderWindow>("Window1");
 		mRenderWindowTwo->setPosition({ offset_x + 512, offset_y });
 		
 		mRenderWindowThree = mResourceManager->findObject<nap::RenderWindow>("Window2");
 		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
 
-		// Find the world and camera entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		// Extract textures
+		mTextureOne = mResourceManager->findObject<ImageFromFile>("TextureOne");
+		mTextureTwo = mResourceManager->findObject<ImageFromFile>("TextureTwo");
+		mWorldTexture = mResourceManager->findObject<ImageFromFile>("WorldTexture");
 
+		// Find the entities
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mWorldEntity = scene->findEntity("World");
 		mPerspectiveCameraOne = scene->findEntity("PerpectiveCameraOne");
 		mPerspectiveCameraTwo = scene->findEntity("PerpectiveCameraTwo");
@@ -63,8 +69,6 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
-
-		mGuiService->selectWindow(mRenderWindowTwo);
 		return true;
 	}
 	
@@ -103,13 +107,8 @@ namespace nap
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
 
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
+		// Update the gui for all windows
+		updateGUI();
 	}
 
 	
@@ -125,18 +124,19 @@ namespace nap
 	{
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		nap::UniformStructInstance* frag_ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
 
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindowOne.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
 		// Render Window One : Sphere
+		if(mRenderService->beginRecording(*mRenderWindowOne))
 		{
-			// Activate current window for drawing
-			mRenderWindowOne->makeActive();
-
-			// Clear back-buffer
-			mRenderService->clearRenderTarget(mRenderWindowOne->getBackbuffer());
+			// Begin the render pass
+			mRenderWindowOne->beginRendering();
 
 			// Find the world and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -149,19 +149,26 @@ namespace nap
 			// Set the camera location uniform
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraOne->getComponent<nap::TransformComponentInstance>();
 			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform.setValue(global_pos);
+			cam_loc_uniform->setValue(global_pos);
 
 			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(mRenderWindowOne->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowOne, camera, components_to_render);
+
+			// Draw gui to window one
+			mGuiService->draw();
+
+			// End render pass
+			mRenderWindowOne->endRendering();
+
+			// End record pass
+			mRenderService->endRecording();
 		}
 
 		// Render Window Two : Texture
+		if(mRenderService->beginRecording(*mRenderWindowTwo))
 		{
-			// Make window 2 active
-			mRenderWindowTwo->makeActive();
-
-			// Clear backbuffer
-			mRenderService->clearRenderTarget(mRenderWindowTwo->getBackbuffer());
+			// Begin render pass
+			mRenderWindowTwo->beginRendering();
 
 			// Find the plane entity and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -172,19 +179,23 @@ namespace nap
 			nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
 
 			// Render the plane with the orthographic to window two
-			mRenderService->renderObjects(mRenderWindowTwo->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowTwo, camera, components_to_render);
 
 			// Draw gui to window one
 			mGuiService->draw();
+
+			// End render pass
+			mRenderWindowTwo->endRendering();
+
+			// End recording
+			mRenderService->endRecording();
 		}
 
 		// Render Window Three: Sphere and Texture
+		if(mRenderService->beginRecording(*mRenderWindowThree))
 		{
-			// Make window 3 active
-			mRenderWindowThree->makeActive();
-
-			// Clear backbuffer
-			mRenderService->clearRenderTarget(mRenderWindowThree->getBackbuffer());
+			// Begin the render pass
+			mRenderWindowThree->beginRendering();
 			
 			// Find the world entity and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -197,10 +208,10 @@ namespace nap
 			// Set the camera location uniform for the halo effect
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraTwo->getComponent<nap::TransformComponentInstance>();
 			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform.setValue(global_pos);
+			cam_loc_uniform->setValue(global_pos);
 
 			// Render sphere
-			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), persp_camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowThree, persp_camera, components_to_render);
 
 			// Now find the second plane to render
 			nap::RenderableMeshComponentInstance& renderable_plane = mPlaneTwoEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -211,26 +222,20 @@ namespace nap
 			nap::OrthoCameraComponentInstance& camera = mOrthoCamera->getComponent<nap::OrthoCameraComponentInstance>();
 
 			// Render the plane with the orthographic to window three
-			mRenderService->renderObjects(mRenderWindowThree->getBackbuffer(), camera, components_to_render);
+			mRenderService->renderObjects(*mRenderWindowThree, camera, components_to_render);
+
+			// Draw gui to window three
+			mGuiService->draw();
+
+			// Stop render pass
+			mRenderWindowThree->endRendering();
+
+			// Stop recording
+			mRenderService->endRecording();
 		}
 
-		// We can only render the gui to the primary window for now
-		// To do so we simply request the primary window and draw
-		// Note that the primary window is not defined by the declaration
-		// of window resources in json! After that swap all the buffers
-		{
-			// Swap screen buffers
-			mRenderWindowOne->makeActive();
-			mRenderWindowOne->swap();
-
-			// Swap buffers screen two
-			mRenderWindowTwo->makeActive();
-			mRenderWindowTwo->swap();
-
-			// Swap buffers screen three
-			mRenderWindowThree->makeActive();
-			mRenderWindowThree->swap();
-		}
+		// Submit recorded commands
+		mRenderService->endFrame();
 	}
 
 
@@ -278,7 +283,7 @@ namespace nap
 
 	void MultiWindowApp::positionPlane(nap::RenderWindow& window, nap::TransformComponentInstance& planeTransform)
 	{
-        glm::ivec2 pixel_size = window.getBackbuffer().getSize();
+        glm::ivec2 pixel_size = window.getBufferSize();
 		float window_width = pixel_size.x;
 		float window_heigh = pixel_size.y;
 
@@ -302,5 +307,64 @@ namespace nap
 		// Push position values to transform
 		planeTransform.setTranslate(glm::vec3(pos_x, pos_y, 0.0f));
 		planeTransform.setScale(glm::vec3(scale, scale, 1.0f));
+	}
+
+
+	void MultiWindowApp::updateGUI()
+	{
+		// Select window 1
+		mGuiService->selectWindow(mRenderWindowOne);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 1"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
+		ImGui::ShowDemoWindow(nullptr);
+
+		// Select window 2
+		mGuiService->selectWindow(mRenderWindowTwo);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(clr, "Howdy! How are you doing?");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 2"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mTextureOne->getHeight() / (float)mTextureOne->getWidth();
+			ImGui::Image(*mTextureOne, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
+
+		// Select window 3
+		mGuiService->selectWindow(mRenderWindowThree);
+
+		// Draw some GUI elements and show used textures
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Used Textures 3"))
+		{
+			// World texture
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+
+			// Texture two
+			ratio = (float)mTextureTwo->getHeight() / (float)mTextureTwo->getWidth();
+			ImGui::Image(*mTextureTwo, ImVec2(col_width, col_width * ratio));
+		}
+		ImGui::End();
 	}
 }

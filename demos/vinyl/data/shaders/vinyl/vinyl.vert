@@ -1,13 +1,15 @@
-#version 330 core
+#version 450 core
 
-// Vertex shader uniforms
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+// Vertex shader model matrix uniforms
+uniform nap
+{
+		uniform mat4 projectionMatrix;
+		uniform mat4 viewMatrix;
+		uniform mat4 modelMatrix;
+} mvp;
 
 // Input attributes
 in vec3	in_Position;			// Vertex position
-in vec4	in_Color0;				// Vertex color
 in vec3 in_Normals;				// Vertex normal
 in vec3	in_UV0;					// Vertex uv
 in vec3 in_Tangent;				// Vertex tangent
@@ -24,12 +26,12 @@ out vec3 pass_Bitangent;
 void main(void)
 {
 	// Calculate position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
 	// Pass all important attributes to frag shader
 	pass_Uvs0 = in_UV0;
 	pass_Normals = in_Normals;
-	pass_ModelMatrix = modelMatrix;
+	pass_ModelMatrix = mvp.modelMatrix;
 	pass_Vert = in_Position;
 	pass_Tangent = in_Tangent;
 	pass_Bitangent = in_Bitangent;

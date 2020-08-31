@@ -10,6 +10,7 @@
 #include <imguiservice.h>
 #include <app.h>
 #include <entityptr.h>
+#include <color.h>
 
 namespace nap
 {

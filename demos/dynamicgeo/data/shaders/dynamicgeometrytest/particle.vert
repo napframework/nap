@@ -1,8 +1,11 @@
-#version 150 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+} mvp;
 
 in vec3	in_Position;
 in vec4	in_Color0;
@@ -16,7 +19,7 @@ out float pass_PID;
 void main(void)
 {
 	// Calculate position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
 	// Pass color and uv's 
 	pass_Color = in_Color0;

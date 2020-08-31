@@ -1,14 +1,15 @@
 #pragma once
 
 // Local Includes
-#include "rtti/rtti.h"
-#include "rtti/objectptr.h"
-#include "utility/dllexport.h"
-#include "directorywatcher.h"
 #include "numeric.h"
 #include "signalslot.h"
+#include "corefactory.h"
+#include "directorywatcher.h"
 
 // External Includes
+#include <rtti/rtti.h>
+#include <rtti/objectptr.h>
+#include <utility/dllexport.h>
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
 #include <rtti/deserializeresult.h>
@@ -151,10 +152,21 @@ namespace nap
 		 */
 		rtti::Factory& getFactory();
 
+		/**
+		 * Select the current working directory to monitor for file changes.
+		 * All files linked to by the application that reside in this directory will be monitored.
+		 * If a file change is detected to any of the files, the resource manager
+		 * will attempt to hot-load the changes directly into the running application
+		 * @param directory the directory to monitor
+		 * @param error contains the error if the operation fails
+		 * @return if the directory is being monitored
+		 */
+		void watchDirectory();
+
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
-		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
 
 		class OverlayLinkResolver;
 
@@ -197,6 +209,7 @@ namespace nap
 			void clear();
 			void addExistingDevice(Device& device);
 			void addNewDevice(Device& device);
+			void addInitializedObject(rtti::Object& object);
 
 			ObjectByIDMap& getObjectsToUpdate() { return mObjectsToUpdate; }
 
@@ -208,6 +221,7 @@ namespace nap
 			ObjectByIDMap				mObjectsToUpdate;			///< Owned map of all objects that need to be pushed into the ResourceManager.
 			std::vector<Device*>		mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
 			std::vector<Device*>		mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
+			std::vector<rtti::Object*>	mInitializedObjects;		///< This is the list of objects that have actually been initted and will need onDestroy called on them in case of an error
 			bool						mRollbackObjects = true;
 		};
 
@@ -216,15 +230,20 @@ namespace nap
 		ObjectByIDMap						mObjects;						// Holds all objects
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher = nullptr;	// File monitor, detects changes on files
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
-		std::unique_ptr<rtti::Factory>		mFactory;						// Responsible for creating objects when de-serializing
+		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 
 		/**
-		 *	Signal that is emitted when a file has been successfully loaded
+		 *	Signal that is emitted when a file is about to be loaded
 		 */
-		nap::Signal<const std::string&> mFileLoadedSignal;
+		nap::Signal<> mPreResourcesLoadedSignal;
+
+		/**
+		 *	Signal that is emitted after a file has been successfully loaded
+		 */
+		nap::Signal<> mPostResourcesLoadedSignal;
 	};
 
 	template<class T>

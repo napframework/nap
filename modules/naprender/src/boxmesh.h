@@ -8,8 +8,10 @@
 
 namespace nap
 {
+	class RenderService;
+
 	/**
-	 * Predefined box mesh. Contains per face UV coordinates, color information and normals.
+	 * Predefined box mesh with additional uv, color and normal vertex attributes.
 	 * The UV coordinates are always 0-1. The box consists of 6 planes.
 	 * The vertices of the individual planes are not shared.
 	 */
@@ -17,7 +19,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-		virtual ~BoxMesh();
+
+		BoxMesh(Core& core);
 
 		/**
 		 * Sets up and initializes the box as a mesh based on the provided parameters.
@@ -49,8 +52,10 @@ namespace nap
 		const math::Box& getBox() const { return mBox; }
 
 	public:
-		glm::vec3 mSize		= { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the box
-		glm::vec3 mPosition	= { 0.0f, 0.0f, 0.0f };			///< Property: 'Position'  of the box
+		glm::vec3		mSize		= { 1.0f, 1.0f, 1.0f };		///< Property: 'Dimensions' of the box
+		glm::vec3		mPosition	= { 0.0f, 0.0f, 0.0f };		///< Property: 'Position'  of the box
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 
 	protected:
 		/**
@@ -61,6 +66,7 @@ namespace nap
 		void constructBox(const math::Box& box, nap::MeshInstance& mesh);
 
 	private:
+		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Box mBox = { 1.0f, 1.0f, 1.0f };
 	};

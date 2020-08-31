@@ -12,7 +12,7 @@ namespace nap
 
 	/**
 	 * Resource part of the Renderable3DTextComponentInstance. Draws flat text in 3D space.
-	 * Use this component when you want to render text at a specific location in the world
+	 * Use this component when you want to render a line of text at a specific location in the world
 	 * Use the normalize toggle to render the text at the origin of the scene with a unit size of 1.
 	 * When rendering in normalized mode the initial text is used to compute the normalization factor.
 	 * This ensures that when changing text at runtime the size of the letters don't change as well.
@@ -22,6 +22,11 @@ namespace nap
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
 	 * The font size directly influences the size of the text unless normalization is turned on.
 	 * When normalization is turned on the text is rendered centered on the origin with -0.5-0,5 bounds.
+	 *
+	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
+	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
+	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
 	 */
 	class NAPAPI Renderable3DTextComponent : public RenderableTextComponent
 	{
@@ -46,6 +51,11 @@ namespace nap
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
 	 * The font size directly influences the size of the text unless normalization is turned on.
 	 * When normalization is turned on the text is rendered centered on the origin with -0.5-0,5 bounds.
+	 *
+	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
+	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
+	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
+	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
 	 */
 	class NAPAPI Renderable3DTextComponentInstance : public RenderableTextComponentInstance
 	{
@@ -102,7 +112,7 @@ namespace nap
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		bool	mNormalize = true;						///< If the text as a mesh is normalized (-0.5,0.5)

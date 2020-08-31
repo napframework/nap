@@ -11,6 +11,8 @@
 #include <imguiservice.h>
 #include <websocketserverendpoint.h>
 #include <app.h>
+#include <color.h>
+#include <renderservice.h>
 
 namespace nap
 {

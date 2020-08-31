@@ -1,18 +1,28 @@
 {
-  "Objects": 
-  [
-    {
-      "Type": "nap::RenderWindow",
-      "mID": "Window",
-      "Width": 1280,
-      "Height": 720,
-      "Title": "Skeleton",
-      "Sync": "false"
-    },
-    {
-      "Type" : "nap::Scene",
-      "mID": "Scene",   
-      "Entities" : []
-    }
-  ]
+    "Objects": [
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Example Window",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Mailbox",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "Samples": "Four"
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": []
+        }
+    ]
 }

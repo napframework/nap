@@ -15,6 +15,7 @@
 #include <laseroutputcomponent.h>
 #include <meshutils.h>
 #include <linenoisecomponent.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -70,20 +71,15 @@ namespace nap
 	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
-		// The default input router forwards messages to key and mouse input components
-		// attached to a set of entities.
-		nap::DefaultInputRouter input_router;
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
 
-		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
-		
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 
 		// Show all parameters
 		mParameterGUI->show(mParameters.get(), false);
-		
+
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
@@ -91,6 +87,14 @@ namespace nap
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
+
+		// The default input router forwards messages to key and mouse input components
+		// attached to a set of entities.
+		nap::DefaultInputRouter input_router;
+
+		// Forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Push some parameter settings to components
 		// Most custom app components directly reference the parameters
@@ -116,24 +120,33 @@ namespace nap
 	 */
 	void LineBlendingApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Start render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Render all objects in the scene at once
+			// This includes the line + normals and the laser canvas
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
-		// Render all objects in the scene at once
-		// This includes the line + normals and the laser canvas
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			// Draw gui to screen
+			mGuiService->draw();
 
-		// Draw gui to screen
-		mGuiService->draw();
+			// End the render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// End recording framebuffer
+			mRenderService->endRecording();
+		}
+
+		// Signal end of frame capture operation
+		mRenderService->endFrame();
 	}
 	
 	

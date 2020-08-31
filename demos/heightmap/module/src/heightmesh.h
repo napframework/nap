@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * Height Mesh Resource
 	 * This resource is derived from a plane where the plance vertices are displaced along their normal based on a height map
@@ -24,12 +26,12 @@ namespace nap
 	{
 		RTTI_ENABLE(nap::PlaneMesh)
 	public:
-		virtual ~HeightMesh();
+		HeightMesh(Core& core);
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Height map Properties

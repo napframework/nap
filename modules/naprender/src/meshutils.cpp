@@ -1,4 +1,8 @@
+// Local Includes
 #include "meshutils.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
 #include <triangleiterator.h>
@@ -7,19 +11,18 @@ namespace nap
 {
 	namespace utility
 	{
-		bool isTriangleMesh(const MeshShape& shape)
+		bool isTriangleMesh(const MeshInstance& meshInstance)
 		{
-			switch (shape.getDrawMode())
+			switch (meshInstance.getDrawMode())
 			{
-			case opengl::EDrawMode::LINE_LOOP:
-			case opengl::EDrawMode::LINE_STRIP:
-			case opengl::EDrawMode::LINES:
-			case opengl::EDrawMode::POINTS:
-			case opengl::EDrawMode::UNKNOWN:
+			case EDrawMode::LineStrip:
+			case EDrawMode::Lines:
+			case EDrawMode::Points:
+			case EDrawMode::Unknown:
 				return false;
-			case opengl::EDrawMode::TRIANGLES:
-			case opengl::EDrawMode::TRIANGLE_FAN:
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::Triangles:
+			case EDrawMode::TriangleFan:
+			case EDrawMode::TriangleStrip:
 				return true;
 			default:
 				assert(false);
@@ -35,24 +38,23 @@ namespace nap
 			for (int shape_index = 0; shape_index < mesh.getNumShapes(); ++shape_index)
 			{
 				const MeshShape& shape = mesh.getShape(shape_index);
-				switch (shape.getDrawMode())
+				switch (mesh.getDrawMode())
 				{
-				case opengl::EDrawMode::TRIANGLES:
+				case EDrawMode::Triangles:
 				{
 					count += shape.getNumIndices() / 3;
 					break;
 				}
-				case opengl::EDrawMode::TRIANGLE_FAN:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
-				case opengl::EDrawMode::TRIANGLE_STRIP:		// After that every vertex is a triangle
+				case EDrawMode::TriangleFan:		// Fan and strip need at least 3 vertices to make up 1 triangle. 
+				case EDrawMode::TriangleStrip:		// After that every vertex is a triangle
 				{
 					count += math::max<int>(shape.getNumIndices() - 2, 0);
 					break;
 				}
-				case opengl::EDrawMode::LINE_LOOP:
-				case opengl::EDrawMode::LINE_STRIP:
-				case opengl::EDrawMode::LINES:
-				case opengl::EDrawMode::POINTS:
-				case opengl::EDrawMode::UNKNOWN:
+				case EDrawMode::LineStrip:
+				case EDrawMode::Lines:
+				case EDrawMode::Points:
+				case EDrawMode::Unknown:
 					break;
 				default:
 					assert(false);
@@ -70,38 +72,38 @@ namespace nap
 		}
 
 
-		void  setTriangleIndices(MeshShape& mesh, int number, const std::array<int, 3>& indices)
+		void  setTriangleIndices(MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices)
 		{
 			// Copy triangle index over
-			MeshShape::IndexList& mesh_indices = mesh.getIndices();
+			std::vector<uint32>& mesh_indices = mesh.getIndices();
 
-			switch (mesh.getDrawMode())
+			switch (drawMode)
 			{
-			case opengl::EDrawMode::TRIANGLES:
+			case EDrawMode::Triangles:
 			{
 				// Make sure our index is in range
 				assert((number * 3) + 2 < mesh_indices.size());
 
 				// Fill the data
-				unsigned int* id = mesh_indices.data() + (number * 3);
+				uint32* id = mesh_indices.data() + (number * 3);
 				*(id + 0) = indices[0];
 				*(id + 1) = indices[1];
 				*(id + 2) = indices[2];
 				break;
 			}
-			case opengl::EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TriangleFan:
 			{
 				assert(number + 2 < mesh_indices.size());
-				unsigned int* id = mesh_indices.data();
+				uint32* id = mesh_indices.data();
 				*id = indices[0];
 				*(id + number + 1) = indices[1];
 				*(id + number + 2) = indices[2];
 				break;
 			}
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TriangleStrip:
 			{
 				assert(number + 2 < mesh_indices.size());
-				unsigned int* id = mesh_indices.data() + number;
+				uint32* id = mesh_indices.data() + number;
 				*(id + 0) = indices[0];
 				*(id + 1) = indices[1];
 				*(id + 2) = indices[2];
@@ -119,7 +121,7 @@ namespace nap
 			glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
 			glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
 
-			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(vertexid::position);
 			for (const auto& point : positions.getData())
 			{
 				if (point.x < min.x) { min.x = point.x; }
@@ -186,17 +188,24 @@ namespace nap
 				std::swap(indices[0], indices[2]);
 
 				int shapeIndex = triangle.getShapeIndex();
-				setTriangleIndices(mesh.getShape(shapeIndex), triangle.getTriangleIndex(), indices);
+				setTriangleIndices(mesh.getShape(shapeIndex), mesh.getDrawMode(), triangle.getTriangleIndex(), indices);
 			}
 		}
 
 
-		void generateIndices(nap::MeshShape& shape, int vertexCount, int offset)
+		void generateIndices(nap::MeshShape& shape, int vertexCount, bool loop, int offset)
 		{
-			MeshShape::IndexList& indices = shape.getIndices();
-			indices.resize(vertexCount);
+			std::vector<uint32>& indices = shape.getIndices();
+			int vert_count = loop ? vertexCount + 1 : vertexCount;
+			indices.resize(vert_count);
+			
+			// Generate indices
 			for (int vertex = 0; vertex < vertexCount; ++vertex)
 				indices[vertex] = vertex + offset;
+			
+			// Loop if requested, adding an extra index at the end
+			if (loop)
+				indices.back() = indices.front();
 		}
 
 

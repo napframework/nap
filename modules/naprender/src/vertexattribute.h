@@ -3,7 +3,7 @@
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include <glm/glm.hpp>
-#include <GL/glew.h>
+#include "vulkan/vulkan_core.h"
 
 namespace nap
 {
@@ -26,14 +26,8 @@ namespace nap
 		/**
 		 * @return Should return GL type of the attribute. This is used during construction of the vertex attributes on the GPU.
 		 */
-		virtual GLenum getType() const = 0;
+		virtual VkFormat getFormat() const = 0;
 		
-		/**
-		 * @return Should return number of components per value. For instance, float has one attribute, a vec3 has three components. 
-		 * This is used during construction of the vertex attributes on the GPU.
-		 */
-		virtual int getNumComponents() const = 0;
-
 		/**
 		 * @return Should return amount of element in the buffer.
 		 */
@@ -125,21 +119,7 @@ namespace nap
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
-		/**
-		 * Returns the opengl type associated with this vertex attribute.
-		 * Note that this only works for specialized types such as float, int etc.
-		 * Refer to the type definitions for supported vertex attribute types
-		 * @return the opengl type associated with this vertex attribute
-		 */
-		virtual GLenum getType() const override;
-
-		/**
-		 * Returns the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
-		 * Note that this only works for supported specialized types such as float, int etc.
-		 * Refer to the type definitions for supported vertex attribute types
-		 * @return the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
-		 */
-		virtual int getNumComponents() const override;
+		virtual VkFormat getFormat() const override;
 
 		/**
 		 * @return the number vertices in the buffer
@@ -215,46 +195,25 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	NAPAPI GLenum FloatVertexAttribute::getType() const;
+	NAPAPI VkFormat FloatVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int FloatVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat IntVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum IntVertexAttribute::getType() const;
+	NAPAPI VkFormat ByteVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int IntVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat DoubleVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum ByteVertexAttribute::getType() const;
+	NAPAPI VkFormat Vec2VertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int ByteVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat Vec3VertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum DoubleVertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int DoubleVertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec2VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec2VertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec3VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec3VertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec4VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec4VertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat Vec4VertexAttribute::getFormat() const;
 
 } // nap
 

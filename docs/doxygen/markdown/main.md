@@ -28,16 +28,18 @@ Creative fields such as advertisement, film and the performing arts are starting
 
 NAP ships with many useful modules, including (a): 
 
-- 3D OpenGL Render Engine
+- Vulkan Render Engine
 - FFmpeg Video
 - Audio Playback, Recording and Analysis
+- Sequence Editor
 - Audio Synthesis
 - Font Rendering
 - Websockets
+- ImGUI
+- OpenCV
 - OSC
 - Midi
 - Artnet
-- Gui
 - Parameters
 - Presets
 - Serial

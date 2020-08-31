@@ -28,7 +28,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("objects.json", error))
+		if (!mResourceManager->loadFile("dynamicgeo.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;                
@@ -39,6 +39,9 @@ namespace nap
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity				= scene->findEntity("ParticleEmitterEntity");
+
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -77,24 +80,34 @@ namespace nap
 	 */
 	void DynamicGeoApp::render()
 	{
-		// Get rid of unnecessary resources
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-		// Clear window back-buffer
-		opengl::RenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
-		mRenderService->clearRenderTarget(backbuffer);
+			// Render all available geometry
+			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, frame_cam);
 
-		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-		mRenderService->renderObjects(backbuffer, frame_cam);
+			// Render GUI elements
+			mGuiService->draw();
 
-		// Render GUI elements
-		mGuiService->draw();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
-		// Swap back buffer
-		mRenderWindow->swap();
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Proceed to next frame
+		mRenderService->endFrame();
 	}
 	
 
@@ -137,7 +150,6 @@ namespace nap
 	// Cleanup
 	int DynamicGeoApp::shutdown() 
 	{
-		std::cout << "stopping..." << "\n";
 		return 0;
 	}
 }

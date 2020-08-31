@@ -24,7 +24,6 @@ namespace nap
 	ShapeTriangleListIterator::ShapeTriangleListIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 0)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLES);
 		assert(shape.getNumIndices() != 0 && shape.getNumIndices() % 3 == 0);
 	}
 
@@ -44,7 +43,6 @@ namespace nap
 	ShapeTriangleFanIterator::ShapeTriangleFanIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 2)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
 		assert(shape.getNumIndices() >= 3);
 		
 		// Triangle fans always share the first vertex, so we can just cache it here
@@ -67,7 +65,6 @@ namespace nap
 	ShapeTriangleStripIterator::ShapeTriangleStripIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 2)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
 		assert(shape.getNumIndices() >= 3);
 	}
 
@@ -125,15 +122,15 @@ namespace nap
 		{
 			const MeshShape& shape = mMeshInstance->getShape(mCurShapeIndex);
 
-			switch (shape.getDrawMode())
+			switch (mMeshInstance->getDrawMode())
 			{
-			case opengl::EDrawMode::TRIANGLES:
+			case EDrawMode::Triangles:
 				mCurIterator = new ShapeTriangleListIterator(shape);
 				break;
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TriangleStrip:
 				mCurIterator = new ShapeTriangleStripIterator(shape);
 				break;
-			case opengl::EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TriangleFan:
 				mCurIterator = new ShapeTriangleFanIterator(shape);
 				break;
 			default:

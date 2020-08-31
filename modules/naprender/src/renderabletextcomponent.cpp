@@ -1,6 +1,8 @@
 // Local Includes
 #include "renderabletextcomponent.h"
 #include "renderglobals.h"
+#include "material.h"
+#include "indexbuffer.h"
 
 // External Includes
 #include <entity.h>
@@ -8,7 +10,8 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <nap/logger.h>
-#include <ndrawutils.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <nap/assert.h>
 
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
@@ -27,6 +30,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	RenderableTextComponentInstance::RenderableTextComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<RenderService>()),
+        mPlane(*entity.getCore())
+	{
+	}
+
+
 	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource
@@ -36,33 +47,48 @@ namespace nap
 		mFont = &(resource->mFont->getFontInstance());
 
 		// Extract glyph uniform (texture slot in shader)
-		mGlyphUniform = resource->mGlyphUniform;
+		mGlyphUniformName = resource->mGlyphUniform;
 
 		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 
 		// Create material instance
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
-			return false;
-		
-		// Ensure the uniform to set the glyph is available on the source material
-		nap::Uniform* glyph_uniform = mMaterialInstance.getMaterial()->findUniform(mGlyphUniform);
-		if (!errorState.check(glyph_uniform != nullptr, 
-			"%s: Unable to bind font character, can't find 2Dtexture uniform in shader: %s with name: %s", this->mID.c_str(), 
-			mMaterialInstance.getMaterial()->mID.c_str(), mGlyphUniform.c_str() ))
+		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// Setup the plane
+		// Ensure the uniform to set the glyph is available on the source material
+		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(mGlyphUniformName);
+		if (!errorState.check(mGlyphUniform != nullptr,
+		 	"%s: Unable to bind font character, can't find 2DSampler uniform: %s in material: %s", this->mID.c_str(), 
+			mGlyphUniformName.c_str() , mMaterialInstance.getMaterial().mID.c_str()))
+		 	return false;
+
+		// Find MVP uniforms
+		UniformStructInstance* mvp_uniform = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (mvp_uniform != nullptr)
+		{
+			mModelUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewUniform		= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectionUniform	= mvp_uniform->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+		}
+
+		// Make sure there's a model matrix
+		if (!errorState.check(mModelUniform != nullptr, "%s: Unable to position character, no model matrix with name: %s found in UBO: %s in material %s",
+			mID.c_str(), uniform::modelMatrix, uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
+			return false;
+
+		// Setup the plane, 1x1 with lower left corner at origin {0, 0}
 		mPlane.mRows	= 1;
 		mPlane.mColumns = 1;
+		mPlane.mPosition = { 0.5f, 0.5f };
+		mPlane.mSize = { 1.0f, 1.0f };
+		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mCullMode = ECullMode::Back;
 		if (!mPlane.setup(errorState))
 			return false;
 
-		// Make sure we can write to it often 
-		mPlane.getMeshInstance().setUsage(EMeshDataUsage::DynamicWrite);
-
 		// Update the uv coordinates
-		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(0));
 		if (!errorState.check(uv_attr != nullptr, "%s: unable to find uv vertex attribute on plane", mID.c_str()))
 			return false;
 
@@ -77,18 +103,17 @@ namespace nap
 			return false;
 
 		// Get position attribute buffer, we will update the vertex positions of this plane
-		mPositionAttr = mPlane.getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		mPositionAttr = mPlane.getMeshInstance().findAttribute<glm::vec3>(vertexid::position);
 		if (!errorState.check(mPositionAttr != nullptr, "%s: unable to get plane vertex attribute handle", mID.c_str()))
 			return false;
 
-		// Construct render-able mesh (TODO: Make a factory or something similar to create and verify render-able meshes!
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		mRenderableMesh = render_service->createRenderableMesh(mPlane, mMaterialInstance, errorState);
+		// Construct render-able mesh
+		mRenderableMesh = mRenderService->createRenderableMesh(mPlane, mMaterialInstance, errorState);
 		if (!mRenderableMesh.isValid())
 			return false;
 
 		// Set text, needs to succeed on initialization
-		if (!setText(resource->mText, errorState))
+		if (!addLine(resource->mText, errorState))
 			return false;
 
 		return true;
@@ -104,9 +129,15 @@ namespace nap
 
 	bool RenderableTextComponentInstance::setText(const std::string& text, utility::ErrorState& error)
 	{
-		// Clear Glyph handles
-		mGlyphs.clear();
-		mGlyphs.reserve(text.size());
+		// Adding / changing text is not allowed during frame capture
+		// This is because new characters might be uploaded
+		NAP_ASSERT_MSG(!mRenderService->isRenderingFrame(), "Can't change or add text when rendering a frame");
+
+		// Get cache to populate
+		assert(mIndex < mGlyphCache.size());
+		std::vector<RenderableGlyph*>& cur_cache = mGlyphCache[mIndex];
+		cur_cache.clear();
+		cur_cache.reserve(text.size());
 
 		// Get or create a Glyph for every letter in the text
 		bool success(true);
@@ -120,21 +151,65 @@ namespace nap
 				continue;
 			}
 			// Store handle
-			mGlyphs.emplace_back(glyph);
+			cur_cache.emplace_back(glyph);
 		}
-		mText = text;
-		mFont->getBoundingBox(mText, mTextBounds);	
+
+		// Set text and compute bounding box
+		mLinesCache[mIndex]  = text;
+		mFont->getBoundingBox(text, mTextBounds[mIndex]);
 		return success;
 	}
 
 
-	nap::MaterialInstance& RenderableTextComponentInstance::getMaterialInstance()
+	bool RenderableTextComponentInstance::setText(int lineIndex, const std::string& text, utility::ErrorState& error)
 	{
-		return mMaterialInstance;
+		setLineIndex(lineIndex);
+		return setText(text, error);
 	}
 
 
-	void RenderableTextComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix)
+	bool RenderableTextComponentInstance::addLine(const std::string& text, utility::ErrorState& error)
+	{
+		// Increase container size
+		resize(mGlyphCache.size() + 1);
+
+		// Set text, creating glyphs when required
+		setLineIndex(mGlyphCache.size() - 1);
+		return setText(text, error);
+	}
+
+
+	void RenderableTextComponentInstance::setLineIndex(int index)
+	{
+		assert(index < mGlyphCache.size());
+		mIndex = index;
+	}
+
+
+	void RenderableTextComponentInstance::resize(int lines)
+	{
+		mGlyphCache.resize((size_t)lines);
+		mTextBounds.resize((size_t)lines);
+		mLinesCache.resize((size_t)lines);
+	}
+
+
+	int RenderableTextComponentInstance::getCount() const
+	{
+		return static_cast<int>(mGlyphCache.size());
+	}
+
+
+	void RenderableTextComponentInstance::clear()
+	{
+		mGlyphCache.clear();
+		mTextBounds.clear();
+		mLinesCache.clear();
+		mIndex = 0;
+	}
+
+
+	void RenderableTextComponentInstance::draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, const glm::mat4& modelMatrix)
 	{
 		// Ensure we can render the mesh / material combo
 		if (!mRenderableMesh.isValid())
@@ -143,104 +218,128 @@ namespace nap
 			return;
 		}
 
-		// Bind
-		mMaterialInstance.bind();
+		// If there is no cache, there's nothing to draw so bail.
+		if (mGlyphCache.empty())
+			return;
+		assert(mIndex < mGlyphCache.size());
 
-		// Get the parent material and set uniform values if present
-		Material* comp_mat = mMaterialInstance.getMaterial();
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
+		// If the cache contains no characters, bail.
+		std::vector<RenderableGlyph*> cur_cache = mGlyphCache[mIndex];
+		if (cur_cache.empty())
+			return;
 
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
+		// Update view uniform
+		if (mViewUniform != nullptr)
+			mViewUniform->setValue(viewMatrix);
 
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(modelMatrix);
-
-		// Prepare blending
-		mMaterialInstance.pushBlendMode();
-
-		// Bind vertex array object
-		// The VAO handle works for all the registered render contexts
-		mRenderableMesh.bind();
-
-		// Fetch uniform for setting character
-		UniformTexture2D& glyph_uniform = mMaterialInstance.getOrCreateUniform<UniformTexture2D>(mGlyphUniform);
-
-		// Get vertex position data (that we update in the loop
-		std::vector<glm::vec3>& pos_data = mPositionAttr->getData();
+		// Update projection uniform
+		if (mProjectionUniform != nullptr)
+			mProjectionUniform->setValue(projectionMatrix);
 
 		// Get plane to draw
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
 
-		// GPU mesh representation of plane
-		opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-
-		// Lines / Fill etc.
-		GLenum draw_mode = getGLMode(mesh_instance.getShape(0).getDrawMode());
-
 		// Fetch index buffer (holding drawing order
-		const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
-		GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-		nap::utility::ErrorState error;
-
-		// Get uniforms to push in loop
-		const nap::UniformBinding& glyph_binding = mMaterialInstance.getUniformBinding(glyph_uniform.mName);
-		int texture_unit = mMaterialInstance.getTextureUnit(glyph_uniform);
-		assert(texture_unit > -1);
-
-		// Push all uniforms now
-		mMaterialInstance.pushUniforms();
+		const IndexBuffer& index_buffer = mesh_instance.getGPUMesh().getIndexBuffer(0);
 
 		// Location of active letter
 		float x = 0.0f;
 		float y = 0.0f;
 
-		// Draw every letter in the text to screen
-		for (auto& render_glyph : mGlyphs)
+		// Get pipeline
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		
+		// Scissor rectangle
+		VkRect2D scissor_rect {
+			{0, 0},
+			{(uint32_t)(renderTarget.getBufferSize().x), (uint32_t)(renderTarget.getBufferSize().y) }
+		};
+
+		// Viewport
+		VkViewport viewport = 
 		{
+			0.0f, 0.0f,
+			(float)(renderTarget.getBufferSize().x), 
+			(float)(renderTarget.getBufferSize().y),
+			0.0f, 1.0f
+		};
+
+		// Draw individual glyphs
+		for (auto& render_glyph : mGlyphCache[mIndex])
+		{
+			// Don't draw empty glyphs (spaces)
+			if (render_glyph->empty())
+			{
+				x += render_glyph->getHorizontalAdvance();
+				continue;
+			}
+
 			// Get width and height of character to draw
 			float w = render_glyph->getSize().x;
 			float h = render_glyph->getSize().y;
 
 			// Compute x and y position
 			float xpos = x + render_glyph->getOffsetLeft();
-			float ypos = y - (h - render_glyph->getOffsetTop());
+			float ypos = y - (h - render_glyph->getOffsetTop());;
+			
+			// Compute local model matrix
+			glm::mat4 plane_loc = glm::translate(glm::mat4(), glm::vec3(xpos, ypos, 0.0f));
+			plane_loc = glm::scale(plane_loc, glm::vec3(w, h, 1.0f));
 
-			// Set vertex positions of plane
-			pos_data[0] = { xpos,		ypos,		0.0f };
-			pos_data[1] = { xpos + w,	ypos,		0.0f };
-			pos_data[2] = { xpos,		ypos + h,	0.0f };
-			pos_data[3] = { xpos + w,	ypos + h,	0.0f };
+			// Update model matrix and glyph
+			mModelUniform->setValue(modelMatrix * plane_loc);
+			mGlyphUniform->setTexture(render_glyph->getTexture());
 
-			// Push vertex positions to GPU
-			mesh_instance.update(*mPositionAttr, error);
+			// Get new descriptor set that contains the updated settings and bind pipeline
+			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-			// Set texture and push uniforms
-			glyph_uniform.setTexture(render_glyph->getTexture());
-			glyph_uniform.push(*glyph_binding.mDeclaration, texture_unit);
+			// Bind descriptor set
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-			// Bind and draw all the arrays
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
+			// Bind vertex buffers
+			const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+			const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
+
+			// Draw geometry
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
 			// Update x
 			x += render_glyph->getHorizontalAdvance();
 		}
-
-		// Unbind
-		index_buffer.unbind();
-		mMaterialInstance.unbind();
-		mRenderableMesh.unbind();
 	}
 
 
 	const math::Rect& RenderableTextComponentInstance::getBoundingBox() const
-	{ 
-		return mTextBounds;
+	{
+		const static math::Rect empty;
+		return mIndex < mTextBounds.size() ? mTextBounds[mIndex] : empty;
 	}
+
+
+	const nap::math::Rect& RenderableTextComponentInstance::getBoundingBox(int index)
+	{
+		assert(index < mTextBounds.size());
+		return mTextBounds[index];
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText()
+	{
+		const static std::string empty;
+		return mIndex < mLinesCache.size() ? mLinesCache[mIndex] : empty;
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText(int index)
+	{
+		assert(index < mLinesCache.size());
+		return mLinesCache[index];
+	}
+
 }

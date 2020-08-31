@@ -104,12 +104,11 @@ macro(copy_files_to_target_file_dir)
     endforeach()
 endmacro()
 
-# Copy Windows SD2 and GLEW DLLs to project bin output
+# Copy Windows SDL2 DLLs to project bin output
 macro(copy_base_windows_graphics_dlls)
     # Copy over some window DLLs
     set(FILES_TO_COPY
         ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
-        ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
         )
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
@@ -342,15 +341,6 @@ macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
-                       )    
-endmacro()
-
-# macOS: Add the runtime path for GLEW  
-# TODO As a lower priority this should get pulled in automatically, need to cleanup. Jira NAP-108.
-macro(add_macos_glew_rpath)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/glew/osx/install/lib $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
                        )    
 endmacro()
 

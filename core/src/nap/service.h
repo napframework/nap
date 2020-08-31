@@ -138,15 +138,29 @@ namespace nap
 
 		/**
 		 * Invoked when exiting the main loop, after app shutdown is called
+		 * This is called before shutdown() and before the resources are destroyed.
+		 * Use this function if your service needs to reset its state before resources 
+		 * are destroyed
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void preShutdown()														{ }
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
 		 * Use this function to close service specific handles, drivers or devices
 		 * When service B depends on A, Service B is shutdown before A
 		 */
 		virtual void shutdown()															{ }
 
 		/**
-		 * Invoked after the resource manager successfully loaded a resource file
+		 * Invoked when the resource manager is about to load resources
 		 */
-		virtual void resourcesLoaded()													{ }
+		virtual void preResourcesLoaded()												{ }
+
+		/**
+		 * Invoked after the resource manager successfully loaded resources
+		 */
+		virtual void postResourcesLoaded()												{ }
 
 		/**
 		 * Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration

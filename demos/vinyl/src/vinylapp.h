@@ -15,6 +15,8 @@
 #include <nap/core.h>
 #include <color.h>
 #include <imguiservice.h>
+#include <renderservice.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -75,13 +77,8 @@ namespace nap
 		virtual int shutdown() override;
 
 		/**
-		*	Toggles full screen
-		*/
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-
-		/**
-		*	Called when a window event is received
-		*/
+		 *	Called when a window event is received
+		 */
 		void handleWindowEvent(const WindowEvent& windowEvent);
 		
 	private:

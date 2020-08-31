@@ -101,10 +101,15 @@ namespace nap
 #endif
 		// Change directory to data folder
 		assert(mProjectInfo != nullptr);
-		std::string dataDir = mProjectInfo->dataDirectory();
-		if (!error.check(utility::fileExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
+		std::string dataDir = mProjectInfo->getDataDirectory();
+		if (!error.check(utility::dirExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
 			return false;
+
+		// Everything from this point on is relative to the data directory
 		utility::changeDir(dataDir);
+
+		// Apply any platform specific environment setup
+		setupPlatformSpecificEnvironment();
 
 		// Load modules
 		if (!mModuleManager->loadModules(*mProjectInfo, error))
@@ -157,18 +162,24 @@ namespace nap
 
 		// Listen to potential resource file changes and 
 		// forward those to all registered services
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+		mResourceManager->mPreResourcesLoadedSignal.connect(mPreResourcesLoadedSlot);
+		mResourceManager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
 
 		return true;
 	}
 
 
-	void Core::resourceFileChanged(const std::string& file)
+	void Core::preResourcesLoaded()
 	{
 		for (auto& service : mServices)
-		{
-			service->resourcesLoaded();
-		}
+			service->preResourcesLoaded();
+	}
+
+
+	void Core::postResourcesLoaded()
+	{
+		for (auto& service : mServices)
+			service->postResourcesLoaded();
 	}
 
 
@@ -227,8 +238,19 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		// Call pre-shutdown on services to give them a chance to reset any state they need
+		// before resources are destroyed.
+		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
+		{
+			Service& service = **it;
+			service.preShutdown();
+		}
+
+		// Destroy the resource manager, which will destroy all loaded resources
 		mResourceManager.reset();
 
+		// Shutdown services after all resources have been destroyed.
+		// This order ensures that resources can still make use of services during destruction
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
@@ -262,7 +284,7 @@ namespace nap
 			// Check if the service associated with the configuration isn't already part of the map, if so add as default
 			// Config is automatically destructed otherwise.
 			if (findServiceConfig(service_type) == nullptr)
-				addServiceConfig(service_type, std::move(service_config));
+				addServiceConfig(std::move(service_config));
 		}
 
 		// First create and add all the services (unsorted)
@@ -443,10 +465,11 @@ namespace nap
 	}
 
 
-	bool Core::addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
 	{
-		auto rval = mServiceConfigs.emplace(std::make_pair(serviceType, std::move(serviceConfig)));
-		return rval.second;
+		rtti::TypeInfo service_type = serviceConfig->getServiceType();
+		auto return_v = mServiceConfigs.emplace(std::make_pair(service_type, std::move(serviceConfig)));
+		return return_v.second;
 	}
 
 
@@ -497,21 +520,24 @@ namespace nap
 		rtti::DeserializeResult deserialize_result;
 		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
 		{
-			for (auto& object : deserialize_result.mReadObjects)
+			for (std::unique_ptr<rtti::Object>& object : deserialize_result.mReadObjects)
 			{
 				// Check if it's indeed a service configuration object
-				if (!err.check(object->get_type().is_derived_from<ServiceConfiguration>(),
-					"Config.json should only contain ServiceConfigurations"))
+				rtti::TypeInfo object_type = object->get_type();
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+
+				if (!err.check(config != nullptr,
+					"Config.json should only contain ServiceConfigurations, found object of type: %s instead",
+							   object_type.get_name().to_string().c_str()))
 					return false;
 
-				// Create configuration and try to add.
-				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-                auto configptr = config.get(); // Grab a raw pointer, we're about to move the uni
-				bool added = addServiceConfig(config->getServiceType(), std::move(config));
+				// Get type before moving and store pointer for
+                nap::ServiceConfiguration* config_ptr = config.get();
+				bool added = addServiceConfig(std::move(config));
 
 				// Duplicates are not allowed
 				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
-					configptr->mID.c_str(), configptr->getServiceType().get_name().to_string().c_str()))
+							   config_ptr->mID.c_str(), config_ptr->getServiceType().get_name().to_string().c_str()))
 					return false;
 			}
 		}
@@ -569,13 +595,15 @@ namespace nap
         std::string json = writer.GetJSON();
 
         // Save the config file besides the binary, the first location that NAP searches
-        const std::string exeDir = utility::getExecutableDir();
-        const std::string configFilePath = utility::getExecutableDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
+		assert(getProjectInfo() != nullptr);
+        const std::string configFilePath = getProjectInfo()->getProjectDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
 
         std::ofstream configFile;
         configFile.open(configFilePath);
         configFile << json << std::endl;
         configFile.close();
+		nap::Logger::info("Wrote configuration to: %s", configFilePath.c_str());
+
         return true;
     }
 

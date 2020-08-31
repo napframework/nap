@@ -11,6 +11,7 @@
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
 #include <nap/device.h>
+#include <nap/corefactory.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -94,30 +95,10 @@ namespace nap
 
 	void ResourceManager::RollbackHelper::destroyObjects()
 	{
-		ObservedObjectList all_objects;
-		for (auto& kvp : mObjectsToUpdate)
-			all_objects.push_back(kvp.second.get());
+		// Destroy all objects that have been initialized in reversed initialization order
+		for (int index = mInitializedObjects.size() - 1; index >= 0; --index)
+			mInitializedObjects[index]->onDestroy();
 
-		// We create a dummy errorState here. The RTTIObjectGraphItem never uses errorState and so the building of the graph will never fail.
-		utility::ErrorState errorState;
-		RTTIObjectGraph object_graph;
-		bool result = object_graph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState);
-		assert(result);
-
-		// Destroy objects in reversed initialization order
-		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
-		for (int i = nodes.size() - 1; i >= 0; --i)
-		{
-			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
-				continue;
-
-			ObjectByIDMap::iterator pos = mObjectsToUpdate.find(nodes[i]->mItem.getID());
-
-			// The set of objects that is returned from the object graph builder is potentially larger, as the object graph builder
-			// chases pointers and will discover more objects than there are present in the original set.
-			if (pos != mObjectsToUpdate.end())
-				pos->second->onDestroy();
-		}
 		mObjectsToUpdate.clear();
 	}
 
@@ -135,6 +116,11 @@ namespace nap
 	void ResourceManager::RollbackHelper::addNewDevice(Device& device)
 	{
 		mNewDevices.push_back(&device);
+	}
+
+	void ResourceManager::RollbackHelper::addInitializedObject(rtti::Object& object)
+	{
+		mInitializedObjects.push_back(&object);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -179,8 +165,7 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
-		mFactory(std::make_unique<Factory>()),
+		mFactory(std::make_unique<CoreFactory>(core)),
 		mCore(core)
 	{
 	}
@@ -312,6 +297,9 @@ namespace nap
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
+		// Notify listeners
+		mPreResourcesLoadedSignal.trigger();
+
 		// Read objects from disk
 		DeserializeResult read_result;
 		if (!loadFileAndDeserialize(filename, read_result, errorState))
@@ -429,6 +417,9 @@ namespace nap
 			if (!errorState.check(object->init(errorState), "Couldn't initialize object '%s'", id.c_str()))
 				return false;
 
+			// Add the object to the rollback helper after a successfull init, so that onDestroy is automatically called if an error occurs later on
+			rollback_helper.addInitializedObject(*object);
+
 			// If the object is a device, we also need to start it
 			if (object->get_type().is_derived_from<Device>())				
 			{
@@ -463,7 +454,7 @@ namespace nap
 		rollback_helper.clear();
 
 		// Notify listeners
-		mFileLoadedSignal.trigger(filename);
+		mPostResourcesLoadedSignal.trigger();
 
 		return true;
 	}
@@ -584,4 +575,9 @@ namespace nap
 		return rtti::ObjectPtr<Object>(object);
 	}
 
+
+	void ResourceManager::watchDirectory()
+	{
+		mDirectoryWatcher = std::make_unique<DirectoryWatcher>();
+	}
 }

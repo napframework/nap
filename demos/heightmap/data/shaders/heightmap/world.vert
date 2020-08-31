@@ -1,10 +1,20 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
-uniform float blendValue;
-uniform float normalBlendValue;
+// All model view projection inputs
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
+
+// All uniform vertex shader inputs
+uniform VERTUBO
+{
+	uniform float blendValue;
+	uniform float normalBlendValue;
+} vubo;
+
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -21,21 +31,21 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Blend original normal with target normal
-	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, normalBlendValue);
+	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, vubo.normalBlendValue);
 
 	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
+    mat3 normal_matrix = transpose(inverse(mat3(mvp.modelMatrix)));
 	passNormal = normalize(normal_matrix * blend_nor);
 
 	// Blend original position with target position
-	vec3 blend_pos = mix(in_OriginalPosition, in_Position, blendValue);
+	vec3 blend_pos = mix(in_OriginalPosition, in_Position, vubo.blendValue);
 
 	// Multiply with modelmatrix to position in world space and pass to frag
-	passPosition = vec3(modelMatrix * vec4(blend_pos, 1));
+	passPosition = vec3(mvp.modelMatrix * vec4(blend_pos, 1));
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
 
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(blend_pos, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(blend_pos, 1.0);
 }

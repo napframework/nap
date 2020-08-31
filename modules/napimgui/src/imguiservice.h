@@ -1,25 +1,89 @@
 #pragma once
 
+// Local Includes
+#include "imgui/imgui.h"
+
 // External includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
+#include <nap/resourceptr.h>
+#include <descriptorsetallocator.h>
+#include <nap/signalslot.h>
+#include <color.h>
+
+// ImGUI forward declares
+struct ImGuiContext;
 
 namespace nap
 {
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
+	class IMGuiService;
+
+	/**
+	 * IMGUI configuration options
+	 */
+	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
+	{
+		RTTI_ENABLE(ServiceConfiguration)
+
+	public:
+		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
+		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
+		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
+		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
+		RGBColor8 mFront1Color		= RGBColor8(0x52, 0x54, 0x6A);		///< Property: 'FrontColor1' Gui front color 1
+		RGBColor8 mFront2Color		= RGBColor8(0x5D, 0x5E, 0x73);		///< Property: 'FrontColor2' Gui front color 2
+		RGBColor8 mFront3Color		= RGBColor8(0x8B, 0x8C, 0xA0);		///< Property: 'FrontColor3' Gui front color 3
+		virtual rtti::TypeInfo		getServiceType() override			{ return RTTI_OF(IMGuiService); }
+	};
 
 	/**
 	 * This service manages the global ImGui state.
-	 * Use selectWindow() to select the window to draw the GUI on to.
-	 * By default the GUI is drawn to the primary window, as defined by the renderer.
-	 * Make sure to call draw() inside your application to render the gui to the right window. 
-	 * When doing so make sure the window that you selected is active, otherwise the GUI will not appear.
-	 * When there is no actively selected window call draw() after making the primary window active.
-	 * The service automatically creates a new GUI frame before calling update.
+	 * Call draw() inside a window render pass to draw the GUI to screen.
+	 * Call selectWindow() to select the window subsequent ImGUI calls apply to.
+	 * Explicit window selection is only necessary when there is more than 1 window.
+	 * 
+	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
+	 * The service automatically creates a new GUI frame before application update.
+	 *
+	 * MyApp::update(double deltaTime):
+	 * ~~~~~{.cpp}
+	 *	mGuiService->selectWindow(mRenderWindowOne);
+	 *	ImGui::Begin("GUI Window One");
+	 *	...
+	 *	ImGui::End();
+	 *
+	 *	mGuiService->selectWindow(mRenderWindowTwo);
+	 *	ImGui::Begin("GUI Window Two");
+	 *	...
+	 *	ImGui::End();
+	 * ~~~~~
+	 *
+	 * MyApp::render()
+	 * ~~~~~{.cpp}
+	 *	mRenderService->beginFrame();
+	 *	if (mRenderService->beginRecording(*mRenderWindowOne))
+	 *	{
+	 *		mRenderWindowOne->beginRendering();
+	 *		mGuiService->draw();
+	 *		mRenderWindowOne->endRendering();
+	 *		mRenderService->endRecording();
+	 *	}
+	 *
+	 *	// Draw gui window 2
+	 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
+	 *	{
+	 *		mRenderWindowTwo->beginRendering();
+	 *		mGuiService->draw();
+	 *		mRenderWindowTwo->endRendering();
+	 *		mRenderService->endRecording();
+	 *	}
+	 *	mRenderService->endFrame();
+	 * ~~~~~
 	 */
 	class NAPAPI IMGuiService : public Service
 	{
@@ -32,34 +96,87 @@ namespace nap
 		IMGuiService(ServiceConfiguration* configuration);
 
 		/**
-		 * Draws the all the GUI elements to screen
-		 * You need to call this just before swapping buffers for the primary window
+		 * Draws the GUI elements for the currently active window to screen.
+		 * ~~~~~{.cpp}
+		 *	// Draw gui window 1
+		 *	mRenderService->beginFrame();
+		 *	if (mRenderService->beginRecording(*mRenderWindowOne))
+		 *	{
+		 *		mRenderWindowOne->beginRendering();
+		 *		mGuiService->draw();
+		 *		mRenderWindowOne->endRendering();
+		 *		mRenderService->endRecording();
+		 *	}
+		 * 
+		 *	// Draw gui window 2
+		 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
+		 *	{
+		 *		mRenderWindowTwo->beginRendering();
+		 *		mGuiService->draw();
+		 *		mRenderWindowTwo->endRendering();
+		 *		mRenderService->endRecording();
+		 *	}
+		 *	mRenderService->endFrame();
+		 * ~~~~~
 		 */
 		void draw();
 
 		/**
-		 * Explicitly set the window that is used for drawing the GUI elements
-		 * When no window is specified the system uses the primary window to draw GUI elements
-		 * Only set the window on init() of your application.
-		 * @param window the window to use for drawing the GUI elements
+		 * Select the window all subsequent ImGUI calls apply to.
+		 * Explicit selection is only necessary when there is more than 1 window.
+		 * Only call selectWindow() on application update, not when rendering the GUI to screen.
+		 *
+		 * ~~~~~{.cpp}
+		 *	mGuiService->selectWindow(mRenderWindowOne);
+		 *	ImGui::Begin("GUI Window One");
+		 *	...
+		 *	ImGui::End();
+		 *
+		 *	mGuiService->selectWindow(mRenderWindowTwo);
+		 *	ImGui::Begin("GUI Window Two");
+		 *	...
+		 *	ImGui::End();
+		 * ~~~~~
+		 * @param window the window to select
 		 */
 		void selectWindow(nap::ResourcePtr<RenderWindow> window);
 
 		/**
-		 * Handles input for gui related tasks, called from the Gui App Event Handler
-		 * This is separate from other input related event handling
+		 * Returns the ImGUI context associated with the given window.
+		 * @return ImGUI context for the given window, asserts if it doesn't exist.
 		 */
-		void processInputEvent(InputEvent& event);
+		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
 
 		/**
-		 * @return if the gui is capturing keyboard events
+		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
+		 * @return context that belongs to the event, nullptr if the event is not related to a window.
 		 */
-		bool isCapturingKeyboard();
+		ImGuiContext* processInputEvent(InputEvent& event);
 
 		/**
-		 * @return if the gui is capturing mouse events
+		 * @return if the GUI is capturing keyboard events
 		 */
-		bool isCapturingMouse();
+		bool isCapturingKeyboard(ImGuiContext* context);
+
+		/**
+		 * @return if the GUI is capturing mouse events
+		 */
+		bool isCapturingMouse(ImGuiContext* context);
+
+		/**
+		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
+		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.		 
+		 * Internally the handles are cached, it is therefore fine to call this function every frame. 
+		 * Keep in mind that a handle (descriptor set) is created for every unique texture.
+		 *
+		 * ~~~~~{.cpp}
+		 * ImGui::Begin("Texture");
+		 * ImGui::Image(mGuiService.getTextureHandle(texture), ...);
+		 * ImGui::End();
+		 * ~~~~~
+		 * @return Vulkan texture handle, used to display a texture in ImGUI
+		 */
+		ImTextureID getTextureHandle(nap::Texture2D& texture);
 
 	protected:
 		/**
@@ -83,13 +200,58 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 *	Disables the imgui library
+		 * Ends frame operation for all contexts.
+		 */
+		virtual void postUpdate(double deltaTime) override;
+
+		/**
+		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;
 
 	private:
-		RenderService*				mRenderer = nullptr;			///< The rendered used by IMGUI
-		ResourcePtr<RenderWindow>	mUserWindow = nullptr;			///< User selected GUI window, defaults to primary window
-		bool						mWindowChanged = true;			///< If the window changed, forces a reconstruction of GUI resources
+
+		/**
+		 * Simple struct that combines an ImGUI context with additional state information
+		 * Takes ownership of the context, destroys it on destruction
+		 */
+		struct GUIContext
+		{
+			GUIContext(ImGuiContext* context) : mContext(context) { };
+			~GUIContext();
+
+			bool mMousePressed[3]		= { false, false, false };
+			float mMouseWheel			= 0.0f;
+			ImGuiContext* mContext		= nullptr;
+		};
+
+		RenderService* mRenderService = nullptr;
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+
+		/**
+		 * Called when a window is added, creates ImGUI related resources
+		 */
+		void onWindowAdded(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowAddedSlot	= { this, &IMGuiService::onWindowAdded };
+
+		/**
+		 * Called when a window is removed, destroys ImGUI related resources
+		 */
+		void onWindowRemoved(RenderWindow& window);
+		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
+
+		/**
+		 * Creates all vulkan related resources, for imGUI as well as local
+		 */
+		void createVulkanResources(nap::RenderWindow& window);
+
+		/**
+		 * starts a new imgui frame
+		 */
+		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 	};
 }

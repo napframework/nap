@@ -6,262 +6,85 @@
 			"mID" : "Window0",
 			"Width" : 256,
 			"Height" : 256,
-			"Title" : "Window 1"
+			"Title" : "Window 1",
+			"Samples": "Four",
+			"SampleShading": true,
+			"PresentationMode":"Mailbox"
 		},
-
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window1",
 			"Width" : 512,
 			"Height" : 512,
-			"Title" : "Window 2"
+			"Title" : "Window 2",
+			"Samples": "Four",
+			"SampleShading": true,
+			"PresentationMode":"Mailbox"
 		},
-
-		{
-			"Type" : "nap::ImageFromFile",
-			"mID" : "PigTexture",
-			"ImagePath" : "pig_head.jpg"
-		},
-		
-		{
-			"Type" : "nap::ImageFromFile",	
-			"mID" : "WorldTexture",
-			"ImagePath" : "world_texture.jpg"
-		},
-
-		{
-			"Type" : "nap::ImageFromFile",
-			"mID" : "TestTexture",
-			"ImagePath" : "test.jpg"
-		},
-
 		{
 			"Type" : "nap::RenderTexture2D",
 			"mID" : "ColorTexture",
 			"Width" : 640,
 			"Height" : 480,
-			"Format" : "RGBA8"
+			"Format" : "RGBA8",
+			"Usage" : "Static"
 		},
-		
-		{
-			"Type" : "nap::RenderTexture2D",
-			"mID" : "DepthTexture",
-			"Width" : 640,
-			"Height" : 480,
-			"Format" : "Depth"
-		},
-		
 		{
 			"Type" : "nap::RenderTarget",
 			"mID": "PlaneRenderTarget",
-			"mColorTexture": "ColorTexture",
-			"mDepthTexture": "DepthTexture",
-			"mClearColor" : {
+			"ColorTexture": "ColorTexture",
+			"ClearColor" : {
 				"x" : 1.0,
 				"y" : 1.0,
 				"z" : 1.0,
 				"w" : 1.0
-			}
+			},
+			"Samples": "Two",
+			"SampleShading": false
 		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "GeneralShader",
-			"mVertShader": "shaders/shader.vert",
-			"mFragShader": "shaders/shader.frag"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "OrientationShader",
-			"mVertShader": "shaders/orientation.vert",
-			"mFragShader": "shaders/orientation.frag"
-		},
-
-		{
-			"Type" : "nap::MeshFromFile",
-			"mID": "OrientationMesh",
-			"Path": "orientation.mesh"
-		},
-
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "PigMesh",
 			"Path": "pig_head_alpha_rotated.mesh"
-		},	
-		
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
 		},
-		
 		{
 			"Type" : "nap::SphereMesh",
 			"mID": "SphereMesh"
+		},		
+		{
+			"Type" : "nap::ImageFromFile",
+			"mID" : "TestTexture",
+			"ImagePath" : "test.jpg"
+		},		
+		{
+			"Type" : "nap::ImageFromFile",
+			"mID" : "PigTexture",
+			"ImagePath" : "pig_head.jpg"
+		},		
+		{
+			"Type" : "nap::ImageFromFile",	
+			"mID" : "WorldTexture",
+			"ImagePath" : "world_texture.jpg"
+		},		
+		{
+			"Type" : "nap::Shader",
+			"mID": "GeneralShader",
+			"mVertShader": "shaders/shader.vert",
+			"mFragShader": "shaders/shader.frag",
+            "OutputFormat": "RGBA8"
 		},
-		
 		{
-			"Type" : "nap::Mesh",
-			"mID" : "CustomLineMesh",
-			"Properties" : {
-				"NumVertices" : 5,
-				"Shapes" : [
-					{
-						"DrawMode" : "LineStrip"
-					}
-				],
-				"Attributes" : [
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "Position",
-						"Data" : [
-							{ "x": -0.5, 	"y": -0.5, "z": 0.0 },
-							{ "x":  0.5, 	"y": -0.5,	"z": 0.0 },
-							{ "x":  0.5, 	"y":  0.5,	"z": 0.0 },
-							{ "x": -0.5, 	"y":  0.5,	"z": 0.0 },							
-							{ "x": -0.5, 	"y": -0.5, "z": 0.0 }
-						]
-					},
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "UV0",
-						"Data" : [
-							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 },
-							{ "x": 1.0, 	"y": 0.0,	"z": 0.0 },
-							{ "x": 0.0, 	"y": 1.0,	"z": 0.0 },
-							{ "x": 1.0, 	"y": 1.0,	"z": 0.0 },
-							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 }
-						]
-					}
-				]
-			}
-		},	
-
-		{
-			"Type" : "nap::Mesh",
-			"mID" : "CustomPlaneMesh",
-			"Properties" : {
-				"NumVertices" : 4,
-				"Shapes" : [
-					{
-						"DrawMode" : "TriangleStrip"
-					}
-				],
-				"Attributes" : [
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "Position",
-						"Data" : [
-							{ "x": -0.5, 	"y": -0.5, "z": 0.0 },
-							{ "x":  0.5, 	"y": -0.5,	"z": 0.0 },
-							{ "x": -0.5, 	"y":  0.5,	"z": 0.0 },
-							{ "x":  0.5, 	"y":  0.5,	"z": 0.0 }
-						]
-					},
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "UV0",
-						"Data" : [
-							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 },
-							{ "x": 1.0, 	"y": 0.0,	"z": 0.0 },
-							{ "x": 0.0, 	"y": 1.0,	"z": 0.0 },
-							{ "x": 1.0, 	"y": 1.0,	"z": 0.0 }
-						]
-					}
-				],
-				"Indices" : [
-					0,
-					1,
-					3,
-					0,
-					3,
-					2
-				]
-			}
-		},	
-		
-		{
-			"Type" : "nap::Material",
-			"mID": "GeneralMaterial",
-			"Shader": "GeneralShader",
-			"VertexAttributeBindings" : [
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformVec4",
-					"Name" : "mColor",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 0.0,
-						"z" : 0.0,
-						"w" : 1.0						
-					}
-				}
-			]			
-		},
-		
-		
-		{
-			"Type" : "nap::Material",
-			"mID": "OrientationMaterial",
-			"Shader": "OrientationShader",
-			"VertexAttributeBindings" : [
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				}
-			]			
-		},
-		
+			"Type" : "nap::PythonScript",
+			"mID" : "WorldEntityScript",
+			"Path" : "scripts/world.py"
+		},        
 		{
 			"Type" : "nap::Scene",
 			"mID": "Scene",		
 			"Entities" : 
 			[
 				{
-					"Entity" : "DefaultInputRouterEntity"
-				},
-				{
-					"Entity" : "OrientationEntity"
-				},
-				{
-					"Entity" : "PlaneEntity"
-				},
-				{
-					"Entity" : "RotatingPlaneEntity"
-				},
-				{
-					"Entity" : "WorldEntity"
+					"Entity" : "PigEntity"
 				},
 				{
 					"Entity" : "CameraEntityLeft"
@@ -271,116 +94,22 @@
 				},
 				{
 					"Entity" : "SplitCameraEntity"
+				},
+				{
+					"Entity" : "WorldEntity"
+				},				
+				{
+					"Entity" : "DefaultInputRouterEntity"
+				},
+				{
+					"Entity" : "PlaneEntity"
 				}
 			]
 		},
-
 		{
-			"Type" : "nap::Entity",
-			"mID": "DefaultInputRouterEntity",		
-			"Components" : 
-			[
-				{
-					"Type" : "nap::DefaultInputRouterComponent"
-				}
-			]
+			"Type" : "nap::PlaneMesh",
+			"mID" : "CustomPlaneMesh"
 		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "PigEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PigMesh",
-					"MaterialInstance" : {
-						"Material": "GeneralMaterial",
-						"BlendMode": "Opaque",
-						"Uniforms" : 
-						[
-							{
-								"Type" : "nap::UniformInt",
-								"Name" : "mTextureIndex",
-								"Value" : 0
-							},
-							{
-								"Type" : "nap::UniformTexture2D",
-								"Name" : "pigTexture",
-								"Texture" : "PigTexture"
-							},
-							{
-								"Type" : "nap::UniformTexture2D",
-								"Name" : "testTexture",
-								"Texture" : "TestTexture"
-							}
-						]
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.1,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0
-					}
-				},
-				{
-					"Type" : "nap::PythonScriptComponent",
-					"Path": "scripts/pig.py"
-				}
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "OrientationEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "OrientationMesh",
-					"MaterialInstance" : {
-						"Material": "OrientationMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": -1.5,
-							"y": -1.5,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.00					
-					}
-				}
-			]
-		},	
-		
 		{
 			"Type" : "nap::Entity",
 			"mID": "PlaneEntity",
@@ -388,13 +117,21 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "CustomLineMesh",
+					"Mesh" : "CustomPlaneMesh",
 					"MaterialInstance" : {
-						"Material": "GeneralMaterial"
+						"Material": "GeneralMaterial",
+						"Samplers" :
+						[
+							{
+								"Type" : "nap::Sampler2D",
+								"Name" : "pigTexture",
+								"Texture" : "ColorTexture"
+							}
+						]
 					}
 				},
 				{
-					"Type" : "nap::TransformComponent",
+					"Type" : "nap::TransformComponent", 
 					"Properties": {
 						"Translate": {
 							"x": -1.0,
@@ -413,54 +150,9 @@
 						},
 						"UniformScale": 1.5					
 					}
-				},
-				{
-					"Type" : "nap::PythonScriptComponent",
-					"Path": "scripts/plane.py"
 				}
 			]
-		},	
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "RotatingPlaneEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "CustomPlaneMesh",
-					"MaterialInstance" : {
-						"Material": "GeneralMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 1.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.5
-					}
-				},
-				{
-					"Type" : "nap::PythonScriptComponent",
-					"Path": "scripts/rotating_plane.py"
-				}		
-			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "WorldEntity",
@@ -475,17 +167,52 @@
 						"Uniforms" : 
 						[
 							{
-								"Type" : "nap::UniformInt",
-								"Name" : "mTextureIndex",
-								"Value" : 1
-							},
+
+								"Type" : "nap::UniformStruct",
+								"Name" : "UBO",
+								"Uniforms" :
+								[
+									{
+										"Type" : "nap::UniformStructArray",
+										"Name" : "mData",
+										"Structs" :
+										[
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 0
+													}
+												]
+											},
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 1
+													}
+												]
+											}													
+										]
+									}
+								]
+							}
+						],
+						"Samplers" : 
+						[
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "pigTexture",
 								"Texture" : "WorldTexture"
 							},
 							{
-								"Type" : "nap::UniformTexture2D",
+								"Type" : "nap::Sampler2D",
 								"Name" : "testTexture",
 								"Texture" : "WorldTexture"
 							}
@@ -515,11 +242,192 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "scripts/world.py"
+					"PythonScript": "WorldEntityScript",
+					"Class": "WorldEntity"
 				}			
 			]
+		},		
+		{
+			"Type" : "nap::Entity",
+			"mID": "DefaultInputRouterEntity",		
+			"Components" : 
+			[
+				{
+					"Type" : "nap::DefaultInputRouterComponent"
+				}
+			]
+		},		
+		{
+			"Type" : "nap::Entity",
+			"mID": "PigEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "PigMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+
+								"Type" : "nap::UniformStruct",
+								"Name" : "UBO",
+								"Uniforms" :
+								[
+									{
+										"Type" : "nap::UniformStructArray",
+										"Name" : "mData",
+										"Structs" :
+										[
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 0
+													}
+												]
+											},
+											{
+												"Type" : "nap::UniformStruct",
+												"Uniforms" :
+												[
+													{
+														"Type" : "nap::UniformInt",
+														"Name" : "mTextureIndex",
+														"Value" : 1
+													}
+												]
+											}													
+										]
+									}
+								]
+							}
+						],
+						"Samplers" :
+						[
+							{
+								"Type" : "nap::Sampler2D",
+								"Name" : "pigTexture",
+								"Texture" : "PigTexture"
+							}
+						]
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0 
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				},
+				{
+					"Type" : "nap::RotateComponent",
+					"Properties" : {
+						"Axis" : {
+							"x": 0.0,
+							"y": 1.0,
+							"z": 0.0 
+						},
+						"Speed": 0.1
+					}
+					
+				}
+			]
 		},
-		
+		{
+			"Type" : "nap::Material",
+			"mID": "GeneralMaterial",
+			"Shader": "GeneralShader",
+			"VertexAttributeBindings" : [
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				},
+				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID": "in_Normals"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+
+					"Type" : "nap::UniformStruct",
+					"Name" : "UBO",
+					"Uniforms" :
+					[
+						{
+							"Type" : "nap::UniformStructArray",
+							"Name" : "mData",
+							"Structs" :
+							[
+								{
+									"Type" : "nap::UniformStruct",
+									"Uniforms" :
+									[
+										{
+											"Type" : "nap::UniformVec4",
+											"Name" : "mColor",
+											"Value" : 
+											{
+												"x" : 1.0,
+												"y" : 1.0,
+												"z" : 1.0,
+												"w" : 1.0						
+											}
+										}
+									]
+								},
+								{
+									"Type" : "nap::UniformStruct",
+									"Uniforms" :
+									[
+										{
+											"Type" : "nap::UniformVec4",
+											"Name" : "mColor",
+											"Value" : 
+											{
+												"x" : 1.0,
+												"y" : 1.0,
+												"z" : 1.0,
+												"w" : 1.0						
+											}
+										}
+									]
+								}								
+							]
+						}
+					]
+				}
+			]
+		},
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntityLeft",
@@ -570,7 +478,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntityRight",
@@ -620,7 +527,6 @@
 				}
 			]
 		},
-		
 		{
 			"Type" : "nap::Entity",
 			"mID": "SplitCameraEntity",
@@ -661,6 +567,6 @@
 					}
 				}
 			]
-		}
+		}		
 	]
 }

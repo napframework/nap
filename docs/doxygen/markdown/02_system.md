@@ -7,6 +7,7 @@ System {#system}
 *   [Core](@ref core)
 *	[Resourcemanager](@ref resourcemanager)
 *	[Events](@ref events)
+*	[Configuration](@ref service_config)
 
 Overview {#system_overview}
 =======================
@@ -141,3 +142,56 @@ Events {#events}
 
 NAP uses [events](@ref nap::Event) to signal the occurrence of an action to the running application. Events often originate from an external environment and are handled by their respective services. When the event is generated asynchronously the service makes sure it is consumed before making it available to potential listeners (often components) on the main thread. This is the general design pattern behind event handling in NAP. [Input](@ref nap::InputEvent), [OSC](@ref nap::OSCEvent) and [Midi](@ref nap::MidiEvent) events are handled this way. This also ensures that new messages don't stall the running application.
 
+Configuration {#service_config}
+=======================
+Some services are configurable, including the [audio](@ref nap::AudioService), [render](@ref nap::RenderService) and [gui](@ref nap::IMGuiService) service. Every service that is configurable is initialized using a class derived from [ServiceConfiguration](@ref nap::ServiceConfiguration). The render service is initialized using a [render service configuration](@ref nap::RenderServiceConfiguration) and the audio service is initialized using an [audio service configuration](@ref nap::audio::AudioServiceConfiguration).
+
+All service configurable settings are stored in a `config.json` file, which should be placed next to the executable. This file is not placed in the `data` folder because service configurable settings are system specific, not application specific. You might want to select a different audio output port, change the gui font size or disable high dpi rendering. If no `config.json` file is provided the system defaults are used. 
+
+`config.json` example:
+
+```
+{
+    "Objects": 
+    [
+        {
+            "Type": "nap::IMGuiServiceConfiguration",
+            "mID": "nap::IMGuiServiceConfiguration",
+            "FontSize": 17.0
+        },
+        {
+            "Type": "nap::RenderServiceConfiguration",
+            "mID": "nap::RenderServiceConfiguration",
+            "PreferredGPU": "Discrete",
+            "Layers": 
+            [
+                "VK_LAYER_KHRONOS_validation"
+            ],
+            "Extensions": [],
+            "VulkanMajor": 1,
+            "VulkanMinor": 0,
+            "EnableHighDPI": true,
+            "ShowLayers": false,
+            "ShowExtensions": true,
+            "AnisotropicSamples": 8
+        },
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "nap::audio::AudioServiceConfiguration",
+            "InputChannelCount": 1,
+            "OutputChannelCount": 2,
+            "AllowChannelCountFailure": true,
+            "SampleRate": 44100.0,
+            "BufferSize": 1024,
+            "InternalBufferSize": 1024
+        }
+    ]
+}
+```
+
+You can automatically generate a config file, using the currently loaded settings of your application, by calling :
+
+~~~~~~~~~~~~~~~{.cpp}
+	if (!getCore().writeConfigFile(error))
+		return false;
+~~~~~~~~~~~~~~~

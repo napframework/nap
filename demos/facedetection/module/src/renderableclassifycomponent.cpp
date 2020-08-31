@@ -7,6 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
 #include <nap/datetime.h>
+#include <nap/core.h>
+#include <renderservice.h>
+#include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
@@ -33,6 +36,12 @@ namespace nap
 	}
 
 
+	RenderableClassifyComponentInstance::RenderableClassifyComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<nap::RenderService>())
+	{
+
+	}
+
 	/**
 	 * Initializes this component. For this component to work a reference mesh + at least one mesh to copy onto it is needed.
 	 * It also makes sure various uniforms (such as color) are present in the material. These uniforms are set when onRender() is called.
@@ -51,39 +60,65 @@ namespace nap
 			return false;
 
 		// Initialize our material instance based on values in the resource
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*mRenderService, resource->mMaterialInstanceResource, errorState))
+			return false;
+
+		//////////////////////////////////////////////////////////////////////////
+
+		// Get the general uniform buffer object, has handles to all other uniforms
+		UniformStructInstance* gen_ubo = mMaterialInstance.getOrCreateUniform("UBO");
+		if (!errorState.check(gen_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", resource->mID.c_str()))
 			return false;
 
 		// Get handle to color uniform, which we set in the draw call
-		mColorUniform = extractUniform<UniformVec3>(resource->mColorUniform, mMaterialInstance, errorState);
+		mColorUniform = extractUniform<UniformVec3Instance>(resource->mColorUniform, *gen_ubo, errorState);
 		if (mColorUniform == nullptr)
+			return false;
+		
+		//////////////////////////////////////////////////////////////////////////
+
+		// Get the mvp uniform buffer object
+		UniformStructInstance* mvp_ubo = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (!errorState.check(mvp_ubo != nullptr, "%s: missing model view projection 'ubo' with name: %s", resource->mID.c_str(), uniform::mvpStruct))
 			return false;
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = extractUniform<UniformMat4>("projectionMatrix", mMaterialInstance, errorState);
+		mProjectionUniform = extractUniform<UniformMat4Instance>("projectionMatrix", *mvp_ubo, errorState);
 		if (mProjectionUniform == nullptr)
 			return false;
 		
-		mViewUniform = extractUniform<UniformMat4>("viewMatrix", mMaterialInstance, errorState);
+		mViewUniform = extractUniform<UniformMat4Instance>("viewMatrix", *mvp_ubo, errorState);
 		if (mViewUniform == nullptr)
 			return false;
 		
-		mModelUniform = extractUniform<UniformMat4>("modelMatrix", mMaterialInstance, errorState);
+		mModelUniform = extractUniform<UniformMat4Instance>("modelMatrix", *mvp_ubo, errorState);
 		if (mModelUniform == nullptr)
 			return false;
 
-		mBlobCountUniform = extractUniform<UniformInt>("blobCount", mPlaneComponent->getMaterialInstance(), errorState);
+		//////////////////////////////////////////////////////////////////////////
+
+		// Get handle to general uniform buffer object of plane
+		UniformStructInstance* plane_ubo = mPlaneComponent->getMaterialInstance().getOrCreateUniform("UBO");
+		if (!errorState.check(mvp_ubo != nullptr, "%s: missing uniform buffer object with name: 'UBO'", mPlaneComponent->mID.c_str()))
+			return false;
+
+		// Get handle to the blobs uniform array input of the plane material, we update the position of the blobs on update.
+		mBlobsUniform = extractUniform<UniformStructArrayInstance>("blobs", *plane_ubo, errorState);
+		if (mBlobsUniform == nullptr)
+			return false;
+
+		// Get handle to blob count uniform
+		mBlobCountUniform = extractUniform<UniformIntInstance>("blobCount", *plane_ubo, errorState);
 		if (mBlobCountUniform == nullptr)
 			return false;
 
-		// Fetch render service
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<RenderService>();
+		//////////////////////////////////////////////////////////////////////////
 
 		// Iterate over the meshes to copy
 		// Create a valid mesh / material combination based on our referenced material and the meshes to copy
-		// If a renderable mesh turns out to be invalid it means that the material / mesh combination isn't valid, ie:
+		// If a render-able mesh turns out to be invalid it means that the material / mesh combination isn't valid, ie:
 		// There are required vertex attributes in the shader that the mesh doesn't have.
-		mSphereMesh = render_service->createRenderableMesh(*resource->mSphereMesh, mMaterialInstance, errorState);
+		mSphereMesh = mRenderService->createRenderableMesh(*resource->mSphereMesh, mMaterialInstance, errorState);
 		if (!errorState.check(mSphereMesh.isValid(), "%s, mesh: %s can't be copied", resource->mID.c_str(), resource->mSphereMesh->mID.c_str()))
 			return false;
 
@@ -144,22 +179,18 @@ namespace nap
 			if (mBlobs[i].getElapsedTime() > 1.0)
 				continue;
 
-			// Update blob and store corrent location and size as a vec4
+			// Update blob and store current location and size as a vec4
 			glm::vec4 new_location = mBlobs[i].update(deltaTime);
 
 			// Set current blob location in plane material
-			std::string center_uniform_name = utility::stringFormat("blobs[%d].mCenter", i);
-			assert(plane_material.getMaterial()->findUniform(center_uniform_name) != nullptr);
-
-			UniformVec3& center_uniform = plane_material.getOrCreateUniform<UniformVec3>(center_uniform_name);
-			center_uniform.setValue(glm::vec3(new_location));
+			UniformVec3Instance* center_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformVec3Instance>("mCenter");
+			assert(center_uniform != nullptr);
+			center_uniform->setValue(new_location);
 
 			// Set current blob size in plane material
-			std::string size_uniform_name = utility::stringFormat("blobs[%d].mSize", i);
-			assert(plane_material.getMaterial()->findUniform(size_uniform_name) != nullptr);
-
-			UniformFloat& size_uniform = plane_material.getOrCreateUniform<UniformFloat>(size_uniform_name);
-			size_uniform.setValue(new_location.w);
+			UniformFloatInstance* size_uniform = (*mBlobsUniform)[i].getOrCreateUniform<UniformFloatInstance>("mSize");
+			assert(size_uniform != nullptr);
+			size_uniform->setValue(new_location.w);
 			
 			// Valid location
 			mLocations.emplace_back(new_location);
@@ -181,18 +212,12 @@ namespace nap
 	 * A randomly selected mesh is rendered at the position of every vertex in the reference mesh.
 	 * You can change the meshes that are copied and the reference mesh in the JSON file.
 	 */
-	void RenderableClassifyComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableClassifyComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
-		// Bind material
-		mMaterialInstance.bind();
-
 		// Set non changing uniforms
 		mViewUniform->setValue(viewMatrix);
 		mProjectionUniform->setValue(projectionMatrix);
 		mColorUniform->setValue({ 1.0,0.0,0.0 });
-
-		// Prepare blending
-		mMaterialInstance.pushBlendMode();
 
 		// Fix seed for subsequent random calls
 		math::setRandomSeed(mSeed);
@@ -200,61 +225,73 @@ namespace nap
 		// Get randomization scale for various effects
 		int max_rand_color = static_cast<int>(mColors.size()) - 1;
 
-		// Push all existing uniforms to GPU
-		mMaterialInstance.pushUniforms();
+		// Construct viewport, can be re-used.
+		VkViewport viewport =
+		{
+			0.0f, 0.0f,
+			(float)renderTarget.getBufferSize().x,
+			(float)renderTarget.getBufferSize().y,
+			0.0f, 1.0f
+		};
 
-		// Fetch the uniform declarations of the uniform values we want to update in the copy loop
-		// This allows us to only push a specific uniform instead of all uniforms.
-		// Every uniform maps to a declaration, where there can be multiple values associated with a single declaration.
-		// You can look at the uniform declaration as the actual slot on a shader that accepts a value of a specific type.
-		const auto& color_binding = mMaterialInstance.getUniformBinding(mColorUniform->mName);
-		const auto& objec_binding = mMaterialInstance.getUniformBinding(mModelUniform->mName);
+		// Scissor rect can also be re-used
+		VkRect2D scissor_rect
+		{
+			{ 0, 0 },
+			{
+				(uint32_t)renderTarget.getBufferSize().x,
+				(uint32_t)renderTarget.getBufferSize().y
+			}
+		};
 
-		// Iterate over every point, fetch random mesh, construct custom object matrix, set uniforms and render.
+		// Get pipeline for rendering
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mSphereMesh.getMesh(), mMaterialInstance, error_state);
+
+		// Iterate over every point, construct custom object matrix, set uniforms and render.
 		for (auto i = 0; i < mLocations.size(); i++)
 		{			
 			// Pick random color for mesh and push to GPU
 			glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
 			mColorUniform->setValue(color);
-			mColorUniform->push(*color_binding.mDeclaration);
-
-			// Get the mesh to stamp onto this point and bind
-			RenderableMesh& render_mesh = mSphereMesh;
-			render_mesh.bind();
-
-			// Get data of that mesh
-			MeshInstance& mesh_instance = render_mesh.getMesh().getMeshInstance();
-
-			// GPU mesh representation of mesh to copy
-			opengl::GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 
 			// Calculate model matrix, set and push
 			glm::mat4 object_loc = glm::translate(glm::mat4(), glm::vec3(mLocations[i]));
 			object_loc = glm::scale(object_loc, { mLocations[i].w, mLocations[i].w, mLocations[i].w });
 			mModelUniform->setValue(object_loc);
-			mModelUniform->push(*objec_binding.mDeclaration);
+
+			// Update our descriptor set
+			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+
+			// Bind pipeline
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+
+			// Set viewport
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+			// Bind descriptor set for next draw call
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+
+			// Bind vertex buffers
+			const std::vector<VkBuffer>& vertexBuffers = mSphereMesh.getVertexBuffers();
+			const std::vector<VkDeviceSize>& vertexBufferOffsets = mSphereMesh.getVertexBufferOffsets();
+			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+
+			// Get mesh to draw
+			MeshInstance& mesh_instance = mSphereMesh.getMesh().getMeshInstance();
+			GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+
+			// Update scissor state
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
 
 			// Iterate over all the shapes and render
 			for (int shape_idx = 0; shape_idx < mesh_instance.getNumShapes(); ++shape_idx)
 			{
-				// Get the shape we want to draw and the index buffer associated with that shape
-				MeshShape& shape = mesh_instance.getShape(shape_idx);
-				const opengl::IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(shape_idx);
-
-				GLenum draw_mode = getGLMode(shape.getDrawMode());
-				GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-
-				// Bind and draw all the currently attached vbo's based on the shape's indices.
-				index_buffer.bind();
-				glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-				index_buffer.unbind();
+				const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(shape_idx);
+				vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 			}
-			// Unbind this instance
-			render_mesh.unbind();
 		}
-
-		// Unbind material
-		mMaterialInstance.unbind();
 	}
 
 

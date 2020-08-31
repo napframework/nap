@@ -10,6 +10,9 @@
 #include <limits>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <nap/logger.h>
+#include <nap/core.h>
+#include <renderglobals.h>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::PX,		"px"),
@@ -20,7 +23,8 @@ RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::DPI,	"dpi")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::LineFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineFromFile)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("File",				&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Units",				&nap::LineFromFile::mUnits,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DPI",				&nap::LineFromFile::mDPI,		nap::rtti::EPropertyMetaData::Default)
@@ -105,6 +109,10 @@ static void extractPathVertices(float* pts, int npts, char closed, float tol, st
 
 namespace nap
 {
+	LineFromFile::LineFromFile(nap::Core& core) : PolyLine(core)
+	{}
+
+
 	bool LineFromFile::init(utility::ErrorState& errorState)
 	{
 		if (!PolyLine::init(errorState))
@@ -186,6 +194,20 @@ namespace nap
 	}
 
 
+	bool LineFromFile::isClosed(int shapeIndex) const
+	{
+		assert(shapeIndex < mClosedStates.size());
+		return mClosedStates[shapeIndex];
+	}
+
+
+	bool LineFromFile::isClosed() const
+	{
+		assert(!mClosedStates.empty());
+		return mClosedStates.front();
+	}
+
+
 	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rect, utility::ErrorState& errorState)
 	{
 		// Calculate rectangle ratio
@@ -220,6 +242,7 @@ namespace nap
 		float pos_y_max = mFlipY ? mNormalize ? -0.5f : rect.mMinPosition.y : mNormalize ? 0.5f	 : rect.mMaxPosition.y;
 
 		// Create a set of mesh instances based on those paths
+		mClosedStates.clear();
 		for (int path_index = 0; path_index != paths.size(); ++path_index)
 		{
 			auto& path = paths[path_index];
@@ -315,19 +338,21 @@ namespace nap
 				normals.front() = { 0,1.0,0.0 };
 			}
 
-			addShape(positions, normals, uvs, is_closed);
+			addShape(is_closed, positions, normals, uvs);
+			mClosedStates.emplace_back(is_closed);
 		}
 
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 		return mMeshInstance->init(errorState);
 	}
 
 
-	void LineFromFile::addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool closed)
+	void LineFromFile::addShape(bool closed, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs)
 	{		
-		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& col_attr = mMeshInstance->getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		Vec3VertexAttribute& nor_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec4VertexAttribute& col_attr = mMeshInstance->getAttribute<glm::vec4>(vertexid::getColorName(0));
+		Vec3VertexAttribute& nor_attr = mMeshInstance->getAttribute<glm::vec3>(vertexid::normal);
 
 		int vertex_count = static_cast<int>(pathVertices.size());
 		// Set position buffer
@@ -344,9 +369,7 @@ namespace nap
 		uvs_attr.addData(pathUvs.data(), pathUvs.size());
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
 		utility::generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
-
 		mMeshInstance->setNumVertices(mMeshInstance->getNumVertices() + vertex_count);
 	}
 

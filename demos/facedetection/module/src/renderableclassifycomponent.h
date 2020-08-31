@@ -11,9 +11,14 @@
 #include <renderablemeshcomponent.h>
 #include <smoothdamp.h>
 #include <nap/timer.h>
+#include <uniforminstance.h>
 
 namespace nap
 {
+	// Forward Declares
+	class RenderService;
+	class Core;
+
 	//////////////////////////////////////////////////////////////////////////
 	// Blob
 	//////////////////////////////////////////////////////////////////////////
@@ -101,8 +106,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
-		RenderableClassifyComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)									{ }
+		RenderableClassifyComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize RenderableCopyMeshComponentInstance based on the RenderableCopyMeshComponent resource
@@ -145,7 +149,7 @@ namespace nap
 		* @param viewMatrix the camera world space location
 		* @param projectionMatrix the camera projection matrix
 		*/
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		/**
@@ -153,38 +157,37 @@ namespace nap
 		 * First it checks if the material actually has (supports) a uniform with the given name.
 		 * If that is the case a new uniform with that name is retrieved.
 		 * @param name uniform name
-		 * @param material the material to extract uniform from.
+		 * @param ubo the uniform buffer object to extract uniform from.
 		 * @param error contains the error if extraction fails
 		 * @return the extracted uniform
 		 */
 		template<typename T>
-		T* extractUniform(const std::string& name, nap::MaterialInstance& minstance, utility::ErrorState& error);
+		T* extractUniform(const std::string& name, nap::UniformStructInstance& ubo, utility::ErrorState& error);
 
 		TransformComponentInstance* mTransform = nullptr;				///< Transform used to position instanced meshes
 		RenderableMesh mSphereMesh;										///< Valid mesh / material combinations
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
-		nap::UniformVec3* mColorUniform = nullptr;						///< Color uniform slot
-		nap::UniformMat4* mProjectionUniform = nullptr;					///< Projection matrix uniform slot
-		nap::UniformMat4* mViewUniform = nullptr;						///< View matrix uniform slot
-		nap::UniformMat4* mModelUniform = nullptr;						///< Model matrix uniform 
-		nap::UniformInt* mBlobCountUniform = nullptr;					///< Number of blobs uniform
+		nap::UniformVec3Instance* mColorUniform = nullptr;				///< Color uniform slot
+		nap::UniformMat4Instance* mProjectionUniform = nullptr;			///< Projection matrix uniform slot
+		nap::UniformMat4Instance* mViewUniform = nullptr;				///< View matrix uniform slot
+		nap::UniformMat4Instance* mModelUniform = nullptr;				///< Model matrix uniform 
+		nap::UniformIntInstance* mBlobCountUniform = nullptr;			///< Number of blobs uniform
+		nap::UniformStructArrayInstance* mBlobsUniform = nullptr;		///< Handle to the array of blobs in the plane material
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
 		std::vector<Blob> mBlobs;										///< All the blobs in world space
-		std::vector<glm::vec4> mLocations;							///< Recent blob location and size data, xyz = position, z = size
+		std::vector<glm::vec4> mLocations;								///< Recent blob location and size data, xyz = position, z = size
+		nap::RenderService* mRenderService;								///< Handle to the renderer
 	};
 
 
 	template<typename T>
-	T* nap::RenderableClassifyComponentInstance::extractUniform(const std::string& name, MaterialInstance& minstance, utility::ErrorState& error)
+	T* nap::RenderableClassifyComponentInstance::extractUniform(const std::string& name, nap::UniformStructInstance& ubo, utility::ErrorState& error)
 	{
-		// Find the uniform in the material first
-		nap::Material* material = minstance.getMaterial();
-		T* found_uni = material->findUniform<T>(name);
-		if (!error.check(found_uni != nullptr, "%s: unable to find uniform: %s", material->mID.c_str(), name.c_str()))
-			return nullptr;
-
-		// If found, create a uniform associated with the instance of that material
-		return &(minstance.getOrCreateUniform<T>(name));
+		// Get / create uniform if exists
+		T* found_uni = ubo.getOrCreateUniform<T>(name);
+		if (found_uni == nullptr)
+			error.fail("Unable to find uniform: %s", name.c_str());
+		return found_uni;
 	}
 
 }

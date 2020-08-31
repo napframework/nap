@@ -19,20 +19,21 @@ After creation your new project is located in the `projects` folder.
 Specifying Modules {#specifying_modules}
 =======================
 
-Within your newly created project you will find the project definition file `project.json`, which looks like this:
+Within your newly created project you will find the project definition file `project.json`, which looks something like this:
 
 ```
 {
     "title": "NewProject",
-    "version": "0.2",
+    "version": "1.0",
     "modules": [
+        "mod_napimgui",
         "mod_napapp",
         "mod_napaudio"
     ]
 }
 ```
 
-All projects created via `create_project` will automatically be setup to use modules `mod_napapp` and `mod_napaudio`.  The simple project that we create in the steps below makes use of the module `mod_napaudio` for audio playback.  When you find a need to use some of the other NAP modules in your project these should be added to the `modules` element in your `project.json`.  After changing `project.json` you need to regenerate the project (via CMake) by executing the `regenerate` shortcut in the project folder.
+All projects created via `create_project` will automatically be setup to use modules `mod_napapp`, `mod_napaudio` and `mod_napimgui`.  The simple project that we create in the steps below makes use of the module `mod_napaudio` for audio playback.  When you find a need to use some of the other NAP modules in your project these should be added to the `modules` element in your `project.json`.  After changing `project.json` you need to regenerate the project (via CMake) by executing the `regenerate` shortcut in the project folder.
 
 You can build and run the project using Visual Studio on Windows (in directory `msvc64`), Xcode on macOS (in `xcode`) or make on Linux (in `build`).
 
@@ -46,7 +47,7 @@ The `data` folder within your project folder contains an `app_structure.json` fi
 - [Entities](@ref scene): objects that structure functionality by combining a set of components
 - [Components](@ref scene): used to add functionality to an entity and receive an update call
 
-Refer to the [Resource](@ref resources) and [Scene](@ref scene) documentation for more information.
+Refer to the [Resource](@ref resources) and [Scene](@ref scene) documentation for more information. 
 
 Every blank app contains a window and a scene:
 
@@ -57,10 +58,9 @@ Every blank app contains a window and a scene:
         {
             "Type": "nap::RenderWindow",
             "mID": "Window",
-            "Width": 1280,
-            "Height": 720,
             "Title": "NewProject",
-            "Sync": "false"
+            "Width": 1280,
+            "Height": 720
         },
         {
             "Type" : "nap::Scene",
@@ -71,7 +71,7 @@ Every blank app contains a window and a scene:
 } 
 ```
 
-Let's add a new resource: an audio file that is loaded from disk. Make sure to add it to the `Objects` array:
+Let's add a new resource: an audio file that is loaded from disk. Make sure to add it to the `Objects` array. Note that instead of editing JSON files by hand it is highly recommended that you use [Napkin](@ref napkin), our JSON editor, instead.
 
 ```
 {
@@ -133,10 +133,9 @@ Your final `app_structure.json` should look like this:
         {
             "Type": "nap::RenderWindow",
             "mID": "Window",
-            "Width": 1280,
-            "Height": 720,
             "Title": "NewProject",
-            "Sync": "false"
+            "Width": 1280,
+            "Height": 720
         },
         {
             "Type": "nap::Scene",
@@ -244,26 +243,24 @@ The example below (which is part of the default template) shows you how to rende
 ~~~{cpp}
 void NewProjectApp::render()
 {
-    // Clear OpenGL context-related resources that are not necessary any more
-    mRenderService->destroyGLContextResources({ mRenderWindow });
+    // Signal the beginning of a new frame, allowing it to be recorded.
+    mRenderService->beginFrame();
 
-    // Activate current window for drawing
-    mRenderWindow->makeActive();
+    // Begin recording the render commands for the main render window
+    if (mRenderService->beginRecording(*mRenderWindow))
+    {
+        // Begin render pass
+        mRenderWindow->beginRendering();
 
-    // Clear back-buffer
-    mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+        // Render GUI elements
+        mGuiService->draw();
 
-    // Draw our UI last!
-    mGuiService->draw();
+        // Stop render pass and end recording
+        mRenderWindow->endRendering();
+        mRenderService->endRecording();
+    }
 
-    // Swap screen buffers
-    mRenderWindow->swap();
+    // Proceed to next frame
+    mRenderService->endFrame();
 }
 ~~~
-
-
-
-
-
-
-

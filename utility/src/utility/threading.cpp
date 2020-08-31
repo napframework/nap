@@ -3,7 +3,7 @@
 namespace nap
 {
     
-    TaskQueue::TaskQueue(unsigned int maxQueueItems) : mQueue(maxQueueItems)
+    TaskQueue::TaskQueue(std::uint32_t maxQueueItems) : mQueue(maxQueueItems)
     {
         mDequeuedTasks.resize(maxQueueItems);
     }
@@ -28,7 +28,7 @@ namespace nap
     }
     
     
-    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, std::uint32_t maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
     {
         mRunning = false;
     }
@@ -79,11 +79,11 @@ namespace nap
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems)
+    ThreadPool::ThreadPool(std::uint32_t numberOfThreads, std::uint32_t maxQueueItems)
         : mTaskQueue(maxQueueItems)
     {
         mStop = false;
-        for (unsigned int i = 0; i < numberOfThreads; ++i)
+        for (std::uint32_t i = 0; i < numberOfThreads; ++i)
             addThread();
     }
     
@@ -99,7 +99,7 @@ namespace nap
         mStop = true;
         
         // enqueue empty function for each thread to make it stop blocking
-        for (unsigned int i = 0; i < mThreads.size(); ++i)
+        for (std::uint32_t i = 0; i < mThreads.size(); ++i)
             mTaskQueue.enqueue([](){});
         
         for (auto& thread : mThreads)

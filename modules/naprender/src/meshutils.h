@@ -16,7 +16,7 @@ namespace nap
 		* @param shape the mesh shape to check.
 		* @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 		*/
-		bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
+		bool NAPAPI isTriangleMesh(const nap::MeshInstance& meshInstance);
 
 		/**
 		* @return the number of triangles associated with a mesh
@@ -40,7 +40,7 @@ namespace nap
 		* @param indices the new indices
 		* @return if the triangle indices are valid
 		*/
-		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, const std::array<int, 3>& indices);
+		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
 		* Computes the bounding box of a mesh using its associated position data
@@ -80,12 +80,13 @@ namespace nap
 		void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
 		/**
-		* Generates a list of sequential indices from offset op to vertexCount + offset.
+		* Generates a list of sequential indices from offset up to vertexCount + offset.
 		* @param shape The shape to generate indices for.
-		* @param vertexCount The number of indices to generate.
+		* @param vertexCount number of indices to generate.
+		* @param loop an extra index is added at the end, pointing to the the first one. Useful when creating a line loop.
 		* @param offset The first index value.
 		*/
-		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
+		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, bool loop = false, int offset = 0);
 
 		/**
 		* Builds a 'map' that binds points (mesh index values) to faces

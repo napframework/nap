@@ -1,191 +1,180 @@
 #pragma once
 
+// Local Includes
+#include "surfacedescriptor.h"
+#include "renderutils.h"
+
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-#include <ntexture2d.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
+#include <rtti/factory.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
+	// Forward Declares
 	class Bitmap;
+	class RenderService;
+	class Core;
 
 	/**
-	 *	Texture min filter
+	 * Flag that determines how the texture is used at runtime.
 	 */
-	enum class EFilterMode : int
+	enum class ETextureUsage
 	{
-		Nearest = 0,				///< Nearest
-		Linear,						///< Linear
-		NearestMipmapNearest,		///< NearestMipmapNearest
-		LinearMipmapNearest,		///< LinearMipmapNearest
-		NearestMipmapLinear,		///< NearestMipmapLinear
-		LinearMipmapLinear			///< LinearMipmapLinear
+		Static,				///< Texture does not change
+		DynamicRead,		///< Texture is frequently read from GPU to CPU
+		DynamicWrite		///< Texture is frequently updated from CPU to GPU
 	};
 
-	/**
-	 *	Texture wrap mode
-	 */
-	enum class EWrapMode : int
-	{
-		Repeat = 0,					///< Repeat 
-		MirroredRepeat,				///< MirroredRepeat
-		ClampToEdge,				///< ClampToEdge
-		ClampToBorder				///< ClampToBorder
-	};
 
 	/**
-	 * Parameters associated with a texture
-	 */
-	struct NAPAPI TextureParameters
-	{
-		EFilterMode mMinFilter = EFilterMode::LinearMipmapLinear;		///< Property: 'MinFilter' minimizing filter
-		EFilterMode mMaxFilter = EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
-		EWrapMode	mWrapVertical = EWrapMode::ClampToEdge;				///< Property: 'WrapVertical' vertical wrap mode
-		EWrapMode	mWrapHorizontal = EWrapMode::ClampToEdge;			///< Property: 'WarpHorizontal'	horizontal wrap mode
-		int			mMaxLodLevel = 20;									///< Property: 'MaxLodLevel' max number of supported lods, 0 = only highest lod
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * GPU representation of a 2D bitmap. This is the base class for all 2D textures.
-	 * Classes should derive from Texture2D and call either initTexture (for a GPU-only texture) or initFromBitmap (for a CPU & GPU texture).
-	 * This class does not own any CPU data but offers an interface to up and download texture data from and in to a bitmap
+	 * GPU representation of a 2D image.
+	 * This class does not own any CPU data, it offers an interface to upload / download texture data from and to a bitmap.
+	 * When usage is set to 'Static' (default) or 'DynamicRead' data can be uploaded only once!
+	 * Only when usage is set to 'DynamicWrite' can the texture be updated frequently from CPU to GPU.
 	 */
 	class NAPAPI Texture2D : public Resource
 	{
+		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 * Initializes the opengl texture using the associated parameters and given settings.
-		 * @param settings the texture specific settings associated with this texture
-		 */
-		void initTexture(const opengl::Texture2DSettings& settings);
+		Texture2D(Core& core);
+		~Texture2D() override;
 
 		/**
-		 * Initializes the GPU texture using the settings associated with the incoming bitmap
-		 * @param bitmap the cpu pixel data used to initialize this texture with
-		 * @param compressed Whether a compressed GPU texture should be created.
-		 * @param errorState Contains error information if the function returns false;
-		 * @return True on success, false on failure.
+		 * Defines how the Texture2D is cleared on initialization.
 		 */
-		bool initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState);
+		enum class EClearMode : uint8
+		{
+			DontClear		= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
+			FillWithZero	= 1				///< Texture is created and initialized to black on the GPU.
+		};
+		
+		/**
+		 * Creates the texture on the GPU using the provided settings.
+		 * The texture is initialized to to black if 'clearMode' is set to 'FillWithZero'. 
+		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
+		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param clearMode if the texture is immediately initialized to black after creation.
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState);
+		
+		/**
+		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
+		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param initialData the data to upload, must be of size SurfaceDescriptor::getSizeInBytes().
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState);
 
 		/**
-		 * @return the Texture2D parameters that describe, clamping, interpolation etc.
-		 */
-		const nap::TextureParameters& geParameters() const { return mParameters; }
-
-		/**
-		 * @return size of the texture, in texels.
+		 * @return size of the texture in texels.
 		 */
 		const glm::vec2 getSize() const; 
 
 		/**
-		 *	@return width of the texture, in texels
+		 *	@return width of the texture in texels
 		 */
 		int getWidth() const;
 
 		/**
-		 *	@return height of the texture, in texels
+		 *	@return height of the texture in texels
 		 */
 		int getHeight() const;
 
 		/**
-		 * Converts the CPU data from the Bitmap that is passed in to the GPU. The internal Bitmap remains untouched. 
-		 * The bitmap should contain valid data and not be empty.
-		 * @param bitmap CPU data to convert to GPU.
+		 * @return the texture description
 		 */
-		void update(const Bitmap& bitmap);
+		const SurfaceDescriptor& getDescriptor() const;
 
 		/**
-		 * Converts the CPU data that is passed in to the GPU. The internal Bitmap remains untouched. 
-		 * @param data Pointer to the CPU data.
-		 * @param pitch Length of a row of bytes in the input data.
+		 * Uploads CPU data to the texture on the GPU. 
+		 * Note that you can only update the contents of a texture once if 'Usage' is 'DynamicRead' or 'Static'.
+		 * @param data pointer to the CPU data.
+		 * @param width width of the image in pixels
+		 * @param height height of the image in pixels
+		 * @param pitch size in bytes of a single row of pixel data.
+		 * @param channels total number of channels: 3 for RGB, 4 for RGBA etc. 
 		 */
-		void update(const void* data, int pitch = 0);
+		void update(const void* data, int width, int height, int pitch, ESurfaceChannels channels);
 
 		/**
-		 * Blocking call to retrieve GPU texture data that is stored in this texture
-		 * When the internal bitmap is empty it will be initialized based on the settings associated with this texture
-		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		 * @return reference to the internal bitmap that is filled with the GPU data of this texture.
+		 * Uploads CPU data to the texture on the GPU.
+		 * Note that you can only update the contents of a texture once if 'Usage' is 'DynamicRead' or 'Static'.
+		 * @param data pointer to the CPU data.
+		 * @param descriptor texture description.
 		 */
-		void getData(Bitmap& bitmap);
+		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
-		 * @return the OpenGL texture hardware handle.
+		 * @return Vulkan texture format
 		 */
-		nap::uint getHandle() const;
+		VkFormat getFormat() const							{ return mFormat; }
 
 		/**
-		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
-		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
+		 * @return Vulkan image view
 		 */
-		void startGetData();
+		VkImageView getImageView() const					{ return mImageData.mTextureView; }
 
 		/**
-		* Finishes a transfer of texture data from GPU to CPU that was started with startGetData. See comment in startGetData for proper use.
-		* When the internal bitmap is empty it will be initialized based on the settings associated with this texture.
-		* This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match.
-		* @return reference to the internal bitmap that is filled with the GPU data of this texture.
-		*/
-		void endGetData(Bitmap& bitmap);
+		 * @return number of mip-map levels
+		 */
+		int getMipmapCount()								{ return static_cast<int>(mMipLevels); }
 
 		/**
-		 * Activates this texture for rendering.
+		 * @return render service
 		 */
-		void bind();
+		RenderService& getRenderService()					{ return *mRenderService; }
 
 		/**
-		 * Deactivates this texture for rendering.
+		 * Starts a transfer of texture data from GPU to CPU. 
+		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
+		 * @param bitmap the bitmap to download texture data into.
 		 */
-		void unbind();
+		void asyncGetData(Bitmap& bitmap);
 
-	public:
-		nap::TextureParameters		mParameters;									///< Property: 'Parameters' GPU parameters associated with this texture
-		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;			///< Property: 'Usage' How this texture is used, ie: updated on the GPU
-
-	protected:
-		/**
-		 *	@return the opengl texture
-		 */
-		opengl::Texture2D& getTexture()												{ return mTexture; }
-
-		/**
-		 *	@return the opengl texture
-		 */
-		const opengl::Texture2D& getTexture() const									{ return mTexture; }
+		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:
-		friend class RenderTarget;
-		opengl::Texture2D			mTexture;			///< Internal opengl texture
-	};
-}
+		/**
+		 * Called by the render service when data can be uploaded.
+		 */
+		void upload(VkCommandBuffer commandBuffer);
 
-//////////////////////////////////////////////////////////////////////////
-// Template Specialization of the Texture filter and wrap modes
-//////////////////////////////////////////////////////////////////////////
+		/**
+		 * Called by the render service when download is ready
+		 */
+		void notifyDownloadReady(int frameIndex);		
 
-namespace std
-{
-	template<>
-	struct hash<nap::EFilterMode>
-	{
-		size_t operator()(const nap::EFilterMode &v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
+		/**
+		 * Downloads texture data
+		 */
+		void download(VkCommandBuffer commandBuffer);
+        
+        // Hide resource init explicitly
+        using Resource::init;
 
-	template<>
-	struct hash<nap::EWrapMode>
-	{
-		size_t operator()(const nap::EWrapMode &v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
+	protected:
+		RenderService*						mRenderService = nullptr;
+
+	private:
+		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
+
+		ImageData							mImageData;							///< 2D Texture vulkan image buffers
+		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
+		int									mCurrentStagingBufferIndex = -1;	///< Currently used staging buffer
+		size_t								mImageSizeInBytes = -1;				///< Size in bytes of texture
+		SurfaceDescriptor					mDescriptor;						///< Texture description
+		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
+		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
+		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
 	};
 }

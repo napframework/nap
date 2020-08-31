@@ -90,6 +90,7 @@
                     "MaterialInstance": {
                         "Material": "BlobMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -134,6 +135,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -239,6 +241,7 @@
                     "MaterialInstance": {
                         "Material": "VideoClassifyMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -372,12 +375,13 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "TextRenderableComponent",
-                    "Text": "Hi There! Welcome to NAP",
+                    "Text": "Blob#",
                     "Font": "Font",
                     "GlyphUniform": "glyph",
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -424,30 +428,50 @@
         {
             "Type": "nap::ImageFromFile",
             "mID": "PlaneTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "texture_one.jpg",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::Material",
             "mID": "BlobMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_121344fb",
-                    "Name": "lights",
-                    "Structs": [
-                        "LightOne"
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "LightTwo",
+                            "Name": "light",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "902390",
+                                    "Name": "mPosition",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 333.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "985784",
+                                    "Name": "mIntensity",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                }
+                            ]
+                        }
                     ]
                 }
             ],
+            "Samplers": [],
             "Shader": "BlobShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -458,19 +482,34 @@
             "mID": "CameraClassifyMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_2",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_04168e08",
+                            "Name": "captureSize",
+                            "Value": {
+                                "x": 640.0,
+                                "y": 480.0
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_76a0b43b",
                     "Name": "captureTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "CameraCaptureTexture"
-                },
-                {
-                    "Type": "nap::UniformVec2",
-                    "mID": "UniformVec2_04168e08",
-                    "Name": "captureSize",
-                    "Value": {
-                        "x": 640.0,
-                        "y": 480.0
-                    }
                 }
             ],
             "Shader": "ClassifyShader",
@@ -483,16 +522,24 @@
             "mID": "FontMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "textColor",
-                    "Value": {
-                        "x": 0.8587999939918518,
-                        "y": 0.8587999939918518,
-                        "z": 0.8587999939918518
-                    }
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_3",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3",
+                            "Name": "textColor",
+                            "Value": {
+                                "x": 0.8587999939918518,
+                                "y": 0.8587999939918518,
+                                "z": 0.8587999939918518
+                            }
+                        }
+                    ]
                 }
             ],
+            "Samplers": [],
             "Shader": "FontShader",
             "VertexAttributeBindings": [],
             "BlendMode": "AlphaBlend",
@@ -503,18 +550,52 @@
             "mID": "PlaneMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_4",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "LightOne",
+                            "Name": "light",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_c1202ff0",
+                                    "Name": "mPosition",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 333.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_2c4cde79",
+                                    "Name": "mIntensity",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_8ba3bc61",
                     "Name": "inTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "PlaneTexture"
-                },
-                {
-                    "Type": "nap::UniformStructArray",
-                    "mID": "UniformStructArray_b2965733",
-                    "Name": "lights",
-                    "Structs": [
-                        "LightOne"
-                    ]
                 }
             ],
             "Shader": "PlaneShader",
@@ -527,18 +608,33 @@
             "mID": "VideoClassifyMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec2",
-                    "mID": "UniformVec2_a528c61c",
-                    "Name": "captureSize",
-                    "Value": {
-                        "x": 640.0,
-                        "y": 360.0
-                    }
-                },
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_5",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_a528c61c",
+                            "Name": "captureSize",
+                            "Value": {
+                                "x": 640.0,
+                                "y": 360.0
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
                 {
-                    "Type": "nap::UniformTexture2D",
+                    "Type": "nap::Sampler2D",
                     "mID": "UniformTexture2D_50b9fb1e",
                     "Name": "captureTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
                     "Texture": "VideoCaptureTexture"
                 }
             ],
@@ -550,6 +646,8 @@
         {
             "Type": "nap::PlaneMesh",
             "mID": "GroundPlane",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 640.0,
                 "y": 640.0
@@ -564,78 +662,57 @@
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraCaptureTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 1
-            },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 480,
-            "Format": "RGB8"
+            "Format": "RGBA8",
+            "ColorSpace": "Linear"
         },
         {
             "Type": "nap::RenderTexture2D",
             "mID": "CameraOutputTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
             "Usage": "Static",
             "Width": 640,
             "Height": 480,
-            "Format": "RGB8"
+            "Format": "RGBA8",
+            "ColorSpace": "Linear"
         },
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoCaptureTexture",
-            "Parameters": {
-                "MinFilter": "Linear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 1
-            },
-            "Usage": "Static",
+            "Usage": "DynamicWrite",
             "Width": 640,
             "Height": 360,
-            "Format": "RGB8"
+            "Format": "RGBA8",
+            "ColorSpace": "Linear"
         },
         {
             "Type": "nap::RenderTexture2D",
             "mID": "VideoOutputTexture",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 10
-            },
             "Usage": "Static",
             "Width": 640,
             "Height": 360,
-            "Format": "RGB8"
+            "Format": "RGBA8",
+            "ColorSpace": "Linear"
         },
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "Window 1",
-            "Sync": true,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
@@ -857,36 +934,11 @@
         {
             "Type": "nap::SphereMesh",
             "mID": "BlobMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0
-        },
-        {
-            "Type": "nap::UniformStruct",
-            "mID": "LightOne",
-            "Name": "PointLight",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_c1202ff0",
-                    "Name": "mPosition",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 333.0,
-                        "z": 0.0
-                    }
-                },
-                {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3_2c4cde79",
-                    "Name": "mIntensity",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    }
-                }
-            ]
         }
     ]
 }

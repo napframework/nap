@@ -27,7 +27,7 @@ namespace nap
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;
 		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed.get();
 
-		// Copy line
+		// Copy line and set draw mode, we are updating this mesh frequently.
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
 
 		// Resample and cache current line selections

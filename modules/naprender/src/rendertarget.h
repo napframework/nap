@@ -1,80 +1,170 @@
 #pragma once
 
 // Local Includes
-#include "texture2d.h"
+#include "irendertarget.h"
+#include "rendertexture2d.h"
 
 // External Includes
-#include <nap/resourceptr.h>
-#include <glm/glm.hpp>
-#include <ntexturerendertarget2d.h>
 #include <nap/resource.h>
-
-namespace opengl
-{
-	class RenderTarget;
-}
+#include <nap/resourceptr.h>
+#include <vulkan/vulkan_core.h>
 
 namespace nap
 {
+	// Forward Declares
+	class RenderTexture2D;
+	class RenderService;
+
 	/**
-	 * A resource that is used to render objects to an off screen surface (set of textures).
-	 * This objects requires a link to a color and depth texture and internally manages an opengl render target.
-	 * The result of the render step is stored in the linked textures.
+	 * A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
+	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
+	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
+	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
+	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
+	 *
+	 * ~~~~~{.cpp} 
+	 *		mRenderService->beginFrame();
+	 *		if (mRenderService->beginHeadlessRecording())
+	 *		{
+	 *			...
+	 *			mTargetOne->beginRendering();
+	 *			mRenderService->renderObjects(*mTargetOne, ortho_cam, objects_one);
+	 *			mTargetOne->endRendering();
+	 *			...
+	 *			mTargetTwo->beginRendering();
+	 *			mRenderService->renderObjects(*mTargetTwo, ortho_cam, objects_two);
+	 *			mTargetTwo->endRendering();
+	 *			...
+	 *			mRenderService->endHeadlessRecording();
+	 *		}
+	 *		mRenderService->endFrame();
+	 * ~~~~~
+	 *
 	 */
-	class NAPAPI RenderTarget : public Resource
+	class NAPAPI RenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		/**
+		 * Every render target requires a reference to core.
+		 * @param core link to a nap core instance
+		 */
+		RenderTarget(Core& core);
+		
+		/**
+		 * Destroys allocated render resources
+		 */
+		~RenderTarget();
 
 		/**
-		* Creates internal OpengL render target, bound to color and depth textures.
-		*/
+		 * Initializes the render target, including all the required resources.
+		 * @param errorState contains the error if initialization failed.
+		 * @return if initialization succeeded.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Sets color texture to use by the render-target.
-		 * Note that if the operation fails the previous texture remains active and bound.
-		 * Target size needs to match current color texture size.
-		 * @param colorTexture color texture to render to.
-		 * @param error contains the error if setting the texture fails
-		 * @return if setting the texture succeeded.
+		 * Starts the render pass.
+		 * Only start the render pass after a successful call to RenderService::beginHeadlessRecording().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mTarget->beginRendering();
+		 *			mRenderService->renderObjects(*mTarget, ortho_cam, objects_one);
+		 *			mTarget->endRendering();
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
 		 */
-		bool switchColorTexture(Texture2D& colorTexture, utility::ErrorState& error);
+		virtual void beginRendering() override;
 
 		/**
-		 * Sets depth texture to use by the render-target.
-		 * Note that if the operation fails the previous texture remains active and bound.
-		 * Target size needs to match current depth texture size.
-		 * @param depthTexture depth texture to render to.
-		 * @param error contains the error if setting the texture fails
-		 * @return if setting the texture succeeded.
+		 * Ends the render pass. Always call this after beginRendering().
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mTarget->beginRendering();
+		 *			mTarget->renderObjects(*mTarget, ortho_cam, objects_one);
+		 *			mTarget->endRendering();
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		*/
+		virtual void endRendering() override;
+
+		/**
+		 * @return size in pixels of the render target.
 		 */
-		bool switchDepthTexture(Texture2D& depthTexture, utility::ErrorState& error);
+		virtual const glm::ivec2 getBufferSize() const override;
 
 		/**
-		* Returns color texture resource
-		*/
-		Texture2D& getColorTexture()								{ return *mColorTexture; }
+		 * Updates the render target clear color.
+		 * @param color the new clear color to use.
+		 */
+		virtual void setClearColor(const glm::vec4& color) override				{ mClearColor = color; }
+		
+		/**
+		 * @return the currently used render target clear color.
+		 */
+		virtual const glm::vec4& getClearColor() const override					{ return mClearColor; }
 
 		/**
-		* Returns depth texture resource
-		*/
-		Texture2D& getDepthTexture()								{ return *mDepthTexture; }
+		 * Geometry winding order, defaults to clockwise. 
+		 */
+		virtual ECullWindingOrder getWindingOrder() const override				{ return ECullWindingOrder::Clockwise; }
 
 		/**
-		* @return opengl base frame buffer object
-		* Note that this implicitly initializes the frame buffer
-		*/
-		opengl::TextureRenderTarget2D& getTarget();
+		 * @return the render pass
+		 */
+		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
-	private:
+		/**
+		 * @return the texture that holds the result of the render pass.
+		 */
+		RenderTexture2D& getColorTexture();
 
-		// Frame-buffer to draw to
-		std::unique_ptr<opengl::TextureRenderTarget2D> mTextureRenderTarget = nullptr;
+		/**
+		 * @return render target color format. This is the format of the linked in color texture.
+		 */
+		virtual VkFormat getColorFormat() const override;
+
+		/**
+		 * @return render target depth format
+		 */
+		virtual VkFormat getDepthFormat() const override;
+
+		/**
+		 * @return current number of MSAA samples used when rendering to the window.
+		 */
+		virtual VkSampleCountFlagBits getSampleCount() const override;
+		
+		/**
+		 * @return if sample based shading is enabled when rendering to the target.
+		 */
+		virtual bool getSampleShadingEnabled() const override;
 
 	public:
-		ResourcePtr<Texture2D>			mColorTexture = nullptr;	///< Property: 'mColorTexture' link to texture used to store the color values of a render step
-		ResourcePtr<Texture2D>			mDepthTexture = nullptr;	///< Property: 'mDepthTexture' link to texture used to store the depth values of a render step
-		glm::vec4						mClearColor;				///< Property: 'mClearColor' RGBA color used when clearing the render target
+		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		glm::vec4							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
+		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results turn on 'SampleShading'.
+		nap::ResourcePtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
+
+	private:
+		RenderService*			mRenderService;
+		VkFramebuffer			mFramebuffer = nullptr;
+		VkRenderPass			mRenderPass = nullptr;
+		VkSampleCountFlagBits	mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		ImageData				mDepthImage;
+		ImageData				mColorImage;
 	};
 }

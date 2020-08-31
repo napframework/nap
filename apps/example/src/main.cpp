@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "skeleton.h"
+#include "exampleapp.h"
 
 // Nap includes
 #include <apprunner.h>
@@ -14,28 +14,22 @@ int main(int argc, char *argv[])
     // Create core
     nap::Core core;
 
-    // Create app runner
-    nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> appRunner(core);
+    // Create the application runner, based on the app to run
+	// and event handler that is used to forward information into the app.
+    nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> app_runner(core);
 
-    // Decide which file to load
-    if (argc >= 2) {
-        // Command line provided
-        appRunner.getApp().setFilename(argv[1]);
-    } else {
-        // Default
-        appRunner.getApp().setFilename("default.json");
-    }
+    // Decide which data file to load on initialization
+	app_runner.getApp().setFilename(argc >= 2 ? argv[1] : "default.json");
 
-
-    // Start
+    // Start running
     nap::utility::ErrorState error;
-    if (!appRunner.start(error))
+    if (!app_runner.start(error))
     {
         nap::Logger::fatal("error: %s", error.toString().c_str());
         return -1;
     }
 
     // Return if the app ran successfully
-    return appRunner.exitCode();
+    return app_runner.exitCode();
 }
 

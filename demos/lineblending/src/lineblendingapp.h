@@ -9,12 +9,14 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <app.h>
 #include <spheremesh.h>
 #include <parametergui.h>
 #include <parameterservice.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <imagefromfile.h>
 
 namespace nap
 {

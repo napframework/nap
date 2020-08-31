@@ -51,7 +51,7 @@ namespace nap
 
 	private:
 		// Object pointer to laser
-		ComponentInstancePtr<LaserOutputComponent> mOutput = initComponentInstancePtr(this, &FrustumSyncComponent::mLaserOutputComponent);
+		ComponentInstancePtr<LaserOutputComponent> mOutput = { this, &FrustumSyncComponent::mLaserOutputComponent };
 
 		// Object pointer to transform of laser canvas
 		TransformComponentInstance* mCanvasTransform = nullptr;

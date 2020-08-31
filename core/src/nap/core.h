@@ -270,11 +270,16 @@ namespace nap
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
 		/**
- 		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
- 		 * @param errorState Serialization errors will be logged to errorState.
- 		 * @return true on sucess.
+ 		 * Writes a 'config.json' file, that contains all currently loaded service configurations, to the project directory.
+ 		 * @param errorState contains the error if the operation fails.
+ 		 * @return true on success.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
+
+		/**
+		 * Used on macOS to apply an environment variable for Vulkan.
+		 */
+		void setupPlatformSpecificEnvironment();
 
 	private:
 		/**
@@ -320,12 +325,18 @@ namespace nap
 		bool loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserialize_result, utility::ErrorState& errorState);
 
 		/**
-		* Occurs when a file has been successfully loaded by the resource manager
-		* Forwards the call to all interested services.
-		* This can only be called when the services have been initialized
-		* @param file the currently loaded resource file
-		*/
-		void resourceFileChanged(const std::string& file);
+		 * Occurs when resources are about to be loaded by the resource manager
+		 * Forwards the call to all interested services.
+		 * This can only be called when the services have been initialized
+		 */
+		void preResourcesLoaded();
+
+		/**
+		 * Occurs when resources have been successfully loaded by the resource manager
+		 * Forwards the call to all interested services.
+		 * This can only be called when the services have been initialized
+		 */
+		void postResourcesLoaded();
 
 		/**
 		 *	Calculates the framerate over time
@@ -357,11 +368,10 @@ namespace nap
 		/**
 		 * Add a new service configuration to this project if not present already.
 		 * Ownership is transferred.
-		 * @param serviceType the type of service this config belongs to
 		 * @param serviceConfig the service configuration to add.
 		 * @return true when added, false if already present.
 		 */
-		bool addServiceConfig(rtti::TypeInfo serviceType, std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
+		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
 
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
@@ -398,7 +408,11 @@ namespace nap
 		// If the engine is initialized
 		bool mInitialized = false;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		// Called before resources are loaded
+		nap::Slot<> mPreResourcesLoadedSlot		= { [&]() -> void { preResourcesLoaded();  } };
+
+		// Called after resources are loaded
+		nap::Slot<> mPostResourcesLoadedSlot	= { [&]() -> void { postResourcesLoaded(); } };
 	};
 }
 

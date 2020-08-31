@@ -91,7 +91,7 @@ namespace nap
 		void link(bool value)											{ mLink = value; }
 
 	private:
-		ComponentInstancePtr<LineBlendComponent> mBlendComponent = initComponentInstancePtr(this, &LineColorComponent::mBlendComponent);		// Holds the line we want to color
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
 		float mIntensity = 1.0f;								// Final intensity
 		bool mWrap = false;										// If the color values should be wrapped
 		float mPower = 1.0f;									// Amount of blend power when computing the wrap

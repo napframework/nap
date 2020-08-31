@@ -50,19 +50,43 @@
         },
         {
             "Type": "nap::RenderWindow",
-            "mID": "Window",
-            "Width": 1280,
-            "Height": 720,
+            "mID": "ParameterWindow",
             "Borderless": false,
             "Resizable": true,
-            "Title": "Timeline",
-            "Sync": false,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Parameters",
+            "Width": 512,
+            "Height": 512,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "TimelineWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Timeline",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -77,7 +101,9 @@
         {
             "Type": "nap::SequenceEditorGUI",
             "mID": "SequenceEditorGUI",
-            "Sequence Editor": "SequenceEditor"
+            "Sequence Editor": "SequenceEditor",
+            "Render Window": "TimelineWindow",
+            "Draw Full Window": true
         },
         {
             "Type": "nap::SequencePlayer",

@@ -152,7 +152,7 @@ namespace nap
 	}
 
 
-	void ParameterService::resourcesLoaded()
+	void ParameterService::postResourcesLoaded()
 	{
 		// Whenever the main json is (re)loaded, update the root parameter group
 		// We search for the root parameter group by finding the group that has no parent

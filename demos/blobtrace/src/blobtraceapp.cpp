@@ -13,6 +13,8 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <uniforminstance.h>
+#include <renderglobals.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -69,23 +71,53 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Set mouse pos in shader
+		// Actual velocity
+		float vel = math::fit(glm::length(mUVSmoother.getVelocity()), 0.0f, 0.66f, 0.0f, 1.0f);
+
+		// Get vertex shader uniform buffer object
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
-		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inBlobPosition");
-		uv_uniform.setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
+		UniformStructInstance* vert_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOVert");
+		if (vert_ubo != nullptr)
+		{
+			// Set mouse pos in vert shader
+			UniformVec3Instance* blob_uniform = vert_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+			if (blob_uniform != nullptr)
+				blob_uniform->setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
 
-		// Set velocity in shader
-		UniformFloat& vel_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inVelocity");
-		float vel = math::fit(glm::length(mUVSmoother.getVelocity()), 0.0f, 0.66f, 0.0f,1.0f);
-		vel_uniform.setValue(vel);
+			// Set time in vert shader
+			UniformFloatInstance* time_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			if(time_uniform != nullptr)
+				time_uniform->setValue(mTime);
 
-		// Set mouse position
-		UniformVec3& mou_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inMousePosition");
-		mou_uniform.setValue(mMouseUvPosition);
+			// Set velocity in vert shader
+			UniformFloatInstance* vel_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			if (vel_uniform != nullptr)
+				vel_uniform->setValue(vel);
+		}
 
-		// Set time in shader
-		UniformFloat& time_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inTime");
-		time_uniform.setValue(mTime);
+		// Get fragment shader uniform buffer object
+		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
+		if (frag_ubo != nullptr)
+		{
+			// Set mouse position in frag shader
+			UniformVec3Instance* mou_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inMousePosition");
+			if(mou_uniform != nullptr)
+				mou_uniform->setValue(mMouseUvPosition);
+
+			// Set blob position in frag shader
+			UniformVec3Instance* blob_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+				blob_uniform->setValue(mUVSmoother.getValue());
+
+			// Set velocity in frag shader
+			UniformFloatInstance* vel_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			if (vel_uniform != nullptr)
+				vel_uniform->setValue(vel);
+
+			// Set time in frag shader
+			UniformFloatInstance* time_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			if (time_uniform != nullptr)
+				time_uniform->setValue(mTime);
+		}
 
 		// Increment time based on velocity
 		mTime += (deltaTime * math::fit<float>(vel, 0.0f, 1.0f, 1.0f, 3.0f));
@@ -111,37 +143,54 @@ namespace nap
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		
+		// Get fragment shader uniform buffer object
+		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
+		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
+		if (frag_ubo != nullptr)
+		{
+			nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+			if (cam_loc_uniform != nullptr)
+			{
+				nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+				glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+				cam_loc_uniform->setValue(global_pos);
+			}
+		}
 
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform.setValue(global_pos);
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin the render pass
+			mRenderWindow->beginRendering();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+			// Find the world and add as an object to render
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			nap::RenderableMeshComponentInstance& renderable_world = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
+			components_to_render.emplace_back(&renderable_world);
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Find the camera
+			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 
-		// Find the world and add as an object to render
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_world = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		components_to_render.emplace_back(&renderable_world);
+			// Render the world with the right camera directly to screen
+			mRenderService->renderObjects(*mRenderWindow, camera, components_to_render);
 
-		// Find the camera
-		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+			// Draw gui
+			mGuiService->draw();
 
-		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+			// End render pass
+			mRenderWindow->endRendering();
 
-		// Draw our gui
-		mGuiService->draw();
+			// End recording
+			mRenderService->endRecording();
+		}
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+		mRenderService->endFrame();
 	}
 	
 	
@@ -221,8 +270,8 @@ namespace nap
 		// Get the attributes we need, the vertices (position data) is used to perform a world space triangle intersection
 		// The uv attribute is to compute the uv coordinates when a triangle is hit
 		MeshInstance& mesh = mIntersectMesh->getMeshInstance();
-		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
 
 		// Get ray from screen in to scene (world space)
 		// The result is a normal pointing away from the camera in to the scene

@@ -8,6 +8,7 @@
 #include <rtti/typeinfo.h>
 #include <nap/core.h>
 #include <nap/datetime.h>
+#include <nap/logger.h>
 #include <thread>
 
 namespace nap
@@ -134,6 +135,7 @@ namespace nap
 			error.fail("unable to initialize engine");
 			return false;
 		}
+
 		// Initialize the various services
 		if (!mCore.initializeServices(error))
 		{
@@ -162,6 +164,9 @@ namespace nap
 			return false;
 		}
 		*/
+
+		// Setup data listener current working directory
+		mCore.getResourceManager()->watchDirectory();
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))

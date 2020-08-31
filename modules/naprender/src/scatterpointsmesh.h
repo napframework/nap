@@ -8,6 +8,10 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * Randomly distributes x amount of points over the surface of a mesh
 	 * The result is a new mesh that does not contain any triangles, only points as vertices
@@ -17,6 +21,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		ScatterPointsMesh(Core& core);
+
 		/**
 		* Initialize this object after de-serialization
 		* @param errorState contains the error message when initialization fails
@@ -33,11 +39,9 @@ namespace nap
 		 */
 		virtual const MeshInstance& getMeshInstance() const override			{ return *mMeshInstance; }
 
-		// property: pointer to the IMesh that the points are scattered on
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-
-		// number of points to scatter on reference mesh
 		int mNumberOfPoints = 1000;												///< Property: 'PointCount' number of points to scatter on the mesh
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;						///< Property: 'Usage' If the plane is created once or frequently updated.
 
 	protected:
 		// Creates the mesh and shape
@@ -53,19 +57,11 @@ namespace nap
 		using TriangleAreaMap = std::map<float, Triangle>;
 		float computeArea(TriangleAreaMap& outMap);
 
-		// The actual mesh that contains all the points
-		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;
-
-		// Position Attribute data
-		nap::Vec3VertexAttribute* mPositionAttr = nullptr;
-
-		// Normal attribute data
-		nap::Vec3VertexAttribute* mNormalsAttr = nullptr;
-
-		// UV attribute data
-		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;
-
-		// Color attribute data
-		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;					///< The actual mesh that contains all the points
+		nap::Vec3VertexAttribute* mPositionAttr = nullptr;						///< Position Attribute data
+		nap::Vec3VertexAttribute* mNormalsAttr = nullptr;						///< Normal attribute data
+		std::vector<nap::Vec3VertexAttribute*> mUvAttrs;						///< UV attribute data
+		std::vector<nap::Vec4VertexAttribute*> mColorAttrs;						///< Color attribute data
+		RenderService* mRenderService = nullptr;								///< Handle to render service
 	};
 }

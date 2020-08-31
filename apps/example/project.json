@@ -1,13 +1,12 @@
 {
     "Type": "nap::ProjectInfo", 
     "mID": "ProjectInfo", 
-    "Title": "Skeleton", 
-    "Version": "0.3.0", 
+    "Title": "Example", 
+    "Version": "1.0.0", 
     "RequiredModules": [
-        "mod_napapp", 
-        "mod_napsvg", 
-        "mod_napvideo", 
-        "mod_napimgui"
+        "mod_example",
+        "mod_napapp",
+        "mod_napparametergui"
     ], 
     "Data": "", 
     "ServiceConfig": "", 

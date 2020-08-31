@@ -22,7 +22,7 @@ namespace nap
 	{
 		RTTI_ENABLE(VisualizeNormalsMesh)
 	public:
-		virtual ~HeightNormals();
+		HeightNormals(nap::Core& core);
 
 		/**
 		* Initialize this object after de-serialization

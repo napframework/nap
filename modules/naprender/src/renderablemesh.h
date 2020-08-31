@@ -2,8 +2,8 @@
 
 // Local includes
 #include "mesh.h"
-#include "material.h"
-#include "vao.h"
+#include "materialinstance.h"
+#include "nap/signalslot.h"
 
 namespace nap
 {
@@ -12,9 +12,8 @@ namespace nap
 
 	/**
 	 * Represents the coupling between a mesh and a material that can be rendered to screen.
-	 * Use the vertex array object handle to bind your mesh before rendering.
-	 * The vertex array object handle is given by the render service on construction.
 	 * Call RenderService.createRenderableMesh() from your own renderable component to create a renderable mesh on initialization.
+	 * Renderable meshes are hashable, equality is based on the contained mesh and material.
 	 */
 	class NAPAPI RenderableMesh final
 	{
@@ -26,11 +25,20 @@ namespace nap
 		 */
 		RenderableMesh() = default;
 
+		// Copy constructor
+		RenderableMesh(const RenderableMesh& rhs);
+
+		// Copy assignment operator
+		RenderableMesh& operator=(const RenderableMesh& rhs);
+
+		// Object is similar when sharing mesh / material combination
+		bool operator==(const RenderableMesh& rhs) const;
+
 		/**
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
 		* of a mesh match the vertex attributes of a shader.
 		*/
-		bool isValid() const													{ return mVAOHandle.isValid(); }
+		bool isValid() const													{ return mMesh != nullptr; }
 
 		/**
 		 * @return The mesh object used to create this object.
@@ -52,19 +60,8 @@ namespace nap
 		 */
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
-		/**
-		 * Binds the managed vertex array object. Call this before rendering your vertex buffers.
-		 * Only call bind when this object is valid! 
-		 * Note that the material and mesh are not bound, only the vertex array object managed internally.
-		 */
-		void bind();
-		
-		/**
-		 * Unbinds the managed vertex array object. Call this after rendering your vertex buffers.
-		 * Only call unbind when this object is valid!
-		 * Note that the material and mesh are not unbound, only the vertex array object managed internally.
-		 */
-		void unbind();
+		const std::vector<VkBuffer>& getVertexBuffers();
+		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const { return mVertexBufferOffsets; }
 
 	protected:
 		/**
@@ -73,12 +70,37 @@ namespace nap
 		 * @param materialInstance the material the mesh is rendered with
 		 * @param vaoHandle issued by the render service based on mesh / material combination
 		 */
-		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle);
+		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance);
 
 	private:
-		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance
-		IMesh*				mMesh = nullptr;				///< Mesh
-		VAOHandle			mVAOHandle;						///< Vertex Array Object handle, acquired from the RenderService
-	};
+		void onVertexBufferDataChanged();
 
+	private:
+		MaterialInstance*			mMaterialInstance = nullptr;	///< Material instance
+		IMesh*						mMesh = nullptr;				///< Mesh
+		std::vector<VkBuffer>		mVertexBuffers;
+		std::vector<VkDeviceSize>	mVertexBufferOffsets;
+		bool						mVertexBuffersDirty = true;
+		nap::Slot<>					mVertexBufferDataChangedSlot = { [&]() { onVertexBufferDataChanged(); } };
+	};
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// hash
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	template<>
+	struct hash<nap::RenderableMesh>
+	{
+		size_t operator()(const nap::RenderableMesh& key) const
+		{
+			assert(key.isValid());
+			size_t mesh_hash = hash<size_t>{}((size_t)&key.getMesh());
+			size_t mate_hash = hash<size_t>{}((size_t)&key.getMaterialInstance());
+			return mesh_hash ^ mate_hash;
+		}
+	};
 }

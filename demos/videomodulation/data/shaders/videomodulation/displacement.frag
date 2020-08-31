@@ -1,4 +1,4 @@
-#version 330
+#version 450
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -15,9 +15,13 @@ struct PointLight
 };
 
 // uniform inputs
-uniform sampler2D	videoTexture;
-uniform vec3		cameraPosition;		//< world space camera position
-uniform PointLight	light;
+uniform sampler2D	videoTextureFrag;
+
+uniform UBO
+{
+	vec3		cameraPosition;		//< world space camera position
+	PointLight	light;
+} ubo;
 
 // output
 out vec4 out_Color;
@@ -36,17 +40,17 @@ const vec3	colorFor = vec3(0.176, 0.180, 0.2588);
 void main() 
 {
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(light.mPosition - passVert);
+	vec3 surfaceToLight = normalize(ubo.light.mPosition - passVert);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(cameraPosition - passVert);
+	vec3 surfaceToCamera = normalize(ubo.cameraPosition - passVert);
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
     vec3 ws_normal = normalize(normal_matrix * passNormal);
 
 	// Get texture rgba value
-	vec3 tex_color = texture(videoTexture, passUVs.xy).rgb;
+	vec3 tex_color = texture(videoTextureFrag, passUVs.xy).rgb;
 
 	// Get both mix colors
 	vec3 ver_color = passColor.rgb;
@@ -66,14 +70,14 @@ void main()
 
 	// diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * tex_color.rgb * light.mIntensity;
+	vec3 diffuse = diffuseCoefficient * tex_color.rgb * ubo.light.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = min(specularIntensity + (pow(ver_greyscale,2) / 2.0),1.0);
 
 	// Compute specularf
     float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * light.mIntensity * spec_intensity;
+    vec3 specular = specularCoefficient * specularColor * ubo.light.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     vec3 linearColor = diffuse + specular + ambient;

@@ -1,7 +1,16 @@
+// Local Includes
 #include "boxmesh.h"
+#include "renderservice.h"
+#include "renderglobals.h"
+
+// External Includes
+#include <nap/core.h>
 
 // nap::boxmesh run time class definition 
-RTTI_BEGIN_CLASS(nap::BoxMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",		&nap::BoxMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -11,12 +20,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static constexpr int planeVertCount = 4;					//< Number of vertices per plane
-	static constexpr int boxVertCount = planeVertCount * 6;		//< Total number of box vertices
-	static constexpr int triCount = 6 * 2;						//< Total number of box triangles
+	constexpr int planeVertCount = 4;					//< Number of vertices per plane
+	constexpr int boxVertCount = planeVertCount * 6;	//< Total number of box vertices
+	constexpr int triCount = 6 * 2;						//< Total number of box triangles
 
-	BoxMesh::~BoxMesh()			{ }
-
+	BoxMesh::BoxMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{ }
 
 	bool BoxMesh::init(utility::ErrorState& errorState)
 	{
@@ -34,7 +44,8 @@ namespace nap
 	void BoxMesh::setup()
 	{
 		// Create mesh instance
-		mMeshInstance = std::make_unique<MeshInstance>();
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
 		// Compute box and construct mesh
 		mBox = math::Box(mSize.x, mSize.y, mSize.z, mPosition);
@@ -122,9 +133,8 @@ namespace nap
 		}
 
 		// Generate the indices
-
-		std::vector<unsigned int> indices(triCount * 3, 0);
-		unsigned int* index_ptr = indices.data();
+		std::vector<uint32> indices(triCount * 3, 0);
+		uint32* index_ptr = indices.data();
 
 		for (int side = 0; side < 6; side++)
 		{
@@ -143,13 +153,16 @@ namespace nap
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set numer of vertices this mesh contains
 		mesh.setNumVertices(boxVertCount);
+		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setCullMode(mCullMode);
+		mesh.setUsage(mUsage);
 
 		// Set data
 		position_attribute.setData(vertices.data(), boxVertCount);
@@ -159,8 +172,6 @@ namespace nap
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
-
 }

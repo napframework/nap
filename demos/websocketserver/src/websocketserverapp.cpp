@@ -86,29 +86,38 @@ namespace nap
 	 */
 	void WebSocketServerApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow.get() });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin the render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Get render-able text component
+			Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 
-		// Get render-able text component
-		Renderable2DTextComponentInstance& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-		
-		// Center
-		text_comp.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
-		
-		// Draw
-		text_comp.draw(mRenderWindow->getBackbuffer());
+			// Center
+			text_comp.setLocation(mRenderWindow->getBufferSize() / glm::ivec2(2, 2));
 
-		// Draw gui to screen
-		mGuiService->draw();
+			// Draw
+			text_comp.draw(*mRenderWindow);
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Draw our GUI to target
+			mGuiService->draw();
+
+			// Stop render pass
+			mRenderWindow->endRendering();
+
+			// Stop recording operations for this window
+			mRenderService->endRecording();
+		}
+
+		// End frame capture
+		mRenderService->endFrame();
 	}
 	
 	
@@ -143,7 +152,6 @@ namespace nap
 				mRenderWindow->toggleFullscreen();
 			}
 		}
-
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

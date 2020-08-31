@@ -1620,8 +1620,7 @@ namespace nap
 						mCurveCache[segment.mID][i].size(),	 // size of points array
 						guicolors::curvecolors[i],  // color
 						false, // closed
-										  selected_curve == i ? 3.0f : 1.0f, // thickness
-						true); // anti-aliased
+						selected_curve == i ? 3.0f : 1.0f); // thickness
 				}
 			}
 		}

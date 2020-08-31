@@ -8,9 +8,11 @@ namespace nap
 {
 	// Forward Declares
 	class FontInstance;
+	class RenderService;
+	class Core;
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2D texture that can be tied to a material.
 	 * The glyph is converted to a bitmap on initialization and uploaded to the GPU.
 	 * The bitmap is deleted after storage on the GPU.
@@ -19,6 +21,12 @@ namespace nap
 	{
 		RTTI_ENABLE(IGlyphRepresentation)
 	public:
+		// Constructor
+		RenderableGlyph(nap::Core& core);
+
+		// Destructor
+		virtual ~RenderableGlyph() override;
+
 		/**
 		 * @return size of the glyph in pixels
 		 */
@@ -50,14 +58,14 @@ namespace nap
 		int getOffsetTop() const { return mBearing.y; }
 
 		/**
-		 * @return the 2D opengl Texture
+		 * @return the 2D Texture
 		 */
-		const Texture2D& getTexture() const { return mTexture; }
+		const Texture2D& getTexture() const { return *mTexture; }
 
 		/**
-		 * @return the 2D opengl Texture
+		 * @return the 2D Texture
 		 */
-		Texture2D& getTexture() { return mTexture; }
+		Texture2D& getTexture() { return *mTexture; }
 
 		/**
 		 * @return horizontal glyph advance value in pixels
@@ -69,23 +77,22 @@ namespace nap
 		 */
 		int getVerticalAdvance() const { return mAdvance.y; }
 
+		/**
+		 * If this render-able glyph has a texture. 
+		 * @return if this glyph has a texture associated with it
+		 */
+		bool empty() const { return mTexture == nullptr; }
+
 	protected:
 		/**
-		 * Initializes the OpenGL 2DTexture after construction of this glyph.	
+		 * Initializes the 2DTexture after construction of this glyph.	
 		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
 		 * @return if the 2DTexture has been initialized correctly.
 		 */
-		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
-
-		/**
-		 * Called on initialization. Derived classes should populate these.
-		 * @param outParameters the parameters that are used to create the GPU texture.
-		 * @param charSize size of a single character
-		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) = 0;
+		virtual bool setup(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode);
 
 	private:
-		Texture2D mTexture;
+		std::unique_ptr<Texture2D> mTexture = nullptr;
 		glm::ivec2 mSize	= { -1, -1 };		///< Size of the Glyph in pixels
 		glm::ivec2 mBearing = { -1, -1 };		///< Offset from baseline to left/top of glyph
 		glm::ivec2 mAdvance = { -1, -1 };		///< Offset in pixels to advance to next glyph
@@ -97,19 +104,24 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2DTexture and has no mipmaps.
 	 * Use this glyph representation when the text does not scale.
 	 */
 	class NAPAPI Renderable2DGlyph : public RenderableGlyph
 	{
 		RTTI_ENABLE(RenderableGlyph)
+	public:
+		// Constructor
+		Renderable2DGlyph(nap::Core& core);
+
 	protected:
 		/**
-		 * @param outParameters the populated texture parameters 
-		 * @param charSize the size of a single character
+		 * Initializes the 2DTexture after construction of this glyph.
+		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
+		 * @return if the 2DTexture has been initialized correctly.
 		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 	};
 
 
@@ -118,18 +130,23 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a symbol (character) in a font that can be rendered using OpenGL.
+	 * Represents a symbol (character) in a font that can be rendered.
 	 * The glyph is rendered to a 2DTexture but has mipmaps.
 	 * Use this glyph when the text is not rendered in the native font resolution (ie: scaled).
 	 */
 	class NAPAPI Renderable2DMipMapGlyph : public RenderableGlyph
 	{
 		RTTI_ENABLE(RenderableGlyph)
+	public:
+		// Constructor
+		Renderable2DMipMapGlyph(nap::Core& core);
+
 	protected:
 		/**
-		 * @param outParameters the populated texture parameters
-		 * @param charSize the size of a single character, used to determine the lod-level for that given character.
+		 * Initializes the 2DTexture after construction of this glyph.
+		 * First it converts the free-type glyph into a bitmap. This bitmap is uploaded to the GPU.
+		 * @return if the 2DTexture has been initialized correctly.
 		 */
-		virtual void getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize) override;
+		virtual bool onInit(const Glyph& glyph, utility::ErrorState& errorCode) override;
 	};
 }

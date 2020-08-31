@@ -111,7 +111,7 @@ namespace nap
 		/**
 		 * Called when a json file has been (re)loaded. Used to re-apply the presets.
 		 */
-		virtual void resourcesLoaded() override;
+		virtual void postResourcesLoaded() override;
 
 	private:
 

@@ -19,6 +19,7 @@
 #include <utility/errorstate.h>
 #include <rtti/binaryreader.h>
 #include <rtti/defaultlinkresolver.h>
+#include <renderglobals.h>
 
 // Local Includes
 #include "mesh.h"
@@ -104,11 +105,12 @@ namespace nap
 				return false;
 
 			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
+			mesh_data.mProperties.mDrawMode = EDrawMode::Triangles;
 
 			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 
 			// Copy vertex data			
-			VertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, VertexAttributeIDs::getPositionName(), vertex_attribute_storage);
+			VertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::position, vertex_attribute_storage);
 			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
@@ -119,7 +121,7 @@ namespace nap
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				VertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, VertexAttributeIDs::getNormalName(), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::normal, vertex_attribute_storage);
 				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
@@ -131,8 +133,8 @@ namespace nap
 			// Copy tangents
 			if (fbx_mesh->HasTangentsAndBitangents())
 			{
-				VertexAttribute<glm::vec3>& tangent_attribute = CreateAttribute<glm::vec3>(mesh_data, VertexAttributeIDs::getTangentName(), vertex_attribute_storage);
-				VertexAttribute<glm::vec3>& bitangent_attribute = CreateAttribute<glm::vec3>(mesh_data, VertexAttributeIDs::getBitangentName(), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& tangent_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::tangent, vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& bitangent_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::bitangent, vertex_attribute_storage);
 				tangent_attribute.reserve(fbx_mesh->mNumVertices);
 				bitangent_attribute.reserve(fbx_mesh->mNumVertices);
 				
@@ -151,7 +153,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				VertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, VertexAttributeIDs::getUVName(uv_channel), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::getUVName(uv_channel), vertex_attribute_storage);
 				uv_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
@@ -168,7 +170,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				VertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, VertexAttributeIDs::GetColorName(color_channel), vertex_attribute_storage);
+				VertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, vertexid::getColorName(color_channel), vertex_attribute_storage);
 				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel
@@ -186,9 +188,7 @@ namespace nap
 			mesh_data.mProperties.mShapes.push_back(MeshShape());
 			MeshShape& shape = mesh_data.mProperties.mShapes.back();
 
-			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
-
-			MeshShape::IndexList& indices = shape.getIndices();
+			std::vector<uint32>& indices = shape.getIndices();
 			indices.reserve(fbx_mesh->mNumFaces * 3);
 			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
@@ -196,7 +196,7 @@ namespace nap
 				assert(face.mNumIndices == 3);
 
 				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
-					indices.push_back(face.mIndices[point_index]);
+					indices.emplace_back(face.mIndices[point_index]);
 			}
 
 			rtti::BinaryWriter binaryWriter;
@@ -216,7 +216,7 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<MeshInstance> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
+	std::unique_ptr<MeshInstance> loadMesh(RenderService& renderService, const std::string& meshPath, utility::ErrorState& errorState)
 	{
 		rtti::Factory factory;
 
@@ -247,9 +247,9 @@ namespace nap
 		// will clone contents and take ownership of the cloned content. 
 		// The RTTI data in Mesh is lost, which is intentional as we don't need an extra copy of CPU data in memory. If we need to have an option to keep the source CPU data for binary
 		// meshes, this can be supported later by adding it. This could be the case if we are doing dynamic geometry based on a binary mesh where we keep the source mesh for reference.
-		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>();
+		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(renderService);
 		mesh_instance->copyMeshProperties(mesh->mProperties);
 		return mesh_instance;
 	}
 
-} // opengl
+}

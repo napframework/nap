@@ -75,7 +75,7 @@ namespace nap
 	}
 
 
-	void Renderable3DTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void Renderable3DTextComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		assert(hasTransform());
 		glm::mat4x4 model_matrix = getTransform()->getGlobalTransform();
@@ -89,10 +89,10 @@ namespace nap
 			const nap::math::Rect& bbox = getBoundingBox();
 			offset.x = 0.0f - ((scale.x * bbox.getWidth())  / 2.0f);
 
-			glm::mat4x4  text_matrix = glm::translate(identityMatrix, offset);
+			glm::mat4x4  text_matrix = glm::translate(glm::mat4(), offset);
 			text_matrix = glm::scale(text_matrix, scale);
 			model_matrix = model_matrix * text_matrix;
 		}
-		Renderable3DTextComponentInstance::draw(viewMatrix, projectionMatrix, model_matrix);
+		Renderable3DTextComponentInstance::draw(renderTarget, commandBuffer, viewMatrix, projectionMatrix, model_matrix);
 	}
 }

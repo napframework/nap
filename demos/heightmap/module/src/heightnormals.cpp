@@ -1,9 +1,13 @@
+// Local Includes
 #include "heightnormals.h"
 #include "heightmesh.h"
 
+// External Includes
+#include <nap/core.h>
+
 // nap::heightnormals run time class definition 
-RTTI_BEGIN_CLASS(nap::HeightNormals)
-	// Put additional properties here
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightNormals)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -11,7 +15,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	HeightNormals::~HeightNormals()			{ }
+	HeightNormals::HeightNormals(nap::Core& core) : VisualizeNormalsMesh(core)
+	{ }
 
 
 	bool HeightNormals::init(utility::ErrorState& errorState)

@@ -32,10 +32,24 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
+		LineFromFile(nap::Core& core);
+
 		/**
-		 *	Loads the svg file and extracts the line
+		 * Loads the svg file and extract all the lines
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return if the first line is open or closed.
+		 */
+		virtual bool isClosed() const override;
+
+		/**
+		 * Returns if a given line is open or closed, useful when the file 
+		 * contains multiple lines, where each line is converted into a shape.
+		 * @return if a given line is open or closed.
+		 */
+		virtual bool isClosed(int shapeIndex) const;
 
 		// Property: the svg file to read
 		std::string mFile;
@@ -72,6 +86,9 @@ namespace nap
 		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rectangle, utility::ErrorState& errorState);
 
 		// Create a mesh instance out of curve sampled vertices
-		void addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool isClosed);
+		void addShape(bool closed, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs);
+
+		// All the lines closed states
+		std::vector<bool> mClosedStates;
 	};
 }

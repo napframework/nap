@@ -1,21 +1,25 @@
 // Local Includes
 #include "renderableglyph.h"
+#include "renderservice.h"
 
 // External Includes
-#include <nglutils.h>
 #include <mathutils.h>
 #include <ft2build.h>
 #include <bitmap.h>
+#include <nap/core.h>
+
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableGlyph)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DGlyph)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Renderable2DMipMapGlyph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Renderable2DMipMapGlyph)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap
@@ -28,7 +32,18 @@ namespace nap
 		return reinterpret_cast<FT_Glyph>(handle);
 	}
 
-	bool RenderableGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
+
+	RenderableGlyph::RenderableGlyph(nap::Core& core) : IGlyphRepresentation(core)
+	{ }
+
+
+	RenderableGlyph::~RenderableGlyph()
+	{
+		mTexture.reset(nullptr);
+	}
+
+
+	bool RenderableGlyph::setup(const Glyph& glyph, bool generateMipmaps, utility::ErrorState& errorCode)
 	{
 		// Get handle to the glyph
 		FT_Glyph bitmap = toFreeTypeGlyph(glyph.getHandle());
@@ -48,53 +63,57 @@ namespace nap
 		mSize.x = bitmap_glyph->bitmap.width;
 		mSize.y = bitmap_glyph->bitmap.rows;
 
-		// Set parameters
-		getTextureParameters(mTexture.mParameters, mSize);
-
-		// Initialize texture
-		opengl::Texture2DSettings settings;
-		settings.mWidth  = mSize.x;
-		settings.mHeight = mSize.y;
-		settings.mType = GL_UNSIGNED_BYTE;
-		settings.mInternalFormat = GL_RED;
-		settings.mFormat = GL_RED;
-		mTexture.initTexture(settings);
-
-		// Upload glyph bitmap data
-		mTexture.update(bitmap_glyph->bitmap.buffer, bitmap_glyph->bitmap.pitch);
-
-		// Clean up bitmap data
-		FT_Done_Glyph(bitmap);
-
 		// Store advance
 		mAdvance.x = glyph.getHorizontalAdvance();
 		mAdvance.y = glyph.getVerticalAdvance();
 
+		// If there is no width / height, don't initialize the texture
+		assert(mTexture == nullptr);
+		if (mSize.x == 0 || mSize.y == 0)
+		{
+			FT_Done_Glyph(bitmap);
+			return true;
+		}
+
+		// Create texture and get parameters
+		mTexture = std::make_unique<Texture2D>(*mCore);
+
+		// Initialize texture
+		SurfaceDescriptor settings;
+		settings.mWidth  = mSize.x;
+		settings.mHeight = mSize.y;
+		settings.mDataType = ESurfaceDataType::BYTE;
+		settings.mChannels = ESurfaceChannels::R;
+		
+		if (!mTexture->init(settings, generateMipmaps, bitmap_glyph->bitmap.buffer, errorCode))
+			return false;
+
+		// Clean up bitmap data
+		FT_Done_Glyph(bitmap);
 		return true;
 	}
 
 
-	void Renderable2DGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
+	Renderable2DGlyph::Renderable2DGlyph(nap::Core& core) : RenderableGlyph(core)
+	{ }
+	
+
+	bool Renderable2DGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
-		outParameters.mMaxFilter		= EFilterMode::Linear;
-		outParameters.mMinFilter		= EFilterMode::Linear;
-		outParameters.mMaxLodLevel		= 0;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
+		if (!RenderableGlyph::setup(glyph, false, errorCode))
+			return false;
+		return true;
 	}
 
 
-	void Renderable2DMipMapGlyph::getTextureParameters(TextureParameters& outParameters, const glm::ivec2& charSize)
+	Renderable2DMipMapGlyph::Renderable2DMipMapGlyph(nap::Core& core) : RenderableGlyph(core)
+	{ } 
+
+
+	bool Renderable2DMipMapGlyph::onInit(const Glyph& glyph, utility::ErrorState& errorCode)
 	{
-		// Calculate max character lod value based on character dimensions
-		int max_lod = charSize.x > charSize.y ? charSize.x : charSize.y;
-		max_lod = int(glm::log2((float)std::max<int>(max_lod,1)));
-
-		outParameters.mMaxFilter		= EFilterMode::Linear;
-		outParameters.mMinFilter		= max_lod > 0 ? EFilterMode::LinearMipmapLinear : EFilterMode::Linear;
-		outParameters.mMaxLodLevel		= max_lod;
-		outParameters.mWrapVertical		= EWrapMode::ClampToEdge;
-		outParameters.mWrapHorizontal	= EWrapMode::ClampToEdge;
+		if (!RenderableGlyph::setup(glyph, true, errorCode))
+			return false;
+		return true;
 	}
-
 }

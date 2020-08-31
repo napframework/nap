@@ -76,18 +76,20 @@ namespace nap
         int shutdown() override;
 
     private:
-        ResourceManager*		mResourceManager = nullptr;		///< Manages all the loaded data
-        std::string				mFilename = "";					///< The JSON file that is loaded on initialization
-		RenderService*			mRenderService = nullptr;		///< Render Service that handles render calls
-		SceneService*			mSceneService = nullptr;		///< Manages all the objects in the scene
-		InputService*			mInputService = nullptr;		///< Input service for processing input
-		IMGuiService*			mGuiService = nullptr;			///< Manages GUI related update / draw calls
-		ParameterService*		mParameterService = nullptr;	///< Manages all the parameters
-		ObjectPtr<RenderWindow> mRenderWindow;					///< Pointer to the render window	
-		ObjectPtr<Scene>		mScene = nullptr;				///< Pointer to the main scene
-		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;	//< Renders the parameters
-
-		ObjectPtr<SequenceEditorGUI>		mSequenceEditorGUI;
-		ObjectPtr<ParameterGroup>			mParameterGroup;
+        ResourceManager*		mResourceManager = nullptr;				///< Manages all the loaded data
+        std::string				mFilename = "";							///< The JSON file that is loaded on initialization
+		RenderService*			mRenderService = nullptr;				///< Render Service that handles render calls
+		SceneService*			mSceneService = nullptr;				///< Manages all the objects in the scene
+		InputService*			mInputService = nullptr;				///< Input service for processing input
+		IMGuiService*			mGuiService = nullptr;					///< Manages GUI related update / draw calls
+		ParameterService*		mParameterService = nullptr;			///< Manages all the parameters
+		ObjectPtr<RenderWindow> mParameterWindow = nullptr;				///< Pointer to the parameter render window	
+		ObjectPtr<RenderWindow> mTimelineWindow = nullptr;				///< Pointer to the timeline render window
+		ObjectPtr<Scene>		mScene = nullptr;						///< Pointer to the main scene
+		
+		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			///< Displays the parameters
+		ObjectPtr<SequenceEditorGUI> mSequenceEditorGUI = nullptr;		///< Displays the sequence editor gui
+		ObjectPtr<ParameterGroup> mParameterGroup = nullptr;			///< Link to parameters
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	///< GUI text highlight color
 	};
 }

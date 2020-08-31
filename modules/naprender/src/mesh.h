@@ -4,95 +4,74 @@
 #include "vertexattribute.h"
 
 // External includes
-#include <ngpumesh.h>
+#include <gpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <nap/numeric.h>
+#include <rtti/factory.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
+	class RenderService;
+	class Core;
+
 	/**
-	* Known vertex attribute IDs in the system
-	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
-	*/
-	namespace VertexAttributeIDs
+	 * Topology of the mesh
+	 */
+	enum class EDrawMode : int32
 	{
-		/**
-		* @return Default position vertex attribute name "Position"
-		*/
-		const NAPAPI std::string getPositionName();
-
-		/**
-		* @return Default normal vertex attribute name: "Normal"
-		*/
-		const NAPAPI std::string getNormalName();
-
-		/**
-		* @return Default tangent vertex attribute name: "Tangent"
-		*/
-		const NAPAPI std::string getTangentName();
-
-		/**
-		* @return Default bi-tangent vertex attribute name: "Bitangent"
-		*/
-		const NAPAPI std::string getBitangentName();
-
-		/**
-		* Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
-		* @param uvChannel: the uv channel index to query
-		* @return the name of the vertex attribute
-		*/
-		const NAPAPI std::string getUVName(int uvChannel);
-
-		/**
-		* Returns the name of the vertex color attribute based on the queried color channel, ie: "Color0", "Color1" etc.
-		* @param colorChannel: the color channel index to query
-		* @return the name of the color vertex attribute
-		*/
-		const NAPAPI std::string GetColorName(int colorChannel);
+		Points			= 0,				///< Interpret the vertex data as single points
+		Lines			= 1,				///< Interpret the vertex data as individual lines
+		LineStrip		= 2,				///< Interpret the vertex data as a single connected line
+		Triangles		= 3,				///< Interpret the vertex data as a set of triangles
+		TriangleStrip	= 4,				///< Interpret the vertex data as a strip of triangles
+		TriangleFan		= 5,				///< Interpret the vertex data as a fan of triangles
+		Unknown			= 0x7FFFFFFF,		///< Invalid vertex interpretation
 	};
 
-	/**
-	 * Flag that determines how the mesh data is used at runtime. Note that these are only potential performance improvements; they do not actually restrict the way 
-	 * you can use the mesh (i.e. you can still read data from a static mesh).
-	 */
-	enum class EMeshDataUsage
-	{
-		Static,				///< Data of the mesh does not change
-		DynamicRead,		///< Data of the mesh is frequently read from GPU to CPU
-		DynamicWrite		///< Data of the mesh is frequently updated from CPU to GPU
-	};
 
 	/**
-	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
-	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
+	 * Triangle cull modes
 	 */
-	class MeshShape
+	enum class ECullMode : int32
+	{
+		None			= 0,				///< No culling
+		Front			= 1,				///< Cull front facing triangles
+		Back			= 2,				///< Cull back facing triangles
+		FrontAndBack	= 3					///< Cull front and back facing triangles
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// MeshShape
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Contains a list of indices that describe which particular part of the nap::MeshInstance should be drawn.
+	 * Every nap::MeshInstance contains at least one shape.
+	 */
+	class NAPAPI MeshShape
 	{
 	public:
-		using IndexList = std::vector<unsigned int>;
-
 		/**
 		 * @return The number of indices in this shape
 		 */
-		int getNumIndices() const { return mIndices.size(); }
+		int getNumIndices() const										{ return mIndices.size(); }
 
 		/**
 		* Clears the list of indices.
 		* Call either before init() or call update() to reflect the changes in the GPU buffer.
 		*/
-		void clearIndices() { mIndices.clear(); }
+		void clearIndices()												{ mIndices.clear(); }
 
 		/**
 		* Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		* @param numIndices Amount of indices to reserve.
 		*/
-		void reserveIndices(size_t numIndices)
-		{
-			mIndices.reserve(numIndices);
-		}
+		void reserveIndices(size_t numIndices);
 
 		/**
 		* Adds a list of indices to the index CPU buffer.
@@ -100,59 +79,42 @@ namespace nap
 		* @param indices: array of indices to add.
 		* @param numIndices: size of the array.
 		*/
-		void setIndices(uint32_t* indices, int numIndices)
-		{
-			mIndices.resize(numIndices);
-			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
-		}
+		void setIndices(uint32* indices, int numIndices);
 
 		/**
 		 * @return The index list for this shape
 		 */
-		const IndexList& getIndices() const { return mIndices; }
+		const std::vector<uint32>& getIndices() const					{ return mIndices; }
 
 		/**
 		 * @return The index list for this shape
 		 */
-		IndexList& getIndices() { return mIndices; }
+		std::vector<uint32>& getIndices()								{ return mIndices; }
 
 		/**
-		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
-		* the current indices with a new set of indices.
-		* Call either before init() or call update() to reflect the changes in the GPU buffer.
-		* @param indices List of indices to update.
-		* @param numIndices Number of indices in the list.
-		*/
-		void addIndices(uint32_t* indices, int numIndices)
-		{
-			int cur_num_indices = mIndices.size();
-			mIndices.resize(cur_num_indices + numIndices);
-			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
-		}
+		 * Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		 * the current indices with a new set of indices.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param indices List of indices to update.
+		 * @param numIndices Number of indices in the list.
+		 */
+		void addIndices(uint32* indices, int numIndices);
 
 		/**
-		* Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-		* Call either before init() or call update() to reflect the changes in the GPU buffer.
-		* @param index Index to add.
-		*/
-		void addIndex(int index) { mIndices.push_back(index); }
-
-		/**
-		* Sets Draw mode for this mesh
-		* @param drawMode: OpenGL draw mode.
-		*/
-		void setDrawMode(opengl::EDrawMode drawMode) { mDrawMode = drawMode; }
-
-		/**
-		* @return Draw mode for this mesh.
-		*/
-		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
+		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
+	 	 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param index Index to add.
+		 */
+		void addIndex(int index)										{ mIndices.emplace_back(index); }
 
 	public:
-		opengl::EDrawMode	mDrawMode;		///< Property: 'DrawMode' The draw mode that should be used to draw this shape
-		IndexList			mIndices;		///< Property: 'Indices' into the mesh's vertex data
+		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// MeshProperties
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
@@ -169,8 +131,10 @@ namespace nap
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
-		int						mNumVertices;						///< Property: 'NumVertices' number of mesh vertices
+		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -179,12 +143,17 @@ namespace nap
 	using RTTIMeshProperties = MeshProperties<rtti::ObjectPtr<BaseVertexAttribute>>;
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// MeshInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Represents a runtime version of a mesh. MeshInstance holds CPU data and can convert this data to 
-	 * an opengl::GPUMesh. 
+	 * Runtime version of a mesh. MeshInstance holds CPU data and can convert this data into a GPUMesh. 
+	 * 
 	 * A MeshInstance can be created in two ways:
 	 *		1) Manually allocate a MeshInstance object, add attributes to it, and call the regular init() on it. 
 	 *		   This is useful for creation of procedural meshes.
+	 *
 	 *      2) Initialize a MeshInstance object through the init() function that takes an RTTIMeshProperties struct.
 	 *         This is intended for situations where the MeshInstance is created from an RTTI based object (either 
 	 *         rtti-json or rtti-binary).
@@ -201,7 +170,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		MeshInstance() = default;
+		MeshInstance(RenderService& renderService);
 
 		// destructor
 		virtual ~MeshInstance();
@@ -221,9 +190,9 @@ namespace nap
 		void copyMeshProperties(RTTIMeshProperties& meshProperties);
 
 		/**
-		 * @return the opengl mesh that can be drawn to screen or buffer
+		 * @return the mesh that can be drawn to screen or buffer
 		 */
-		opengl::GPUMesh& getGPUMesh() const;
+		GPUMesh& getGPUMesh() const;
 
 		/**
 		 * Finds vertex attribute.
@@ -290,6 +259,26 @@ namespace nap
 		int getNumShapes() const												{ return mProperties.mShapes.size(); }
 
 		/**
+		* @return Set the topology of this mesh (triangle list, strip, lines etc).
+		*/
+		void setDrawMode(EDrawMode mode)										{ mProperties.mDrawMode = mode; }
+
+		/**
+		 * @return The topology of this mesh (triangle list, strip, lines etc).
+		 */
+		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
+
+		/**
+		 * @return set the cull mode of this mesh (front, back etc.)
+		 */
+		void setCullMode(ECullMode mode)										{ mProperties.mCullMode = mode; }
+
+		/**
+		 * @return the cull mode of this mesh (front, back etc.)
+		 */
+		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
+
+		/**
 		 * Get the shape at the specified index
 		 * @param index The index of the shape to get (between 0 and getNumShapes())
 		 * @return The shape
@@ -310,18 +299,20 @@ namespace nap
 		MeshShape& createShape();
 
 		/**
-		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called; changing it after init will not have any effect.
+		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
+		 * changing it after init will not have any effect.
 		 */
 		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
 		/**
-		 * Get the usage for this mesh
+		 * @return how this mesh is used at runtime
 		 */
-		EMeshDataUsage getUsage(EMeshDataUsage inUsage) const					{ return mProperties.mUsage; }
+		EMeshDataUsage getUsage() const											{ return mProperties.mUsage; }
 
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
@@ -331,6 +322,7 @@ namespace nap
 		/**
 		 * Push one specific CPU vertex buffer to the GPU.
 		 * Use this when updating only specific vertex attributes at run-time.
+		 * Only update the mesh when 'Usage' is set to 'DynamicWrite', an assert is triggered otherwise.
 		 * If there is a mismatch between the vertex buffer an error will be returned
 		 * @param attribute the attribute to synchronize.
 		 * @param errorState contains the error when synchronization fails.
@@ -342,23 +334,41 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
-		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
-		std::unique_ptr<opengl::GPUMesh>						mGPUMesh;			///< GPU mesh
+		RenderService&											mRenderService;			///< Required reference to the render service
+		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;			///< CPU mesh data
+		std::unique_ptr<GPUMesh>								mGPUMesh;				///< GPU mesh
+		bool													mInitialized = false;	///< If the instance is initialized
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// IMesh
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Base class for each mesh resource. Every derived mesh should provide a MeshInstance class.
+	 * Mesh resource interface. Derive from this class to implement your own serializable mesh resource.
+	 * Every IMesh should be able to construct and return a nap::MeshInstance().
+	 * The instance is rendered and can be updated / modified at runtime.
 	 */
 	class IMesh : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
+		/**
+		 * @return the mesh instance
+		 */
 		virtual MeshInstance& getMeshInstance() = 0;
+
+		/**
+		 * @return the mesh instance
+		 */
 		virtual const MeshInstance& getMeshInstance() const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Mesh
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Serializable Mesh. This mesh can be used to either load from json or binary format.
@@ -374,6 +384,15 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		/**
+		 * Constructor used during serialization.
+		 */
+		Mesh() = default;
+
+		/**
+		 * Constructor used at runtime.
+		 */
+		Mesh(Core& core);
 
 		/**
 		 * Initialized the mesh instance.
@@ -385,12 +404,12 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance()	override		{ return mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override;
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override;
 
 		/**
 		 * Finds vertex attribute.
@@ -408,10 +427,11 @@ namespace nap
 		template<typename T>
 		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
-		RTTIMeshProperties	mProperties;		///< Property: 'Properties' RTTI mesh CPU data
+		RTTIMeshProperties	mProperties;				///< Property: 'Properties' RTTI mesh CPU data
 
 	private:
-		MeshInstance		mMeshInstance;		///< Runtime mesh instance
+		std::unique_ptr<MeshInstance> mMeshInstance;	///< Runtime mesh instance
+		RenderService* mRenderService = nullptr;		///< Render service
 	};
 
 
@@ -495,5 +515,4 @@ namespace nap
 		assert(attribute != nullptr);
 		return *attribute;
 	}
-} // nap
-
+}

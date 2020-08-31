@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -10,11 +10,17 @@ struct Blob
 	float	mSize;
 };
 
-// uniform inputs
-uniform Blob blobs[20];					//< All detected blobs
-uniform int blobCount;					//< Total number of detected blobs
-uniform sampler2D captureTexture;		//< Classify texture 
-uniform vec2 captureSize;				//< Size of captureTexture in pixels
+
+// All uniform inputs
+uniform UBO
+{
+	// uniform inputs
+	uniform Blob blobs[20];					//< All detected ubo.blobs
+	uniform int blobCount;					//< Total number of detected ubo.blobs
+	uniform vec2 captureSize;				//< Size of captureTexture in pixels
+} ubo;
+
+uniform sampler2D captureTexture;			//< Classify texture 
 
 const float ringSize = 3;
 const vec3 edgeColor = vec3(1.0, 1.0, 1.0);
@@ -44,10 +50,10 @@ float bell(float t, float strength)
 float getDistance(int blobID)
 {
 	// Flip blob vertical
-	vec2 center = vec2(blobs[blobID].mCenter.x, captureSize.y - blobs[blobID].mCenter.y); 
+	vec2 center = vec2(ubo.blobs[blobID].mCenter.x, ubo.captureSize.y - ubo.blobs[blobID].mCenter.y); 
 	
 	// Return distance from pixel to center of blob
-	return length(center - (passUVs.xy * captureSize));
+	return length(center - (passUVs.xy * ubo.captureSize));
 }
 
 
@@ -58,7 +64,7 @@ void main()
 	float current_dist = 1000000.0;
 	int closest_blob = -1;
 
-	for(int i=0; i < blobCount; i++)
+	for(int i=0; i < ubo.blobCount; i++)
 	{
 		float blob_dist = getDistance(i);
 		if(blob_dist < current_dist)
@@ -75,7 +81,7 @@ void main()
 	if (closest_blob >= 0)
 	{
 		// Get blob size and create gradient on edge
-		float blob_size = blobs[closest_blob].mSize;
+		float blob_size = ubo.blobs[closest_blob].mSize;
 		edge_lerp_v = fit(current_dist, blob_size-ringSize , blob_size+ringSize, 0.0, 1.0);
 		edge_lerp_v = bell(edge_lerp_v, 0.33);
 

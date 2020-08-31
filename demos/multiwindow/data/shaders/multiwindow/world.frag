@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -7,7 +7,12 @@ in vec3 passPosition;					//< frag world space position
 
 // uniform inputs
 uniform sampler2D inWorldTexture;		//< World Texture
-uniform vec3 inCameraPosition;			//< Camera World Space Position
+
+// Uniform buffer inputs
+uniform UBO
+{
+	uniform vec3 inCameraPosition;			//< Camera World Space Position
+} ubo;
 
 // output
 out vec4 out_Color;
@@ -19,7 +24,7 @@ void main()
 	vec3 world_color = mix(vec3(0.784, 0.411, 0.411), vec3(0.176, 0.180, 0.258), alpha);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(inCameraPosition - passPosition);
+	vec3 cam_normal = normalize(ubo.inCameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value

@@ -1,11 +1,14 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+} mvp;
 
 // Input Vertex Attributes
-in vec3	in_Position;
+in vec3 in_Position;
 in vec3 in_Normals;
 
 // Output to fragment shader
@@ -17,7 +20,7 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Pass along model matrix for light calculations
-	passModelMatrix = modelMatrix;
+	passModelMatrix = mvp.modelMatrix;
 
 	// Pass along normals for light calculations
 	passNormals = in_Normals;
@@ -26,8 +29,8 @@ void main(void)
 	passVert = in_Position;
 
 	// calculate vertex world space position and set
-	passPosition = vec3(modelMatrix * vec4(in_Position, 1));
+	passPosition = vec3(mvp.modelMatrix * vec4(in_Position, 1));
 
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 }

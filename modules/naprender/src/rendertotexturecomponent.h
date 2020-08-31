@@ -1,11 +1,17 @@
 #pragma once
 
+// Local Includes
+#include "rendercomponent.h"
+#include "rendertexture2d.h"
+#include "planemesh.h"
+#include "rendertarget.h"
+#include "materialinstance.h"
+#include "renderablemesh.h"
+#include "color.h"
+
 // External Includes
-#include <rendercomponent.h>
 #include <nap/resourceptr.h>
-#include <rendertexture2d.h>
-#include <rendertarget.h>
-#include <planemesh.h>
+#include <entity.h>
 
 namespace nap
 {
@@ -24,13 +30,6 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderToTextureComponent, RenderToTextureComponentInstance)
 	public:
-
-		/**
-		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		 * @param components the components this object depends on
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;					///< Property: 'OutputTexture' the target of the render step
 		MaterialInstanceResource		mMaterialInstanceResource;					///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		RGBColor8						mClearColor = { 255, 255, 255 };			///< Property: 'ClearColor' the color that is used to clear the render target
@@ -51,10 +50,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
-		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
-			RenderableComponentInstance(entity, resource)									{ }
-
-		virtual ~RenderToTextureComponentInstance();
+		RenderToTextureComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize RenderToTextureComponentInstance based on the RenderToTextureComponent resource
@@ -72,19 +68,12 @@ namespace nap
 		/**
 		 * @return the render target that is used to perform the render step	
 		 */
-		opengl::RenderTarget& getTarget();
+		IRenderTarget& getTarget();
 
 		/**
 		 * @return the output texture
 		 */
-		Texture2D& getOutputTexture();
-
-		/**
-		 * Switch the output texture, ie: the texture that is rendered to.
-		 * @param texture the new texture the result is rendered into
-		 * @param error contains the error if switching fails
-		 */
-		bool switchOutputTexture(nap::Texture2D& texture, utility::ErrorState& error);
+		Texture2D& getOutputTexture(); 
 
 		/**
 		 * Directly executes the render step without having to go through the render service.
@@ -113,12 +102,11 @@ namespace nap
 		* @param viewMatrix often the camera world space location
 		* @param projectionMatrix often the camera projection matrix
 		*/
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
 		nap::RenderTarget	mTarget;										///< Internally managed render target
 		nap::PlaneMesh		mPlane;											///< Plane used for rendering the effect onto
-		RenderTexture2D		mDepthTexture;									///< Depth texture which is required by the render target
 		MaterialInstance	mMaterialInstance;								///< The MaterialInstance as created from the resource.
 		RenderableMesh		mRenderableMesh;								///< Valid Plane / Material combination
 		RenderService*		mService = nullptr;								///< Render service

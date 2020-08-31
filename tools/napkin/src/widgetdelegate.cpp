@@ -127,7 +127,6 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	}
 	else
 	{
-
 		if (event->type() == QEvent::MouseButtonPress)
 		{
 			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
@@ -186,9 +185,9 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 						// Make relative if inside resource dir
 						if (nap::qt::directoryContains(getResourceReferencePath(), filename))
 							filename = getRelativeResourcePath(filename);
-
 						model->setData(index, filename);
 					}
+					return true;
 				}
 			}
 		}

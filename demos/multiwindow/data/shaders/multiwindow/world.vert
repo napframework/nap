@@ -1,8 +1,11 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -17,14 +20,14 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
 	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
+    mat3 normal_matrix = transpose(inverse(mat3(mvp.modelMatrix)));
 	passNormal = normalize(normal_matrix * in_Normal);
 
 	// calculate vertex world space position and set
-	passPosition = vec3(modelMatrix * vec4(in_Position, 1));
+	passPosition = vec3(mvp.modelMatrix * vec4(in_Position, 1));
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

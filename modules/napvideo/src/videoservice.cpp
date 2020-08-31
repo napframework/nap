@@ -24,11 +24,11 @@ namespace nap
 	{
 	}
 
+
 	bool VideoService::init(nap::utility::ErrorState& errorState)
 	{
 		av_register_all();
 		avcodec_register_all();
-
 		return true;
 	}
 
@@ -38,27 +38,24 @@ namespace nap
 		nap::utility::ErrorState error;
 		for (auto& player : mVideoPlayers)
 		{
-			if (!player->update(deltaTime, error))
-			{
-				nap::Logger::warn(error.toString().c_str());
-			}
+			player->update(deltaTime);
 		}
 	}
 
 
 	void VideoService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<VideoObjectCreator>(*this));
+		factory.addObjectCreator(std::make_unique<VideoPlayerObjectCreator>(*this));
 	}
 
 
-	void VideoService::registerVideoPlayer(Video& receiver)
+	void VideoService::registerVideoPlayer(VideoPlayer& receiver)
 	{
 		mVideoPlayers.emplace_back(&receiver);
 	}
 
 
-	void VideoService::removeVideoPlayer(Video& receiver)
+	void VideoService::removeVideoPlayer(VideoPlayer& receiver)
 	{
 		auto found_it = std::find_if(mVideoPlayers.begin(), mVideoPlayers.end(), [&](const auto& it)
 		{

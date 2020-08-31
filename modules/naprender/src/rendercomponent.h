@@ -12,7 +12,7 @@ namespace nap
 	class RenderableComponentInstance;
 
 	/**
-	 * Resource part of the render-able component.
+	 * Resource part of the render-able component. 
 	 * Represents an object that can be rendered to screen or any other type of render target.
 	 * This is the base class for all render-able types.
 	 * Override the draw call to implement custom draw behavior.
@@ -43,7 +43,7 @@ namespace nap
 		 * @param viewMatrix often the camera world space location.
 		 * @param projectionMatrix often the camera projection matrix.
 		 */
-		void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
+		void draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 
 		/**
 		 * Toggles visibility.
@@ -72,7 +72,7 @@ namespace nap
 		 * @param viewMatrix often the camera world space location
 		 * @param projectionMatrix often the camera projection matrix
 		 */
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 
 	private:
 		bool mVisible = true;			///< If this object should be drawn or not

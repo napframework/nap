@@ -4,9 +4,13 @@
 #include <fbxconverter.h>
 #include <meshutils.h>
 #include <triangleiterator.h>
+#include <renderglobals.h>
+#include <nap/core.h>
+#include <renderservice.h>
 
 // nap::videomesh run time class definition 
-RTTI_BEGIN_CLASS(nap::VideoMeshFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -15,31 +19,37 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	VideoMeshFromFile::~VideoMeshFromFile()			{ }
+	VideoMeshFromFile::VideoMeshFromFile(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{
+	}
 
 
 	bool VideoMeshFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load our mesh
-		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
+		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(*mRenderService, mPath, errorState);
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
 		// Set mesh
 		mMeshInstance = std::move(mesh_instance);
+		mMeshInstance->setCullMode(ECullMode::Back);
+		mMeshInstance->setDrawMode(EDrawMode::Triangles);
+		mMeshInstance->setUsage(EMeshDataUsage::Static);
 
 		// Get position
-		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::position);
 		assert(mPositionAttribute != nullptr);
 
 		// Get uv
-		mUVAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", VertexAttributeIDs::getUVName(0).c_str(), mPath.c_str()))
+		mUVAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::getUVName(0));
+		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", vertexid::getUVName(0).c_str(), mPath.c_str()))
 			return false;
 
 		// Now check for the color attribute
-		mNormalAttribute = mMeshInstance->findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		if (!errorState.check(mNormalAttribute != nullptr, "unable to find normal attribute: %s on mesh: %s", VertexAttributeIDs::getNormalName().c_str(), mPath.c_str()))
+		mNormalAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::normal);
+		if (!errorState.check(mNormalAttribute != nullptr, "unable to find normal attribute: %s on mesh: %s", vertexid::normal, mPath.c_str()))
 			return false;
 
 		// We add the direction attribute and copy our normal information

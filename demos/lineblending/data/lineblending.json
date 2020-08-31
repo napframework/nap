@@ -9,7 +9,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5,
             "Segments": 100
@@ -113,6 +114,7 @@
                     "MaterialInstance": {
                         "Material": "CanvasMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
                     },
@@ -237,6 +239,7 @@
                     "MaterialInstance": {
                         "Material": "LineMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -258,6 +261,7 @@
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -335,23 +339,17 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5
         },
         {
             "Type": "nap::ImageFromFile",
             "mID": "CanvasImage",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "laser_canvas.png",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::Line",
@@ -362,7 +360,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "DynamicWrite"
             },
             "Start": {
                 "x": -0.5,
@@ -386,7 +385,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Start": {
                 "x": 0.5,
@@ -410,7 +410,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "File": "logo.svg",
             "Units": "px",
@@ -427,20 +428,35 @@
             "mID": "CanvasMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
-                    "Name": "mCanvas",
-                    "Texture": "CanvasImage"
-                },
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "nap::UniformVec3",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 0.32100000977516177,
+                                "y": 0.32899999618530276,
+                                "z": 0.41499999165534975
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "nap::UniformVec3",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 0.32100000977516177,
-                        "y": 0.32899999618530276,
-                        "z": 0.41499999165534975
-                    }
+                    "Type": "nap::Sampler2D",
+                    "mID": "canvas_sampler_2D",
+                    "Name": "mCanvas",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "Texture": "CanvasImage"
                 }
             ],
             "Shader": "CanvasShader",
@@ -465,6 +481,7 @@
             "Type": "nap::Material",
             "mID": "LineMaterial",
             "Uniforms": [],
+            "Samplers": [],
             "Shader": "LineShader",
             "VertexAttributeBindings": [
                 {
@@ -492,17 +509,25 @@
             "mID": "NormalsMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec4",
-                    "mID": "nap::UniformVec4",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0,
-                        "w": 1.0
-                    }
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_2",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "nap::UniformVec4",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0,
+                                "w": 1.0
+                            }
+                        }
+                    ]
                 }
             ],
+            "Samplers": [],
             "Shader": "NormalsShader",
             "VertexAttributeBindings": [
                 {
@@ -636,6 +661,8 @@
         {
             "Type": "nap::PlaneMesh",
             "mID": "CanvasMesh",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -656,7 +683,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Dimensions": {
                 "x": 1.0,
@@ -666,18 +694,21 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "Window 1",
-            "Sync": false,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
@@ -724,13 +755,15 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5
         },
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
+            "Usage": "DynamicWrite",
             "ReferenceMesh": "DisplayLine",
             "Length": 0.05000000074505806
         }

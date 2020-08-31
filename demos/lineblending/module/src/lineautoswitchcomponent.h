@@ -79,9 +79,9 @@ namespace nap
 			Stationary	= 2
 		};
 
-		ComponentInstancePtr<LineSelectionComponent> mSelectorOne	= initComponentInstancePtr(this, &LineAutoSwitchComponent::mSelectionComponentOne);		// First line selection component
-		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo	= initComponentInstancePtr(this, &LineAutoSwitchComponent::mSelectionComponentTwo);		// Second line selection component
-		ComponentInstancePtr<LineBlendComponent>	mLineBlender	= initComponentInstancePtr(this, &LineAutoSwitchComponent::mBlendComponent);			// Line Blender
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne		= { this, &LineAutoSwitchComponent::mSelectionComponentOne };		// First line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo		= { this, &LineAutoSwitchComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineBlendComponent>	mLineBlender		= { this, &LineAutoSwitchComponent::mBlendComponent };				// Line Blender
 		bool mRandom = false;											// If this component randomly picks another line
 		int mNextLine = 0;												// The next line to select (if random is turned off)
 

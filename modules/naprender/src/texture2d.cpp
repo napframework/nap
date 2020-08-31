@@ -1,201 +1,543 @@
+// Local Includes
 #include "texture2d.h"
 #include "bitmap.h"
-#include "bitmaputils.h"
+#include "renderservice.h"
+#include "copyimagedata.h"
 
-RTTI_BEGIN_ENUM(nap::EFilterMode)
-	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::Linear, "Linear"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::NearestMipmapNearest, "NearestMipmapNearest"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::LinearMipmapNearest, "LinearMipmapNearest"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::NearestMipmapLinear, "NearestMipmapLinear"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::LinearMipmapLinear, "LinearMipmapLinear")
+// External Includes
+#include <nap/core.h>
+#include <nap/logger.h>
+
+RTTI_BEGIN_ENUM(nap::ETextureUsage)
+	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicRead,	"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
-
-RTTI_BEGIN_ENUM(nap::EWrapMode)
-	RTTI_ENUM_VALUE(nap::EWrapMode::Repeat,			"Repeat"),
-	RTTI_ENUM_VALUE(nap::EWrapMode::MirroredRepeat, "MirroredRepeat"),
-	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToEdge,	"ClampToEdge"),
-	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
-RTTI_END_ENUM
-
-RTTI_BEGIN_CLASS(nap::TextureParameters)
-	RTTI_PROPERTY("MinFilter",			&nap::TextureParameters::mMinFilter,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxFilter",			&nap::TextureParameters::mMaxFilter,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WrapVertical",		&nap::TextureParameters::mWrapVertical,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WrapHorizontal",		&nap::TextureParameters::mWrapHorizontal,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxLodLevel",		&nap::TextureParameters::mMaxLodLevel,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
-	RTTI_PROPERTY("Parameters", 	&nap::Texture2D::mParameters,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
-
-/**
-* openglFilterMap
-*
-* Maps Filter modes to supported GL formats
-*/
-using OpenglFilterMap = std::unordered_map<nap::EFilterMode, GLint>;
-static const OpenglFilterMap openglFilterMap =
-{
-	{ nap::EFilterMode::Nearest,					GL_NEAREST},
-	{ nap::EFilterMode::Linear,						GL_LINEAR },
-	{ nap::EFilterMode::NearestMipmapNearest,		GL_NEAREST_MIPMAP_NEAREST },
-	{ nap::EFilterMode::LinearMipmapNearest,		GL_LINEAR_MIPMAP_NEAREST },
-	{ nap::EFilterMode::NearestMipmapLinear,		GL_NEAREST_MIPMAP_LINEAR },
-	{ nap::EFilterMode::LinearMipmapLinear,			GL_LINEAR_MIPMAP_LINEAR}
-};
-
-
-/**
- *	openglWrapMap
- *
- * Maps Wrap modes to supported GL formats
- */
-using OpenglWrapMap = std::unordered_map<nap::EWrapMode, GLint>;
-static const OpenglWrapMap openglWrapMap =
-{	 
-	{ nap::EWrapMode::Repeat,						GL_REPEAT },
-	{ nap::EWrapMode::MirroredRepeat,				GL_MIRRORED_REPEAT },
-	{ nap::EWrapMode::ClampToEdge,					GL_CLAMP_TO_EDGE },
-	{ nap::EWrapMode::ClampToBorder,				GL_CLAMP_TO_BORDER }
-};
-
-
-/**
- *	@return the opengl filter based on @filter
- */
-static GLint getGLFilterMode(nap::EFilterMode filter)
-{
-	auto it = openglFilterMap.find(filter);
-	assert(it != openglFilterMap.end());
-	return it->second;
-}
-
-
-/**
- *	@return the opengl wrap mode based on @wrapmode
- */
-static GLint getGLWrapMode(nap::EWrapMode wrapmode)
-{
-	auto it = openglWrapMap.find(wrapmode);
-	assert(it != openglWrapMap.end());
-	return it->second;
-}
-
-
-static void convertTextureParameters(const nap::TextureParameters& input, opengl::TextureParameters& output)
-{
-	output.minFilter	=	getGLFilterMode(input.mMinFilter);
-	output.maxFilter	=	getGLFilterMode(input.mMaxFilter);
-	output.wrapVertical =	getGLWrapMode(input.mWrapVertical);
-	output.wrapHorizontal = getGLWrapMode(input.mWrapHorizontal);
-	output.maxLodLevel =	input.mMaxLodLevel;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static
+	//////////////////////////////////////////////////////////////////////////
 
-	void Texture2D::initTexture(const opengl::Texture2DSettings& settings)
+	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		// Create the texture with the associated settings
-		opengl::TextureParameters gl_params;
-		convertTextureParameters(mParameters, gl_params);
-		mTexture.init(settings, gl_params, mUsage);
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
+
+		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	}
 
 
-	bool Texture2D::initFromBitmap(const Bitmap& bitmap, bool compressed, utility::ErrorState& errorState)
+	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
 	{
-		assert(!bitmap.empty());
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = {
+			width,
+			height,
+			1
+		};
 
-		// Get opengl settings from bitmap
-		opengl::Texture2DSettings settings;
-		if (!errorState.check(getTextureSettingsFromBitmap(bitmap, compressed, settings, errorState), "Unable to determine texture settings from bitmap"))
+		vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+	}
+
+
+	static VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
+	{
+		ESurfaceDataType dataType = descriptor.getDataType();
+		EColorSpace colorSpace = descriptor.getColorSpace();
+
+		switch (descriptor.getChannels())
+		{
+			case ESurfaceChannels::R:
+			{
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16_UNORM;
+				}
+				break;
+			}
+			case ESurfaceChannels::RGBA:
+			{
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32G32B32A32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16G16B16A16_UNORM;
+				}
+				break;
+			}
+			case ESurfaceChannels::BGRA:
+			{
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_UNDEFINED;
+				}
+				break;
+			}
+			assert(false);
+		}
+		return VK_FORMAT_UNDEFINED;
+	}
+
+
+	static int getNumStagingBuffers(int inMaxFramesInFlight, ETextureUsage textureUsage)
+	{
+		switch (textureUsage)
+		{
+			case ETextureUsage::DynamicWrite:
+				return inMaxFramesInFlight + 1;
+			case ETextureUsage::Static:
+				return 1;
+			case ETextureUsage::DynamicRead:
+				return inMaxFramesInFlight;
+			default:
+				assert(false);
+		}
+		return 0;
+	}
+
+
+	/**
+	 * Transition image to a new layout using an existing image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
+		VkImageLayout oldLayout,		VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
+		uint32 mipLevel,				uint32 mipLevelCount)
+	{
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = mipLevel;
+		barrier.subresourceRange.levelCount = mipLevelCount;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = dstAccessMask;
+		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+
+	/**
+	 * Transition image to a new layout using an image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		uint32 mipLevel, uint32 mipLevelCount)
+	{
+		VkImageMemoryBarrier barrier = {};
+		transitionImageLayout(commandBuffer, image, barrier,
+			oldLayout,		newLayout,
+			srcAccessMask,	dstAccessMask,
+			srcStage,		dstStage,
+			mipLevel,		mipLevelCount);
+	}
+
+
+	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	{
+
+		int32 mipWidth  = static_cast<int32>(texWidth);
+		int32 mipHeight = static_cast<int32>(texHeight);
+
+		VkImageMemoryBarrier barrier {};
+		for (uint32_t i = 1; i < mipLevels; i++)
+		{
+			// Prepare LOD for blit operation
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
+				i - 1,									1);
+
+			// Create blit structure
+			VkImageBlit blit{};
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = i - 1;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = i;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+
+			// Blit
+			vkCmdBlitImage(buffer,
+				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+
+			// Prepare LOD for shader read
+			transitionImageLayout(buffer, image, barrier,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				i - 1,									1);
+
+			if (mipWidth  > 1) mipWidth  /= 2;
+			if (mipHeight > 1) mipHeight /= 2;
+		}
+
+		// Prepare final LOD for shader read
+		transitionImageLayout(buffer, image, barrier,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			mipLevels - 1,							1);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Texture2D
+	//////////////////////////////////////////////////////////////////////////
+
+	Texture2D::Texture2D(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{
+	}
+
+
+	Texture2D::~Texture2D()
+	{	
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService->removeTextureRequests(*this);
+		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+		{
+			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			for (const BufferData& buffer : stagingBuffers)
+			{
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			}
+		});
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
+	{
+		// Get the format, when unsupported bail.
+		mFormat = getTextureFormat(*mRenderService, descriptor);
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
+			"%s, Unsupported texture format", mID.c_str()))
 			return false;
+
+		// Ensure our GPU image can be used as a transfer destination during uploads
+		VkFormatProperties format_properties;
+		mRenderService->getFormatProperties(mFormat, format_properties);
+		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+		{
+			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+			return false;
+		}
 		
-		// Initialize texture from bitmap
-		initTexture(settings);
-		
-		update(bitmap);
+		// If mip mapping is enabled, ensure it is supported
+		if (generateMipMaps)
+		{
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			{
+				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
+				return false;
+			}
+			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+		}
+
+		// Ensure there are enough read callbacks based on max number of frames in flight
+		mImageSizeInBytes = descriptor.getSizeInBytes();
+		if (mUsage == ETextureUsage::DynamicRead)
+			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+
+		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
+		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
+		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
+		// 
+		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
+		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
+		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
+		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
+		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
+		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
+		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
+		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
+		// frame will just overwrite the same staging buffer.
+		//
+		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
+		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
+		// called, which moves the index one place ahead. 
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
+		for (int index = 0; index < mStagingBuffers.size(); ++index)
+		{
+			BufferData& staging_buffer = mStagingBuffers[index];
+
+			// Get usage flags based on selected texture usage
+			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+			VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ? VMA_MEMORY_USAGE_GPU_TO_CPU : 
+				VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+			// Create staging buffer
+			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
+			{
+				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
+				return false;
+			}
+		}
+
+		// Create GPU image usage information
+		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
+			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+		// We create images and image views for the amount of frames in flight
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, 
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+				return false;
+
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+				return false;
+
+		mCurrentStagingBufferIndex = 0;
+		mDescriptor = descriptor;
+
+		// Fill the texture with nothing (black)
+		if (clearMode == Texture2D::EClearMode::FillWithZero)
+		{
+			std::vector<uint8_t> empty_texture_data;
+			empty_texture_data.resize(mImageSizeInBytes);
+			update(empty_texture_data.data(), descriptor);
+		}
+		return true;
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState)
+	{
+		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, errorState))
+			return false;
+		update(initialData, descriptor);
 		return true;
 	}
 
 
 	const glm::vec2 Texture2D::getSize() const
 	{
-		return glm::vec2(mTexture.getSettings().mWidth, mTexture.getSettings().mHeight);
+		return glm::vec2(getWidth(), getHeight());
 	}
 
 
 	int Texture2D::getWidth() const
 	{
-		return static_cast<int>(mTexture.getSettings().mWidth);
+		return mDescriptor.mWidth;
 	}
 
 
 	int Texture2D::getHeight() const
 	{
-		return static_cast<int>(mTexture.getSettings().mHeight);
+		return mDescriptor.mHeight;
 	}
 
 
-	void Texture2D::bind()
+	const nap::SurfaceDescriptor& Texture2D::getDescriptor() const
 	{
-		mTexture.bind();
+		return mDescriptor;
 	}
 
 
-	void Texture2D::unbind()
+	void Texture2D::upload(VkCommandBuffer commandBuffer)
 	{
-		mTexture.unbind();
+		assert(mCurrentStagingBufferIndex != -1);
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		assert(buffer.mAllocation != VK_NULL_HANDLE);
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
+		
+		VkAccessFlags srcMask = 0;
+		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
+		{
+			srcMask  = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+
+		// Get image ready for copy, applied to all mipmap layers
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			srcMask,	dstMask,
+			srcStage,	dstStage,
+			0,			mMipLevels);
+		
+		// Copy staging buffer to image
+		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		
+		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
+		if (mMipLevels > 1)
+		{
+			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+		}
+		else
+		{
+			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0,										1);
+		}
+
+		// We store the last image layout, which is used as input for a subsequent upload
+		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		// Destroy staging buffer when usage is static
+		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
+		// Explicitly release the handle, so it's not deleted twice.
+		if (mUsage == ETextureUsage::Static)
+		{
+			assert(mStagingBuffers.size() == 1);
+			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService)
+			{
+				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
+			});
+			buffer.release();
+		}
 	}
 
 
-	void Texture2D::update(const Bitmap& bitmap)
+	void Texture2D::download(VkCommandBuffer commandBuffer)
 	{
-		update(bitmap.getData());
+		assert(mCurrentStagingBufferIndex != -1);
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
+
+		// Transition for copy
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0,											1);
+		
+		// Copy to buffer
+		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		
+		// Transition back to shader usage
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0,											1);
 	}
 
 
-	void Texture2D::update(const void* data, int pitch)
+	void Texture2D::update(const void* data, const SurfaceDescriptor& surfaceDescriptor)
 	{
-		mTexture.setData(data, pitch);
+		update(data, surfaceDescriptor.getWidth(), surfaceDescriptor.getHeight(), surfaceDescriptor.getPitch(), surfaceDescriptor.getChannels());
 	}
 
 
-	void Texture2D::getData(Bitmap& bitmap)
+	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
-		if (bitmap.empty())
-			bitmap.initFromTexture(mTexture.getSettings());
+		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
+		assert(mUsage == ETextureUsage::DynamicWrite || mImageData.mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+		assert(mDescriptor.mWidth == width && mDescriptor.mHeight == height);
 
-		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+		// We use a staging buffer that is guaranteed to be free
+		assert(mCurrentStagingBufferIndex != -1);
+		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+
+		// Update the staging buffer using the Bitmap contents
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+
+		// Map memory and copy contents, note for this to work on OSX the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required!
+		void* mapped_memory = nullptr;
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
+		assert(result == VK_SUCCESS);
+		copyImageData((const uint8_t*)data, pitch, channels, (uint8_t*)mapped_memory, mDescriptor.getPitch(), mDescriptor.mChannels, mDescriptor.mWidth, mDescriptor.mHeight);
+		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
+
+		// Notify the RenderService that it should upload the texture contents during rendering
+		mRenderService->requestTextureUpload(*this);
 	}
 
 
-	nap::uint Texture2D::getHandle() const
+	void Texture2D::asyncGetData(Bitmap& bitmap)
 	{
-		return getTexture().getTextureId();
+ 		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+ 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
+		{
+ 			bitmap.initFromDescriptor(mDescriptor);
+ 			memcpy(bitmap.getData(), data, sizeInBytes);
+ 		};
+ 		mRenderService->requestTextureDownload(*this);	
 	}
 
 
-	void Texture2D::startGetData()
+	void Texture2D::notifyDownloadReady(int frameIndex)
 	{
-		getTexture().asyncStartGetData();
-	}
+		// Update the staging buffer using the Bitmap contents
+		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
+		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
+		BufferData& buffer = mStagingBuffers[frameIndex];
+		void* mapped_memory = nullptr;
+		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
+		assert(result == VK_SUCCESS);
 
-	void Texture2D::endGetData(Bitmap& bitmap)
-	{
-		if (bitmap.empty())
-			bitmap.initFromTexture(mTexture.getSettings());
-
-		mTexture.getData(bitmap.getData(), bitmap.getSizeInBytes());
+		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
+		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
+		mReadCallbacks[frameIndex] = TextureReadCallback();
 	}
 }

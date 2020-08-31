@@ -1,8 +1,11 @@
-#version 330 core
+#version 450 core
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+} mvp;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -20,9 +23,13 @@ out mat4 passModelMatrix;			//< Model matrix
 out vec4 passColor;					//< Vertex color
 
 // uniform inputs
-uniform sampler2D	videoTexture;
-uniform float displacement = 0.3;
-uniform float randomness = 0.05;
+uniform DisplacementUBO
+{
+	float value;
+	float randomness;
+} displacement;
+
+uniform sampler2D	videoTextureVert;
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax)
 {
@@ -33,11 +40,10 @@ float fit(float value, float inMin, float inMax, float outMin, float outMax)
 	return (v - inMin) / (m) * (outMax - outMin) + outMin;
 }
 
-
 void main(void)
 {
 	// Get texture rgba value
-	vec3 tex_color = texture(videoTexture, in_CenterUV.xy).rgb;
+	vec3 tex_color = texture(videoTextureVert, in_CenterUV.xy).rgb;
 
 	// Get displacement value
 	float tex_greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
@@ -45,11 +51,11 @@ void main(void)
 
 	// Compute vertex displacement value
 	float ver_greyscale = (((in_Color.r + in_Color.g + in_Color.b) / 3.0) * 2.0) - 1;
-	float temp_greyscale = tex_greyscale + (ver_greyscale * randomness);
+	float temp_greyscale = tex_greyscale + (ver_greyscale * displacement.randomness);
 	float displacement_value = mix(tex_greyscale, temp_greyscale, tex_greyscale);
 
 	// Modify position
-	vec3 new_pos = in_Position + (in_DisplacementDirection * displacement_value * displacement);
+	vec3 new_pos = in_Position + (in_DisplacementDirection * displacement_value * displacement.value);
 	
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
@@ -58,14 +64,14 @@ void main(void)
     passNormal = in_Normal;
 
     // calculate vert in world coordinates
-    passVert = vec3(modelMatrix * vec4(new_pos, 1));
+    passVert = vec3(mvp.modelMatrix * vec4(new_pos, 1));
 
     // Pass model matrix to frag shader
-    passModelMatrix = modelMatrix;
+    passModelMatrix = mvp.modelMatrix;
 
     // Pass along color
     passColor = in_Color;
 
     // Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(new_pos, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(new_pos, 1.0);
 }

@@ -37,13 +37,13 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(APPLE)
-    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/glew/lib)
-    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
-    set(LINUX_EXTRA_RPATH ../../../../thirdparty/glew/lib)
-    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/vulkansdk/lib)
 endif()    
 package_module()
