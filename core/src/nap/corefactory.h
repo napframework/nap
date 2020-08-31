@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rtti/factory.h"
+#include <rtti/factory.h>
 #include <utility/dllexport.h>
 
 namespace nap
@@ -20,7 +20,6 @@ namespace nap
 		virtual rtti::Object* createDefaultObject(rtti::TypeInfo typeInfo) override;
 
 	private:
-		Core* mCore;
-
+		Core* mCore = nullptr;
 	};
 }

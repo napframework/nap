@@ -1,14 +1,15 @@
 #pragma once
 
 // Local Includes
-#include "rtti/rtti.h"
-#include "rtti/objectptr.h"
-#include "utility/dllexport.h"
-#include "directorywatcher.h"
 #include "numeric.h"
 #include "signalslot.h"
+#include "corefactory.h"
+#include "directorywatcher.h"
 
 // External Includes
+#include <rtti/rtti.h>
+#include <rtti/objectptr.h>
+#include <utility/dllexport.h>
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
 #include <rtti/deserializeresult.h>
@@ -19,7 +20,6 @@ namespace nap
 	class Core;
 	class Scene;
 	class Device;
-	class CoreFactory;
 
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
@@ -232,7 +232,7 @@ namespace nap
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher = nullptr;	// File monitor, detects changes on files
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
-		std::unique_ptr<CoreFactory>		mFactory;						// Responsible for creating objects when de-serializing
+		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 
 		/**
