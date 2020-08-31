@@ -270,9 +270,9 @@ namespace nap
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
 		/**
- 		 * Writes a configuration file consisting of all existing service configurations next to the binary executable.
- 		 * @param errorState Serialization errors will be logged to errorState.
- 		 * @return true on sucess.
+ 		 * Writes a 'config.json' file, that contains all currently loaded service configurations, to the project directory.
+ 		 * @param errorState contains the error if the operation fails.
+ 		 * @return true on success.
 		 */
 		bool writeConfigFile(utility::ErrorState& errorState);
 

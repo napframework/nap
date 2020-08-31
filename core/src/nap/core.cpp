@@ -591,13 +591,15 @@ namespace nap
         std::string json = writer.GetJSON();
 
         // Save the config file besides the binary, the first location that NAP searches
-        const std::string exeDir = utility::getExecutableDir();
-        const std::string configFilePath = utility::getExecutableDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
+		assert(getProjectInfo() != nullptr);
+        const std::string configFilePath = getProjectInfo()->getProjectDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
 
         std::ofstream configFile;
         configFile.open(configFilePath);
         configFile << json << std::endl;
         configFile.close();
+		nap::Logger::info("Wrote configuration to: %s", configFilePath.c_str());
+
         return true;
     }
 
