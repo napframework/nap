@@ -576,13 +576,8 @@ namespace nap
 	}
 
 
-	bool ResourceManager::watchDirectory(const std::string& directory, utility::ErrorState& error)
+	void ResourceManager::watchDirectory()
 	{
-		if (!error.check(utility::dirExists(directory), "Directory does not exist: %s", directory.c_str()))
-			return false;
-
 		mDirectoryWatcher = std::make_unique<DirectoryWatcher>();
-		mDirectoryWatcher->init(directory);
-		return true;
 	}
 }

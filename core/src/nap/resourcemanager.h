@@ -153,7 +153,7 @@ namespace nap
 		rtti::Factory& getFactory();
 
 		/**
-		 * Select the directory to monitor for file changes.
+		 * Select the current working directory to monitor for file changes.
 		 * All files linked to by the application that reside in this directory will be monitored.
 		 * If a file change is detected to any of the files, the resource manager
 		 * will attempt to hot-load the changes directly into the running application
@@ -161,7 +161,7 @@ namespace nap
 		 * @param error contains the error if the operation fails
 		 * @return if the directory is being monitored
 		 */
-		bool watchDirectory(const std::string& directory, utility::ErrorState& error);
+		void watchDirectory();
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)

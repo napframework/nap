@@ -135,6 +135,7 @@ namespace nap
 			error.fail("unable to initialize engine");
 			return false;
 		}
+
 		// Initialize the various services
 		if (!mCore.initializeServices(error))
 		{
@@ -164,13 +165,8 @@ namespace nap
 		}
 		*/
 
-		// Setup data listener
-		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
-		if (!mCore.getResourceManager()->watchDirectory(data_dir, error))
-		{
-			error.fail("Unable to monitor directory for file changes: %s", data_dir.c_str());
-			return false;
-		}
+		// Setup data listener current working directory
+		mCore.getResourceManager()->watchDirectory();
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
