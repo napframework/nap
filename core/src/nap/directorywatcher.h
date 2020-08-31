@@ -1,12 +1,10 @@
 #pragma once
 
+// External Includes
 #include <string>
-// Exernal Includes
 #include <memory>
 #include <vector>
-
-// Local Includes
-#include "utility/dllexport.h"
+#include <utility/dllexport.h>
 
 namespace nap
 {
