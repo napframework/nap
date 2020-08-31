@@ -165,7 +165,6 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
 		mFactory(std::make_unique<CoreFactory>(core)),
 		mCore(core)
 	{
@@ -576,4 +575,9 @@ namespace nap
 		return rtti::ObjectPtr<Object>(object);
 	}
 
+
+	void ResourceManager::watchDirectory()
+	{
+		mDirectoryWatcher = std::make_unique<DirectoryWatcher>();
+	}
 }

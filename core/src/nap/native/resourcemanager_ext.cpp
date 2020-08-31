@@ -20,7 +20,7 @@ namespace nap
     void ResourceManager::checkForFileChanges()
     {
         std::vector<std::string> modified_files;
-        if (mDirectoryWatcher->update(modified_files))
+        if (mDirectoryWatcher != nullptr && mDirectoryWatcher->update(modified_files))
         {
             for (std::string& modified_file : modified_files)
             {

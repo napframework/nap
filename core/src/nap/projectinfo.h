@@ -98,7 +98,7 @@ namespace nap
 		/**
 		 * @return Absolute path of this project's data directory
 		 */
-		std::string dataDirectory() const;
+		std::string getDataDirectory() const;
 
 		/**
 		 * Returns if a service configuration file has been provided.

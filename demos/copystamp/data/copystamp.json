@@ -249,8 +249,8 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows": 75,
-            "Columns": 75
+            "Rows": 25,
+            "Columns": 10
         },
         {
             "Type": "nap::RenderWindow",

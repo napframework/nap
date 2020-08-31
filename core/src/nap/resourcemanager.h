@@ -152,6 +152,17 @@ namespace nap
 		 */
 		rtti::Factory& getFactory();
 
+		/**
+		 * Select the current working directory to monitor for file changes.
+		 * All files linked to by the application that reside in this directory will be monitored.
+		 * If a file change is detected to any of the files, the resource manager
+		 * will attempt to hot-load the changes directly into the running application
+		 * @param directory the directory to monitor
+		 * @param error contains the error if the operation fails
+		 * @return if the directory is being monitored
+		 */
+		void watchDirectory();
+
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
@@ -219,9 +230,9 @@ namespace nap
 		ObjectByIDMap						mObjects;						// Holds all objects
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher = nullptr;	// File monitor, detects changes on files
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
-		std::unique_ptr<CoreFactory>		mFactory;						// Responsible for creating objects when de-serializing
+		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 
 		/**
