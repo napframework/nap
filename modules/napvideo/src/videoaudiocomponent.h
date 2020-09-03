@@ -57,7 +57,7 @@ namespace nap
 			 * @param channel index of the output channel.
 			 * @return the output pin associated with the given channel.
 			 */
-            OutputPin& getOutputForChannel(int channel) override	{ return mNode->getOutput(channel); }
+            OutputPin* getOutputForChannel(int channel) override	{ return &mNode->getOutput(channel); }
             
         private:
             SafeOwner<VideoNode> mNode = nullptr;					///< The audio node that polls the Video object for audio output
