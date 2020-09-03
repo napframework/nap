@@ -10,22 +10,35 @@ namespace nap
     namespace audio
     {
 
+        NodeManager::~NodeManager()
+        {
+            // Tell the nodes that their node manager is outta here, so they won't try to unregister themselves in their dtors.
+            for (auto& node : mNodes)
+            {
+                node->mNodeManager = nullptr;
+                node->mRegisteredWithNodeManager.store(false);
+            }
+        }
+
+
         void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
             // clean the output buffers
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
-            
-            mInputBuffer = inputBuffer;
+
+            for (auto channel = 0; channel < mInputChannelCount; ++channel)
+                mInputBuffer[channel] = inputBuffer[channel];
             
             mInternalBufferOffset = 0;
             while (mInternalBufferOffset < framesPerBuffer)
             {
-                for (auto& channelMapping : mOutputMapping)
+				mTaskQueue.process();
+				for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
                 
                 {
-                    for (auto& root : mRootNodes)
+                    for (auto& root : mRootProcesses)
                         root->process();
                 }
                 
@@ -38,8 +51,44 @@ namespace nap
                 
                 mInternalBufferOffset += mInternalBufferSize;
                 mSampleTime += mInternalBufferSize;
-                
-                mTaskQueue.process();
+
+                mUpdateSignal(mSampleTime);
+            }
+        }
+
+
+        void NodeManager::process(std::vector<SampleBuffer*>& inputBuffer, std::vector<SampleBuffer*>& outputBuffer, unsigned long framesPerBuffer)
+        {
+            // clean the output buffers
+            for (auto channel = 0; channel < mOutputChannelCount; ++channel)
+                memset(outputBuffer[channel]->data(), 0, sizeof(float) * framesPerBuffer);
+
+            for (auto channel = 0; channel < mInputChannelCount; ++channel)
+                mInputBuffer[channel] = inputBuffer[channel]->data();
+
+            mInternalBufferOffset = 0;
+            while (mInternalBufferOffset < framesPerBuffer)
+            {
+				mTaskQueue.process();
+				for (auto& channelMapping : mOutputMapping)
+                    channelMapping.clear();
+
+                {
+                    for (auto& root : mRootProcesses)
+                        root->update();
+                }
+
+                for (auto channel  = 0; channel < mOutputChannelCount; ++channel)
+                {
+                    for (auto& output : mOutputMapping[channel])
+                        for (auto j = 0; j < mInternalBufferSize; ++j)
+                            (*outputBuffer[channel])[mInternalBufferOffset + j] += (*output)[j];
+                }
+
+                mInternalBufferOffset += mInternalBufferSize;
+                mSampleTime += mInternalBufferSize;
+
+                mUpdateSignal(mSampleTime);
             }
         }
         
@@ -47,6 +96,8 @@ namespace nap
         void NodeManager::setInputChannelCount(int inputChannelCount)
         {
             mInputChannelCount = inputChannelCount;
+            mInputBuffer.resize(inputChannelCount);
+            mChannelCountChangedSignal(*this);
         }
         
         
@@ -56,6 +107,7 @@ namespace nap
             mOutputChannelCount = outputChannelCount;
             mOutputMapping.clear();
             mOutputMapping.resize(mOutputChannelCount);
+            mChannelCountChangedSignal(*this);
         }
         
         
@@ -89,6 +141,7 @@ namespace nap
                     node.setSampleRate(mSampleRate);
                 if (oldBufferSize != mInternalBufferSize)
                     node.setBufferSize(mInternalBufferSize);
+                node.mRegisteredWithNodeManager.store(true);
                 mNodes.emplace(&node);
             });
         }
@@ -100,22 +153,22 @@ namespace nap
         }
         
         
-        void NodeManager::registerRootNode(Node& rootNode)
+        void NodeManager::registerRootProcess(Process& rootProcess)
         {
-            enqueueTask([&](){ mRootNodes.emplace(&rootNode); });
+            enqueueTask([&](){ mRootProcesses.emplace(&rootProcess); });
         }
 
         
-        void NodeManager::unregisterRootNode(Node& rootNode)
+        void NodeManager::unregisterRootProcess(Process& rootProcess)
         {
-            mRootNodes.erase(&rootNode);
+            mRootProcesses.erase(&rootProcess);
         }
 
         
         void NodeManager::provideOutputBufferForChannel(SampleBuffer* buffer, int channel)
         {
-            assert(channel < mOutputMapping.size());
-            mOutputMapping[channel].emplace_back(buffer);
+            if (channel < mOutputMapping.size())
+                mOutputMapping[channel].emplace_back(buffer);
         }
         
         

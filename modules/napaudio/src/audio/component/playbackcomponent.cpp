@@ -64,9 +64,9 @@ namespace nap
                     return false;
                 }
                 
-                auto bufferPlayer = mAudioService->makeSafe<BufferPlayerNode>(*mNodeManager);
-                auto gain = mAudioService->makeSafe<GainNode>(*mNodeManager);
-                auto gainControl = mAudioService->makeSafe<ControlNode>(*mNodeManager);
+                auto bufferPlayer = mNodeManager->makeSafe<BufferPlayerNode>(*mNodeManager);
+                auto gain = mNodeManager->makeSafe<MultiplyNode>(*mNodeManager);
+                auto gainControl = mNodeManager->makeSafe<ControlNode>(*mNodeManager);
                 
                 bufferPlayer->setBuffer(mResource->mBuffer->getBuffer());
 

@@ -51,7 +51,7 @@ namespace nap
         void BufferPlayerNode::setBuffer(SafePtr<MultiSampleBuffer> buffer)
         {
             assert(mPlaying == false); // It is not safe to do this while playing back!
-            mBuffer = buffer;
+            mBuffer = std::move(buffer);
         }
         
         

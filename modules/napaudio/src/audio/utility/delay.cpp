@@ -10,10 +10,8 @@ namespace nap
         
         Delay::Delay(unsigned int bufferSize)
         {
-            mBuffer.resize(bufferSize);
+            mBuffer.resize(bufferSize, 0.0);
             mWriteIndex = 0;
-            
-            clear();
         }
 
         

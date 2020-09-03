@@ -24,14 +24,16 @@ namespace nap
         
         
         /**
-         * Interface for input pin and multi input pin classes
+         * Interface for @InputPin and @MultiInputPin classes
          */
         class NAPAPI InputPinBase
         {
             RTTI_ENABLE()
         public:
-            virtual ~InputPinBase() = default;
+            InputPinBase(Node* node);
             
+            virtual ~InputPinBase();
+
             /**
              * Connects a pin to this input. Disconnects the current connection first if necessary.
              */
@@ -53,16 +55,25 @@ namespace nap
             virtual bool isConnected() const = 0;
             
             /**
-             * Enqueues a connect call the be executed on the audio thread.
+             * Enqueues a @connect call the be executed on the audio thread.
              * This is the connect() function that is exposed to RTTR and to python.
              */
             void enqueueConnect(OutputPin& pin);
 
             /**
-             * Enqueues a disconnect call the be executed on the audio thread
+             * Enqueues a @disconnect call the be executed on the audio thread
              * This is the disconnect() function that is exposed to RTTR and to python.
              */
             void enqueueDisconnect(OutputPin& pin);
+            
+            /**
+             * Returns the node that owns this input.
+             */
+            Node& getNode() { return *mNode; }
+            
+        private:
+            // The node that owns this input
+            Node* mNode = nullptr;
         };
         
         
@@ -77,7 +88,7 @@ namespace nap
             RTTI_ENABLE(InputPinBase)
 
         public:
-            InputPin() = default;
+            InputPin(Node* node) : InputPinBase(node) { }
             
             /**
              * Destructor. If the input is connected on destruction the connection will be broken first.
@@ -91,9 +102,9 @@ namespace nap
             SampleBuffer* pull();
             
             /**
-             * Connects another node's output pin to this input.
+             * Connects another node's @OutputPin to this input.
              * If either this ipnut or the connected output is already connected it will be disconnected first.
-             * @param input: The output that this input pin will be connected to.
+             * @param input: The output that this @InputPin will be connected to.
              */
             void connect(OutputPin& input) override;
             
@@ -133,7 +144,7 @@ namespace nap
             RTTI_ENABLE(InputPinBase)
             
         public:
-            MultiInputPin() = default;
+            MultiInputPin(Node* node, unsigned int reservedInputCount = 2);
             
             virtual ~MultiInputPin() override;
             
@@ -141,17 +152,15 @@ namespace nap
              * This method can be used by the node to pull a buffer of samples for every connected output pin.
              * @return: the vector can contain nullptr items if somewhere down the line of connection silence is returned.
              */
-            std::vector<SampleBuffer*> pull();
+            std::vector<SampleBuffer*>& pull();
             
             /**
-             * Connects the given input to this pin.
-			 * @param input the input to connect
+             * Connects @input to this pin.
              */
             void connect(OutputPin& input) override;
             
             /**
-             * If the given input is connected to this pin it will be disconnected.
-			 * @param input the input to disconnect
+             * If @input is connected to this pin it will be disconnected.
              */
             void disconnect(OutputPin& input) override;
             
@@ -165,8 +174,15 @@ namespace nap
              */
             bool isConnected() const override { return !mInputs.empty(); }
 
+            /**
+             * Allocates memory to be able to handle the specified number of inputs without having to perform allocations on the audio thread.
+             */
+            void reserveInputs(unsigned int inputCount);
+
         private:
-            std::set<OutputPin*> mInputs;
+            std::vector<OutputPin*> mInputs;
+            std::vector<SampleBuffer*> mPullResult;
+            std::vector<OutputPin*> mInputsCache;
         };
         
         
@@ -174,7 +190,7 @@ namespace nap
         /**
          * An audio output is used by audio node to connect it to other nodes.
          * The output connects one channel (mono) audio.
-         * It outputs a pointer to an owned SampleBuffer.
+         * It outputs a pointer to an owned @SampleBuffer.
          * The PullFunction of this class calls a calculate function on the node it belongs to.
          */
         class NAPAPI OutputPin final
@@ -187,12 +203,12 @@ namespace nap
             RTTI_ENABLE()
         public:
             /**
-             * @param node: the owner of this output
+             * @param parent: the owner node if this output
              */
             OutputPin(Node* node);
             
             ~OutputPin();
-            
+
             /**
              * Disconnects the output from all connected inputs.
              */
@@ -204,9 +220,14 @@ namespace nap
             bool isConnected() const { return !mOutputs.empty(); }
             
             /**
-             * Used by the input pin to poll this output for a new buffer of output samples
+             * Used by @InputPin to poll this output for a new buffer of output samples
              */
             SampleBuffer* pull();
+            
+            /**
+             * Returns the node that owns this output.
+             */
+            Node& getNode() { return *mNode; }
             
         protected:
             SampleBuffer mBuffer; ///< The buffer containing the latest output

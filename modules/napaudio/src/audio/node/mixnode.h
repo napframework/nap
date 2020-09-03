@@ -13,16 +13,18 @@ namespace nap
          */
         class NAPAPI MixNode : public Node
         {
+            RTTI_ENABLE(Node)
+            
         public:
             MixNode(NodeManager& manager) : Node(manager) { }
             
             /**
-             * The input to be scaled
+             * The input to be mixed
              */
-            MultiInputPin inputs;
+            MultiInputPin inputs = { this };
             
             /**
-             * Outputs the scaled signal
+             * Outputs the mixed signal
              */
             OutputPin audioOutput = { this };
             

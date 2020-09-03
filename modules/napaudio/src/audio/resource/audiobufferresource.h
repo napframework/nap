@@ -21,7 +21,7 @@ namespace nap
         /**
          * A buffer of multichannel audio data in memory.
          */
-        class AudioBufferResource : public Resource
+        class NAPAPI AudioBufferResource : public Resource
         {
             RTTI_ENABLE(Resource)
         public:
@@ -46,6 +46,16 @@ namespace nap
              * @return: access the actual data in the buffer
              */
             SafePtr<MultiSampleBuffer> getBuffer() { return mBuffer.get(); }
+
+            /**
+             * Utility to convert a position in milliseconds to a position in samples
+             */
+            DiscreteTimeValue toSamples(TimeValue milliseconds) const { return milliseconds * (mSampleRate / 1000.f); }
+            
+            /**
+             * Utility to convert a position in samples to a position in milliseconds
+             */
+            TimeValue toMilliseconds(DiscreteTimeValue samples) const { return samples / (mSampleRate / 1000.f); }
             
         protected:
             /**

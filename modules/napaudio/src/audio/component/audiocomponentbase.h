@@ -7,6 +7,7 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
+#include <audio/core/multichannel.h>
 
 namespace nap
 {
@@ -20,6 +21,7 @@ namespace nap
         
         /**
          * Component that generates audio output for one or more channels.
+         * Note: does not send the audio to de DAC yet, in order to do this add an @OutputComponent as well.
          */
         class NAPAPI AudioComponentBase : public Component
         {
@@ -36,22 +38,12 @@ namespace nap
         /**
          * Instance of a component that generates audio output for one or more channels.
          */
-        class NAPAPI AudioComponentBaseInstance : public ComponentInstance
+        class NAPAPI AudioComponentBaseInstance : public ComponentInstance, public IMultiChannelOutput
         {
             RTTI_ENABLE(nap::ComponentInstance)
             
         public:
-            AudioComponentBaseInstance(EntityInstance& entity, Component& resource);
-            
-            /**
-             * Override this method to specify the number of audio channels output by this component.
-             */
-            virtual int getChannelCount() const = 0;
-            
-            /**
-             * Override this to return the output pin that outputs audio data for the specified channel.
-             */
-            virtual OutputPin& getOutputForChannel(int channel) = 0;
+            AudioComponentBaseInstance(EntityInstance& entity, Component& resource);            
             
         protected:
             /**

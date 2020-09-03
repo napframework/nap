@@ -7,7 +7,7 @@
 // Audio includes
 #include <audio/component/audiocomponentbase.h>
 #include <audio/node/inputnode.h>
-#include <audio/node/gainnode.h>
+#include <audio/node/multiplynode.h>
 #include <audio/node/controlnode.h>
 
 namespace nap
@@ -15,12 +15,13 @@ namespace nap
     
     namespace audio
     {
-		// Forward Declares
+    
         class AudioInputComponentInstance;
+        
         
         /**
          * Component to receive audio input from the audio interface.
-         * Can be used as input to an OutpuComponent of LevelMeterComponent.
+         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
         class NAPAPI AudioInputComponent : public AudioComponentBase
         {
@@ -40,7 +41,7 @@ namespace nap
         
         /**
          * Instance of component to receive audio input from the audio interface.
-         * Can be used as input to an OutpuComponent of LevelMeterComponent.
+         * Can be used as input to an @OutpuComponent of @LevelMeterComponent.
          */
         class NAPAPI AudioInputComponentInstance : public AudioComponentBaseInstance
         {
@@ -53,7 +54,7 @@ namespace nap
             
             // Inherited from AudioComponentBaseInstance
             int getChannelCount() const override { return mGainNodes.size(); }
-            OutputPin& getOutputForChannel(int channel) override { return mGainNodes[channel]->audioOutput; }
+            OutputPin* getOutputForChannel(int channel) override { return &mGainNodes[channel]->audioOutput; }
             
             /**
              * Set the input gain factor of the input signal.
@@ -67,7 +68,7 @@ namespace nap
             
         private:
             std::vector<SafeOwner<Node>> mInputNodes; // Nodes pulling audio input data out of the ADC inputs from the node manager
-            std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes to control gain level of the input
+            std::vector<SafeOwner<MultiplyNode>> mGainNodes; // Nodes to control gain level of the input
             SafeOwner<ControlNode> mGainControl; // Node to control the gain for each channel.
             
             ControllerValue mGain = 1; // Gain factor of the output signal.

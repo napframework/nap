@@ -19,8 +19,8 @@ namespace nap
         
         
         /**
-         * Component to measure the amplitude level of the audio signal from an audio base component.
-         * A specific frequency band to be measured can be specified.
+         * Component to measure the amplitude level of the audio signal from an @AudioComponentBase.
+         * A specific frequency band to be meusured can be specified.
          */
         class NAPAPI LevelMeterComponent : public Component
         {
@@ -44,8 +44,8 @@ namespace nap
         
         
         /**
-         * Instance of component to measure the amplitude level of the audio signal from an audio base component.
-         * A specific frequency band to be measured can be specified.
+         * Instance of component to measure the amplitude level of the audio signal from an @AudioComponentBase.
+         * A specific frequency band to be meusured can be specified.
          */
         class NAPAPI LevelMeterComponentInstance : public ComponentInstance
         {
@@ -63,37 +63,37 @@ namespace nap
     
             /**
              * Sets the center frequency in Hz of the band that will be analyzed.
-             * Only has effect when the property mFilterInput in the level meter component is set to true.
+             * Only has effect when the property mFilterInput in @LevelMeterComponent is set to true.
              */
             void setCenterFrequency(ControllerValue centerFrequency);
             
             /**
              * Sets the bandwidth in Hz of the band that will be analyzed.
-             * Only has effect when the property mFilterInput in in the level meter component is set to true.
+             * Only has effect when the property mFilterInput in @LevelMeterComponent is set to true.
              */
             void setBandWidth(ControllerValue bandWidth);
             
             /**
              * Sets the gain factor of the filtered signal.
-             * Only has effect when the property mFilterInput in the level meter component is set to true.
+             * Only has effect when the property mFilterInput in @LevelMeterComponent is set to true.
              */
             void setFilterGain(ControllerValue gain);
             
             /**
              * Returns the center frequency in Hz of the band that will be analyzed.
-             * Always returns 0 when the property mFilterInput in the level meter component is set to false.
+             * Always returns 0 when the property mFilterInput in @LevelMeterComponent is set to false.
              */
             ControllerValue getCenterFrequency() const;
             
             /**
              * Returns the bandwidth in Hz of the band that will be analyzed.
-             * Always returns 0 when the property mFilterInput in the level meter component is set to false.
+             * Always returns 0 when the property mFilterInput in @LevelMeterComponent is set to false.
              */
             ControllerValue getBandWidth() const;
             
             /**
              * Returns the gain factor of the filtered signal.
-             * Always returns 0 when the property mFilterInput in the level meter component is set to false.
+             * Always returns 0 when the property mFilterInput in @LevelMeterComponent is set to false.
              */
             ControllerValue getFilterGain() const;
             

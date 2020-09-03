@@ -8,7 +8,7 @@
 #include <audio/component/audiocomponentbase.h>
 #include <audio/resource/audiobufferresource.h>
 #include <audio/node/bufferplayernode.h>
-#include <audio/node/gainnode.h>
+#include <audio/node/multiplynode.h>
 #include <audio/node/controlnode.h>
 #include <audio/node/filternode.h>
 
@@ -24,9 +24,8 @@ namespace nap
         
         
         /**
-		 * Resource part of the PlaybackComponent.
-         * Plays back audio from an AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the start() method, and is stopped using the stop() method or by specifying the "Duration" property.
-         * The component has to be used in combination with an OutputComponent to send the playback to DAC.
+         * Straightforward component to playback audio from an @AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the @start() method, and is stopped using the @stop() method or by specifying the "Duration" property.
+         * The component has to be used in combination with an @OutputComponent to send the playback to DAC.
          */
         class NAPAPI PlaybackComponent : public AudioComponentBase
         {
@@ -58,9 +57,7 @@ namespace nap
 
         
         /**
-         * Instance part of the PlaybackComponent
-		 * Plays back audio from an AudioBufferResource. Playback can be started on initialization using the AutoPlay property or using the start() method, and is stopped using the stop() method or by specifying the "Duration" property.
-		 * The component has to be used in combination with an OutputComponent to send the playback to DAC.
+         * Instance of @PlaybackComponent
          */
         class NAPAPI PlaybackComponentInstance : public AudioComponentBaseInstance
         {
@@ -74,7 +71,7 @@ namespace nap
             
             // Inherited from AudioComponentBaseInstance
             int getChannelCount() const override { return mGainNodes.size(); }
-            OutputPin& getOutputForChannel(int channel) override { return mGainNodes[channel]->audioOutput; }
+            OutputPin* getOutputForChannel(int channel) override { return &mGainNodes[channel]->audioOutput; }
             
             /**
              * @param startPosition: the start position in the buffer in milliseconds
@@ -151,7 +148,7 @@ namespace nap
             void applyGain(TimeValue rampTime);
             
             std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
-            std::vector<SafeOwner<GainNode>> mGainNodes; // Nodes for each channel to gain the signal.
+            std::vector<SafeOwner<MultiplyNode>> mGainNodes; // Nodes for each channel to gain the signal.
             std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
             
             ControllerValue mGain = 0;

@@ -1,7 +1,6 @@
 #include "outputnode.h"
 
 // Audio includes
-#include <audio/service/audioservice.h>
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OutputNode)
@@ -15,24 +14,22 @@ namespace nap
     namespace audio
     {
         
-        OutputNode::OutputNode(NodeManager& nodeManager, bool active) : Node(nodeManager)
+        OutputNode::OutputNode(NodeManager& nodeManager, bool rootProcess) : Node(nodeManager), mRootProcess(rootProcess)
         {
-            nodeManager.registerRootNode(*this);
-            mActive = active;
+            if (rootProcess)
+                getNodeManager().registerRootProcess(*this);
         }
         
         
         OutputNode::~OutputNode()
         {
-            getNodeManager().unregisterRootNode(*this);
+            if (mRootProcess && isRegisteredWithNodeManager())
+                getNodeManager().unregisterRootProcess(*this);
         }
         
         
         void OutputNode::process()
         {
-            if (!mActive)
-                return;
-            
             auto outputChannel = mOutputChannel.load();
             
             SampleBuffer* buffer = audioInput.pull();

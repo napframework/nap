@@ -5,6 +5,8 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
+#include <audio/utility/safeptr.h>
+#include <audio/core/process.h>
 
 namespace nap
 {
@@ -26,33 +28,22 @@ namespace nap
             RTTI_ENABLE(Node)
         public:
             /**
-             * @param nodeManager: The manager this node provides output to.
-             * @param active: true if the node is active and being processed from the moment of creation.
+             * @param nodeManager: The node manager this node runs on
+             * @param rootProcess: true if the node registered as root process and processed from creation.
              */
-            PullNode(NodeManager& nodeManager, bool active = true);
+            PullNode(NodeManager& nodeManager, bool rootProcess = true);
             
             ~PullNode() override final;
             
             /**
              * The processing chain connected to this input will be processed even when not being used for anything.
              */
-            InputPin audioInput;
-            
-            /**
-             * Sets wether the node will be processed by the audio node manager.
-             * On creation the node is inactive by default.
-             */
-            void setActive(bool active) { mActive = true; }
-            
-            /**
-             * @return: true if the node is currently active and thus being processed (triggered) on every callback.
-             */
-            bool isActive() const { return mActive; }
+            InputPin audioInput = { this };
             
         private:
             void process() override;
             
-            std::atomic<bool> mActive = { true };
+            bool mRootProcess = false;
         };
         
         

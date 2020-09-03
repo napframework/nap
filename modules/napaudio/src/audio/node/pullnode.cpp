@@ -12,24 +12,22 @@ namespace nap
     namespace audio
     {
         
-        PullNode::PullNode(NodeManager& nodeManager, bool active) : Node(nodeManager)
+        PullNode::PullNode(NodeManager& nodeManager, bool rootProcess) : Node(nodeManager), mRootProcess(rootProcess)
         {
-            nodeManager.registerRootNode(*this);
-            mActive = active;
+            if (rootProcess)
+                getNodeManager().registerRootProcess(*this);
         }
         
         
         PullNode::~PullNode()
         {
-            getNodeManager().unregisterRootNode(*this);
+            if (mRootProcess)
+                getNodeManager().unregisterRootProcess(*this);
         }
         
         
         void PullNode::process()
         {
-            if (!mActive)
-                return;
-            
             audioInput.pull();
         }
         

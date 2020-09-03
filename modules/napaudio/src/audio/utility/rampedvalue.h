@@ -2,6 +2,7 @@
 
 // Std includes
 #include <atomic>
+#include <iostream>
 
 // Nap includes
 #include <nap/signalslot.h>
@@ -17,8 +18,6 @@ namespace nap
     namespace audio
     {
         
-        enum RampMode { Linear, Exponential };
-        
         /**
          * Used to make linear or exponential ramps up and down of a value in steps.
          * The length of the ramp and the kind of ramp can be specified for each ramp.
@@ -32,21 +31,30 @@ namespace nap
             RampedValue(const T& initValue) : mValue(initValue)
             {
             }
+
+            /**
+             * Stop the current ramp and set a value directly
+             */
+            void setValue(const T& value)
+            {
+                stop();
+                mValue = value;
+            }
             
             /**
              * Start a ramp
-             * @param destination the finishing value
-             * @param stepCount the number of steps
-			 * @param mode the ramp interpolation mode
+             * @param destination: the finishing value
+             * @param stepCount: the number of steps
              */
             void ramp(const T& destination, int stepCount, RampMode mode = RampMode::Linear)
             {
                 assert(stepCount >= 0);
                 
-                mNewStepCount.store(stepCount);
-                mNewDestination.store(destination);
-                mNewRampMode.store(mode);
-                mIsDirty.set();
+                mDestination = destination;
+                mStepCount = stepCount;
+                mRampMode = mode;
+                
+                updateRamp();
             }
 
             /**
@@ -54,9 +62,7 @@ namespace nap
              */
             void stop()
             {
-                mNewStepCount.store(0);
-                mNewDestination.store(mValue);
-                mIsDirty.set();
+                mStepCounter = 0;
             }
             
             /**
@@ -65,8 +71,6 @@ namespace nap
              */
             T getNextValue()
             {
-                updateRamp();
-                
                 if (mStepCounter > 0)
                 {
                     switch (mRampMode) {
@@ -114,55 +118,43 @@ namespace nap
         private:
             void updateRamp()
             {
-                if (mIsDirty.check())
+                // if there are zero steps we reach the destination of the ramp immediately
+                if (mStepCount <= 0)
                 {
-                    mDestination = mNewDestination.load();
-                    mStepCount = mNewStepCount.load();
-                    mRampMode = mNewRampMode.load();
-                    
-                    // if there are zero steps we reach the destination of the ramp immediately
-                    if (mStepCount <= 0)
-                    {
-                        mStepCounter = 0;
-                        mValue = mDestination;
-                        destinationReachedSignal(mValue);
-                        return;
-                    }
-                    
-                    mStepCounter = mStepCount;
-                    
-                    switch (mRampMode) {
-                        case RampMode::Linear:
-                            mIncrement = (mDestination - mValue) / T(mStepCount);
-                            break;
-                            
-                        case RampMode::Exponential:
-                            // avoid divisions by zero by avoiding mValue = 0
-                            if (mValue == 0)
-                                mValue = mDestination * smallestFactor; // this is a 140dB ramp up from mValue to mDestination
-                            
-                            // avoid divisions by zero by avoiding mDestination = 0
-                            if (mDestination == 0)
-                            {
-                                mDestination = mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
-                                mDestinationZero = true;
-                            }
-                            else
-                                mDestinationZero = false;
-                            
-                            // calculate the increment factor
-                            mFactor = pow(double(mDestination / mValue), double(1.0 / mStepCount));
-                            break;
-                    }
+                    mStepCounter = 0;
+                    mValue = mDestination;
+                    destinationReachedSignal(mValue);
+                    return;
+                }
+                
+                mStepCounter = mStepCount;
+                
+                switch (mRampMode) {
+                    case RampMode::Linear:
+                        mIncrement = (mDestination - mValue) / T(mStepCount);
+                        break;
+                        
+                    case RampMode::Exponential:
+                        // avoid divisions by zero by avoiding mValue = 0
+                        if (mValue == 0)
+                            mValue = mDestination * smallestFactor; // this is a 140dB ramp up from mValue to mDestination
+                        
+                        // avoid divisions by zero by avoiding mDestination = 0
+                        if (mDestination == 0)
+                        {
+                            mDestination = mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
+                            mDestinationZero = true;
+                        }
+                        else
+                            mDestinationZero = false;
+                        
+                        // calculate the increment factor
+                        mFactor = pow(double(mDestination / mValue), double(1.0 / mStepCount));
+                        break;
                 }
             }
             
         private:
-            std::atomic<T> mNewDestination = { 0 };
-            std::atomic<int> mNewStepCount = { 0 };
-            std::atomic<RampMode> mNewRampMode = { RampMode::Linear };
-            DirtyFlag mIsDirty;
-
             T mValue; // Value that is being controlled by this object.
             
             union {

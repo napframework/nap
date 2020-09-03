@@ -6,9 +6,11 @@
 
 // Nap includes
 #include <utility/threading.h>
+#include <nap/signalslot.h>
 
 // Audio includes
 #include <audio/utility/audiotypes.h>
+#include <audio/core/process.h>
 
 namespace nap
 {
@@ -18,8 +20,7 @@ namespace nap
     
         // Forward declarations
         class Node;
-        class AudioTrigger;
-        
+
         /**
          * De audio node manager represents a node system for audio processing.
          * The nodes in the system can have multiple inputs and outputs that can be connected between different nodes.
@@ -29,18 +30,16 @@ namespace nap
         class NAPAPI NodeManager final
         {
             friend class Node;
-            friend class AudioTrigger;
             friend class OutputNode;
             friend class InputNode;
-            friend class NodePtrBase;
-            
+
         public:
             using OutputMapping = std::vector<std::vector<SampleBuffer*>>;
             
         public:
-            NodeManager() = default;
+            NodeManager(DeletionQueue& deletionQueue) : mDeletionQueue(deletionQueue) { }
             
-            ~NodeManager() = default;
+            ~NodeManager();
             
             /**
              * This function is typically called by an audio callback to perform all the audio processing.
@@ -50,7 +49,13 @@ namespace nap
              * @param framesPerBuffer: the number of samples that has to be processed per channel
              */
             void process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer);
-            
+            void process(std::vector<SampleBuffer*>& inputBuffer, std::vector<SampleBuffer*>& outputBuffer, unsigned long framesPerBuffer);
+
+            /**
+             * This signal is emitted from the @process() function after processing every internal buffer of audio.
+             */
+            Signal<DiscreteTimeValue> mUpdateSignal;
+
             /**
              * Enqueue a lambda to be executed before the processing of the next internal buffer starts.
              * This way modifications to the processing chain can be made in a threadsafe manner from outside of the audio thread, with a timing accuracy that corresponds to the internal buffer size.
@@ -112,11 +117,39 @@ namespace nap
             void setInternalBufferSize(int size);
             
             // Used by nodes to register themselves to be processed directly by the node manager
-            void registerRootNode(Node& rootNode);
+            void registerRootProcess(Process& rootProcess);
             
             // Used by nodes to unregister themselves to be processed directly by the node manager
-            void unregisterRootNode(Node& rootNode);
-            
+            void unregisterRootProcess(Process& rootProcess);
+
+            /**
+             * Constructs an object managed by a @SafeOwner that will dispose the object in the NodeManager's @DeletionQueue when it is no longer used.
+             */
+            template <typename T, typename... Args>
+            SafeOwner<T> makeSafe(Args&&... args)
+            {
+                auto owner = SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
+                return owner;
+            }
+
+            template <typename T>
+            SafeOwner<T> makeSafe(T* ptr)
+            {
+                auto owner = SafeOwner<T>(mDeletionQueue, ptr);
+                return owner;
+            }
+
+            /**
+             * Returns the @DeletionQueue that this node manager uses to construct and destruct nodes threadsafely.
+             */
+            DeletionQueue& getDeletionQueue() { return mDeletionQueue; }
+
+            /**
+             * Signal triggered whenever the input or output channel count of the node manager changes
+             */
+            Signal<NodeManager&> mChannelCountChangedSignal;
+
+
         private:
             // Used by the nodes to register themselves on construction
             void registerNode(Node& node);
@@ -152,13 +185,14 @@ namespace nap
             
             // for each output channel a vector of buffers that need to be played back on the corresponding channel
             OutputMapping mOutputMapping;
-            
-            float** mInputBuffer = nullptr; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
+
+            std::vector<float*> mInputBuffer; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
             
             std::set<Node*> mNodes; // all the audio nodes managed by this node manager
-            std::set<Node*> mRootNodes; // the nodes that will be processed directly by the manager on every audio callback
+            std::set<Process*> mRootProcesses; // the nodes that will be processed directly by the manager on every audio callback
             
-            nap::TaskQueue mTaskQueue; // Queue with lambda functions to be executed before processing the next itnernal buffer.
+            nap::TaskQueue mTaskQueue= { 256 }; // Queue with lambda functions to be executed before processing the next itnernal buffer.
+            DeletionQueue& mDeletionQueue; // Deletion queue used to safely create and destruct nodes in a threadsafe manner.
         };
         
     }

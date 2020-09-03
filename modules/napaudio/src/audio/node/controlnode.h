@@ -52,7 +52,7 @@ namespace nap
             ControllerValue getRawValue() const { return mCurrentValue; }
 
             /**
-             * Start ramping to destination over a period of time, using mode to indicate the type of ramp.
+             * Start ramping to @destination over a period of @time, using mode to indicate the type of ramp.
              */
             void ramp(ControllerValue destination, TimeValue time, RampMode mode = RampMode::Linear);
             
@@ -83,6 +83,7 @@ namespace nap
             
         private:
             void process() override;
+            void update();
             
             // Slot called internally when the destination of a ramp has been reached.
             nap::Slot<ControllerValue> mDestinationReachedSlot = { this, &ControlNode::destinationReached };
@@ -90,6 +91,11 @@ namespace nap
                 mCurrentValue = value;
                 rampFinishedSignal(*this);
             }
+            
+            std::atomic<ControllerValue> mNewDestination = { 0.f };
+            std::atomic<int> mNewStepCount = { 0 };
+            std::atomic<RampMode> mNewMode = { RampMode::Linear };
+            DirtyFlag mIsDirty;
             
             RampedValue<ControllerValue> mValue = { 0.f }; // Current output value of the node.
             std::atomic<ControllerValue> mCurrentValue = { 0.f };

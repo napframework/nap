@@ -23,7 +23,9 @@ namespace nap
         
         void ControlNode::setValue(ControllerValue value)
         {
-            mValue.ramp(value, 0);
+            mNewDestination.store(value);
+            mNewStepCount.store(0);
+            mIsDirty.set();
         }
 
         
@@ -39,18 +41,24 @@ namespace nap
         
         void ControlNode::ramp(ControllerValue destination, TimeValue time, RampMode mode)
         {
-            mValue.ramp(destination, time * getNodeManager().getSamplesPerMillisecond(), mode);
+            mNewDestination.store(destination);
+            mNewStepCount.store(time * getNodeManager().getSamplesPerMillisecond());
+            mNewMode.store(mode);
+            mIsDirty.set();
         }
         
         
         void ControlNode::stop()
         {
-            mValue.stop();
+            mNewDestination.store(mCurrentValue);
+            mNewStepCount.store(0);
+            mIsDirty.set();
         }
         
         
         void ControlNode::process()
         {
+            update();
             auto& outputBuffer = getOutputBuffer(output);
             
             if (mTranslator != nullptr)
@@ -68,6 +76,21 @@ namespace nap
             }
             mCurrentValue.store(mValue.getValue());
         }
+        
+        
+        void ControlNode::update()
+        {
+            if (mIsDirty.check())
+            {
+                auto stepCount = mNewStepCount.load();
+                if (stepCount > 0)
+                    mValue.ramp(mNewDestination.load(), mNewStepCount.load(), mNewMode.load());
+                else
+                    mValue.setValue(mNewDestination.load());
+            }
+        }
+    
+
         
     }
     

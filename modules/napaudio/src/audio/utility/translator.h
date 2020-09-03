@@ -3,7 +3,7 @@
 // Std includes
 #include <vector>
 #include <functional>
-#include <math.h>
+#include <mathutils.h>
 
 // Audio includes
 #include <audio/utility/audiofunctions.h>
@@ -21,6 +21,7 @@ namespace nap
         template <typename T>
         class Translator {
         public:
+            virtual ~Translator() { }
             virtual T translate(const T& inputValue) = 0;
         private:
         };
@@ -67,21 +68,18 @@ namespace nap
              */
             static inline T translate(const T& inputValue, const std::vector<T>& inTable)
             {
-                // make sure we are between 0 and 1
-                assert(inputValue >= 0.);
-                assert(inputValue <= 1.);
-                
                 // scale input accross table size
-                T index = inputValue * (inTable.size() - 1);
+                T index = math::clamp(inputValue, 0.f, 1.f) * (inTable.size() - 1);
                 
                 // convert to integer
                 int floor = index;
                 
                 // interpolate
                 T frac = index - floor;
-                T res = lerp(inTable[floor], inTable[floor + 1], frac);
-                
-                return res;
+				if (frac > 0)
+					return lerp(inTable[floor], inTable[floor + 1], frac);
+				else
+					return inTable[floor];
             }
             
             

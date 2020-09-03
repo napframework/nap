@@ -30,6 +30,19 @@ namespace nap
         
         // --- InputPinBase --- //
         
+        
+        InputPinBase::InputPinBase(Node* node) : mNode(node)
+        {
+            mNode->mInputs.emplace(this);
+        }
+        
+        
+        InputPinBase::~InputPinBase()
+        {
+            mNode->mInputs.erase(this);
+        }
+
+        
         void InputPinBase::enqueueConnect(OutputPin& pin)
         {
             OutputPin* pinPtr = &pin;
@@ -98,6 +111,13 @@ namespace nap
         
         // --- MultiInputPin ---- //
         
+        MultiInputPin::MultiInputPin(Node* node, unsigned int reservedInputCount) : InputPinBase(node)
+        {
+            mPullResult.reserve(reservedInputCount);
+            mInputsCache.reserve(reservedInputCount);
+        }
+
+        
         
         MultiInputPin::~MultiInputPin()
         {
@@ -105,28 +125,33 @@ namespace nap
         }
         
         
-        std::vector<SampleBuffer*> MultiInputPin::pull()
+        std::vector<SampleBuffer*>& MultiInputPin::pull()
         {
-            std::vector<SampleBuffer*> result;
+            // Make a copy of mInputs because its contents can change while pulling its content.
+            mInputsCache = mInputs;
             
-            auto inputs = mInputs; // we make a copy of mOutputs because its contents can be changed while traversing the loop!
-            for (auto& input : inputs)
-                result.emplace_back(input->pull());
+            mPullResult.clear();
+            for (auto& input : mInputsCache)
+                mPullResult.emplace_back(input->pull());
             
-            return result;
+            return mPullResult;
         }
         
         
         void MultiInputPin::connect(OutputPin& input)
         {
-            mInputs.emplace(&input);
+            auto it = std::find(mInputs.begin(), mInputs.end(), &input);
+            if (it == mInputs.end())
+                mInputs.emplace_back(&input);
             input.mOutputs.emplace(this);
         }
 
         
         void MultiInputPin::disconnect(OutputPin& input)
         {
-            mInputs.erase(&input);
+            auto it = std::find(mInputs.begin(), mInputs.end(), &input);
+            if (it != mInputs.end())
+                mInputs.erase(it);
             input.mOutputs.erase(this);
         }
         
@@ -137,9 +162,23 @@ namespace nap
             {
                 auto input = *mInputs.begin();
                 input->mOutputs.erase(this);
-                mInputs.erase(input);
+                auto it = std::find(mInputs.begin(), mInputs.end(), input);
+                assert(it != mInputs.end());
+                mInputs.erase(it);
             }
+            mPullResult.clear();
+            mInputsCache.clear();
         }
+
+
+        void MultiInputPin::reserveInputs(unsigned int inputCount)
+        {
+            mPullResult.shrink_to_fit();
+            mInputsCache.shrink_to_fit();
+            mPullResult.reserve(inputCount);
+            mInputsCache.reserve(inputCount);
+        }
+
         
         
         // --- OutputPin --- //
@@ -176,7 +215,7 @@ namespace nap
         
         void OutputPin::setBufferSize(int bufferSize)
         {
-            mBuffer.resize(bufferSize);
+            mBuffer.resize(bufferSize, 0.f);
         }
         
     }

@@ -32,7 +32,7 @@ namespace nap
             
             mGain = resource->mGain;
 
-            mGainControl = audioService->makeSafe<ControlNode>(*nodeManager);
+            mGainControl = nodeManager->makeSafe<ControlNode>(*nodeManager);
             mGainControl->setValue(mGain);
 
             for (auto channel = 0; channel < resource->mChannels.size(); ++channel)
@@ -42,9 +42,9 @@ namespace nap
                     // The input channel is out of bounds, in case we allow out of bounds channels we create a zero node instead
                     if (audioService->getAllowChannelCountFailure())
                     {
-                        auto zeroNode = audioService->makeSafe<ControlNode>(*nodeManager);
+                        auto zeroNode = nodeManager->makeSafe<ControlNode>(*nodeManager);
                         zeroNode->setValue(0);
-                        auto gainNode = audioService->makeSafe<GainNode>(*nodeManager);
+                        auto gainNode = nodeManager->makeSafe<MultiplyNode>(*nodeManager);
                         gainNode->inputs.connect(zeroNode->output);
                         gainNode->inputs.connect(mGainControl->output);
                         
@@ -59,10 +59,10 @@ namespace nap
                     }
                 }
                 
-                auto inputNode = audioService->makeSafe<InputNode>(*nodeManager);
+                auto inputNode = nodeManager->makeSafe<InputNode>(*nodeManager);
                 inputNode->setInputChannel(resource->mChannels[channel]);
                 
-                auto gainNode = audioService->makeSafe<GainNode>(*nodeManager);
+                auto gainNode = nodeManager->makeSafe<MultiplyNode>(*nodeManager);
                 gainNode->inputs.connect(inputNode->audioOutput);
                 gainNode->inputs.connect(mGainControl->output);
                 
