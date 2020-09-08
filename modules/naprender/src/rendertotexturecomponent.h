@@ -23,6 +23,8 @@ namespace nap
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
 	 * The plane is automatically scaled to fit the bounds of the output texture.
+	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
+	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 * Resource part of the component.
 	 */
 	class NAPAPI RenderToTextureComponent : public RenderableComponent
@@ -43,7 +45,8 @@ namespace nap
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
 	 * The plane is automatically scaled to fit the bounds of the output texture.
-	 * Simply declare the component in json and call draw() in the render part of your application.
+	 * Simply declare the component in json and call draw() in the render part of your application,
+	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 * It is still possible to render this component through the render service, although only orthographic cameras are supported.
 	 */
 	class NAPAPI RenderToTextureComponentInstance : public RenderableComponentInstance
@@ -60,12 +63,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update rendertotexturecomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
 		 * @return the render target that is used to perform the render step	
 		 */
 		IRenderTarget& getTarget();
@@ -76,10 +73,11 @@ namespace nap
 		Texture2D& getOutputTexture(); 
 
 		/**
-		 * Directly executes the render step without having to go through the render service.
-		 * Call this in your app render() call. 
-		 * The render target associated with this component is automatically cleared and bound.
-		 * Simply cal draw() and the result is rendered into the current output texture.
+		 * Directly render to the given output texture without having to go through the render service.
+		 * Call this in your application render() call, 
+		 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
+		 * Do not call this function outside of a headless recording pass, ie: when rendering to a window.
+		 * The result is rendered into the given output texture. 
 		 * A custom orthographic projection matrix is constructed based on the size of the render target.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
@@ -98,10 +96,10 @@ namespace nap
 
 	protected:
 		/**
-		* Draws the plane full screen to the currently active render target.
-		* @param viewMatrix often the camera world space location
-		* @param projectionMatrix often the camera projection matrix
-		*/
+		 * Draws the plane full screen to the currently active render target.
+		 * @param viewMatrix often the camera world space location
+		 * @param projectionMatrix often the camera projection matrix
+		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:

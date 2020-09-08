@@ -92,12 +92,6 @@ namespace nap
 	}
 
 
-	void RenderToTextureComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
 	IRenderTarget& RenderToTextureComponentInstance::getTarget()
 	{
 		return mTarget;
@@ -119,11 +113,9 @@ namespace nap
 		// Create projection matrix
 		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
 
-		mTarget.beginRendering();
-
 		// Call on draw
+		mTarget.beginRendering();
 		onDraw(mTarget, command_buffer, sIdentityMatrix, proj_matrix);
-
 		mTarget.endRendering();
 	}
 

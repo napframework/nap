@@ -733,6 +733,10 @@
             ],
             "VideoIndex": 0,
             "Speed": 1.0
+        },
+        {
+            "Type": "nap::VideoShader",
+            "mID": "VideoShader2"
         }
     ]
 }

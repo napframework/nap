@@ -9,7 +9,8 @@ namespace nap
 	Core;
 
 	/**
-	 * Video shader
+	 * Shader that converts YUV video textures, output by the nap::VideoPlayer, into an RGB image.
+	 * Used by the nap::RenderVideoToTextureComponent.
 	 */
 	class NAPAPI VideoShader : public Shader
 	{
@@ -18,8 +19,9 @@ namespace nap
 		VideoShader(Core& core);
 
 		/**
-		 * Initialize this object after de-serialization
-		 * @param errorState contains the error message when initialization fails
+		 * Cross compiles the video GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
+		 * @param error contains the error if initialization fails.
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 	};
