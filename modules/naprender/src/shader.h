@@ -78,7 +78,7 @@ namespace nap
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		virtual bool init(const std::string& name, char* vertShader, int vertSize, char* fragShader, int fragSize, utility::ErrorState& errorState);
+		virtual bool init(const std::string& name, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
 
 		RenderService* mRenderService = nullptr;				///< Handle to render engine
 

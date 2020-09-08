@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
  
 uniform sampler2D yTexture;
 uniform sampler2D uTexture;

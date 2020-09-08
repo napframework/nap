@@ -281,11 +281,11 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 
 static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
+	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName+".vert", EShLangVertex, errorState);
 	if (vertex_shader == nullptr)
 		return false;
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
+	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName+".frag", EShLangFragment, errorState);
 	if (fragment_shader == nullptr)
 		return false;
 
@@ -567,7 +567,7 @@ namespace nap
 	}
 
 
-	bool Shader::init(const std::string& name, char* vertShader, int vertSize, char* fragShader, int fragSize, utility::ErrorState& errorState)
+	bool Shader::init(const std::string& name, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
@@ -685,8 +685,6 @@ namespace nap
 
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		if (!Shader::init(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
-			return false;
-		return true;
+		return Shader::init(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 }

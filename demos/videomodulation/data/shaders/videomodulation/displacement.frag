@@ -1,4 +1,4 @@
-#version 450
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
