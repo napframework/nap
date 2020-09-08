@@ -17,12 +17,12 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
-RTTI_DEFINE_BASE(nap::BaseShader)
+RTTI_DEFINE_BASE(nap::Shader)
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Shader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
-	RTTI_PROPERTY_FILELINK("mFragShader", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
+	RTTI_PROPERTY_FILELINK("mVertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
+	RTTI_PROPERTY_FILELINK("mFragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -545,10 +545,10 @@ namespace nap
 	// Base Shader
 	//////////////////////////////////////////////////////////////////////////
 
-	BaseShader::BaseShader(Core& core) : mRenderService(core.getService<RenderService>())
+	Shader::Shader(Core& core) : mRenderService(core.getService<RenderService>())
 	{ }
 
-	BaseShader::~BaseShader()
+	Shader::~Shader()
 	{
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
@@ -567,7 +567,7 @@ namespace nap
 	}
 
 
-	bool BaseShader::init(const std::string& name, char* vertShader, int vertSize, char* fragShader, int fragSize, utility::ErrorState& errorState)
+	bool Shader::init(const std::string& name, char* vertShader, int vertSize, char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
@@ -619,7 +619,7 @@ namespace nap
 	}
 
 
-	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	bool Shader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
 		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
@@ -659,11 +659,11 @@ namespace nap
 	// Shader
 	//////////////////////////////////////////////////////////////////////////
 
-	Shader::Shader(Core& core) : BaseShader(core) { }
+	ShaderFromFile::ShaderFromFile(Core& core) : Shader(core) { }
 
 
 	// Store path and create display names
-	bool Shader::init(utility::ErrorState& errorState)
+	bool ShaderFromFile::init(utility::ErrorState& errorState)
 	{
 		// Ensure vertex shader exists
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
@@ -685,7 +685,7 @@ namespace nap
 
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		if (!BaseShader::init(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
+		if (!Shader::init(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
 			return false;
 		return true;
 	}

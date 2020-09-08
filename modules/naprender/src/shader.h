@@ -24,12 +24,12 @@ namespace nap
 	 * A nap::Material links to a BaseShader. The shader is compiled on initialization.
 	 * Use a nap::Material or nap::MaterialInstance to set / override uniforms and samplers.
 	 */
-	class BaseShader : public Resource
+	class NAPAPI Shader : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		BaseShader(Core& core);
-		~BaseShader() override;
+		Shader(Core& core);
+		~Shader() override;
 
 		/**
 		* @return all vertex shader attribute declarations.
@@ -100,11 +100,11 @@ namespace nap
 	 * The shader cross compiles the loaded GLSL shader code to SPIR-V, creates the shader module and 
 	 * parses all the uniforms and samplers.
 	 */
-	class NAPAPI Shader : public BaseShader
+	class NAPAPI ShaderFromFile : public Shader
 	{
-		RTTI_ENABLE(BaseShader)
+		RTTI_ENABLE(Shader)
 	public:
-		Shader(Core& core);
+		ShaderFromFile(Core& core);
 
 		/**
 		 * Cross compiles the loaded GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.

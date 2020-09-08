@@ -305,13 +305,13 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "BallShader",
             "mVertShader": "shaders/ball.vert",
             "mFragShader": "shaders/ball.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "PlaneShader",
             "mVertShader": "shaders/plane.vert",
             "mFragShader": "shaders/plane.frag"

@@ -260,7 +260,7 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "DripShader",
             "mVertShader": "shaders/blobtrace/blob.vert",
             "mFragShader": "shaders/blobtrace/blob.frag"

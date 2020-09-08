@@ -256,7 +256,7 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "ParticleShader",
             "mVertShader": "shaders/dynamicgeometrytest/particle.vert",
             "mFragShader": "shaders/dynamicgeometrytest/particle.frag"

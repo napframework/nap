@@ -564,13 +564,13 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "PlaneShader",
             "mVertShader": "shaders/multiwindow/plane.vert",
             "mFragShader": "shaders/multiwindow/plane.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "WorldShader",
             "mVertShader": "shaders/multiwindow/world.vert",
             "mFragShader": "shaders/multiwindow/world.frag"

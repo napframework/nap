@@ -286,7 +286,7 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CopyShader",
             "mVertShader": "shaders/copy.vert",
             "mFragShader": "shaders/copy.frag"

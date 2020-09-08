@@ -729,19 +729,19 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CanvasShader",
             "mVertShader": "shaders/canvas.vert",
             "mFragShader": "shaders/canvas.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "LineShader",
             "mVertShader": "shaders/line.vert",
             "mFragShader": "shaders/line.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "NormalsShader",
             "mVertShader": "shaders/normals.vert",
             "mFragShader": "shaders/normals.frag"

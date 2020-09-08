@@ -908,25 +908,25 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "BlobShader",
             "mVertShader": "shaders/facedetection/blob.vert",
             "mFragShader": "shaders/facedetection/blob.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "ClassifyShader",
             "mVertShader": "shaders/facedetection/detection.vert",
             "mFragShader": "shaders/facedetection/detection.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "FontShader",
             "mVertShader": "shaders/facedetection/font.vert",
             "mFragShader": "shaders/facedetection/font.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "PlaneShader",
             "mVertShader": "shaders/facedetection/plane.vert",
             "mFragShader": "shaders/facedetection/plane.frag"
