@@ -669,26 +669,26 @@
         {
             "Type": "nap::ShaderFromFile",
             "mID": "BackgroundShader",
-            "mVertShader": "shaders/videomodulation/background.vert",
-            "mFragShader": "shaders/videomodulation/background.frag"
+            "VertShader": "shaders/videomodulation/background.vert",
+            "FragShader": "shaders/videomodulation/background.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "DisplacementShader",
-            "mVertShader": "shaders/videomodulation/displacement.vert",
-            "mFragShader": "shaders/videomodulation/displacement.frag"
+            "VertShader": "shaders/videomodulation/displacement.vert",
+            "FragShader": "shaders/videomodulation/displacement.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "FXShader",
-            "mVertShader": "shaders/videomodulation/fxshader.vert",
-            "mFragShader": "shaders/videomodulation/fxshader.frag"
+            "VertShader": "shaders/videomodulation/fxshader.vert",
+            "FragShader": "shaders/videomodulation/fxshader.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "VideoShader",
-            "mVertShader": "shaders/videomodulation/video.vert",
-            "mFragShader": "shaders/videomodulation/video.frag"
+            "VertShader": "shaders/videomodulation/video.vert",
+            "FragShader": "shaders/videomodulation/video.frag"
         },
         {
             "Type": "nap::VideoMeshFromFile",

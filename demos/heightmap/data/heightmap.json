@@ -291,14 +291,14 @@
         {
             "Type": "nap::ShaderFromFile",
             "mID": "HeightShader",
-            "mVertShader": "shaders/heightmap/world.vert",
-            "mFragShader": "shaders/heightmap/world.frag"
+            "VertShader": "shaders/heightmap/world.vert",
+            "FragShader": "shaders/heightmap/world.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "NormalsShader",
-            "mVertShader": "shaders/heightmap/normals.vert",
-            "mFragShader": "shaders/heightmap/normals.frag"
+            "VertShader": "shaders/heightmap/normals.vert",
+            "FragShader": "shaders/heightmap/normals.frag"
         }
     ]
 }

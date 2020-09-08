@@ -348,14 +348,14 @@
         {
             "Type": "nap::ShaderFromFile",
             "mID": "FontShader",
-            "mVertShader": "shaders/helloworld/font.vert",
-            "mFragShader": "shaders/helloworld/font.frag"
+            "VertShader": "shaders/helloworld/font.vert",
+            "FragShader": "shaders/helloworld/font.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "WorldShader",
-            "mVertShader": "shaders/helloworld/world.vert",
-            "mFragShader": "shaders/helloworld/world.frag"
+            "VertShader": "shaders/helloworld/world.vert",
+            "FragShader": "shaders/helloworld/world.frag"
         },
         {
             "Type": "nap::SphereMesh",

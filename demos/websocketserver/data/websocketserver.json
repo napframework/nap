@@ -126,10 +126,10 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "FontShader",
-            "mVertShader": "shaders/font.vert",
-            "mFragShader": "shaders/font.frag"
+            "VertShader": "shaders/font.vert",
+            "FragShader": "shaders/font.frag"
         },
         {
             "Type": "nap::WebSocketServerEndPoint",
