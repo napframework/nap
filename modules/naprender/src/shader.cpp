@@ -226,15 +226,11 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 }
 
 
-static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t vulkanVersion, const std::string& file, EShLanguage stage, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, nap::utility::ErrorState& errorState)
 {
-	std::vector<char> shader_source;
-	if (!errorState.check(tryReadFile(file, shader_source), "Unable to read shader file %s", file.c_str()))
-		return nullptr;
-
-	const char* sources[] = { shader_source.data() };
-	int source_sizes[] = { (int)shader_source.size() };
-	const char* file_names[] = { file.data() };
+	const char* sources[] = { shaderCode };
+	int source_sizes[] = { shaderSize };
+	const char* file_names[] = { shaderName.data() };
 
 	std::unique_ptr<glslang::TShader> shader = std::make_unique<glslang::TShader>(stage);
 	shader->setStringsWithLengthsAndNames(sources, source_sizes, file_names, 1);
@@ -270,7 +266,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 	bool result = shader->parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
-		errorState.fail("Failed to compile shader %s: %s", file.c_str(), shader->getInfoLog());
+		errorState.fail("Failed to compile shader %s: %s", + shaderName.c_str(), shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -278,13 +274,13 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 }
 
 
-static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const std::string& vertexFile, const std::string& fragmentFile, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertexFile, EShLangVertex, errorState);
+	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
 	if (vertex_shader == nullptr)
 		return false;
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragmentFile, EShLangFragment, errorState);
+	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
 	if (fragment_shader == nullptr)
 		return false;
 
@@ -566,11 +562,23 @@ namespace nap
 	// Store path and create display names
 	bool Shader::init(utility::ErrorState& errorState)
 	{
+		// Ensure vertex shader exists
 		assert(mRenderService->isInitialized());
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
 
+		// Ensure fragment shader exists
 		if (!errorState.check(!mFragPath.empty(), "Fragment shader path not set"))
+			return false;
+
+		// Read vert shader file
+		std::vector<char> vert_source;
+		if (!errorState.check(tryReadFile(mVertPath, vert_source), "Unable to read shader file %s", mVertPath.c_str()))
+			return false;
+
+		// Read frag shader file
+		std::vector<char> frag_source;
+		if (!errorState.check(tryReadFile(mFragPath, frag_source), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
 
 		// Set display name
@@ -582,7 +590,9 @@ namespace nap
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<uint32> vertex_shader_spirv;
 		std::vector<uint32> fragment_shader_spirv;
-		if (!compileProgram(device, vulkan_version, mVertPath, mFragPath, vertex_shader_spirv, fragment_shader_spirv, errorState))
+
+		// Compile both vert and frag into single shader pipeline program
+		if (!compileProgram(device, vulkan_version, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
 			return false;
 
 		// Create vertex shader module
