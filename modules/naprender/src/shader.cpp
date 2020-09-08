@@ -17,6 +17,8 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
+RTTI_DEFINE_BASE(nap::BaseShader)
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Shader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
@@ -26,8 +28,12 @@ RTTI_END_CLASS
 using namespace std; // Include the standard namespace
 
 
+//////////////////////////////////////////////////////////////////////////
+// Static module members and functions
+//////////////////////////////////////////////////////////////////////////
+
 // From https://github.com/KhronosGroup/glslang/blob/master/StandAlone/ResourceLimits.cpp
-const TBuiltInResource defaultResource =
+static const TBuiltInResource defaultResource =
 {
 	/* .MaxLights = */ 32,
 	/* .MaxClipPlanes = */ 6,
@@ -191,6 +197,7 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 	}
 };
 
+
 static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffer)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -203,9 +210,7 @@ static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffe
 
 	file.seekg(0);
 	file.read(buffer.data(), fileSize);
-
 	file.close();
-
 	outBuffer = std::move(buffer);
 
 	return true;
@@ -335,7 +340,7 @@ static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* 
 	return true;
 }
 
-nap::EUniformValueType getUniformValueType(spirv_cross::SPIRType type)
+static nap::EUniformValueType getUniformValueType(spirv_cross::SPIRType type)
 {
 	switch (type.basetype)
 	{
@@ -366,7 +371,7 @@ nap::EUniformValueType getUniformValueType(spirv_cross::SPIRType type)
 }
 
 
-VkFormat getFormatFromType(spirv_cross::SPIRType type)
+static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 {
 	switch (type.basetype)
 	{
@@ -393,7 +398,7 @@ VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
+static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
 
@@ -476,7 +481,7 @@ bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cro
 }
 
 
-bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, std::vector<nap::UniformBufferObjectDeclaration>& uboDeclarations, std::vector<nap::SamplerDeclaration>& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, std::vector<nap::UniformBufferObjectDeclaration>& uboDeclarations, std::vector<nap::SamplerDeclaration>& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
@@ -536,11 +541,14 @@ bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStag
 
 namespace nap
 {
-	Shader::Shader(Core& core) :
-		mRenderService(core.getService<RenderService>()) { }
+	//////////////////////////////////////////////////////////////////////////
+	// Base Shader
+	//////////////////////////////////////////////////////////////////////////
 
+	BaseShader::BaseShader(Core& core) : mRenderService(core.getService<RenderService>())
+	{ }
 
-	Shader::~Shader()
+	BaseShader::~BaseShader()
 	{
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
@@ -559,30 +567,11 @@ namespace nap
 	}
 
 
-	// Store path and create display names
-	bool Shader::init(utility::ErrorState& errorState)
+	bool BaseShader::init(const std::string& name, char* vertShader, int vertSize, char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
-		// Ensure vertex shader exists
-		assert(mRenderService->isInitialized());
-		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
-			return false;
-
-		// Ensure fragment shader exists
-		if (!errorState.check(!mFragPath.empty(), "Fragment shader path not set"))
-			return false;
-
-		// Read vert shader file
-		std::vector<char> vert_source;
-		if (!errorState.check(tryReadFile(mVertPath, vert_source), "Unable to read shader file %s", mVertPath.c_str()))
-			return false;
-
-		// Read frag shader file
-		std::vector<char> frag_source;
-		if (!errorState.check(tryReadFile(mFragPath, frag_source), "Unable to read shader file %s", mFragPath.c_str()))
-			return false;
-
 		// Set display name
-		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
+		assert(mRenderService->isInitialized());
+		mDisplayName = name;
 
 		VkDevice device = mRenderService->getDevice();
 		uint32_t vulkan_version = mRenderService->getVulkanVersion();
@@ -592,17 +581,17 @@ namespace nap
 		std::vector<uint32> fragment_shader_spirv;
 
 		// Compile both vert and frag into single shader pipeline program
-		if (!compileProgram(device, vulkan_version, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
+		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
 			return false;
 
 		// Create vertex shader module
 		mVertexModule = createShaderModule(vertex_shader_spirv, device);
-		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", mVertPath.c_str()))
+		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", name))
 			return false;
 
 		// Create fragment shader module
 		mFragmentModule = createShaderModule(fragment_shader_spirv, device);
-		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", mFragPath.c_str()))
+		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", name))
 			return false;
 
 		// Extract vertex shader uniforms & inputs
@@ -620,7 +609,7 @@ namespace nap
 			uint32_t location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
 			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, format);
 		}
-		
+
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
@@ -630,7 +619,7 @@ namespace nap
 	}
 
 
-	bool Shader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
 		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
@@ -663,5 +652,41 @@ namespace nap
 		layoutInfo.pBindings = descriptor_set_layouts.data();
 
 		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+	}
+	
+
+	//////////////////////////////////////////////////////////////////////////
+	// Shader
+	//////////////////////////////////////////////////////////////////////////
+
+	Shader::Shader(Core& core) : BaseShader(core) { }
+
+
+	// Store path and create display names
+	bool Shader::init(utility::ErrorState& errorState)
+	{
+		// Ensure vertex shader exists
+		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
+			return false;
+
+		// Ensure fragment shader exists
+		if (!errorState.check(!mFragPath.empty(), "Fragment shader path not set"))
+			return false;
+
+		// Read vert shader file
+		std::vector<char> vert_source;
+		if (!errorState.check(tryReadFile(mVertPath, vert_source), "Unable to read shader file %s", mVertPath.c_str()))
+			return false;
+
+		// Read frag shader file
+		std::vector<char> frag_source;
+		if (!errorState.check(tryReadFile(mFragPath, frag_source), "Unable to read shader file %s", mFragPath.c_str()))
+			return false;
+
+		// Compile shader
+		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
+		if (!BaseShader::init(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
+			return false;
+		return true;
 	}
 }
