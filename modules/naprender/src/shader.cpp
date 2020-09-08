@@ -271,7 +271,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 	bool result = shader->parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
-		errorState.fail("Failed to compile shader %s: %s", + shaderName.c_str(), shader->getInfoLog());
+		errorState.fail("%s", shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -281,13 +281,19 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 
 static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName+".vert", EShLangVertex, errorState);
+	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
 	if (vertex_shader == nullptr)
+	{
+		errorState.fail("Unable to compile vertex shader");
 		return false;
+	}
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName+".frag", EShLangFragment, errorState);
+	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
 	if (fragment_shader == nullptr)
+	{
+		errorState.fail("Unable to compile fragment shader");
 		return false;
+	}
 
 	EShMessages messages = EShMsgDefault;
 	messages = (EShMessages)(messages | EShMsgSpvRules);
