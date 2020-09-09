@@ -4,6 +4,7 @@
 // External includes
 #include <sceneservice.h>
 #include <renderservice.h>
+#include <mathutils.h>
 
 extern "C"
 {
@@ -35,9 +36,7 @@ namespace nap
 	{
 		nap::utility::ErrorState error;
 		for (auto& player : mVideoPlayers)
-		{
 			player->update(deltaTime);
-		}
 	}
 
 
@@ -61,8 +60,10 @@ namespace nap
 		{
 			// Create video shader and material instance
 			mVideoShader = std::make_unique<VideoShader>(getCore());
+			mVideoShader->mID = "SharedVideoShader_" + math::generateUUID();
 			mVideoMaterial = std::make_unique<Material>(getCore());
-			mVideoMaterial->mShader = ResourcePtr<Shader>(mVideoShader.get());
+			mVideoMaterial->mID = "SharedVideoMaterial_" + math::generateUUID();
+			mVideoMaterial->mShader = mVideoShader.get();
 
 			// Initialize shader and material
 			if (mVideoShader->init(error) && mVideoMaterial->init(error))
@@ -72,8 +73,7 @@ namespace nap
 		// Ensure video material initialized correctly
 		if (!error.check(mVideoMaterialInitialized, "Video material initialization failed"))
 			return nullptr;
-
-		return nap::ResourcePtr<Material>(mVideoMaterial.get());
+		return mVideoMaterial.get();
 	}
 
 
