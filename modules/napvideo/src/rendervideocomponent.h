@@ -17,15 +17,15 @@
 namespace nap
 {
 	// Forward Declares
-	class RenderVideoToTextureComponentInstance;
+	class RenderVideoComponentInstance;
 
 	/**
 	 * rendervideototexturecomponent
 	 */
-	class NAPAPI RenderVideoToTextureComponent : public RenderableComponent
+	class NAPAPI RenderVideoComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)
-		DECLARE_COMPONENT(RenderVideoToTextureComponent, RenderVideoToTextureComponentInstance)
+		DECLARE_COMPONENT(RenderVideoComponent, RenderVideoComponentInstance)
 	public:
 
 		ResourcePtr<VideoPlayer>		mVideoPlayer = nullptr;				///< Property: 'VideoPlayer' the video player to render to texture
@@ -37,11 +37,11 @@ namespace nap
 	/**
 	 * rendervideototexturecomponentInstance	
 	 */
-	class NAPAPI RenderVideoToTextureComponentInstance : public RenderableComponentInstance
+	class NAPAPI RenderVideoComponentInstance : public RenderableComponentInstance
 	{
 		RTTI_ENABLE(RenderableComponentInstance)
 	public:
-		RenderVideoToTextureComponentInstance(EntityInstance& entity, Component& resource);
+		RenderVideoComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize rendervideototexturecomponentInstance based on the rendervideototexturecomponent resource
@@ -131,6 +131,6 @@ namespace nap
 		void videoChanged(VideoPlayer& player);
 
 		// Called when video selection changes
-		nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &RenderVideoToTextureComponentInstance::videoChanged };
+		nap::Slot<VideoPlayer&> mVideoChangedSlot = { this, &RenderVideoComponentInstance::videoChanged };
 	};
 }

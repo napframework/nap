@@ -343,8 +343,8 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderVideoToTextureComponent",
-                    "mID": "nap::RenderVideoToTextureComponent",
+                    "Type": "nap::RenderVideoComponent",
+                    "mID": "nap::RenderVideoComponent",
                     "VideoPlayer": "VideoPlayer",
                     "OutputTexture": "VideoColorTexture",
                     "ClearColor": {

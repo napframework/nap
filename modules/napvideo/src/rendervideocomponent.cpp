@@ -1,5 +1,5 @@
 // Local Includes
-#include "rendervideototexturecomponent.h"
+#include "rendervideocomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -11,14 +11,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // nap::rendervideototexturecomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderVideoToTextureComponent)
-	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoToTextureComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoToTextureComponent::mOutputTexture,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoToTextureComponent::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
+	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::rendervideototexturecomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderVideoToTextureComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderVideoComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -28,16 +28,16 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	RenderVideoToTextureComponentInstance::RenderVideoToTextureComponentInstance(EntityInstance& entity, Component& resource) :
+	RenderVideoComponentInstance::RenderVideoComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mTarget(*entity.getCore()),
 		mPlane(*entity.getCore())	{ }
 
 
-	bool RenderVideoToTextureComponentInstance::init(utility::ErrorState& errorState)
+	bool RenderVideoComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource
-		RenderVideoToTextureComponent* resource = getComponent<RenderVideoToTextureComponent>();
+		RenderVideoComponent* resource = getComponent<RenderVideoComponent>();
 
 		// Extract player
 		mPlayer = resource->mVideoPlayer.get();
@@ -123,19 +123,19 @@ namespace nap
 	}
 
 
-	bool RenderVideoToTextureComponentInstance::isSupported(nap::CameraComponentInstance& camera) const
+	bool RenderVideoComponentInstance::isSupported(nap::CameraComponentInstance& camera) const
 	{
 		return camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance));
 	}
 
 
-	nap::Texture2D& RenderVideoToTextureComponentInstance::getOutputTexture()
+	nap::Texture2D& RenderVideoComponentInstance::getOutputTexture()
 	{
 		return mTarget.getColorTexture();
 	}
 
 
-	void RenderVideoToTextureComponentInstance::draw()
+	void RenderVideoComponentInstance::draw()
 	{
 		// Get current command buffer, should be headless.
 		VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
@@ -153,7 +153,7 @@ namespace nap
 	}
 
 
-	void RenderVideoToTextureComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderVideoComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Update the model matrix so that the plane mesh is of the same size as the render target
 		computeModelMatrix();
@@ -190,7 +190,7 @@ namespace nap
 	}
 
 
-	nap::UniformMat4Instance* RenderVideoToTextureComponentInstance::ensureUniform(const std::string& uniformName, utility::ErrorState& error)
+	nap::UniformMat4Instance* RenderVideoComponentInstance::ensureUniform(const std::string& uniformName, utility::ErrorState& error)
 	{
 		assert(mMVPStruct != nullptr);
 		UniformMat4Instance* found_uniform = mMVPStruct->getOrCreateUniform<UniformMat4Instance>(uniformName);
@@ -202,7 +202,7 @@ namespace nap
 	}
 
 
-	nap::Sampler2DInstance* RenderVideoToTextureComponentInstance::ensureSampler(const std::string& samplerName, utility::ErrorState& error)
+	nap::Sampler2DInstance* RenderVideoComponentInstance::ensureSampler(const std::string& samplerName, utility::ErrorState& error)
 	{
 		Sampler2DInstance* found_sampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(samplerName);
 		if (!error.check(found_sampler != nullptr,
@@ -213,7 +213,7 @@ namespace nap
 	}
 
 
-	void RenderVideoToTextureComponentInstance::computeModelMatrix()
+	void RenderVideoComponentInstance::computeModelMatrix()
 	{
 		if (mDirty)
 		{
@@ -231,7 +231,7 @@ namespace nap
 	}
 
 
-	void RenderVideoToTextureComponentInstance::videoChanged(VideoPlayer& player)
+	void RenderVideoComponentInstance::videoChanged(VideoPlayer& player)
 	{
 		mYSampler->setTexture(player.getYTexture());
 		mUSampler->setTexture(player.getUTexture());

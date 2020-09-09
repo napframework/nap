@@ -12,7 +12,7 @@
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
 #include <rendertotexturecomponent.h>
-#include <rendervideototexturecomponent.h>
+#include <rendervideocomponent.h>
 #include <imguiutils.h>
 #include <uniforminstance.h>
 
@@ -115,13 +115,13 @@ namespace nap
 		// Start recording into the headless recording buffer.
 		if (mRenderService->beginHeadlessRecording())
 		{
-			// Render video to texture
-			RenderVideoToTextureComponentInstance& video_render_comp = mVideoEntity->getComponent<RenderVideoToTextureComponentInstance>();
+			// Render video to video texture
+			RenderVideoComponentInstance& video_render_comp = mVideoEntity->getComponent<RenderVideoComponentInstance>();
 			video_render_comp.draw();
 
-			// Render the gray-scale version of video into the fx target
-			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
-			to_tex_comp.draw();
+			// Render the gray-scale version of the video to the fx texture
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+			fx_comp.draw();
 
 			// Tell the render service we are done rendering into render-targets.
 			// The queue is submitted and executed.
@@ -245,7 +245,7 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
 		{
-			RenderVideoToTextureComponentInstance& video_comp = mVideoEntity->getComponent<RenderVideoToTextureComponentInstance>();
+			RenderVideoComponentInstance& video_comp = mVideoEntity->getComponent<RenderVideoComponentInstance>();
 			float col_width = ImGui::GetContentRegionAvailWidth();
 			nap::Texture2D& video_tex = video_comp.getOutputTexture();
 			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
