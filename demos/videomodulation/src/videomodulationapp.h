@@ -13,7 +13,6 @@
 #include <renderservice.h>
 #include <video.h>
 #include <app.h>
-#include <rendertarget.h>
 #include <imguiservice.h>
 #include <color.h>
 #include <smoothdamp.h>
@@ -117,7 +116,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
 
 		// video render target
-		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Render window
 		ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;					//< Video player
 

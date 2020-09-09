@@ -6,7 +6,17 @@
 namespace nap
 {
 	// Forward declares
-	Core;
+	class Core;
+	class Material;
+
+	// Video shader sampler names 
+	namespace uniform
+	{
+		constexpr const char* YSampler = "yTexture";	///< video shader Y sampler name
+		constexpr const char* USampler = "uTexture";	///< video shader U sampler name
+		constexpr const char* VSampler = "vTexture";	///< video shader V sampler name
+	}
+
 
 	/**
 	 * Shader that converts YUV video textures, output by the nap::VideoPlayer, into an RGB image.

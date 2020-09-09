@@ -19,8 +19,6 @@ RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
 	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ProjectionMatrixUniform",	&nap::RenderToTextureComponent::mProjectMatrixUniform,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ModelMatrixUniform",			&nap::RenderToTextureComponent::mModelMatrixUniform,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::rendertotexturecomponentInstance run time class definition 
@@ -33,10 +31,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	// Some statics used by this component
-	static const glm::mat4x4 sIdentityMatrix = glm::mat4x4();
-
-
 	RenderToTextureComponentInstance::RenderToTextureComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mTarget(*entity.getCore()),
@@ -59,31 +53,42 @@ namespace nap
 		if (!mTarget.init(errorState))
 			return false;
 
-		// Now create a plane and initialize it
-		// The plane is positioned on update based on current texture output size
+		// Now create a plane and initialize it.
+		// The model matrix is computed on draw and used to scale the model to fit target bounds.
 		mPlane.mSize = glm::vec2(1.0f, 1.0f);
 		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 		if (!mPlane.init(errorState))
 			return false;
 
-		RenderService* render_service = getEntityInstance()->getCore()->getService<RenderService>();
-
-		// Create material instance
-		if (!mMaterialInstance.init(*render_service, resource->mMaterialInstanceResource, errorState))
-			return false;
-
-		// Ensure the matrices are present on the material
-		mProjectMatrixUniform = resource->mProjectMatrixUniform;
-		if (!ensureUniform(mProjectMatrixUniform, errorState))
-			return false;
-
-		mModelMatrixUniform = resource->mModelMatrixUniform;
-		if (!ensureUniform(mModelMatrixUniform, errorState))
-			return false;
-
-		// Create the renderable mesh, which represents a valid mesh / material combination
+		// Get render service
 		mService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mService != nullptr);
+
+		// Create material instance
+		if (!mMaterialInstance.init(*mService, resource->mMaterialInstanceResource, errorState))
+			return false;
+
+		// Ensure the mvp struct is available
+		mMVPStruct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in material: %s",
+			this->mID.c_str(), uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
+			return false;
+
+		// Get model matrix (required)
+		mModelMatrixUniform = ensureUniform(uniform::modelMatrix, *mMVPStruct, errorState);
+		if (mModelMatrixUniform == nullptr)
+			return false;
+
+		// Get projection matrix (required)
+		mProjectMatrixUniform = ensureUniform(uniform::projectionMatrix, *mMVPStruct, errorState);
+		if (mProjectMatrixUniform == nullptr) 
+			false;
+
+		// Get view matrix (optional)
+		utility::ErrorState view_error;
+		mViewMatrixUniform = ensureUniform(uniform::viewMatrix, *mMVPStruct, view_error);
+
+		// Create the renderable mesh, which represents a valid mesh / material combination
 		mRenderableMesh = mService->createRenderableMesh(mPlane, mMaterialInstance, errorState);
 		if (!mRenderableMesh.isValid())
 			return false;
@@ -103,6 +108,7 @@ namespace nap
 		return mTarget.getColorTexture();
 	}
 
+
 	void RenderToTextureComponentInstance::draw()
 	{
 		VkCommandBuffer command_buffer = mService->getCurrentCommandBuffer();
@@ -115,7 +121,7 @@ namespace nap
 
 		// Call on draw
 		mTarget.beginRendering();
-		onDraw(mTarget, command_buffer, sIdentityMatrix, proj_matrix);
+		onDraw(mTarget, command_buffer, glm::mat4(), proj_matrix);
 		mTarget.endRendering();
 	}
 
@@ -133,47 +139,36 @@ namespace nap
 
 
 	void RenderToTextureComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
-	{
-		// Ensure we can render the mesh / material combo
-		if (!mRenderableMesh.isValid())
-		{
-			assert(false);
-			return;
-		}
-        
+	{        
 		// Update the model matrix so that the plane mesh is of the same size as the render target
 		computeModelMatrix();
 
-		UniformStructInstance* nap_uniform = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
-		if (nap_uniform != nullptr)
-		{
-			// Set projection uniform in shader
-			UniformMat4Instance* projection_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(mProjectMatrixUniform);
-			if (projection_uniform != nullptr)
-				projection_uniform->setValue(projectionMatrix);
+		// Update matrices, projection and model are required
+		mProjectMatrixUniform->setValue(projectionMatrix);
+		mModelMatrixUniform->setValue(mModelMatrix);
 
-			// Set model matrix uniform in shader
-			UniformMat4Instance* model_uniform = nap_uniform->getOrCreateUniform<UniformMat4Instance>(mModelMatrixUniform);
-			if (model_uniform != nullptr)
-				model_uniform->setValue(mModelMatrix);
-		}
+		// If view matrix exposed on shader, set it as well
+		if (mViewMatrixUniform != nullptr)
+			mViewMatrixUniform->setValue(viewMatrix);
 
+		// Get valid descriptor set
 		VkDescriptorSet descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
+		// Get pipeline to to render with
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
+		// Bind buffers and draw
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
-
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
 			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
@@ -183,19 +178,15 @@ namespace nap
 	}
 
 
-	bool RenderToTextureComponentInstance::ensureUniform(const std::string& uniformName, utility::ErrorState& error)
+	UniformMat4Instance* RenderToTextureComponentInstance::ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error)
 	{
-		// Same applies for the matrices
-		UniformInstance* found_uniform = nullptr;
-		UniformStructInstance* nap_uniform = mMaterialInstance.getMaterial().findUniform("nap");
-		if (nap_uniform != nullptr)
-			found_uniform = nap_uniform->findUniform(uniformName);
-
-		if (!error.check(found_uniform != nullptr,
+		// Get matrix binding
+		UniformMat4Instance* found_mat = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
+		if(!error.check(found_mat != nullptr, 
 			"%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(),
 			mMaterialInstance.getMaterial().mID.c_str()))
-			return false;
-		return true;
+			return nullptr;
+		return found_mat;
 	}
 
 
@@ -205,7 +196,7 @@ namespace nap
 		{
 			// Transform to middle of target
 			glm::ivec2 tex_size = mTarget.getBufferSize();
-			mModelMatrix = glm::translate(sIdentityMatrix, glm::vec3(
+			mModelMatrix = glm::translate(glm::mat4(), glm::vec3(
 				tex_size.x / 2.0f,
 				tex_size.y / 2.0f,
 				0.0f));

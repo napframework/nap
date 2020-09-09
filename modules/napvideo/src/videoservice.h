@@ -2,9 +2,11 @@
 
 // Local Includes
 #include "videoplayer.h"
+#include "videoshader.h"
 
-// Nap Includes
+// External Includes
 #include <nap/service.h>
+#include <material.h>
 
 namespace nap
 {
@@ -20,9 +22,16 @@ namespace nap
 		// Default constructor
 		VideoService(ServiceConfiguration* configuration);
 
-		// Disable copy
-		VideoService(const VideoService& that) = delete;
-		VideoService& operator=(const VideoService&) = delete;
+		/**
+		 * Returns a video material that can be shared.
+		 * The material points to a shader that converts YUV textures into an RGB image.
+		 * The material is created when requested for the first time.
+		 * Use this material as a template for a video material instance. 
+		 * @param error contains the error if the material could not be created.
+		 * @return shared video material, nullptr if shader or material could not be created or failed to initialize.
+		 */
+		nap::ResourcePtr<Material> getMaterial(utility::ErrorState& error);
+
 
 	protected:
 		// This service depends on render and scene
@@ -45,6 +54,13 @@ namespace nap
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void shutdown() override;
+
 	private:
 		/**
 		* Registers a video player with the service
@@ -57,6 +73,9 @@ namespace nap
 		void removeVideoPlayer(VideoPlayer& receiver);
 
 	private:
-		std::vector<VideoPlayer*> mVideoPlayers;			///< All registered video players
+		std::vector<VideoPlayer*> mVideoPlayers;				///< All registered video players
+		std::unique_ptr<VideoShader> mVideoShader = nullptr;	///< Sharable video shader
+		std::unique_ptr<Material> mVideoMaterial = nullptr;		///< Sharable video material
+		bool mVideoMaterialInitialized = false;					///< If the video material is properly initialized
 	};
 }

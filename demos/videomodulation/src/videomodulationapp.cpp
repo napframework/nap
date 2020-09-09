@@ -3,8 +3,8 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
+#include <orthocameracomponent.h>
 #include <rendertexture2d.h>
 #include <scene.h>
 #include <imgui/imgui.h>
@@ -12,6 +12,7 @@
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
 #include <rendertotexturecomponent.h>
+#include <rendervideototexturecomponent.h>
 #include <imguiutils.h>
 #include <uniforminstance.h>
 
@@ -45,9 +46,6 @@ namespace nap
 		mVideoEntity = scene->findEntity("VideoEntity");
 		mDisplacementEntity = scene->findEntity("DisplacementEntity");
 		mPerspCameraEntity = scene->findEntity("PerspCameraEntity");
-
-		// Get render target
-		mVideoRenderTarget = mResourceManager->findObject<RenderTarget>("VideoRenderTarget");
 
 		// Find the window we want to render the output to
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
@@ -117,14 +115,9 @@ namespace nap
 		// Start recording into the headless recording buffer.
 		if (mRenderService->beginHeadlessRecording())
 		{
-			// Get objects to render
-			std::vector<RenderableComponentInstance*> render_objects;
-			render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
-
-			// Render the video into the video target
-			mVideoRenderTarget->beginRendering();
-			mRenderService->renderObjects(*mVideoRenderTarget, ortho_cam, render_objects);
-			mVideoRenderTarget->endRendering();
+			// Render video to texture
+			RenderVideoToTextureComponentInstance& video_render_comp = mVideoEntity->getComponent<RenderVideoToTextureComponentInstance>();
+			video_render_comp.draw();
 
 			// Render the gray-scale version of video into the fx target
 			RenderToTextureComponentInstance& to_tex_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
@@ -252,8 +245,9 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
 		{
+			RenderVideoToTextureComponentInstance& video_comp = mVideoEntity->getComponent<RenderVideoToTextureComponentInstance>();
 			float col_width = ImGui::GetContentRegionAvailWidth();
-			nap::Texture2D& video_tex = mVideoRenderTarget->getColorTexture();
+			nap::Texture2D& video_tex = video_comp.getOutputTexture();
 			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
 			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
 		}

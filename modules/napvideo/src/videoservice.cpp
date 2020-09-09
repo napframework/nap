@@ -4,8 +4,6 @@
 // External includes
 #include <sceneservice.h>
 #include <renderservice.h>
-#include <nap/logger.h>
-#include "nap/datetime.h"
 
 extern "C"
 {
@@ -46,6 +44,36 @@ namespace nap
 	void VideoService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<VideoPlayerObjectCreator>(*this));
+	}
+
+
+	void VideoService::shutdown()
+	{
+		mVideoMaterial.reset(nullptr);
+		mVideoShader.reset(nullptr);
+	}
+
+
+	ResourcePtr<Material> VideoService::getMaterial(utility::ErrorState& error)
+	{
+		// Create video material if doesn't exist
+		if (mVideoMaterial == nullptr)
+		{
+			// Create video shader and material instance
+			mVideoShader = std::make_unique<VideoShader>(getCore());
+			mVideoMaterial = std::make_unique<Material>(getCore());
+			mVideoMaterial->mShader = ResourcePtr<Shader>(mVideoShader.get());
+
+			// Initialize shader and material
+			if (mVideoShader->init(error) && mVideoMaterial->init(error))
+				mVideoMaterialInitialized = true;
+		}
+
+		// Ensure video material initialized correctly
+		if (!error.check(mVideoMaterialInitialized, "Video material initialization failed"))
+			return nullptr;
+
+		return nap::ResourcePtr<Material>(mVideoMaterial.get());
 	}
 
 

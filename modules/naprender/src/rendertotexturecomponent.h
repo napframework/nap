@@ -25,7 +25,22 @@ namespace nap
 	 * The plane is automatically scaled to fit the bounds of the output texture.
 	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
 	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
-	 * Resource part of the component.
+	 *
+	 * This component expects a material with a shader that contains a model and projection matrix uniform.
+	 * The view matrix uniform is optional, for example:
+	 *
+	 * ~~~~~
+	 *	uniform nap
+	 *	{
+	 *		uniform mat4 projectionMatrix;
+	 *		uniform mat4 modelMatrix;
+	 *	} mvp;
+	 *	...
+	 *	void main(void)
+	 *	{
+	 *		gl_Position = mvp.projectionMatrix * mvp.modelMatrix;
+	 *	}
+	 * ~~~~~
 	 */
 	class NAPAPI RenderToTextureComponent : public RenderableComponent
 	{
@@ -48,6 +63,23 @@ namespace nap
 	 * Simply declare the component in json and call draw() in the render part of your application,
 	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 * It is still possible to render this component through the render service, although only orthographic cameras are supported.
+	 *
+	 * This component expects a material with a shader that contains a model and projection matrix uniform.
+	 * The view matrix uniform is optional, for example:
+	 *
+	 * ~~~~~
+	 *	uniform nap
+	 *	{
+	 *		uniform mat4 projectionMatrix;
+	 *		uniform mat4 modelMatrix;
+	 *	} mvp;
+	 *	...
+	 *	void main(void)
+	 *	{
+	 *		gl_Position = mvp.projectionMatrix * mvp.modelMatrix;
+	 *	}
+	 * ~~~~~
+	 *
 	 */
 	class NAPAPI RenderToTextureComponentInstance : public RenderableComponentInstance
 	{
@@ -103,21 +135,23 @@ namespace nap
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		nap::RenderTarget	mTarget;										///< Internally managed render target
-		nap::PlaneMesh		mPlane;											///< Plane used for rendering the effect onto
-		MaterialInstance	mMaterialInstance;								///< The MaterialInstance as created from the resource.
-		RenderableMesh		mRenderableMesh;								///< Valid Plane / Material combination
-		RenderService*		mService = nullptr;								///< Render service
-		glm::mat4x4			mModelMatrix;									///< Plane model matrix
-		bool				mDirty = true;									///< If the model matrix needs to be recomputed
-		std::string			mModelMatrixUniform;							///< Name of the model matrix uniform in the shader
-		std::string			mProjectMatrixUniform;							///< Name of the projection matrix uniform in the shader
-	
+		nap::RenderTarget			mTarget;							///< Internally managed render target
+		nap::PlaneMesh				mPlane;								///< Plane used for rendering the effect onto
+		MaterialInstance			mMaterialInstance;					///< The MaterialInstance as created from the resource.
+		RenderableMesh				mRenderableMesh;					///< Valid Plane / Material combination
+		RenderService*				mService = nullptr;					///< Render service
+		glm::mat4x4					mModelMatrix;						///< Plane model matrix
+		bool						mDirty = true;						///< If the model matrix needs to be recomputed
+		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
+		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
+		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform
+		UniformStructInstance*		mMVPStruct = nullptr;				///< model view projection struct
+
 		/**
-		 * Checks if the uniform is available on the source material
-		 * @return if the uniform is available or not
+		 * Checks if the uniform is available on the source material and creates it if so
+		 * @return the uniform, nullptr if not available.
 		 */
-		bool ensureUniform(const std::string& uniformName, utility::ErrorState& error);
+		UniformMat4Instance* ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error);
 
 		/**
 		 * Computes the model matrix based on current frame buffer size.
