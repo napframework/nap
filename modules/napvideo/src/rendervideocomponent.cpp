@@ -27,6 +27,22 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * Creates a model matrix based on the dimensions of the given target.
+	 */
+	static void computeModelMatrix(const nap::IRenderTarget& target, glm::mat4& outMatrix)
+	{
+		// Transform to middle of target
+		glm::ivec2 tex_size = target.getBufferSize();
+		outMatrix = glm::translate(glm::mat4(), glm::vec3(
+			tex_size.x / 2.0f,
+			tex_size.y / 2.0f,
+			0.0f));
+
+		// Scale to fit target
+		outMatrix = glm::scale(outMatrix, glm::vec3(tex_size.x, tex_size.y, 1.0f));
+	}
+
 
 	RenderVideoComponentInstance::RenderVideoComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
@@ -156,11 +172,11 @@ namespace nap
 	void RenderVideoComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Update the model matrix so that the plane mesh is of the same size as the render target
-		computeModelMatrix();
+		computeModelMatrix(renderTarget, mModelMatrix);
+		mModelMatrixUniform->setValue(mModelMatrix);
 
 		// Update matrices, projection and model are required
 		mProjectMatrixUniform->setValue(projectionMatrix);
-		mModelMatrixUniform->setValue(mModelMatrix);
 		mViewMatrixUniform->setValue(viewMatrix);
 
 		// Get valid descriptor set
@@ -212,25 +228,7 @@ namespace nap
 		return found_sampler;
 	}
 
-
-	void RenderVideoComponentInstance::computeModelMatrix()
-	{
-		if (mDirty)
-		{
-			// Transform to middle of target
-			glm::ivec2 tex_size = mTarget.getBufferSize();
-			mModelMatrix = glm::translate(glm::mat4x4(), glm::vec3(
-				tex_size.x / 2.0f,
-				tex_size.y / 2.0f,
-				0.0f));
-
-			// Scale to fit target
-			mModelMatrix = glm::scale(mModelMatrix, glm::vec3(tex_size.x, tex_size.y, 1.0f));
-			mDirty = false;
-		}
-	}
-
-
+	
 	void RenderVideoComponentInstance::videoChanged(VideoPlayer& player)
 	{
 		mYSampler->setTexture(player.getYTexture());

@@ -19,7 +19,7 @@ namespace nap
 	class RenderToTextureComponentInstance;
 
 	/**
-	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly to a texture without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
 	 * The plane is automatically scaled to fit the bounds of the output texture.
@@ -56,7 +56,7 @@ namespace nap
 
 
 	/**
-	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly to a texture using a custom material without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
 	 * The plane is automatically scaled to fit the bounds of the output texture.
@@ -110,14 +110,12 @@ namespace nap
 		 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 		 * Do not call this function outside of a headless recording pass, ie: when rendering to a window.
 		 * The result is rendered into the given output texture. 
-		 * A custom orthographic projection matrix is constructed based on the size of the render target.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
 		void draw();
 
 		/**
-		 * Called by the Render Service.
-		 * Only orthographic cameras are supported when rendering through the render service!
+		 * Called by the Render Service. Only orthographic cameras are supported.
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
 
@@ -128,7 +126,10 @@ namespace nap
 
 	protected:
 		/**
-		 * Draws the plane full screen to the currently active render target.
+		 * Draws the effect full screen to the currently active render target,
+		 * when the view matrix = identity.
+		 * @param renderTarget the target to render to.
+		 * @param commandBuffer the currently active command buffer.
 		 * @param viewMatrix often the camera world space location
 		 * @param projectionMatrix often the camera projection matrix
 		 */
@@ -152,11 +153,5 @@ namespace nap
 		 * @return the uniform, nullptr if not available.
 		 */
 		UniformMat4Instance* ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error);
-
-		/**
-		 * Computes the model matrix based on current frame buffer size.
-		 * The model matrix if only computed if the output texture is set or changed.
-		 */
-		void computeModelMatrix();
 	};
 }
