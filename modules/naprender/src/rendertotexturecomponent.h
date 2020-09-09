@@ -19,15 +19,17 @@ namespace nap
 	class RenderToTextureComponentInstance;
 
 	/**
-	 * Renders an effect directly to a texture without having to define a render target or mesh.
+	 * Renders an effect directly to a texture using a custom material without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
-	 * The plane is automatically scaled to fit the bounds of the output texture.
+	 * The plane is automatically scaled to fit the bounds of the render target.
+	 *
 	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
 	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 *
-	 * This component expects a material with a shader that contains a model and projection matrix uniform.
-	 * The view matrix uniform is optional, for example:
+	 * This component expects a material with a shader that contains both a model and projection matrix uniform.
+	 * The view matrix uniform is optional. It will be set if found, otherwise bypassed.
+	 * If you don't care about view space (camera) transformation, don't declare it.
 	 *
 	 * ~~~~~
 	 *	uniform nap
@@ -59,13 +61,16 @@ namespace nap
 	 * Renders an effect directly to a texture using a custom material without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
-	 * The plane is automatically scaled to fit the bounds of the output texture.
-	 * Simply declare the component in json and call draw() in the render part of your application,
+	 * The plane is automatically scaled to fit the bounds of the render target.
+	 *
+	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
 	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 * It is still possible to render this component through the render service, although only orthographic cameras are supported.
 	 *
-	 * This component expects a material with a shader that contains a model and projection matrix uniform.
-	 * The view matrix uniform is optional, for example:
+	 * This component expects a material with a shader that contains both a model and projection matrix uniform.
+	 * The view matrix uniform is optional. It will be set if found, otherwise bypassed.
+	 * If you don't care about view space (camera) transformation, don't declare it in the shader.
+	 * for example:
 	 *
 	 * ~~~~~
 	 *	uniform nap
@@ -90,7 +95,7 @@ namespace nap
 		/**
 		 * Initialize RenderToTextureComponentInstance based on the RenderToTextureComponent resource
 		 * @param errorState should hold the error message when initialization fails
-		 * @return if the rendertotexturecomponentInstance is initialized successfully
+		 * @return if the rendertotexturecomponentInstance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -105,7 +110,7 @@ namespace nap
 		Texture2D& getOutputTexture(); 
 
 		/**
-		 * Directly render to the given output texture without having to go through the render service.
+		 * Renders the effect directly to texture using a custom material, without having to define a render target or mesh.
 		 * Call this in your application render() call, 
 		 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 		 * Do not call this function outside of a headless recording pass, ie: when rendering to a window.

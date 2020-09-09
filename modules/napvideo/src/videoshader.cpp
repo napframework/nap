@@ -78,6 +78,6 @@ namespace nap
 		// Number of characters = number of bytes minus null termination character of string literal.
 		auto vert_size = sizeof(videoVertShader) - 1;
 		auto frag_size = sizeof(videoFragShader) - 1;
-		return Shader::init("VideoShader", videoVertShader, vert_size, videoFragShader, frag_size, errorState);
+		return load("VideoShader", videoVertShader, vert_size, videoFragShader, frag_size, errorState);
 	}
 }
