@@ -3,6 +3,7 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "indexbuffer.h"
+#include "fontshader.h"
 
 // External Includes
 #include <entity.h>
@@ -17,7 +18,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
 	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GlyphUniform",		&nap::RenderableTextComponent::mGlyphUniform,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TextColor",			&nap::RenderableTextComponent::mColor,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableTextComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -46,9 +47,6 @@ namespace nap
 		// Extract font
 		mFont = &(resource->mFont->getFontInstance());
 
-		// Extract glyph uniform (texture slot in shader)
-		mGlyphUniformName = resource->mGlyphUniform;
-
 		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 
@@ -56,11 +54,24 @@ namespace nap
 		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
+		// Ensure we can find the text color uniform
+		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::font::uboStruct);
+		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to set color, unable to find uniform struct with name: %s in material: %s",
+			resource->mID.c_str(), uniform::font::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
+			return false;
+
+		// Ensure the color color uniform is available and set it
+		UniformVec3Instance* color_uniform = ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::font::textColor);
+		if (!errorState.check(color_uniform != nullptr, "%s: Unable to find uniform vec3 with name: %s in material: %s",
+			resource->mID.c_str(), uniform::font::textColor, mMaterialInstance.getMaterial().mID.c_str()))
+			return false;
+		color_uniform->setValue(resource->mColor.toVec3());
+
 		// Ensure the uniform to set the glyph is available on the source material
-		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(mGlyphUniformName);
+		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::font::glyphSampler);
 		if (!errorState.check(mGlyphUniform != nullptr,
-		 	"%s: Unable to bind font character, can't find 2DSampler uniform: %s in material: %s", this->mID.c_str(), 
-			mGlyphUniformName.c_str() , mMaterialInstance.getMaterial().mID.c_str()))
+		 	"%s: Unable to bind font character, can't find 2DSampler uniform: %s in material: %s", resource->mID.c_str(), 
+			uniform::font::glyphSampler, mMaterialInstance.getMaterial().mID.c_str()))
 		 	return false;
 
 		// Find MVP uniforms
@@ -74,7 +85,7 @@ namespace nap
 
 		// Make sure there's a model matrix
 		if (!errorState.check(mModelUniform != nullptr, "%s: Unable to position character, no model matrix with name: %s found in UBO: %s in material %s",
-			mID.c_str(), uniform::modelMatrix, uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
+			resource->mID.c_str(), uniform::modelMatrix, uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Setup the plane, 1x1 with lower left corner at origin {0, 0}
@@ -89,7 +100,7 @@ namespace nap
 
 		// Update the uv coordinates
 		Vec3VertexAttribute* uv_attr = mPlane.getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(0));
-		if (!errorState.check(uv_attr != nullptr, "%s: unable to find uv vertex attribute on plane", mID.c_str()))
+		if (!errorState.check(uv_attr != nullptr, "%s: unable to find uv vertex attribute on plane", resource->mID.c_str()))
 			return false;
 
 		// Flip uv y axis (text is rendered flipped)

@@ -17,6 +17,7 @@ namespace nap
 	 * When rendering in normalized mode the initial text is used to compute the normalization factor.
 	 * This ensures that when changing text at runtime the size of the letters don't change as well.
 	 * Use the Renderable2DTextComponent to draw text in screen (pixel) space with an orthographic camera.
+	 * The material to shade the characters should point to a nap::FontShader.
 	 *
 	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.
@@ -46,6 +47,7 @@ namespace nap
 	/**
 	 * Runtime version of the Renderable3DTextComponent.
 	 * This component allows you to render a single line of text at a specific location in the world.
+	 * The material to shade the characters should point to a nap::FontShader.
 	 *
 	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.

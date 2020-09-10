@@ -251,9 +251,7 @@
                             255,
                             0
                         ]
-                    },
-                    "ProjectionMatrixUniform": "projectionMatrix",
-                    "ModelMatrixUniform": "modelMatrix"
+                    }
                 }
             ],
             "Children": [
@@ -377,7 +375,13 @@
                     "mID": "TextRenderableComponent",
                     "Text": "Blob#",
                     "Font": "Font",
-                    "GlyphUniform": "glyph",
+                    "TextColor": {
+                        "Values": [
+                            0.8587999939918518,
+                            0.8587999939918518,
+                            0.8587999939918518
+                        ]
+                    },
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
@@ -424,6 +428,10 @@
                 "DPI": 96
             },
             "Font": "fonts/Montserrat-Light.otf"
+        },
+        {
+            "Type": "nap::FontShader",
+            "mID": "FontShader"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -509,6 +517,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "CameraCaptureTexture"
                 }
             ],
@@ -520,25 +529,7 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct_3",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3",
-                            "Name": "textColor",
-                            "Value": {
-                                "x": 0.8587999939918518,
-                                "y": 0.8587999939918518,
-                                "z": 0.8587999939918518
-                            }
-                        }
-                    ]
-                }
-            ],
+            "Uniforms": [],
             "Samplers": [],
             "Shader": "FontShader",
             "VertexAttributeBindings": [],
@@ -595,6 +586,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "PlaneTexture"
                 }
             ],
@@ -635,6 +627,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoCaptureTexture"
                 }
             ],
@@ -712,7 +705,8 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -918,12 +912,6 @@
             "mID": "ClassifyShader",
             "VertShader": "shaders/facedetection/detection.vert",
             "FragShader": "shaders/facedetection/detection.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "FontShader",
-            "VertShader": "shaders/facedetection/font.vert",
-            "FragShader": "shaders/facedetection/font.frag"
         },
         {
             "Type": "nap::ShaderFromFile",

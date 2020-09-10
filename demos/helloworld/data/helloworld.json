@@ -117,7 +117,13 @@
                     "mID": "nap::RenderableTextComponent",
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
-                    "GlyphUniform": "glyph",
+                    "TextColor": {
+                        "Values": [
+                            0.8587999939918518,
+                            0.8587999939918518,
+                            0.8587999939918518
+                        ]
+                    },
                     "MaterialInstance": {
                         "Material": "FontMaterial",
                         "Uniforms": [],
@@ -230,6 +236,10 @@
             "Font": "fonts/Montserrat-Light.otf"
         },
         {
+            "Type": "nap::FontShader",
+            "mID": "FontShader"
+        },
+        {
             "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
             "Usage": "Static",
@@ -239,25 +249,7 @@
         {
             "Type": "nap::Material",
             "mID": "FontMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3",
-                            "Name": "textColor",
-                            "Value": {
-                                "x": 0.8587999939918518,
-                                "y": 0.8587999939918518,
-                                "z": 0.8587999939918518
-                            }
-                        }
-                    ]
-                }
-            ],
+            "Uniforms": [],
             "Samplers": [],
             "Shader": "FontShader",
             "VertexAttributeBindings": [],
@@ -279,6 +271,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "WorldTexture"
                 }
             ],
@@ -321,7 +314,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -344,12 +338,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "FontShader",
-            "VertShader": "shaders/helloworld/font.vert",
-            "FragShader": "shaders/helloworld/font.frag"
         },
         {
             "Type": "nap::ShaderFromFile",

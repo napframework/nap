@@ -4,6 +4,7 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
+#include "color.h"
 
 // External Includes
 #include <font.h>
@@ -17,7 +18,7 @@ namespace nap
 
 	/**
 	 * Render-able Text Component Resource.
-	 * Creates a RenderableTextComponentInstance that can draw text using a font and material.
+	 * Creates a RenderableTextComponentInstance that can draw text using a nap::FontShader and nap::Material.
 	 * Text rendering works best when the blend mode of the Material is set to: AlphaBlend and the Depth mode to NoReadWrite.
 	 * This ensures the text is rendered on top of the rest and remains visible.
 	 * Use the Renderable2DTextComponent to render text in screen space and the Renderable3DTextComopnent to render text in 3D space.
@@ -46,13 +47,13 @@ namespace nap
 	public:
 		ResourcePtr<Font> mFont;								///< Property: 'Font' that represents the style of the text
 		std::string mText;										///< Property: 'Text' to draw
-		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text
-		std::string mGlyphUniform = "glyph";					///< Property: 'GlyphUniform' name of the 2D texture character binding in the shader, defaults to 'glyph'
+		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text. Shader should be of type nap::FontShader
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };			///< Property: 'TextColor' the color of the text
 	};
 
 
 	/**
-	 * Draws text into the currently active render target using a font and material.
+	 * Draws text into the currently active render target using a nap::FontShader and nap::Material.
 	 * This is the runtime version of the RenderableTextComponent resource.
 	 * Text rendering works best when the blend mode of the Material is set to: AlphaBlend and the Depth mode to NoReadWrite. 
 	 * This ensures the text is rendered on top of the rest and remains visible.
@@ -218,7 +219,6 @@ namespace nap
 		int mIndex = 0;													///< Current line index to update or draw
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
-		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
 		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
 		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
