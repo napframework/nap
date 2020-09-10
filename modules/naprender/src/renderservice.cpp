@@ -980,7 +980,7 @@ namespace nap
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName(), material.mID.c_str()))
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
 			const VertexBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
