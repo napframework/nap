@@ -77,6 +77,11 @@ namespace nap
 		// The plane is positioned on update based on current texture output size
 		mPlane.mSize = glm::vec2(1.0f, 1.0f);
 		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		mPlane.mCullMode = ECullMode::Back;
+		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mColumns = 1;
+		mPlane.mRows = 1;
+
 		if (!mPlane.init(errorState))
 			return false;
 
@@ -117,9 +122,9 @@ namespace nap
 			return false;
 
 		// Get sampler inputs to update from video material
-		mYSampler = ensureSampler(uniform::YSampler, errorState);
-		mUSampler = ensureSampler(uniform::USampler, errorState);
-		mVSampler = ensureSampler(uniform::VSampler, errorState);
+		mYSampler = ensureSampler(uniform::video::YSampler, errorState);
+		mUSampler = ensureSampler(uniform::video::USampler, errorState);
+		mVSampler = ensureSampler(uniform::video::VSampler, errorState);
 
 		if (mYSampler == nullptr || mUSampler == nullptr || mVSampler == nullptr)
 			return false;

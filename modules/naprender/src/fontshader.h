@@ -12,23 +12,22 @@ namespace nap
 	// Video shader sampler names 
 	namespace uniform
 	{
-		namespace video
-		{
-			constexpr const char* YSampler = "yTexture";	///< video shader Y sampler name
-			constexpr const char* USampler = "uTexture";	///< video shader U sampler name
-			constexpr const char* VSampler = "vTexture";	///< video shader V sampler name
+		namespace font
+		{	
+			constexpr const char* glyphSampler	= "glyph";		///< Name of the 2D sampler that points to the glyph
+			constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
+			constexpr const char* textColor		= "textColor";	///< Text color vec3 
 		}
 	}
 
 	/**
-	 * Shader that converts YUV video textures, output by the nap::VideoPlayer, into an RGB image.
-	 * Used by the nap::RenderVideoComponent.
+	 * Shader that renders glyphs. Used by the nap::RenderableTextComponent
 	 */
-	class NAPAPI VideoShader : public Shader
+	class NAPAPI FontShader : public Shader
 	{
 		RTTI_ENABLE(Shader)
 	public:
-		VideoShader(Core& core);
+		FontShader(Core& core);
 
 		/**
 		 * Cross compiles the video GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
