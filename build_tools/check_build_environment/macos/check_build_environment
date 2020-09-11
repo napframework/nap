@@ -83,7 +83,7 @@ def check_arch():
     return arch_ok
 
 def check_macos():
-    """Check if the we're running macOS High Sierra 10.13"""
+    """Check if the we're running a supported macOS version"""
 
     macos_version = call('sw_vers -productVersion')
     macos_version_ok = macos_version.startswith(REQUIRED_MACOS_VERSION)

@@ -37,7 +37,7 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 ## macOS {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports macOS Catalina with XCode 10.5. Although NAP is known to work on other macOS releases, Catalina is the current supported platform. Other versions of XCode are not supported at this moment.
+NAP $(NAP_VERSION_FULL) supports macOS Catalina with XCode 11.7. Although NAP is known to work on other macOS releases, Catalina is the current supported platform. Other versions of XCode are not supported at this moment.
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
