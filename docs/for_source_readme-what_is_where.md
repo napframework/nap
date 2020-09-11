@@ -1,4 +1,4 @@
-Output Paths
+Output Paths - TODO Move into Source README
 =================
 
 When working in the Source context NAP uses a different directory and build system structure to that in the Framework Release. One of the largest differences between the two is that the Framework Release system is project-centric, having an IDE/makefile solution per project, instead of one that covers everything. Plus, where possible, we attempt to not copy everything all over the place. So that means on Linux and macOS NAP modules and user modules are deployed to a location relative to the module.

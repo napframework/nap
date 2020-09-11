@@ -24,6 +24,7 @@ Project Management {#project_management}
 	*	[Project](@ref custom_cmake_proj)
 	*	[Module](@ref custom_cmake_module)
 	*	[Third Party Dependencies](@ref custom_cmake_thirdparty)
+		*	[macOS RPATH Management](@ref macos_thirdparty_library_rpath)
 
 # Overview {#proj_overview}
 
