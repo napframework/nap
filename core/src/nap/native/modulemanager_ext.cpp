@@ -39,7 +39,7 @@ namespace nap
 		// Find module library in given directories
 		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
 		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
-		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+		if (!err.check(!moduleFile.empty(), "File '%s' not found in any of these dirs:\n%s",
 			expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
 			return false;
 
@@ -100,7 +100,7 @@ namespace nap
 		{
 			auto resolved = utility::getAbsolutePath(moduleFile);
 			err.fail(utility::stringFormat("Failed to load module '%s' (resolved as %s): %s",
-										   moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str()));
+				moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str()));
 			return false;
 		}
 
