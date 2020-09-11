@@ -25,6 +25,7 @@ Project Management {#project_management}
 	*	[Module](@ref custom_cmake_module)
 	*	[Third Party Dependencies](@ref custom_cmake_thirdparty)
 		*	[macOS RPATH Management](@ref macos_thirdparty_library_rpath)
+*	[Path Mapping System](@ref path_mapping)
 
 # Overview {#proj_overview}
 
@@ -461,3 +462,11 @@ lib/libmpg123.0.dylib:
 Anything using our library with the updated install name (in this case mpg123) would then need to be rebuilt to pull in the changed path.
 
 One risk with RPATH management and third party libraries is in the case where you're integrating a library that you also have installed on your system via eg. Homebrew or MacPorts. In this case it's possible to unknowningly be building and running against the system-level third party library. There are a number of ways to detect this, one of which is while running your project using `lsof` in a terminal and grepping the output to ensure that the correct instance of your library is being used. If this issue goes unresolved you're likely to run into problems when the project or module is used on a another system.
+
+# Path Mapping System {#path_mapping}
+
+NAP uses a path mapping system based on simple JSON files to manage the directory relationships between the project binaries, Napkin and modules in the different arrangements of working against a Framework Release, from a Packaged App, or even against Source. The path mapping for the platform and context you're using will be deployed by the build system to `cache/path_mapping.json` relative to both the project directory and the project binary output.
+
+In the very large majority of cases NAP will manage these paths for you and you won't need to pay attention to this system. There is however a provision for custom project-specific path mappings which get pulled in from the directory `config/custom_path_mappings` within the project directory, containing content similar to `tools/platform/path_mappings` in the Framework Release. Only the platforms and contexts you want to modify should be defined. NAP will locate these custom mappings and deploy them as expected. 
+
+Custom path mappings are fairly beta at this stage and if you end up finding a need for them we would be interested in hearing from you, feel free to get in touch on the forum.
