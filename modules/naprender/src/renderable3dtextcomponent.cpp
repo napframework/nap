@@ -8,6 +8,7 @@
 // nap::Renderable3DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable3DTextComponent)
 	RTTI_PROPERTY("Normalize",	&nap::Renderable3DTextComponent::mNormalize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",	&nap::Renderable3DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable3DTextComponentInstance run time class definition 
@@ -28,14 +29,18 @@ namespace nap
 
 	bool Renderable3DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
-		if (!RenderableTextComponentInstance::init(errorState))
+		// Setup base class
+		if (!setup(errorState))
 			return false;
 
+		// Transform is required since text is rendered in 3D in the scene.
 		if (!errorState.check(hasTransform(), "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Copy flags
-		normalizeText(getComponent<Renderable3DTextComponent>()->mNormalize);
+		Renderable3DTextComponent* resource = getComponent<Renderable3DTextComponent>();
+		getMaterialInstance().setDepthMode(resource->mDepthMode);
+		normalizeText(resource->mNormalize);
 
 		// Ensure that when we render normalized the scaling factor is up to date.
 		if (isNormalized())

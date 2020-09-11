@@ -9,6 +9,7 @@
 #include <nap/service.h>
 #include <windowevent.h>
 #include <rendertarget.h>
+#include <material.h>
 
 namespace nap
 {
@@ -488,6 +489,38 @@ namespace nap
 		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
 
 		/**
+		 * Returns an existing or new material for the given type of shader that can be shared.
+		 * This only works for hard coded shader types that can be initialized without input arguments.
+		 * If initialization or creation fails, the result is cached but invalid.
+		 * Use the material as a template for a material instance.
+		 *
+		 * ~~~~~{.cpp}
+		 *	mRenderService->getOrCreateMaterial(RTTI_OF(nap::FontShader), error);
+		 * ~~~~~
+		 *
+		 * @param shaderType type of shader to get material for.
+		 * @param error contains the error if the material could not be created or initialized.
+		 * @return new or existing material for the given shader type, nullptr if creation or initialization failed.
+		 */
+		Material* getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error);
+
+		/**
+	 	 * Returns an existing or new material for the given type of shader T that can be shared.
+		 * This only works for hard coded shader types that can be initialized without input arguments.
+		 * If initialization or creation fails, the result is cached but invalid.
+		 * Use the material as a template for a material instance.
+		 *
+		 * ~~~~~{.cpp}
+		 *	mRenderService->getOrCreateMaterial<nap::FontShader>(error);
+		 * ~~~~~
+		 *
+		 * @param error contains the error if the material could not be created or initialized.
+		 * @return new or existing material for the given shader type, nullptr if creation or initialization failed.
+		 */
+		template<typename T>
+		Material* getOrCreateMaterial(utility::ErrorState& error)					{ return getOrCreateMaterial(RTTI_OF(T), error); }
+
+		/**
 		 * Returns the index of the frame that is currently rendered.
 		 * This index controls which command buffer is recorded and is therefore
 		 * capped to the max number of images in flight.
@@ -692,12 +725,14 @@ namespace nap
 		void waitDeviceIdle();
 
 	private:
+		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
+		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
 		/**
 		 * Binds together all the Vulkan data for a frame.
@@ -710,6 +745,19 @@ namespace nap
 			VkCommandBuffer						mDownloadCommandBuffers;			///< Command buffer used to download data from GPU to CPU
 			VkCommandBuffer						mHeadlessCommandBuffers;			///< Command buffer used to record operations not associated with a window.
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
+		};
+
+		/**
+		 * Binds together a shader and material.
+		 * Used as a sharable shader / material combination.
+		 */
+		struct UniqueMaterial
+		{
+			UniqueMaterial() = default;
+			UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material);
+			std::unique_ptr<Shader>		mShader = nullptr;					///< Shader instance linked to material
+			std::unique_ptr<Material>	mMaterial = nullptr;				///< Material that links to shader
+			bool valid() const;
 		};
 
 		bool									mEnableHighDPIMode = true;
@@ -748,6 +796,7 @@ namespace nap
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
+		UniqueMaterialCache						mMaterials;
 	};
 } // nap
 

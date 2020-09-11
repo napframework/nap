@@ -102,7 +102,6 @@ namespace nap
 		MaterialInstanceResource	mMaterialInstanceResource;						///< Resource used to initialize the material instance
 		RenderableMesh				mRenderableMesh;								///< Valid Plane / Material combination
 		RenderService*				mRenderService = nullptr;						///< Pointer to the render service
-		VideoService*				mVideoService = nullptr;						///< Pointer to the video service
 		UniformMat4Instance*		mModelMatrixUniform = nullptr;					///< Model matrix uniform in the material
 		UniformMat4Instance*		mProjectMatrixUniform = nullptr;				///< Projection matrix uniform in the material
 		UniformMat4Instance*		mViewMatrixUniform = nullptr;					///< View matrix uniform in the material

@@ -1,12 +1,12 @@
 // Local Includes
 #include "rendervideocomponent.h"
+#include "videoshader.h"
 
 // External Includes
 #include <entity.h>
 #include <orthocameracomponent.h>
 #include <nap/core.h>
 #include <renderservice.h>
-#include <videoservice.h>
 #include <renderglobals.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -89,21 +89,17 @@ namespace nap
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Extract video service
-		mVideoService = getEntityInstance()->getCore()->getService<VideoService>();
-		assert(mVideoService != nullptr);
-
 		// Get video material
-		ResourcePtr<Material> video_material = mVideoService->getMaterial(errorState);
-		if (!errorState.check(video_material != nullptr, "%s: unable to get video material handle", resource->mID.c_str()))
+		Material* video_material = mRenderService->getOrCreateMaterial<VideoShader>(errorState);
+		if (!errorState.check(video_material != nullptr, "%s: unable to get or create video material", resource->mID.c_str()))
 			return false;
 
-		// Create resource for the material instance
+		// Create resource for the video material instance
 		mMaterialInstanceResource.mBlendMode = EBlendMode::Opaque;
 		mMaterialInstanceResource.mDepthMode = EDepthMode::NoReadWrite;
 		mMaterialInstanceResource.mMaterial  = video_material;
 
-		// Initialize material instance, used for rendering video
+		// Initialize video material instance, used for rendering video
 		if (!mMaterialInstance.init(*mRenderService, mMaterialInstanceResource, errorState))
 			return false;
 

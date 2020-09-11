@@ -11,8 +11,9 @@
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
-	RTTI_PROPERTY("Location", &nap::Renderable2DTextComponent::mLocation, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Location",		&nap::Renderable2DTextComponent::mLocation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Orientation",	&nap::Renderable2DTextComponent::mOrientation,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",		&nap::Renderable2DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 
@@ -28,14 +29,14 @@ namespace nap
 	bool Renderable2DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!RenderableTextComponentInstance::init(errorState))
+		if (!setup(errorState))
 			return false;
-
-		// Copy orientation
-		setOrientation(getComponent<Renderable2DTextComponent>()->mOrientation);
-
-		// Copy location
-		setLocation(getComponent<Renderable2DTextComponent>()->mLocation);
+		
+		// Copy flags
+		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
+		getMaterialInstance().setDepthMode(resource->mDepthMode);
+		setOrientation(resource->mOrientation);
+		setLocation(resource->mLocation);
 
 		// Fetch render service
 		mService = getEntityInstance()->getCore()->getService<RenderService>();
@@ -94,7 +95,6 @@ namespace nap
 			rvalue.x += (int)(text_xform.x);
 			rvalue.y += (int)(text_xform.y);
 		}
-
 		return rvalue;
 	}
 

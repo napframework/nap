@@ -124,18 +124,12 @@
                             0.8587999939918518
                         ]
                     },
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
                     "Location": {
                         "x": 0,
                         "y": 0
                     },
-                    "Orientation": "Center"
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -236,25 +230,11 @@
             "Font": "fonts/Montserrat-Light.otf"
         },
         {
-            "Type": "nap::FontShader",
-            "mID": "FontShader"
-        },
-        {
             "Type": "nap::ImageFromFile",
             "mID": "WorldTexture",
             "Usage": "Static",
             "ImagePath": "world_texture.png",
             "GenerateLods": true
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "FontMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",

@@ -35,18 +35,12 @@
                             1.0
                         ]
                     },
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
                     "Location": {
                         "x": 0,
                         "y": 0
                     },
-                    "Orientation": "Center"
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::APIComponent",
@@ -73,20 +67,6 @@
                 "DPI": 96
             },
             "Font": "fonts/Montserrat-Light.otf"
-        },
-        {
-            "Type": "nap::FontShader",
-            "mID": "FontShader"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "FontMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::RenderWindow",

@@ -70,7 +70,7 @@ namespace nap
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
 		 * Call this in a derived class on initialization.
-		 * @param name the name of the shader
+		 * @param displayName the name of the shader
 		 * @param vertShader the vertex shader GLSL code.
 		 * @param vertSize total number of characters in vertShader.
 		 * @param fragShader the fragment shader GLSL code.
@@ -78,7 +78,7 @@ namespace nap
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		virtual bool load(const std::string& name, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
+		virtual bool load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
 
 		RenderService* mRenderService = nullptr;				///< Handle to render engine
 

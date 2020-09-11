@@ -573,11 +573,11 @@ namespace nap
 	}
 
 
-	bool Shader::load(const std::string& name, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
+	bool Shader::load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
-		mDisplayName = name;
+		mDisplayName = displayName;
 
 		VkDevice device = mRenderService->getDevice();
 		uint32_t vulkan_version = mRenderService->getVulkanVersion();
@@ -592,12 +592,12 @@ namespace nap
 
 		// Create vertex shader module
 		mVertexModule = createShaderModule(vertex_shader_spirv, device);
-		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module %s", name.c_str()))
+		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module"))
 			return false;
 
 		// Create fragment shader module
 		mFragmentModule = createShaderModule(fragment_shader_spirv, device);
-		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module %s", name.c_str()))
+		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module"))
 			return false;
 
 		// Extract vertex shader uniforms & inputs

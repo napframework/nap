@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
 	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TextColor",			&nap::RenderableTextComponent::mColor,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableTextComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::renderabletextcomponentInstance run time class definition 
@@ -35,23 +34,28 @@ namespace nap
 		RenderableComponentInstance(entity, resource),
 		mRenderService(entity.getCore()->getService<RenderService>()),
         mPlane(*entity.getCore())
-	{
-	}
+	{ }
 
 
-	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
+	bool RenderableTextComponentInstance::setup(utility::ErrorState& errorState)
 	{
-		// Get resource
+		// Get resource and extract font and transform
 		RenderableTextComponent* resource = getComponent<RenderableTextComponent>();
-		
-		// Extract font
 		mFont = &(resource->mFont->getFontInstance());
-
-		// Fetch transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 
-		// Create material instance
-		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
+		// Get hard-coded font material
+		Material* font_material = mRenderService->getOrCreateMaterial<FontShader>(errorState);
+		if (!errorState.check(font_material!= nullptr, "%s: unable to get or create video material", resource->mID.c_str()))
+			return false;
+
+		// Create resource for the font material instance
+		mMaterialInstanceResource.mBlendMode = EBlendMode::AlphaBlend;
+		mMaterialInstanceResource.mDepthMode = EDepthMode::NoReadWrite;
+		mMaterialInstanceResource.mMaterial = font_material;
+
+		// Initialize font material instance
+		if (!mMaterialInstance.init(*mRenderService, mMaterialInstanceResource, errorState))
 			return false;
 
 		// Ensure we can find the text color uniform
