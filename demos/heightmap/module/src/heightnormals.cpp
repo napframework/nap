@@ -36,7 +36,8 @@ namespace nap
 		if (!setReferenceMesh(*mReferenceMesh, errorState))
 			return false;
 
-		// Calculate our normals
+		// Calculate our normals, result is stored in the "Position"attribute.
+		// This data = normal data of the displaced plane, where normals are calculated based on surrounding triangles.
 		if (!calculateNormals(errorState, false))
 			return false;
 
@@ -45,9 +46,11 @@ namespace nap
 		mHeightMesh = rtti_cast<HeightMesh>(mReferenceMesh.get());
 		assert(mHeightMesh != nullptr);
 
-		// Create original positions attribute
+		// Create original positions attribute, this is the normal data for the original plane
 		mOriginalPosAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("OriginalPosition");
-		mOriginalNorAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("DisplacedPosition");
+
+		// Create displaced position attribute, this is the normal data for the displaced plane. 
+		mDisplacedPosAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("DisplacedPosition");
 
 		// Get the number of vertices in the height mesh
 		int vert_count = mHeightMesh->getMeshInstance().getNumVertices();
@@ -91,7 +94,7 @@ namespace nap
 
 		// Set the attribute data
 		mOriginalPosAttr->setData(original_vertices);
-		mOriginalNorAttr->setData(displaced_vertices);
+		mDisplacedPosAttr->setData(displaced_vertices);
 
 		// Initialize our mesh -> create all attributes on the gpu and push data
 		return getMeshInstance().init(errorState);

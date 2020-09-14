@@ -32,7 +32,7 @@ namespace nap
 
 	private:
 		HeightMesh* mHeightMesh = nullptr;						///< Pointer to the normals we want to visualize
-		Vec3VertexAttribute* mOriginalPosAttr = nullptr;		///< Original vertex positions
-		Vec3VertexAttribute* mOriginalNorAttr = nullptr;		///< Displaced but not blended normal direction
+		Vec3VertexAttribute* mOriginalPosAttr  = nullptr;		///< Original vertex positions
+		Vec3VertexAttribute* mDisplacedPosAttr = nullptr;		///< Displaced but not blended normal direction
 	};
 }
