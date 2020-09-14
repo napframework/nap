@@ -3,7 +3,7 @@
 // Local Includes
 #include "videoplayer.h"
 
-// Nap Includes
+// External Includes
 #include <nap/service.h>
 
 namespace nap
@@ -19,10 +19,6 @@ namespace nap
 	public:
 		// Default constructor
 		VideoService(ServiceConfiguration* configuration);
-
-		// Disable copy
-		VideoService(const VideoService& that) = delete;
-		VideoService& operator=(const VideoService&) = delete;
 
 	protected:
 		// This service depends on render and scene
@@ -57,6 +53,7 @@ namespace nap
 		void removeVideoPlayer(VideoPlayer& receiver);
 
 	private:
-		std::vector<VideoPlayer*> mVideoPlayers;			///< All registered video players
+		std::vector<VideoPlayer*> mVideoPlayers;				///< All registered video players
+		bool mVideoMaterialInitialized = false;					///< If the video material is properly initialized
 	};
 }

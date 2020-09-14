@@ -25,6 +25,7 @@
 #include <SDL_vulkan.h>
 #include <glslang/Public/ShaderLang.h>
 #include <nap/assert.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
@@ -980,7 +981,7 @@ namespace nap
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().mVertPath.c_str(), material.mID.c_str()))
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
 			const VertexBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
@@ -1283,6 +1284,44 @@ namespace nap
 	}
 
 
+	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
+	{
+		// Ensure it's a shader
+		std::string shader_name = shaderType.get_name().to_string();
+		if (!error.check(shaderType.is_derived_from(RTTI_OF(nap::Shader)), "Requested type: %s is not a shader", shader_name.c_str()))
+			return nullptr;
+
+		// Find it in our map
+		auto it = mMaterials.find(shaderType);
+		if (it != mMaterials.end())
+		{		
+			// Add error message if material isn't valid, ie: not initalized
+			error.check(it->second->valid(), "Shader not initialized");
+			return it->second->mMaterial.get();
+		}
+
+		// Create video shader and material instance
+		std::unique_ptr<Shader>shader(shaderType.create<Shader>({ getCore() }));
+		shader->mID = utility::stringFormat("%s_%s", shader_name.c_str(), math::generateUUID().c_str());
+		
+		std::unique_ptr<Material> material = std::make_unique<Material>(getCore());
+		material->mID = utility::stringFormat("Material_%s_%s", shader_name.c_str(), math::generateUUID().c_str());
+		material->mShader = shader.get();
+
+		// Initialization failed, invalid entry
+		if (!shader->init(error) || !material->init(error))
+		{
+			// Add invalid combo
+			mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>()));
+			return nullptr;
+		}
+
+		// Initialization succeeded, valid entry
+		auto inserted = mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material))));
+		return inserted.first->second->mMaterial.get();
+	}
+
+
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
@@ -1318,6 +1357,7 @@ namespace nap
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
+		mMaterials.clear();
 		for (auto kvp : mPipelineCache)
 		{
 			vkDestroyPipeline(mDevice, kvp.second.mPipeline, nullptr);
@@ -1698,4 +1738,16 @@ namespace nap
 			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : 
 			VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
+
+
+	RenderService::UniqueMaterial::UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material) :
+		mShader(std::move(shader)), mMaterial(std::move(material))
+	{ }
+
+
+	bool RenderService::UniqueMaterial::valid() const
+	{
+		return mShader != nullptr && mMaterial != nullptr;
+	}
+
 }

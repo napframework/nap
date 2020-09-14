@@ -9,7 +9,7 @@ namespace nap
 {
 	/**
 	 * These uniforms are set automatically by all nap::RenderableComponent(s) when present in the vertex shader.
-	 *
+	 * ~~~~~
 	 *	...
 	 *	uniform nap
 	 *	{
@@ -23,7 +23,7 @@ namespace nap
 	 *	{
      *		gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix;	
 	 *	}
-	 *	
+	 * ~~~~~
 	 */
 	namespace uniform
 	{

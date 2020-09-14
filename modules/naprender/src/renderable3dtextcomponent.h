@@ -5,6 +5,7 @@
 
 // External Includes
 #include <component.h>
+#include <materialcommon.h>
 
 namespace nap
 {
@@ -12,7 +13,7 @@ namespace nap
 
 	/**
 	 * Resource part of the Renderable3DTextComponentInstance. Draws flat text in 3D space.
-	 * Use this component when you want to render a line of text at a specific location in the world
+	 * Use this component when you want to render text at a specific location in the world
 	 * Use the normalize toggle to render the text at the origin of the scene with a unit size of 1.
 	 * When rendering in normalized mode the initial text is used to compute the normalization factor.
 	 * This ensures that when changing text at runtime the size of the letters don't change as well.
@@ -39,13 +40,14 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		bool	mNormalize = true;	///< Property: 'Normalize' text is rendered at the origin with normalized bounds (-0.5,0.5)
+		bool		mNormalize = true;									///< Property: 'Normalize' text is rendered at the origin with normalized bounds (-0.5,0.5)
+		EDepthMode	mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' how text is handled by z-buffer.
 	};
 
 
 	/**
 	 * Runtime version of the Renderable3DTextComponent.
-	 * This component allows you to render a single line of text at a specific location in the world.
+	 * This component allows you to render flat text at a specific location in the world.
 	 *
 	 * 3D text can only be rendered using the render service, similar to how 3D meshes are rendered.
 	 * The text can be transformed, scaled and rotated. It's best to render 3D text using a perspective camera.

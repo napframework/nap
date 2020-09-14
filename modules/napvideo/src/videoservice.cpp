@@ -4,8 +4,8 @@
 // External includes
 #include <sceneservice.h>
 #include <renderservice.h>
-#include <nap/logger.h>
-#include "nap/datetime.h"
+#include <nap/core.h>
+#include <mathutils.h>
 
 extern "C"
 {
@@ -37,9 +37,7 @@ namespace nap
 	{
 		nap::utility::ErrorState error;
 		for (auto& player : mVideoPlayers)
-		{
 			player->update(deltaTime);
-		}
 	}
 
 

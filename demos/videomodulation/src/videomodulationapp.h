@@ -13,7 +13,6 @@
 #include <renderservice.h>
 #include <video.h>
 #include <app.h>
-#include <rendertarget.h>
 #include <imguiservice.h>
 #include <color.h>
 #include <smoothdamp.h>
@@ -32,27 +31,21 @@ namespace nap
 	* Use the left mouse + mouse button to tumble the camera, right mouse button to zoom
 	*
 	* This application uses it's own module: mod_videomodulation. 
-	* That module exposes 1 resource (VideoMeshFromFile) and 2 components (SyncVideoComponent / SelectVideoMeshComponent).
+	* That module exposes 1 resource (VideoMeshFromFile) and 1 component (SelectVideoMeshComponent).
 	* The video mesh from file loads an fbx ans adds 2 attributes that are necessary for displacement. 
-	* The SyncVideoComponent binds the decoded YUV video textures to the video material, the SelectVideoMeshComponent
-	* changes the mesh to display. 
+	* The SelectVideoMeshComponent changes the mesh to display. 
 	* 
-	* Video playback is handled using FFMpeg. All videos are loaded and validated on startup.
-	* The video select component links to all the videos and triggers one for playback, ie: manages current playback state
-	* To limit CPU usage NAP does not translate the YUV textures to RGB values, that's best to do on the GPU using a shader.
-	* Refer to the video.frag and video.vert shader as an example.
+	* Video playback is handled using FFMpeg. The VideoPlayer allows you to select a video from the play-list, defined in JSON.
+	* To limit CPU usage, the video player does not translate the YUV textures to RGB values, that's best to do on the GPU using a shader.
+	* The nap::RenderVideoComponent converts the YUV textures of the video player into a single RGB texture using a
+	* build in shader and render target.
 	* 
-	* In this example the video is rendered to a 1920x1080 RGB texture using the video shader.
-	* This example uses a RenderTarget to render the video to an off screen texture.
-	* The resulting texture is used as an input to both the background plane and the foreground (displacement) mesh
+	* The resulting RGB video texture is used as an input to both the background plane and the foreground (displacement) mesh.
 	* In the background it's shown using a combination of 2 colors, in the foreground the video data is used to
 	* displace and color the mesh vertices. Play around with the on screen controls to select a different mesh or video
 	* 
-	* We first render the video to it's off screen texture target. The texture it renders to
-	* is linked by both the background and displacement material in JSON.
-	* We don't have to manually bind the rendered texture to a shader input.
-	* After rendering the off screen pass, the background is rendered using an orthographic camera
-	* The displacement mesh is rendered on top of the background using a perspective camera.
+	* After rendering the off screen passes, the background is rendered using an orthographic camera and
+	* the displacement mesh is rendered on top of the background using a perspective camera.
 	*
 	* The displacement mesh uses a basic light setup to calculate specular highlights and diffusion.
 	* The light position is hard coded in the displacement shader. The camera position is set
@@ -117,7 +110,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
 
 		// video render target
-		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Render window
 		ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;					//< Video player
 

@@ -286,10 +286,10 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CopyShader",
-            "mVertShader": "shaders/copy.vert",
-            "mFragShader": "shaders/copy.frag"
+            "VertShader": "shaders/copy.vert",
+            "FragShader": "shaders/copy.frag"
         },
         {
             "Type": "nap::SphereMesh",

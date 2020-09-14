@@ -667,22 +667,22 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "BackgroundShader",
-            "mVertShader": "shaders/vinyl/background.vert",
-            "mFragShader": "shaders/vinyl/background.frag"
+            "VertShader": "shaders/vinyl/background.vert",
+            "FragShader": "shaders/vinyl/background.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CoverShader",
-            "mVertShader": "shaders/vinyl/cover.vert",
-            "mFragShader": "shaders/vinyl/cover.frag"
+            "VertShader": "shaders/vinyl/cover.vert",
+            "FragShader": "shaders/vinyl/cover.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "VinylShader",
-            "mVertShader": "shaders/vinyl/vinyl.vert",
-            "mFragShader": "shaders/vinyl/vinyl.frag"
+            "VertShader": "shaders/vinyl/vinyl.vert",
+            "FragShader": "shaders/vinyl/vinyl.frag"
         }
     ]
 }

@@ -627,7 +627,7 @@ namespace nap
 		 * Note that this can only be changed *before* play() is called!
 		 * @param enabled if audio decoding and playback is enabled.
 		 */
-		void decodeAudioStream(bool enabled)			{ assert(!isPlaying()); mDecodeAudio = enabled; }
+		void decodeAudioStream(bool enabled);
 
 		/**
 		 * Function that needs to be called by the audio system on a fixed frequency to copy the audio data from the audio

@@ -168,8 +168,15 @@ namespace nap
 		/**
 		 * Acts like a regular pointer. Accessing the pointer does not have different performance characteristics than accessing a regular
 		 * pointer. Moving/copying an ObjectPtr has a small overhead, as it removes/adds itself from the ObjectPtrManager in such cases.
-		 * The purpose of ObjectPtr is that the internal pointer can be changed by the system, so it is not allowed to store pointers or 
-		 * references to the internal pointer, as it may get replaced (and destructed) by the system.
+		 *
+		 * The purpose of ObjectPtr is that the internal pointer can be changed by the system.
+		 * Therefore it is not allowed to store the internal pointer or a reference to the internal pointer, 
+		 * as it may get replaced (and destructed) by the system. 
+		 * This occurs when hot reloading changes into the running application.
+		 *
+		 * When creating resources at runtime that require a link to another rtti::Object, it is 
+		 * perfectly safe (and valid) to create the referenced object and wrap it in an ObjectPtr<T>,
+		 * before assigning it. In that case you do have to manually manage the lifetime of the created objects.
 		 */
 		template<typename T>
 		class ObjectPtr : public ObjectPtrBase

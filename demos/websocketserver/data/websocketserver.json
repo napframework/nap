@@ -28,19 +28,19 @@
                     "mID": "Render2DTextComponent",
                     "Text": "waiting for a websocket client to change this text",
                     "Font": "Font",
-                    "GlyphUniform": "glyph",
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
                     },
                     "Location": {
                         "x": 0,
                         "y": 0
                     },
-                    "Orientation": "Center"
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::APIComponent",
@@ -69,34 +69,6 @@
             "Font": "fonts/Montserrat-Light.otf"
         },
         {
-            "Type": "nap::Material",
-            "mID": "FontMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3",
-                            "Name": "textColor",
-                            "Value": {
-                                "x": 0.8587999939918518,
-                                "y": 0.8587999939918518,
-                                "z": 0.8587999939918518
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Borderless": false,
@@ -113,7 +85,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -124,12 +97,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::Shader",
-            "mID": "FontShader",
-            "mVertShader": "shaders/font.vert",
-            "mFragShader": "shaders/font.frag"
         },
         {
             "Type": "nap::WebSocketServerEndPoint",

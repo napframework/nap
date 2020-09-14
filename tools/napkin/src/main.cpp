@@ -68,14 +68,15 @@ int main(int argc, char* argv[])
 	splash.show();
 	app.processEvents();
 
+	// handle commandline
 	{
-		// handle commandline
 		QCommandLineParser parser;
 		auto opHelp = parser.addHelpOption();
-		auto opVer	= parser.addVersionOption();
+		auto opVer = parser.addVersionOption();
 
-		QCommandLineOption opProject({"p", "project"}, "Load specified project file upon startup", "project", "");
+		QCommandLineOption opProject({ "p", "project" }, "Load specified project file upon startup", "project", "");
 		parser.addOption(opProject);
+
 		// Options to assist with automated testing
 		QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
 		parser.addOption(opNoOpenRecent);
@@ -83,27 +84,23 @@ int main(int argc, char* argv[])
 		parser.addOption(opExitFailure);
 		QCommandLineOption opExitSuccess("exit-on-success", "Exit on success loading project (for testing)", "", "");
 		parser.addOption(opExitSuccess);
-
 		parser.process(app);
 
-		if (parser.isSet(opHelp))
-			return 0;
+		if (parser.isSet(opHelp)) { return 0; }
+		if (parser.isSet(opVer)) { return 0; }
+		if (parser.isSet(opExitFailure)) { ctx.setExitOnLoadFailure(true); }
+		if (parser.isSet(opExitSuccess)) { ctx.setExitOnLoadSuccess(true); }
 
-		if (parser.isSet(opVer))
-			return 0;
-
-		if (parser.isSet(opProject)) 
-        {
-            std::string projectPath = parser.value(opProject).toStdString();
-		    projectPath = nap::utility::getAbsolutePath(projectPath);
+		if (parser.isSet(opProject))
+		{
+			std::string projectPath = parser.value(opProject).toStdString();
+			projectPath = nap::utility::getAbsolutePath(projectPath);
 			ctx.addRecentlyOpenedProject(QString::fromStdString(projectPath));
-        } else if (parser.isSet(opNoOpenRecent))
+		}
+		else if (parser.isSet(opNoOpenRecent))
+		{
 			ctx.setOpenRecentProjectOnStartup(false);
-
-		if (parser.isSet(opExitFailure))
-			ctx.setExitOnLoadFailure(true);
-		if (parser.isSet(opExitSuccess))
-			ctx.setExitOnLoadSuccess(true);
+		}
 	}
 
 	// Create main window and run

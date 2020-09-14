@@ -251,9 +251,7 @@
                             255,
                             0
                         ]
-                    },
-                    "ProjectionMatrixUniform": "projectionMatrix",
-                    "ModelMatrixUniform": "modelMatrix"
+                    }
                 }
             ],
             "Children": [
@@ -377,19 +375,19 @@
                     "mID": "TextRenderableComponent",
                     "Text": "Blob#",
                     "Font": "Font",
-                    "GlyphUniform": "glyph",
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                    "TextColor": {
+                        "Values": [
+                            0.8587999939918518,
+                            0.8587999939918518,
+                            0.8587999939918518
+                        ]
                     },
                     "Location": {
                         "x": 0,
                         "y": 0
                     },
-                    "Orientation": "Center"
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -509,40 +507,13 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "CameraCaptureTexture"
                 }
             ],
             "Shader": "ClassifyShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "FontMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct_3",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3",
-                            "Name": "textColor",
-                            "Value": {
-                                "x": 0.8587999939918518,
-                                "y": 0.8587999939918518,
-                                "z": 0.8587999939918518
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
             "DepthMode": "InheritFromBlendMode"
         },
         {
@@ -595,6 +566,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "PlaneTexture"
                 }
             ],
@@ -635,6 +607,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "VideoCaptureTexture"
                 }
             ],
@@ -712,7 +685,8 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -908,28 +882,22 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "BlobShader",
-            "mVertShader": "shaders/facedetection/blob.vert",
-            "mFragShader": "shaders/facedetection/blob.frag"
+            "VertShader": "shaders/facedetection/blob.vert",
+            "FragShader": "shaders/facedetection/blob.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "ClassifyShader",
-            "mVertShader": "shaders/facedetection/detection.vert",
-            "mFragShader": "shaders/facedetection/detection.frag"
+            "VertShader": "shaders/facedetection/detection.vert",
+            "FragShader": "shaders/facedetection/detection.frag"
         },
         {
-            "Type": "nap::Shader",
-            "mID": "FontShader",
-            "mVertShader": "shaders/facedetection/font.vert",
-            "mFragShader": "shaders/facedetection/font.frag"
-        },
-        {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "PlaneShader",
-            "mVertShader": "shaders/facedetection/plane.vert",
-            "mFragShader": "shaders/facedetection/plane.frag"
+            "VertShader": "shaders/facedetection/plane.vert",
+            "FragShader": "shaders/facedetection/plane.frag"
         },
         {
             "Type": "nap::SphereMesh",

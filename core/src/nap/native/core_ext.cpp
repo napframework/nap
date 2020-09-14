@@ -9,14 +9,14 @@
 
 namespace nap
 {
-	static const std::string sPossibleProjectParents[] =
-			{
-					"projects",     // User projects against packaged NAP
-					"demos",        // Demo projects
-					"apps",         // Applications in NAP source
-					"test",         // Old test projects in NAP source
-					"examples"      // Example projects
-			};
+	static const std::vector<std::string> sPossibleProjectParents =
+	{
+			"projects",     // User projects against packaged NAP
+			"demos",        // Demo projects
+			"apps",         // Applications in NAP source
+			"test",         // Old test projects in NAP source
+			"examples"      // Example projects
+	};
 
 
 	bool Core::findProjectInfoFile(std::string& foundFilePath) const
@@ -49,7 +49,7 @@ namespace nap
 		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
 
 		// Iterate possible project locations
-		for (auto& parentPath : sPossibleProjectParents)
+		for (const auto& parentPath : sPossibleProjectParents)
 		{
 			std::string testPath = utility::joinPath({napRoot, parentPath, projectName});
 			nap::Logger::debug("Looking for %s in '%s'...", PROJECT_INFO_FILENAME, testPath.c_str());

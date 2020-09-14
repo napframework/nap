@@ -729,22 +729,22 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CanvasShader",
-            "mVertShader": "shaders/canvas.vert",
-            "mFragShader": "shaders/canvas.frag"
+            "VertShader": "shaders/canvas.vert",
+            "FragShader": "shaders/canvas.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "LineShader",
-            "mVertShader": "shaders/line.vert",
-            "mFragShader": "shaders/line.frag"
+            "VertShader": "shaders/line.vert",
+            "FragShader": "shaders/line.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "NormalsShader",
-            "mVertShader": "shaders/normals.vert",
-            "mFragShader": "shaders/normals.frag"
+            "VertShader": "shaders/normals.vert",
+            "FragShader": "shaders/normals.frag"
         },
         {
             "Type": "nap::TriangleLine",

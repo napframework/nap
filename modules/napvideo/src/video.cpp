@@ -1766,4 +1766,10 @@ namespace nap
 		// Return popped frame, make sure to FREE after use!!
 		return cur_frame;
 	}
+
+
+	void Video::decodeAudioStream(bool enabled)
+	{
+		mDecodeAudio = enabled;
+	}
 }

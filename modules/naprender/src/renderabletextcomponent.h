@@ -4,6 +4,7 @@
 #include "rendercomponent.h"
 #include "materialinstance.h"
 #include "renderableglyph.h"
+#include "color.h"
 
 // External Includes
 #include <font.h>
@@ -16,28 +17,13 @@ namespace nap
 	class RenderableTextComponentInstance;
 
 	/**
-	 * Render-able Text Component Resource.
-	 * Creates a RenderableTextComponentInstance that can draw text using a font and material.
-	 * Text rendering works best when the blend mode of the Material is set to: AlphaBlend and the Depth mode to NoReadWrite.
-	 * This ensures the text is rendered on top of the rest and remains visible.
+	 * Draws text into the currently active render target using.
 	 * Use the Renderable2DTextComponent to render text in screen space and the Renderable3DTextComopnent to render text in 3D space.
 	 *
 	 * The nap::RenderableTextComponentInstance can cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line.
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
-	 *
-	 * The model view and projection matrices are automatically updated when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
-	 * The model matrix uniform 'uniform::modelMatrix' is required.
-	 *
-	 * ~~~~~{.cpp}
-	 * uniform nap
-	 * {
-	 *		mat4 projectionMatrix;		///< Optional
-	 *		mat4 viewMatrix;			///< Optional
-	 *		mat4 modelMatrix;			///< Required
-	 *	} mvp;							///< Required
-	 * ~~~~~
 	 */
 	class NAPAPI RenderableTextComponent : public RenderableComponent
 	{
@@ -46,34 +32,19 @@ namespace nap
 	public:
 		ResourcePtr<Font> mFont;								///< Property: 'Font' that represents the style of the text
 		std::string mText;										///< Property: 'Text' to draw
-		MaterialInstanceResource mMaterialInstanceResource;		///< Property: 'MaterialInstance' the material used to shade the text
-		std::string mGlyphUniform = "glyph";					///< Property: 'GlyphUniform' name of the 2D texture character binding in the shader, defaults to 'glyph'
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };			///< Property: 'TextColor' the color of the text
 	};
 
 
 	/**
-	 * Draws text into the currently active render target using a font and material.
+	 * Draws text into the currently active render target.
 	 * This is the runtime version of the RenderableTextComponent resource.
-	 * Text rendering works best when the blend mode of the Material is set to: AlphaBlend and the Depth mode to NoReadWrite. 
-	 * This ensures the text is rendered on top of the rest and remains visible.
 	 * Use the Renderable2DTextComponent to render text in screen space and the Renderable3DTextComopnent to render text in 3D space.
 	 *
 	 * It is possible to cache multiple lines at once, where each line can be selected and drawn individually inside a render loop.
 	 * This is useful when you want the same component to render multiple lines of text, removing the need to declare a component for each individual line. 
 	 * You cannot update or add a line of text when rendering a frame: inside the render loop.
 	 * Only update or add new lines of text on update. You can however change the position and line of text to draw inside the render loop.
-	 *
-	 * The model view and projection matrices are automatically updated when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
-	 * The model matrix uniform 'uniform::modelMatrix' is required.
-	 *
-	 * ~~~~~{.cpp}
-	 * uniform nap
-	 * {
-	 *		mat4 projectionMatrix;		///< Optional
-	 *		mat4 viewMatrix;			///< Optional
-	 *		mat4 modelMatrix;			///< Required
-	 *	} mvp;
-	 * ~~~~~
 	 */
 	class NAPAPI RenderableTextComponentInstance : public RenderableComponentInstance
 	{
@@ -81,13 +52,6 @@ namespace nap
 	public:
 
 		RenderableTextComponentInstance(EntityInstance& entity, Component& resource);
-
-		/**
-		 * Initializes the this component.
-		 * @param errorState holds the error message when initialization fails
-		 * @return if the component initialized successfully
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * @return the font used to display text.
@@ -211,6 +175,14 @@ namespace nap
 		 */
 		const nap::TransformComponentInstance* getTransform() const		{ return mTransform; }			
 
+		/**
+		 * Loads the shader and initializes this component, call this in a derived class on initialization.
+		 * @param depthMode text shading depth mode
+		 * @param errorState holds the error message when initialization fails
+		 * @return if the component initialized successfully
+		 */
+		virtual bool setup(utility::ErrorState& errorState);
+
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
 		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
@@ -218,7 +190,6 @@ namespace nap
 		int mIndex = 0;													///< Current line index to update or draw
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
-		std::string mGlyphUniformName = "glyph";						///< Name of the 2D texture character binding in the shader
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
 		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
 		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
@@ -229,5 +200,6 @@ namespace nap
 		std::vector<math::Rect> mTextBounds;							///< Bounds of the text in pixels
 		std::vector<std::vector<RenderableGlyph*>> mGlyphCache;			///< All available lines of text to render
 		std::vector<std::string> mLinesCache;							///< All current lines to be drawn
+		MaterialInstanceResource mMaterialInstanceResource;				///< Resource used to initialize the material instance
 	};
 }

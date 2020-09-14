@@ -280,11 +280,6 @@
             "mID": "VideoEntity",
             "Components": [
                 {
-                    "Type": "nap::SyncVideoComponent",
-                    "mID": "nap::SyncVideoComponent",
-                    "VideoPlayer": "VideoPlayer"
-                },
-                {
                     "Type": "nap::audio::VideoAudioComponent",
                     "mID": "audioComponent",
                     "VideoPlayer": "VideoPlayer",
@@ -299,50 +294,6 @@
                         0,
                         1
                     ]
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
-                    "Mesh": "VideoMesh",
-                    "MaterialInstance": {
-                        "Material": "VideoMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_3",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
@@ -389,9 +340,20 @@
                             0,
                             0
                         ]
-                    },
-                    "ProjectionMatrixUniform": "projectionMatrix",
-                    "ModelMatrixUniform": "modelMatrix"
+                    }
+                },
+                {
+                    "Type": "nap::RenderVideoComponent",
+                    "mID": "nap::RenderVideoComponent",
+                    "VideoPlayer": "VideoPlayer",
+                    "OutputTexture": "VideoColorTexture",
+                    "ClearColor": {
+                        "Values": [
+                            255,
+                            255,
+                            255
+                        ]
+                    }
                 }
             ],
             "Children": []
@@ -539,25 +501,6 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::Material",
-            "mID": "VideoMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "VideoShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
             "Type": "nap::PlaneMesh",
             "mID": "PlaneMesh",
             "Usage": "Static",
@@ -572,35 +515,6 @@
             },
             "Rows": 1,
             "Columns": 1
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "VideoMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "Size": {
-                "x": 1920.0,
-                "y": 1080.0
-            },
-            "Position": {
-                "x": 960.0,
-                "y": 540.0
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
-            "Type": "nap::RenderTarget",
-            "mID": "VideoRenderTarget",
-            "SampleShading": true,
-            "Samples": "Four",
-            "ClearColor": {
-                "x": 1.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "ColorTexture": "VideoColorTexture"
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -667,28 +581,22 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "BackgroundShader",
-            "mVertShader": "shaders/videomodulation/background.vert",
-            "mFragShader": "shaders/videomodulation/background.frag"
+            "VertShader": "shaders/videomodulation/background.vert",
+            "FragShader": "shaders/videomodulation/background.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "DisplacementShader",
-            "mVertShader": "shaders/videomodulation/displacement.vert",
-            "mFragShader": "shaders/videomodulation/displacement.frag"
+            "VertShader": "shaders/videomodulation/displacement.vert",
+            "FragShader": "shaders/videomodulation/displacement.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "FXShader",
-            "mVertShader": "shaders/videomodulation/fxshader.vert",
-            "mFragShader": "shaders/videomodulation/fxshader.frag"
-        },
-        {
-            "Type": "nap::Shader",
-            "mID": "VideoShader",
-            "mVertShader": "shaders/videomodulation/video.vert",
-            "mFragShader": "shaders/videomodulation/video.frag"
+            "VertShader": "shaders/videomodulation/fxshader.vert",
+            "FragShader": "shaders/videomodulation/fxshader.frag"
         },
         {
             "Type": "nap::VideoMeshFromFile",

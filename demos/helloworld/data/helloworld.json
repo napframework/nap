@@ -117,19 +117,19 @@
                     "mID": "nap::RenderableTextComponent",
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
-                    "GlyphUniform": "glyph",
-                    "MaterialInstance": {
-                        "Material": "FontMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                    "TextColor": {
+                        "Values": [
+                            0.8587999939918518,
+                            0.8587999939918518,
+                            0.8587999939918518
+                        ]
                     },
                     "Location": {
                         "x": 0,
                         "y": 0
                     },
-                    "Orientation": "Center"
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -238,34 +238,6 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "FontMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3",
-                            "Name": "textColor",
-                            "Value": {
-                                "x": 0.8587999939918518,
-                                "y": 0.8587999939918518,
-                                "z": 0.8587999939918518
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "FontShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
             "mID": "WorldMaterial",
             "Uniforms": [],
             "Samplers": [
@@ -279,6 +251,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "WorldTexture"
                 }
             ],
@@ -321,7 +294,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -346,16 +320,10 @@
             ]
         },
         {
-            "Type": "nap::Shader",
-            "mID": "FontShader",
-            "mVertShader": "shaders/helloworld/font.vert",
-            "mFragShader": "shaders/helloworld/font.frag"
-        },
-        {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "WorldShader",
-            "mVertShader": "shaders/helloworld/world.vert",
-            "mFragShader": "shaders/helloworld/world.frag"
+            "VertShader": "shaders/helloworld/world.vert",
+            "FragShader": "shaders/helloworld/world.frag"
         },
         {
             "Type": "nap::SphereMesh",

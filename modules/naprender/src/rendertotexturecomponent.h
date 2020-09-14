@@ -19,11 +19,30 @@ namespace nap
 	class RenderToTextureComponentInstance;
 
 	/**
-	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly to a texture using a custom material without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
-	 * The plane is automatically scaled to fit the bounds of the output texture.
-	 * Resource part of the component.
+	 * The plane is automatically scaled to fit the bounds of the render target.
+	 *
+	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
+	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
+	 *
+	 * This component expects a material with a shader that contains both a model and projection matrix uniform.
+	 * The view matrix uniform is optional. It will be set if found, otherwise bypassed.
+	 * If you don't care about view space (camera) transformation, don't declare it.
+	 *
+	 * ~~~~~
+	 *	uniform nap
+	 *	{
+	 *		uniform mat4 projectionMatrix;
+	 *		uniform mat4 modelMatrix;
+	 *	} mvp;
+	 *	...
+	 *	void main(void)
+	 *	{
+	 *		gl_Position = mvp.projectionMatrix * mvp.modelMatrix;
+	 *	}
+	 * ~~~~~
 	 */
 	class NAPAPI RenderToTextureComponent : public RenderableComponent
 	{
@@ -39,12 +58,33 @@ namespace nap
 
 
 	/**
-	 * Renders an effect directly into a texture without having to define a render target or mesh.
+	 * Renders an effect directly to a texture using a custom material without having to define a render target or mesh.
 	 * Use this component as a post process render step.
 	 * This component manages its own render target and plane to render to.
-	 * The plane is automatically scaled to fit the bounds of the output texture.
-	 * Simply declare the component in json and call draw() in the render part of your application.
+	 * The plane is automatically scaled to fit the bounds of the render target.
+	 *
+	 * Simply declare the component in json and call RenderToTextureComponentInstance::draw() in the render part of your application,
+	 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
 	 * It is still possible to render this component through the render service, although only orthographic cameras are supported.
+	 *
+	 * This component expects a material with a shader that contains both a model and projection matrix uniform.
+	 * The view matrix uniform is optional. It will be set if found, otherwise bypassed.
+	 * If you don't care about view space (camera) transformation, don't declare it in the shader.
+	 * for example:
+	 *
+	 * ~~~~~
+	 *	uniform nap
+	 *	{
+	 *		uniform mat4 projectionMatrix;
+	 *		uniform mat4 modelMatrix;
+	 *	} mvp;
+	 *	...
+	 *	void main(void)
+	 *	{
+	 *		gl_Position = mvp.projectionMatrix * mvp.modelMatrix;
+	 *	}
+	 * ~~~~~
+	 *
 	 */
 	class NAPAPI RenderToTextureComponentInstance : public RenderableComponentInstance
 	{
@@ -55,15 +95,9 @@ namespace nap
 		/**
 		 * Initialize RenderToTextureComponentInstance based on the RenderToTextureComponent resource
 		 * @param errorState should hold the error message when initialization fails
-		 * @return if the rendertotexturecomponentInstance is initialized successfully
+		 * @return if the rendertotexturecomponentInstance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * update rendertotexturecomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
 
 		/**
 		 * @return the render target that is used to perform the render step	
@@ -76,18 +110,17 @@ namespace nap
 		Texture2D& getOutputTexture(); 
 
 		/**
-		 * Directly executes the render step without having to go through the render service.
-		 * Call this in your app render() call. 
-		 * The render target associated with this component is automatically cleared and bound.
-		 * Simply cal draw() and the result is rendered into the current output texture.
-		 * A custom orthographic projection matrix is constructed based on the size of the render target.
+		 * Renders the effect directly to texture using a custom material, without having to define a render target or mesh.
+		 * Call this in your application render() call, 
+		 * in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
+		 * Do not call this function outside of a headless recording pass, ie: when rendering to a window.
+		 * The result is rendered into the given output texture. 
 		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
 		void draw();
 
 		/**
-		 * Called by the Render Service.
-		 * Only orthographic cameras are supported when rendering through the render service!
+		 * Called by the Render Service. Only orthographic cameras are supported.
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
 
@@ -98,33 +131,32 @@ namespace nap
 
 	protected:
 		/**
-		* Draws the plane full screen to the currently active render target.
-		* @param viewMatrix often the camera world space location
-		* @param projectionMatrix often the camera projection matrix
-		*/
+		 * Draws the effect full screen to the currently active render target,
+		 * when the view matrix = identity.
+		 * @param renderTarget the target to render to.
+		 * @param commandBuffer the currently active command buffer.
+		 * @param viewMatrix often the camera world space location
+		 * @param projectionMatrix often the camera projection matrix
+		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		nap::RenderTarget	mTarget;										///< Internally managed render target
-		nap::PlaneMesh		mPlane;											///< Plane used for rendering the effect onto
-		MaterialInstance	mMaterialInstance;								///< The MaterialInstance as created from the resource.
-		RenderableMesh		mRenderableMesh;								///< Valid Plane / Material combination
-		RenderService*		mService = nullptr;								///< Render service
-		glm::mat4x4			mModelMatrix;									///< Plane model matrix
-		bool				mDirty = true;									///< If the model matrix needs to be recomputed
-		std::string			mModelMatrixUniform;							///< Name of the model matrix uniform in the shader
-		std::string			mProjectMatrixUniform;							///< Name of the projection matrix uniform in the shader
-	
-		/**
-		 * Checks if the uniform is available on the source material
-		 * @return if the uniform is available or not
-		 */
-		bool ensureUniform(const std::string& uniformName, utility::ErrorState& error);
+		nap::RenderTarget			mTarget;							///< Internally managed render target
+		nap::PlaneMesh				mPlane;								///< Plane used for rendering the effect onto
+		MaterialInstance			mMaterialInstance;					///< The MaterialInstance as created from the resource.
+		RenderableMesh				mRenderableMesh;					///< Valid Plane / Material combination
+		RenderService*				mService = nullptr;					///< Render service
+		glm::mat4x4					mModelMatrix;						///< Plane model matrix
+		bool						mDirty = true;						///< If the model matrix needs to be recomputed
+		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
+		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
+		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform
+		UniformStructInstance*		mMVPStruct = nullptr;				///< model view projection struct
 
 		/**
-		 * Computes the model matrix based on current frame buffer size.
-		 * The model matrix if only computed if the output texture is set or changed.
+		 * Checks if the uniform is available on the source material and creates it if so
+		 * @return the uniform, nullptr if not available.
 		 */
-		void computeModelMatrix();
+		UniformMat4Instance* ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error);
 	};
 }
