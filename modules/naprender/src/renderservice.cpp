@@ -1302,10 +1302,10 @@ namespace nap
 
 		// Create video shader and material instance
 		std::unique_ptr<Shader>shader(shaderType.create<Shader>({ getCore() }));
-		shader->mID = utility::stringFormat("%s_%s", shader_name.c_str(), math::generateUUID());
+		shader->mID = utility::stringFormat("%s_%s", shader_name.c_str(), math::generateUUID().c_str());
 		
 		std::unique_ptr<Material> material = std::make_unique<Material>(getCore());
-		material->mID = utility::stringFormat("Material_%s_%s", shader_name.c_str(), math::generateUUID());
+		material->mID = utility::stringFormat("Material_%s_%s", shader_name.c_str(), math::generateUUID().c_str());
 		material->mShader = shader.get();
 
 		// Initialization failed, invalid entry
