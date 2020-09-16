@@ -35,6 +35,7 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
+	RTTI_PROPERTY("Headless",			&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
@@ -52,6 +53,29 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Dummy Window Wrapper
+	//////////////////////////////////////////////////////////////////////////
+	
+	/**
+	 * Used by the render service to temporarily bind and destroy information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummyWindow
+	{
+		~DummyWindow()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Static Methods
 	//////////////////////////////////////////////////////////////////////////
@@ -269,7 +293,7 @@ namespace nap
 	}
 
 
-	bool getAvailableVulkanInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getAvailableVulkanInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -293,10 +317,22 @@ namespace nap
 
 
 	/**
+	 * Creates the vulkan surface that is rendered to by the device using SDL
+	 */
+	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
+	{
+		// Use SDL to create the surface
+		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
+			return false;
+		return true;
+	}
+
+
+	/**
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, uint32 requestedVersion, VkInstance& outInstance, utility::ErrorState& errorState)
+	static bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, uint32 requestedVersion, VkInstance& outInstance, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -376,9 +412,10 @@ namespace nap
 
 
 	/**
-	 * Selects a device based on user preference, min required api version and queue family requirements
+	 * Selects a device based on user preference, min required api version and queue family requirements.
+	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -431,12 +468,23 @@ namespace nap
 			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
 
-			// Make sure the family of commands contains an option to issue graphical commands.
+			// Make sure the queue family supports both graphical and transfer commands.
 			int queue_node_index = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
-				if (queue_properties[i].queueCount > 0 && (queue_properties[i].queueFlags & required_flags))
+				if (queue_properties[i].queueFlags & required_flags)
 				{
+					// If there's the need to present as well, make sure this family supports presentation to the given surface. 
+					if (presentSurface != VK_NULL_HANDLE)
+					{
+						VkBool32 supports_presentation = false;
+						vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, presentSurface, &supports_presentation);
+						if (supports_presentation == 0)
+							continue;
+					}
+
+					// Compatible
+					Logger::info("%d: Compatible queue found at index: %d", index, i);
 					queue_node_index = i;
 					break;
 				}
@@ -452,7 +500,6 @@ namespace nap
 			// This is at least a compatible device
 			valid_devices.emplace_back(index);
 			queue_indices.emplace_back(index);
-			nap::Logger::info("%d: Compatible", index);
 
 			// Check if it's the preferred type, if so select it
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? index : preferred_idx;
@@ -1145,18 +1192,35 @@ namespace nap
 
 		// Store render settings, used for initialization and global window creation
 		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
-		mEnableHighDPIMode	= render_config->mEnableHighDPIMode;
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
 
-		// Get available vulkan extensions, necessary for interfacing with native window
+		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
+		mHeadless = render_config->mHeadless;
+
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
+		// A dummy window is always created when NOT running headless, because we have to ensure that
+		// the queue that is selected supports presenting a swapchain image . 
+		// The dummy window also allows us to figure out what Vulkan (instance) extensions are required
+		// on initialization to interface with the native window system.
+		DummyWindow dummy_window;
+		
+		// Get available vulkan instance extensions.
 		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
 		// When initializing the vulkan instance these extensions have to be enabled in order to create a valid
 		// surface later on.
-		std::vector<std::string> found_extensions;
-		SDL_Window* dummy_window = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-		bool got_extensions = getAvailableVulkanInstanceExtensions(dummy_window, found_extensions, errorState);
-		SDL_DestroyWindow(dummy_window);
-		if (!got_extensions)
-			return false;
+		std::vector<std::string> instance_extensions;
+		if (!mHeadless)
+		{
+			// Create dummy window and verify creation
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+				return false;
+			
+			// Get all available vulkan instance extensions, required to create a presentable surface.
+			if (!getAvailableVulkanInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+				return false;
+		}
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
@@ -1178,15 +1242,24 @@ namespace nap
 
 		// Create Vulkan Instance together with required extensions and layers
 		mAPIVersion = VK_MAKE_VERSION(render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
-		if (!createVulkanInstance(found_layers, found_extensions, mAPIVersion, mInstance, errorState))
+		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
 		// Vulkan messaging callback
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
-		// Select GPU after successful creation of a vulkan instance
+		// Create presentation surface if not running headless. Can only do this after creation of instance.
+		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		if (!mHeadless)
+		{
+			dummy_window.mInstance = mInstance;
+			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
+				return false;
+		}
+
+		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported

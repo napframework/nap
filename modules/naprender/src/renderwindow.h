@@ -271,7 +271,6 @@ namespace nap
 		VkSwapchainKHR					mSwapchain = VK_NULL_HANDLE;
 		VkRenderPass					mRenderPass = VK_NULL_HANDLE;
 		VkQueue							mPresentQueue = VK_NULL_HANDLE;
-		uint32 							mPresentQueueIndex = 0;
 		VkFormat						mSwapchainFormat = VK_FORMAT_UNDEFINED;
 		std::vector<VkImageView>		mSwapChainImageViews;
 		std::vector<VkFramebuffer>		mSwapChainFramebuffers;

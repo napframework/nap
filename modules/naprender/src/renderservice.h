@@ -45,6 +45,7 @@ namespace nap
 			CPU			= 4		///< CPU as graphics card
 		};
 
+		bool						mHeadless = false;												///< Property: 'Headless' If there is no display device (monitor) attached to the GPU. Turning this on forbids the use of a nap::RenderWindow.
 		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
@@ -359,6 +360,14 @@ namespace nap
 		 */
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 		
+		/**
+		 * Returns if the render engine runs headless. 
+		 * This allows you to render images without any display device.
+		 * This in turn means that when enabled it is not possible to display (present) images to a window.
+		 * @return if the render engine runs headless.
+		 */
+		bool isHeadless() const														{ return mHeadless; }
+
 		/**
 		 * Returns the command buffer that is being recorded. Every window records into
 		 * it's own command buffer. All headless render operations share the same command buffer.
@@ -797,6 +806,7 @@ namespace nap
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
 		UniqueMaterialCache						mMaterials;
+		bool									mHeadless = false;
 	};
 } // nap
 
