@@ -67,7 +67,7 @@ namespace nap
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
 	 * By default headless rendering is turned off. This means Vulkan is setup to display the result of a render operation 
-	 * in a nap::RenderWindow, which in turn requires a display device to be connected to the system.
+	 * in a nap::RenderWindow, next to a nap::RenderTarget. This requires a display device to be connected to the system.
 	 * Enable headless rendering when you do NOT want to render to a window or when there is no display attached to the system.
 	 * This in turn forbids the use of a nap::RenderWindow inside your application.
 	 *
