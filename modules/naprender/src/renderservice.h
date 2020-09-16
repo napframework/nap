@@ -73,7 +73,7 @@ namespace nap
 	 *
 	 * When headless rendering is enabled, the engine will be initialized  without surface and swapchain support, 
 	 * which are required by a nap::RenderWindow to display images on screen. You can therefore only render to a 
-	 * nap::RenderTarget (on the GPU) when Headless rendering is enabled. 
+	 * nap::RenderTarget when Headless rendering is enabled. 
 	 *
 	 * Turn headless rendering on / off using the nap::RenderServiceConfiguration.
 	 *
