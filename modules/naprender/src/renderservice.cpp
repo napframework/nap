@@ -200,7 +200,6 @@ namespace nap
 	{
 		const static std::vector<std::string> layers = 
 		{ 
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_KHR_MAINTENANCE1_EXTENSION_NAME
 		};
 		return layers;
@@ -293,7 +292,7 @@ namespace nap
 	}
 
 
-	static bool getAvailableVulkanInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getSurfaceInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -309,9 +308,6 @@ namespace nap
 		// Store
 		for (unsigned int i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
-
-		// Add debug display extension, we need this to relay debug messages
-		outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		return true;
 	}
 
@@ -394,7 +390,7 @@ namespace nap
 		inst_info.flags = 0;
 		inst_info.pApplicationInfo = &app_info;
 		inst_info.enabledExtensionCount = static_cast<uint32_t>(ext_names.size());
-		inst_info.ppEnabledExtensionNames = ext_names.data();
+		inst_info.ppEnabledExtensionNames = ext_names.empty() ? nullptr : ext_names.data();
 		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
@@ -1199,16 +1195,12 @@ namespace nap
 
 		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
 		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		// A dummy window is always created when NOT running headless, because we have to ensure that
-		// the queue that is selected supports presenting a swapchain image . 
-		// The dummy window also allows us to figure out what Vulkan (instance) extensions are required
-		// on initialization to interface with the native window system.
 		DummyWindow dummy_window;
 		
-		// Get available vulkan instance extensions.
-		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
-		// When initializing the vulkan instance these extensions have to be enabled in order to create a valid
-		// surface later on.
+		// Get available vulkan instance extensions using SDL.
+		// Returns, next to the default VK_KHR_surface, a platform specific extension.
+		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
+		// When running headless we don't present so don't need the extensions.
 		std::vector<std::string> instance_extensions;
 		if (!mHeadless)
 		{
@@ -1218,9 +1210,13 @@ namespace nap
 				return false;
 			
 			// Get all available vulkan instance extensions, required to create a presentable surface.
-			if (!getAvailableVulkanInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
+			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
 				return false;
 		}
+
+		// Add debug display extension, we need this to relay debug messages
+		instance_extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
@@ -1271,10 +1267,16 @@ namespace nap
 		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
 		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
 
-		// Create unique set of extensions out of required and additional requested ones
+		// Get extensions that are required for NAP render engine to function.
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
-		std::vector<std::string> addition_ext_names = render_config->mAdditionalExtensions;
-		required_ext_names.insert(required_ext_names.end(), addition_ext_names.begin(), addition_ext_names.end());
+
+		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
+		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
+
+		// Add additional requests
+		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
+		
+		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
 		for (const auto& ext : required_ext_names)
 			unique_ext_names.emplace(ext);

@@ -555,8 +555,8 @@ namespace nap
 
 	RenderWindow::~RenderWindow()
 	{
-		// Return immediately if there's no actual native present present
-		// This is the case when the window is created but not initialized or did not initialize properly
+		// Return immediately if there's no actual native window present.
+		// This is the case when the window is created but not initialized or did not initialize properly.
 		if (mSDLWindow == nullptr)
 			return;
 
@@ -592,6 +592,11 @@ namespace nap
 
 	bool RenderWindow::init(utility::ErrorState& errorState)
 	{
+		// Forbid creation of window when headless rendering is enabled
+		// Window might be created, when display device is attached, but surface creation will definately fail.
+		if (!errorState.check(!mRenderService->isHeadless(), "Can't create window, headless rendering is enabled"))
+			return false;
+
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
 		mSDLWindow = createSDLWindow(*this, errorState);
