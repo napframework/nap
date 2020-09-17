@@ -430,8 +430,10 @@ namespace nap
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
 		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
 
-		std::vector<int> valid_devices;
-		std::vector<int> queue_indices;
+		std::vector<VkPhysicalDevice> valid_devices;
+		std::vector<VkPhysicalDeviceProperties> valid_properties;
+		std::vector<int> valid_indices;
+
 		int preferred_idx = -1;
 		for (int index = 0; index < physical_devices.size(); ++index)
 		{
@@ -486,7 +488,7 @@ namespace nap
 				}
 			}
 			
-			// No compatible queue found
+			// Ensure there's a compatible queue for this device
 			if (queue_node_index < 0)
 			{
 				Logger::warn("%d: Unable to find compatible queue family", index);
@@ -494,11 +496,13 @@ namespace nap
 			}
 
 			// This is at least a compatible device
-			valid_devices.emplace_back(index);
-			queue_indices.emplace_back(index);
+			valid_devices.emplace_back(physical_device);
+			valid_properties.emplace_back(properties);
+			valid_indices.emplace_back(queue_node_index);
 
 			// Check if it's the preferred type, if so select it
-			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? index : preferred_idx;
+			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
+				valid_devices.size() -1 : preferred_idx;
 		}
 
 		// if there are no valid devices, bail.
@@ -506,21 +510,21 @@ namespace nap
 			return false;
 
 		// If the preferred GPU is found, use that one, otherwise first compatible one
-		int device_idx = preferred_idx;
+		int selected_idx = preferred_idx;
 		if (preferred_idx < 0)
 		{
 			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
-			device_idx = 0;
+			selected_idx = 0;
 		}
 
 		// Set the output variables
-		outDevice = physical_devices[device_idx];
-		outProperties = physical_device_properties[device_idx];
-		outQueueFamilyIndex = queue_indices[device_idx];
+		outDevice = valid_devices[selected_idx];
+		outQueueFamilyIndex = valid_indices[selected_idx];
+		outProperties = valid_properties[selected_idx];
 
 		// Extract device features
-		vkGetPhysicalDeviceFeatures(physical_devices[device_idx], &outFeatures);
-		nap::Logger::info("Selected device: %d", device_idx, physical_device_properties[device_idx].deviceName);
+		vkGetPhysicalDeviceFeatures(valid_devices[selected_idx], &outFeatures);
+		nap::Logger::info("Selected device: %d", selected_idx, physical_device_properties[selected_idx].deviceName);
 		return true;
 	}
 
