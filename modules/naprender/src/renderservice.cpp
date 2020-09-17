@@ -77,6 +77,13 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Compatible physical device
+	//////////////////////////////////////////////////////////////////////////
+
+
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Static Methods
 	//////////////////////////////////////////////////////////////////////////
 
@@ -411,7 +418,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -430,25 +437,27 @@ namespace nap
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
 		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
 
-		std::vector<VkPhysicalDevice> valid_devices;
-		std::vector<VkPhysicalDeviceProperties> valid_properties;
-		std::vector<int> valid_indices;
+		// All valid physical devices
+		std::vector<PhysicalDevice> valid_devices;
 
+		// Iterate over every available physical device and gather valid ones.
+		// A valid physical device has a graphics and compute queue, if presentSurface != NULL,
+		// present functionality is also required.
 		int preferred_idx = -1;
-		for (int index = 0; index < physical_devices.size(); ++index)
+		for (int device_idx = 0; device_idx < physical_devices.size(); ++device_idx)
 		{
 			// Get current physical device
-			VkPhysicalDevice physical_device = physical_devices[index];
+			VkPhysicalDevice physical_device = physical_devices[device_idx];
 
 			// Get properties associated with device
-			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
+			VkPhysicalDeviceProperties& properties = physical_device_properties[device_idx];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s, type: %s, version: %d.%d", index, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
 			// If the supported api version < required by currently used api, continue
 			if (properties.apiVersion < minAPIVersion)
 			{
-				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
 				continue;
 			}
 
@@ -457,7 +466,7 @@ namespace nap
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
 			if (family_queue_count == 0)
 			{
-				Logger::warn("%d: No queue families available", index);
+				Logger::warn("%d: No queue families available", device_idx);
 				continue;
 			}
 
@@ -467,7 +476,7 @@ namespace nap
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
 
 			// Make sure the queue family supports both graphical and transfer commands.
-			int queue_node_index = -1;
+			int selected_queue_idx = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
 				if (queue_properties[i].queueFlags & required_flags)
@@ -482,25 +491,23 @@ namespace nap
 					}
 
 					// Compatible
-					Logger::info("%d: Compatible queue found at index: %d", index, i);
-					queue_node_index = i;
+					Logger::info("%d: Compatible queue found at index: %d", device_idx, i);
+					selected_queue_idx = i;
 					break;
 				}
 			}
 			
 			// Ensure there's a compatible queue for this device
-			if (queue_node_index < 0)
+			if (selected_queue_idx < 0)
 			{
-				Logger::warn("%d: Unable to find compatible queue family", index);
+				Logger::warn("%d: Unable to find compatible queue family", device_idx);
 				continue;
 			}
 
-			// This is at least a compatible device
-			valid_devices.emplace_back(physical_device);
-			valid_properties.emplace_back(properties);
-			valid_indices.emplace_back(queue_node_index);
+			// Add it as a compatible device
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_queue_idx));
 
-			// Check if it's the preferred type, if so select it
+			// Check if it's the preferred type, if so select it.
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
 				valid_devices.size() -1 : preferred_idx;
 		}
@@ -517,14 +524,9 @@ namespace nap
 			selected_idx = 0;
 		}
 
-		// Set the output variables
+		// Set the output
 		outDevice = valid_devices[selected_idx];
-		outQueueFamilyIndex = valid_indices[selected_idx];
-		outProperties = valid_properties[selected_idx];
-
-		// Extract device features
-		vkGetPhysicalDeviceFeatures(valid_devices[selected_idx], &outFeatures);
-		nap::Logger::info("Selected device: %d", selected_idx, physical_device_properties[selected_idx].deviceName);
+		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
 		return true;
 	}
 
@@ -532,7 +534,7 @@ namespace nap
 	/**
 	 * Creates the logical device based on the selected physical device, queue index and required extensions
 	 */
-	static bool createLogicalDevice(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceFeatures& physicalDeviceFeatures, uint32 queueFamilyIndex, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
+	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -541,13 +543,13 @@ namespace nap
 
 		// Get the number of available extensions for our graphics card
 		uint32_t device_property_count(0);
-		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
 		if (print) { Logger::info("Found %d Vulkan device extensions:", device_property_count); }
 
 		// Acquire their actual names
 		std::vector<VkExtensionProperties> device_properties(device_property_count);
-		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, device_properties.data()) == VK_SUCCESS, "Unable to acquire device extension property names"))
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, device_properties.data()) == VK_SUCCESS, "Unable to acquire device extension property names"))
 			return false;
 
 		// Match names against requested extension
@@ -574,7 +576,7 @@ namespace nap
 		// We create one command processing queue for graphics
 		VkDeviceQueueCreateInfo queue_create_info = { };
 		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queue_create_info.queueFamilyIndex = queueFamilyIndex;
+		queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
 		queue_create_info.queueCount = 1;
 		std::vector<float> queue_prio = { 1.0f };
 		queue_create_info.pQueuePriorities = queue_prio.data();
@@ -583,8 +585,8 @@ namespace nap
 
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
-		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
-		device_features.samplerAnisotropy = physicalDeviceFeatures.samplerAnisotropy;
+		device_features.sampleRateShading = physicalDevice.getFeatures().sampleRateShading;
+		device_features.samplerAnisotropy = physicalDevice.getFeatures().samplerAnisotropy;
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
@@ -600,7 +602,7 @@ namespace nap
 		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
-		if (!errorState.check(vkCreateDevice(physicalDevice, &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
+		if (!errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
 			return false;
 
 		return true;
@@ -1259,15 +1261,15 @@ namespace nap
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
-		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
+		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice.getHandle());
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
-		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
+		mSampleShadingSupported = mPhysicalDevice.getFeatures().sampleRateShading > 0;
 		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
-		mAnisotropicFilteringSupported = mPhysicalDeviceFeatures.samplerAnisotropy > 0;
+		mAnisotropicFilteringSupported = mPhysicalDevice.getFeatures().samplerAnisotropy > 0;
 		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
 		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
 
@@ -1287,22 +1289,22 @@ namespace nap
 
 		// Create a logical device that interfaces with the physical device.
 		bool print_extensions = render_config->mPrintAvailableExtensions;
-		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
 			return false;
 
 		// Create command pool
-		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mQueueIndex, mCommandPool), "Failed to create Command Pool"))
+		if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getQueueIndex(), mCommandPool), "Failed to create Command Pool"))
 			return false;
 
 		// Determine depth format for the current device
-		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
+		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
 			return false;
 
 		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
-		vkGetDeviceQueue(mDevice, mQueueIndex, 0, &mQueue);
+		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.physicalDevice = mPhysicalDevice;
+		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
 		allocatorInfo.device = mDevice;
         allocatorInfo.vulkanApiVersion = mAPIVersion;
         allocatorInfo.instance = mInstance;
@@ -1403,7 +1405,7 @@ namespace nap
 
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), format, &outProperties);
 	}
 
 
@@ -1828,5 +1830,11 @@ namespace nap
 	{
 		return mShader != nullptr && mMaterial != nullptr;
 	}
+}
 
+
+nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
+	mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
+{
+	vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 }

@@ -27,6 +27,10 @@ namespace nap
 	class Texture2D;
 	class GPUBuffer;
 
+	//////////////////////////////////////////////////////////////////////////
+	// Render Service Configuration
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Render engine configuration settings.
 	 */
@@ -57,6 +61,60 @@ namespace nap
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Render Physical Device
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Vulkan physical device (GPU), binds together physical device information for better management.
+	 */
+	class NAPAPI PhysicalDevice
+	{
+	public:
+		// Default constructor, invalid object
+		PhysicalDevice() = default;
+
+		// Called by the render service
+		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex);
+
+		/**
+		 * @return Physical device handle
+		 */
+		VkPhysicalDevice getHandle() const { return mDevice; }
+
+		/**
+		 * @return queue index used for graphics commands and image presentation.
+		 */
+		int getQueueIndex() const { return mQueueIndex; }
+
+		/**
+		 * @return physical device properties
+		 */
+		const VkPhysicalDeviceProperties& getProperties() const { return mProperties; }
+
+		/**
+		 * @return Physical device features
+		 */
+		const VkPhysicalDeviceFeatures& getFeatures() const { return mFeatures; }
+
+		/**
+		 * @return if the device is valid
+		 */
+		bool isValid() const	{ return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
+
+	private:
+		VkPhysicalDevice			mDevice = VK_NULL_HANDLE;			///< Handle to physical device
+		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
+		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
+		int							mQueueIndex = -1;					///< Graphics queue index
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Render Service
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Main interface for 2D and 3D rendering operations.
@@ -406,13 +464,13 @@ namespace nap
 		 * Multiple physical devices are not supported.
 		 * @return Selected Vulkan hardware (GPU) device
 		 */
-		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice; }
+		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice.getHandle(); }
 
 		/**
 		 * Returns all supported physical device (GPU) features.
 		 * @return all supported hardware features
 		 */
-		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDeviceFeatures; }
+		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDevice.getFeatures(); }
 
 		/**
 		 * Returns the Vulkan api version, as supported by the physical device.
@@ -421,13 +479,13 @@ namespace nap
 		 * but could be higher.
 		 * @return the version of Vulkan supported by the device
 		 */
-		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDeviceProperties.apiVersion; }
+		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDevice.getProperties().apiVersion; }
 
 		/**
 		 * All physical device hardware properties.
 		 * @return all hardware properties
 		 */
-		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDeviceProperties; }
+		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDevice.getProperties(); }
 
 		/**
 		 * Returns the handle to the logical Vulkan device,
@@ -493,7 +551,7 @@ namespace nap
 		 * Returns the index of the selected queue family.
 		 * @return the main queue index.
 		 */
-		uint32 getQueueIndex() const												{ return mQueueIndex; }
+		uint32 getQueueIndex() const												{ return mPhysicalDevice.getQueueIndex(); }
 		
 		/**
 		 * Returns the selected queue, used to execute recorded command buffers.
@@ -803,14 +861,10 @@ namespace nap
 		VkInstance								mInstance = VK_NULL_HANDLE;
 		VmaAllocator							mVulkanAllocator = VK_NULL_HANDLE;
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
-		VkPhysicalDevice						mPhysicalDevice = VK_NULL_HANDLE;
-		VkPhysicalDeviceFeatures				mPhysicalDeviceFeatures;
-		VkPhysicalDeviceProperties				mPhysicalDeviceProperties;
-		uint32_t								mPhysicalDeviceVersion = 0;
+		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
 		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
-		int										mQueueIndex = -1;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mQueue = VK_NULL_HANDLE;
 		PipelineCache							mPipelineCache;
