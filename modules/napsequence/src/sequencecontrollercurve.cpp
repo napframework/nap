@@ -738,7 +738,7 @@ namespace nap
 		{
 		case SequenceCurveEnums::TanPointTypes::IN:
 		{
-			if (curve_point.mInTan.mTime + time < curve_point.mOutTan.mTime)
+			if (time < curve_point.mOutTan.mTime)
 			{
 				curve_point.mInTan.mTime = time;
 				curve_point.mInTan.mValue = value;
@@ -753,7 +753,7 @@ namespace nap
 		break;
 		case SequenceCurveEnums::TanPointTypes::OUT:
 		{
-			if (curve_point.mOutTan.mTime + time > curve_point.mInTan.mTime)
+			if (time > curve_point.mInTan.mTime)
 			{
 				curve_point.mOutTan.mTime = time;
 				curve_point.mOutTan.mValue = value;

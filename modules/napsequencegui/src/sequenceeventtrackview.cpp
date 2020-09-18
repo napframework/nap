@@ -99,7 +99,7 @@ namespace nap
 			}
 		}
 
-		ImGui::PushItemWidth(140.0f);
+		ImGui::PushItemWidth(200.0f);
 		if (Combo(
 			"",
 			&current_item, event_outputs))

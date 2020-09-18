@@ -85,13 +85,9 @@ namespace nap
 	{
 		bool reset_dirty_flag = mState.mDirty;
 		mState.mInspectorWidth = 300.0f;		
-		if(ImGui::IsAnyWindowHovered())
-			mState.mMousePos = ImGui::GetMousePos();
+		mState.mMousePos = ImGui::GetMousePos();
 
-		mState.mMouseDelta =
-		{	mState.mMousePos.x - mState.mPreviousMousePos.x,
-			mState.mMousePos.y - mState.mPreviousMousePos.y };
-		mState.mPreviousMousePos = mState.mMousePos;
+		mState.mMouseDelta = ImGui::GetIO().MouseDelta;
 
 		//
 		const Sequence& sequence = mEditor.mSequencePlayer->getSequenceConst();

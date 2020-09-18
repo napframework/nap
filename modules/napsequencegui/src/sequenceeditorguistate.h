@@ -22,9 +22,6 @@ namespace nap
 		// dirty means view has changed, and potentially content of tracks need to be redrawn and cached
 		bool mDirty = false;
 
-		// previous mouse pos
-		ImVec2 mPreviousMousePos;
-
 		// window focused
 		bool mIsWindowFocused = false;
 
