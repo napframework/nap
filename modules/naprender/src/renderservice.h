@@ -27,8 +27,12 @@ namespace nap
 	class Texture2D;
 	class GPUBuffer;
 
+	//////////////////////////////////////////////////////////////////////////
+	// Render Service Configuration
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Render engine configuration settings
+	 * Render engine configuration settings.
 	 */
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
@@ -45,6 +49,7 @@ namespace nap
 			CPU			= 4		///< CPU as graphics card
 		};
 
+		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
 		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
@@ -57,6 +62,60 @@ namespace nap
 		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Render Physical Device
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Vulkan physical device (GPU), binds together physical device information for better management.
+	 */
+	class NAPAPI PhysicalDevice
+	{
+	public:
+		// Default constructor, invalid object
+		PhysicalDevice() = default;
+
+		// Called by the render service
+		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex);
+
+		/**
+		 * @return Physical device handle
+		 */
+		VkPhysicalDevice getHandle() const { return mDevice; }
+
+		/**
+		 * @return queue index used for graphics commands and image presentation.
+		 */
+		int getQueueIndex() const { return mQueueIndex; }
+
+		/**
+		 * @return physical device properties
+		 */
+		const VkPhysicalDeviceProperties& getProperties() const { return mProperties; }
+
+		/**
+		 * @return Physical device features
+		 */
+		const VkPhysicalDeviceFeatures& getFeatures() const { return mFeatures; }
+
+		/**
+		 * @return if the device is valid
+		 */
+		bool isValid() const	{ return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
+
+	private:
+		VkPhysicalDevice			mDevice = VK_NULL_HANDLE;			///< Handle to physical device
+		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
+		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
+		int							mQueueIndex = -1;					///< Graphics queue index
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Render Service
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Main interface for 2D and 3D rendering operations.
 	 *
@@ -65,12 +124,24 @@ namespace nap
 	 * When rendering geometry the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
+	 * By default headless rendering is turned off. This means Vulkan is setup to display the result of a render operation 
+	 * in a nap::RenderWindow, next to a nap::RenderTarget. This requires a display device to be connected to the system.
+	 * Enable headless rendering when you do NOT want to render to a window or when there is no display attached to the system.
+	 * This in turn forbids the use of a nap::RenderWindow inside your application.
+	 *
+	 * When headless rendering is enabled, the engine will be initialized  without surface and swapchain support, 
+	 * which are required by a nap::RenderWindow to display images on screen. You can therefore only render to a 
+	 * nap::RenderTarget when Headless rendering is enabled. 
+	 *
+	 * Turn headless rendering on / off using the nap::RenderServiceConfiguration.
+	 *
 	 * The service creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required.
 	 * Make sure to set the required major and minor Vulkan version accordingly using the RenderServiceConfiguration.
 	 * The application will not start if the device does not support the selected (and therefore required) version of Vulkan.
 	 *
-	 * The following Vulkan device extensions are always required: VK_KHR_SWAPCHAIN_EXTENSION and VK_KHR_MAINTENANCE1_EXTENSION.
-	 * Additional extension requirements can be specified using the RenderServiceConfiguration.
+	 * The following Vulkan device extensions are always required: VK_KHR_MAINTENANCE1_EXTENSION.
+	 * When rendering to a window, the VK_KHR_SWAPCHAIN_EXTENSION is also required.
+	 * Additional extension can be specified using the nap::RenderServiceConfiguration.
 	 *
 	 * The system will try to load the requested validation layers in debug mode only.
 	 * Use the RenderServiceConfiguration to specify which layers the Vulkan loader should attempt to load.
@@ -81,7 +152,6 @@ namespace nap
 	 *
 	 * On initialization the service will try to choose a physical device based on the preferred GPU type.
 	 * If no compatible GPU is found (even a not-preferred one) the system will fail to initialize.
-	 *
 	 * Most dedicated and integrated GPUs are supported.
 	*/
 	class NAPAPI RenderService : public Service
@@ -360,6 +430,14 @@ namespace nap
 		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
 		
 		/**
+		 * Returns if the render engine runs headless. 
+		 * This allows you to render images without any display device.
+		 * This in turn means that when enabled it is not possible to display (present) images to a window.
+		 * @return if the render engine runs headless.
+		 */
+		bool isHeadless() const														{ return mHeadless; }
+
+		/**
 		 * Returns the command buffer that is being recorded. Every window records into
 		 * it's own command buffer. All headless render operations share the same command buffer.
 		 * The current command buffer is set after nap::beginHeadlessRecording() or
@@ -386,13 +464,13 @@ namespace nap
 		 * Multiple physical devices are not supported.
 		 * @return Selected Vulkan hardware (GPU) device
 		 */
-		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice; }
+		VkPhysicalDevice getPhysicalDevice() const									{ return mPhysicalDevice.getHandle(); }
 
 		/**
 		 * Returns all supported physical device (GPU) features.
 		 * @return all supported hardware features
 		 */
-		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDeviceFeatures; }
+		const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const			{ return mPhysicalDevice.getFeatures(); }
 
 		/**
 		 * Returns the Vulkan api version, as supported by the physical device.
@@ -401,13 +479,13 @@ namespace nap
 		 * but could be higher.
 		 * @return the version of Vulkan supported by the device
 		 */
-		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDeviceProperties.apiVersion; }
+		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDevice.getProperties().apiVersion; }
 
 		/**
 		 * All physical device hardware properties.
 		 * @return all hardware properties
 		 */
-		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDeviceProperties; }
+		const VkPhysicalDeviceProperties&	getPhysicalDeviceProperties() const		{ return mPhysicalDevice.getProperties(); }
 
 		/**
 		 * Returns the handle to the logical Vulkan device,
@@ -473,7 +551,7 @@ namespace nap
 		 * Returns the index of the selected queue family.
 		 * @return the main queue index.
 		 */
-		uint32 getQueueIndex() const												{ return mQueueIndex; }
+		uint32 getQueueIndex() const												{ return mPhysicalDevice.getQueueIndex(); }
 		
 		/**
 		 * Returns the selected queue, used to execute recorded command buffers.
@@ -783,20 +861,17 @@ namespace nap
 		VkInstance								mInstance = VK_NULL_HANDLE;
 		VmaAllocator							mVulkanAllocator = VK_NULL_HANDLE;
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
-		VkPhysicalDevice						mPhysicalDevice = VK_NULL_HANDLE;
-		VkPhysicalDeviceFeatures				mPhysicalDeviceFeatures;
-		VkPhysicalDeviceProperties				mPhysicalDeviceProperties;
-		uint32_t								mPhysicalDeviceVersion = 0;
+		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
 		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
-		int										mQueueIndex = -1;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mQueue = VK_NULL_HANDLE;
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
 		UniqueMaterialCache						mMaterials;
+		bool									mHeadless = false;
 	};
 } // nap
 

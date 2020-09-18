@@ -35,6 +35,7 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
+	RTTI_PROPERTY("Headless",			&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
@@ -52,6 +53,36 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Dummy Window Wrapper
+	//////////////////////////////////////////////////////////////////////////
+	
+	/**
+	 * Used by the render service to temporarily bind and destroy information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummyWindow
+	{
+		~DummyWindow()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Compatible physical device
+	//////////////////////////////////////////////////////////////////////////
+
+
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Static Methods
 	//////////////////////////////////////////////////////////////////////////
@@ -176,7 +207,6 @@ namespace nap
 	{
 		const static std::vector<std::string> layers = 
 		{ 
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_KHR_MAINTENANCE1_EXTENSION_NAME
 		};
 		return layers;
@@ -269,7 +299,7 @@ namespace nap
 	}
 
 
-	bool getAvailableVulkanInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getSurfaceInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -285,9 +315,18 @@ namespace nap
 		// Store
 		for (unsigned int i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
+		return true;
+	}
 
-		// Add debug display extension, we need this to relay debug messages
-		outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+
+	/**
+	 * Creates the vulkan surface that is rendered to by the device using SDL
+	 */
+	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
+	{
+		// Use SDL to create the surface
+		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
+			return false;
 		return true;
 	}
 
@@ -296,7 +335,7 @@ namespace nap
 	* Creates a vulkan instance using all the available instance extensions and layers
 	* @return if the instance was created successfully
 	*/
-	bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, uint32 requestedVersion, VkInstance& outInstance, utility::ErrorState& errorState)
+	static bool createVulkanInstance(const std::vector<std::string>& layerNames, const std::vector<std::string>& extensionNames, uint32 requestedVersion, VkInstance& outInstance, utility::ErrorState& errorState)
 	{
 		// Copy layers
 		std::vector<const char*> layer_names;
@@ -358,7 +397,7 @@ namespace nap
 		inst_info.flags = 0;
 		inst_info.pApplicationInfo = &app_info;
 		inst_info.enabledExtensionCount = static_cast<uint32_t>(ext_names.size());
-		inst_info.ppEnabledExtensionNames = ext_names.data();
+		inst_info.ppEnabledExtensionNames = ext_names.empty() ? nullptr : ext_names.data();
 		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
@@ -376,9 +415,10 @@ namespace nap
 
 
 	/**
-	 * Selects a device based on user preference, min required api version and queue family requirements
+	 * Selects a device based on user preference, min required api version and queue family requirements.
+	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkPhysicalDevice& outDevice, VkPhysicalDeviceProperties& outProperties, VkPhysicalDeviceFeatures& outFeatures, int& outQueueFamilyIndex, utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -397,23 +437,27 @@ namespace nap
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
 		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
 
-		std::vector<int> valid_devices;
-		std::vector<int> queue_indices;
+		// All valid physical devices
+		std::vector<PhysicalDevice> valid_devices;
+
+		// Iterate over every available physical device and gather valid ones.
+		// A valid physical device has a graphics and compute queue, if presentSurface != NULL,
+		// present functionality is also required.
 		int preferred_idx = -1;
-		for (int index = 0; index < physical_devices.size(); ++index)
+		for (int device_idx = 0; device_idx < physical_devices.size(); ++device_idx)
 		{
 			// Get current physical device
-			VkPhysicalDevice physical_device = physical_devices[index];
+			VkPhysicalDevice physical_device = physical_devices[device_idx];
 
 			// Get properties associated with device
-			VkPhysicalDeviceProperties& properties = physical_device_properties[index];
+			VkPhysicalDeviceProperties& properties = physical_device_properties[device_idx];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s, type: %s, version: %d.%d", index, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
 
 			// If the supported api version < required by currently used api, continue
 			if (properties.apiVersion < minAPIVersion)
 			{
-				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", index, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
 				continue;
 			}
 
@@ -422,7 +466,7 @@ namespace nap
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
 			if (family_queue_count == 0)
 			{
-				Logger::warn("%d: No queue families available", index);
+				Logger::warn("%d: No queue families available", device_idx);
 				continue;
 			}
 
@@ -431,31 +475,42 @@ namespace nap
 			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
 
-			// Make sure the family of commands contains an option to issue graphical commands.
-			int queue_node_index = -1;
+			// Make sure the queue family supports both graphical and transfer commands.
+			int selected_queue_idx = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
-				if (queue_properties[i].queueCount > 0 && (queue_properties[i].queueFlags & required_flags))
+				if (queue_properties[i].queueFlags & required_flags)
 				{
-					queue_node_index = i;
+					// Make sure this family supports presentation to the given surface
+					// If running headless this check is not performed.
+					if (presentSurface != VK_NULL_HANDLE)
+					{
+						VkBool32 supports_presentation = false;
+						vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, presentSurface, &supports_presentation);
+						if (supports_presentation == 0)
+							continue;
+					}
+
+					// Compatible
+					Logger::info("%d: Compatible queue found at index: %d", device_idx, i);
+					selected_queue_idx = i;
 					break;
 				}
 			}
 			
-			// No compatible queue found
-			if (queue_node_index < 0)
+			// Ensure there's a compatible queue for this device
+			if (selected_queue_idx < 0)
 			{
-				Logger::warn("%d: Unable to find compatible queue family", index);
+				Logger::warn("%d: Unable to find compatible queue family", device_idx);
 				continue;
 			}
 
-			// This is at least a compatible device
-			valid_devices.emplace_back(index);
-			queue_indices.emplace_back(index);
-			nap::Logger::info("%d: Compatible", index);
+			// Add it as a compatible device
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_queue_idx));
 
-			// Check if it's the preferred type, if so select it
-			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? index : preferred_idx;
+			// Check if it's the preferred type, if so select it.
+			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
+				valid_devices.size() -1 : preferred_idx;
 		}
 
 		// if there are no valid devices, bail.
@@ -463,21 +518,16 @@ namespace nap
 			return false;
 
 		// If the preferred GPU is found, use that one, otherwise first compatible one
-		int device_idx = preferred_idx;
+		int selected_idx = preferred_idx;
 		if (preferred_idx < 0)
 		{
 			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
-			device_idx = 0;
+			selected_idx = 0;
 		}
 
-		// Set the output variables
-		outDevice = physical_devices[device_idx];
-		outProperties = physical_device_properties[device_idx];
-		outQueueFamilyIndex = queue_indices[device_idx];
-
-		// Extract device features
-		vkGetPhysicalDeviceFeatures(physical_devices[device_idx], &outFeatures);
-		nap::Logger::info("Selected device: %d", device_idx, physical_device_properties[device_idx].deviceName);
+		// Set the output
+		outDevice = valid_devices[selected_idx];
+		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
 		return true;
 	}
 
@@ -485,7 +535,7 @@ namespace nap
 	/**
 	 * Creates the logical device based on the selected physical device, queue index and required extensions
 	 */
-	static bool createLogicalDevice(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceFeatures& physicalDeviceFeatures, uint32 queueFamilyIndex, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
+	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -494,13 +544,13 @@ namespace nap
 
 		// Get the number of available extensions for our graphics card
 		uint32_t device_property_count(0);
-		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
 		if (print) { Logger::info("Found %d Vulkan device extensions:", device_property_count); }
 
 		// Acquire their actual names
 		std::vector<VkExtensionProperties> device_properties(device_property_count);
-		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &device_property_count, device_properties.data()) == VK_SUCCESS, "Unable to acquire device extension property names"))
+		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, device_properties.data()) == VK_SUCCESS, "Unable to acquire device extension property names"))
 			return false;
 
 		// Match names against requested extension
@@ -527,7 +577,7 @@ namespace nap
 		// We create one command processing queue for graphics
 		VkDeviceQueueCreateInfo queue_create_info = { };
 		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queue_create_info.queueFamilyIndex = queueFamilyIndex;
+		queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
 		queue_create_info.queueCount = 1;
 		std::vector<float> queue_prio = { 1.0f };
 		queue_create_info.pQueuePriorities = queue_prio.data();
@@ -536,8 +586,8 @@ namespace nap
 
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
-		device_features.sampleRateShading = physicalDeviceFeatures.sampleRateShading;
-		device_features.samplerAnisotropy = physicalDeviceFeatures.samplerAnisotropy;
+		device_features.sampleRateShading = physicalDevice.getFeatures().sampleRateShading;
+		device_features.samplerAnisotropy = physicalDevice.getFeatures().samplerAnisotropy;
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
@@ -553,7 +603,7 @@ namespace nap
 		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
-		if (!errorState.check(vkCreateDevice(physicalDevice, &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
+		if (!errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
 			return false;
 
 		return true;
@@ -1145,18 +1195,35 @@ namespace nap
 
 		// Store render settings, used for initialization and global window creation
 		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
-		mEnableHighDPIMode	= render_config->mEnableHighDPIMode;
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
 
-		// Get available vulkan extensions, necessary for interfacing with native window
-		// SDL takes care of this call and returns, next to the default VK_KHR_surface a platform specific extension
-		// When initializing the vulkan instance these extensions have to be enabled in order to create a valid
-		// surface later on.
-		std::vector<std::string> found_extensions;
-		SDL_Window* dummy_window = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-		bool got_extensions = getAvailableVulkanInstanceExtensions(dummy_window, found_extensions, errorState);
-		SDL_DestroyWindow(dummy_window);
-		if (!got_extensions)
-			return false;
+		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
+		mHeadless = render_config->mHeadless;
+
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
+		DummyWindow dummy_window;
+		
+		// Get available vulkan instance extensions using SDL.
+		// Returns, next to the default VK_KHR_surface, a platform specific extension.
+		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
+		// When running headless we don't present so don't need the extensions.
+		std::vector<std::string> instance_extensions;
+		if (!mHeadless)
+		{
+			// Create dummy window and verify creation
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+				return false;
+			
+			// Get all available vulkan instance extensions, required to create a presentable surface.
+			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
+			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+				return false;
+		}
+
+		// Add debug display extension, we need this to relay debug messages
+		instance_extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
@@ -1178,52 +1245,67 @@ namespace nap
 
 		// Create Vulkan Instance together with required extensions and layers
 		mAPIVersion = VK_MAKE_VERSION(render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
-		if (!createVulkanInstance(found_layers, found_extensions, mAPIVersion, mInstance, errorState))
+		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
 		// Vulkan messaging callback
 		setupDebugCallback(mInstance, mDebugCallback, errorState);
 
-		// Select GPU after successful creation of a vulkan instance
+		// Create presentation surface if not running headless. Can only do this after creation of instance.
+		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		if (!mHeadless)
+		{
+			dummy_window.mInstance = mInstance;
+			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
+				return false;
+		}
+
+		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, mPhysicalDevice, mPhysicalDeviceProperties, mPhysicalDeviceFeatures, mQueueIndex, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
 			return false;
 
 		// Figure out how many rasterization samples we can use and if sample rate shading is supported
-		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice);
+		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice.getHandle());
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
-		mSampleShadingSupported = mPhysicalDeviceFeatures.sampleRateShading > 0;
+		mSampleShadingSupported = mPhysicalDevice.getFeatures().sampleRateShading > 0;
 		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
-		mAnisotropicFilteringSupported = mPhysicalDeviceFeatures.samplerAnisotropy > 0;
+		mAnisotropicFilteringSupported = mPhysicalDevice.getFeatures().samplerAnisotropy > 0;
 		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
 		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
 
-		// Create unique set of extensions out of required and additional requested ones
+		// Get extensions that are required for NAP render engine to function.
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
-		std::vector<std::string> addition_ext_names = render_config->mAdditionalExtensions;
-		required_ext_names.insert(required_ext_names.end(), addition_ext_names.begin(), addition_ext_names.end());
+
+		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
+		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
+
+		// Add additional requests
+		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
+		
+		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
 		for (const auto& ext : required_ext_names)
 			unique_ext_names.emplace(ext);
 
 		// Create a logical device that interfaces with the physical device.
 		bool print_extensions = render_config->mPrintAvailableExtensions;
-		if (!createLogicalDevice(mPhysicalDevice, mPhysicalDeviceFeatures, mQueueIndex, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
 			return false;
 
 		// Create command pool
-		if (!errorState.check(createCommandPool(mPhysicalDevice, mDevice, mQueueIndex, mCommandPool), "Failed to create Command Pool"))
+		if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getQueueIndex(), mCommandPool), "Failed to create Command Pool"))
 			return false;
 
 		// Determine depth format for the current device
-		if (!errorState.check(findDepthFormat(mPhysicalDevice, mDepthFormat), "Unable to find depth format"))
+		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
 			return false;
 
 		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
-		vkGetDeviceQueue(mDevice, mQueueIndex, 0, &mQueue);
+		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.physicalDevice = mPhysicalDevice;
+		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
 		allocatorInfo.device = mDevice;
         allocatorInfo.vulkanApiVersion = mAPIVersion;
         allocatorInfo.instance = mInstance;
@@ -1324,7 +1406,7 @@ namespace nap
 
 	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
 	{
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &outProperties);
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), format, &outProperties);
 	}
 
 
@@ -1749,5 +1831,11 @@ namespace nap
 	{
 		return mShader != nullptr && mMaterial != nullptr;
 	}
+}
 
+
+nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
+	mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
+{
+	vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 }

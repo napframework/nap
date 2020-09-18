@@ -31,6 +31,10 @@ namespace nap
 	 * If sample based shading is requested but not supported, it is disabled and a warning is issued. 
 	 * If the requested multi-sample count exceeds what is supported by the hardware, the highest available sample
 	 * count is picked and a warning is issued.
+	 *
+	 * Initialization will fail when the nap::RenderService is configured to run headless.
+	 * When headless rendering is enabled, the engine is initialized without surface and swapchain support,
+	 * which are required by a nap::RenderWindow to display images on screen.
 	 */
 	class NAPAPI RenderWindow : public Window, public IRenderTarget
 	{
@@ -271,7 +275,6 @@ namespace nap
 		VkSwapchainKHR					mSwapchain = VK_NULL_HANDLE;
 		VkRenderPass					mRenderPass = VK_NULL_HANDLE;
 		VkQueue							mPresentQueue = VK_NULL_HANDLE;
-		uint32 							mPresentQueueIndex = 0;
 		VkFormat						mSwapchainFormat = VK_FORMAT_UNDEFINED;
 		std::vector<VkImageView>		mSwapChainImageViews;
 		std::vector<VkFramebuffer>		mSwapChainFramebuffers;
