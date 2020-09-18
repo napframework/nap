@@ -481,7 +481,8 @@ namespace nap
 			{
 				if (queue_properties[i].queueFlags & required_flags)
 				{
-					// If there's the need to present as well, make sure this family supports presentation to the given surface. 
+					// Make sure this family supports presentation to the given surface
+					// If running headless this check is not performed.
 					if (presentSurface != VK_NULL_HANDLE)
 					{
 						VkBool32 supports_presentation = false;
