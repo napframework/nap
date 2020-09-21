@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """This script does some crude dependencies testing on a NAP framework release. See the README."""
 

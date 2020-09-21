@@ -1,2 +1,2 @@
 #!/bin/sh
-python generateDocumentation.py
+python3 generateDocumentation.py
