@@ -76,6 +76,9 @@ namespace nap
 		{
 			mUpdateTask.wait();
 		}
+
+		// clear adapters
+		mAdapters.clear();
 	}
 
 
