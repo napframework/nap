@@ -174,18 +174,18 @@ namespace nap
                 if (!configuration->mAllowDeviceFailure)
                 {
                     errorState.fail("Portaudio stream failed to start: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i",
-                                    Pa_GetDeviceInfo(inputDeviceIndex)->name,
-									Pa_GetDeviceInfo(outputDeviceIndex)->name, inputChannelCount,
-                                    outputChannelCount, configuration->mSampleRate, configuration->mBufferSize);
+                                    inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "",
+									outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "",
+									inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize);
                     return false;
                 }
                 else
                 {
                     Logger::info(
                             "Portaudio stream failed to start: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i",
-							Pa_GetDeviceInfo(inputDeviceIndex)->name,
-							Pa_GetDeviceInfo(outputDeviceIndex)->name, inputChannelCount,
-                            outputChannelCount, configuration->mSampleRate, configuration->mBufferSize);
+							inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "",
+							outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "",
+							inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize);
                 }
                 return true;
             }
