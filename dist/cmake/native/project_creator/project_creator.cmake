@@ -38,7 +38,7 @@ endif()
 
 # Create our project files, with substitutions
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
-configure_file(${TEMPLATE_ROOT}/data/app_structure.json ${PROJECT_DIR}/data/app_structure.json @ONLY)
+configure_file(${TEMPLATE_ROOT}/data/objects.json ${PROJECT_DIR}/data/objects.json @ONLY)
 
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.cpp @ONLY)
