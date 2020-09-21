@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Project.info and module.info conversion script from old to new format.
 
 TODO: Update this docstring to account for versioning

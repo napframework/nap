@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """This script automates basic testing of opening projects in Napkin in the Source context"""
 
