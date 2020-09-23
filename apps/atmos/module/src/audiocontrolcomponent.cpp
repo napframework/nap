@@ -106,8 +106,8 @@ namespace nap
 		auto sensorControl = 1.f;
 		if (mAudioSensorControl != nullptr)
 		{
-			sensorControl = -48.f + mAudioSensorControl->mValue * 48;
-			sensorControl = audio::dbToA(sensorControl);
+			sensorControl = -24.f + mAudioSensorControl->mValue * 24;
+			sensorControl = audio::dbToA(sensorControl, -24);
 		}
 
         for (auto channel = 0; channel < mGain->getChannelCount(); ++channel)
