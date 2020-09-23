@@ -445,21 +445,7 @@
                     ]
                 }
             ],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "nap::Sampler2D_2",
-                    "Name": "videoTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "VideoColorTexture"
-                }
-            ],
+            "Samplers": [],
             "Shader": "DisplacementShader",
             "VertexAttributeBindings": [
                 {
