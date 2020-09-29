@@ -165,7 +165,7 @@ Document* AppContext::newDocument()
 	nap::Core& core = getCore();
 	if (!core.isInitialized())
 	{
-		nap::Logger::warn("Core not initialized, cannot create document");
+		nap::Logger::warn("NAP not initialized, cannot create document");
 		return nullptr;
 	}
 

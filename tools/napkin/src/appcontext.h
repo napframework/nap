@@ -168,11 +168,15 @@ namespace napkin
 		QStringList getRecentlyOpenedProjects() const;
 
 		/**
-		 * @return The current document, creates it if it doesn't exist
+		 * Returns the currently loaded document, attempts to create it if it doesn't exist.
+		 * Returns a nullptr if the document isn't available, this is the case when no project has been loaded.
+		 * @return The current document, creates it if it doesn't exist.
 		 */
 		Document* getDocument();
 
 		/**
+		 * Returns the currently loaded document, attempts to create it if it doesn't exist.
+		 * Returns a nullptr if the document isn't available, this is the case when no project has been loaded.
 		 * @return The current document or nullptr if there is no document
 		 */
 		const Document* getDocument() const;

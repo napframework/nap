@@ -83,7 +83,16 @@ SaveFileAction::SaveFileAction()
 
 void SaveFileAction::perform()
 {
-	if (AppContext::get().getDocument()->getCurrentFilename().isNull())
+	// Get current document, nullptr when there is no document and document can't be created
+	// This is the case when no project is loaded or core failed to initialize
+	napkin::Document* doc = AppContext::get().getDocument();
+	if (doc == nullptr)
+	{
+		nap::Logger::warn("Unable to save file");
+		return;
+	}
+
+	if (doc->getCurrentFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
@@ -102,7 +111,14 @@ SaveFileAsAction::SaveFileAsAction()
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	auto prevFilename = ctx.getDocument()->getCurrentFilename();
+	napkin::Document* doc  = ctx.getDocument();
+	if (doc == nullptr)
+	{
+		nap::Logger::warn("Unable to save file");
+		return;
+	}
+
+	auto prevFilename = doc->getCurrentFilename();
 	if (prevFilename.isNull())
 		prevFilename = "untitled.json";
 
