@@ -3,6 +3,7 @@ Napkin {#napkin}
 *	[What Is Napkin](@ref what_is_napkin)
 *	[Launching Napkin](@ref launching_napkin)
 *	[General Structure](@ref napkin_structure)
+	*	[Opening a Project](@ref napkin_project_management)
 	* 	[Document Management](@ref napkin_doc_management)
 	*	[Resource Management](@ref napkin_res_management)
 		*	[Create Resource](@ref new_resource)
@@ -24,7 +25,7 @@ Napkin {#napkin}
 What is Napkin? {#what_is_napkin}
 =======================
 
-NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are managing. Napkin is our JSON file editor that allows you to change your JSON files in a more visual manner. Fire up Napkin, launch your NAP application (from within or outside of the editor) and edit your data to see your changes reflected in the running application upon every save. This way you can get near-realtime feedback from even the most invasive structural changes in your app. Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
+Napkin allows you to change your application data files in a more visual manner. NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are creating. Fire up Napkin, launch your NAP application (from within or outside of the editor) and edit your data to see your changes reflected in real time every save. This way you can get near-realtime feedback from even the most invasive structural changes in your app. Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
 
 ![](@ref content/napkin.png)
 
@@ -38,30 +39,38 @@ The following jargon will be used in this document:
 Launching Napkin {#launching_napkin}
 =======================
 
-When you build a project Napkin is deployed alongside the project binary within the project's `bin` folder.<br>
+After downloading and extracting the NAP package, you can find Napkin inside the `tools/napkin` directory. When building Napkin from source it will be placed in the `binary` output directory, inside a folder called `napkin`. Napkin is also included with packaged projects. This allows others to edit application content after compilation.
 
-For example: If you have a project titled 'NewProject' and perform a debug build, Napkin will be deployed into the folder:
-- `projects/newproject/bin/Clang-x86_64-Debug`
-
-Naturally `Clang-x86_64-Debug` will vary depending on your platform)<br>.
-
-Napkin is also included with packaged projects, in that case it will sit in the root of the created release. See [Project Management](@ref project_management) for further details, including how to disable including Napkin in packaged projects. When launched for the first time within a certain directory Napkin uses the default NAP theme and layout. 
+See [Project Management](@ref project_management) for further details, including how to disable including Napkin in packaged projects. 
 
 General Structure {#napkin_structure}
 =======================
 
-NAP Projects consist mainly of an executable, one or more JSON files and a collection of assets such as images, sound, 3D models, etc. <br> Napkin runs mostly on the same code as your application, this ensures a solid consistency between what is shown in the editor and your application. 
+Napkin allows you to create and edit application content, associated with a specific NAP project. Content is stored in a `myapp.json` file, which is referenced by the `project.json file.` Both the NAP application and Napkin use the project information to resolve dependencies, load modules into memory and inspect / create resources. Napkin and the application therefore 'share' the same code base. If you adjust a Resource in code, Napkin will reflect those changes in the editor.
+
+Opening a Project {#napkin_project_management}
+-----------------------
+
+To open a project:
+- `File > Open Project` or `CTRL + O`<br>
+
+Use the file browser to select the project you want to load. The project is a `.json` file with the name: `project.json`. 
+
+Inside `project.json` there's a `nap::ProjectInfo` structure that points to a `Data` file. This is the file Napkin will load after successfully loading the project. 
+
+Before Napkin can load the file it will attempt to load all the `RequiredModules`. Every module has it's own set of dependencies, which will be resolved as well. If loading succeeds, Napkin can safely create and edit files because it can access all the resources exposed by the modules. You can safely launch multiple instances of Napkin to work on multiple projects at once.
 
 Document Management {#napkin_doc_management}
 -----------------------
 
-To make a new file: 
+To save the data file:
+- `File > Save` or `CTRL + S` <br>
+
+To save thedata  file with a different name:
+- `File > Save as...`
+
+To make a new data file: 
 - `File > New` or `CTRL + N` creates an empty document.<br> 
-
-To open an existing file:
-- `File > Open` or `CTRL+O` opens an existing document.<br>
-
-Napkin can edit one file at a time, but you're free to open as many editors as you want.
 
 Resource Management {#napkin_res_management}
 -----------------------
