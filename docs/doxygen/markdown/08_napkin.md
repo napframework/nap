@@ -25,7 +25,7 @@ Napkin {#napkin}
 What is Napkin? {#what_is_napkin}
 =======================
 
-Napkin allows you to change your application data files in a more visual manner. NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are creating. Fire up Napkin, launch your NAP application (from within or outside of the editor) and edit your data to see your changes reflected in real time every save. This way you can get near-realtime feedback from even the most invasive structural changes in your app. Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
+Napkin allows you to create and edit application content, associated with a specific NAP project. NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are creating. Napkin helps you do that. Fire up the editor, launch your NAP application and edit your file to see the changes you make reflected in real time. This way you can get near-realtime feedback from even the most invasive structural changes in your app. Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
 
 ![](@ref content/napkin.png)
 
@@ -46,7 +46,7 @@ See [Project Management](@ref project_management) for further details, including
 General Structure {#napkin_structure}
 =======================
 
-Napkin allows you to create and edit application content, associated with a specific NAP project. Content is stored in a `myapp.json` file, which is referenced by the `project.json file.` Both the NAP application and Napkin use the project information to resolve dependencies, load modules into memory and inspect / create resources. Napkin and the application therefore 'share' the same code base. If you adjust a Resource in code, Napkin will reflect those changes in the editor.
+Content is stored in a `myapp.json` file, which is referenced by the `project.json file.` Both the NAP application and Napkin use the project information to resolve dependencies, load modules into memory and inspect / create resources. Napkin and the application therefore 'share' the same code base. If you adjust a Resource in code, Napkin will reflect those changes in the editor.
 
 Opening a Project {#napkin_project_management}
 -----------------------
