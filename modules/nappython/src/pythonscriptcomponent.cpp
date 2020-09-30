@@ -1,16 +1,11 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+#include <pythonscriptcomponent.h>
 
-// Local includes
-#include "pythonscriptcomponent.h"
-#include "pythonscriptservice.h"
-
-// External includes
+// Nap includes
 #include <entity.h>
 #include <utility/fileutils.h>
-#include <nap/core.h>
-#include <nap/logger.h>
+#include "nap/core.h"
+#include "pythonscriptservice.h"
+#include "nap/logger.h"
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PythonScriptComponentInstance)
