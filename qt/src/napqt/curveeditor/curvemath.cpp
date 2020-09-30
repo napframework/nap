@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "curvemath.h"
 
 void nap::qt::limitOverhang(qreal& x0, qreal& x1, qreal& x2, qreal& x3)
