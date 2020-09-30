@@ -1,9 +1,7 @@
 #pragma once
 
-// Local Includes
-#include "utility/dllexport.h"
-
 // External Includes
+#include <utility/dllexport.h>
 #include <unordered_set>
 #include <rtti/object.h>
 #include <cassert>

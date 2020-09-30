@@ -1,5 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "surfacedescriptor.h"
-#include "rtti/typeinfo.h"
+#include <rtti/typeinfo.h>
 
 RTTI_BEGIN_CLASS(nap::SurfaceDescriptor)
 	RTTI_PROPERTY("Width",		&nap::SurfaceDescriptor::mWidth,		nap::rtti::EPropertyMetaData::Default)
