@@ -1,8 +1,16 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// std includes
-#include <unordered_map>
-#include <vector>
+// Local Includes
+#include "modulemanager.h"
+#include "resourcemanager.h"
+#include "service.h"
+#include "timer.h"
+#include "coreextension.h"
+#include "projectinfo.h"
 
 // External Includes
 #include <rtti/factory.h>
@@ -10,14 +18,8 @@
 #include <rtti/deserializeresult.h>
 #include <unordered_set>
 #include <utility/dllexport.h>
-
-// Core Includes
-#include "modulemanager.h"
-#include "resourcemanager.h"
-#include "service.h"
-#include "timer.h"
-#include "coreextension.h"
-#include "projectinfo.h"
+#include <unordered_map>
+#include <vector>
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
 constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
