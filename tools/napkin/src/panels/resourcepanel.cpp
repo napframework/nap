@@ -1,10 +1,13 @@
-#include <commands.h>
-#include "resourcepanel.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include <napqt/filterpopup.h>
-#include <napqt/qtutils.h>
+#include "resourcepanel.h"
 #include "naputils.h"
 
+#include <commands.h>
+#include <napqt/filterpopup.h>
+#include <napqt/qtutils.h>
 
 using namespace napkin;
 

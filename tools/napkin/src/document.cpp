@@ -1,4 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "document.h"
+#include "naputils.h"
 
 #include <QList>
 #include <QtDebug>
@@ -8,8 +13,6 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <utility/fileutils.h>
-
-#include "naputils.h"
 
 using namespace napkin;
 using namespace nap::rtti;

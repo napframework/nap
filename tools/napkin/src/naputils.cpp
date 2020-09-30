@@ -1,3 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+#include "naputils.h"
+#include "napkinglobals.h"
+#include "appcontext.h"
+
 #include <QtGui/QtGui>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -11,12 +19,7 @@
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
 #include <cctype>
-
 #include <napqt/filterpopup.h>
-
-#include "naputils.h"
-#include "napkinglobals.h"
-#include "appcontext.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;

@@ -1,11 +1,15 @@
-#include "actions.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include <QMessageBox>
-#include <QHBoxLayout>
+#include "actions.h"
 #include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
 #include "napkinutils.h"
+
+#include <QMessageBox>
+#include <QHBoxLayout>
 
 using namespace napkin;
 
