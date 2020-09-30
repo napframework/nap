@@ -3,9 +3,9 @@ New Amsterdam Platform {#mainpage}
 
 # Description
 
-NAP framework is a data-driven platform that merges game technology with the flexibility of a creative coding environment. The end result is a platform that offers both stability, ease of use and freedom. If you want to create dynamic content for high resolution screens or control an entire theatre stage: NAP is the tool for you.
+NAP framework is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. The end result is a platform that offers both stability, ease of use and freedom. If you want to create dynamic content for high resolution screens or control an entire theatre stage: NAP is the tool for you.
 
-NAP provides a single platform where you can use any protocol (such as OSC, Midi or Artnet) in conjunction with a 3D graphics engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of output devices: many speakers, many lights, many lasers, many screens.
+NAP provides a single platform where you can use any protocol (such as OSC, Midi or Artnet) in conjunction with a Vulkan 3D graphics engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of output devices: many speakers, many lights, many lasers, many screens.
 	
 NAP's design is intended to be as open as possible: there is little fixed functionality, but there are a lot of useful blocks that can be tied together by a user to create the experience you desire. As a user, you can build new blocks yourself and throw them in the mix to fulfill your creative vision. To push creativity, NAP is built to provide extremely fast iteration times.
 

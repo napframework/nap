@@ -947,7 +947,9 @@ EXCLUDE                = ..\..\napkin \
                          ..\..\packaging_lib \
                          ..\..\packaging_staging \
                          ../../modules/naprender/src/vk_mem_alloc.cpp \
-                         ../../modules/naprender/src/vk_mem_alloc.h
+                         ../../modules/naprender/src/vk_mem_alloc.h \
+                         ../../license.md \
+                         ../for_source_readme-what_is_where.md
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
