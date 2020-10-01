@@ -116,6 +116,12 @@ macro(package_nap)
             package_python()
         endif ()
     endif() # ANDROID
+
+    # install NAP source code license
+    install(FILES ${NAP_ROOT}/LICENSE.txt DESTINATION .)
+
+    # install NAP packaged app license 
+    install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION dist/)
 endmacro()
 
 # Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)
