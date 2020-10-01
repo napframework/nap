@@ -8,7 +8,10 @@ from subprocess import call
 from nap_shared import find_project, validate_pascalcase_name, add_module_to_project_json, get_cmake_path, get_python_path
 
 # Default modules if none are specified
-DEFAULT_MODULE_LIST = "mod_napapp,mod_napaudio,mod_napimgui"
+DEFAULT_MODULE_LIST = "mod_napapp,mod_napcameracontrol,mod_napparametergui"
+
+# Modules for project module
+PROJECT_MODULE_MODULE_LIST = "mod_naprender,mod_napscene,mod_napparameter"
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -44,10 +47,12 @@ def create_project(project_name, module_list, with_module, generate_solution, sh
     if with_module:
         # Create module from template
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
+        input_module_list = PROJECT_MODULE_MODULE_LIST.lower().replace(',', ';')
         cmd = [cmake, 
                '-DMODULE_NAME_PASCALCASE=%s' % project_name, 
                '-DPROJECT_MODULE=1', 
                '-DPROJECT_MODULE_PROJECT_PATH=%s' % project_path,
+               '-DPROJECT_MODULE_MODULE_LIST=%s' % input_module_list,
                '-P', 'module_creator.cmake'
                ]
         if call(cmd, cwd=cmake_template_dir) != 0:
@@ -80,8 +85,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PASCAL_CASE_PROJECT_NAME", type=str,
                         help="The project name, in pascal case (eg. MyProjectName)")
-    parser.add_argument("-m", "--with-module", action="store_true",
-                        help="Include a project module")
+    parser.add_argument("-nm", "--no-module", action="store_true",
+                        help="Don't include a project module")
     parser.add_argument("-ng", "--no-generate", action="store_true",
                         help="Don't generate the solution for the created project")       
     if not sys.platform.startswith('linux'):    
@@ -102,5 +107,5 @@ if __name__ == '__main__':
         sys.exit(ERROR_INVALID_INPUT)
 
     show_solution = not sys.platform.startswith('linux') and not args.no_show
-    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, args.with_module, not args.no_generate, show_solution)
+    exit_code = create_project(project_name, DEFAULT_MODULE_LIST, not args.no_module, not args.no_generate, show_solution)
     sys.exit(exit_code)
