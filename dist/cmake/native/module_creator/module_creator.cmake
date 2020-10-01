@@ -10,6 +10,18 @@ if(DEFINED MODULE_NAME_PASCALCASE)
     string(TOLOWER ${MODULE_NAME_PASCALCASE} MODULE_NAME_LOWERCASE)
 endif()
 
+# Build modules for substitution into module.json
+set(MODULE_LIST_SUB_JSON "")
+if(DEFINED PROJECT_MODULE_MODULE_LIST)
+    foreach(module ${PROJECT_MODULE_MODULE_LIST})
+        # Append to JSON module list
+        if(NOT ${MODULE_LIST_SUB_JSON} STREQUAL "")
+            set(MODULE_LIST_SUB_JSON "${MODULE_LIST_SUB_JSON},\n        ")
+        endif()
+        set(MODULE_LIST_SUB_JSON "${MODULE_LIST_SUB_JSON}\"${module}\"")
+    endforeach()
+endif ()
+
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)

@@ -1,6 +1,8 @@
 {
     "Type": "nap::ModuleInfo", 
     "mID": "ModuleInfo", 
-    "RequiredModules": [], 
+    "RequiredModules": [
+        @MODULE_LIST_SUB_JSON@
+    ], 
     "WindowsDllSearchPaths": []
 }

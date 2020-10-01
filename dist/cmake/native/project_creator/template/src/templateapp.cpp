@@ -30,7 +30,7 @@ namespace nap
 		mScene = mResourceManager->findObject<Scene>("Scene");
 
 		// Convert our path and load resources from file
-		if (!mResourceManager->loadFile("app_structure.json", error))
+		if (!mResourceManager->loadFile("objects.json", error))
 			return false;
 
 		// Get the render window
