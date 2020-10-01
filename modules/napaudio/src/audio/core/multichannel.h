@@ -8,10 +8,8 @@
 
 namespace nap
 {
-    
     namespace audio
     {
-        
         /**
          * Interface for any class that exposes multichannel audio output.
          */
@@ -73,8 +71,5 @@ namespace nap
              */
             void connect(IMultiChannelOutput& inputObject);
         };
-
-        
     }
-    
 }

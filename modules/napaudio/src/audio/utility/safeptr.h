@@ -13,13 +13,11 @@ namespace nap
 {
     
     namespace audio
-    {
-        
+    {        
         // Forward declarations
         class DeletionQueue;
         template <typename T> class SafeOwner;
         template <typename T> class SafePtr;
-
 
         /**
          * Base class for SafeOwner<T> template
@@ -106,9 +104,7 @@ namespace nap
             std::set<SafeOwnerBase*> mSafeOwnerList; // List of all safe owners that exist that are referencing this deletion queue.
         };
         
-        
-
-        
+         
         /**
          * SafeOwner is a special case smart pointer to an object that is used in multiple threads. It serves the purpose of making sure that the object is destructed in a thread safe manner when the SafeOwner goes out of scope.
          * It works very much like unique_ptr in such that it takes ownership over the object it points to and takes responsibility for it's destruction.
@@ -117,7 +113,7 @@ namespace nap
          * This is done to prevent the objects to be destroyed while they are possibly being used in another thread at the same time.
          */
         template <typename T>
-        class NAPAPI SafeOwner final : public SafeOwnerBase
+        class SafeOwner final : public SafeOwnerBase
         {
             friend class DeletionQueue;
             friend class SafePtr<T>;
@@ -340,7 +336,7 @@ namespace nap
          * A SafePtr points to an object that is owned by a @SafeOwner somewhere. When the owner goes out of scope and the pointed object will be moved into the @DeletionQueue the SafePtr will return true when checked if it equals nullptr. However the object it points to can still be used and safely accessed using the * and -> operators and the @get() method until the next time the @DeletionQueue is cleared. This way SafePtr guarantees that it can be safely used on both the thread where the SafeOwner went out of scope AND the thread that periodically empties the DeletionQueue, as long as you check if the SafePtr != nullptr before use.
          */
         template <typename T>
-        class NAPAPI SafePtr final : public SafePtrBase
+        class SafePtr final : public SafePtrBase
         {
             friend class SafeOwner<T>;
             friend class DeletionQueue;

@@ -129,7 +129,7 @@ TEST_CASE("Safe pointers", "[safepointer]")
 {
 	using namespace nap::audio;
 
-	class NAPAPI TestBase
+	class TestBase
 	{
 	public:
 		virtual ~TestBase() = default;
@@ -137,7 +137,7 @@ TEST_CASE("Safe pointers", "[safepointer]")
 	};
 
 	// Test object that increments a counter when it's constructed and decrements it on destruction
-	class NAPAPI Test : public TestBase
+	class Test : public TestBase
 	{
 	public:
 		Test(int x, int& destructed) : mX(x), mCounter(destructed) { mCounter++; }
