@@ -12,6 +12,7 @@
 	*	[Run a Demo](#run-a-demo)
 	*	[Work Against Source](#compile-your-project-against-nap-source)
 	*	[Package](#build-your-own-nap-distribution-package)
+*	[License](#license)
 	
 # Description
 
@@ -153,3 +154,7 @@ You can attempt to package NAP for Android but it will most likely fail. To pack
 	- Added to system path
 
 To package NAP for Android run: `package.bat` or `package.sh` together with the `--android` flag. To use the package in production combine the `--android` flag with `-nt` (no timestamp) and `-nz` (no zip). You must point the `ANDROID_NDK_ROOT` environment variable to the install location of the Android NDK.
+
+# License
+
+NAP Framework is licensed under the [Mozilla Public License, version 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
