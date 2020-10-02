@@ -1,4 +1,4 @@
-<p align="center">
+<p align="left">
   <img src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
