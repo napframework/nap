@@ -147,7 +147,6 @@ This means that you must make your changes to the NAP source code available unde
 In short: You are allowed to use and modify the NAP source code, for both commercial and non commercial purposes. However: if you make changes to the NAP source code, you have to make those changes available for others to use. We encourage people to share their ideas with the community. Keeping kwnowledge to yourself is not what NAP Framework is about.
 
 <br>
-<br>
 <p align="center">
   <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
