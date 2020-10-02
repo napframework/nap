@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://www.napframework.com/png/nap_logo_small.png">
-</p>
-
 *	[Description](#nap_description)
 	*	[Features](#nap_features)
 	*	[Documentation](#nap_documentation)
@@ -12,6 +8,10 @@
 	*	[Run a Demo](#nap_demo)
 	*	[Work Against Source](#nap_work_source)
 	*	[Package](#nap_package)
+
+<p align="center">
+  <img src="https://www.napframework.com/png/nap_logo_small.png">
+</p>
 
 # Description {#nap_description}
 
