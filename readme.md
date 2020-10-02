@@ -101,7 +101,7 @@ Open the generated solution in `XCode` or `Visual Studio`, select a build config
 
 ## Compile your project against NAP source
 ### Motivation
-Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a NAP package instead.
+Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a pre-compiled NAP package instead.
 
 ### Process
 * To see how you set up an app in source, look at the example in the `apps` folder.
