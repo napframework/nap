@@ -1,18 +1,18 @@
-*	[Description](#nap_description)
-	*	[Features](#nap_features)
-	*	[Documentation](#nap_documentation)
-	*	[Gallery](#nap_gallery)
-*	[Compilation](#nap_compilation)
-	*	[Dependencies](#nap_dependencies)
-	*	[Create the Solution](#nap_solution)
-	*	[Run a Demo](#nap_demo)
-	*	[Work Against Source](#nap_work_source)
-	*	[Package](#nap_package)
-
 <p align="center">
   <img src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
+*	[Description](#description)
+	*	[Features](#features)
+	*	[Documentation](#documentation)
+	*	[Gallery](#gallery)
+*	[Compilation](#compilation)
+	*	[Dependencies](#dependencies)
+	*	[Create the Solution](#create-the-solution)
+	*	[Run a Demo](#run-a-demo)
+	*	[Work Against Source](#compile-your-project-against-nap-source)
+	*	[Package](#build-your-own-nap-distribution-package)
+	
 # Description {#nap_description}
 
 [NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
@@ -33,7 +33,7 @@ Central to NAP are a couple of key philosophies:
 - NAP is completely cross-platform and supports all modern desktop environments
 - NAP app content can be edited using an editor
 
-## Features {#nap_features}
+## Features
 
 NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFMPEG and a Python programming interface.
 
@@ -43,11 +43,11 @@ NAP also has built in support for many common protocols and standards, including
   <img src="https://www.napframework.com/png/Vulkan_170px_Dec16.png">
 </p>
 
-## Documentation {#nap_documentation}
+## Documentation
 
 NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP Package only. Follow the instructions in this document to build and create a NAP application from source. All other parts of the documentation apply to both the NAP package and source context.
 
-## Gallery {#nap_gallery}
+## Gallery
 
 Visit [www.napframework.com](https://www.napframework.com/showcase) for more examples
 
@@ -60,9 +60,9 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 ![4DSound System](https://www.napframework.com/jpg/4d-sound-full.jpg)
 [4DSound System](https://4dsound.net/)
 
-# Compilation {#nap_compilation}
+# Compilation
 
-## Dependencies {#nap_dependencies}
+## Dependencies
 
 To generate a solution and compile the source code you need to have installed: 
 
@@ -79,7 +79,7 @@ NAP depends on various other third party libraries. A set of compatible librarie
 
 NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`.
 
-## Create the Solution {#nap_solution}
+## Create the Solution
 
 Run:
 
@@ -93,13 +93,13 @@ On success, run:
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
-## Run a Demo {#nap_demo}
+## Run a Demo
 
 Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh target:helloworld`.
 
 ---
 
-## OPTION #1: Compile your project against NAP source {#nap_work_source}
+## Compile your project against NAP source
 ### Motivation
 Allows you to step into the NAP Framework source code and make changes if required.
 
@@ -111,7 +111,7 @@ Allows you to step into the NAP Framework source code and make changes if requir
 
 ---
 
-## OPTION #2: Build your own NAP distribution package { #nap_package}
+## Build your own NAP distribution package
 A packaged version of NAP will include all of the following:
 * core components
 * standard modules
