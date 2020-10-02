@@ -142,19 +142,6 @@ Some other useful flags:
 
 More options for packaging can be queried by adding the flag `--help` when running the script.
 
-## Package for Android
-
-At the moment Android is not supported because of recent changes to the build system.
-You can attempt to package NAP for Android but it will most likely fail. To package NAP for Android you need to have installed:
-
-- The Android NDK 
-- [Ninja](https://github.com/ninja-build/ninja/releases)
-	- Added to system path
-- [Git](https://git-scm.com/download)
-	- Added to system path
-
-To package NAP for Android run: `package.bat` or `package.sh` together with the `--android` flag. To use the package in production combine the `--android` flag with `-nt` (no timestamp) and `-nz` (no zip). You must point the `ANDROID_NDK_ROOT` environment variable to the install location of the Android NDK.
-
 # License
 
 NAP Framework is open source software, licensed under the [Mozilla Public License Version 2.0](https://www.mozilla.org/en-US/MPL/2.0/). You can use the NAP source code and NAP distributable package to create both commercial and non-commercial derivate works, as long as the MPL 2.0 license is not violated. 
