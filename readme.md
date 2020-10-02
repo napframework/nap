@@ -70,7 +70,6 @@ To generate a solution and compile the source code you need to have installed:
 - [Qt 5](http://download.qt.io/official_releases/qt/)
 	- The precompiled package uses QT 5.11.3, although other versions are known to work.
 	- Use the QT Online Installer and select the **Archive** package category to access older versions
-- Latest version of [Git](https://git-scm.com/download/win)
 
 NAP depends on various other third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
@@ -78,7 +77,7 @@ NAP depends on various other third party libraries. A set of compatible librarie
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`.
+NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on QT, NAP applications do not have a dependency on QT.
 
 ## Create the Solution
 
@@ -102,7 +101,7 @@ Open the generated solution in `XCode` or `Visual Studio`, select a build config
 
 ## Compile your project against NAP source
 ### Motivation
-Allows you to step into the NAP Framework source code and make changes if required.
+Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a NAP package instead.
 
 ### Process
 * To see how you set up an app in source, look at the example in the `apps` folder.
@@ -119,7 +118,7 @@ A packaged version of NAP will include all of the following:
 * demos
 * your own project(s) - only if specified
 
-After packaging a new zip or folder is created, with the naming convention `NAP`-*Version*-*Platform*-*Timestamp* (Timestamp may be optionally omitted).
+After packaging a new zip or folder is created, with the naming convention `NAP-*Version*-*Platform*-*Timestamp*` (Timestamp may be optionally omitted).
 
 **By default only headers and binaries are included; source code and debug symbols will be excluded.**
 
