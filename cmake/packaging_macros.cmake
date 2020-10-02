@@ -120,6 +120,9 @@ macro(package_nap)
     # install NAP source code license
     install(FILES ${NAP_ROOT}/LICENSE.txt DESTINATION .)
 
+    # install NAP readme
+    install(FILES ${NAP_ROOT}/dist/license/README.txt DESTINATION .)
+
     # install NAP packaged app license 
     install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION dist/)
 endmacro()

@@ -1,17 +1,5 @@
-NAP APP
-=======
-
-DISTRIBUTION
-------------
-
-This program makes use of NAP Framework Source Code.
-NAP Framework is open source software, licensed under the: Mozilla Public 
-License, version 2.0. You can obtain the NAP source code, for free, at:
-
-https://github.com/naivisoftware/nap
-
-You are required to include this notice when you distribute this application.
-Failure to do so violates the MPL2.0 agreement.
+NAP PACKAGE
+===========
 
 INFORMATION
 -----------
@@ -49,3 +37,8 @@ LINKS
 NAP Documentation: https://www.napframework.com/doxygen
 NAP Source Code and Releases: https://github.com/naivisoftware/nap
 NAP Website: https://www.napframework.com
+
+LICENSE
+-------
+
+NAP Framework is Licensed under the: Mozilla Public License, version 2.0.
