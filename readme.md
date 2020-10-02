@@ -1,5 +1,5 @@
 <p align="center">
-  <image width="256" height="256" img src="https://www.napframework.com/png/nap_logo_small.png">
+  <img src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
 *	[Description](#description)
