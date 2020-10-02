@@ -124,7 +124,7 @@ After packaging a new zip or folder is created, with the naming convention `NAP-
 
 ## Package for Desktop OS
 
-To package NAP for release run: `package.bat` (Windows) or `package.sh` (MacOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
+To package NAP run: `package.bat` (Windows) or `package.sh` (MacOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
 ```
 QT_DIR=/home/myusername/Qt/5.11.3/gcc_64 ./package.sh
 ```
