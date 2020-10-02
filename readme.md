@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://www.napframework.com/png/nap_logo_small.png">
+  < width="100" height="100" img src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
 *	[Description](#description)
@@ -13,7 +13,7 @@
 	*	[Work Against Source](#compile-your-project-against-nap-source)
 	*	[Package](#build-your-own-nap-distribution-package)
 	
-# Description {#nap_description}
+# Description
 
 [NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
 
