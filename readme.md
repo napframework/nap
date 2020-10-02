@@ -58,7 +58,7 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
 ![EGO, Studio Drift](https://www.napframework.com/jpg/ego_1280.jpg)
 [EGO](https://www.studiodrift.com/work#/ego/) by Studio Drift
-![4DSound System](https://www.napframework.com/jpg/4d-sound-full.jpg)
+![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
 
 # Compilation
