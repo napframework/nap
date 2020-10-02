@@ -1,7 +1,17 @@
-New Amsterdam Platform
-=======================
+<span style="display:block;text-align:center">![NAP Framework](https://www.napframework.com/png/nap_logo_small.png)</span>
 
-# Description
+*	[Description](#nap_description)
+	*	[Features](#nap_features)
+	*	[Documentation](#nap_documentation)
+	*	[Gallery](#nap_gallery)
+*	[Compilation](#nap_compilation)
+	*	[Dependencies](#nap_dependencies)
+	*	[Create the Solution](#nap_solution)
+	*	[Run a Demo](#nap_demo)
+	*	[Work Against Source](#nap_work_source)
+	*	[Package](#nap_package)
+
+# Description {#nap_description}
 
 [NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
 
@@ -21,32 +31,34 @@ Central to NAP are a couple of key philosophies:
 - NAP is completely cross-platform and supports all modern desktop environments
 - NAP app content can be edited using an editor
 
-## Modules
+## Features {#nap_features}
 
-NAP ships with many useful modules, including (a): 
+NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFMPEG and a Python programming interface.
 
-- Vulkan 2D and 3D Render Engine
-- Audio Engine (playback, recording & analysis)
-- Sequencer
-- Editor
-- Video Playback using FFMPEG
-- Preset System
-- Font Rendering
-- Websockets
-- ImGUI
-- OpenCV
-- OSC
-- Midi
-- Artnet
-- Serial
-- Database
-- Ethercat
-- Python Interface
-- Many more...
+NAP also has built in support for many common protocols and standards, including: Websockets, Midi, OSC, Artnet, Serial, Ethercat, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
 
-# Compilation
+<span style="display:block;text-align:center">![Vulkan](https://www.napframework.com/png/Vulkan_170px_Dec16.png)</span>
 
-## Dependencies
+## Documentation {#nap_documentation}
+
+NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP Package only. Follow the instructions in this document to build and create a NAP application from source. All other parts of the documentation apply to both the NAP package and source context.
+
+## Gallery {#nap_gallery}
+
+Visit [www.napframework.com](https://www.napframework.com/showcase) for more examples
+
+![Between Mind and Matter, Nick Verstand](https://www.napframework.com/jpg/bmm_1280.jpg)
+[Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
+![Habitat, Heleen Blanken](https://www.napframework.com/jpg/habitat_1280.jpg)
+[Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
+![EGO, Studio Drift](https://www.napframework.com/jpg/ego_1280.jpg)
+[EGO](https://www.studiodrift.com/work#/ego/) by Studio Drift
+![4DSound System](https://www.napframework.com/jpg/4d-sound-full.jpg)
+[4DSound System](https://4dsound.net/)
+
+# Compilation {#nap_compilation}
+
+## Dependencies {#nap_dependencies}
 
 To generate a solution and compile the source code you need to have installed: 
 
@@ -63,23 +75,39 @@ NAP depends on various other third party libraries. A set of compatible librarie
 
 NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`.
 
-You can generate a solution by running `generate_solution.bat` or `generate_solution.sh`. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms.
+## Create the Solution {#nap_solution}
+
+Run:
+
+`check_build_environment` to ensure your build environment is up to date.
+
+On success, run:
+
+`generate_solution.sh` to generate an `XCode project` (OSX)<br>
+`generate_solution.bat` to generate a `Visual Studio Solution` (Win64)<br>
+`generate_solution.sh` to generate `make files` (Linux)<br>
+
+The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
+
+## Run a Demo {#nap_demo}
+
+Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh target:helloworld`.
 
 ---
 
-## OPTION #1: Compile your project against NAP source
+## OPTION #1: Compile your project against NAP source {#nap_work_source}
 ### Motivation
-Compiling your own project allows you to debug your project and step into the NAP framework source code as well, when necessary.
+Allows you to step into the NAP Framework source code and make changes if required.
 
 ### Process
 * To see how you set up an app in source, look at the example in the `apps` folder.
 * Add your project to the main `CMakeLists.txt` file
 
- Running `./generate_solution.sh` will create the Xcode project for the entire NAP source. You can see the code for napkin, the demos, modules, etc.
+ Running `./generate_solution.sh` or `./generate_solution.bat` will re-create the Xcode or Visual Studio solution and include your project.
 
 ---
 
-## OPTION #2: Build your own NAP distribution package
+## OPTION #2: Build your own NAP distribution package { #nap_package}
 A packaged version of NAP will include all of the following:
 * core components
 * standard modules
@@ -88,7 +116,7 @@ A packaged version of NAP will include all of the following:
 
 After packaging a new zip or folder is created, with the naming convention `NAP`-*Version*-*Platform*-*Timestamp* (Timestamp may be optionally omitted).
 
-**By default only headers and binaries are included; source code will be excluded.**
+**By default only headers and binaries are included; source code and debug symbols will be excluded.**
 
 ## Package for Desktop OS
 
@@ -121,8 +149,3 @@ You can attempt to package NAP for Android but it will most likely fail. To pack
 	- Added to system path
 
 To package NAP for Android run: `package.bat` or `package.sh` together with the `--android` flag. To use the package in production combine the `--android` flag with `-nt` (no timestamp) and `-nz` (no zip). You must point the `ANDROID_NDK_ROOT` environment variable to the install location of the Android NDK.
-
-# Documentation
-
-General NAP documentation can be found at: https://www.napframework.com/doxygen/. 
-Take note that the installation and build instructions on that website apply to the precompiled NAP Package only. Follow the instructions in this file to compile NAP from source. 
