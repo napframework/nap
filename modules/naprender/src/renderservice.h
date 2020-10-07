@@ -529,8 +529,8 @@ namespace nap
 		bool getWideLinesSupported() const											{ return mWideLinesSupported; }
 
 		/**
-		 * Returns if large points are supported.
-		 * @return if large points are supported.
+		 * Returns if rendering large points is supported.
+		 * @return if rendering large points is supported.
 		 */
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
 
