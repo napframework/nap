@@ -5,75 +5,44 @@
 
 namespace nap
 {
-    
-    namespace audio
-    {
-    
-        class AsyncObserver
-        {
-        private:
-            std::condition_variable condition;
-            bool notified;
-            std::mutex m;
-            
-            uint32_t numberOfNotifications;
-            uint32_t notificationCounter;
-            
-        public:
-            AsyncObserver()
-            {
-                notified = false;
-                numberOfNotifications = 0;
-                notificationCounter = 0;
-            }
-            
-            ~AsyncObserver() = default;
-            
-            void setBarrier(uint32_t aNumberOfNotifications = 1)
-            {
-                numberOfNotifications = aNumberOfNotifications;
-                if (numberOfNotifications == 0)
-                    notified = true;
-            }
-            
-            void notifyBarrier()
-            {
-                std::unique_lock<std::mutex> Lock(m);
-                if (++notificationCounter >= numberOfNotifications)
-                {
-                    notified = true;
-                    condition.notify_one();
-                }
-            }
-            
-            void waitForNotifications()
-            {
-                if (!notified)
-                {
-                    std::unique_lock<std::mutex> lock(m);
-                    condition.wait(lock, [&](){ return notified; });
-                }
-                
-                notificationCounter = 0;
-                notified = false;
-            }
-            
-            void notifyOne()
-            {
-                std::unique_lock<std::mutex> Lock(m);
-                notified = true;
-                condition.notify_one();
-            }
-            
-            void notifyAll()
-            {
-                std::unique_lock<std::mutex> Lock(m);
-                notified = true;
-                condition.notify_all();
-            }
-            
-        };
-        
-    }
-    
+	namespace audio
+	{
+		
+		/**
+		 * The AsyncObserver will assist you when one or more threads need to wait for any number of other threads to finish performing certain tasks.
+		 * We will call these threads respectively the waiting threads and the performing threads.
+		 */
+		class AsyncObserver
+		{
+		public:
+			AsyncObserver();
+			~AsyncObserver() = default;
+			
+			/**
+			 * Sets the number of performing threads that the waiting threads need to wait for to finish
+			 * @param numberOfNotifications the number of notifications that will be collected until resuming after the wait.
+			 */
+			void setBarrier(uint32_t numberOfNotifications = 1);
+			
+			/**
+			 *
+			 */
+			void notifyBarrier();
+			
+			void waitForNotifications();
+			
+			void notifyOne();
+			
+			void notifyAll();
+			
+		private:
+			std::condition_variable mCondition;
+			std::mutex mMutex;
+			
+			bool mNotified = false;
+			uint32_t mNumberOfNotifications = 0;
+			uint32_t mNotificationCounter = 0;
+		};
+		
+	}
 }
