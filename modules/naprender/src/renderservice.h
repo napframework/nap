@@ -523,6 +523,18 @@ namespace nap
 		bool anisotropicFilteringSupported() const;
 
 		/**
+		 * Returns if wide line rendering is supported, if so you can use a line width higher than 1.
+		 * @return if wide line rendering is supported.
+		 */
+		bool getWideLinesSupported() const											{ return mWideLinesSupported; }
+
+		/**
+		 * Returns if large points are supported.
+		 * @return if large points are supported.
+		 */
+		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
+
+		/**
 		 * Returns the (system default) number of anisotropic filter samples. 
 		 * The output is always 1 when anisotropic filtering is not supported.
 		 * @return system default number of max anisotropic filter samples.
@@ -841,6 +853,8 @@ namespace nap
 		bool									mEnableHighDPIMode = true;
 		bool									mSampleShadingSupported = false;
 		bool									mAnisotropicFilteringSupported = false;
+		bool									mWideLinesSupported = false;
+		bool									mLargePointsSupported = false;
 		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;												
 		SceneService*							mSceneService = nullptr;								
