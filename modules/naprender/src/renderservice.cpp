@@ -573,6 +573,7 @@ namespace nap
 		for (const auto& name : device_property_names)
 			Logger::info("Applying device extension: %s", name);
 
+
 		// Create queue information structure used by device based on the previously fetched queue information from the physical device
 		// We create one command processing queue for graphics
 		VkDeviceQueueCreateInfo queue_create_info = { };
@@ -588,6 +589,8 @@ namespace nap
 		VkPhysicalDeviceFeatures device_features {0};
 		device_features.sampleRateShading = physicalDevice.getFeatures().sampleRateShading;
 		device_features.samplerAnisotropy = physicalDevice.getFeatures().samplerAnisotropy;
+		device_features.largePoints = physicalDevice.getFeatures().largePoints;
+		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
@@ -829,9 +832,10 @@ namespace nap
 		input_assembly.topology = getTopology(drawMode);
 		input_assembly.primitiveRestartEnable = VK_FALSE;
 
-		VkDynamicState dynamic_states[2] = {
+		VkDynamicState dynamic_states[3] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_LINE_WIDTH
 		};
 
 		VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
@@ -1265,7 +1269,7 @@ namespace nap
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
 			return false;
 
-		// Figure out how many rasterization samples we can use and if sample rate shading is supported
+		// Sample physical device features and notify
 		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice.getHandle());
 		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
 		mSampleShadingSupported = mPhysicalDevice.getFeatures().sampleRateShading > 0;
@@ -1273,6 +1277,11 @@ namespace nap
 		mAnisotropicFilteringSupported = mPhysicalDevice.getFeatures().samplerAnisotropy > 0;
 		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
 		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
+		nap::Logger::info("Max anisotropic filter samples: %d", mAnisotropicSamples);
+		mWideLinesSupported = mPhysicalDevice.getFeatures().wideLines > 0;
+		nap::Logger::info("Wide lines: %s", mWideLinesSupported ? "Supported" : "Not Supported");
+		mLargePointsSupported = mPhysicalDevice.getFeatures().largePoints > 0;
+		nap::Logger::info("Large points: %s", mLargePointsSupported ? "Supported" : "Not Supported");
 
 		// Get extensions that are required for NAP render engine to function.
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();

@@ -271,15 +271,6 @@ namespace nap
 			{(uint32_t)(renderTarget.getBufferSize().x), (uint32_t)(renderTarget.getBufferSize().y) }
 		};
 
-		// Viewport
-		VkViewport viewport = 
-		{
-			0.0f, 0.0f,
-			(float)(renderTarget.getBufferSize().x), 
-			(float)(renderTarget.getBufferSize().y),
-			0.0f, 1.0f
-		};
-
 		// Draw individual glyphs
 		for (auto& render_glyph : mGlyphCache[mIndex])
 		{
@@ -309,7 +300,6 @@ namespace nap
 			// Get new descriptor set that contains the updated settings and bind pipeline
 			VkDescriptorSet descriptor_set = mMaterialInstance.update();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 			// Bind descriptor set
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);

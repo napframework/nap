@@ -51,6 +51,7 @@ namespace nap
 		ResourcePtr<IMesh>					mMesh;								///< Property: 'Mesh' Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		math::Rect							mClipRect;							///< Property: 'ClipRect' Optional clipping rectangle, in pixel coordinates
+		float								mLineWidth = 1.0f;					///< Property: 'LineWidth' Width of the line when rendered, values higher than 1.0 only work when the GPU supports it
 	};
 
 
@@ -164,5 +165,6 @@ namespace nap
 		UniformMat4Instance*					mModelMatUniform = nullptr;		///< Pointer to the model matrix uniform
 		UniformMat4Instance*					mViewMatUniform = nullptr;		///< Pointer to the view matrix uniform
 		UniformMat4Instance*					mProjectMatUniform = nullptr;	///< Pointer to the projection matrix uniform
+		float									mLineWidth = 1.0f;				///< Line width, clamped to 1.0 if not supported by GPU
 	};
 }
