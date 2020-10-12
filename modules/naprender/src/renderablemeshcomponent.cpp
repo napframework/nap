@@ -20,6 +20,7 @@
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LineWidth",			&nap::RenderableMeshComponent::mLineWidth,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -39,8 +40,7 @@ namespace nap
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mRenderService(entity.getCore()->getService<nap::RenderService>())
-	{
-	}
+	{ }
 
 
 	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
@@ -66,6 +66,14 @@ namespace nap
 
 		// Copy cliprect. Any modifications are done per instance
 		mClipRect = resource->mClipRect;
+
+		// Copy line width, ensure it's supported
+		mLineWidth = resource->mLineWidth;
+		if (mLineWidth > 1.0f && !mRenderService->getWideLinesSupported())
+		{
+			nap::Logger::warn("Unsupported line width: %.02f", mLineWidth);
+			mLineWidth = 1.0f;
+		}
 
 		// Since the material can't be changed at run-time, cache the matrices to set on draw
 		// If the struct is found, we expect the matrices with those names to be there
@@ -149,6 +157,9 @@ namespace nap
 			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 
+		// Set line width
+		vkCmdSetLineWidth(commandBuffer, mLineWidth);
+
 		// Draw meshes
 		MeshInstance& mesh_instance = getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
@@ -158,6 +169,9 @@ namespace nap
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
+
+		// Restore line width
+		vkCmdSetLineWidth(commandBuffer, 1.0f);
 
 		// Restore clipping
 		if (has_clip_rect)

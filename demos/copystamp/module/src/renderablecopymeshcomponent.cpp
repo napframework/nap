@@ -214,15 +214,6 @@ namespace nap
 		// Get camera location
 		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
-		// Construct viewport, can be re-used.
-		VkViewport viewport =
-		{
-			0.0f, 0.0f,
-			(float)renderTarget.getBufferSize().x,
-			(float)renderTarget.getBufferSize().y,
-			0.0f, 1.0f
-		};
-
 		// Scissor rect can also be re-used
 		VkRect2D scissor_rect
 		{
@@ -246,9 +237,6 @@ namespace nap
 
 			// Bind pipeline per mesh we are going to render
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-
-			// Set viewport
-			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 			// Update scissor state
 			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);

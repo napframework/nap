@@ -229,15 +229,6 @@ namespace nap
 		// Get randomization scale for various effects
 		int max_rand_color = static_cast<int>(mColors.size()) - 1;
 
-		// Construct viewport, can be re-used.
-		VkViewport viewport =
-		{
-			0.0f, 0.0f,
-			(float)renderTarget.getBufferSize().x,
-			(float)renderTarget.getBufferSize().y,
-			0.0f, 1.0f
-		};
-
 		// Scissor rect can also be re-used
 		VkRect2D scissor_rect
 		{
@@ -269,9 +260,6 @@ namespace nap
 
 			// Bind pipeline
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-
-			// Set viewport
-			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 			// Bind descriptor set for next draw call
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);

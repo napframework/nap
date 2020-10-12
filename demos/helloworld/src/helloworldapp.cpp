@@ -82,6 +82,18 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Update the camera location in the world shader for the halo effect
+		// To do that we fetch the material associated with the world mesh and query the camera location uniform
+		// Once we have the uniform we can set it to the camera world space location
+		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		nap::UniformVec3Instance* cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+
+		// Get camera world space position and set
+		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+		cam_loc_uniform->setValue(global_pos);
+
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
@@ -112,18 +124,6 @@ namespace nap
 	 */
 	void HelloWorldApp::render()
 	{
-		// Update the camera location in the world shader for the halo effect
-		// To do that we fetch the material associated with the world mesh and query the camera location uniform
-		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformVec3Instance* cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
-
-		// Get camera world space position and set
-		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
-
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
